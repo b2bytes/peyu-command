@@ -3,7 +3,8 @@ import { base44 } from "@/api/base44Client";
 import {
   TrendingUp, TrendingDown, Users, Package, DollarSign,
   MessageSquare, Factory, AlertTriangle, CheckCircle2,
-  Clock, Target, Zap, ArrowRight, Database, Loader2
+  Clock, Target, Zap, ArrowRight, Database, Loader2,
+  Store, UserCheck, Flag
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import {
@@ -63,6 +64,10 @@ export default function Dashboard() {
   const [leads, setLeads] = useState([]);
   const [cotizaciones, setCotizaciones] = useState([]);
   const [ordenes, setOrdenes] = useState([]);
+  const [okrs, setOkrs] = useState([]);
+  const [clientes, setClientes] = useState([]);
+  const [ventas, setVentas] = useState([]);
+  const [colaboradores, setColaboradores] = useState([]);
   const [seeding, setSeeding] = useState(false);
   const [seedDone, setSeedDone] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -70,13 +75,21 @@ export default function Dashboard() {
   const loadData = () => {
     setLoading(true);
     Promise.all([
-      base44.entities.Lead.list('-created_date', 50),
-      base44.entities.Cotizacion.list('-created_date', 50),
-      base44.entities.OrdenProduccion.list('-created_date', 50),
-    ]).then(([l, c, o]) => {
+      base44.entities.Lead.list('-created_date', 100),
+      base44.entities.Cotizacion.list('-created_date', 100),
+      base44.entities.OrdenProduccion.list('-created_date', 100),
+      base44.entities.OKR.list('-created_date', 50),
+      base44.entities.Cliente.list('-created_date', 100),
+      base44.entities.VentaTienda.list('-created_date', 200),
+      base44.entities.Colaborador.list('-created_date', 50),
+    ]).then(([l, c, o, ok, cl, vt, col]) => {
       setLeads(l);
       setCotizaciones(c);
       setOrdenes(o);
+      setOkrs(ok);
+      setClientes(cl);
+      setVentas(vt);
+      setColaboradores(col);
       setLoading(false);
     }).catch(() => setLoading(false));
   };
@@ -103,10 +116,37 @@ export default function Dashboard() {
   const ordenesActivas = ordenes.filter(o => !['Despachado'].includes(o.estado)).length;
   const ordenesUrgentes = ordenes.filter(o => o.prioridad === 'Alta (urgente)').length;
 
+  // Tiendas
+  const ventasHoy = ventas.filter(v => v.fecha === new Date().toISOString().split('T')[0]);
+  const totalVentasHoy = ventasHoy.reduce((s, v) => s + (v.total || 0), 0);
+  const totalVentasMes = ventas.reduce((s, v) => s + (v.total || 0), 0);
+
+  // Clientes
+  const clientesVIP = clientes.filter(c => c.estado === 'VIP').length;
+  const clientesEnRiesgo = clientes.filter(c => c.estado === 'En Riesgo').length;
+  const totalLTV = clientes.reduce((s, c) => s + (c.total_compras_clp || 0), 0);
+
+  // Equipo
+  const equipoActivo = colaboradores.filter(c => c.estado === 'Activo').length;
+
+  // OKRs
+  const getPct = (o) => {
+    if (!o.valor_meta || o.valor_meta === o.valor_inicial) return 0;
+    const dir = o.valor_meta > o.valor_inicial ? 1 : -1;
+    const range = Math.abs(o.valor_meta - o.valor_inicial);
+    const progress = dir * ((o.valor_actual || 0) - (o.valor_inicial || 0));
+    return Math.min(100, Math.max(0, Math.round(progress / range * 100)));
+  };
+  const avgOKR = okrs.length > 0 ? Math.round(okrs.reduce((s, o) => s + getPct(o), 0) / okrs.length) : 0;
+  const okrsEnRiesgo = okrs.filter(o => o.estado === 'En riesgo').length;
+  const topOKRs = okrs.slice(0, 4);
+
   const alerts = [
     leadsCalientes > 0 && { type: 'warning', msg: `${leadsCalientes} leads calientes sin cotización enviada` },
     cotEnviadas > 0 && { type: 'info', msg: `${cotEnviadas} cotizaciones esperando respuesta del cliente` },
     ordenesUrgentes > 0 && { type: 'danger', msg: `${ordenesUrgentes} órdenes de producción urgentes` },
+    clientesEnRiesgo > 0 && { type: 'danger', msg: `${clientesEnRiesgo} clientes en riesgo de churn — requieren recontacto` },
+    okrsEnRiesgo > 0 && { type: 'warning', msg: `${okrsEnRiesgo} OKRs en riesgo — revisar iniciativas` },
     { type: 'success', msg: 'Tracking GA4 + Meta CAPI: Pendiente implementación' },
   ].filter(Boolean);
 
@@ -190,42 +230,36 @@ export default function Dashboard() {
       {/* Second row KPIs */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
-          title="Gasto Meta Ads"
-          value="$2.0M"
-          subtitle="CLP/mes • ROAS: bajo"
-          icon={Zap}
-          trendLabel="Reducir 30% → reasignar"
-          trend={-1}
-          color="#D96B4D"
-          bg="#fdf3f0"
-        />
-        <StatCard
-          title="Cotizaciones"
-          value={loading ? '...' : cotizaciones.length}
-          subtitle={`${cotAceptadas} aceptadas`}
-          icon={MessageSquare}
+          title="Ventas Tiendas Hoy"
+          value={loading ? '...' : totalVentasHoy > 0 ? `$${(totalVentasHoy/1000).toFixed(0)}K` : '$0'}
+          subtitle={`Mes: $${(totalVentasMes/1000).toFixed(0)}K · ${ventas.length} transacciones`}
+          icon={Store}
           color="#0F8B6C"
           bg="#f0faf7"
         />
         <StatCard
-          title="Conversión B2B"
-          value="3.3%"
-          subtitle="1 venta por 30 consultas"
-          icon={TrendingUp}
-          trendLabel="Meta: 7% en 90 días"
-          trend={-1}
-          color="#D96B4D"
-          bg="#fdf3f0"
+          title="Clientes LTV Total"
+          value={loading ? '...' : `$${(totalLTV/1000000).toFixed(1)}M`}
+          subtitle={`${clientesVIP} VIP · ${clientesEnRiesgo > 0 ? clientesEnRiesgo+' en riesgo' : 'Sin alertas'}`}
+          icon={UserCheck}
+          color={clientesEnRiesgo > 0 ? '#D96B4D' : '#0F8B6C'}
+          bg={clientesEnRiesgo > 0 ? '#fdf3f0' : '#f0faf7'}
         />
         <StatCard
-          title="Utilización Planta"
-          value="~35%"
-          subtitle="6 inyectoras • Meta: 70%"
-          icon={Package}
-          trendLabel="Capacidad disponible"
-          trend={1}
-          color="#0F8B6C"
-          bg="#f0faf7"
+          title="Equipo Activo"
+          value={loading ? '...' : equipoActivo}
+          subtitle={`${colaboradores.length} colaboradores total`}
+          icon={Users}
+          color="#4B4F54"
+          bg="#f5f5f5"
+        />
+        <StatCard
+          title="OKRs Avance Global"
+          value={loading ? '...' : `${avgOKR}%`}
+          subtitle={`${okrs.length} KRs · ${okrsEnRiesgo > 0 ? okrsEnRiesgo+' en riesgo' : 'Sin alertas'}`}
+          icon={Flag}
+          color={avgOKR >= 70 ? '#0F8B6C' : avgOKR >= 40 ? '#f59e0b' : '#D96B4D'}
+          bg={avgOKR >= 70 ? '#f0faf7' : avgOKR >= 40 ? '#fffbeb' : '#fdf3f0'}
         />
       </div>
 
@@ -315,6 +349,8 @@ export default function Dashboard() {
               { label: 'Nueva Cotización', to: '/pipeline', color: '#0F8B6C' },
               { label: 'Nueva Orden Producción', to: '/operaciones', color: '#4B4F54' },
               { label: 'Nueva Campaña', to: '/marketing', color: '#D96B4D' },
+              { label: 'Ver Tiendas Físicas', to: '/tiendas', color: '#0F8B6C' },
+              { label: 'Ver OKRs & Metas', to: '/okrs', color: '#0F8B6C' },
               { label: 'Ver Analítica', to: '/analitica', color: '#4B4F54' },
             ].map((item, i) => (
               <Link key={i} to={item.to} className="flex items-center justify-between p-3 rounded-xl hover:bg-muted/50 transition-colors group">
@@ -326,22 +362,27 @@ export default function Dashboard() {
 
           {/* OKR quick view */}
           <div className="mt-4 pt-4 border-t border-border">
-            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">OKR 90 días</p>
-            {[
-              { label: 'Pedidos B2B 8→12/mes', pct: 67 },
-              { label: 'Conversión 3.3%→7%', pct: 47 },
-              { label: 'Ventas web $4M→$6M', pct: 67 },
-            ].map((okr, i) => (
-              <div key={i} className="mb-2">
-                <div className="flex justify-between text-xs mb-1">
-                  <span className="text-muted-foreground">{okr.label}</span>
-                  <span className="font-medium">{okr.pct}%</span>
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">OKRs Blueprint Q2</p>
+              <Link to="/okrs" className="text-xs font-medium" style={{ color: '#0F8B6C' }}>Ver todos →</Link>
+            </div>
+            {topOKRs.length === 0 ? (
+              <p className="text-xs text-muted-foreground text-center py-2">Sin OKRs cargados</p>
+            ) : topOKRs.map((okr, i) => {
+              const pct = getPct(okr);
+              const barColor = pct >= 70 ? '#0F8B6C' : pct >= 40 ? '#f59e0b' : '#D96B4D';
+              return (
+                <div key={i} className="mb-2">
+                  <div className="flex justify-between text-xs mb-1">
+                    <span className="text-muted-foreground line-clamp-1">{okr.resultado_clave}</span>
+                    <span className="font-medium ml-2 flex-shrink-0" style={{ color: barColor }}>{pct}%</span>
+                  </div>
+                  <div className="h-1.5 bg-muted rounded-full">
+                    <div className="h-full rounded-full" style={{ width: `${pct}%`, background: barColor }} />
+                  </div>
                 </div>
-                <div className="h-1.5 bg-muted rounded-full">
-                  <div className="h-full rounded-full" style={{ width: `${okr.pct}%`, background: '#0F8B6C' }} />
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </div>

@@ -5,7 +5,7 @@ Deno.serve(async (req) => {
   const user = await base44.auth.me();
   if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
-  const results = { leads: 0, cotizaciones: 0, ordenes: 0, campanas: 0, productos: 0, clientes: 0, proveedores: 0, colaboradores: 0, ventas_tienda: 0, consultas: 0 };
+  const results = { leads: 0, cotizaciones: 0, ordenes: 0, campanas: 0, productos: 0, clientes: 0, proveedores: 0, colaboradores: 0, ventas_tienda: 0, consultas: 0, okrs: 0 };
 
   // ── PRODUCTOS ────────────────────────────────────────────
   const productos = [
@@ -119,6 +119,21 @@ Deno.serve(async (req) => {
     { nombre: 'Clínica Las Condes', telefono: '+56222986754', mensaje: 'Hola, vimos sus productos y tenemos interés en hacer un kit de bienvenida para nuestros colaboradores. Son aprox 300 personas.', tipo: 'Cotización Corporativa', estado: 'Sin responder', calidad: 'Caliente', canal: 'WhatsApp', cantidad_estimada: 300, logo_enviado: false, convertido_lead: false, notas: 'URGENTE: Responder hoy. Gran potencial.' },
   ];
   for (const c of consultas) { await base44.asServiceRole.entities.Consulta.create(c); results.consultas++; }
+
+  // ── OKRs BLUEPRINT ─────────────────────────────────────
+  const okrBlueprint = [
+    { objetivo: 'O1: Escalar Ingresos B2B', resultado_clave: 'Pedidos B2B: 8 → 12/mes', area: 'Comercial', periodo: 'Q2 2026', valor_inicial: 8, valor_meta: 12, valor_actual: 8, unidad: 'pedidos/mes', estado: 'En curso', responsable: 'CEO', iniciativas: 'Contratar Ejecutivo Comercial, campaña LinkedIn B2B, seguimiento pipeline 2x/semana', fecha_inicio: '2026-04-01', fecha_cierre: '2026-06-30' },
+    { objetivo: 'O1: Escalar Ingresos B2B', resultado_clave: 'Ticket promedio B2B: $800K → $1.2M CLP', area: 'Comercial', periodo: 'Q2 2026', valor_inicial: 800000, valor_meta: 1200000, valor_actual: 850000, unidad: 'CLP', estado: 'En curso', responsable: 'CEO', iniciativas: 'Upsell kit corporativo completo, ROI calculator', fecha_inicio: '2026-04-01', fecha_cierre: '2026-06-30' },
+    { objetivo: 'O1: Escalar Ingresos B2B', resultado_clave: 'Conversión lead→venta: 3.3% → 7%', area: 'Comercial', periodo: 'Q2 2026', valor_inicial: 3.3, valor_meta: 7, valor_actual: 3.3, unidad: '%', estado: 'En riesgo', responsable: 'CEO', iniciativas: 'Triage WhatsApp, SLA cotización <24h', fecha_inicio: '2026-04-01', fecha_cierre: '2026-06-30' },
+    { objetivo: 'O2: Crecer Canal B2C Digital', resultado_clave: 'Ventas web: $4M → $6M CLP/mes', area: 'Marketing', periodo: 'Q2 2026', valor_inicial: 4000000, valor_meta: 6000000, valor_actual: 4000000, unidad: 'CLP/mes', estado: 'En riesgo', responsable: 'Community Manager', iniciativas: 'Email flows, SEO, contenido UGC', fecha_inicio: '2026-04-01', fecha_cierre: '2026-06-30' },
+    { objetivo: 'O2: Crecer Canal B2C Digital', resultado_clave: 'ROAS Meta Ads: 1.8x → 3x', area: 'Marketing', periodo: 'Q2 2026', valor_inicial: 1.8, valor_meta: 3, valor_actual: 1.8, unidad: 'ROAS', estado: 'En riesgo', responsable: 'Community Manager', iniciativas: 'Pausar Advantage+, A/B testing creatividades', fecha_inicio: '2026-04-01', fecha_cierre: '2026-06-30' },
+    { objetivo: 'O3: Optimizar Producción', resultado_clave: 'Utilización planta: 35% → 70%', area: 'Producción', periodo: 'Q2 2026', valor_inicial: 35, valor_meta: 70, valor_actual: 35, unidad: '%', estado: 'En curso', responsable: 'Jefe Producción', iniciativas: 'Planificación anticipada, 2do turno', fecha_inicio: '2026-04-01', fecha_cierre: '2026-06-30' },
+    { objetivo: 'O3: Optimizar Producción', resultado_clave: 'Scrap / Rechazo: < 3% mensual', area: 'Producción', periodo: 'Q2 2026', valor_inicial: 5, valor_meta: 3, valor_actual: 4.2, unidad: '%', estado: 'En curso', responsable: 'Jefe Producción', iniciativas: 'Control calidad por turno, entrenamiento operarios', fecha_inicio: '2026-04-01', fecha_cierre: '2026-06-30' },
+    { objetivo: 'O4: Salud Financiera', resultado_clave: 'Ingresos totales: $10.4M → $15M CLP/mes', area: 'Finanzas', periodo: 'Q2 2026', valor_inicial: 10400000, valor_meta: 15000000, valor_actual: 10400000, unidad: 'CLP/mes', estado: 'En curso', responsable: 'CEO', iniciativas: 'B2B x12 + B2C $6M + tiendas $1M', fecha_inicio: '2026-04-01', fecha_cierre: '2026-06-30' },
+    { objetivo: 'O5: Digitalización Operacional', resultado_clave: 'Sistema de gestión Peyu 100% operativo', area: 'Tecnología', periodo: 'Q2 2026', valor_inicial: 0, valor_meta: 100, valor_actual: 85, unidad: '% módulos activos', estado: 'En curso', responsable: 'B2BYTES', iniciativas: 'Todos los módulos del Centro de Comando en producción', fecha_inicio: '2026-04-01', fecha_cierre: '2026-04-15' },
+    { objetivo: 'O5: Digitalización Operacional', resultado_clave: 'WhatsApp Business API + autoresponder activo', area: 'Tecnología', periodo: 'Q2 2026', valor_inicial: 0, valor_meta: 100, valor_actual: 0, unidad: '% completo', estado: 'Pendiente', responsable: 'CEO / B2BYTES', iniciativas: 'Integración API oficial, flujo triage automático', fecha_inicio: '2026-04-20', fecha_cierre: '2026-05-15' },
+  ];
+  for (const o of okrBlueprint) { await base44.asServiceRole.entities.OKR.create(o); results.okrs++; }
 
   return Response.json({ ok: true, results });
 });
