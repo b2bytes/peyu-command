@@ -1,5 +1,5 @@
 import { Link, useLocation, Outlet } from "react-router-dom";
-import { LayoutDashboard, Users, Settings, BarChart3, Megaphone, Turtle, Package, Calculator, MessageSquare, TrendingUp, Store, UserCheck, Truck, HardHat, Flag } from "lucide-react";
+import { LayoutDashboard, Users, Settings, BarChart3, Megaphone, Turtle, Package, Calculator, MessageSquare, TrendingUp, Store, UserCheck, Truck, HardHat, Flag, Archive } from "lucide-react";
 
 const navItems = [
   { path: "/", label: "Centro de Comando", icon: LayoutDashboard },
@@ -16,6 +16,7 @@ const navItems = [
   { path: "/proveedores", label: "Proveedores", icon: Truck },
   { path: "/equipo", label: "Equipo / RRHH", icon: HardHat },
   { path: "/okrs", label: "OKRs & Metas", icon: Flag },
+  { path: "/inventario", label: "Inventario", icon: Archive },
 ];
 
 export default function Layout() {

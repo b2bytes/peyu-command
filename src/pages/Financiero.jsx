@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { TrendingUp, TrendingDown, DollarSign, Package, Zap, AlertTriangle } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
@@ -61,13 +61,15 @@ const ESCENARIOS = [
   },
 ];
 
-const PRODUCTOS_MARGEN = [
-  { sku: 'BOT-001', nombre: 'Botella 500ml Reciclada', precio: 9_990, costo: 4_200, margen: 57.9 },
-  { sku: 'BOT-002', nombre: 'Botella 750ml Premium', precio: 12_990, costo: 5_800, margen: 55.3 },
-  { sku: 'TAZ-001', nombre: 'Taza Trigo 300ml', precio: 7_990, costo: 3_100, margen: 61.2 },
-  { sku: 'MUG-001', nombre: 'Mug Corporativo 400ml', precio: 8_990, costo: 3_600, margen: 59.9 },
-  { sku: 'PORT-001', nombre: 'Porta Notebook', precio: 11_990, costo: 5_200, margen: 56.6 },
-  { sku: 'ECO-001', nombre: 'Eco Kit Escritorio', precio: 24_990, costo: 11_500, margen: 54.0 },
+const PRODUCTOS_MARGEN_DEFAULT = [
+  { sku: 'SOPC-001', nombre: 'Soporte Celular PEYU', precio: 6990, costo: 3146, margen: 55.0 },
+  { sku: 'SONB-001', nombre: 'Soporte Notebook PEYU', precio: 9990, costo: 4496, margen: 55.0 },
+  { sku: 'LLAV-001', nombre: 'Llavero Soporte Celular', precio: 3990, costo: 1596, margen: 60.0 },
+  { sku: 'POSAV-001', nombre: 'Posavasos Set x4', precio: 7990, costo: 3196, margen: 60.0 },
+  { sku: 'CACH-001', nombre: 'Pack Cachos (6u)', precio: 25990, costo: 11696, margen: 55.0 },
+  { sku: 'LAMP-001', nombre: 'Lámpara Chillka', precio: 23490, costo: 11275, margen: 52.0 },
+  { sku: 'MACE-001', nombre: 'Macetero Ecológico', precio: 5990, costo: 2575, margen: 57.0 },
+  { sku: 'KIT-ESCR-001', nombre: 'Kit Escritorio Corporativo', precio: 19990, costo: 9795, margen: 51.0 },
 ];
 
 const COLORS = ['#0F8B6C', '#D96B4D', '#A7D9C9', '#4B4F54', '#E7D8C6', '#f97316'];
@@ -86,6 +88,24 @@ function calcEscenario(e) {
 
 export default function Financiero() {
   const [escenarioSel, setEscenarioSel] = useState('Base');
+  const [productosDB, setProductosDB] = useState([]);
+
+  useEffect(() => {
+    base44.entities.Producto.list('-precio_b2c', 50).then(data => {
+      const activos = data.filter(p => p.precio_b2c > 0);
+      if (activos.length > 0) setProductosDB(activos);
+    });
+  }, []);
+
+  const productosMargen = productosDB.length > 0
+    ? productosDB.map(p => ({
+        sku: p.sku,
+        nombre: p.nombre,
+        precio: p.precio_b2c,
+        costo: Math.round(p.precio_b2c * 0.43),
+        margen: 57,
+      }))
+    : PRODUCTOS_MARGEN_DEFAULT;
 
   const totalFijos = COSTOS_FIJOS.reduce((s, c) => s + c.monto, 0);
   const escActual = ESCENARIOS.find(e => e.nombre === escenarioSel);
@@ -290,7 +310,7 @@ export default function Financiero() {
                   </tr>
                 </thead>
                 <tbody>
-                  {PRODUCTOS_MARGEN.map((p, i) => (
+                  {productosMargen.map((p, i) => (
                     <tr key={i} className="border-b border-border last:border-0 hover:bg-muted/20 transition-colors">
                       <td className="py-3 font-mono text-xs text-muted-foreground">{p.sku}</td>
                       <td className="py-3 font-medium text-foreground">{p.nombre}</td>
