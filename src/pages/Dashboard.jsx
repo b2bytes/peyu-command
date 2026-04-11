@@ -67,7 +67,8 @@ export default function Dashboard() {
   const [seedDone, setSeedDone] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
+  const loadData = () => {
+    setLoading(true);
     Promise.all([
       base44.entities.Lead.list('-created_date', 50),
       base44.entities.Cotizacion.list('-created_date', 50),
@@ -78,6 +79,10 @@ export default function Dashboard() {
       setOrdenes(o);
       setLoading(false);
     }).catch(() => setLoading(false));
+  };
+
+  useEffect(() => {
+    loadData();
   }, []);
 
   const handleSeed = async () => {
