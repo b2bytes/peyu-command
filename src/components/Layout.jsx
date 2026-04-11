@@ -1,8 +1,9 @@
 import { Link, useLocation, Outlet } from "react-router-dom";
-import { LayoutDashboard, Users, Settings, BarChart3, Megaphone, Turtle, Package, Calculator, Database } from "lucide-react";
+import { LayoutDashboard, Users, Settings, BarChart3, Megaphone, Turtle, Package, Calculator, MessageSquare } from "lucide-react";
 
 const navItems = [
   { path: "/", label: "Centro de Comando", icon: LayoutDashboard },
+  { path: "/soporte", label: "Soporte & WhatsApp", icon: MessageSquare },
   { path: "/pipeline", label: "Pipeline B2B", icon: Users },
   { path: "/cpq", label: "CPQ Cotizador", icon: Calculator },
   { path: "/catalogo", label: "Catálogo SKUs", icon: Package },

@@ -1,0 +1,95 @@
+{
+  "name": "Consulta",
+  "type": "object",
+  "properties": {
+    "nombre": {
+      "type": "string",
+      "title": "Nombre / Empresa"
+    },
+    "telefono": {
+      "type": "string",
+      "title": "Tel\u00e9fono WhatsApp"
+    },
+    "mensaje": {
+      "type": "string",
+      "title": "Mensaje Original"
+    },
+    "tipo": {
+      "type": "string",
+      "title": "Tipo de Consulta",
+      "enum": [
+        "Cotizaci\u00f3n Corporativa",
+        "Compra Individual",
+        "Personalizaci\u00f3n Tienda",
+        "Estado Pedido",
+        "Pregunta General",
+        "No Comercial"
+      ]
+    },
+    "estado": {
+      "type": "string",
+      "title": "Estado",
+      "enum": [
+        "Sin responder",
+        "Respondido",
+        "En seguimiento",
+        "Cerrado",
+        "Descartado"
+      ]
+    },
+    "calidad": {
+      "type": "string",
+      "title": "Calidad Lead",
+      "enum": [
+        "Caliente",
+        "Tibio",
+        "Fr\u00edo",
+        "No Comercial"
+      ]
+    },
+    "canal": {
+      "type": "string",
+      "title": "Canal",
+      "enum": [
+        "WhatsApp",
+        "Instagram DM",
+        "Email",
+        "Web"
+      ]
+    },
+    "cantidad_estimada": {
+      "type": "number",
+      "title": "Cantidad Estimada (u)"
+    },
+    "fecha_requerida": {
+      "type": "string",
+      "title": "Fecha Requerida"
+    },
+    "logo_enviado": {
+      "type": "boolean",
+      "title": "Logo Enviado"
+    },
+    "respuesta": {
+      "type": "string",
+      "title": "Respuesta Enviada"
+    },
+    "tiempo_respuesta_hrs": {
+      "type": "number",
+      "title": "Tiempo Respuesta (hrs)"
+    },
+    "convertido_lead": {
+      "type": "boolean",
+      "title": "Convertido a Lead"
+    },
+    "notas": {
+      "type": "string",
+      "title": "Notas Internas"
+    }
+  },
+  "required": [
+    "nombre",
+    "tipo",
+    "estado",
+    "canal"
+  ]
+}

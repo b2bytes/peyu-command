@@ -3,7 +3,7 @@ import { base44 } from "@/api/base44Client";
 import {
   TrendingUp, TrendingDown, Users, Package, DollarSign,
   MessageSquare, Factory, AlertTriangle, CheckCircle2,
-  Clock, Target, Zap, ArrowRight
+  Clock, Target, Zap, ArrowRight, Database, Loader2
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import {
@@ -63,6 +63,8 @@ export default function Dashboard() {
   const [leads, setLeads] = useState([]);
   const [cotizaciones, setCotizaciones] = useState([]);
   const [ordenes, setOrdenes] = useState([]);
+  const [seeding, setSeeding] = useState(false);
+  const [seedDone, setSeedDone] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -77,6 +79,17 @@ export default function Dashboard() {
       setLoading(false);
     }).catch(() => setLoading(false));
   }, []);
+
+  const handleSeed = async () => {
+    setSeeding(true);
+    try {
+      await base44.functions.invoke('seedData', {});
+      setSeedDone(true);
+      setTimeout(() => { setSeedDone(false); loadData(); }, 2000);
+    } finally {
+      setSeeding(false);
+    }
+  };
 
   const leadsActivos = leads.filter(l => !['Ganado','Perdido'].includes(l.estado)).length;
   const leadsCalientes = leads.filter(l => l.calidad_lead === 'Caliente').length;
@@ -95,9 +108,19 @@ export default function Dashboard() {
   return (
     <div className="p-6 space-y-6">
       {/* Header */}
-      <div>
-        <h1 className="text-2xl font-poppins font-bold text-foreground">Centro de Comando</h1>
-        <p className="text-muted-foreground text-sm mt-1">Blueprint empresarial Peyu • Actualizado hoy</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-poppins font-bold text-foreground">Centro de Comando</h1>
+          <p className="text-muted-foreground text-sm mt-1">Blueprint empresarial Peyu • Actualizado hoy</p>
+        </div>
+        <button
+          onClick={handleSeed}
+          disabled={seeding || seedDone}
+          className="flex items-center gap-2 text-xs font-medium px-3 py-2 rounded-xl border border-dashed transition-all hover:bg-muted/50 disabled:opacity-60"
+          title="Carga datos de ejemplo: productos, leads, cotizaciones, campañas">
+          {seeding ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Database className="w-3.5 h-3.5" />}
+          {seedDone ? '✓ Datos cargados' : seeding ? 'Cargando...' : 'Cargar datos demo'}
+        </button>
       </div>
 
       {/* Alerts */}
