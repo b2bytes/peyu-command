@@ -5,6 +5,12 @@ import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
+import Layout from './components/Layout';
+import Dashboard from './pages/Dashboard';
+import PipelineB2B from './pages/PipelineB2B';
+import Operaciones from './pages/Operaciones';
+import Marketing from './pages/Marketing';
+import Analitica from './pages/Analitica';
 // Add page imports here
 
 const AuthenticatedApp = () => {
@@ -33,7 +39,13 @@ const AuthenticatedApp = () => {
   // Render the main app
   return (
     <Routes>
-      {/* Add your page Route elements here */}
+      <Route element={<Layout />}>
+        <Route path="/" element={<Dashboard />} />
+        <Route path="/pipeline" element={<PipelineB2B />} />
+        <Route path="/operaciones" element={<Operaciones />} />
+        <Route path="/marketing" element={<Marketing />} />
+        <Route path="/analitica" element={<Analitica />} />
+      </Route>
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );

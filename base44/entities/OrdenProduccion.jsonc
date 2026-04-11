@@ -1,0 +1,110 @@
+{
+  "name": "OrdenProduccion",
+  "type": "object",
+  "properties": {
+    "numero_op": {
+      "type": "string",
+      "title": "N\u00b0 Orden"
+    },
+    "empresa": {
+      "type": "string",
+      "title": "Empresa / Cliente"
+    },
+    "sku": {
+      "type": "string",
+      "title": "Producto / SKU"
+    },
+    "cantidad": {
+      "type": "number",
+      "title": "Cantidad"
+    },
+    "estado": {
+      "type": "string",
+      "title": "Estado",
+      "enum": [
+        "Pendiente",
+        "En Cola",
+        "En Producci\u00f3n",
+        "Control Calidad",
+        "Personalizaci\u00f3n L\u00e1ser",
+        "Packaging",
+        "Listo para Despacho",
+        "Despachado"
+      ]
+    },
+    "prioridad": {
+      "type": "string",
+      "title": "Prioridad",
+      "enum": [
+        "Alta (urgente)",
+        "Normal",
+        "Baja"
+      ]
+    },
+    "inyectora": {
+      "type": "string",
+      "title": "Inyectora Asignada",
+      "enum": [
+        "Inyectora 1",
+        "Inyectora 2",
+        "Inyectora 3",
+        "Inyectora 4",
+        "Inyectora 5",
+        "Inyectora 6",
+        "Sin asignar"
+      ]
+    },
+    "laser": {
+      "type": "string",
+      "title": "L\u00e1ser Asignado",
+      "enum": [
+        "L\u00e1ser 1",
+        "L\u00e1ser 2",
+        "No requiere"
+      ]
+    },
+    "personalizacion": {
+      "type": "boolean",
+      "title": "Requiere Personalizaci\u00f3n"
+    },
+    "packaging_externo": {
+      "type": "boolean",
+      "title": "Packaging Externo"
+    },
+    "fecha_inicio": {
+      "type": "string",
+      "title": "Fecha Inicio Producci\u00f3n"
+    },
+    "fecha_entrega_prometida": {
+      "type": "string",
+      "title": "Fecha Entrega Prometida"
+    },
+    "fecha_despacho_real": {
+      "type": "string",
+      "title": "Fecha Despacho Real"
+    },
+    "anticipo_pagado": {
+      "type": "boolean",
+      "title": "50% Anticipo Pagado"
+    },
+    "scrap_pct": {
+      "type": "number",
+      "title": "% Scrap/Rechazo"
+    },
+    "notas_produccion": {
+      "type": "string",
+      "title": "Notas de Producci\u00f3n"
+    },
+    "tracking_envio": {
+      "type": "string",
+      "title": "N\u00famero de Seguimiento"
+    }
+  },
+  "required": [
+    "empresa",
+    "sku",
+    "cantidad",
+    "estado",
+    "prioridad"
+  ]
+}

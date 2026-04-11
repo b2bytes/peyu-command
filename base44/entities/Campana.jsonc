@@ -1,0 +1,120 @@
+{
+  "name": "Campana",
+  "type": "object",
+  "properties": {
+    "nombre": {
+      "type": "string",
+      "title": "Nombre Campa\u00f1a"
+    },
+    "canal": {
+      "type": "string",
+      "title": "Canal",
+      "enum": [
+        "Meta Ads",
+        "Google Search",
+        "TikTok Ads",
+        "LinkedIn Ads",
+        "Email",
+        "WhatsApp",
+        "Org\u00e1nico Instagram",
+        "Org\u00e1nico TikTok"
+      ]
+    },
+    "objetivo": {
+      "type": "string",
+      "title": "Objetivo",
+      "enum": [
+        "Awareness",
+        "Consideraci\u00f3n",
+        "Conversi\u00f3n",
+        "Retargeting",
+        "B2B Lead Gen"
+      ]
+    },
+    "publico": {
+      "type": "string",
+      "title": "P\u00fablico Objetivo"
+    },
+    "estado": {
+      "type": "string",
+      "title": "Estado",
+      "enum": [
+        "Activa",
+        "Pausada",
+        "Finalizada",
+        "En revisi\u00f3n",
+        "Planificada"
+      ]
+    },
+    "fecha_inicio": {
+      "type": "string",
+      "title": "Fecha Inicio"
+    },
+    "fecha_fin": {
+      "type": "string",
+      "title": "Fecha Fin"
+    },
+    "presupuesto_clp": {
+      "type": "number",
+      "title": "Presupuesto (CLP)"
+    },
+    "gasto_real_clp": {
+      "type": "number",
+      "title": "Gasto Real (CLP)"
+    },
+    "impresiones": {
+      "type": "number",
+      "title": "Impresiones"
+    },
+    "clics": {
+      "type": "number",
+      "title": "Clics"
+    },
+    "conversiones": {
+      "type": "number",
+      "title": "Conversiones"
+    },
+    "leads_generados": {
+      "type": "number",
+      "title": "Leads Generados"
+    },
+    "roas": {
+      "type": "number",
+      "title": "ROAS"
+    },
+    "cac_clp": {
+      "type": "number",
+      "title": "CAC (CLP)"
+    },
+    "ctr_pct": {
+      "type": "number",
+      "title": "CTR (%)"
+    },
+    "tipo_contenido": {
+      "type": "string",
+      "title": "Tipo Contenido",
+      "enum": [
+        "Video Reel",
+        "Imagen Est\u00e1tica",
+        "Carrusel",
+        "Story",
+        "Texto",
+        "Video largo"
+      ]
+    },
+    "sku_promovido": {
+      "type": "string",
+      "title": "SKU / Producto Promovido"
+    },
+    "notas": {
+      "type": "string",
+      "title": "Notas"
+    }
+  },
+  "required": [
+    "nombre",
+    "canal",
+    "objetivo",
+    "estado"
+  ]
+}
