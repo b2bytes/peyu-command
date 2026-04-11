@@ -15,6 +15,8 @@ import Catalogo from './pages/Catalogo';
 import CPQCalculator from './pages/CPQCalculator';
 import Soporte from './pages/Soporte';
 import Financiero from './pages/Financiero';
+import Clientes from './pages/Clientes';
+import Tiendas from './pages/Tiendas';
 // Add page imports here
 
 const AuthenticatedApp = () => {
@@ -49,6 +51,8 @@ const AuthenticatedApp = () => {
         <Route path="/cpq" element={<CPQCalculator />} />
         <Route path="/soporte" element={<Soporte />} />
         <Route path="/financiero" element={<Financiero />} />
+        <Route path="/clientes" element={<Clientes />} />
+        <Route path="/tiendas" element={<Tiendas />} />
         <Route path="/operaciones" element={<Operaciones />} />
         <Route path="/marketing" element={<Marketing />} />
         <Route path="/analitica" element={<Analitica />} />

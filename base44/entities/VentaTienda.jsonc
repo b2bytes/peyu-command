@@ -1,0 +1,85 @@
+{
+  "name": "VentaTienda",
+  "type": "object",
+  "properties": {
+    "tienda": {
+      "type": "string",
+      "title": "Tienda",
+      "enum": [
+        "Providencia (F. Bilbao 3775)",
+        "Macul (P. de Valdivia 6603)"
+      ]
+    },
+    "fecha": {
+      "type": "string",
+      "title": "Fecha"
+    },
+    "tipo_venta": {
+      "type": "string",
+      "title": "Tipo Venta",
+      "enum": [
+        "Producto stock",
+        "Personalizaci\u00f3n en tienda",
+        "Retiro pedido web",
+        "Regalo corporativo"
+      ]
+    },
+    "sku": {
+      "type": "string",
+      "title": "SKU / Producto"
+    },
+    "cantidad": {
+      "type": "number",
+      "title": "Cantidad"
+    },
+    "precio_unitario": {
+      "type": "number",
+      "title": "Precio Unitario (CLP)"
+    },
+    "total": {
+      "type": "number",
+      "title": "Total (CLP)"
+    },
+    "medio_pago": {
+      "type": "string",
+      "title": "Medio de Pago",
+      "enum": [
+        "Efectivo",
+        "D\u00e9bito",
+        "Cr\u00e9dito",
+        "Transferencia",
+        "WebPay"
+      ]
+    },
+    "personalizacion_laser": {
+      "type": "boolean",
+      "title": "Personalizaci\u00f3n L\u00e1ser"
+    },
+    "texto_laser": {
+      "type": "string",
+      "title": "Texto / Logo Grabado"
+    },
+    "cliente_nombre": {
+      "type": "string",
+      "title": "Nombre Cliente"
+    },
+    "cliente_telefono": {
+      "type": "string",
+      "title": "Tel\u00e9fono Cliente"
+    },
+    "listo_en_min": {
+      "type": "number",
+      "title": "Tiempo Grabado (min)"
+    },
+    "notas": {
+      "type": "string",
+      "title": "Notas"
+    }
+  },
+  "required": [
+    "tienda",
+    "fecha",
+    "tipo_venta",
+    "total"
+  ]
+}
