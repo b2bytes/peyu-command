@@ -5,81 +5,120 @@ Deno.serve(async (req) => {
   const user = await base44.auth.me();
   if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
-  const results = { leads: 0, cotizaciones: 0, ordenes: 0, campanas: 0, productos: 0 };
+  const results = { leads: 0, cotizaciones: 0, ordenes: 0, campanas: 0, productos: 0, clientes: 0, proveedores: 0, colaboradores: 0, ventas_tienda: 0, consultas: 0 };
 
-  // Productos
+  // ── PRODUCTOS ────────────────────────────────────────────
   const productos = [
-    { sku: 'SOPC-001', nombre: 'Soporte Celular PEYU', categoria: 'Escritorio', material: 'Plástico 100% Reciclado', canal: 'B2B + B2C', precio_b2c: 6990, precio_base_b2b: 4500, precio_50_199: 4050, precio_200_499: 3825, precio_500_mas: 3510, moq_personalizacion: 10, personalizacion_gratis_desde: 10, lead_time_sin_personal: 5, lead_time_con_personal: 7, inyecciones_requeridas: 1, garantia_anios: 10, activo: true, area_laser_mm: '60x40' },
-    { sku: 'SONB-001', nombre: 'Soporte Notebook PEYU', categoria: 'Escritorio', material: 'Plástico 100% Reciclado', canal: 'B2B + B2C', precio_b2c: 9990, precio_base_b2b: 6500, precio_50_199: 5850, precio_200_499: 5525, precio_500_mas: 5070, moq_personalizacion: 10, personalizacion_gratis_desde: 10, lead_time_sin_personal: 5, lead_time_con_personal: 7, inyecciones_requeridas: 1, garantia_anios: 10, activo: true, area_laser_mm: '80x50' },
-    { sku: 'LLAV-001', nombre: 'Llavero Soporte Celular', categoria: 'Escritorio', material: 'Plástico 100% Reciclado', canal: 'B2B + B2C', precio_b2c: 3990, precio_base_b2b: 2500, precio_50_199: 2250, precio_200_499: 2125, precio_500_mas: 1950, moq_personalizacion: 10, personalizacion_gratis_desde: 10, lead_time_sin_personal: 4, lead_time_con_personal: 6, inyecciones_requeridas: 1, garantia_anios: 10, activo: true, area_laser_mm: '30x15' },
-    { sku: 'POSAV-001', nombre: 'Posavasos Set x4', categoria: 'Hogar', material: 'Plástico 100% Reciclado', canal: 'B2B + B2C', precio_b2c: 7990, precio_base_b2b: 5000, precio_50_199: 4500, precio_200_499: 4250, precio_500_mas: 3900, moq_personalizacion: 10, personalizacion_gratis_desde: 10, lead_time_sin_personal: 5, lead_time_con_personal: 7, inyecciones_requeridas: 1, garantia_anios: 10, activo: true },
-    { sku: 'CACH-001', nombre: 'Pack Cachos (6 u)', categoria: 'Entretenimiento', material: 'Plástico 100% Reciclado', canal: 'B2B + B2C', precio_b2c: 25990, precio_base_b2b: 18000, precio_50_199: 16200, precio_200_499: 15300, precio_500_mas: 14040, moq_personalizacion: 10, personalizacion_gratis_desde: 10, lead_time_sin_personal: 6, lead_time_con_personal: 8, inyecciones_requeridas: 2, garantia_anios: 10, activo: true },
-    { sku: 'LAMP-001', nombre: 'Lámpara Chillka', categoria: 'Hogar', material: 'Plástico 100% Reciclado', canal: 'B2B + B2C', precio_b2c: 23490, precio_base_b2b: 16000, precio_50_199: 14400, precio_200_499: 13600, precio_500_mas: 12480, moq_personalizacion: 10, personalizacion_gratis_desde: 10, lead_time_sin_personal: 10, lead_time_con_personal: 12, inyecciones_requeridas: 3, garantia_anios: 10, activo: true },
-    { sku: 'MACE-001', nombre: 'Macetero Ecológico', categoria: 'Hogar', material: 'Plástico 100% Reciclado', canal: 'B2B + B2C', precio_b2c: 5990, precio_base_b2b: 3800, precio_50_199: 3420, precio_200_499: 3230, precio_500_mas: 2964, moq_personalizacion: 10, personalizacion_gratis_desde: 10, lead_time_sin_personal: 5, lead_time_con_personal: 7, inyecciones_requeridas: 1, garantia_anios: 10, activo: true },
-    { sku: 'KIT-ESCR-001', nombre: 'Kit Escritorio Corporativo (5 piezas)', categoria: 'Corporativo', material: 'Plástico 100% Reciclado', canal: 'B2B Exclusivo', precio_b2c: 0, precio_base_b2b: 19990, precio_50_199: 17990, precio_200_499: 16990, precio_500_mas: 15590, moq_personalizacion: 10, personalizacion_gratis_desde: 10, lead_time_sin_personal: 7, lead_time_con_personal: 9, inyecciones_requeridas: 1, garantia_anios: 10, activo: true, descripcion: 'Soporte celular + soporte notebook + llavero + posavaso + separador de páginas' },
-    { sku: 'CARC-001', nombre: 'Carcasa iPhone Fibra Trigo', categoria: 'Carcasas B2C', material: 'Fibra de Trigo (Compostable)', canal: 'B2C Exclusivo', precio_b2c: 14990, precio_base_b2b: 0, moq_personalizacion: 0, personalizacion_gratis_desde: 0, lead_time_sin_personal: 3, lead_time_con_personal: 3, inyecciones_requeridas: 0, garantia_anios: 2, activo: true, descripcion: 'Carcasa compostable 100% fibra de trigo. Solo canal B2C.' },
+    { sku: 'SOPC-001', nombre: 'Soporte Celular PEYU', categoria: 'Escritorio', material: 'Plástico 100% Reciclado', canal: 'B2B + B2C', precio_b2c: 6990, precio_base_b2b: 4500, precio_50_199: 4050, precio_200_499: 3825, precio_500_mas: 3510, moq_personalizacion: 10, personalizacion_gratis_desde: 10, lead_time_sin_personal: 5, lead_time_con_personal: 7, inyecciones_requeridas: 1, garantia_anios: 10, activo: true, stock_actual: 320, area_laser_mm: '60x40' },
+    { sku: 'SONB-001', nombre: 'Soporte Notebook PEYU', categoria: 'Escritorio', material: 'Plástico 100% Reciclado', canal: 'B2B + B2C', precio_b2c: 9990, precio_base_b2b: 6500, precio_50_199: 5850, precio_200_499: 5525, precio_500_mas: 5070, moq_personalizacion: 10, personalizacion_gratis_desde: 10, lead_time_sin_personal: 5, lead_time_con_personal: 7, inyecciones_requeridas: 1, garantia_anios: 10, activo: true, stock_actual: 180, area_laser_mm: '80x50' },
+    { sku: 'LLAV-001', nombre: 'Llavero Soporte Celular', categoria: 'Escritorio', material: 'Plástico 100% Reciclado', canal: 'B2B + B2C', precio_b2c: 3990, precio_base_b2b: 2500, precio_50_199: 2250, precio_200_499: 2125, precio_500_mas: 1950, moq_personalizacion: 10, personalizacion_gratis_desde: 10, lead_time_sin_personal: 4, lead_time_con_personal: 6, inyecciones_requeridas: 1, garantia_anios: 10, activo: true, stock_actual: 500, area_laser_mm: '30x15' },
+    { sku: 'POSAV-001', nombre: 'Posavasos Set x4', categoria: 'Hogar', material: 'Plástico 100% Reciclado', canal: 'B2B + B2C', precio_b2c: 7990, precio_base_b2b: 5000, precio_50_199: 4500, precio_200_499: 4250, precio_500_mas: 3900, moq_personalizacion: 10, personalizacion_gratis_desde: 10, lead_time_sin_personal: 5, lead_time_con_personal: 7, inyecciones_requeridas: 1, garantia_anios: 10, activo: true, stock_actual: 140 },
+    { sku: 'CACH-001', nombre: 'Pack Cachos (6 u)', categoria: 'Entretenimiento', material: 'Plástico 100% Reciclado', canal: 'B2B + B2C', precio_b2c: 25990, precio_base_b2b: 18000, precio_50_199: 16200, precio_200_499: 15300, precio_500_mas: 14040, moq_personalizacion: 10, personalizacion_gratis_desde: 10, lead_time_sin_personal: 6, lead_time_con_personal: 8, inyecciones_requeridas: 2, garantia_anios: 10, activo: true, stock_actual: 60 },
+    { sku: 'LAMP-001', nombre: 'Lámpara Chillka', categoria: 'Hogar', material: 'Plástico 100% Reciclado', canal: 'B2B + B2C', precio_b2c: 23490, precio_base_b2b: 16000, precio_50_199: 14400, precio_200_499: 13600, precio_500_mas: 12480, moq_personalizacion: 10, personalizacion_gratis_desde: 10, lead_time_sin_personal: 10, lead_time_con_personal: 12, inyecciones_requeridas: 3, garantia_anios: 10, activo: true, stock_actual: 40 },
+    { sku: 'MACE-001', nombre: 'Macetero Ecológico', categoria: 'Hogar', material: 'Plástico 100% Reciclado', canal: 'B2B + B2C', precio_b2c: 5990, precio_base_b2b: 3800, precio_50_199: 3420, precio_200_499: 3230, precio_500_mas: 2964, moq_personalizacion: 10, personalizacion_gratis_desde: 10, lead_time_sin_personal: 5, lead_time_con_personal: 7, inyecciones_requeridas: 1, garantia_anios: 10, activo: true, stock_actual: 95 },
+    { sku: 'KIT-ESCR-001', nombre: 'Kit Escritorio Corporativo (5 piezas)', categoria: 'Corporativo', material: 'Plástico 100% Reciclado', canal: 'B2B Exclusivo', precio_b2c: 0, precio_base_b2b: 19990, precio_50_199: 17990, precio_200_499: 16990, precio_500_mas: 15590, moq_personalizacion: 10, personalizacion_gratis_desde: 10, lead_time_sin_personal: 7, lead_time_con_personal: 9, inyecciones_requeridas: 1, garantia_anios: 10, activo: true, stock_actual: 0, descripcion: 'Soporte celular + soporte notebook + llavero + posavaso + separador de páginas' },
+    { sku: 'CARC-001', nombre: 'Carcasa iPhone Fibra Trigo', categoria: 'Carcasas B2C', material: 'Fibra de Trigo (Compostable)', canal: 'B2C Exclusivo', precio_b2c: 14990, precio_base_b2b: 0, moq_personalizacion: 0, personalizacion_gratis_desde: 0, lead_time_sin_personal: 3, lead_time_con_personal: 3, inyecciones_requeridas: 0, garantia_anios: 2, activo: true, stock_actual: 75, descripcion: 'Carcasa compostable 100% fibra de trigo. Solo canal B2C.' },
   ];
+  for (const p of productos) { await base44.asServiceRole.entities.Producto.create(p); results.productos++; }
 
-  for (const p of productos) {
-    await base44.asServiceRole.entities.Producto.create(p);
-    results.productos++;
-  }
-
-  // Leads
+  // ── LEADS ────────────────────────────────────────────────
   const leads = [
     { empresa: 'Adidas Chile', contacto: 'María González', email: 'mgonzalez@adidas.cl', telefono: '+56912345678', canal: 'WhatsApp', estado: 'Cotizado', tipo: 'B2B Corporativo', calidad_lead: 'Caliente', cantidad_estimada: 500, presupuesto_estimado: 9000000, producto_interes: 'Kit Escritorio Corporativo', logo_recibido: true, personalizacion: true, next_action: 'Enviar mockup con logo Adidas', next_action_date: '2026-04-12' },
     { empresa: 'Nestlé Chile', contacto: 'Carlos Vega', email: 'cvega@nestle.com', canal: 'Email', estado: 'Muestra Enviada', tipo: 'B2B Corporativo', calidad_lead: 'Caliente', cantidad_estimada: 1000, presupuesto_estimado: 18000000, producto_interes: 'Posavasos + Soporte Celular', logo_recibido: true, personalizacion: true, next_action: 'Seguimiento a muestra enviada', next_action_date: '2026-04-13' },
     { empresa: 'BancoEstado', contacto: 'Ana Martínez', email: 'amartinez@bancoestado.cl', canal: 'LinkedIn', estado: 'Negociación', tipo: 'B2B Corporativo', calidad_lead: 'Caliente', cantidad_estimada: 2000, presupuesto_estimado: 32000000, producto_interes: 'Kit Escritorio + Cachos', logo_recibido: true, personalizacion: true, notas: 'Empresa con política ESG fuerte. Muy interesados en fabricación local.' },
     { empresa: 'DUOC UC', contacto: 'Pedro Soto', email: 'psoto@duoc.cl', canal: 'Instagram', estado: 'Contactado', tipo: 'B2B Pyme', calidad_lead: 'Tibio', cantidad_estimada: 200, presupuesto_estimado: 4000000, producto_interes: 'Llavero Soporte', personalizacion: true, next_action: 'Enviar catálogo B2B', next_action_date: '2026-04-14' },
     { empresa: 'Tech Startup SPA', contacto: 'Laura Pérez', canal: 'WhatsApp', estado: 'Nuevo', tipo: 'B2B Pyme', calidad_lead: 'Tibio', cantidad_estimada: 50, producto_interes: 'Soporte Celular', personalizacion: true },
-    { empresa: 'Felicitación #1', contacto: 'Patricia Rojas', canal: 'WhatsApp', estado: 'Perdido', tipo: 'B2C', calidad_lead: 'No Comercial', notas: 'Solo felicitó el proyecto, no intención de compra' },
-    { empresa: 'Minera Los Bronces', contacto: 'Roberto Fuentes', email: 'rfuentes@minera.com', canal: 'LinkedIn', estado: 'Nuevo', tipo: 'B2B Corporativo', calidad_lead: 'Caliente', cantidad_estimada: 5000, presupuesto_estimado: 75000000, producto_interes: 'Kit Escritorio Corporativo', personalizacion: true, notas: 'Empresa con alto estándar sustentabilidad, no miran precio. Catálogo premium.' },
+    { empresa: 'Minera Los Bronces', contacto: 'Roberto Fuentes', email: 'rfuentes@minera.com', canal: 'LinkedIn', estado: 'Nuevo', tipo: 'B2B Corporativo', calidad_lead: 'Caliente', cantidad_estimada: 5000, presupuesto_estimado: 75000000, producto_interes: 'Kit Escritorio Corporativo', personalizacion: true, notas: 'No miran precio. Catálogo premium. Alta sustentabilidad.' },
     { empresa: 'Universidad Adolfo Ibáñez', contacto: 'Francisca Lima', canal: 'Email', estado: 'Cotizado', tipo: 'B2B Corporativo', calidad_lead: 'Tibio', cantidad_estimada: 300, presupuesto_estimado: 6000000, producto_interes: 'Cachos Pack', personalizacion: true, logo_recibido: false },
   ];
+  for (const l of leads) { await base44.asServiceRole.entities.Lead.create(l); results.leads++; }
 
-  for (const l of leads) {
-    await base44.asServiceRole.entities.Lead.create(l);
-    results.leads++;
-  }
-
-  // Cotizaciones
+  // ── COTIZACIONES ─────────────────────────────────────────
   const cotizaciones = [
-    { empresa: 'Adidas Chile', contacto: 'María González', sku: 'Kit Escritorio Corporativo', cantidad: 500, precio_unitario: 19990, descuento_pct: 22, fee_personalizacion: 0, fee_packaging: 14993, total: 7934543, personalizacion_tipo: 'Láser UV', packaging: 'Personalizado', lead_time_dias: 12, estado: 'Enviada', es_express: false },
-    { empresa: 'Nestlé Chile', contacto: 'Carlos Vega', sku: 'Posavasos + Soporte Celular (mix)', cantidad: 1000, precio_unitario: 4750, descuento_pct: 22, fee_personalizacion: 0, total: 3705000, personalizacion_tipo: 'Láser UV', packaging: 'Estándar (stock)', lead_time_dias: 9, estado: 'Aceptada', es_express: false },
-    { empresa: 'DUOC UC', contacto: 'Pedro Soto', sku: 'Llavero Soporte Celular', cantidad: 200, precio_unitario: 2500, descuento_pct: 15, fee_personalizacion: 0, total: 425000, personalizacion_tipo: 'Láser UV', packaging: 'Estándar (stock)', lead_time_dias: 7, estado: 'Borrador', es_express: false },
+    { empresa: 'Adidas Chile', contacto: 'María González', sku: 'KIT-ESCR-001', cantidad: 500, precio_unitario: 19990, descuento_pct: 22, fee_personalizacion: 0, fee_packaging: 14993, total: 7934543, personalizacion_tipo: 'Láser UV', packaging: 'Personalizado', lead_time_dias: 12, estado: 'Enviada', es_express: false },
+    { empresa: 'Nestlé Chile', contacto: 'Carlos Vega', sku: 'POSAV-001', cantidad: 1000, precio_unitario: 4750, descuento_pct: 22, fee_personalizacion: 0, total: 3705000, personalizacion_tipo: 'Láser UV', packaging: 'Estándar (stock)', lead_time_dias: 9, estado: 'Aceptada', es_express: false },
+    { empresa: 'DUOC UC', contacto: 'Pedro Soto', sku: 'LLAV-001', cantidad: 200, precio_unitario: 2500, descuento_pct: 15, fee_personalizacion: 0, total: 425000, personalizacion_tipo: 'Láser UV', packaging: 'Estándar (stock)', lead_time_dias: 7, estado: 'Borrador', es_express: false },
+    { empresa: 'Universidad Adolfo Ibáñez', contacto: 'Francisca Lima', sku: 'CACH-001', cantidad: 300, precio_unitario: 18000, descuento_pct: 10, fee_personalizacion: 0, total: 4860000, personalizacion_tipo: 'Láser UV', packaging: 'Estándar (stock)', lead_time_dias: 10, estado: 'Enviada', es_express: false },
   ];
+  for (const c of cotizaciones) { await base44.asServiceRole.entities.Cotizacion.create(c); results.cotizaciones++; }
 
-  for (const c of cotizaciones) {
-    await base44.asServiceRole.entities.Cotizacion.create(c);
-    results.cotizaciones++;
-  }
-
-  // Órdenes producción
+  // ── ÓRDENES PRODUCCIÓN ───────────────────────────────────
   const ordenes = [
-    { numero_op: 'OP-2026-001', empresa: 'Nestlé Chile', sku: 'Posavasos + Soporte Celular (mix)', cantidad: 1000, estado: 'En Producción', prioridad: 'Normal', inyectora: 'Inyectora 1', laser: 'Láser 1', personalizacion: true, packaging_externo: false, anticipo_pagado: true, fecha_inicio: '2026-04-08', fecha_entrega_prometida: '2026-04-15' },
-    { numero_op: 'OP-2026-002', empresa: 'BancoEstado', sku: 'Kit Escritorio Corporativo', cantidad: 2000, estado: 'En Cola', prioridad: 'Alta (urgente)', inyectora: 'Inyectora 2', laser: 'Láser 2', personalizacion: true, packaging_externo: true, anticipo_pagado: true, fecha_inicio: '2026-04-12', fecha_entrega_prometida: '2026-04-22' },
-    { numero_op: 'OP-2026-003', empresa: 'Stock B2C Web', sku: 'Soporte Celular PEYU', cantidad: 500, estado: 'Listo para Despacho', prioridad: 'Normal', inyectora: 'Inyectora 3', laser: 'No requiere', personalizacion: false, packaging_externo: false, anticipo_pagado: true, fecha_despacho_real: '2026-04-11' },
-    { numero_op: 'OP-2026-004', empresa: 'Stock B2C Web', sku: 'Lámpara Chillka', cantidad: 50, estado: 'Control Calidad', prioridad: 'Baja', inyectora: 'Inyectora 4', laser: 'No requiere', personalizacion: false, packaging_externo: false, anticipo_pagado: true },
+    { numero_op: 'OP-2026-001', empresa: 'Nestlé Chile', sku: 'POSAV-001', cantidad: 1000, estado: 'En Producción', prioridad: 'Normal', inyectora: 'Inyectora 1', laser: 'Láser 1', personalizacion: true, packaging_externo: false, anticipo_pagado: true, fecha_inicio: '2026-04-08', fecha_entrega_prometida: '2026-04-17' },
+    { numero_op: 'OP-2026-002', empresa: 'BancoEstado', sku: 'KIT-ESCR-001', cantidad: 2000, estado: 'En Cola', prioridad: 'Alta (urgente)', inyectora: 'Inyectora 2', laser: 'Láser 2', personalizacion: true, packaging_externo: true, anticipo_pagado: true, fecha_inicio: '2026-04-14', fecha_entrega_prometida: '2026-04-25' },
+    { numero_op: 'OP-2026-003', empresa: 'Stock B2C Web', sku: 'SOPC-001', cantidad: 500, estado: 'Listo para Despacho', prioridad: 'Normal', inyectora: 'Inyectora 3', laser: 'No requiere', personalizacion: false, packaging_externo: false, anticipo_pagado: true, fecha_despacho_real: '2026-04-11' },
+    { numero_op: 'OP-2026-004', empresa: 'Stock B2C Web', sku: 'LAMP-001', cantidad: 50, estado: 'Control Calidad', prioridad: 'Baja', inyectora: 'Inyectora 4', laser: 'No requiere', personalizacion: false, packaging_externo: false, anticipo_pagado: true },
+    { numero_op: 'OP-2026-005', empresa: 'UAI', sku: 'CACH-001', cantidad: 300, estado: 'Pendiente', prioridad: 'Normal', inyectora: 'Sin asignar', laser: 'Láser 1', personalizacion: true, packaging_externo: false, anticipo_pagado: false, fecha_entrega_prometida: '2026-04-28' },
   ];
+  for (const o of ordenes) { await base44.asServiceRole.entities.OrdenProduccion.create(o); results.ordenes++; }
 
-  for (const o of ordenes) {
-    await base44.asServiceRole.entities.OrdenProduccion.create(o);
-    results.ordenes++;
-  }
-
-  // Campañas
+  // ── CAMPAÑAS ─────────────────────────────────────────────
   const campanas = [
-    { nombre: 'Meta Ads — Escritorio Q2', canal: 'Meta Ads', objetivo: 'Conversión', estado: 'Activa', presupuesto_clp: 1200000, gasto_real_clp: 980000, impresiones: 450000, clics: 5400, conversiones: 12, leads_generados: 35, roas: 1.8, cac_clp: 28000, ctr_pct: 1.2, tipo_contenido: 'Video Reel', sku_promovido: 'Soporte Celular + Notebook' },
-    { nombre: 'Meta Ads — B2B Corporativo', canal: 'Meta Ads', objetivo: 'B2B Lead Gen', estado: 'Activa', presupuesto_clp: 800000, gasto_real_clp: 600000, impresiones: 120000, clics: 900, conversiones: 3, leads_generados: 8, roas: 2.1, cac_clp: 75000, ctr_pct: 0.75, tipo_contenido: 'Imagen Estática', sku_promovido: 'Kit Escritorio Corporativo' },
-    { nombre: 'TikTok — How it\'s Made', canal: 'TikTok Ads', objetivo: 'Awareness', estado: 'Planificada', presupuesto_clp: 300000, gasto_real_clp: 0, impresiones: 0, clics: 0, conversiones: 0, leads_generados: 0, tipo_contenido: 'Video Reel', sku_promovido: 'Proceso fábrica' },
+    { nombre: 'Meta Ads — Escritorio Q2', canal: 'Meta Ads', objetivo: 'Conversión', estado: 'Activa', presupuesto_clp: 1200000, gasto_real_clp: 980000, impresiones: 450000, clics: 5400, conversiones: 12, leads_generados: 35, roas: 1.8, cac_clp: 28000, ctr_pct: 1.2, tipo_contenido: 'Video Reel', sku_promovido: 'SOPC-001' },
+    { nombre: 'Meta Ads — B2B Corporativo', canal: 'Meta Ads', objetivo: 'B2B Lead Gen', estado: 'Activa', presupuesto_clp: 800000, gasto_real_clp: 600000, impresiones: 120000, clics: 900, conversiones: 3, leads_generados: 8, roas: 2.1, cac_clp: 75000, ctr_pct: 0.75, tipo_contenido: 'Imagen Estática', sku_promovido: 'KIT-ESCR-001' },
+    { nombre: 'TikTok — How it\'s Made', canal: 'TikTok Ads', objetivo: 'Awareness', estado: 'Planificada', presupuesto_clp: 300000, gasto_real_clp: 0, tipo_contenido: 'Video Reel', sku_promovido: 'Proceso fábrica' },
     { nombre: 'Google Search — Regalos Corp.', canal: 'Google Search', objetivo: 'B2B Lead Gen', estado: 'Planificada', presupuesto_clp: 500000, tipo_contenido: 'Texto', sku_promovido: 'regalos corporativos sustentables' },
     { nombre: 'Orgánico IG — Proceso Reciclaje', canal: 'Orgánico Instagram', objetivo: 'Awareness', estado: 'Activa', presupuesto_clp: 0, gasto_real_clp: 0, impresiones: 85000, clics: 2100, leads_generados: 12, ctr_pct: 2.5, tipo_contenido: 'Video Reel' },
   ];
+  for (const c of campanas) { await base44.asServiceRole.entities.Campana.create(c); results.campanas++; }
 
-  for (const c of campanas) {
-    await base44.asServiceRole.entities.Campana.create(c);
-    results.campanas++;
-  }
+  // ── CLIENTES ─────────────────────────────────────────────
+  const clientes = [
+    { empresa: 'Nestlé Chile', contacto: 'Carlos Vega', email: 'cvega@nestle.com', telefono: '+56912000001', tipo: 'B2B Corporativo', segmento: 'Retail', estado: 'VIP', total_compras_clp: 14820000, num_pedidos: 4, ticket_promedio: 3705000, nps_score: 9, sku_favorito: 'POSAV-001', canal_preferido: 'Email', personalizacion_habitual: true, pagos_al_dia: true, fecha_primera_compra: '2025-09-01', fecha_ultima_compra: '2026-03-15', proximo_recontacto: '2026-05-01', notas: 'Cliente ancla. Repite cada trimestre.' },
+    { empresa: 'BancoEstado', contacto: 'Ana Martínez', email: 'amartinez@bancoestado.cl', tipo: 'B2B Corporativo', segmento: 'Finanzas', estado: 'Activo', total_compras_clp: 8500000, num_pedidos: 2, ticket_promedio: 4250000, nps_score: 8, sku_favorito: 'KIT-ESCR-001', canal_preferido: 'LinkedIn', personalizacion_habitual: true, pagos_al_dia: true, fecha_primera_compra: '2025-11-10', fecha_ultima_compra: '2026-02-28', notas: 'Muy interesados en política ESG. Potencial contrato anual.' },
+    { empresa: 'Adidas Chile', contacto: 'María González', email: 'mgonzalez@adidas.cl', tipo: 'B2B Corporativo', segmento: 'Retail', estado: 'Activo', total_compras_clp: 3705000, num_pedidos: 1, ticket_promedio: 3705000, nps_score: 7, sku_favorito: 'KIT-ESCR-001', canal_preferido: 'WhatsApp', personalizacion_habitual: true, pagos_al_dia: true, fecha_primera_compra: '2026-01-20', fecha_ultima_compra: '2026-01-20', proximo_recontacto: '2026-04-20', notas: 'En proceso segunda cotización.' },
+    { empresa: 'DUOC UC', contacto: 'Pedro Soto', email: 'psoto@duoc.cl', tipo: 'B2B Pyme', segmento: 'Educación', estado: 'Activo', total_compras_clp: 850000, num_pedidos: 2, ticket_promedio: 425000, nps_score: 8, sku_favorito: 'LLAV-001', canal_preferido: 'Email', personalizacion_habitual: true, pagos_al_dia: true, fecha_primera_compra: '2025-10-05', fecha_ultima_compra: '2026-03-01', notas: 'Licitación anual potencial.' },
+    { empresa: 'Cliente B2C — María José', contacto: 'María José Torres', telefono: '+56987654321', tipo: 'B2C Recurrente', estado: 'Activo', total_compras_clp: 34960, num_pedidos: 5, ticket_promedio: 6990, nps_score: 10, sku_favorito: 'SOPC-001', canal_preferido: 'Web', pagos_al_dia: true, fecha_ultima_compra: '2026-04-01' },
+    { empresa: 'Tienda Regalo — Bellavista', contacto: 'Jorge Herrera', telefono: '+56922334455', tipo: 'Tienda Física', segmento: 'Retail', estado: 'En Riesgo', total_compras_clp: 1200000, num_pedidos: 3, ticket_promedio: 400000, nps_score: 5, sku_favorito: 'MACE-001', canal_preferido: 'WhatsApp', pagos_al_dia: false, fecha_ultima_compra: '2025-11-15', notas: 'Mora 60 días. Pendiente cobro $400K.' },
+  ];
+  for (const c of clientes) { await base44.asServiceRole.entities.Cliente.create(c); results.clientes++; }
+
+  // ── PROVEEDORES ──────────────────────────────────────────
+  const proveedores = [
+    { nombre: 'EcoPlastic Chile SpA', rut: '77.123.456-7', contacto: 'Sergio Araya', email: 'saraya@ecoplastic.cl', telefono: '+56922111222', categoria: 'Material Reciclado', estado: 'Activo', calidad: 'Excelente', producto_servicio: 'Pellet HDPE reciclado 100%', precio_unitario_clp: 850, unidad: 'kg', lead_time_dias: 5, pago_dias: 30, pedido_minimo: 500, certificacion_reciclado: true, fecha_ultimo_pedido: '2026-04-01', monto_anual_clp: 36000000 },
+    { nombre: 'Fibra Natural SPA', rut: '76.987.654-3', contacto: 'Camila Fuentes', email: 'cfuentes@fibranatural.cl', categoria: 'Material Reciclado', estado: 'Activo', calidad: 'Bueno', producto_servicio: 'Pellet fibra de trigo compostable', precio_unitario_clp: 1200, unidad: 'kg', lead_time_dias: 7, pago_dias: 30, pedido_minimo: 200, certificacion_reciclado: true, fecha_ultimo_pedido: '2026-03-20', monto_anual_clp: 8000000 },
+    { nombre: 'PackSustentable Ltda.', rut: '79.456.123-8', contacto: 'Felipe Rojas', email: 'frojas@packsust.cl', categoria: 'Packaging', estado: 'Activo', calidad: 'Bueno', producto_servicio: 'Cajas recicladas + bolsas papel kraft', precio_unitario_clp: 180, unidad: 'u', lead_time_dias: 3, pago_dias: 15, pedido_minimo: 1000, certificacion_reciclado: false, fecha_ultimo_pedido: '2026-04-05', monto_anual_clp: 5500000 },
+    { nombre: 'Tintes Verdes SA', rut: '78.321.654-1', contacto: 'Valentina Cruz', email: 'vcruz@tintesverdes.cl', categoria: 'Tintes / Pigmentos', estado: 'Activo', calidad: 'Excelente', producto_servicio: 'Pigmentos orgánicos sin VOC', precio_unitario_clp: 3500, unidad: 'kg', lead_time_dias: 10, pago_dias: 30, certificacion_reciclado: false, fecha_ultimo_pedido: '2026-03-10', monto_anual_clp: 2400000 },
+    { nombre: 'LogiRápido SpA', rut: '76.111.222-3', contacto: 'Andrés Morales', telefono: '+56933444555', categoria: 'Logística', estado: 'Activo', calidad: 'Bueno', producto_servicio: 'Despacho last-mile Santiago + regiones', precio_unitario_clp: 2900, unidad: 'despacho', lead_time_dias: 1, pago_dias: 15, certificacion_reciclado: false, monto_anual_clp: 4200000, notas: 'Tarifa volumétrica. Alianza exclusiva Santiago.' },
+    { nombre: 'Servicios Láser Pro', rut: '77.654.321-0', contacto: 'Pablo Vargas', email: 'pvargas@laserpro.cl', categoria: 'Servicios Externos', estado: 'En Evaluación', calidad: 'Regular', producto_servicio: 'Grabado láser UV subcontrato overflow', precio_unitario_clp: 450, unidad: 'u', lead_time_dias: 2, pago_dias: 0, certificacion_reciclado: false, notas: 'Solo usar en overflow > 200 u/día. Calidad variable.' },
+  ];
+  for (const p of proveedores) { await base44.asServiceRole.entities.Proveedor.create(p); results.proveedores++; }
+
+  // ── COLABORADORES ────────────────────────────────────────
+  const colaboradores = [
+    { nombre: 'Pablo Fernández', cargo: 'CEO / Fundador', area: 'Dirección', tipo_contrato: 'Indefinido', estado: 'Activo', sueldo_bruto: 1200000, fecha_ingreso: '2022-01-01', email: 'pablo@peyu.cl', turno: 'Flexible', kpi_meta: 'Revenue $10M+ mensual en 90 días', score_evaluacion: 5 },
+    { nombre: 'Daniela Salinas', cargo: 'Administración & Finanzas', area: 'Administración', tipo_contrato: 'Indefinido', estado: 'Activo', sueldo_bruto: 650000, fecha_ingreso: '2023-03-15', turno: 'Completo (08-17)', kpi_meta: 'Flujo de caja positivo todos los meses', score_evaluacion: 4.5 },
+    { nombre: 'Joaquín Torres', cargo: 'Jefe de Producción', area: 'Operaciones', tipo_contrato: 'Indefinido', estado: 'Activo', sueldo_bruto: 750000, fecha_ingreso: '2022-06-01', turno: 'Mañana (07-15)', maquina_asignada: 'Supervisión general', kpi_meta: 'Scrap < 3% · OEE > 70%', score_evaluacion: 4 },
+    { nombre: 'Eduardo Meza', cargo: 'Operario Inyección', area: 'Producción', tipo_contrato: 'Indefinido', estado: 'Activo', sueldo_bruto: 480000, fecha_ingreso: '2022-08-01', turno: 'Mañana (07-15)', maquina_asignada: 'Inyectora 1 + Inyectora 2', kpi_meta: '500 u/turno · scrap < 3%', score_evaluacion: 4 },
+    { nombre: 'Rosa Poblete', cargo: 'Operario Inyección', area: 'Producción', tipo_contrato: 'Indefinido', estado: 'Activo', sueldo_bruto: 480000, fecha_ingreso: '2023-01-10', turno: 'Tarde (15-23)', maquina_asignada: 'Inyectora 3 + Inyectora 4', kpi_meta: '500 u/turno · scrap < 3%', score_evaluacion: 3.5 },
+    { nombre: 'Héctor Díaz', cargo: 'Operario Láser', area: 'Producción', tipo_contrato: 'Plazo Fijo', estado: 'Activo', sueldo_bruto: 520000, fecha_ingreso: '2024-02-01', turno: 'Completo (08-17)', maquina_asignada: 'Láser 1 + Láser 2', kpi_meta: '300 u grabadas/día con 0 retrabajos', score_evaluacion: 4 },
+    { nombre: 'Sofía Bravo', cargo: 'Community Manager', area: 'Marketing', tipo_contrato: 'Honorarios', estado: 'Activo', sueldo_bruto: 400000, fecha_ingreso: '2024-06-01', turno: 'Flexible', kpi_meta: '20k seguidores IG · 5% engagement', score_evaluacion: 3.5 },
+    { nombre: 'Ignacio Ramos', cargo: 'Encargado Tienda Providencia', area: 'Tienda Física', tipo_contrato: 'Indefinido', estado: 'Activo', sueldo_bruto: 480000, fecha_ingreso: '2023-09-01', turno: 'Completo (08-17)', kpi_meta: '$800K ventas/mes tienda · NPS > 8', score_evaluacion: 4.5 },
+    { nombre: 'Fernanda Castro', cargo: 'Encargada Tienda Macul', area: 'Tienda Física', tipo_contrato: 'Indefinido', estado: 'Activo', sueldo_bruto: 480000, fecha_ingreso: '2024-01-15', turno: 'Completo (08-17)', kpi_meta: '$500K ventas/mes tienda · NPS > 8', score_evaluacion: 4 },
+  ];
+  for (const c of colaboradores) { await base44.asServiceRole.entities.Colaborador.create(c); results.colaboradores++; }
+
+  // ── VENTAS TIENDA ────────────────────────────────────────
+  const ventasTienda = [
+    { tienda: 'Providencia (F. Bilbao 3775)', fecha: '2026-04-11', tipo_venta: 'Personalización en tienda', sku: 'SOPC-001', cantidad: 1, precio_unitario: 6990, total: 6990, medio_pago: 'Débito', personalizacion_laser: true, texto_laser: 'Camila & Tomás ♥', listo_en_min: 12, cliente_nombre: 'Camila Ríos' },
+    { tienda: 'Providencia (F. Bilbao 3775)', fecha: '2026-04-11', tipo_venta: 'Producto stock', sku: 'CACH-001', cantidad: 1, precio_unitario: 25990, total: 25990, medio_pago: 'Crédito', personalizacion_laser: false, cliente_nombre: 'Lucas Muñoz' },
+    { tienda: 'Macul (P. de Valdivia 6603)', fecha: '2026-04-11', tipo_venta: 'Personalización en tienda', sku: 'LLAV-001', cantidad: 2, precio_unitario: 3990, total: 7980, medio_pago: 'Transferencia', personalizacion_laser: true, texto_laser: 'PEYU Forever', listo_en_min: 8, cliente_nombre: 'Andrea Vásquez' },
+    { tienda: 'Providencia (F. Bilbao 3775)', fecha: '2026-04-10', tipo_venta: 'Regalo corporativo', sku: 'KIT-ESCR-001', cantidad: 10, precio_unitario: 19990, total: 199900, medio_pago: 'Transferencia', personalizacion_laser: true, texto_laser: 'Logo empresa cliente', listo_en_min: 45, cliente_nombre: 'Empresa ABC' },
+    { tienda: 'Macul (P. de Valdivia 6603)', fecha: '2026-04-10', tipo_venta: 'Retiro pedido web', sku: 'LAMP-001', cantidad: 1, precio_unitario: 23490, total: 23490, medio_pago: 'WebPay', personalizacion_laser: false, cliente_nombre: 'Marco Silva' },
+    { tienda: 'Providencia (F. Bilbao 3775)', fecha: '2026-04-09', tipo_venta: 'Producto stock', sku: 'SONB-001', cantidad: 1, precio_unitario: 9990, total: 9990, medio_pago: 'Efectivo', personalizacion_laser: false },
+    { tienda: 'Macul (P. de Valdivia 6603)', fecha: '2026-04-09', tipo_venta: 'Personalización en tienda', sku: 'SOPC-001', cantidad: 1, precio_unitario: 6990, total: 6990, medio_pago: 'Débito', personalizacion_laser: true, texto_laser: 'Papá Te Amo', listo_en_min: 10, cliente_nombre: 'Diego Moreno' },
+  ];
+  for (const v of ventasTienda) { await base44.asServiceRole.entities.VentaTienda.create(v); results.ventas_tienda++; }
+
+  // ── CONSULTAS / SOPORTE ──────────────────────────────────
+  const consultas = [
+    { nombre: 'Empresa XYZ', telefono: '+56999123456', mensaje: 'Hola, necesito 200 llaveros con logo de mi empresa para entrega en 10 días. ¿Es posible?', tipo: 'Cotización Corporativa', estado: 'Sin responder', calidad: 'Caliente', canal: 'WhatsApp', cantidad_estimada: 200, logo_enviado: false, tiempo_respuesta_hrs: 0, convertido_lead: false },
+    { nombre: 'María Paz Aguilera', telefono: '+56987111222', mensaje: 'Quiero saber si pueden grabarme un soporte con el nombre de mi hija, qué valor tiene?', tipo: 'Personalización Tienda', estado: 'Respondido', calidad: 'Tibio', canal: 'Instagram DM', logo_enviado: false, tiempo_respuesta_hrs: 1.5, convertido_lead: false, respuesta: 'Hola María Paz! Sí, grabamos en tienda en 15 min por $0 adicional con la compra del soporte 😊' },
+    { nombre: 'Municipalidad de Ñuñoa', telefono: '+56222345678', mensaje: 'Buenos días, somos la Municipalidad de Ñuñoa y necesitamos 500 productos sustentables para entrega de fin de año. ¿Tienen catálogo?', tipo: 'Cotización Corporativa', estado: 'En seguimiento', calidad: 'Caliente', canal: 'Email', cantidad_estimada: 500, logo_enviado: false, tiempo_respuesta_hrs: 3, convertido_lead: true, notas: 'Lead creado en pipeline. Seguimiento activo.' },
+    { nombre: 'Persona Random', mensaje: 'Me copié el video de TikTok, muy lindo jajaja que wena empresa', tipo: 'No Comercial', estado: 'Cerrado', calidad: 'No Comercial', canal: 'Instagram DM', tiempo_respuesta_hrs: 0.5, convertido_lead: false, respuesta: '¡Gracias! Nos alegra que te gustara 💚🌎' },
+    { nombre: 'Clínica Las Condes', telefono: '+56222986754', mensaje: 'Hola, vimos sus productos y tenemos interés en hacer un kit de bienvenida para nuestros colaboradores. Son aprox 300 personas.', tipo: 'Cotización Corporativa', estado: 'Sin responder', calidad: 'Caliente', canal: 'WhatsApp', cantidad_estimada: 300, logo_enviado: false, convertido_lead: false, notas: 'URGENTE: Responder hoy. Gran potencial.' },
+  ];
+  for (const c of consultas) { await base44.asServiceRole.entities.Consulta.create(c); results.consultas++; }
 
   return Response.json({ ok: true, results });
 });
