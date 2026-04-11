@@ -1,0 +1,113 @@
+{
+  "name": "Producto",
+  "type": "object",
+  "properties": {
+    "sku": {
+      "type": "string",
+      "title": "SKU"
+    },
+    "nombre": {
+      "type": "string",
+      "title": "Nombre"
+    },
+    "categoria": {
+      "type": "string",
+      "title": "Categor\u00eda",
+      "enum": [
+        "Escritorio",
+        "Hogar",
+        "Entretenimiento",
+        "Corporativo",
+        "Carcasas B2C"
+      ]
+    },
+    "material": {
+      "type": "string",
+      "title": "Material",
+      "enum": [
+        "Pl\u00e1stico 100% Reciclado",
+        "Fibra de Trigo (Compostable)"
+      ]
+    },
+    "canal": {
+      "type": "string",
+      "title": "Canal de Venta",
+      "enum": [
+        "B2B + B2C",
+        "B2C Exclusivo",
+        "B2B Exclusivo"
+      ]
+    },
+    "precio_b2c": {
+      "type": "number",
+      "title": "Precio B2C (CLP)"
+    },
+    "precio_base_b2b": {
+      "type": "number",
+      "title": "Precio Base B2B (CLP)"
+    },
+    "precio_50_199": {
+      "type": "number",
+      "title": "Precio 50-199 u (CLP)"
+    },
+    "precio_200_499": {
+      "type": "number",
+      "title": "Precio 200-499 u (CLP)"
+    },
+    "precio_500_mas": {
+      "type": "number",
+      "title": "Precio 500+ u (CLP)"
+    },
+    "moq_personalizacion": {
+      "type": "number",
+      "title": "MOQ Personalizaci\u00f3n (u)",
+      "default": 10
+    },
+    "personalizacion_gratis_desde": {
+      "type": "number",
+      "title": "Personalizaci\u00f3n gratis desde (u)",
+      "default": 10
+    },
+    "area_laser_mm": {
+      "type": "string",
+      "title": "\u00c1rea L\u00e1ser (mm)"
+    },
+    "lead_time_sin_personal": {
+      "type": "number",
+      "title": "Lead Time sin personalizaci\u00f3n (d\u00edas)"
+    },
+    "lead_time_con_personal": {
+      "type": "number",
+      "title": "Lead Time con personalizaci\u00f3n (d\u00edas)"
+    },
+    "inyecciones_requeridas": {
+      "type": "number",
+      "title": "Inyecciones Requeridas",
+      "default": 1
+    },
+    "stock_actual": {
+      "type": "number",
+      "title": "Stock Actual (u)"
+    },
+    "activo": {
+      "type": "boolean",
+      "title": "Activo en Cat\u00e1logo",
+      "default": true
+    },
+    "descripcion": {
+      "type": "string",
+      "title": "Descripci\u00f3n"
+    },
+    "garantia_anios": {
+      "type": "number",
+      "title": "Garant\u00eda (a\u00f1os)"
+    }
+  },
+  "required": [
+    "sku",
+    "nombre",
+    "categoria",
+    "material",
+    "canal"
+  ]
+}

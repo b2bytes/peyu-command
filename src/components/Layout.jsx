@@ -1,9 +1,11 @@
 import { Link, useLocation, Outlet } from "react-router-dom";
-import { LayoutDashboard, Users, Settings, BarChart3, Megaphone, Turtle } from "lucide-react";
+import { LayoutDashboard, Users, Settings, BarChart3, Megaphone, Turtle, Package, Calculator, Database } from "lucide-react";
 
 const navItems = [
   { path: "/", label: "Centro de Comando", icon: LayoutDashboard },
   { path: "/pipeline", label: "Pipeline B2B", icon: Users },
+  { path: "/cpq", label: "CPQ Cotizador", icon: Calculator },
+  { path: "/catalogo", label: "Catálogo SKUs", icon: Package },
   { path: "/operaciones", label: "Operaciones", icon: Settings },
   { path: "/marketing", label: "Marketing", icon: Megaphone },
   { path: "/analitica", label: "Analítica", icon: BarChart3 },

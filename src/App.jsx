@@ -11,6 +11,8 @@ import PipelineB2B from './pages/PipelineB2B';
 import Operaciones from './pages/Operaciones';
 import Marketing from './pages/Marketing';
 import Analitica from './pages/Analitica';
+import Catalogo from './pages/Catalogo';
+import CPQCalculator from './pages/CPQCalculator';
 // Add page imports here
 
 const AuthenticatedApp = () => {
@@ -42,6 +44,8 @@ const AuthenticatedApp = () => {
       <Route element={<Layout />}>
         <Route path="/" element={<Dashboard />} />
         <Route path="/pipeline" element={<PipelineB2B />} />
+        <Route path="/cpq" element={<CPQCalculator />} />
+        <Route path="/catalogo" element={<Catalogo />} />
         <Route path="/operaciones" element={<Operaciones />} />
         <Route path="/marketing" element={<Marketing />} />
         <Route path="/analitica" element={<Analitica />} />
