@@ -1,0 +1,106 @@
+{
+  "name": "Proveedor",
+  "type": "object",
+  "properties": {
+    "nombre": {
+      "type": "string",
+      "title": "Nombre Proveedor"
+    },
+    "rut": {
+      "type": "string",
+      "title": "RUT"
+    },
+    "contacto": {
+      "type": "string",
+      "title": "Contacto"
+    },
+    "email": {
+      "type": "string",
+      "title": "Email"
+    },
+    "telefono": {
+      "type": "string",
+      "title": "Tel\u00e9fono / WhatsApp"
+    },
+    "categoria": {
+      "type": "string",
+      "title": "Categor\u00eda",
+      "enum": [
+        "Material Reciclado",
+        "Packaging",
+        "Tintes / Pigmentos",
+        "Maquinaria",
+        "Servicios Externos",
+        "Log\u00edstica",
+        "Marketing",
+        "Tecnolog\u00eda",
+        "Otro"
+      ]
+    },
+    "estado": {
+      "type": "string",
+      "title": "Estado",
+      "enum": [
+        "Activo",
+        "Inactivo",
+        "En Evaluaci\u00f3n",
+        "Bloqueado"
+      ]
+    },
+    "calidad": {
+      "type": "string",
+      "title": "Calificaci\u00f3n",
+      "enum": [
+        "Excelente",
+        "Bueno",
+        "Regular",
+        "Malo"
+      ]
+    },
+    "producto_servicio": {
+      "type": "string",
+      "title": "Producto / Servicio"
+    },
+    "precio_unitario_clp": {
+      "type": "number",
+      "title": "Precio Unitario Ref. (CLP)"
+    },
+    "unidad": {
+      "type": "string",
+      "title": "Unidad (kg, m, u...)"
+    },
+    "lead_time_dias": {
+      "type": "number",
+      "title": "Lead Time (d\u00edas)"
+    },
+    "pago_dias": {
+      "type": "number",
+      "title": "Plazo Pago (d\u00edas)"
+    },
+    "pedido_minimo": {
+      "type": "number",
+      "title": "Pedido M\u00ednimo"
+    },
+    "certificacion_reciclado": {
+      "type": "boolean",
+      "title": "Certifica Material Reciclado"
+    },
+    "fecha_ultimo_pedido": {
+      "type": "string",
+      "title": "\u00daltimo Pedido"
+    },
+    "monto_anual_clp": {
+      "type": "number",
+      "title": "Gasto Anual Estimado (CLP)"
+    },
+    "notas": {
+      "type": "string",
+      "title": "Notas"
+    }
+  },
+  "required": [
+    "nombre",
+    "categoria",
+    "estado"
+  ]
+}

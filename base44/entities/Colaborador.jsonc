@@ -1,0 +1,108 @@
+{
+  "name": "Colaborador",
+  "type": "object",
+  "properties": {
+    "nombre": {
+      "type": "string",
+      "title": "Nombre Completo"
+    },
+    "rut": {
+      "type": "string",
+      "title": "RUT"
+    },
+    "cargo": {
+      "type": "string",
+      "title": "Cargo"
+    },
+    "area": {
+      "type": "string",
+      "title": "\u00c1rea",
+      "enum": [
+        "Producci\u00f3n",
+        "Administraci\u00f3n",
+        "Ventas",
+        "Marketing",
+        "Operaciones",
+        "Tienda F\u00edsica",
+        "Direcci\u00f3n"
+      ]
+    },
+    "tipo_contrato": {
+      "type": "string",
+      "title": "Tipo Contrato",
+      "enum": [
+        "Indefinido",
+        "Plazo Fijo",
+        "Por Obra",
+        "Honorarios",
+        "Part-Time"
+      ]
+    },
+    "estado": {
+      "type": "string",
+      "title": "Estado",
+      "enum": [
+        "Activo",
+        "Vacaciones",
+        "Licencia",
+        "Desvinculado"
+      ]
+    },
+    "sueldo_bruto": {
+      "type": "number",
+      "title": "Sueldo Bruto (CLP)"
+    },
+    "fecha_ingreso": {
+      "type": "string",
+      "title": "Fecha Ingreso"
+    },
+    "email": {
+      "type": "string",
+      "title": "Email"
+    },
+    "telefono": {
+      "type": "string",
+      "title": "Tel\u00e9fono"
+    },
+    "turno": {
+      "type": "string",
+      "title": "Turno",
+      "enum": [
+        "Ma\u00f1ana (07-15)",
+        "Tarde (15-23)",
+        "Completo (08-17)",
+        "Flexible"
+      ]
+    },
+    "maquina_asignada": {
+      "type": "string",
+      "title": "M\u00e1quina / Estaci\u00f3n Asignada"
+    },
+    "habilidades": {
+      "type": "string",
+      "title": "Habilidades / Certificaciones"
+    },
+    "kpi_meta": {
+      "type": "string",
+      "title": "KPI / Meta Principal"
+    },
+    "ultima_evaluacion": {
+      "type": "string",
+      "title": "\u00daltima Evaluaci\u00f3n"
+    },
+    "score_evaluacion": {
+      "type": "number",
+      "title": "Score Evaluaci\u00f3n (1-5)"
+    },
+    "notas": {
+      "type": "string",
+      "title": "Notas"
+    }
+  },
+  "required": [
+    "nombre",
+    "cargo",
+    "area",
+    "estado"
+  ]
+}

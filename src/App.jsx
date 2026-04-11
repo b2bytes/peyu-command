@@ -17,6 +17,8 @@ import Soporte from './pages/Soporte';
 import Financiero from './pages/Financiero';
 import Clientes from './pages/Clientes';
 import Tiendas from './pages/Tiendas';
+import Proveedores from './pages/Proveedores';
+import Equipo from './pages/Equipo';
 // Add page imports here
 
 const AuthenticatedApp = () => {
@@ -53,6 +55,8 @@ const AuthenticatedApp = () => {
         <Route path="/financiero" element={<Financiero />} />
         <Route path="/clientes" element={<Clientes />} />
         <Route path="/tiendas" element={<Tiendas />} />
+        <Route path="/proveedores" element={<Proveedores />} />
+        <Route path="/equipo" element={<Equipo />} />
         <Route path="/operaciones" element={<Operaciones />} />
         <Route path="/marketing" element={<Marketing />} />
         <Route path="/analitica" element={<Analitica />} />
