@@ -3,7 +3,7 @@ import { useState } from "react";
 import {
   LayoutDashboard, Users, BarChart3, Megaphone, Turtle, Package,
   Calculator, MessageSquare, TrendingUp, Store, UserCheck, Truck,
-  HardHat, Flag, Archive, ShoppingCart, Settings as SettingsIcon, ChevronLeft, ChevronRight, Leaf, ListChecks, Sparkles, FileText, CalendarDays, PieChart
+  HardHat, Flag, Archive, ShoppingCart, Settings as SettingsIcon, ChevronLeft, ChevronRight, Leaf, ListChecks, Sparkles, FileText, CalendarDays, PieChart, AlertTriangle
 } from "lucide-react";
 
 const navGroups = [
@@ -51,6 +51,7 @@ const navGroups = [
       { path: "/ia", label: "Asistente IA", icon: Sparkles },
       { path: "/reportes", label: "Reportes & Análisis", icon: PieChart },
       { path: "/configuracion", label: "Configuración", icon: SettingsIcon },
+      { path: "/alertas", label: "Centro de Alertas", icon: AlertTriangle },
     ]
   }
 ];
