@@ -71,12 +71,6 @@ const AuthenticatedApp = () => {
     }
   }
 
-  // Si es ruta de tienda pública, no requiere auth
-  const pathName = window.location.pathname;
-  if (pathName === '/' || pathName.startsWith('/shop') || pathName.startsWith('/producto') || pathName.startsWith('/cart')) {
-    return <PublicShopRoutes />;
-  }
-
   // Render the main app
   return (
     <Routes>
@@ -117,16 +111,23 @@ const AuthenticatedApp = () => {
 
 
 function App() {
+  // Check if we're on a public shop route
+  const pathName = window.location.pathname;
+  const isPublicShop = pathName === '/' || pathName.startsWith('/shop') || pathName.startsWith('/producto') || pathName.startsWith('/cart');
 
   return (
-    <AuthProvider>
-      <QueryClientProvider client={queryClientInstance}>
-        <Router>
-          <AuthenticatedApp />
-        </Router>
-        <Toaster />
-      </QueryClientProvider>
-    </AuthProvider>
+    <QueryClientProvider client={queryClientInstance}>
+      <Router>
+        {isPublicShop ? (
+          <PublicShopRoutes />
+        ) : (
+          <AuthProvider>
+            <AuthenticatedApp />
+            <Toaster />
+          </AuthProvider>
+        )}
+      </Router>
+    </QueryClientProvider>
   )
 }
 
