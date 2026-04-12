@@ -3,7 +3,7 @@ import { useState } from "react";
 import {
   LayoutDashboard, Users, BarChart3, Megaphone, Turtle, Package,
   Calculator, MessageSquare, TrendingUp, Store, UserCheck, Truck,
-  HardHat, Flag, Archive, ShoppingCart, Settings, ChevronLeft, ChevronRight, Leaf
+  HardHat, Flag, Archive, ShoppingCart, Settings, ChevronLeft, ChevronRight, Leaf, ListChecks
 } from "lucide-react";
 
 const navGroups = [
@@ -45,6 +45,7 @@ const navGroups = [
       { path: "/analitica", label: "Analítica", icon: BarChart3 },
       { path: "/equipo", label: "Equipo / RRHH", icon: HardHat },
       { path: "/okrs", label: "OKRs & Metas", icon: Flag },
+      { path: "/plan", label: "Plan de Acción", icon: ListChecks },
     ]
   }
 ];

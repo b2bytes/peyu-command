@@ -1,0 +1,94 @@
+{
+  "name": "Tarea",
+  "type": "object",
+  "properties": {
+    "titulo": {
+      "type": "string",
+      "title": "T\u00edtulo"
+    },
+    "descripcion": {
+      "type": "string",
+      "title": "Descripci\u00f3n"
+    },
+    "area": {
+      "type": "string",
+      "title": "\u00c1rea",
+      "enum": [
+        "Comercial",
+        "Marketing",
+        "Producci\u00f3n",
+        "Finanzas",
+        "RRHH",
+        "Operaciones",
+        "Tecnolog\u00eda",
+        "ESG",
+        "Direcci\u00f3n"
+      ]
+    },
+    "tipo": {
+      "type": "string",
+      "title": "Tipo",
+      "enum": [
+        "Tarea operativa",
+        "Iniciativa OKR",
+        "Mejora proceso",
+        "Reuni\u00f3n / Follow-up",
+        "Urgente"
+      ]
+    },
+    "estado": {
+      "type": "string",
+      "title": "Estado",
+      "enum": [
+        "Pendiente",
+        "En curso",
+        "Bloqueada",
+        "Completada",
+        "Cancelada"
+      ]
+    },
+    "prioridad": {
+      "type": "string",
+      "title": "Prioridad",
+      "enum": [
+        "Alta",
+        "Media",
+        "Baja"
+      ]
+    },
+    "responsable": {
+      "type": "string",
+      "title": "Responsable"
+    },
+    "fecha_limite": {
+      "type": "string",
+      "title": "Fecha L\u00edmite"
+    },
+    "fecha_completada": {
+      "type": "string",
+      "title": "Fecha Completada"
+    },
+    "okr_relacionado": {
+      "type": "string",
+      "title": "OKR Relacionado"
+    },
+    "resultado_esperado": {
+      "type": "string",
+      "title": "Resultado Esperado"
+    },
+    "notas": {
+      "type": "string",
+      "title": "Notas"
+    },
+    "recurrente": {
+      "type": "boolean",
+      "title": "Tarea Recurrente"
+    }
+  },
+  "required": [
+    "titulo",
+    "area",
+    "estado",
+    "prioridad"
+  ]
+}

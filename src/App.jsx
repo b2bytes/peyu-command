@@ -26,6 +26,7 @@ import FlujoCaja from './pages/FlujoCaja';
 import Trazabilidad from './pages/Trazabilidad';
 import Compras from './pages/Compras';
 import ESG from './pages/ESG';
+import PlanAccion from './pages/PlanAccion';
 // Add page imports here
 
 const AuthenticatedApp = () => {
@@ -72,6 +73,7 @@ const AuthenticatedApp = () => {
         <Route path="/trazabilidad" element={<Trazabilidad />} />
         <Route path="/compras" element={<Compras />} />
         <Route path="/esg" element={<ESG />} />
+        <Route path="/plan" element={<PlanAccion />} />
         <Route path="/operaciones" element={<Operaciones />} />
         <Route path="/marketing" element={<Marketing />} />
         <Route path="/analitica" element={<Analitica />} />
