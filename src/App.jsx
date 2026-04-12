@@ -22,6 +22,7 @@ import Equipo from './pages/Equipo';
 import OKRs from './pages/OKRs';
 import Inventario from './pages/Inventario';
 import Ecommerce from './pages/Ecommerce';
+import FlujoCaja from './pages/FlujoCaja';
 // Add page imports here
 
 const AuthenticatedApp = () => {
@@ -64,6 +65,7 @@ const AuthenticatedApp = () => {
         <Route path="/okrs" element={<OKRs />} />
         <Route path="/inventario" element={<Inventario />} />
         <Route path="/ecommerce" element={<Ecommerce />} />
+        <Route path="/flujo-caja" element={<FlujoCaja />} />
         <Route path="/operaciones" element={<Operaciones />} />
         <Route path="/marketing" element={<Marketing />} />
         <Route path="/analitica" element={<Analitica />} />

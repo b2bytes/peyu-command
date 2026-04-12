@@ -37,6 +37,7 @@ const navGroups = [
     label: "Estrategia",
     items: [
       { path: "/financiero", label: "Financiero", icon: TrendingUp },
+      { path: "/flujo-caja", label: "Flujo de Caja", icon: Store },
       { path: "/marketing", label: "Marketing", icon: Megaphone },
       { path: "/analitica", label: "Analítica", icon: BarChart3 },
       { path: "/equipo", label: "Equipo / RRHH", icon: HardHat },

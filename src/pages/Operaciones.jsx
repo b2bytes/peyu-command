@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
-import { Plus, Edit2, Trash2, Factory, Clock, CheckCircle2, AlertTriangle, Package } from "lucide-react";
+import { Plus, Edit2, Trash2, Factory, Clock, CheckCircle2, AlertTriangle, Package, Zap } from "lucide-react";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -135,11 +136,14 @@ export default function Operaciones() {
     (filterPrioridad === 'todos' || o.prioridad === filterPrioridad)
   );
 
+  const [tab, setTab] = useState('lista');
+
   // Stats
   const enProduccion = ordenes.filter(o => ['En Producción', 'En Cola', 'Pendiente', 'Control Calidad', 'Personalización Láser', 'Packaging', 'Listo para Despacho'].includes(o.estado)).length;
   const urgentes = ordenes.filter(o => o.prioridad === 'Alta (urgente)' && o.estado !== 'Despachado').length;
   const totalUnidades = ordenes.filter(o => o.estado !== 'Despachado').reduce((s, o) => s + (o.cantidad || 0), 0);
   const inyectorasUsadas = [...new Set(ordenes.filter(o => o.inyectora && o.inyectora !== 'Sin asignar' && o.estado !== 'Despachado').map(o => o.inyectora))].length;
+  const utilizacionPct = Math.round((inyectorasUsadas / 6) * 100);
 
   return (
     <div className="p-6 space-y-5">
@@ -168,25 +172,31 @@ export default function Operaciones() {
         ))}
       </div>
 
-      {/* Filters */}
-      <div className="flex gap-2 flex-wrap">
-        <Select value={filterEstado} onValueChange={setFilterEstado}>
-          <SelectTrigger className="h-9 w-48"><SelectValue placeholder="Estado" /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="todos">Todos los estados</SelectItem>
-            {ESTADOS.map(e => <SelectItem key={e} value={e}>{e}</SelectItem>)}
-          </SelectContent>
-        </Select>
-        <Select value={filterPrioridad} onValueChange={setFilterPrioridad}>
-          <SelectTrigger className="h-9 w-44"><SelectValue placeholder="Prioridad" /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="todos">Todas las prioridades</SelectItem>
-            {PRIORIDADES.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}
-          </SelectContent>
-        </Select>
-        <span className="text-sm text-muted-foreground self-center ml-1">{filtered.length} órdenes</span>
-      </div>
+      {/* Filters + tabs */}
+      <Tabs value={tab} onValueChange={setTab}>
+        <div className="flex items-center gap-3 flex-wrap">
+          <TabsList>
+            <TabsTrigger value="lista">Kanban</TabsTrigger>
+            <TabsTrigger value="planta">Vista Planta</TabsTrigger>
+          </TabsList>
+          <Select value={filterEstado} onValueChange={setFilterEstado}>
+            <SelectTrigger className="h-9 w-44"><SelectValue placeholder="Estado" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="todos">Todos los estados</SelectItem>
+              {ESTADOS.map(e => <SelectItem key={e} value={e}>{e}</SelectItem>)}
+            </SelectContent>
+          </Select>
+          <Select value={filterPrioridad} onValueChange={setFilterPrioridad}>
+            <SelectTrigger className="h-9 w-44"><SelectValue placeholder="Prioridad" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="todos">Todas las prioridades</SelectItem>
+              {PRIORIDADES.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}
+            </SelectContent>
+          </Select>
+          <span className="text-sm text-muted-foreground">{filtered.length} órdenes</span>
+        </div>
 
+        <TabsContent value="lista" className="mt-4">
       {/* Kanban por estado */}
       <div className="flex gap-3 overflow-x-auto pb-4">
         {ESTADOS.slice(0, 6).map(estado => {
@@ -213,6 +223,90 @@ export default function Operaciones() {
           <p>No hay órdenes de producción. Crea la primera.</p>
         </div>
       )}
+        </TabsContent>
+
+        <TabsContent value="planta" className="mt-4">
+          {/* Utilización planta */}
+          <div className="mb-4 bg-white rounded-xl p-4 border border-border shadow-sm">
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-sm font-semibold text-foreground">Utilización Planta</p>
+              <span className="font-poppins font-bold text-lg" style={{ color: utilizacionPct >= 70 ? '#0F8B6C' : '#D96B4D' }}>{utilizacionPct}%</span>
+            </div>
+            <div className="h-2.5 bg-muted rounded-full overflow-hidden">
+              <div className="h-full rounded-full transition-all" style={{ width: `${utilizacionPct}%`, background: utilizacionPct >= 70 ? '#0F8B6C' : '#D96B4D' }} />
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">{inyectorasUsadas} de 6 inyectoras activas • Meta mandato: ≥70%</p>
+          </div>
+          {/* Grid de inyectoras */}
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-6">
+            {['Inyectora 1','Inyectora 2','Inyectora 3','Inyectora 4','Inyectora 5','Inyectora 6'].map(inj => {
+              const ops = ordenes.filter(o => o.inyectora === inj && o.estado !== 'Despachado');
+              const activa = ops.length > 0;
+              const urgente = ops.some(o => o.prioridad === 'Alta (urgente)');
+              return (
+                <div key={inj} className={`rounded-xl p-4 border-2 transition-all ${
+                  urgente ? 'border-red-300 bg-red-50/40' : activa ? 'border-green-300 bg-green-50/40' : 'border-dashed border-border bg-muted/30'
+                }`}>
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <Factory className={`w-4 h-4 ${activa ? 'text-green-600' : 'text-muted-foreground'}`} />
+                      <span className="font-medium text-sm">{inj}</span>
+                    </div>
+                    <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
+                      urgente ? 'bg-red-100 text-red-600' : activa ? 'bg-green-100 text-green-600' : 'bg-muted text-muted-foreground'
+                    }`}>{urgente ? '⚠ Urgente' : activa ? 'Activa' : 'Libre'}</span>
+                  </div>
+                  {ops.length === 0 ? (
+                    <p className="text-xs text-muted-foreground">Sin órdenes asignadas</p>
+                  ) : (
+                    <div className="space-y-1">
+                      {ops.map(o => (
+                        <div key={o.id} className="text-xs bg-white rounded-lg p-2 border border-border">
+                          <p className="font-medium truncate">{o.empresa}</p>
+                          <p className="text-muted-foreground">{o.sku} • {(o.cantidad||0).toLocaleString()} u</p>
+                          <span className={`inline-block mt-1 text-xs px-1.5 py-0.5 rounded-full font-medium ${estadoConfig[o.estado]?.color || 'bg-gray-100 text-gray-600'}`}>{o.estado}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+          {/* Láseres */}
+          <div className="grid grid-cols-2 gap-3">
+            {['Láser 1','Láser 2'].map(laser => {
+              const ops = ordenes.filter(o => o.laser === laser && o.estado !== 'Despachado');
+              const activo = ops.length > 0;
+              return (
+                <div key={laser} className={`rounded-xl p-4 border-2 ${
+                  activo ? 'border-indigo-300 bg-indigo-50/30' : 'border-dashed border-border bg-muted/30'
+                }`}>
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <Zap className={`w-4 h-4 ${activo ? 'text-indigo-600' : 'text-muted-foreground'}`} />
+                      <span className="font-medium text-sm">{laser} (UV)</span>
+                    </div>
+                    <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
+                      activo ? 'bg-indigo-100 text-indigo-600' : 'bg-muted text-muted-foreground'
+                    }`}>{activo ? 'Activo' : 'Libre'}</span>
+                  </div>
+                  {ops.length === 0 ? <p className="text-xs text-muted-foreground">Sin trabajos asignados</p> : (
+                    <div className="space-y-1">
+                      {ops.map(o => (
+                        <div key={o.id} className="text-xs bg-white rounded-lg p-2 border border-border">
+                          <p className="font-medium truncate">{o.empresa}</p>
+                          <p className="text-muted-foreground">{o.sku} • {(o.cantidad||0).toLocaleString()} u</p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </TabsContent>
+      </Tabs>
 
       {/* Modal */}
       <Dialog open={showModal} onOpenChange={setShowModal}>
