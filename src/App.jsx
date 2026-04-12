@@ -29,6 +29,7 @@ import ESG from './pages/ESG';
 import PlanAccion from './pages/PlanAccion';
 import AsistenteIA from './pages/AsistenteIA';
 import Cotizaciones from './pages/Cotizaciones';
+import Calendario from './pages/Calendario';
 // Add page imports here
 
 const AuthenticatedApp = () => {
@@ -78,6 +79,7 @@ const AuthenticatedApp = () => {
         <Route path="/plan" element={<PlanAccion />} />
         <Route path="/ia" element={<AsistenteIA />} />
         <Route path="/cotizaciones" element={<Cotizaciones />} />
+        <Route path="/calendario" element={<Calendario />} />
         <Route path="/operaciones" element={<Operaciones />} />
         <Route path="/marketing" element={<Marketing />} />
         <Route path="/analitica" element={<Analitica />} />
