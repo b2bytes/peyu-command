@@ -3,7 +3,7 @@ import { useState } from "react";
 import {
   LayoutDashboard, Users, BarChart3, Megaphone, Turtle, Package,
   Calculator, MessageSquare, TrendingUp, Store, UserCheck, Truck,
-  HardHat, Flag, Archive, ShoppingCart, Settings, ChevronLeft, ChevronRight, Leaf, ListChecks, Sparkles, FileText, CalendarDays
+  HardHat, Flag, Archive, ShoppingCart, Settings, ChevronLeft, ChevronRight, Leaf, ListChecks, Sparkles, FileText, CalendarDays, PieChart
 } from "lucide-react";
 
 const navGroups = [
@@ -49,6 +49,7 @@ const navGroups = [
       { path: "/calendario", label: "Agenda Comercial", icon: CalendarDays },
       { path: "/plan", label: "Plan de Acción", icon: ListChecks },
       { path: "/ia", label: "Asistente IA", icon: Sparkles },
+      { path: "/reportes", label: "Reportes & Análisis", icon: PieChart },
     ]
   }
 ];
