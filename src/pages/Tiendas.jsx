@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
+import PersonalizacionFlow from "./PersonalizacionFlow";
 import { Store, Plus, Edit2, Trash2, MapPin, DollarSign, Zap, TrendingUp } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -66,6 +67,8 @@ export default function Tiendas() {
   const [showModal, setShowModal] = useState(false);
   const [editing, setEditing] = useState(null);
   const [form, setForm] = useState(DEFAULTS);
+  const [showPersonalizacion, setShowPersonalizacion] = useState(false);
+  const [personalizandoId, setPersonalizandoId] = useState(null);
 
   const loadData = async () => {
     setLoading(true);
@@ -91,6 +94,11 @@ export default function Tiendas() {
   const handleDelete = async (id) => {
     if (!confirm('¿Eliminar venta?')) return;
     await base44.entities.VentaTienda.delete(id);
+    loadData();
+  };
+
+  const handleSavePersonalizacion = async (data) => {
+    await base44.entities.VentaTienda.update(personalizandoId, data);
     loadData();
   };
 
@@ -123,6 +131,8 @@ export default function Tiendas() {
     providencia: ventas.filter(v => v.fecha?.startsWith(mes) && v.tienda?.includes('Providencia')).reduce((s, v) => s + (v.total || 0), 0) / 1000,
     macul: ventas.filter(v => v.fecha?.startsWith(mes) && v.tienda?.includes('Macul')).reduce((s, v) => s + (v.total || 0), 0) / 1000,
   }));
+
+
 
   return (
     <div className="p-6 space-y-5">
@@ -232,8 +242,23 @@ export default function Tiendas() {
                     </tr>
                   </thead>
                   <tbody>
-                    {filtered.map(v => (
-                      <VentaRow key={v.id} venta={v} onEdit={openEdit} onDelete={handleDelete} />
+                        {filtered.map(v => (
+                          <tr key={v.id} className="border-b border-border hover:bg-muted/20 transition-colors">
+                            <td className="py-3 px-3"><span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+                              v.tienda?.includes('Providencia') ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700'}`}>{v.tienda?.includes('Providencia') ? 'Providencia' : 'Macul'}</span></td>
+                            <td className="py-3 px-3 text-sm text-muted-foreground">{v.fecha}</td>
+                            <td className="py-3 px-3 text-sm text-foreground">{v.tipo_venta}</td>
+                            <td className="py-3 px-3 text-sm text-muted-foreground">{v.sku || '—'}</td>
+                            <td className="py-3 px-3 text-sm text-center">{v.cantidad || 1}</td>
+                            <td className="py-3 px-3 text-sm font-semibold text-right" style={{ color: '#0F8B6C' }}>{v.total ? fmtClp(v.total) : '—'}</td>
+                            <td className="py-3 px-3 text-sm text-center">{v.personalizacion_laser && <span className="text-xs px-1.5 py-0.5 rounded-full bg-blue-50 text-blue-600">⚡ Láser</span>}</td>
+                            <td className="py-3 px-3">
+                              <div className="flex gap-1 justify-end">
+                                <button onClick={() => openEdit(v)} className="p-1.5 hover:bg-muted rounded-lg"><Edit2 className="w-3.5 h-3.5 text-muted-foreground" /></button>
+                                <button onClick={() => handleDelete(v.id)} className="p-1.5 hover:bg-red-50 rounded-lg"><Trash2 className="w-3.5 h-3.5 text-red-400" /></button>
+                              </div>
+                            </td>
+                          </tr>
                     ))}
                   </tbody>
                 </table>
@@ -275,8 +300,17 @@ export default function Tiendas() {
               </div>
             )}
           </div>
-        </TabsContent>
-      </Tabs>
+          </TabsContent>
+          </Tabs>
+
+          {/* Personalización flow */}
+          {showPersonalizacion && PersonalizacionFlow && (
+          <PersonalizacionFlow
+          pedidoId={personalizandoId}
+          onClose={() => setShowPersonalizacion(false)}
+          onSave={handleSavePersonalizacion}
+          />
+          )}
 
       {/* Modal */}
       <Dialog open={showModal} onOpenChange={setShowModal}>

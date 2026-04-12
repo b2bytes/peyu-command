@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
+import PersonalizacionFlow from "./PersonalizacionFlow";
 import {
   ShoppingCart, Package, TrendingUp, Star, Search, Plus,
   Loader2, Edit2, Truck, CheckCircle2, Clock, AlertCircle,
@@ -59,6 +60,8 @@ export default function Ecommerce() {
   const [editingId, setEditingId] = useState(null);
   const [form, setForm] = useState(defaultForm);
   const [saving, setSaving] = useState(false);
+  const [showPersonalizacion, setShowPersonalizacion] = useState(false);
+  const [personalizandoId, setPersonalizandoId] = useState(null);
 
   const load = async () => {
     setLoading(true);
@@ -95,6 +98,16 @@ export default function Ecommerce() {
     load();
   };
 
+  const handleOpenPersonalizacion = (pedido) => {
+    setPersonalizandoId(pedido.id);
+    setShowPersonalizacion(true);
+  };
+
+  const handleSavePersonalizacion = async (data) => {
+    await base44.entities.PedidoWeb.update(personalizandoId, data);
+    load();
+  };
+
   // Métricas
   const totalVentas = pedidos.filter(p => p.estado !== 'Cancelado' && p.estado !== 'Reembolsado')
     .reduce((s, p) => s + (p.total || 0), 0);
@@ -112,6 +125,15 @@ export default function Ecommerce() {
     count: pedidos.filter(p => p.canal === c).length,
     total: pedidos.filter(p => p.canal === c).reduce((s, p) => s + (p.total || 0), 0),
   })).filter(c => c.count > 0);
+
+  // Métricas de conversión
+  const totalConversión = {
+    nuevos: pedidos.filter(p => p.estado === 'Nuevo').length,
+    confirmados: pedidos.filter(p => !['Nuevo', 'Cancelado'].includes(p.estado)).length,
+    despachados: pedidos.filter(p => ['Despachado', 'Entregado'].includes(p.estado)).length,
+    entregados: pedidos.filter(p => p.estado === 'Entregado').length,
+  };
+  const convRate = totalConversión.confirmados > 0 ? Math.round((totalConversión.despachados / totalConversión.confirmados) * 100) : 0;
 
   // Timeline últimos 14 días
   const hoy = new Date();
@@ -275,6 +297,11 @@ export default function Ecommerce() {
                         <button onClick={() => handleEdit(p)} className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1 justify-center">
                           <Edit2 className="w-3 h-3" /> Editar
                         </button>
+                        {p.requiere_personalizacion && !p.logo_recibido && (
+                          <button onClick={() => handleOpenPersonalizacion(p)} className="text-xs text-purple-600 hover:text-purple-700 flex items-center gap-1 justify-center font-medium">
+                            ✨ Logo
+                          </button>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -530,6 +557,15 @@ export default function Ecommerce() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Flujo de personalización */}
+      {showPersonalizacion && (
+        <PersonalizacionFlow
+          pedidoId={personalizandoId}
+          onClose={() => setShowPersonalizacion(false)}
+          onSave={handleSavePersonalizacion}
+        />
+      )}
     </div>
   );
 }
