@@ -34,9 +34,19 @@ import Reportes from './pages/Reportes';
 import Configuracion from './pages/Configuracion';
 import Alertas from './pages/Alertas';
 import Shop from './pages/Shop';
+import ShopLanding from './pages/ShopLanding';
 import ProductoDetalle from './pages/ProductoDetalle';
 import Carrito from './pages/Carrito';
 // Add page imports here
+
+const PublicShopRoutes = () => (
+  <Routes>
+    <Route path="/" element={<ShopLanding />} />
+    <Route path="/shop" element={<Shop />} />
+    <Route path="/producto/:id" element={<ProductoDetalle />} />
+    <Route path="/cart" element={<Carrito />} />
+  </Routes>
+);
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -59,6 +69,12 @@ const AuthenticatedApp = () => {
       navigateToLogin();
       return null;
     }
+  }
+
+  // Si es ruta de tienda pública, no requiere auth
+  const pathName = window.location.pathname;
+  if (pathName === '/' || pathName.startsWith('/shop') || pathName.startsWith('/producto') || pathName.startsWith('/cart')) {
+    return <PublicShopRoutes />;
   }
 
   // Render the main app
@@ -92,9 +108,7 @@ const AuthenticatedApp = () => {
         <Route path="/operaciones" element={<Operaciones />} />
         <Route path="/marketing" element={<Marketing />} />
         <Route path="/analitica" element={<Analitica />} />
-        <Route path="/shop" element={<Shop />} />
-        <Route path="/producto/:id" element={<ProductoDetalle />} />
-        <Route path="/cart" element={<Carrito />} />
+
       </Route>
       <Route path="*" element={<PageNotFound />} />
     </Routes>
