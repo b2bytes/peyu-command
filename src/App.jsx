@@ -33,6 +33,9 @@ import Calendario from './pages/Calendario';
 import Reportes from './pages/Reportes';
 import Configuracion from './pages/Configuracion';
 import Alertas from './pages/Alertas';
+import Shop from './pages/Shop';
+import ProductoDetalle from './pages/ProductoDetalle';
+import Carrito from './pages/Carrito';
 // Add page imports here
 
 const AuthenticatedApp = () => {
@@ -89,6 +92,9 @@ const AuthenticatedApp = () => {
         <Route path="/operaciones" element={<Operaciones />} />
         <Route path="/marketing" element={<Marketing />} />
         <Route path="/analitica" element={<Analitica />} />
+        <Route path="/shop" element={<Shop />} />
+        <Route path="/producto/:id" element={<ProductoDetalle />} />
+        <Route path="/cart" element={<Carrito />} />
       </Route>
       <Route path="*" element={<PageNotFound />} />
     </Routes>
