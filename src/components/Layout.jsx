@@ -1,78 +1,129 @@
 import { Link, useLocation, Outlet } from "react-router-dom";
-import { LayoutDashboard, Users, Settings, BarChart3, Megaphone, Turtle, Package, Calculator, MessageSquare, TrendingUp, Store, UserCheck, Truck, HardHat, Flag, Archive, ShoppingCart } from "lucide-react";
+import { useState } from "react";
+import {
+  LayoutDashboard, Users, BarChart3, Megaphone, Turtle, Package,
+  Calculator, MessageSquare, TrendingUp, Store, UserCheck, Truck,
+  HardHat, Flag, Archive, ShoppingCart, Settings, ChevronLeft, ChevronRight
+} from "lucide-react";
 
-const navItems = [
-  { path: "/", label: "Centro de Comando", icon: LayoutDashboard },
-  { path: "/soporte", label: "Soporte & WhatsApp", icon: MessageSquare },
-  { path: "/pipeline", label: "Pipeline B2B", icon: Users },
-  { path: "/cpq", label: "CPQ Cotizador", icon: Calculator },
-  { path: "/catalogo", label: "Catálogo SKUs", icon: Package },
-  { path: "/operaciones", label: "Operaciones", icon: Settings },
-  { path: "/marketing", label: "Marketing", icon: Megaphone },
-  { path: "/analitica", label: "Analítica", icon: BarChart3 },
-  { path: "/financiero", label: "Financiero", icon: TrendingUp },
-  { path: "/clientes", label: "Clientes / LTV", icon: UserCheck },
-  { path: "/tiendas", label: "Tiendas Físicas", icon: Store },
-  { path: "/proveedores", label: "Proveedores", icon: Truck },
-  { path: "/equipo", label: "Equipo / RRHH", icon: HardHat },
-  { path: "/okrs", label: "OKRs & Metas", icon: Flag },
-  { path: "/inventario", label: "Inventario", icon: Archive },
-  { path: "/ecommerce", label: "E-commerce", icon: ShoppingCart },
+const navGroups = [
+  {
+    label: "Operaciones",
+    items: [
+      { path: "/", label: "Centro de Comando", icon: LayoutDashboard },
+      { path: "/pipeline", label: "Pipeline B2B", icon: Users },
+      { path: "/cpq", label: "CPQ Cotizador", icon: Calculator },
+      { path: "/soporte", label: "Soporte & WhatsApp", icon: MessageSquare },
+    ]
+  },
+  {
+    label: "Comercial",
+    items: [
+      { path: "/ecommerce", label: "E-commerce", icon: ShoppingCart },
+      { path: "/tiendas", label: "Tiendas Físicas", icon: Store },
+      { path: "/clientes", label: "Clientes / LTV", icon: UserCheck },
+      { path: "/catalogo", label: "Catálogo SKUs", icon: Package },
+    ]
+  },
+  {
+    label: "Producción",
+    items: [
+      { path: "/operaciones", label: "Operaciones", icon: Settings },
+      { path: "/inventario", label: "Inventario", icon: Archive },
+      { path: "/proveedores", label: "Proveedores", icon: Truck },
+    ]
+  },
+  {
+    label: "Estrategia",
+    items: [
+      { path: "/financiero", label: "Financiero", icon: TrendingUp },
+      { path: "/marketing", label: "Marketing", icon: Megaphone },
+      { path: "/analitica", label: "Analítica", icon: BarChart3 },
+      { path: "/equipo", label: "Equipo / RRHH", icon: HardHat },
+      { path: "/okrs", label: "OKRs & Metas", icon: Flag },
+    ]
+  }
 ];
 
 export default function Layout() {
   const location = useLocation();
+  const [collapsed, setCollapsed] = useState(false);
 
   return (
     <div className="flex h-screen bg-background overflow-hidden">
       {/* Sidebar */}
-      <aside className="w-64 flex-shrink-0 flex flex-col" style={{ background: '#2C3340' }}>
+      <aside
+        className="flex-shrink-0 flex flex-col transition-all duration-300 relative"
+        style={{ background: 'hsl(220,16%,14%)', width: collapsed ? 64 : 220 }}
+      >
         {/* Logo */}
-        <div className="p-6 border-b" style={{ borderColor: '#3a4252' }}>
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: '#0F8B6C' }}>
-              <Turtle className="w-5 h-5 text-white" />
-            </div>
-            <div>
-              <div className="font-poppins font-bold text-white text-lg leading-none">PEYU</div>
-              <div className="text-xs mt-0.5" style={{ color: '#A7D9C9' }}>Centro de Comando</div>
-            </div>
+        <div className="flex items-center gap-3 px-4 py-4 border-b" style={{ borderColor: 'hsl(220,14%,20%)' }}>
+          <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: '#0F8B6C' }}>
+            <Turtle className="w-4 h-4 text-white" />
           </div>
+          {!collapsed && (
+            <div className="overflow-hidden">
+              <div className="font-poppins font-bold text-white text-base leading-none">PEYU</div>
+              <div className="text-xs mt-0.5 truncate" style={{ color: '#A7D9C9' }}>Centro de Comando</div>
+            </div>
+          )}
         </div>
 
-        {/* Navigation */}
-        <nav className="flex-1 p-4 space-y-1">
-          {navItems.map((item) => {
-            const Icon = item.icon;
-            const isActive = location.pathname === item.path;
-            return (
-              <Link
-                key={item.path}
-                to={item.path}
-                className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 text-sm font-medium ${
-                  isActive
-                    ? "text-white"
-                    : "text-gray-400 hover:text-white hover:bg-white/5"
-                }`}
-                style={isActive ? { background: '#0F8B6C', color: 'white' } : {}}
-              >
-                <Icon className="w-4 h-4 flex-shrink-0" />
-                {item.label}
-              </Link>
-            );
-          })}
+        {/* Navigation — scrollable */}
+        <nav className="flex-1 overflow-y-auto py-3" style={{ scrollbarWidth: 'thin', scrollbarColor: 'hsl(220,14%,25%) transparent' }}>
+          {navGroups.map((group) => (
+            <div key={group.label} className="mb-1">
+              {!collapsed && (
+                <div className="px-4 py-1.5 text-xs font-semibold uppercase tracking-wider" style={{ color: 'hsl(220,10%,40%)' }}>
+                  {group.label}
+                </div>
+              )}
+              {group.items.map((item) => {
+                const Icon = item.icon;
+                const isActive = location.pathname === item.path;
+                return (
+                  <Link
+                    key={item.path}
+                    to={item.path}
+                    title={collapsed ? item.label : undefined}
+                    className={`flex items-center gap-3 mx-2 px-2.5 py-2 rounded-lg transition-all duration-150 text-sm font-medium ${
+                      isActive
+                        ? "text-white"
+                        : "text-gray-400 hover:text-white hover:bg-white/5"
+                    } ${collapsed ? 'justify-center' : ''}`}
+                    style={isActive ? { background: '#0F8B6C' } : {}}
+                  >
+                    <Icon className="w-4 h-4 flex-shrink-0" />
+                    {!collapsed && <span className="truncate">{item.label}</span>}
+                  </Link>
+                );
+              })}
+              {!collapsed && <div className="mx-4 mt-1 mb-1 border-t" style={{ borderColor: 'hsl(220,14%,20%)' }} />}
+            </div>
+          ))}
         </nav>
 
+        {/* Collapse toggle */}
+        <button
+          onClick={() => setCollapsed(!collapsed)}
+          className="absolute -right-3 top-14 w-6 h-6 rounded-full flex items-center justify-center border z-10 transition-colors hover:bg-white/10"
+          style={{ background: 'hsl(220,16%,14%)', borderColor: 'hsl(220,14%,28%)', color: '#9ca3af' }}
+        >
+          {collapsed ? <ChevronRight className="w-3 h-3" /> : <ChevronLeft className="w-3 h-3" />}
+        </button>
+
         {/* Footer */}
-        <div className="p-4 border-t text-xs" style={{ borderColor: '#3a4252', color: '#6b7280' }}>
-          <div className="font-medium" style={{ color: '#9ca3af' }}>B2BYTES</div>
-          <div>Enterprise as a Service</div>
-          <div className="mt-1" style={{ color: '#4b5563' }}>v1.0 • Peyu Chile SPA</div>
-        </div>
+        {!collapsed && (
+          <div className="px-4 py-3 border-t text-xs" style={{ borderColor: 'hsl(220,14%,20%)', color: 'hsl(220,10%,40%)' }}>
+            <div className="font-semibold" style={{ color: '#9ca3af' }}>B2BYTES</div>
+            <div>Enterprise as a Service</div>
+            <div className="mt-0.5" style={{ color: 'hsl(220,10%,30%)' }}>v1.0 • Peyu Chile SPA</div>
+          </div>
+        )}
       </aside>
 
-      {/* Main content */}
-      <main className="flex-1 overflow-auto">
+      {/* Main content — full scroll */}
+      <main className="flex-1 min-w-0 overflow-y-auto overflow-x-hidden">
         <Outlet />
       </main>
     </div>
