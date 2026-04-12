@@ -95,7 +95,7 @@ function LeadCard({ lead, onEdit, onDelete }) {
   );
 }
 
-function CotizacionRow({ cot, onEdit, onDelete }) {
+function CotizacionRow({ cot, onEdit, onDelete, onCrearOP }) {
   const total = cot.total || (cot.cantidad * cot.precio_unitario * (1 - (cot.descuento_pct || 0) / 100) + (cot.fee_personalizacion || 0) + (cot.fee_packaging || 0));
   return (
     <div className="bg-white rounded-xl p-4 shadow-sm border border-border hover:shadow-md transition-shadow flex items-center justify-between">
@@ -111,7 +111,16 @@ function CotizacionRow({ cot, onEdit, onDelete }) {
           <p className="font-poppins font-bold text-sm" style={{ color: '#0F8B6C' }}>${total.toLocaleString('es-CL')}</p>
           <p className="text-xs text-muted-foreground">{cot.lead_time_dias || '?'} días hábiles</p>
         </div>
-        <div className="flex gap-1">
+        <div className="flex gap-1 items-center">
+          {cot.estado === 'Aceptada' && (
+            <button
+              onClick={() => onCrearOP(cot)}
+              title="Crear Orden de Producción"
+              className="text-xs font-medium px-2 py-1 rounded-lg transition-colors hover:opacity-80 flex items-center gap-1"
+              style={{ background: '#f0faf7', color: '#0F8B6C' }}>
+              + OP
+            </button>
+          )}
           <button onClick={() => onEdit(cot)} className="p-1.5 hover:bg-muted rounded-lg transition-colors">
             <Edit2 className="w-3.5 h-3.5 text-muted-foreground" />
           </button>
@@ -182,6 +191,22 @@ export default function PipelineB2B() {
     if (activeTab === 'leads') await base44.entities.Lead.delete(id);
     else await base44.entities.Cotizacion.delete(id);
     loadData();
+  };
+
+  const handleCrearOP = async (cot) => {
+    await base44.entities.OrdenProduccion.create({
+      empresa: cot.empresa,
+      sku: cot.sku,
+      cantidad: cot.cantidad,
+      estado: 'Pendiente',
+      prioridad: 'Normal',
+      inyectora: 'Sin asignar',
+      laser: cot.personalizacion_tipo && cot.personalizacion_tipo !== 'Sin personalización' ? 'Láser 1' : 'No requiere',
+      personalizacion: cot.personalizacion_tipo !== 'Sin personalización',
+      anticipo_pagado: false,
+      notas_produccion: `Generado automáticamente desde Cotización ${cot.numero || cot.id?.slice(0,8)}`,
+    });
+    alert(`✅ Orden de Producción creada para ${cot.empresa} — ${cot.sku}`);
   };
 
   const filteredLeads = leads.filter(l =>
@@ -289,7 +314,7 @@ export default function PipelineB2B() {
         <TabsContent value="cotizaciones" className="mt-4 space-y-3">
           {loading ? <div className="text-center py-12 text-muted-foreground">Cargando...</div> : (
             <>
-              {filteredCots.map(c => <CotizacionRow key={c.id} cot={c} onEdit={openEdit} onDelete={handleDelete} />)}
+              {filteredCots.map(c => <CotizacionRow key={c.id} cot={c} onEdit={openEdit} onDelete={handleDelete} onCrearOP={handleCrearOP} />)}
               {filteredCots.length === 0 && (
                 <div className="text-center py-16 text-muted-foreground">
                   <FileText className="w-12 h-12 mx-auto mb-3 opacity-30" />

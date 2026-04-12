@@ -29,6 +29,7 @@ const navGroups = [
     label: "Producción",
     items: [
       { path: "/operaciones", label: "Operaciones", icon: Settings },
+      { path: "/trazabilidad", label: "Trazabilidad", icon: HardHat },
       { path: "/inventario", label: "Inventario", icon: Archive },
       { path: "/proveedores", label: "Proveedores", icon: Truck },
     ]
