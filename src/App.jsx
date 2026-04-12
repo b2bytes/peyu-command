@@ -31,6 +31,7 @@ import AsistenteIA from './pages/AsistenteIA';
 import Cotizaciones from './pages/Cotizaciones';
 import Calendario from './pages/Calendario';
 import Reportes from './pages/Reportes';
+import Configuracion from './pages/Configuracion';
 // Add page imports here
 
 const AuthenticatedApp = () => {
@@ -82,6 +83,7 @@ const AuthenticatedApp = () => {
         <Route path="/cotizaciones" element={<Cotizaciones />} />
         <Route path="/calendario" element={<Calendario />} />
         <Route path="/reportes" element={<Reportes />} />
+        <Route path="/configuracion" element={<Configuracion />} />
         <Route path="/operaciones" element={<Operaciones />} />
         <Route path="/marketing" element={<Marketing />} />
         <Route path="/analitica" element={<Analitica />} />

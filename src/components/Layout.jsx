@@ -3,7 +3,7 @@ import { useState } from "react";
 import {
   LayoutDashboard, Users, BarChart3, Megaphone, Turtle, Package,
   Calculator, MessageSquare, TrendingUp, Store, UserCheck, Truck,
-  HardHat, Flag, Archive, ShoppingCart, Settings, ChevronLeft, ChevronRight, Leaf, ListChecks, Sparkles, FileText, CalendarDays, PieChart
+  HardHat, Flag, Archive, ShoppingCart, Settings as SettingsIcon, ChevronLeft, ChevronRight, Leaf, ListChecks, Sparkles, FileText, CalendarDays, PieChart
 } from "lucide-react";
 
 const navGroups = [
@@ -29,7 +29,7 @@ const navGroups = [
   {
     label: "Producción",
     items: [
-      { path: "/operaciones", label: "Operaciones", icon: Settings },
+      { path: "/operaciones", label: "Operaciones", icon: SettingsIcon },
       { path: "/trazabilidad", label: "Trazabilidad", icon: HardHat },
       { path: "/inventario", label: "Inventario", icon: Archive },
       { path: "/proveedores", label: "Proveedores", icon: Truck },
@@ -50,6 +50,7 @@ const navGroups = [
       { path: "/plan", label: "Plan de Acción", icon: ListChecks },
       { path: "/ia", label: "Asistente IA", icon: Sparkles },
       { path: "/reportes", label: "Reportes & Análisis", icon: PieChart },
+      { path: "/configuracion", label: "Configuración", icon: SettingsIcon },
     ]
   }
 ];
