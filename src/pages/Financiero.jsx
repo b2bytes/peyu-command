@@ -96,7 +96,7 @@ function calcEscenario(e) {
 }
 
 export default function Financiero() {
-  const [escenarioSel, setEscenarioSel] = useState('Base');
+  const [escenarioSel, setEscenarioSel] = useState('B — Base/Realista');
   const [productosDB, setProductosDB] = useState([]);
 
   useEffect(() => {
