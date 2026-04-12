@@ -128,6 +128,7 @@ export default function Dashboard() {
 
   // Equipo
   const equipoActivo = colaboradores.filter(c => c.estado === 'Activo').length;
+  const inyectorasUsadas = [...new Set(ordenes.filter(o => o.inyectora && o.inyectora !== 'Sin asignar' && o.estado !== 'Despachado').map(o => o.inyectora))].length;
 
   // OKRs
   const getPct = (o) => {
@@ -140,6 +141,13 @@ export default function Dashboard() {
   const avgOKR = okrs.length > 0 ? Math.round(okrs.reduce((s, o) => s + getPct(o), 0) / okrs.length) : 0;
   const okrsEnRiesgo = okrs.filter(o => o.estado === 'En riesgo').length;
   const topOKRs = okrs.slice(0, 4);
+
+  // Caja real del mes
+  const mesActual = new Date().toISOString().slice(0, 7);
+  const movMes = movimientos.filter(m => m.fecha?.startsWith(mesActual));
+  const ingresosMes = movMes.filter(m => m.tipo === 'Ingreso').reduce((s, m) => s + (m.monto || 0), 0);
+  const egresosMes = movMes.filter(m => m.tipo === 'Egreso').reduce((s, m) => s + (m.monto || 0), 0);
+  const saldoCaja = ingresosMes - egresosMes;
 
   // Blueprint funnel metrics
   const totalLeads = leads.length;
@@ -201,11 +209,11 @@ export default function Dashboard() {
         </div>
         <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
           {[
-            { label: 'Conversión Lead→Venta', actual: '3.3%', meta: '7.0%', ok: false },
-            { label: 'Pedidos B2B/mes', actual: '8', meta: '12→16', ok: false },
-            { label: 'CAC Meta Ads (target)', actual: '$2M/mes', meta: '-15% CAC', ok: false },
-            { label: 'Ventas Web B2C', actual: '$4M', meta: '$6M+/mes', ok: false },
-            { label: 'Utilización Planta', actual: '35%', meta: '≥70%', ok: false },
+            { label: 'Conversión Lead→Venta', actual: `${tasaConversionReal}%`, meta: '7.0%', ok: parseFloat(tasaConversionReal) >= 7 },
+              { label: 'Pedidos B2B/mes', actual: pedidosB2BActuales, meta: '12→16', ok: pedidosB2BActuales >= 12 },
+              { label: 'Saldo Caja Mes', actual: saldoCaja >= 0 ? `+$${(saldoCaja/1000).toFixed(0)}K` : `$${(saldoCaja/1000).toFixed(0)}K`, meta: 'Positivo', ok: saldoCaja >= 0 },
+              { label: 'Ventas Tiendas Mes', actual: `$${(totalVentasMes/1000000).toFixed(1)}M`, meta: '$2M+/mes', ok: totalVentasMes >= 2000000 },
+              { label: 'Utilización Planta', actual: `${Math.round((inyectorasUsadas/6)*100)}%`, meta: '≥70%', ok: inyectorasUsadas/6 >= 0.7 },
           ].map((kpi, i) => (
             <div key={i} className="bg-white rounded-xl p-3 border border-border">
               <p className="text-xs text-muted-foreground leading-tight">{kpi.label}</p>

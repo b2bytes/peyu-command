@@ -57,6 +57,7 @@ export default function Analitica() {
   const [ventas, setVentas] = useState([]);
   const [okrs, setOkrs] = useState([]);
   const [ordenes, setOrdenes] = useState([]);
+  const [movimientos, setMovimientos] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -68,9 +69,11 @@ export default function Analitica() {
       base44.entities.VentaTienda.list('-created_date', 500),
       base44.entities.OKR.list('-created_date', 100),
       base44.entities.OrdenProduccion.list('-created_date', 100),
-    ]).then(([l, c, cam, cl, vt, ok, op]) => {
+      base44.entities.MovimientoCaja.list('-fecha', 300),
+    ]).then(([l, c, cam, cl, vt, ok, op, mov]) => {
       setLeads(l); setCotizaciones(c); setCampanas(cam);
       setClientes(cl); setVentas(vt); setOkrs(ok); setOrdenes(op);
+      setMovimientos(mov);
       setLoading(false);
     });
   }, []);
@@ -86,6 +89,34 @@ export default function Analitica() {
   const cotEnviadas = cotizaciones.filter(c => ['Enviada','Aceptada'].includes(c.estado)).length;
   const ganados = leads.filter(l => l.estado === 'Ganado').length;
   const convRate = totalLeads > 0 ? ((ganados / totalLeads) * 100).toFixed(1) : 0;
+
+  // Caja real
+  const mesActual = new Date().toISOString().slice(0, 7);
+  const movMes = movimientos.filter(m => m.fecha?.startsWith(mesActual));
+  const ingresosMesReal = movMes.filter(m => m.tipo === 'Ingreso').reduce((s, m) => s + (m.monto || 0), 0);
+  const egresosMesReal = movMes.filter(m => m.tipo === 'Egreso').reduce((s, m) => s + (m.monto || 0), 0);
+  const saldoMesReal = ingresosMesReal - egresosMesReal;
+  const hayDatosCaja = movimientos.length > 0;
+  const ingresoFin = hayDatosCaja ? ingresosMesReal : 10400000;
+  const egresoFin = hayDatosCaja ? egresosMesReal : 7410000;
+  const margenFin = ingresoFin - egresoFin;
+
+  // Evolución 6 meses
+  const meses6 = [];
+  for (let i = 5; i >= 0; i--) {
+    const d = new Date(); d.setMonth(d.getMonth() - i);
+    const m = d.toISOString().slice(0, 7);
+    const label = d.toLocaleString('es-CL', { month: 'short' });
+    const ing = movimientos.filter(x => x.fecha?.startsWith(m) && x.tipo === 'Ingreso').reduce((s, x) => s + (x.monto || 0), 0);
+    const eg = movimientos.filter(x => x.fecha?.startsWith(m) && x.tipo === 'Egreso').reduce((s, x) => s + (x.monto || 0), 0);
+    meses6.push({ mes: label, Ingresos: ing, Egresos: eg, Saldo: ing - eg });
+  }
+
+  // Egresos por categoría del mes
+  const egresosCateg = {};
+  movMes.filter(m => m.tipo === 'Egreso').forEach(m => {
+    egresosCateg[m.categoria] = (egresosCateg[m.categoria] || 0) + (m.monto || 0);
+  });
 
   // Campañas
   const totalInvPub = campanas.reduce((s, c) => s + (c.gasto_real_clp || 0), 0);
@@ -188,6 +219,7 @@ export default function Analitica() {
           <TabsTrigger value="marketing">Marketing</TabsTrigger>
           <TabsTrigger value="operaciones">Operaciones</TabsTrigger>
           <TabsTrigger value="financiero">Financiero</TabsTrigger>
+          <TabsTrigger value="caja">Caja Real</TabsTrigger>
           <TabsTrigger value="okrs">OKRs</TabsTrigger>
         </TabsList>
 
@@ -419,28 +451,32 @@ export default function Analitica() {
 
         {/* ── FINANCIERO ── */}
         <TabsContent value="financiero" className="space-y-4 mt-4">
+          {!hayDatosCaja && (
+            <div className="text-xs bg-amber-50 border border-amber-200 rounded-xl px-4 py-2.5 text-amber-700">
+              Mostrando estimados del blueprint. Registra movimientos en <strong>Flujo de Caja</strong> para ver datos reales.
+            </div>
+          )}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
             <div className="bg-white rounded-2xl p-5 shadow-sm border border-border text-center">
-              <p className="text-xs text-muted-foreground uppercase tracking-wide">Ingresos Est. Mensual</p>
-              <p className="text-3xl font-poppins font-bold mt-2" style={{ color: '#0F8B6C' }}>$10.4M</p>
-              <p className="text-xs text-muted-foreground mt-1">B2B $6.4M + B2C $4.0M CLP</p>
+              <p className="text-xs text-muted-foreground uppercase tracking-wide">Ingresos {hayDatosCaja ? 'Reales Mes' : 'Est. Mensual'}</p>
+              <p className="text-3xl font-poppins font-bold mt-2" style={{ color: '#0F8B6C' }}>{fmtCLP(ingresoFin)}</p>
+              <p className="text-xs text-muted-foreground mt-1">{hayDatosCaja ? `${movMes.filter(m=>m.tipo==='Ingreso').length} movimientos` : 'B2B $6.4M + B2C $4.0M CLP'}</p>
             </div>
             <div className="bg-white rounded-2xl p-5 shadow-sm border border-border text-center">
-              <p className="text-xs text-muted-foreground uppercase tracking-wide">Costos Fijos Mensual</p>
-              <p className="text-3xl font-poppins font-bold mt-2" style={{ color: '#4B4F54' }}>${totalCostos.toLocaleString('es-CL')}K</p>
-              <p className="text-xs text-muted-foreground mt-1">CLP/mes estimado</p>
+              <p className="text-xs text-muted-foreground uppercase tracking-wide">Egresos {hayDatosCaja ? 'Reales Mes' : 'Est. Mensual'}</p>
+              <p className="text-3xl font-poppins font-bold mt-2" style={{ color: '#4B4F54' }}>{fmtCLP(egresoFin)}</p>
+              <p className="text-xs text-muted-foreground mt-1">{hayDatosCaja ? `${movMes.filter(m=>m.tipo==='Egreso').length} pagos registrados` : 'CLP/mes estimado'}</p>
             </div>
-            <div className={`bg-white rounded-2xl p-5 shadow-sm border text-center ${margen > 0 ? 'border-green-200' : 'border-red-200'}`}>
-              <p className="text-xs text-muted-foreground uppercase tracking-wide">Margen Operacional</p>
-              <p className="text-3xl font-poppins font-bold mt-2" style={{ color: margen > 0 ? '#0F8B6C' : '#D96B4D' }}>
-                {margen > 0 ? '+' : ''}${margen.toLocaleString('es-CL')}K
+            <div className={`bg-white rounded-2xl p-5 shadow-sm border text-center ${margenFin > 0 ? 'border-green-200' : 'border-red-200'}`}>
+              <p className="text-xs text-muted-foreground uppercase tracking-wide">Resultado Neto</p>
+              <p className="text-3xl font-poppins font-bold mt-2" style={{ color: margenFin > 0 ? '#0F8B6C' : '#D96B4D' }}>
+                {margenFin >= 0 ? '+' : ''}{fmtCLP(margenFin)}
               </p>
-              <p className="text-xs text-muted-foreground mt-1">{((margen/ingresoEst)*100).toFixed(0)}% margen</p>
+              <p className="text-xs text-muted-foreground mt-1">{ingresoFin > 0 ? ((margenFin/ingresoFin)*100).toFixed(0) : 0}% margen</p>
             </div>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            {/* Escenarios */}
             <div className="bg-white rounded-2xl p-5 shadow-sm border border-border">
               <h3 className="font-poppins font-semibold mb-1">Escenarios Financieros</h3>
               <p className="text-xs text-muted-foreground mb-4">B2B + B2C proyectado · CLP K/mes</p>
@@ -456,8 +492,6 @@ export default function Analitica() {
                 </BarChart>
               </ResponsiveContainer>
             </div>
-
-            {/* Costos */}
             <div className="bg-white rounded-2xl p-5 shadow-sm border border-border">
               <h3 className="font-poppins font-semibold mb-4">Breakdown de Costos Fijos</h3>
               <div className="space-y-2">
@@ -483,6 +517,76 @@ export default function Analitica() {
               </div>
             </div>
           </div>
+        </TabsContent>
+
+        {/* ── CAJA REAL ── */}
+        <TabsContent value="caja" className="space-y-4 mt-4">
+          {!hayDatosCaja ? (
+            <div className="text-center py-20 text-muted-foreground">
+              <p className="text-lg font-medium">Sin movimientos registrados</p>
+              <p className="text-sm mt-2">Ve a <strong>Flujo de Caja</strong> y registra ingresos y egresos.</p>
+            </div>
+          ) : (
+            <>
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                {[
+                  { label: 'Ingresos Mes', value: fmtCLP(ingresosMesReal), color: '#0F8B6C', bg: '#f0faf7' },
+                  { label: 'Egresos Mes', value: fmtCLP(egresosMesReal), color: '#D96B4D', bg: '#fdf3f0' },
+                  { label: 'Saldo Neto', value: fmtCLP(saldoMesReal), color: saldoMesReal >= 0 ? '#0F8B6C' : '#D96B4D', bg: saldoMesReal >= 0 ? '#f0faf7' : '#fdf3f0' },
+                  { label: 'Total Movimientos', value: movimientos.length, color: '#4B4F54', bg: '#f5f5f5' },
+                ].map((k, i) => (
+                  <div key={i} className="bg-white rounded-xl p-4 border border-border shadow-sm">
+                    <p className="text-xs text-muted-foreground">{k.label}</p>
+                    <p className="font-poppins font-bold text-xl mt-1" style={{ color: k.color }}>{k.value}</p>
+                  </div>
+                ))}
+              </div>
+
+              <div className="bg-white rounded-2xl p-5 border border-border shadow-sm">
+                <h3 className="font-poppins font-semibold text-sm mb-4">Evolución Saldo Neto — Últimos 6 meses</h3>
+                <ResponsiveContainer width="100%" height={220}>
+                  <AreaChart data={meses6}>
+                    <defs>
+                      <linearGradient id="gradSaldo" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#0F8B6C" stopOpacity={0.2}/>
+                        <stop offset="95%" stopColor="#0F8B6C" stopOpacity={0}/>
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                    <XAxis dataKey="mes" tick={{ fontSize: 12 }} />
+                    <YAxis tick={{ fontSize: 10 }} tickFormatter={v=>`$${(v/1000).toFixed(0)}K`} />
+                    <Tooltip formatter={v=>[fmtCLP(v)]} />
+                    <Legend />
+                    <Area type="monotone" dataKey="Ingresos" stroke="#0F8B6C" fill="none" strokeWidth={2} />
+                    <Area type="monotone" dataKey="Egresos" stroke="#D96B4D" fill="none" strokeWidth={2} />
+                    <Area type="monotone" dataKey="Saldo" stroke="#4B4F54" fill="url(#gradSaldo)" strokeWidth={2} />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+
+              {Object.keys(egresosCateg).length > 0 && (
+                <div className="bg-white rounded-2xl p-5 border border-border shadow-sm">
+                  <h3 className="font-poppins font-semibold text-sm mb-4">Egresos por Categoría — Mes Actual</h3>
+                  <div className="space-y-2">
+                    {Object.entries(egresosCateg).sort((a,b)=>b[1]-a[1]).map(([cat, monto]) => {
+                      const pct = Math.round((monto / egresosMesReal) * 100);
+                      return (
+                        <div key={cat}>
+                          <div className="flex justify-between text-xs mb-1">
+                            <span>{cat}</span>
+                            <span className="font-medium text-red-600">{fmtCLP(monto)} <span className="text-muted-foreground">({pct}%)</span></span>
+                          </div>
+                          <div className="h-1.5 bg-muted rounded-full">
+                            <div className="h-full rounded-full" style={{ width: `${pct}%`, background: '#D96B4D' }} />
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </>
+          )}
         </TabsContent>
 
         {/* ── OKRs ── */}
