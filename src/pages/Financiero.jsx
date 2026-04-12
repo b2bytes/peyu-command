@@ -29,34 +29,42 @@ const COSTOS_VARIABLES = [
 
 const ESCENARIOS = [
   {
-    nombre: 'Pesimista',
-    b2b_pedidos: 6,
-    b2b_ticket: 700_000,
-    b2c_ventas: 3_000_000,
+    nombre: 'A — Pesimista',
+    descripcion: 'Sin acción — Meta Ads sigue bajando',
+    b2b_pedidos: 8,
+    b2b_ticket: 800_000,
+    b2c_ventas: 3_920_000,
+    variables_fijos: { variables: 1_300_000, fijos: 6_110_000 },
     color: '#D96B4D',
     bg: '#fdf3f0',
   },
   {
-    nombre: 'Base',
-    b2b_pedidos: 8,
+    nombre: 'B — Base/Realista',
+    descripcion: 'CRM + recorte Ads 30% + CPQ parcial',
+    b2b_pedidos: 12,
     b2b_ticket: 800_000,
-    b2c_ventas: 4_000_000,
+    b2c_ventas: 4_500_000,
+    variables_fijos: { variables: 1_800_000, fijos: 6_500_000 },
     color: '#4B4F54',
     bg: '#f5f5f5',
   },
   {
-    nombre: 'Optimista',
-    b2b_pedidos: 12,
-    b2b_ticket: 900_000,
+    nombre: 'C — Optimista',
+    descripcion: 'CPQ+portal B2B, marketing optimizado, planta >70%',
+    b2b_pedidos: 16,
+    b2b_ticket: 800_000,
     b2c_ventas: 6_000_000,
+    variables_fijos: { variables: 2_400_000, fijos: 6_200_000 },
     color: '#0F8B6C',
     bg: '#f0faf7',
   },
   {
     nombre: 'Meta 12m',
+    descripcion: 'Escala completa — Revenue +50% baseline',
     b2b_pedidos: 20,
     b2b_ticket: 1_000_000,
     b2c_ventas: 10_000_000,
+    variables_fijos: { variables: 3_200_000, fijos: 6_200_000 },
     color: '#0F8B6C',
     bg: '#d4f5ed',
   },
@@ -80,11 +88,11 @@ const fmtK = (n) => `$${(n / 1_000).toFixed(0)}K`;
 
 function calcEscenario(e) {
   const ingresos = e.b2b_pedidos * e.b2b_ticket + e.b2c_ventas;
-  const costoVariable = ingresos * 0.62; // 62% costos variables totales
-  const costosFijos = COSTOS_FIJOS.reduce((s, c) => s + c.monto, 0);
-  const utilidad = ingresos - costoVariable - costosFijos;
+  const variables = e.variables_fijos ? e.variables_fijos.variables : ingresos * 0.62;
+  const fijos = e.variables_fijos ? e.variables_fijos.fijos : COSTOS_FIJOS.reduce((s, c) => s + c.monto, 0);
+  const utilidad = ingresos - variables - fijos;
   const margen = ingresos > 0 ? (utilidad / ingresos * 100).toFixed(1) : 0;
-  return { ingresos, costoVariable, costosFijos, utilidad, margen };
+  return { ingresos, costoVariable: variables, costosFijos: fijos, utilidad, margen };
 }
 
 export default function Financiero() {
@@ -188,11 +196,12 @@ export default function Financiero() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <div className="bg-white rounded-2xl p-5 shadow-sm border border-border">
               <h3 className="font-poppins font-semibold mb-1">Desglose — Escenario {escenarioSel}</h3>
+              <p className="text-xs text-muted-foreground mb-4">{escActual.descripcion}</p>
               <p className="text-xs text-muted-foreground mb-4">B2B: {escActual.b2b_pedidos} × {fmtK(escActual.b2b_ticket)} · B2C: {fmtClp(escActual.b2c_ventas)}</p>
               <div className="space-y-3">
                 {[
                   { label: 'Ingresos Totales', val: calc.ingresos, color: '#0F8B6C' },
-                  { label: 'Costos Variables (62%)', val: -calc.costoVariable, color: '#D96B4D' },
+                  { label: 'Costos Variables', val: -calc.costoVariable, color: '#D96B4D' },
                   { label: 'Costos Fijos', val: -calc.costosFijos, color: '#D96B4D' },
                   { label: 'Utilidad Neta', val: calc.utilidad, color: calc.utilidad >= 0 ? '#0F8B6C' : '#D96B4D', bold: true },
                 ].map((r, i) => (

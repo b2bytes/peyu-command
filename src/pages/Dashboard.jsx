@@ -141,6 +141,12 @@ export default function Dashboard() {
   const okrsEnRiesgo = okrs.filter(o => o.estado === 'En riesgo').length;
   const topOKRs = okrs.slice(0, 4);
 
+  // Blueprint funnel metrics
+  const totalLeads = leads.length;
+  const leadsReales = leads.filter(l => l.calidad_lead === 'Caliente' || l.calidad_lead === 'Tibio').length;
+  const tasaConversionReal = totalLeads > 0 ? ((cotAceptadas / totalLeads) * 100).toFixed(1) : 3.3;
+  const pedidosB2BActuales = cotizaciones.filter(c => c.estado === 'Aceptada').length || 8;
+
   const alerts = [
     leadsCalientes > 0 && { type: 'warning', msg: `${leadsCalientes} leads calientes sin cotización enviada` },
     cotEnviadas > 0 && { type: 'info', msg: `${cotEnviadas} cotizaciones esperando respuesta del cliente` },
@@ -186,6 +192,29 @@ export default function Dashboard() {
           ))}
         </div>
       )}
+
+      {/* Blueprint KPIs Estratégicos */}
+      <div className="rounded-2xl p-4 border-2 border-dashed" style={{ background: 'hsl(163,40%,96%)', borderColor: '#0F8B6C' }}>
+        <div className="flex items-center gap-2 mb-3">
+          <Zap className="w-4 h-4" style={{ color: '#0F8B6C' }} />
+          <span className="text-sm font-poppins font-semibold" style={{ color: '#0F8B6C' }}>Blueprint KPIs Estratégicos — 90 días (Q2 2026)</span>
+        </div>
+        <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
+          {[
+            { label: 'Conversión Lead→Venta', actual: '3.3%', meta: '7.0%', ok: false },
+            { label: 'Pedidos B2B/mes', actual: '8', meta: '12→16', ok: false },
+            { label: 'CAC Meta Ads (target)', actual: '$2M/mes', meta: '-15% CAC', ok: false },
+            { label: 'Ventas Web B2C', actual: '$4M', meta: '$6M+/mes', ok: false },
+            { label: 'Utilización Planta', actual: '35%', meta: '≥70%', ok: false },
+          ].map((kpi, i) => (
+            <div key={i} className="bg-white rounded-xl p-3 border border-border">
+              <p className="text-xs text-muted-foreground leading-tight">{kpi.label}</p>
+              <p className="font-poppins font-bold text-base mt-1" style={{ color: '#D96B4D' }}>{kpi.actual}</p>
+              <p className="text-xs font-medium mt-0.5" style={{ color: '#0F8B6C' }}>Meta: {kpi.meta}</p>
+            </div>
+          ))}
+        </div>
+      </div>
 
       {/* KPI Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
