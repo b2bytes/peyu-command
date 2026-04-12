@@ -24,6 +24,8 @@ import Inventario from './pages/Inventario';
 import Ecommerce from './pages/Ecommerce';
 import FlujoCaja from './pages/FlujoCaja';
 import Trazabilidad from './pages/Trazabilidad';
+import Compras from './pages/Compras';
+import ESG from './pages/ESG';
 // Add page imports here
 
 const AuthenticatedApp = () => {
@@ -68,6 +70,8 @@ const AuthenticatedApp = () => {
         <Route path="/ecommerce" element={<Ecommerce />} />
         <Route path="/flujo-caja" element={<FlujoCaja />} />
         <Route path="/trazabilidad" element={<Trazabilidad />} />
+        <Route path="/compras" element={<Compras />} />
+        <Route path="/esg" element={<ESG />} />
         <Route path="/operaciones" element={<Operaciones />} />
         <Route path="/marketing" element={<Marketing />} />
         <Route path="/analitica" element={<Analitica />} />
