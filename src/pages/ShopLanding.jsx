@@ -25,10 +25,12 @@ export default function ShopLanding() {
       {/* Header */}
       <div className="sticky top-0 z-40 bg-white border-b border-border">
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold" style={{ color: '#0F8B6C' }}>PEYU</h1>
-            <p className="text-xs text-muted-foreground">Plástico Reciclado Sustentable</p>
-          </div>
+          <Link to="/">
+            <div className="cursor-pointer hover:opacity-80 transition">
+              <h1 className="text-2xl font-bold" style={{ color: '#0F8B6C' }}>PEYU</h1>
+              <p className="text-xs text-muted-foreground">Plástico Reciclado Sustentable</p>
+            </div>
+          </Link>
           <Link to="/cart">
             <Button variant="outline" className="gap-2">
               <ShoppingCart className="w-4 h-4" />
