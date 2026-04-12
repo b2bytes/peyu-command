@@ -68,6 +68,7 @@ export default function Dashboard() {
   const [clientes, setClientes] = useState([]);
   const [ventas, setVentas] = useState([]);
   const [colaboradores, setColaboradores] = useState([]);
+  const [movimientos, setMovimientos] = useState([]);
   const [seeding, setSeeding] = useState(false);
   const [seedDone, setSeedDone] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -82,7 +83,8 @@ export default function Dashboard() {
       base44.entities.Cliente.list('-created_date', 100),
       base44.entities.VentaTienda.list('-created_date', 200),
       base44.entities.Colaborador.list('-created_date', 50),
-    ]).then(([l, c, o, ok, cl, vt, col]) => {
+      base44.entities.MovimientoCaja.list('-fecha', 200),
+    ]).then(([l, c, o, ok, cl, vt, col, mov]) => {
       setLeads(l);
       setCotizaciones(c);
       setOrdenes(o);
@@ -90,6 +92,7 @@ export default function Dashboard() {
       setClientes(cl);
       setVentas(vt);
       setColaboradores(col);
+      setMovimientos(mov);
       setLoading(false);
     }).catch(() => setLoading(false));
   };
