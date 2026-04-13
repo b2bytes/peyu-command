@@ -155,36 +155,45 @@ export default function ShopLanding() {
             {/* Left Column - 60% */}
             <div className="md:col-span-2 space-y-4 sm:space-y-6 md:space-y-8 flex flex-col justify-between overflow-y-auto md:overflow-visible">
               {/* Hero Title */}
-              <div className="space-y-3 sm:space-y-4 md:space-y-5">
-                <h1 className="text-4xl sm:text-5xl md:text-7xl font-poppins font-bold leading-tight text-white drop-shadow-lg">
-                  Regalos<br /><span className="text-emerald-300 font-black">100% Sostenibles</span><br /><span className="text-lg sm:text-2xl md:text-4xl">Con Propósito ESG</span>
-                </h1>
-                <p className="text-white/95 text-base sm:text-lg md:text-xl leading-relaxed drop-shadow font-medium">Plástico reciclado con personalización láser UV</p>
+              <div className="space-y-3 sm:space-y-4 md:space-y-6">
+                <div>
+                  <h1 className="text-5xl sm:text-6xl md:text-8xl font-poppins font-black leading-tight text-white drop-shadow-lg mb-2">
+                    Regalos Corporativos
+                  </h1>
+                  <div className="flex flex-col md:flex-row md:items-baseline gap-1 md:gap-3">
+                    <span className="text-5xl sm:text-6xl md:text-7xl font-poppins font-black text-emerald-300">100%</span>
+                    <div>
+                      <span className="text-5xl sm:text-6xl md:text-7xl font-poppins font-black text-emerald-300 block md:inline">Sostenibles</span>
+                      <span className="text-3xl sm:text-4xl md:text-5xl font-poppins font-bold text-white block md:inline md:ml-4">Con Propósito ESG</span>
+                    </div>
+                  </div>
+                </div>
+                <p className="text-white/95 text-base sm:text-lg md:text-lg leading-relaxed drop-shadow font-medium max-w-xl">Productos de plástico reciclado con personalización láser. Diseña, crea y mide el impacto de tu programa de gifting corporativo.</p>
               </div>
 
               {/* CTA Buttons */}
-              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 md:gap-5 flex-shrink-0">
-                <Link to="/shop" className="flex-1 sm:flex-none">
-                  <Button className="w-full bg-red-500 hover:bg-red-600 text-white font-bold rounded-full px-6 sm:px-8 md:px-10 py-3 sm:py-3.5 md:py-4 gap-2 sm:gap-2.5 shadow-lg text-sm sm:text-base md:text-lg">
-                    🎁 Explorar
-                  </Button>
-                </Link>
-                <Link to="/b2b/contacto" className="flex-1 sm:flex-none">
-                  <Button className="w-full bg-yellow-400 hover:bg-yellow-500 text-gray-900 font-bold rounded-full px-6 sm:px-8 md:px-10 py-3 sm:py-3.5 md:py-4 gap-2 sm:gap-2.5 shadow-lg text-sm sm:text-base md:text-lg">
-                    ✨ B2B
-                  </Button>
-                </Link>
+              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 flex-shrink-0">
+               <Link to="/shop" className="flex-1 sm:flex-none">
+                 <Button className="w-full bg-gradient-to-r from-red-600 to-red-500 hover:from-red-700 hover:to-red-600 text-white font-bold rounded-full px-6 sm:px-10 py-3 md:py-4 gap-2 shadow-xl hover:shadow-2xl text-base md:text-lg transition-all">
+                   🎁 Explorar Regalos
+                 </Button>
+               </Link>
+               <Link to="/b2b/contacto" className="flex-1 sm:flex-none">
+                 <Button className="w-full bg-gradient-to-r from-yellow-300 to-yellow-400 hover:from-yellow-400 hover:to-yellow-500 text-gray-900 font-bold rounded-full px-6 sm:px-10 py-3 md:py-4 gap-2 shadow-xl hover:shadow-2xl text-base md:text-lg transition-all">
+                   ✨ Regalos Corporativos con Propósito
+                 </Button>
+               </Link>
               </div>
 
               {/* Chat Agent */}
               <div className="bg-white/15 backdrop-blur-xl border border-white/30 rounded-3xl p-4 sm:p-5 md:p-7 flex-1 flex flex-col shadow-xl min-h-[280px] sm:min-h-[350px]">
                 
                 {/* Agent Header */}
-                <div className="mb-3 sm:mb-4 md:mb-5 pb-3 sm:pb-4 md:pb-5 border-b border-white/20 flex items-center gap-3 sm:gap-4 flex-shrink-0">
-                  <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-gradient-to-br from-orange-400 to-red-500 flex items-center justify-center text-white font-bold flex-shrink-0 text-xl">✨</div>
+                <div className="mb-4 md:mb-5 pb-4 md:pb-5 border-b border-white/20 flex items-center gap-3 md:gap-4 flex-shrink-0">
+                  <div className="w-12 h-12 md:w-14 md:h-14 rounded-full bg-gradient-to-br from-orange-400 to-red-500 flex items-center justify-center text-white font-bold flex-shrink-0 text-2xl shadow-lg">✨</div>
                   <div className="min-w-0">
-                    <p className="text-white font-bold text-sm sm:text-base truncate">Asistente PEYU</p>
-                    <p className="text-white/50 text-xs sm:text-sm line-clamp-1">Bienvenido al arte del gifting</p>
+                    <p className="text-white font-bold text-base md:text-lg">Asistente PEYU</p>
+                    <p className="text-white/60 text-sm">Bienvenido. Con más de una década perfeccionando el arte del gifting estratégico.</p>
                   </div>
                 </div>
 
@@ -249,26 +258,29 @@ export default function ShopLanding() {
             <div className="md:col-span-1 bg-gradient-to-br from-orange-600/40 to-red-600/30 border border-orange-500/40 rounded-3xl p-4 sm:p-5 md:p-7 flex flex-col justify-between h-full shadow-xl">
               
               {/* Product Image */}
-              <div className="aspect-square bg-gradient-to-br from-orange-400/30 to-red-500/30 rounded-xl sm:rounded-2xl flex items-center justify-center text-6xl sm:text-8xl md:text-9xl">
+              <div className="aspect-square bg-gradient-to-br from-yellow-300/40 via-orange-400/30 to-red-500/20 rounded-2xl md:rounded-3xl flex items-center justify-center text-8xl md:text-9xl shadow-inner">
                 🎁
               </div>
 
               {/* Rating */}
-              <div className="space-y-1 sm:space-y-2">
-                <div className="flex gap-1 sm:gap-1.5">
+              <div className="space-y-2">
+                <div className="flex gap-2">
                   {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 fill-yellow-400 text-yellow-400" />
+                    <Star key={i} className="w-5 h-5 md:w-6 md:h-6 fill-yellow-300 text-yellow-300 drop-shadow" />
                   ))}
                 </div>
-                <p className="text-white/70 text-xs sm:text-sm">(+2.400)</p>
+                <div className="flex items-baseline gap-2">
+                  <span className="text-yellow-300 font-bold text-lg">⭐ 5.0</span>
+                  <span className="text-white/70 text-sm">(+2.400 valoraciones)</span>
+                </div>
               </div>
 
               {/* Product Details */}
-              <div className="space-y-2 sm:space-y-3">
-                <p className="text-white font-bold text-sm sm:text-base md:text-xl line-clamp-2">Canasta Estrelita - Edición Corporativa</p>
-                <div className="bg-white/20 border border-white/30 rounded-lg p-3 sm:p-4 space-y-1.5">
-                  <p className="text-white/90 text-xs sm:text-sm leading-tight">Plástico 100% reciclado • UV • Garantía 10 años</p>
-                  <p className="text-white font-bold text-sm sm:text-base md:text-xl">$30.099</p>
+              <div className="space-y-3 md:space-y-4">
+                <p className="text-white font-bold text-base md:text-lg line-clamp-2">Canasta Estrelita Estrelita - Edición Corporativa</p>
+                <div className="bg-white/20 backdrop-blur border border-white/40 rounded-xl p-4 md:p-5 space-y-2 shadow-lg">
+                  <p className="text-white/95 text-xs md:text-sm leading-snug">Plástico 100% reciclado • Personalización UV • Garantía 10 años</p>
+                  <p className="text-white font-black text-2xl md:text-3xl">$30.099</p>
                 </div>
               </div>
             </div>
