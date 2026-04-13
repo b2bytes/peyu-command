@@ -113,10 +113,11 @@ export default function ShopLanding() {
 
   return (
     <div className="h-screen w-screen relative overflow-hidden flex" style={{
-      backgroundImage: `linear-gradient(135deg, rgba(15, 23, 42, 0.85) 0%, rgba(29, 78, 137, 0.85) 30%, rgba(139, 92, 0, 0.85) 100%), url('https://images.unsplash.com/photo-1532996122724-8f3c2cd83c5d?w=1920&h=1080&fit=crop')`,
+      backgroundImage: `linear-gradient(135deg, rgba(15, 23, 42, 0.75) 0%, rgba(15, 78, 137, 0.75) 50%, rgba(15, 23, 42, 0.75) 100%), url('https://media.base44.com/images/public/69d99b9d61f699701129c103/6935b8ac0_image.png')`,
       backgroundSize: 'cover',
       backgroundPosition: 'center',
-      backgroundAttachment: 'fixed'
+      backgroundAttachment: 'fixed',
+      backgroundRepeat: 'no-repeat'
     }}>
       {/* Main container with glassmorphism */}
       <div className="flex-1 flex gap-3 sm:gap-4 p-3 sm:p-6 relative z-10 w-full h-full">
