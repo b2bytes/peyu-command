@@ -203,7 +203,7 @@ export default function ShopLanding() {
             </div>
 
             {/* Ocasiones Carousel */}
-            <div className="overflow-x-auto scrollbar-hide flex gap-3 sm:gap-4 pb-2 justify-center sm:justify-start">
+            <div className="overflow-x-auto scrollbar-hide flex gap-3 sm:gap-4 pb-2 justify-center">
               {OCASIONES.map(occ => (
                 <button
                   key={occ.id}
