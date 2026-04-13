@@ -7,6 +7,7 @@ import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import Layout from './components/Layout';
 import Dashboard from './pages/Dashboard';
+import ShopLanding from './pages/ShopLanding';
 import PipelineB2B from './pages/PipelineB2B';
 import Operaciones from './pages/Operaciones';
 import Marketing from './pages/Marketing';
@@ -34,7 +35,6 @@ import Reportes from './pages/Reportes';
 import Configuracion from './pages/Configuracion';
 import Alertas from './pages/Alertas';
 import Shop from './pages/Shop';
-import ShopLanding from './pages/ShopLanding';
 import ProductoDetalle from './pages/ProductoDetalle';
 import Carrito from './pages/Carrito';
 import B2BContacto from './pages/B2BContacto';
@@ -45,7 +45,6 @@ import PersonalizacionFlow from './pages/PersonalizacionFlow';
 import SoportePublico from './pages/SoportePublico';
 import SeguimientoPedido from './pages/SeguimientoPedido';
 import CatalogoVisual from './pages/CatalogoVisual';
-import PublicSidebar from './components/PublicSidebar';
 // Add page imports here
 
 const PublicShopRoutes = () => (
@@ -93,7 +92,7 @@ const AuthenticatedApp = () => {
   return (
     <Routes>
       <Route element={<Layout />}>
-        <Route path="/" element={<Dashboard />} />
+        <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/pipeline" element={<PipelineB2B />} />
         <Route path="/cpq" element={<CPQCalculator />} />
         <Route path="/soporte" element={<Soporte />} />
