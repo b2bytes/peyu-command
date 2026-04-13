@@ -14,19 +14,18 @@ export default function Shop() {
   const [carrito, setCarrito] = useState(JSON.parse(localStorage.getItem('carrito') || '[]'));
   const [agregandoId, setAgregandoId] = useState(null);
 
-  // Placeholder image generator
+  // Map productos a imágenes reales
+const productImageMap = {
+  'Kit Escritorio Pro': 'https://images.unsplash.com/photo-1572365992253-3cb3e56dd362?w=600&h=600&fit=crop',
+  'Carcasa': 'https://images.unsplash.com/photo-1611532736579-6b16e2b50449?w=600&h=600&fit=crop',
+  'Cachos': 'https://images.unsplash.com/photo-1491553895911-0055eca6402d?w=600&h=600&fit=crop',
+  'Accesorios Escritorio': 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=600&h=600&fit=crop',
+  'Macetero': 'https://images.unsplash.com/photo-1578500494198-246f612d03b3?w=600&h=600&fit=crop',
+  'Posavasos': 'https://images.unsplash.com/photo-1578507065211-a61d7d29cd83?w=600&h=600&fit=crop',
+};
+
 const getProductImage = (producto) => {
-  if (producto.imagen_url) return producto.imagen_url;
-  
-  // Fallback: generate color-coded placeholder by category
-  const categoryColors = {
-    'Escritorio': 'from-blue-600 to-blue-400',
-    'Hogar': 'from-green-600 to-green-400',
-    'Entretenimiento': 'from-purple-600 to-purple-400',
-    'Corporativo': 'from-orange-600 to-orange-400',
-    'Carcasas B2C': 'from-red-600 to-red-400',
-  };
-  return categoryColors[producto.categoria] || 'from-gray-600 to-gray-400';
+  return productImageMap[producto.nombre] || 'https://images.unsplash.com/photo-1578432291840-8d3a3a016e4d?w=600&h=600&fit=crop';
 };
 
   const categorias = ['Todos', 'Navidad', 'Patrias', 'Año Nuevo', 'Día del Trabajador', 'Día de la Secretaria', 'Día del Profesor', 'Bienvenida', 'Día de la Mujer', 'Día de la Madre'];
@@ -142,9 +141,9 @@ const getProductImage = (producto) => {
         </div>
       </section>
 
-      <div className="max-w-7xl mx-auto px-6 py-8 grid lg:grid-cols-5 gap-6">
+      <div className="max-w-7xl mx-auto px-6 py-8 grid lg:grid-cols-4 gap-6">
         {/* SIDEBAR - CATEGORÍAS */}
-        <aside className="lg:col-span-1">
+        <aside className="lg:col-span-1 h-fit">
           <div className="sticky top-24 space-y-4">
             {/* Categories */}
             <div className="bg-gradient-to-br from-yellow-500/20 to-orange-500/10 border border-yellow-500/30 rounded-2xl overflow-hidden">
@@ -185,10 +184,10 @@ const getProductImage = (producto) => {
         </aside>
 
         {/* MAIN CONTENT */}
-        <main className="lg:col-span-4">
+        <main className="lg:col-span-3">
 
           {/* Products Grid */}
-          <div className="grid md:grid-cols-2 lg:grid-cols-2 gap-6">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filtered.map(p => (
               <Link
                 key={p.id}
@@ -226,19 +225,14 @@ const getProductImage = (producto) => {
                     )}
                   </div>
                   
-                  {/* Product Image or Emoji Icon */}
-                  {p.imagen_url ? (
-                    <img 
-                      src={p.imagen_url}
-                      alt={p.nombre}
-                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-                      loading="lazy"
-                    />
-                  ) : (
-                    <div className="text-6xl opacity-30">
-                      {p.categoria === 'Escritorio' ? '📦' : p.categoria === 'Hogar' ? '🏠' : p.categoria === 'Entretenimiento' ? '🎮' : p.categoria === 'Corporativo' ? '💼' : '🎁'}
-                    </div>
-                  )}
+                  {/* Product Image */}
+                  <img 
+                    src={getProductImage(p)}
+                    alt={p.nombre}
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                    loading="lazy"
+                    onError={(e) => e.target.src = 'https://images.unsplash.com/photo-1578432291840-8d3a3a016e4d?w=600&h=600&fit=crop'}
+                  />
                 </div>
 
                 {/* Product Info */}
