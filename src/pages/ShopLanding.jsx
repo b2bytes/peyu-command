@@ -28,7 +28,7 @@ const SIDEBAR_ITEMS = [
 ];
 
 const FEATURED_PRODUCTS = [
-  { id: 1, nombre: 'Kit Escritorio Pro', precio: 30099, imagen: 'https://i0.wp.com/peyuchile.cl/wp-content/uploads/2025/11/Kit-Escritorio-Pro-2-1-1.png', rating: 5.0, reviews: 2400, description: 'Plástico 100% reciclado • Personalización UV • Garantía 10 años' },
+  { id: 1, nombre: 'Kit Escritorio Pro', precio: 30099, imagen: 'https://images.unsplash.com/photo-1587825140708-dfaf72ae4b04?w=500&h=500&fit=crop', rating: 5.0, reviews: 2400, description: 'Plástico 100% reciclado • Personalización UV • Garantía 10 años' },
   { id: 2, nombre: 'Soporte de Celular', precio: 6990, imagen: 'https://i0.wp.com/peyuchile.cl/wp-content/uploads/2025/04/carcasas-500x500-1.webp', rating: 5.0, reviews: 1840, description: 'Plástico 100% reciclado • Múltiples colores • Garantía 10 años' },
   { id: 3, nombre: 'Cachos Corporativos', precio: 18500, imagen: 'https://i0.wp.com/peyuchile.cl/wp-content/uploads/2025/04/4-mixto-1024x1024-1.webp', rating: 5.0, reviews: 1620, description: 'Plástico 100% reciclado • Entretenimiento • Garantía 10 años' },
   { id: 4, nombre: 'Macetero Eco', precio: 12999, imagen: 'https://i0.wp.com/peyuchile.cl/wp-content/uploads/2022/11/potfinal_porta-Photoroom-1.jpg', rating: 5.0, reviews: 980, description: 'Plástico 100% reciclado • Diseño moderno • Garantía 10 años' },
@@ -43,8 +43,13 @@ export default function ShopLanding() {
   const [loading, setLoading] = useState(false);
   const [currentProductIndex, setCurrentProductIndex] = useState(0);
   const [sidebarExpanded, setSidebarExpanded] = useState(false);
+  const [pageLoaded, setPageLoaded] = useState(false);
   const messagesEndRef = useRef(null);
   const carrito = JSON.parse(localStorage.getItem('carrito') || '[]');
+
+  useEffect(() => {
+    setPageLoaded(true);
+  }, []);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -113,7 +118,7 @@ export default function ShopLanding() {
   };
 
   return (
-    <div className="h-screen w-full relative overflow-hidden flex flex-col lg:flex-row" style={{
+    <div className={`h-screen w-full relative overflow-hidden flex flex-col lg:flex-row transition-opacity duration-500 ${!pageLoaded ? 'opacity-0' : 'opacity-100'}`} style={{
 
       backgroundImage: `linear-gradient(135deg, rgba(15, 23, 42, 0.75) 0%, rgba(15, 78, 137, 0.75) 50%, rgba(15, 23, 42, 0.75) 100%), url('https://media.base44.com/images/public/69d99b9d61f699701129c103/6935b8ac0_image.png')`,
       backgroundSize: 'cover',
@@ -124,30 +129,43 @@ export default function ShopLanding() {
       {/* Main container with glassmorphism */}
       <div className="flex-1 flex gap-3 sm:gap-4 p-3 sm:p-4 lg:p-6 relative z-10 w-full flex-col lg:flex-row items-stretch h-full">
         
-        {/* SIDEBAR - Floating vertical with expand/collapse */}
+        {/* SIDEBAR - macOS style */}
         <div 
-          className={`hidden lg:flex flex-col items-center justify-center gap-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-3xl shadow-xl self-stretch transition-all duration-300 ${
-            sidebarExpanded ? 'w-48 px-4 py-6' : 'w-16 p-2.5'
+          className={`hidden lg:flex flex-col bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl shadow-xl transition-all duration-300 overflow-hidden ${
+            sidebarExpanded ? 'w-48' : 'w-16'
           }`}
           onMouseEnter={() => setSidebarExpanded(true)}
           onMouseLeave={() => setSidebarExpanded(false)}
         >
-          {SIDEBAR_ITEMS.map((item) => {
-            const Icon = item.icon;
-            return (
-              <Link
-                key={item.href}
-                to={item.href}
-                className={`${item.color} rounded-full flex items-center text-white shadow-lg hover:scale-105 transition-all group relative flex-shrink-0 ${
-                  sidebarExpanded ? 'w-full px-4 py-3 justify-start gap-3' : 'w-9 h-9 justify-center'
-                }`}
-                title={item.label}
-              >
-                <Icon className={sidebarExpanded ? 'w-5 h-5' : 'w-4 h-4'} />
-                {sidebarExpanded && <span className="text-sm font-medium">{item.label}</span>}
-              </Link>
-            );
-          })}
+          {/* macOS Header */}
+          <div className="bg-white/5 border-b border-white/10 px-3 py-2.5 flex items-center gap-2 flex-shrink-0">
+            <div className="flex gap-1.5">
+              <div className="w-2.5 h-2.5 rounded-full bg-red-500 shadow"></div>
+              <div className="w-2.5 h-2.5 rounded-full bg-yellow-500 shadow"></div>
+              <div className="w-2.5 h-2.5 rounded-full bg-green-500 shadow"></div>
+            </div>
+            {sidebarExpanded && <span className="text-xs text-white/50 ml-auto font-medium">MENU</span>}
+          </div>
+
+          {/* Menu Items */}
+          <div className="flex flex-col items-center gap-1 px-2 py-3 flex-1 justify-start">
+            {SIDEBAR_ITEMS.map((item) => {
+              const Icon = item.icon;
+              return (
+                <Link
+                  key={item.href}
+                  to={item.href}
+                  className={`flex items-center text-white hover:bg-white/20 transition-all rounded-lg group relative ${
+                    sidebarExpanded ? 'w-full px-3 py-2.5 justify-start gap-3' : 'w-10 h-10 justify-center'
+                  }`}
+                  title={item.label}
+                >
+                  <Icon className="w-4 h-4 flex-shrink-0" />
+                  {sidebarExpanded && <span className="text-xs font-medium">{item.label}</span>}
+                </Link>
+              );
+            })}
+          </div>
         </div>
 
         {/* LEFT CONTAINER - Content */}
