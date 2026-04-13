@@ -99,7 +99,7 @@ export default function ShopLanding() {
   return (
     <div className="h-screen w-screen bg-gradient-to-br from-blue-900 via-blue-600 to-orange-300 relative overflow-hidden flex flex-col">
       {/* Main container with glassmorphism */}
-      <div className="flex-1 flex gap-3 sm:gap-4 p-3 sm:p-6 relative z-10 overflow-hidden max-w-7xl mx-auto w-full">
+      <div className="flex-1 flex gap-3 sm:gap-4 p-3 sm:p-6 relative z-10 overflow-hidden w-full h-full">
         
         {/* SIDEBAR - Floating vertical */}
         <div className="hidden lg:flex flex-col items-center gap-2 sm:gap-3 bg-white/10 backdrop-blur-md border border-white/20 rounded-3xl p-3 sm:p-5 shadow-xl w-20 sm:w-24 h-fit self-center my-auto">
