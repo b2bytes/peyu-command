@@ -275,6 +275,10 @@ export default function Carrito() {
             <p className="text-xs text-muted-foreground text-center">
               🔒 Pago seguro · WebPay · Tarjetas de crédito y débito
             </p>
+            <div className="flex justify-center gap-4 text-xs text-muted-foreground pt-1">
+              <Link to="/seguimiento">🔍 Seguimiento pedido</Link>
+              <Link to="/soporte">❓ Ayuda</Link>
+            </div>
           </div>
         </div>
       </div>

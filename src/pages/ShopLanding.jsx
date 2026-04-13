@@ -21,7 +21,7 @@ export default function ShopLanding() {
   return (
     <div className="min-h-screen bg-white font-inter">
 
-      {/* ── NAVBAR ───────────────────────────────────────────────── */}
+      {/* NAVBAR */}
       <div className="sticky top-0 z-40 bg-white/95 backdrop-blur border-b border-border">
         <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
           <Link to="/">
@@ -56,7 +56,7 @@ export default function ShopLanding() {
         </div>
       </div>
 
-      {/* ── HERO ─────────────────────────────────────────────────── */}
+      {/* HERO */}
       <div className="relative overflow-hidden bg-gradient-to-br from-[#0B0F12] via-[#0F2420] to-[#0B6B48] text-white">
         <div className="absolute inset-0 opacity-10">
           <div className="absolute top-10 left-10 w-64 h-64 rounded-full bg-[#0F8B6C] blur-3xl" />
@@ -93,7 +93,7 @@ export default function ShopLanding() {
         </div>
       </div>
 
-      {/* ── VALOR PROPOSICIÓN ────────────────────────────────────── */}
+      {/* VALOR PROPOSICIÓN */}
       <div className="bg-[#F7F7F5] py-12 px-4">
         <div className="max-w-6xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-4">
           {[
@@ -113,7 +113,7 @@ export default function ShopLanding() {
         </div>
       </div>
 
-      {/* ── PRODUCTOS DESTACADOS ─────────────────────────────────── */}
+      {/* PRODUCTOS DESTACADOS */}
       <div className="max-w-7xl mx-auto px-4 py-16">
         <div className="flex items-end justify-between mb-8">
           <div>
@@ -133,7 +133,7 @@ export default function ShopLanding() {
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
             {productosDestacados.map(p => (
               <Link key={p.id} to={`/producto/${p.id}`}>
-                <div className="bg-white border border-border rounded-2xl overflow-hidden hover:shadow-md transition-shadow group cursor-pointer">
+                <div className="bg-white border border-border rounded-2xl overflow-hidden hover:shadow-md transition-shadow cursor-pointer">
                   <div className="bg-gradient-to-br from-[#0F8B6C]/20 to-[#A7D9C9]/30 h-44 flex items-center justify-center">
                     <div className="text-center">
                       <div className="text-5xl mb-1">📦</div>
@@ -173,7 +173,7 @@ export default function ShopLanding() {
         </div>
       </div>
 
-      {/* ── PERSONALIZACIÓN LASER B2C ─────────────────────────────── */}
+      {/* PERSONALIZACIÓN LASER B2C */}
       <div className="bg-gradient-to-r from-[#1a1a1a] to-[#4B4F54] py-14 px-4">
         <div className="max-w-5xl mx-auto flex flex-col md:flex-row items-center gap-8 justify-between">
           <div className="text-white space-y-3">
@@ -199,22 +199,19 @@ export default function ShopLanding() {
         </div>
       </div>
 
-      {/* ── B2B ──────────────────────────────────────────────────── */}
+      {/* B2B */}
       <div className="bg-[#0F172A] py-16 px-4">
         <div className="max-w-5xl mx-auto">
           <div className="text-center text-white space-y-4 mb-10">
             <div className="inline-flex items-center gap-2 bg-[#0F8B6C]/20 text-[#A7D9C9] px-4 py-1.5 rounded-full text-sm font-medium">
               <Building2 className="w-4 h-4" /> Regalos Corporativos B2B
             </div>
-            <h3 className="text-2xl md:text-3xl font-poppins font-bold">
-              Regalos corporativos con impacto
-            </h3>
+            <h3 className="text-2xl md:text-3xl font-poppins font-bold">Regalos corporativos con impacto</h3>
             <p className="text-white/60 max-w-xl mx-auto">
               Transformamos tus residuos plásticos en regalos corporativos personalizados. Personalización láser UV sin costo en pedidos corporativos.
             </p>
           </div>
 
-          {/* Clientes */}
           <div className="flex flex-wrap justify-center gap-3 mb-10">
             {CLIENTES.map(c => (
               <span key={c} className="bg-white/5 border border-white/10 text-white/70 text-xs px-3 py-1.5 rounded-full">{c}</span>
@@ -249,7 +246,7 @@ export default function ShopLanding() {
         </div>
       </div>
 
-      {/* ── ECONOMÍA CIRCULAR ────────────────────────────────────── */}
+      {/* ECONOMÍA CIRCULAR */}
       <div className="bg-[#E7D8C6] py-12 px-4">
         <div className="max-w-3xl mx-auto text-center space-y-4">
           <div className="text-4xl">🐢</div>
@@ -264,15 +261,13 @@ export default function ShopLanding() {
               </Button>
             </Link>
             <Link to="/shop">
-              <Button variant="outline" className="gap-2">
-                Ver tienda
-              </Button>
+              <Button variant="outline" className="gap-2">Ver tienda</Button>
             </Link>
           </div>
         </div>
       </div>
 
-      {/* ── REVIEWS ──────────────────────────────────────────────── */}
+      {/* REVIEWS */}
       <div className="max-w-5xl mx-auto px-4 py-12">
         <h3 className="text-center font-poppins font-bold text-xl mb-6">Lo que dicen nuestros clientes</h3>
         <div className="grid md:grid-cols-3 gap-4">
@@ -294,7 +289,25 @@ export default function ShopLanding() {
 
       <WhatsAppWidget context="general" />
 
-      {/* ── FOOTER ───────────────────────────────────────────────── */}
+      {/* SOPORTE BAR */}
+      <div className="bg-[#F7F7F5] border-t border-border py-6 px-4">
+        <div className="max-w-5xl mx-auto flex flex-wrap justify-center gap-6 text-sm">
+          <Link to="/seguimiento" className="text-muted-foreground hover:text-foreground transition-colors">
+            🔍 Seguimiento de pedido
+          </Link>
+          <Link to="/soporte" className="text-muted-foreground hover:text-foreground transition-colors">
+            ❓ Centro de ayuda
+          </Link>
+          <a href="https://wa.me/56935040242" target="_blank" rel="noreferrer" className="text-muted-foreground hover:text-foreground transition-colors">
+            💬 WhatsApp +56 9 3504 0242
+          </a>
+          <Link to="/b2b/contacto" className="text-muted-foreground hover:text-foreground transition-colors">
+            🏢 Cotización corporativa
+          </Link>
+        </div>
+      </div>
+
+      {/* FOOTER */}
       <footer className="bg-[#0B0F12] text-white py-10 px-4">
         <div className="max-w-6xl mx-auto grid md:grid-cols-4 gap-6">
           <div className="md:col-span-2">
