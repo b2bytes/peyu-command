@@ -119,7 +119,7 @@ export default function Shop() {
       </header>
 
       {/* HERO SECTION */}
-      <section className="bg-gradient-to-br from-slate-800 to-blue-800 border-b border-white/10 px-6 py-16 -mt-16 pt-32">
+      <section className="bg-gradient-to-br from-slate-800 to-blue-800 border-b border-white/10 px-6 py-20">
         <div className="max-w-7xl mx-auto space-y-6">
           <h1 className="text-6xl lg:text-7xl font-poppins font-black text-white leading-tight">
             Regalos Corporativos<br />
@@ -147,7 +147,7 @@ export default function Shop() {
       <div className="max-w-7xl mx-auto px-6 py-8 grid lg:grid-cols-4 gap-6">
         {/* SIDEBAR - CATEGORÍAS */}
         <aside className="lg:col-span-1 h-fit">
-          <div className="sticky top-32 space-y-4">
+          <div className="sticky top-24 space-y-4">
             {/* Categories */}
             <div className="bg-gradient-to-br from-yellow-500/20 to-orange-500/10 border border-yellow-500/30 rounded-2xl overflow-hidden">
               <div className="bg-yellow-500/30 px-4 py-3 border-b border-yellow-500/20">
