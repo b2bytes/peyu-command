@@ -119,22 +119,53 @@ export default function Shop() {
       </header>
 
       {/* HERO SECTION */}
-      <section className="bg-gradient-to-r from-slate-800/50 to-blue-800/50 border-b border-white/10 px-6 py-8">
-        <div className="max-w-7xl mx-auto space-y-3">
-          <h1 className="text-4xl font-poppins font-bold text-white">Regalos Corporativos 100% Sostenibles</h1>
-          <p className="text-white/80 text-sm font-semibold">100% Sostenibles Con Propósito ESG</p>
-          <p className="text-white/70 text-sm max-w-2xl">Productos de plástico reciclado con personalización láser. Navega y descubre soluciones de gifting estratégico.</p>
-          
-          {/* Quick Badges */}
-          <div className="flex gap-2 flex-wrap pt-2">
-            <div className="flex items-center gap-1.5 bg-white/10 border border-white/20 rounded-full px-3 py-1.5 text-xs text-white/80">
-              <span>📦 26 Productos</span>
+      <section className="bg-gradient-to-br from-slate-800/60 to-blue-800/60 border-b border-white/10 px-6 py-12">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid lg:grid-cols-3 gap-8 items-start">
+            {/* Left: Title & Content */}
+            <div className="lg:col-span-2 space-y-6">
+              <div>
+                <h1 className="text-5xl lg:text-6xl font-poppins font-black text-white leading-tight mb-4">
+                  Regalos Corporativos<br />
+                  <span className="text-yellow-300">100% Sostenibles</span> Con<br />
+                  <span className="text-emerald-400">Propósito ESG</span>
+                </h1>
+                <p className="text-white/80 text-lg max-w-xl leading-relaxed">Productos de plástico reciclado con personalización láser. Diseña, crea y mide el impacto de tu programa de gifting corporativo.</p>
+              </div>
+              
+              {/* CTA Buttons */}
+              <div className="flex flex-col sm:flex-row gap-3">
+                <Link to="/shop">
+                  <Button className="bg-red-600 hover:bg-red-700 text-white font-bold rounded-full px-8 py-3 gap-2 text-base">
+                    📮 Explorar Regalos
+                  </Button>
+                </Link>
+                <Link to="/b2b/contacto">
+                  <Button className="bg-yellow-400 hover:bg-yellow-500 text-gray-900 font-bold rounded-full px-8 py-3 gap-2 text-base">
+                    ✨ Regalos Corporativos con Propósito
+                  </Button>
+                </Link>
+              </div>
             </div>
-            <div className="flex items-center gap-1.5 bg-white/10 border border-white/20 rounded-full px-3 py-1.5 text-xs text-white/80">
-              <span>🚚 Despacho Express</span>
-            </div>
-            <div className="flex items-center gap-1.5 bg-white/10 border border-white/20 rounded-full px-3 py-1.5 text-xs text-white/80">
-              <span>✅ Certificados ESG</span>
+            
+            {/* Right: Product Showcase */}
+            <div className="bg-gradient-to-br from-orange-500/20 to-red-500/20 border border-orange-400/30 rounded-2xl p-6 space-y-4 h-fit">
+              <div className="aspect-square bg-gradient-to-br from-yellow-200/30 to-orange-300/30 rounded-xl flex items-center justify-center text-8xl shadow-inner">
+                🎁
+              </div>
+              <div>
+                <p className="text-white font-bold text-base mb-3">Canasta Estrelita - Edición Corporativa</p>
+                <div className="flex gap-0.5 mb-2">
+                  {[...Array(5)].map((_, i) => (
+                    <Star key={i} className="w-4 h-4 fill-yellow-300 text-yellow-300" />
+                  ))}
+                </div>
+                <p className="text-yellow-300 text-sm font-bold mb-3">⭐ 5.0 (+2.400 valoraciones)</p>
+                <div className="bg-white/20 border border-white/30 rounded-lg p-3">
+                  <p className="text-white/90 text-xs mb-2">Plástico 100% reciclado • Personalización UV • Garantía 10 años</p>
+                  <p className="text-white font-black text-2xl">$30.099</p>
+                </div>
+              </div>
             </div>
           </div>
         </div>
