@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import PEYULogo from '@/components/PEYULogo';
 import { Send, ShoppingCart, Bell, Star, ChevronLeft, ChevronRight, Home, Grid3x3, Building2, HelpCircle } from 'lucide-react';
+import MobileMenu from '@/components/MobileMenu';
 
 const OCASIONES = [
   { id: 'navidad', label: 'Navidad', icon: '🎄' },
@@ -102,7 +103,7 @@ export default function ShopLanding() {
   };
 
   return (
-    <div className="flex h-screen w-full overflow-hidden">
+    <div className="flex h-screen w-full overflow-hidden bg-gradient-to-br from-slate-900 to-slate-800">
       {/* SIDEBAR - macOS style */}
       <div 
         className={`hidden lg:flex flex-col bg-white/10 backdrop-blur-md border-r border-white/20 transition-all duration-300 overflow-hidden ${sidebarExpanded ? 'w-48' : 'w-16'}`}
@@ -166,15 +167,18 @@ export default function ShopLanding() {
             
             {/* Header */}
             <div className="bg-gradient-to-r from-teal-500/40 to-cyan-500/40 border-b border-white/20 px-3 sm:px-4 py-2.5 sm:py-3 flex items-center justify-between flex-shrink-0">
-              <PEYULogo size="xs" showText={true} />
-              <div className="flex items-center gap-2 sm:gap-3">
-                <button className="w-8 h-8 sm:w-10 sm:h-10 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center text-white transition-all flex-shrink-0">
-                  <Bell className="w-4 h-4 sm:w-5 sm:h-5" />
+              <div className="flex items-center gap-2 flex-1 min-w-0">
+                <MobileMenu items={MENU_ITEMS} />
+                <PEYULogo size="xs" showText={true} />
+              </div>
+              <div className="flex items-center gap-3 flex-shrink-0">
+                <button className="w-10 h-10 lg:w-10 lg:h-10 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center text-white transition-all active:bg-white/40 flex-shrink-0 touch-target">
+                  <Bell className="w-5 h-5" />
                 </button>
                 <Link to="/cart">
-                  <button className="w-8 h-8 sm:w-10 sm:h-10 bg-teal-500 hover:bg-teal-600 rounded-full flex items-center justify-center text-white transition-all relative flex-shrink-0">
-                    <ShoppingCart className="w-4 h-4 sm:w-5 sm:h-5" />
-                    {carrito.length > 0 && <span className="absolute -top-1 -right-1 w-4 h-4 sm:w-5 sm:h-5 bg-red-500 text-white text-[8px] sm:text-[9px] font-bold rounded-full flex items-center justify-center">{carrito.length}</span>}
+                  <button className="w-10 h-10 bg-teal-500 hover:bg-teal-600 rounded-full flex items-center justify-center text-white transition-all relative flex-shrink-0 active:bg-teal-700 touch-target">
+                    <ShoppingCart className="w-5 h-5" />
+                    {carrito.length > 0 && <span className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">{carrito.length}</span>}
                   </button>
                 </Link>
               </div>
@@ -193,14 +197,14 @@ export default function ShopLanding() {
               </div>
 
               {/* CTA Buttons */}
-              <div className="flex gap-1.5 flex-col sm:flex-row flex-shrink-0">
+              <div className="flex gap-2 flex-col sm:flex-row flex-shrink-0">
                 <Link to="/shop" className="flex-1 min-w-0">
-                  <Button className="w-full bg-red-600 hover:bg-red-700 text-white font-bold rounded-full px-3 sm:px-5 py-1.5 sm:py-2 gap-2 shadow-lg hover:shadow-xl text-xs transition-all">
+                  <Button className="w-full bg-red-600 hover:bg-red-700 active:bg-red-800 text-white font-bold rounded-full px-4 sm:px-6 py-2.5 sm:py-3 gap-2 shadow-lg hover:shadow-xl text-xs sm:text-sm transition-all touch-target">
                     📮 Explorar Regalos
                   </Button>
                 </Link>
                 <Link to="/b2b/contacto" className="flex-1 min-w-0">
-                  <Button className="w-full bg-yellow-400 hover:bg-yellow-500 text-gray-900 font-bold rounded-full px-3 sm:px-5 py-1.5 sm:py-2 gap-2 shadow-lg hover:shadow-xl text-xs transition-all">
+                  <Button className="w-full bg-yellow-400 hover:bg-yellow-500 active:bg-yellow-600 text-gray-900 font-bold rounded-full px-4 sm:px-6 py-2.5 sm:py-3 gap-2 shadow-lg hover:shadow-xl text-xs sm:text-sm transition-all touch-target">
                     ✨ B2B Corporativo
                   </Button>
                 </Link>
@@ -210,11 +214,11 @@ export default function ShopLanding() {
               <div className="bg-white/5 backdrop-blur-sm border border-white/15 rounded-xl lg:rounded-2xl p-2 sm:p-3 flex flex-col shadow-xl flex-1 min-h-40 sm:min-h-48 overflow-hidden">
                 
                 {/* Agent Header */}
-                <div className="mb-1.5 pb-1.5 border-b border-white/20 flex items-center gap-1.5 flex-shrink-0 min-w-0">
-                  <div className="w-6 h-6 rounded-full bg-gradient-to-br from-orange-400 to-red-500 flex items-center justify-center text-white font-bold flex-shrink-0 text-xs shadow-lg">✨</div>
+                <div className="mb-2 pb-2 border-b border-white/20 flex items-center gap-2 flex-shrink-0 min-w-0">
+                  <div className="w-7 h-7 rounded-full bg-gradient-to-br from-orange-400 to-red-500 flex items-center justify-center text-white font-bold flex-shrink-0 text-sm shadow-lg">✨</div>
                   <div className="min-w-0">
-                    <p className="text-white font-bold text-[11px]">Asistente</p>
-                    <p className="text-white/50 text-[9px] line-clamp-1">¿Necesitas ayuda?</p>
+                    <p className="text-white font-bold text-xs">Asistente</p>
+                    <p className="text-white/50 text-[10px] line-clamp-1">¿Necesitas ayuda?</p>
                   </div>
                 </div>
 
@@ -231,20 +235,20 @@ export default function ShopLanding() {
                 </div>
 
                 {/* Input */}
-                <div className="flex gap-1 flex-shrink-0 min-w-0">
+                <div className="flex gap-2 flex-shrink-0 min-w-0">
                   <Input
                     value={input}
                     onChange={e => setInput(e.target.value)}
                     onKeyPress={e => e.key === 'Enter' && sendMessage()}
                     placeholder="¿Necesitas?"
-                    className="bg-white/20 border-white/30 text-white placeholder:text-white/40 text-[11px] rounded-xl focus:ring-teal-400/50 flex-1 h-8 sm:h-9"
+                    className="bg-white/20 border-white/30 text-white placeholder:text-white/40 text-xs sm:text-sm rounded-xl focus:ring-teal-400/50 flex-1 h-10 sm:h-11 px-3 py-2 touch-target"
                     disabled={loading}
                   />
                   <Button
                     onClick={sendMessage}
                     disabled={loading || !input.trim()}
-                    className="bg-teal-500 hover:bg-teal-600 text-white rounded-full w-8 h-8 sm:w-9 sm:h-9 p-0 flex items-center justify-center flex-shrink-0">
-                    <Send className="w-3 h-3" />
+                    className="bg-teal-500 hover:bg-teal-600 active:bg-teal-700 text-white rounded-full w-10 h-10 sm:w-11 sm:h-11 p-0 flex items-center justify-center flex-shrink-0 touch-target">
+                    <Send className="w-4 h-4" />
                   </Button>
                 </div>
               </div>
@@ -255,12 +259,12 @@ export default function ShopLanding() {
                   <button
                     key={occ.id}
                     onClick={() => handleOccasionClick(occ)}
-                    className="flex flex-col items-center gap-1 flex-shrink-0 hover:scale-105 transition-transform group"
+                    className="flex flex-col items-center gap-1.5 flex-shrink-0 hover:scale-105 active:scale-95 transition-transform group touch-target p-1"
                   >
-                    <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-white/25 border border-white/40 flex items-center justify-center text-lg sm:text-xl group-hover:bg-white/35 group-hover:border-white/60 transition-all shadow-lg">
+                    <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-white/25 border border-white/40 flex items-center justify-center text-xl sm:text-2xl group-hover:bg-white/35 group-hover:border-white/60 active:bg-white/40 transition-all shadow-lg">
                       {occ.icon}
                     </div>
-                    <span className="text-white text-[7px] sm:text-[10px] font-bold text-center leading-tight whitespace-nowrap">{occ.label}</span>
+                    <span className="text-white text-[8px] sm:text-[10px] font-bold text-center leading-tight whitespace-nowrap">{occ.label}</span>
                   </button>
                 ))}
               </div>
