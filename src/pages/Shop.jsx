@@ -14,14 +14,20 @@ export default function Shop() {
   const [carrito, setCarrito] = useState(JSON.parse(localStorage.getItem('carrito') || '[]'));
   const [agregandoId, setAgregandoId] = useState(null);
 
-  const productImages = {
-    'Kit Escritorio Pro': 'https://i0.wp.com/peyuchile.cl/wp-content/uploads/2025/11/Kit-Escritorio-Pro-2-1-1.png?fit=500&ssl=1',
-    'Carcasa': 'https://i0.wp.com/peyuchile.cl/wp-content/uploads/2025/04/carcasas-500x500-1.webp?fit=500&ssl=1',
-    'Cachos': 'https://i0.wp.com/peyuchile.cl/wp-content/uploads/2025/04/4-mixto-1024x1024-1.webp?fit=500&ssl=1',
-    'Accesorios Escritorio': 'https://i0.wp.com/peyuchile.cl/wp-content/uploads/2025/09/dce80c23-7441-4922-a656-8627018c1e5d-1.jpeg?fit=500&ssl=1',
-    'Macetero': 'https://i0.wp.com/peyuchile.cl/wp-content/uploads/2022/11/potfinal_porta-Photoroom-1.jpg?fit=500&ssl=1',
-    'Posavasos': 'https://i0.wp.com/peyuchile.cl/wp-content/uploads/2022/07/WhatsApp-Image-2025-09-10-at-6.08.47-PM-2.jpeg?fit=500&ssl=1',
+  // Placeholder image generator
+const getProductImage = (producto) => {
+  if (producto.imagen_url) return producto.imagen_url;
+  
+  // Fallback: generate color-coded placeholder by category
+  const categoryColors = {
+    'Escritorio': 'from-blue-600 to-blue-400',
+    'Hogar': 'from-green-600 to-green-400',
+    'Entretenimiento': 'from-purple-600 to-purple-400',
+    'Corporativo': 'from-orange-600 to-orange-400',
+    'Carcasas B2C': 'from-red-600 to-red-400',
   };
+  return categoryColors[producto.categoria] || 'from-gray-600 to-gray-400';
+};
 
   const categorias = ['Todos', 'Navidad', 'Patrias', 'Año Nuevo', 'Día del Trabajador', 'Día de la Secretaria', 'Día del Profesor', 'Bienvenida', 'Día de la Mujer', 'Día de la Madre'];
 
@@ -190,7 +196,7 @@ export default function Shop() {
                 className="group bg-gradient-to-br from-slate-700/40 to-slate-800/40 border border-white/15 rounded-3xl overflow-hidden hover:border-white/30 transition-all hover:shadow-2xl hover:shadow-orange-500/20"
               >
                 {/* Product Image */}
-                <div className="relative w-full aspect-square bg-gradient-to-br from-gray-700 to-gray-900 flex items-center justify-center overflow-hidden">
+                <div className={`relative w-full aspect-square bg-gradient-to-br ${getProductImage(p)} flex items-center justify-center overflow-hidden`}>
                   {/* Badges */}
                   <div className="absolute top-3 left-3 flex gap-2 z-10">
                     {p.categoria === 'Escritorio' && (
@@ -220,14 +226,19 @@ export default function Shop() {
                     )}
                   </div>
                   
-                  {/* Product Image */}
-                  <img 
-                    src={productImages[p.nombre] || 'https://via.placeholder.com/500x500'}
-                    alt={p.nombre}
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-                    onError={(e) => e.target.style.display = 'none'}
-                    loading="lazy"
-                  />
+                  {/* Product Image or Emoji Icon */}
+                  {p.imagen_url ? (
+                    <img 
+                      src={p.imagen_url}
+                      alt={p.nombre}
+                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                      loading="lazy"
+                    />
+                  ) : (
+                    <div className="text-6xl opacity-30">
+                      {p.categoria === 'Escritorio' ? '📦' : p.categoria === 'Hogar' ? '🏠' : p.categoria === 'Entretenimiento' ? '🎮' : p.categoria === 'Corporativo' ? '💼' : '🎁'}
+                    </div>
+                  )}
                 </div>
 
                 {/* Product Info */}
