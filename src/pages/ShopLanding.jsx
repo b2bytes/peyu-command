@@ -97,7 +97,12 @@ export default function ShopLanding() {
   };
 
   return (
-    <div className="h-screen w-screen bg-gradient-to-br from-blue-900 via-blue-600 to-orange-300 relative overflow-hidden flex">
+    <div className="h-screen w-screen relative overflow-hidden flex" style={{
+      backgroundImage: `linear-gradient(135deg, rgba(15, 23, 42, 0.85) 0%, rgba(29, 78, 137, 0.85) 30%, rgba(139, 92, 0, 0.85) 100%), url('https://images.unsplash.com/photo-1532996122724-8f3c2cd83c5d?w=1920&h=1080&fit=crop')`,
+      backgroundSize: 'cover',
+      backgroundPosition: 'center',
+      backgroundAttachment: 'fixed'
+    }}>
       {/* Main container with glassmorphism */}
       <div className="flex-1 flex gap-3 sm:gap-4 p-3 sm:p-6 relative z-10 w-full h-full">
         
