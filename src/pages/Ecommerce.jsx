@@ -95,6 +95,25 @@ export default function Ecommerce() {
 
   const handleStatusChange = async (id, newEstado) => {
     await base44.entities.PedidoWeb.update(id, { estado: newEstado });
+    // Notificar al cliente si tiene email
+    const pedido = pedidos.find(p => p.id === id);
+    if (pedido?.cliente_email) {
+      const msgs = {
+        'Confirmado': 'Tu pedido fue confirmado y está en cola de producción.',
+        'Despachado': `Tu pedido fue despachado. ${pedido.tracking ? 'N° tracking: ' + pedido.tracking : 'Pronto recibirás el tracking.'}`,
+        'Entregado': '¡Tu pedido fue entregado! Gracias por comprar en Peyu Chile.',
+        'Listo para Despacho': 'Tu pedido está listo y pronto será despachado.',
+      };
+      const msg = msgs[newEstado];
+      if (msg) {
+        base44.integrations.Core.SendEmail({
+          to: pedido.cliente_email,
+          subject: `Peyu Chile · Estado de tu pedido: ${newEstado}`,
+          body: `<div style="font-family:Inter,sans-serif;padding:24px;max-width:500px"><h2 style="color:#0F8B6C">Actualización de tu pedido 🌿</h2><p>Hola <strong>${pedido.cliente_nombre}</strong>,</p><p>${msg}</p><p style="color:#9ca3af;font-size:12px">Pedido: ${pedido.numero_pedido} · Peyu Chile · +56 9 3504 0242</p></div>`,
+          from_name: 'Peyu Chile',
+        }).catch(() => {});
+      }
+    }
     load();
   };
 

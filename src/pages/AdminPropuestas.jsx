@@ -181,6 +181,7 @@ export default function AdminPropuestas() {
   const [updating, setUpdating] = useState(null);
   const [generatingMockup, setGeneratingMockup] = useState(null);
   const [propuestaModal, setPropuestaModal] = useState(null);
+  const [search, setSearch] = useState('');
 
   const cargar = async () => {
     setLoading(true);
@@ -246,12 +247,15 @@ export default function AdminPropuestas() {
     }
   };
 
+  const pipelineValue = proposals.filter(p => ['Borrador','Enviada'].includes(p.status)).reduce((s, p) => s + (p.total || 0), 0);
+
   // KPIs
   const kpis = [
     { label: 'Leads nuevos', value: leads.filter(l => l.status === 'Nuevo').length, icon: Building2, color: 'text-blue-600', bg: 'bg-blue-50' },
     { label: 'Leads calientes (≥70pts)', value: leads.filter(l => (l.lead_score || 0) >= 70).length, icon: Star, color: 'text-yellow-600', bg: 'bg-yellow-50' },
     { label: 'Propuestas enviadas', value: proposals.filter(p => p.status === 'Enviada').length, icon: Send, color: 'text-purple-600', bg: 'bg-purple-50' },
     { label: 'Propuestas aceptadas', value: proposals.filter(p => p.status === 'Aceptada').length, icon: TrendingUp, color: 'text-green-600', bg: 'bg-green-50' },
+    { label: 'Pipeline en vuelo (CLP)', value: pipelineValue > 0 ? `$${(pipelineValue/1000000).toFixed(1)}M` : '$0', icon: TrendingUp, color: 'text-[#006D5B]', bg: 'bg-green-50' },
   ];
 
   return (
@@ -268,7 +272,7 @@ export default function AdminPropuestas() {
       </div>
 
       {/* KPIs */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
         {kpis.map((k, i) => (
           <div key={i} className="bg-white rounded-xl border border-border p-4">
             <div className={`w-8 h-8 ${k.bg} rounded-lg flex items-center justify-center mb-2`}>
@@ -278,6 +282,12 @@ export default function AdminPropuestas() {
             <div className="text-xs text-muted-foreground mt-0.5">{k.label}</div>
           </div>
         ))}
+      </div>
+
+      {/* Búsqueda */}
+      <div className="relative max-w-sm">
+        <svg className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+        <Input value={search} onChange={e => setSearch(e.target.value)} placeholder="Buscar empresa, contacto..." className="pl-9 h-9" />
       </div>
 
       {/* Tabs */}
@@ -309,7 +319,7 @@ export default function AdminPropuestas() {
               <p className="text-sm mt-1">Los leads del formulario web y WhatsApp aparecerán aquí.</p>
             </div>
           ) : (
-            leads.map(lead => (
+            leads.filter(l => !search || l.company_name?.toLowerCase().includes(search.toLowerCase()) || l.contact_name?.toLowerCase().includes(search.toLowerCase())).map(lead => (
               <div key={lead.id} className="bg-white rounded-xl border border-border p-4 hover:shadow-sm transition">
                 <div className="flex items-start gap-4">
                   <div className="flex-1 min-w-0">
