@@ -141,7 +141,7 @@ export default function ShopLanding() {
         </div>
 
         {/* LEFT CONTAINER - Content */}
-        <div className="flex-1 bg-white/5 backdrop-blur-sm border border-white/20 rounded-3xl shadow-2xl overflow-y-auto flex flex-col">
+        <div className="flex-1 bg-white/3 backdrop-blur-xs border border-white/15 rounded-3xl shadow-2xl overflow-hidden flex flex-col">
           
           {/* Header */}
           <div className="bg-gradient-to-r from-teal-500/40 to-cyan-500/40 border-b border-white/20 px-4 sm:px-6 md:px-8 py-3 sm:py-4 md:py-5 flex items-center justify-between flex-shrink-0">
@@ -186,7 +186,7 @@ export default function ShopLanding() {
             </div>
 
             {/* Chat Agent */}
-            <div className="bg-white/15 backdrop-blur-xl border border-white/30 rounded-3xl p-4 sm:p-5 flex flex-col shadow-xl flex-1 min-h-56">
+            <div className="bg-white/5 backdrop-blur-sm border border-white/15 rounded-3xl p-4 sm:p-5 flex flex-col shadow-xl flex-1 min-h-56">
               
               {/* Agent Header */}
               <div className="mb-3 pb-3 border-b border-white/20 flex items-center gap-2 flex-shrink-0">
@@ -237,7 +237,7 @@ export default function ShopLanding() {
         </div>
 
         {/* RIGHT CONTAINER - Product Carousel */}
-        <div className="w-80 bg-gradient-to-br from-orange-600/15 to-red-600/10 border border-orange-500/30 rounded-3xl p-6 flex flex-col justify-between shadow-xl">
+        <div className="w-80 bg-gradient-to-br from-orange-600/10 to-red-600/5 border border-orange-500/20 rounded-3xl p-6 flex flex-col justify-between shadow-xl">
           {(() => {
             const product = FEATURED_PRODUCTS[currentProductIndex];
             return (
