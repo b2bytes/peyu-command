@@ -71,6 +71,7 @@ export default function Dashboard() {
   const [movimientos, setMovimientos] = useState([]);
   const [b2bLeads, setB2bLeads] = useState([]);
   const [proposals, setProposals] = useState([]);
+  const [pedidosWeb, setPedidosWeb] = useState([]);
   const [seeding, setSeeding] = useState(false);
   const [seedDone, setSeedDone] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -88,7 +89,8 @@ export default function Dashboard() {
       base44.entities.MovimientoCaja.list('-fecha', 200),
       base44.entities.B2BLead.list('-created_date', 100),
       base44.entities.CorporateProposal.list('-created_date', 100),
-    ]).then(([l, c, o, ok, cl, vt, col, mov, bl, props]) => {
+      base44.entities.PedidoWeb.list('-fecha', 300),
+    ]).then(([l, c, o, ok, cl, vt, col, mov, bl, props, pw]) => {
       setLeads(l);
       setCotizaciones(c);
       setOrdenes(o);
@@ -99,6 +101,7 @@ export default function Dashboard() {
       setMovimientos(mov);
       setB2bLeads(bl);
       setProposals(props);
+      setPedidosWeb(pw);
       setLoading(false);
     }).catch(() => setLoading(false));
   };
@@ -165,9 +168,15 @@ export default function Dashboard() {
   const propuestasAceptadas = proposals.filter(p => p.status === 'Aceptada').length;
   const pipelineB2BValue = proposals.filter(p => ['Borrador','Enviada'].includes(p.status)).reduce((s, p) => s + (p.total || 0), 0);
 
+  // PedidoWeb reales
+  const mesActualStr = new Date().toISOString().slice(0, 7);
+  const pedidosWebMes = pedidosWeb.filter(p => p.fecha?.startsWith(mesActualStr));
+  const ventasWebMes = pedidosWebMes.reduce((s, p) => s + (p.total || 0), 0);
+  const pedidosWebPendientes = pedidosWeb.filter(p => p.estado === 'Nuevo').length;
+  const pedidosWebEnProduccion = pedidosWeb.filter(p => p.estado === 'En Producción').length;
+
   // Blueprint funnel metrics
   const totalLeads = leads.length;
-  const leadsReales = leads.filter(l => l.calidad_lead === 'Caliente' || l.calidad_lead === 'Tibio').length;
   const tasaConversionReal = totalLeads > 0 ? ((cotAceptadas / totalLeads) * 100).toFixed(1) : 3.3;
   const pedidosB2BActuales = cotizaciones.filter(c => c.estado === 'Aceptada').length || 8;
 
@@ -245,12 +254,12 @@ export default function Dashboard() {
       {/* KPI Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
-          title="Ventas Web B2C"
-          value="$4.0M"
-          subtitle="Meta: $6M+ CLP/mes"
+          title="Ventas Web B2C (mes)"
+          value={loading ? '...' : ventasWebMes > 0 ? `$${(ventasWebMes/1000000).toFixed(1)}M` : '$0'}
+          subtitle={`${pedidosWebMes.length} pedidos · ${pedidosWebPendientes} nuevos`}
           icon={DollarSign}
-          trend={-33}
-          trendLabel="-33% vs mínimo histórico"
+          trend={ventasWebMes >= 6000000 ? 1 : -1}
+          trendLabel={ventasWebMes >= 6000000 ? '✓ Sobre meta $6M' : `Meta: $6M+ CLP/mes`}
           color="#D96B4D"
           bg="#fdf3f0"
         />

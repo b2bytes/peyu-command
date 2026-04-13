@@ -97,12 +97,17 @@ export default function CatalogoCorporativo() {
   return (
     <div className="min-h-screen bg-[#F7F7F5]">
       {/* Header */}
-      <div className="bg-white border-b border-border sticky top-0 z-40">
-        <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
+      <div className="bg-white/95 backdrop-blur border-b border-border sticky top-0 z-40">
+        <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
           <Link to="/">
-            <div className="flex items-center gap-2">
-              <span className="font-bold text-[#006D5B] font-poppins text-xl">PEYU</span>
-              <span className="text-xs text-muted-foreground hidden sm:block">Catálogo Corporativo</span>
+            <div className="flex items-center gap-2.5 hover:opacity-80 transition">
+              <div className="w-8 h-8 rounded-full bg-[#0F8B6C] flex items-center justify-center">
+                <span className="text-white text-xs font-bold">P</span>
+              </div>
+              <div className="hidden sm:block">
+                <h1 className="text-base font-poppins font-bold leading-none" style={{ color: '#0F8B6C' }}>PEYU</h1>
+                <p className="text-xs text-muted-foreground leading-none">Catálogo Corporativo 2026</p>
+              </div>
             </div>
           </Link>
           <div className="flex items-center gap-3">

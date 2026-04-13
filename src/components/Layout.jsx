@@ -129,6 +129,23 @@ export default function Layout() {
           {collapsed ? <ChevronRight className="w-3 h-3" /> : <ChevronLeft className="w-3 h-3" />}
         </button>
 
+        {/* Accesos tienda pública */}
+        {!collapsed && (
+          <div className="px-3 py-2 border-t" style={{ borderColor: 'hsl(220,14%,20%)' }}>
+            <div className="text-xs font-semibold uppercase tracking-wider mb-1" style={{ color: 'hsl(220,10%,40%)' }}>Tienda Pública</div>
+            <a href="/" target="_blank" rel="noreferrer"
+              className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs font-medium text-gray-400 hover:text-white hover:bg-white/5 transition-colors">
+              <ShoppingCart className="w-3.5 h-3.5 flex-shrink-0" />
+              <span>Tienda B2C</span>
+            </a>
+            <a href="/b2b/catalogo" target="_blank" rel="noreferrer"
+              className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs font-medium text-gray-400 hover:text-white hover:bg-white/5 transition-colors">
+              <Building2 className="w-3.5 h-3.5 flex-shrink-0" />
+              <span>Catálogo B2B</span>
+            </a>
+          </div>
+        )}
+
         {/* Footer */}
         {!collapsed && (
           <div className="px-4 py-3 border-t text-xs" style={{ borderColor: 'hsl(220,14%,20%)', color: 'hsl(220,10%,40%)' }}>
