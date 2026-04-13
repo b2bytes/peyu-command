@@ -198,7 +198,7 @@ export default function ShopLanding() {
         </div>
         <div className="grid grid-cols-3 md:grid-cols-6 gap-3">
           {CATEGORY_SHOWCASE.map((c, i) => (
-            <Link key={i} to={`/shop?cat=${c.cat}`}>
+            <Link key={i} to={`/shop?cat=${encodeURIComponent(c.cat)}`}>
               <div className="group relative overflow-hidden rounded-2xl aspect-square cursor-pointer">
                 <img src={c.img} alt={c.label} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent group-hover:from-black/80 transition-colors" />
