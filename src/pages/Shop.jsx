@@ -111,11 +111,11 @@ export default function Shop() {
         <div className="max-w-7xl mx-auto">
           <div className="space-y-4">
             <h1 className="text-4xl font-poppins font-bold">
-              <span className="text-white">MATERIALES PARA TU</span><br />
-              <span className="bg-gradient-to-r from-orange-400 to-red-500 bg-clip-text text-transparent">PROYECTO</span>
+              <span className="text-white">Regalos</span><br />
+              <span className="bg-gradient-to-r from-[#0F8B6C] to-[#A7D9C9] bg-clip-text text-transparent">100% Sostenibles</span>
             </h1>
             <p className="text-white/70 text-sm max-w-xl">
-              Kits modulares, estructura metálica y terminaciones. Cotiza directo con IA.
+              Productos de plástico reciclado con personalización láser. Diseña tu regalo corporativo ahora.
             </p>
             
             {/* Quick Badges */}
@@ -194,8 +194,8 @@ export default function Shop() {
             <div className="flex items-center gap-3 mb-4">
               <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-orange-400 to-red-500 flex items-center justify-center font-bold">🏭</div>
               <div>
-                <h2 className="text-2xl font-poppins font-bold text-white">Kits Modulares y Viviendas</h2>
-                <p className="text-xs text-white/60">Oficinas, viviendas y componentes hechos en mano</p>
+                <h2 className="text-2xl font-poppins font-bold text-white">Nuestros Productos</h2>
+                <p className="text-xs text-white/60">Regalos corporativos personalizados y reutilizables</p>
               </div>
               <span className="ml-auto text-sm text-white/60 font-semibold">{filtered.length} productos</span>
             </div>
