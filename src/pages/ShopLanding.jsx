@@ -36,25 +36,20 @@ export default function ShopLanding() {
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [currentProductIndex, setCurrentProductIndex] = useState(0);
-  const [pageLoaded, setPageLoaded] = useState(false);
   const messagesEndRef = useRef(null);
+  const pageLoadedRef = useRef(true);
   const carrito = JSON.parse(localStorage.getItem('carrito') || '[]');
-
-  useEffect(() => {
-    setPageLoaded(true);
-  }, []);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
   useEffect(() => {
-    if (!pageLoaded) return;
     const interval = setInterval(() => {
       setCurrentProductIndex((prev) => (prev + 1) % FEATURED_PRODUCTS.length);
     }, 23000);
     return () => clearInterval(interval);
-  }, [pageLoaded]);
+  }, []);
 
   const initConversation = async () => {
     if (conversationId) return;
@@ -122,7 +117,7 @@ export default function ShopLanding() {
   };
 
   return (
-    <div className={`h-screen w-full relative overflow-hidden flex flex-col lg:flex-row transition-opacity duration-500 ${!pageLoaded ? 'opacity-0' : 'opacity-100'}`} style={{
+    <div className={`h-screen w-full relative overflow-hidden flex flex-col lg:flex-row`} style={{
 
       backgroundImage: `linear-gradient(135deg, rgba(15, 23, 42, 0.75) 0%, rgba(15, 78, 137, 0.75) 50%, rgba(15, 23, 42, 0.75) 100%), url('https://media.base44.com/images/public/69d99b9d61f699701129c103/6935b8ac0_image.png')`,
       backgroundSize: 'cover',
