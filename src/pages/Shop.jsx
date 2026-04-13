@@ -15,12 +15,15 @@ export default function Shop() {
   const [agregandoId, setAgregandoId] = useState(null);
 
   const productImageMap = {
-    'Kit Escritorio Pro': 'https://images.unsplash.com/photo-1572365992253-3cb3e56dd362?w=600&h=600&fit=crop',
-    'Carcasa': 'https://images.unsplash.com/photo-1611532736579-6b16e2b50449?w=600&h=600&fit=crop',
-    'Cachos': 'https://images.unsplash.com/photo-1491553895911-0055eca6402d?w=600&h=600&fit=crop',
-    'Accesorios Escritorio': 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=600&h=600&fit=crop',
-    'Macetero': 'https://images.unsplash.com/photo-1578500494198-246f612d03b3?w=600&h=600&fit=crop',
-    'Posavasos': 'https://images.unsplash.com/photo-1578507065211-a61d7d29cd83?w=600&h=600&fit=crop',
+    'Kit Escritorio Pro': 'https://media.base44.com/images/public/69d99b9d61f699701129c103/b5b3cf211_kitclassssprro2.jpg',
+    'Soporte Celular Aguas': 'https://media.base44.com/images/public/69d99b9d61f699701129c103/5085b8b77_WhatsAppImage2026-03-23at51806PM2.jpg',
+    'Soporte Notebook': 'https://media.base44.com/images/public/69d99b9d61f699701129c103/f9a08d799_kitclasico.jpg',
+    'Soporte Aguas Andinas': 'https://media.base44.com/images/public/69d99b9d61f699701129c103/407f18312_WhatsAppImage2026-03-23at51544PM.jpg',
+    'Carcasa': 'https://media.base44.com/images/public/69d99b9d61f699701129c103/b5b3cf211_kitclassssprro2.jpg',
+    'Cachos': 'https://media.base44.com/images/public/69d99b9d61f699701129c103/da02d09c2_kitclassssprro4.jpg',
+    'Accesorios Escritorio': 'https://media.base44.com/images/public/69d99b9d61f699701129c103/8f212c064_kitclassssprro1.jpg',
+    'Macetero': 'https://media.base44.com/images/public/69d99b9d61f699701129c103/355ca531a_sopooll1.jpg',
+    'Posavasos': 'https://media.base44.com/images/public/69d99b9d61f699701129c103/4bfe4fc51_sopooll.jpg',
   };
 
   const getProductImage = (producto) => {
