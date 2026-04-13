@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
-import { ShoppingCart, Leaf, Award, Truck } from 'lucide-react';
+import { ShoppingCart, Leaf, Award, Truck, Building2 } from 'lucide-react';
 
 export default function ShopLanding() {
   const [productosDestacados, setProductosDestacados] = useState([]);
@@ -47,11 +47,17 @@ export default function ShopLanding() {
             <h2 className="text-5xl font-bold mb-4">Productos Sustentables</h2>
             <p className="text-lg opacity-90">Plástico 100% reciclado para un futuro mejor</p>
           </div>
-          <div className="flex gap-4 justify-center">
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link to="/shop">
-              <Button size="lg" className="gap-2 bg-white text-[#0F8B6C] hover:bg-gray-100">
+              <Button size="lg" className="gap-2 bg-white text-[#006D5B] hover:bg-gray-50">
                 <ShoppingCart className="w-5 h-5" />
-                Explorar Tienda
+                Tienda B2C
+              </Button>
+            </Link>
+            <Link to="/b2b/contacto">
+              <Button size="lg" variant="outline" className="gap-2 border-2 border-white text-white hover:bg-white/15">
+                <Building2 className="w-5 h-5" />
+                Cotización Corporativa
               </Button>
             </Link>
           </div>
@@ -139,16 +145,49 @@ export default function ShopLanding() {
         </div>
       </div>
 
+      {/* B2B Section */}
+      <div className="bg-[#0F172A] py-16 px-4 mt-16">
+        <div className="max-w-5xl mx-auto">
+          <div className="text-center text-white space-y-4 mb-10">
+            <div className="inline-flex items-center gap-2 bg-white/10 text-white px-4 py-1.5 rounded-full text-sm font-medium">
+              <Building2 className="w-4 h-4" /> Ventas Corporativas B2B
+            </div>
+            <h3 className="text-2xl font-bold font-poppins">Regalos corporativos con propósito</h3>
+            <p className="text-white/70 max-w-xl mx-auto">
+              Kit escritorio, posavasos, maceteros y más — todos con plástico 100% reciclado, personalizados con tu logo mediante láser galvo UV.
+            </p>
+          </div>
+          <div className="grid md:grid-cols-3 gap-4 mb-8">
+            {[{e: '🎨', t: 'Mockup gratis', d: 'Con tu logo en 30 minutos'}, {e: '⚡', t: 'Propuesta en <24h', d: 'Con precios y condiciones'}, {e: '🏭', t: 'Fabricación local', d: '6 inyectoras automáticas en Chile'}].map((f, i) => (
+              <div key={i} className="bg-white/5 border border-white/10 rounded-xl p-5 text-white text-center">
+                <div className="text-2xl mb-2">{f.e}</div>
+                <div className="font-semibold text-sm">{f.t}</div>
+                <div className="text-white/60 text-xs mt-1">{f.d}</div>
+              </div>
+            ))}
+          </div>
+          <div className="text-center">
+            <Link to="/b2b/contacto">
+              <Button size="lg" style={{ backgroundColor: '#006D5B' }} className="gap-2 font-semibold">
+                <Building2 className="w-5 h-5" />
+                Solicitar cotización corporativa
+              </Button>
+            </Link>
+            <p className="text-white/50 text-xs mt-3">Respondemos en menos de 24 horas · Adidas, Nestlé, BancoEstado confían en Peyu</p>
+          </div>
+        </div>
+      </div>
+
       {/* CTA Final */}
-      <div className="bg-[#E7D8C6] py-12 px-4 mt-16">
+      <div className="bg-[#E7D8C6] py-12 px-4">
         <div className="max-w-3xl mx-auto text-center space-y-4">
-          <h3 className="text-2xl font-bold">¿Buscas personalización?</h3>
+          <h3 className="text-2xl font-bold font-poppins">¿Tienes plástico para reciclar?</h3>
           <p className="text-muted-foreground">
-            Todos nuestros productos pueden personalizarse con tu logo o texto. Mínimo 10 unidades.
+            Transformamos los residuos plásticos de tu empresa en regalos corporativos personalizados. Economía circular real.
           </p>
-          <Link to="/cpq">
-            <Button className="gap-2" style={{ backgroundColor: '#0F8B6C' }}>
-              Solicitar Cotización Personalizada
+          <Link to="/b2b/contacto">
+            <Button className="gap-2 font-semibold" style={{ backgroundColor: '#006D5B' }}>
+              Cotización Corporativa →
             </Button>
           </Link>
         </div>

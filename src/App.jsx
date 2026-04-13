@@ -37,6 +37,8 @@ import Shop from './pages/Shop';
 import ShopLanding from './pages/ShopLanding';
 import ProductoDetalle from './pages/ProductoDetalle';
 import Carrito from './pages/Carrito';
+import B2BContacto from './pages/B2BContacto';
+import AdminPropuestas from './pages/AdminPropuestas';
 // Add page imports here
 
 const PublicShopRoutes = () => (
@@ -45,6 +47,7 @@ const PublicShopRoutes = () => (
     <Route path="/shop" element={<Shop />} />
     <Route path="/producto/:id" element={<ProductoDetalle />} />
     <Route path="/cart" element={<Carrito />} />
+    <Route path="/b2b/contacto" element={<B2BContacto />} />
   </Routes>
 );
 
@@ -102,6 +105,8 @@ const AuthenticatedApp = () => {
         <Route path="/operaciones" element={<Operaciones />} />
         <Route path="/marketing" element={<Marketing />} />
         <Route path="/analitica" element={<Analitica />} />
+        <Route path="/admin/propuestas" element={<AdminPropuestas />} />
+        <Route path="/admin/b2b-leads" element={<AdminPropuestas />} />
 
       </Route>
       <Route path="*" element={<PageNotFound />} />
@@ -113,7 +118,7 @@ const AuthenticatedApp = () => {
 function App() {
   // Check if we're on a public shop route
   const pathName = window.location.pathname;
-  const isPublicShop = pathName === '/' || pathName.startsWith('/shop') || pathName.startsWith('/producto') || pathName.startsWith('/cart');
+  const isPublicShop = pathName === '/' || pathName.startsWith('/shop') || pathName.startsWith('/producto') || pathName.startsWith('/cart') || pathName.startsWith('/b2b');
 
   return (
     <QueryClientProvider client={queryClientInstance}>

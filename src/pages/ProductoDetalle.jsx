@@ -3,7 +3,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { ArrowLeft, Check } from 'lucide-react';
+import { ArrowLeft, Check, Building2 } from 'lucide-react';
 
 export default function ProductoDetalle() {
   const { id } = useParams();
@@ -132,6 +132,19 @@ export default function ProductoDetalle() {
                 <>Agregar al carrito</>
               )}
             </Button>
+
+            {/* B2B CTA */}
+            <Link to={`/b2b/contacto?productoId=${producto.id}&nombre=${encodeURIComponent(producto.nombre || '')}`}>
+              <Button
+                size="lg"
+                variant="outline"
+                className="w-full font-semibold gap-2"
+                style={{ borderColor: '#006D5B', color: '#006D5B' }}
+              >
+                <Building2 className="w-4 h-4" />
+                Cotización corporativa (B2B)
+              </Button>
+            </Link>
 
             {/* Info */}
             <div className="space-y-2 text-sm text-muted-foreground">

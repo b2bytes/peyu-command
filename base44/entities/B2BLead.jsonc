@@ -1,0 +1,118 @@
+{
+  "name": "B2BLead",
+  "type": "object",
+  "properties": {
+    "source": {
+      "type": "string",
+      "title": "Fuente",
+      "enum": [
+        "WhatsApp",
+        "Formulario Web",
+        "Email",
+        "Instagram",
+        "LinkedIn",
+        "Referido",
+        "Otro"
+      ]
+    },
+    "contact_name": {
+      "type": "string",
+      "title": "Nombre Contacto"
+    },
+    "company_name": {
+      "type": "string",
+      "title": "Empresa"
+    },
+    "email": {
+      "type": "string",
+      "title": "Email"
+    },
+    "phone": {
+      "type": "string",
+      "title": "Tel\u00e9fono / WhatsApp"
+    },
+    "rut": {
+      "type": "string",
+      "title": "RUT Empresa"
+    },
+    "product_interest": {
+      "type": "string",
+      "title": "Producto de Inter\u00e9s"
+    },
+    "qty_estimate": {
+      "type": "number",
+      "title": "Cantidad Estimada (u)"
+    },
+    "delivery_date": {
+      "type": "string",
+      "title": "Fecha Requerida"
+    },
+    "personalization_needs": {
+      "type": "boolean",
+      "title": "Requiere Personalizaci\u00f3n UV"
+    },
+    "has_plastic": {
+      "type": "boolean",
+      "title": "Tiene Pl\u00e1stico para Reciclar"
+    },
+    "brief_url": {
+      "type": "string",
+      "title": "URL Brief / Archivo"
+    },
+    "logo_url": {
+      "type": "string",
+      "title": "URL Logo"
+    },
+    "lead_score": {
+      "type": "number",
+      "title": "Lead Score (0-100)"
+    },
+    "status": {
+      "type": "string",
+      "title": "Estado",
+      "enum": [
+        "Nuevo",
+        "Contactado",
+        "En revisi\u00f3n",
+        "Propuesta enviada",
+        "Aceptado",
+        "Perdido"
+      ]
+    },
+    "urgency": {
+      "type": "string",
+      "title": "Urgencia",
+      "enum": [
+        "Alta",
+        "Normal",
+        "Baja"
+      ],
+      "default": "Normal"
+    },
+    "notes": {
+      "type": "string",
+      "title": "Notas Internas"
+    },
+    "assigned_to": {
+      "type": "string",
+      "title": "Asignado a"
+    },
+    "utm_source": {
+      "type": "string",
+      "title": "UTM Source"
+    },
+    "mockup_urls": {
+      "type": "array",
+      "title": "URLs Mockups",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "required": [
+    "contact_name",
+    "company_name",
+    "source",
+    "status"
+  ]
+}

@@ -1,0 +1,112 @@
+{
+  "name": "CorporateProposal",
+  "type": "object",
+  "properties": {
+    "numero": {
+      "type": "string",
+      "title": "N\u00b0 Propuesta"
+    },
+    "b2b_lead_id": {
+      "type": "string",
+      "title": "ID Lead B2B"
+    },
+    "empresa": {
+      "type": "string",
+      "title": "Empresa"
+    },
+    "contacto": {
+      "type": "string",
+      "title": "Contacto"
+    },
+    "email": {
+      "type": "string",
+      "title": "Email"
+    },
+    "items_json": {
+      "type": "string",
+      "title": "Items (JSON)"
+    },
+    "subtotal": {
+      "type": "number",
+      "title": "Subtotal (CLP)"
+    },
+    "descuento_pct": {
+      "type": "number",
+      "title": "Descuento (%)"
+    },
+    "fee_personalizacion": {
+      "type": "number",
+      "title": "Fee Personalizaci\u00f3n (CLP)"
+    },
+    "fee_packaging": {
+      "type": "number",
+      "title": "Fee Packaging (CLP)"
+    },
+    "total": {
+      "type": "number",
+      "title": "Total (CLP)"
+    },
+    "status": {
+      "type": "string",
+      "title": "Estado",
+      "enum": [
+        "Borrador",
+        "Enviada",
+        "Aceptada",
+        "Rechazada",
+        "Vencida"
+      ],
+      "default": "Borrador"
+    },
+    "validity_days": {
+      "type": "number",
+      "title": "Validez (d\u00edas)",
+      "default": 15
+    },
+    "lead_time_dias": {
+      "type": "number",
+      "title": "Lead Time (d\u00edas)"
+    },
+    "mockup_urls": {
+      "type": "array",
+      "title": "URLs Mockups",
+      "items": {
+        "type": "string"
+      }
+    },
+    "pdf_url": {
+      "type": "string",
+      "title": "URL PDF Propuesta"
+    },
+    "production_notes": {
+      "type": "string",
+      "title": "Notas de Producci\u00f3n"
+    },
+    "terms": {
+      "type": "string",
+      "title": "T\u00e9rminos y Condiciones"
+    },
+    "auto_generated": {
+      "type": "boolean",
+      "title": "Auto-generada por IA"
+    },
+    "fecha_envio": {
+      "type": "string",
+      "title": "Fecha Env\u00edo"
+    },
+    "fecha_vencimiento": {
+      "type": "string",
+      "title": "Fecha Vencimiento"
+    },
+    "anticipo_pct": {
+      "type": "number",
+      "title": "% Anticipo",
+      "default": 50
+    }
+  },
+  "required": [
+    "empresa",
+    "contacto",
+    "status"
+  ]
+}
