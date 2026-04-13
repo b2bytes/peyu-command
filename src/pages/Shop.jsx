@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { getProductImage } from '@/utils/productImages';
 import { ShoppingCart, Building2, Sparkles, Search, X, Star, Zap, ArrowRight, Package } from 'lucide-react';
 import WhatsAppWidget from '@/components/WhatsAppWidget';
+import AsistenteChat from '@/components/AsistenteChat';
 
 const EMOJI_MAP = {
   'Escritorio': '🖥️', 'Hogar': '🌱', 'Entretenimiento': '🎲', 'Corporativo': '🎁', 'Carcasas B2C': '📱'
@@ -283,6 +284,7 @@ export default function Shop() {
       </div>
 
       <WhatsAppWidget context="general" />
+      <AsistenteChat />
     </div>
   );
 }

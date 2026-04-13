@@ -10,6 +10,7 @@ import {
   RotateCcw, BadgeCheck, Copy, X, Package
 } from 'lucide-react';
 import WhatsAppWidget from '@/components/WhatsAppWidget';
+import AsistenteChat from '@/components/AsistenteChat';
 
 const EMOJI_MAP = { 'Escritorio': '🖥️', 'Hogar': '🌱', 'Entretenimiento': '🎲', 'Corporativo': '🎁', 'Carcasas B2C': '📱' };
 
@@ -771,6 +772,7 @@ export default function ProductoDetalle() {
       </div>
 
       <WhatsAppWidget context="producto" productName={producto.nombre} sku={producto.sku} />
+      <AsistenteChat />
     </div>
   );
 }
