@@ -98,16 +98,7 @@ export default function ShopLanding() {
 
   return (
     <div className="h-screen w-screen bg-gradient-to-br from-blue-900 via-blue-600 to-orange-300 relative overflow-hidden flex flex-col">
-      {/* Decorative snowflakes */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
-        {[...Array(6)].map((_, i) => (
-          <div key={i} className="absolute text-4xl opacity-20 animate-pulse" style={{
-            top: `${Math.random() * 100}%`,
-            left: `${Math.random() * 100}%`,
-            animationDelay: `${i * 0.5}s`
-          }}>❄️</div>
-        ))}
-      </div>
+
 
       {/* Main container with glassmorphism */}
       <div className="flex-1 flex gap-3 sm:gap-5 p-3 sm:p-6 relative z-10 overflow-hidden max-w-7xl mx-auto w-full">
