@@ -4,7 +4,7 @@ import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import PEYULogo from '@/components/PEYULogo';
-import { Send, Home, BookOpen, Grid3x3, HelpCircle, ShoppingCart, Bell, Star, Building2, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Send, ShoppingCart, Bell, Star, ChevronLeft, ChevronRight } from 'lucide-react';
 
 const OCASIONES = [
   { id: 'navidad', label: 'Navidad', icon: '🎄' },
@@ -19,13 +19,7 @@ const OCASIONES = [
   { id: 'logros', label: 'Logros', icon: '🏆' },
 ];
 
-const SIDEBAR_ITEMS = [
-  { href: '/', label: 'Inicio', icon: Home, color: 'bg-teal-500' },
-  { href: '/shop', label: 'Tienda', icon: ShoppingCart, color: 'bg-teal-500' },
-  { href: '/b2b/catalogo', label: 'Catálogo', icon: Grid3x3, color: 'bg-teal-500' },
-  { href: '/b2b/contacto', label: 'B2B', icon: Building2, color: 'bg-teal-500' },
-  { href: '/soporte', label: 'Soporte', icon: HelpCircle, color: 'bg-teal-500' },
-];
+
 
 const FEATURED_PRODUCTS = [
   { id: 1, nombre: 'Kit Escritorio Pro', precio: 30099, imagen: 'https://media.base44.com/images/public/69d99b9d61f699701129c103/b5b3cf211_kitclassssprro2.jpg', rating: 5.0, reviews: 2400, description: 'Plástico 100% reciclado • Personalización UV • Garantía 10 años' },
@@ -42,7 +36,6 @@ export default function ShopLanding() {
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [currentProductIndex, setCurrentProductIndex] = useState(0);
-  const [sidebarExpanded, setSidebarExpanded] = useState(false);
   const [pageLoaded, setPageLoaded] = useState(false);
   const messagesEndRef = useRef(null);
   const carrito = JSON.parse(localStorage.getItem('carrito') || '[]');
@@ -127,49 +120,7 @@ export default function ShopLanding() {
       backgroundRepeat: 'no-repeat'
     }}>
       {/* Main container with glassmorphism */}
-      <div className="flex-1 flex gap-3 sm:gap-4 p-3 sm:p-4 lg:p-6 relative z-10 w-full flex-col lg:flex-row items-stretch h-full">
-        
-        {/* SIDEBAR - macOS style */}
-        <div 
-          className={`hidden lg:flex flex-col bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl shadow-xl transition-all duration-300 overflow-hidden ${
-            sidebarExpanded ? 'w-48' : 'w-16'
-          }`}
-          onMouseEnter={() => setSidebarExpanded(true)}
-          onMouseLeave={() => setSidebarExpanded(false)}
-        >
-          {/* macOS Header */}
-          <div className="bg-white/5 border-b border-white/10 px-3 py-2.5 flex items-center gap-2 flex-shrink-0">
-            <div className="flex gap-1.5">
-              <div className="w-2.5 h-2.5 rounded-full bg-red-500 shadow"></div>
-              <div className="w-2.5 h-2.5 rounded-full bg-yellow-500 shadow"></div>
-              <div className="w-2.5 h-2.5 rounded-full bg-green-500 shadow"></div>
-            </div>
-            {sidebarExpanded && <span className="text-xs text-white/50 ml-auto font-medium">MENU</span>}
-          </div>
-
-          {/* Menu Items */}
-          <div className="flex flex-col items-center gap-1 px-2 py-3 flex-1 justify-start">
-            {SIDEBAR_ITEMS.map((item) => {
-              const Icon = item.icon;
-              return (
-                <Link
-                  key={item.href}
-                  to={item.href}
-                  className={`flex items-center text-white hover:bg-white/20 transition-all rounded-lg group relative ${
-                    sidebarExpanded ? 'w-full px-3 py-2.5 justify-start gap-3' : 'w-12 h-12 justify-center'
-                  }`}
-                  title={item.label}
-                >
-                  <Icon className={`flex-shrink-0 ${
-                    sidebarExpanded ? 'w-4 h-4' : 'w-6 h-6'
-                  }`} />
-                  {sidebarExpanded && <span className="text-xs font-medium">{item.label}</span>}
-                </Link>
-              );
-            })}
-          </div>
-        </div>
-
+      <div className="flex-1 flex gap-3 sm:gap-4 p-3 sm:p-4 lg:p-6 relative z-10 w-full flex-col items-stretch h-full">
         {/* LEFT CONTAINER - Content */}
         <div className="flex-1 bg-white/3 backdrop-blur-xs border border-white/15 rounded-2xl lg:rounded-3xl shadow-2xl overflow-hidden flex flex-col min-w-0">
           
