@@ -70,7 +70,7 @@ const AuthenticatedApp = () => {
   return (
     <Routes>
       <Route element={<Layout />}>
-        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/admin" element={<Dashboard />} />
         <Route path="/pipeline" element={<PipelineB2B />} />
         <Route path="/cpq" element={<CPQCalculator />} />
         <Route path="/soporte" element={<Soporte />} />

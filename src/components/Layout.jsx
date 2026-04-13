@@ -16,7 +16,7 @@ const navGroups = [
   {
     label: "Operaciones",
     items: [
-      { path: "/", label: "Centro de Comando", icon: LayoutDashboard },
+      { path: "/admin", label: "Centro de Comando", icon: LayoutDashboard },
       { path: "/pipeline", label: "Pipeline B2B", icon: Users },
       { path: "/cotizaciones", label: "Cotizaciones", icon: FileText },
       { path: "/cpq", label: "CPQ Cotizador", icon: Calculator },
