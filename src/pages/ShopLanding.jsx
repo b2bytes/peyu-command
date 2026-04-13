@@ -155,24 +155,24 @@ export default function ShopLanding() {
             {/* Left Column - 60% */}
             <div className="md:col-span-2 space-y-2 sm:space-y-4 md:space-y-6 flex flex-col justify-between overflow-y-auto md:overflow-visible">
               {/* Hero Title */}
-              <div className="space-y-1 sm:space-y-2 md:space-y-3">
-                <h1 className="text-2xl sm:text-3xl md:text-5xl font-poppins font-bold leading-tight">
+              <div className="space-y-2 sm:space-y-3 md:space-y-4">
+                <h1 className="text-3xl sm:text-4xl md:text-6xl font-poppins font-bold leading-tight">
                   <span className="text-white">Regalos</span><br className="sm:hidden" /><span className="hidden sm:inline"> Corporativos</span><br />
                   <span className="text-emerald-300 font-black">100% Sostenibles</span><br />
-                  <span className="text-white text-lg sm:text-2xl md:text-4xl">Con Propósito ESG</span>
+                  <span className="text-white text-xl sm:text-3xl md:text-5xl">Con Propósito ESG</span>
                 </h1>
-                <p className="text-white/80 text-xs sm:text-sm md:text-base leading-relaxed">Plástico reciclado con personalización láser. Diseña, crea y mide el impacto de tu gifting.</p>
+                <p className="text-white/90 text-sm sm:text-base md:text-lg leading-relaxed">Plástico reciclado con personalización láser. Diseña, crea y mide el impacto de tu gifting.</p>
               </div>
 
               {/* CTA Buttons */}
-              <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 md:gap-4 flex-shrink-0">
+              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 md:gap-5 flex-shrink-0">
                 <Link to="/shop" className="flex-1 sm:flex-none">
-                  <Button className="w-full bg-red-500 hover:bg-red-600 text-white font-bold rounded-full px-4 sm:px-6 md:px-8 py-2 sm:py-2.5 md:py-3 gap-1.5 sm:gap-2 shadow-lg text-xs sm:text-sm md:text-base">
+                  <Button className="w-full bg-red-500 hover:bg-red-600 text-white font-bold rounded-full px-6 sm:px-8 md:px-10 py-3 sm:py-3.5 md:py-4 gap-2 sm:gap-2.5 shadow-lg text-sm sm:text-base md:text-lg">
                     🎁 Explorar
                   </Button>
                 </Link>
                 <Link to="/b2b/contacto" className="flex-1 sm:flex-none">
-                  <Button className="w-full bg-yellow-400 hover:bg-yellow-500 text-gray-900 font-bold rounded-full px-4 sm:px-6 md:px-8 py-2 sm:py-2.5 md:py-3 gap-1.5 sm:gap-2 shadow-lg text-xs sm:text-sm md:text-base">
+                  <Button className="w-full bg-yellow-400 hover:bg-yellow-500 text-gray-900 font-bold rounded-full px-6 sm:px-8 md:px-10 py-3 sm:py-3.5 md:py-4 gap-2 sm:gap-2.5 shadow-lg text-sm sm:text-base md:text-lg">
                     ✨ B2B
                   </Button>
                 </Link>
@@ -182,11 +182,11 @@ export default function ShopLanding() {
               <div className="bg-white/15 backdrop-blur-xl border border-white/30 rounded-2xl md:rounded-3xl p-3 sm:p-4 md:p-6 flex-1 flex flex-col shadow-xl min-h-[200px] sm:min-h-[300px]">
                 
                 {/* Agent Header */}
-                <div className="mb-2 sm:mb-3 md:mb-4 pb-2 sm:pb-3 md:pb-4 border-b border-white/20 flex items-center gap-2 sm:gap-3 flex-shrink-0">
-                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gradient-to-br from-orange-400 to-red-500 flex items-center justify-center text-white font-bold flex-shrink-0 text-lg">✨</div>
+                <div className="mb-3 sm:mb-4 md:mb-5 pb-3 sm:pb-4 md:pb-5 border-b border-white/20 flex items-center gap-3 sm:gap-4 flex-shrink-0">
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-gradient-to-br from-orange-400 to-red-500 flex items-center justify-center text-white font-bold flex-shrink-0 text-xl">✨</div>
                   <div className="min-w-0">
-                    <p className="text-white font-bold text-xs sm:text-sm truncate">Asistente PEYU</p>
-                    <p className="text-white/50 text-[10px] sm:text-xs line-clamp-1">Bienvenido al arte del gifting</p>
+                    <p className="text-white font-bold text-sm sm:text-base truncate">Asistente PEYU</p>
+                    <p className="text-white/50 text-xs sm:text-sm line-clamp-1">Bienvenido al arte del gifting</p>
                   </div>
                 </div>
 
@@ -194,7 +194,7 @@ export default function ShopLanding() {
                 <div className="flex-1 overflow-y-auto space-y-2 sm:space-y-3 mb-2 sm:mb-3 md:mb-4 scrollbar-hide">
                   {messages.map((msg, i) => (
                     <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                      <div className={msgClass(msg)}>
+                      <div className={msgClass(msg) + ' text-sm sm:text-base'}>
                         {msg.content}
                       </div>
                     </div>
@@ -218,7 +218,7 @@ export default function ShopLanding() {
                     onChange={e => setInput(e.target.value)}
                     onKeyPress={e => e.key === 'Enter' && sendMessage()}
                     placeholder="¿Qué programa necesitas?"
-                    className="bg-white/20 border-white/30 text-white placeholder:text-white/40 text-xs sm:text-sm rounded-full focus:ring-orange-400/50 flex-1 h-8 sm:h-10"
+                    className="bg-white/20 border-white/30 text-white placeholder:text-white/40 text-sm sm:text-base rounded-full focus:ring-orange-400/50 flex-1 h-10 sm:h-12"
                     disabled={loading}
                   />
                   <Button
@@ -231,17 +231,17 @@ export default function ShopLanding() {
               </div>
 
               {/* Ocasiones Carousel */}
-              <div className="overflow-x-auto scrollbar-hide flex gap-1.5 sm:gap-2 pb-1 flex-shrink-0">
+              <div className="overflow-x-auto scrollbar-hide flex gap-2 sm:gap-3 pb-2 flex-shrink-0">
                 {OCASIONES.map(occ => (
                   <button
                     key={occ.id}
                     onClick={() => handleOccasionClick(occ)}
-                    className="flex flex-col items-center gap-0.5 sm:gap-1 flex-shrink-0 hover:scale-110 transition-transform group"
+                    className="flex flex-col items-center gap-1 sm:gap-1.5 flex-shrink-0 hover:scale-110 transition-transform group"
                   >
-                    <div className="w-8 h-8 sm:w-12 sm:h-12 rounded-full bg-white/20 border border-white/30 sm:border-2 flex items-center justify-center text-lg sm:text-2xl group-hover:bg-white/30 group-hover:border-white/50 transition-all shadow-lg">
+                    <div className="w-10 h-10 sm:w-14 sm:h-14 rounded-full bg-white/20 border border-white/30 sm:border-2 flex items-center justify-center text-xl sm:text-3xl group-hover:bg-white/30 group-hover:border-white/50 transition-all shadow-lg">
                       {occ.icon}
                     </div>
-                    <span className="text-white text-[8px] sm:text-[10px] font-bold text-center leading-tight">{occ.label}</span>
+                    <span className="text-white text-[9px] sm:text-xs font-bold text-center leading-tight">{occ.label}</span>
                   </button>
                 ))}
               </div>
@@ -251,26 +251,26 @@ export default function ShopLanding() {
             <div className="md:col-span-1 bg-gradient-to-br from-orange-600/40 to-red-600/30 border border-orange-500/40 rounded-2xl md:rounded-2xl p-3 sm:p-4 md:p-6 flex flex-col justify-between h-full shadow-xl">
               
               {/* Product Image */}
-              <div className="aspect-square bg-gradient-to-br from-orange-400/30 to-red-500/30 rounded-xl sm:rounded-2xl flex items-center justify-center text-5xl sm:text-7xl md:text-8xl">
+              <div className="aspect-square bg-gradient-to-br from-orange-400/30 to-red-500/30 rounded-xl sm:rounded-2xl flex items-center justify-center text-6xl sm:text-8xl md:text-9xl">
                 🎁
               </div>
 
               {/* Rating */}
               <div className="space-y-1 sm:space-y-2">
-                <div className="flex gap-0.5 sm:gap-1">
+                <div className="flex gap-1 sm:gap-1.5">
                   {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-5 md:h-5 fill-yellow-400 text-yellow-400" />
+                    <Star key={i} className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 fill-yellow-400 text-yellow-400" />
                   ))}
                 </div>
-                <p className="text-white/70 text-[10px] sm:text-xs">(+2.400)</p>
+                <p className="text-white/70 text-xs sm:text-sm">(+2.400)</p>
               </div>
 
               {/* Product Details */}
-              <div className="space-y-1.5 sm:space-y-2">
-                <p className="text-white font-bold text-xs sm:text-sm md:text-lg line-clamp-2">Canasta Estrelita - Edición Corporativa</p>
-                <div className="bg-white/20 border border-white/30 rounded-lg p-2 sm:p-3 space-y-1">
-                  <p className="text-white/80 text-[9px] sm:text-xs leading-tight">Plástico 100% reciclado • UV • Garantía 10 años</p>
-                  <p className="text-white font-bold text-xs sm:text-sm md:text-lg">$30.099</p>
+              <div className="space-y-2 sm:space-y-3">
+                <p className="text-white font-bold text-sm sm:text-base md:text-xl line-clamp-2">Canasta Estrelita - Edición Corporativa</p>
+                <div className="bg-white/20 border border-white/30 rounded-lg p-3 sm:p-4 space-y-1.5">
+                  <p className="text-white/90 text-xs sm:text-sm leading-tight">Plástico 100% reciclado • UV • Garantía 10 años</p>
+                  <p className="text-white font-bold text-sm sm:text-base md:text-xl">$30.099</p>
                 </div>
               </div>
             </div>

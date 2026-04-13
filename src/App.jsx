@@ -49,7 +49,6 @@ import PublicSidebar from './components/PublicSidebar';
 
 const PublicShopRoutes = () => (
   <>
-    <PublicSidebar />
     <Routes>
       <Route path="/" element={<ShopLanding />} />
       <Route path="/shop" element={<Shop />} />
