@@ -104,7 +104,8 @@ export default function InstagramGallery() {
                 <img 
                   src={post.image} 
                   alt={post.title}
-                  className="w-full h-full object-cover hover:scale-105 transition-transform"
+                  className="w-full h-full object-cover transition-transform duration-200"
+                  loading="lazy"
                 />
               </div>
 
@@ -124,14 +125,14 @@ export default function InstagramGallery() {
 
               {/* Content */}
               <div className="p-4">
-                <p className="font-bold text-sm text-gray-800 mb-1">{liked[post.id] ? post.likes + 1 : post.likes} Me gusta</p>
+                <p className="font-bold text-sm text-gray-800 mb-1">{liked[post.id] ? post.likes + 1 : post.likes} likes</p>
                 <div className="mb-3">
-                  <p className="font-bold text-gray-900 text-sm">{post.title}</p>
-                  <p className="text-gray-600 text-xs mt-1">{post.description}</p>
+                  <p className="font-bold text-gray-900 text-sm line-clamp-1">{post.title}</p>
+                  <p className="text-gray-600 text-xs mt-1 line-clamp-1">{post.description}</p>
                 </div>
-                <p className="text-2xl font-bold text-[#0F8B6C] mb-3">{post.price}</p>
+                <p className="text-xl font-bold text-[#0F8B6C] mb-3">{post.price}</p>
                 <button className="w-full bg-[#0F8B6C] hover:bg-[#0a7558] text-white py-2 rounded-lg font-semibold text-sm transition-colors">
-                  Ver Producto
+                  Ver
                 </button>
               </div>
             </div>

@@ -219,7 +219,7 @@ export default function Shop() {
                 className="group bg-white/5 border border-white/10 rounded-2xl overflow-hidden hover:border-white/30 transition-all hover:shadow-xl hover:shadow-orange-500/10"
               >
                 {/* Product Image */}
-                <div className="relative w-full aspect-video bg-gray-800 flex items-center justify-center overflow-hidden group-hover:bg-gray-700 transition-colors">
+                <div className="relative w-full aspect-video bg-gray-800 flex items-center justify-center overflow-hidden transition-colors">
                   {/* Badge */}
                   {p.categoria === 'Escritorio' && (
                     <div className="absolute top-3 left-3 bg-orange-500 text-white text-xs font-bold px-2.5 py-1 rounded-full z-10">
@@ -236,8 +236,9 @@ export default function Shop() {
                   <img 
                     src={productImages[p.nombre] || 'https://via.placeholder.com/500x500'}
                     alt={p.nombre}
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
                     onError={(e) => e.target.style.display = 'none'}
+                    loading="lazy"
                   />
                 </div>
 
