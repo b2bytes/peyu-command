@@ -104,10 +104,10 @@ export default function ShopLanding() {
       </div>
 
       {/* Main container with glassmorphism */}
-      <div className="flex-1 flex gap-2 sm:gap-4 p-2 sm:p-4 relative z-10 overflow-hidden">
+      <div className="flex-1 flex gap-3 sm:gap-5 p-3 sm:p-6 relative z-10 overflow-hidden max-w-7xl mx-auto w-full">
         
         {/* SIDEBAR - Floating vertical */}
-        <div className="hidden sm:flex flex-col items-center gap-1 sm:gap-3 bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl sm:rounded-3xl p-2 sm:p-4 shadow-xl w-16 sm:w-20 h-fit self-center my-auto">
+        <div className="hidden lg:flex flex-col items-center gap-2 sm:gap-3 bg-white/10 backdrop-blur-md border border-white/20 rounded-3xl p-3 sm:p-5 shadow-xl w-20 sm:w-24 h-fit self-center my-auto">
           {SIDEBAR_ITEMS.map((item) => {
             const Icon = item.icon;
             return (
@@ -117,25 +117,19 @@ export default function ShopLanding() {
                 className={`${item.color} w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center text-white shadow-lg hover:scale-110 transition-transform group relative flex-shrink-0`}
                 title={item.label}
               >
-                <Icon className="w-4 h-4 sm:w-5 sm:h-5" />
-                <span className="absolute bottom-full mb-1 bg-white/20 backdrop-blur text-white text-[10px] px-2 py-0.5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">{item.label}</span>
+                <Icon className="w-5 h-5 sm:w-6 sm:h-6" />
+                <span className="absolute bottom-full mb-2 bg-white/20 backdrop-blur text-white text-xs px-2.5 py-1 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap font-medium">{item.label}</span>
               </Link>
             );
           })}
         </div>
 
         {/* MAIN GLASS CARD */}
-        <div className="flex-1 bg-white/15 backdrop-blur-2xl border border-white/30 rounded-2xl sm:rounded-3xl shadow-2xl overflow-hidden flex flex-col">
+        <div className="flex-1 bg-white/15 backdrop-blur-2xl border border-white/30 rounded-3xl shadow-2xl overflow-hidden flex flex-col">
           
           {/* Header */}
-          <div className="bg-gradient-to-r from-teal-500/40 to-cyan-500/40 border-b border-white/20 px-3 sm:px-6 md:px-8 py-2 sm:py-3 md:py-4 flex items-center justify-between flex-shrink-0">
-            <div className="flex items-center gap-2 sm:gap-3">
-              <PEYULogo size="sm" showText={false} />
-              <div className="hidden sm:block">
-                <p className="font-poppins font-bold text-white text-xs sm:text-sm">PEYU</p>
-                <p className="text-white/70 text-[10px] sm:text-xs">Historias en Regalos</p>
-              </div>
-            </div>
+          <div className="bg-gradient-to-r from-teal-500/40 to-cyan-500/40 border-b border-white/20 px-4 sm:px-6 md:px-8 py-3 sm:py-4 md:py-5 flex items-center justify-between flex-shrink-0">
+            <PEYULogo size="sm" showText={true} />
             <div className="flex items-center gap-2 sm:gap-3">
               <button className="w-8 h-8 sm:w-10 sm:h-10 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center text-white transition-all flex-shrink-0">
                 <Bell className="w-4 h-4 sm:w-5 sm:h-5" />
@@ -150,18 +144,16 @@ export default function ShopLanding() {
           </div>
 
           {/* Content Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-6 p-3 sm:p-4 md:p-8 flex-1 overflow-hidden">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 md:gap-8 p-4 sm:p-6 md:p-8 flex-1 overflow-hidden">
             
             {/* Left Column - 60% */}
-            <div className="md:col-span-2 space-y-2 sm:space-y-4 md:space-y-6 flex flex-col justify-between overflow-y-auto md:overflow-visible">
+            <div className="md:col-span-2 space-y-4 sm:space-y-6 md:space-y-8 flex flex-col justify-between overflow-y-auto md:overflow-visible">
               {/* Hero Title */}
-              <div className="space-y-2 sm:space-y-3 md:space-y-4">
-                <h1 className="text-3xl sm:text-4xl md:text-6xl font-poppins font-bold leading-tight">
-                  <span className="text-white">Regalos</span><br className="sm:hidden" /><span className="hidden sm:inline"> Corporativos</span><br />
-                  <span className="text-emerald-300 font-black">100% Sostenibles</span><br />
-                  <span className="text-white text-xl sm:text-3xl md:text-5xl">Con Propósito ESG</span>
+              <div className="space-y-3 sm:space-y-4 md:space-y-5">
+                <h1 className="text-4xl sm:text-5xl md:text-7xl font-poppins font-bold leading-tight text-white drop-shadow-lg">
+                  Regalos<br /><span className="text-emerald-300 font-black">100% Sostenibles</span><br /><span className="text-lg sm:text-2xl md:text-4xl">Con Propósito ESG</span>
                 </h1>
-                <p className="text-white/90 text-sm sm:text-base md:text-lg leading-relaxed">Plástico reciclado con personalización láser. Diseña, crea y mide el impacto de tu gifting.</p>
+                <p className="text-white/95 text-base sm:text-lg md:text-xl leading-relaxed drop-shadow font-medium">Plástico reciclado con personalización láser UV</p>
               </div>
 
               {/* CTA Buttons */}
@@ -179,7 +171,7 @@ export default function ShopLanding() {
               </div>
 
               {/* Chat Agent */}
-              <div className="bg-white/15 backdrop-blur-xl border border-white/30 rounded-2xl md:rounded-3xl p-3 sm:p-4 md:p-6 flex-1 flex flex-col shadow-xl min-h-[200px] sm:min-h-[300px]">
+              <div className="bg-white/15 backdrop-blur-xl border border-white/30 rounded-3xl p-4 sm:p-5 md:p-7 flex-1 flex flex-col shadow-xl min-h-[280px] sm:min-h-[350px]">
                 
                 {/* Agent Header */}
                 <div className="mb-3 sm:mb-4 md:mb-5 pb-3 sm:pb-4 md:pb-5 border-b border-white/20 flex items-center gap-3 sm:gap-4 flex-shrink-0">
@@ -191,7 +183,7 @@ export default function ShopLanding() {
                 </div>
 
                 {/* Messages */}
-                <div className="flex-1 overflow-y-auto space-y-2 sm:space-y-3 mb-2 sm:mb-3 md:mb-4 scrollbar-hide">
+                <div className="flex-1 overflow-y-auto space-y-3 sm:space-y-4 mb-3 sm:mb-4 md:mb-5 scrollbar-hide">
                   {messages.map((msg, i) => (
                     <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                       <div className={msgClass(msg) + ' text-sm sm:text-base'}>
@@ -248,7 +240,7 @@ export default function ShopLanding() {
             </div>
 
             {/* Right Column - 40% - Product Showcase */}
-            <div className="md:col-span-1 bg-gradient-to-br from-orange-600/40 to-red-600/30 border border-orange-500/40 rounded-2xl md:rounded-2xl p-3 sm:p-4 md:p-6 flex flex-col justify-between h-full shadow-xl">
+            <div className="md:col-span-1 bg-gradient-to-br from-orange-600/40 to-red-600/30 border border-orange-500/40 rounded-3xl p-4 sm:p-5 md:p-7 flex flex-col justify-between h-full shadow-xl">
               
               {/* Product Image */}
               <div className="aspect-square bg-gradient-to-br from-orange-400/30 to-red-500/30 rounded-xl sm:rounded-2xl flex items-center justify-center text-6xl sm:text-8xl md:text-9xl">
