@@ -28,9 +28,10 @@ const SIDEBAR_ITEMS = [
 ];
 
 const FEATURED_PRODUCTS = [
-  { id: 1, nombre: 'Kit Escritorio Pro', precio: 30099, imagen: 'https://images.unsplash.com/photo-1587825140708-dfaf72ae4b04?w=500&h=500&fit=crop', rating: 5.0, reviews: 2400 },
-  { id: 2, nombre: 'Canasta Hogar Eco', precio: 25499, imagen: 'https://images.unsplash.com/photo-1578500494198-246f612d03b3?w=500&h=500&fit=crop', rating: 5.0, reviews: 1840 },
-  { id: 3, nombre: 'Set Viajero Sostenible', precio: 28999, imagen: 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=500&h=500&fit=crop', rating: 5.0, reviews: 1620 },
+  { id: 1, nombre: 'Kit Escritorio Pro', precio: 30099, imagen: 'https://i0.wp.com/peyuchile.cl/wp-content/uploads/2025/11/Kit-Escritorio-Pro-2-1-1.png?fit=1920%2C640&ssl=1', rating: 5.0, reviews: 2400, description: 'Plástico 100% reciclado • Personalización UV • Garantía 10 años' },
+  { id: 2, nombre: 'Soporte de Celular', precio: 6990, imagen: 'https://i0.wp.com/peyuchile.cl/wp-content/uploads/2025/04/carcasas-500x500-1.webp?fit=300%2C300&ssl=1', rating: 5.0, reviews: 1840, description: 'Plástico 100% reciclado • Múltiples colores • Garantía 10 años' },
+  { id: 3, nombre: 'Cachos Corporativos', precio: 18500, imagen: 'https://i0.wp.com/peyuchile.cl/wp-content/uploads/2025/04/4-mixto-1024x1024-1.webp?fit=300%2C300&ssl=1', rating: 5.0, reviews: 1620, description: 'Plástico 100% reciclado • Entretenimiento • Garantía 10 años' },
+  { id: 4, nombre: 'Macetero Eco', precio: 12999, imagen: 'https://i0.wp.com/peyuchile.cl/wp-content/uploads/2022/11/potfinal_porta-Photoroom-1.jpg?fit=300%2C300&ssl=1', rating: 5.0, reviews: 980, description: 'Plástico 100% reciclado • Diseño moderno • Garantía 10 años' },
 ];
 
 export default function ShopLanding() {
@@ -255,7 +256,7 @@ export default function ShopLanding() {
                 <div className="space-y-3 md:space-y-4">
                   <p className="text-white font-bold text-base md:text-lg line-clamp-2">{product.nombre}</p>
                   <div className="bg-white/20 backdrop-blur border border-white/40 rounded-xl p-4 md:p-5 space-y-2 shadow-lg">
-                    <p className="text-white/95 text-xs md:text-sm leading-snug">Plástico 100% reciclado • Personalización UV • Garantía 10 años</p>
+                    <p className="text-white/95 text-xs md:text-sm leading-snug">{product.description}</p>
                     <p className="text-white font-black text-2xl md:text-3xl">${product.precio.toLocaleString()}</p>
                   </div>
                 </div>
