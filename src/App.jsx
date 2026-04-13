@@ -5,6 +5,7 @@ import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
+import PWAInstallBanner from '@/components/PWAInstallBanner';
 import Layout from './components/Layout';
 import Dashboard from './pages/Dashboard';
 import ShopLanding from './pages/ShopLanding';
@@ -131,6 +132,7 @@ function App() {
             <Route path="/admin/*" element={<AuthenticatedApp />} />
           </Routes>
           <Toaster />
+          <PWAInstallBanner />
         </Router>
       </QueryClientProvider>
     </AuthProvider>

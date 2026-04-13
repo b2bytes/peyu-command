@@ -1,14 +1,52 @@
 <!doctype html>
-<html lang="en">
+<html lang="es">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="https://base44.com/logo_v2.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
+    <meta name="theme-color" content="#0F8B6C" />
+    <meta name="description" content="Plataforma de regalos corporativos 100% sostenibles con personalización láser UV" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="PEYU" />
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'><rect fill='%230F8B6C' width='180' height='180'/><text x='50%' y='50%' font-size='110' font-weight='bold' fill='white' text-anchor='middle' dominant-baseline='central' font-family='Arial'>🐢</text></svg>" />
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%230F8B6C' width='100' height='100'/><text x='50%' y='50%' font-size='70' fill='white' text-anchor='middle' dominant-baseline='central'>🐢</text></svg>" />
     <link rel="manifest" href="/manifest.json" />
-    <title>Base44 APP</title>
+    <link rel="canonical" href="https://peyu.cl" />
+    <meta property="og:title" content="PEYU - Regalos Corporativos Sostenibles" />
+    <meta property="og:description" content="Plataforma de regalos corporativos 100% sostenibles con personalización láser UV" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://peyu.cl" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="PEYU - Regalos Corporativos Sostenibles" />
+    <meta name="twitter:description" content="Plataforma de regalos corporativos 100% sostenibles con personalización láser UV" />
+    <title>PEYU - Regalos Corporativos Sostenibles</title>
   </head>
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js').then((reg) => {
+            console.log('✅ SW registrado:', reg);
+          }).catch((err) => {
+            console.log('❌ SW registro fallido:', err);
+          });
+        });
+      }
+      
+      // iOS standalone mode detection
+      if (window.navigator.standalone === true) {
+        document.documentElement.classList.add('pwa-standalone');
+      }
+      
+      // Install prompt
+      let deferredPrompt;
+      window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        document.body.dispatchEvent(new CustomEvent('pwa-installable'));
+      });
+    </script>
   </body>
 </html>
