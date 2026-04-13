@@ -167,8 +167,8 @@ export default function ShopLanding() {
             <div className="lg:col-span-1">
               <div className="bg-gradient-to-br from-white/15 to-white/5 backdrop-blur-2xl border border-white/20 rounded-3xl p-6 shadow-2xl">
                 {/* Chat Header */}
-                <div className="mb-4 pb-4 border-b border-white/10 flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-orange-400 to-red-500 flex items-center justify-center text-white font-bold">✨</div>
+                <div className="mb-4 pb-4 border-b border-white/10 flex items-center gap-3 flex-shrink-0">
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-orange-400 to-red-500 flex items-center justify-center text-white font-bold flex-shrink-0">✨</div>
                   <div>
                     <p className="text-white font-bold text-sm">Asistente PEYU</p>
                     <p className="text-white/50 text-xs">Hablamos tu idioma</p>
@@ -176,7 +176,7 @@ export default function ShopLanding() {
                 </div>
 
                 {/* Messages Container */}
-                <div className="h-64 overflow-y-auto space-y-3 mb-4 pr-2">
+                <div className="flex-1 overflow-y-auto space-y-3 mb-4 pr-2">
                   {messages.map((msg, i) => (
                     <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                       <div className={`max-w-[85%] rounded-2xl px-4 py-3 text-sm ${
@@ -201,7 +201,7 @@ export default function ShopLanding() {
                 </div>
 
                 {/* Agent Input */}
-                <div className="space-y-3">
+                <div className="space-y-3 flex-shrink-0">
                   <label className="text-white/60 text-xs font-semibold">¿Qué programa necesitas?</label>
                   <div className="flex gap-2">
                     <Input
