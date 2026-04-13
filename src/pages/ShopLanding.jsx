@@ -156,11 +156,13 @@ export default function ShopLanding() {
                   key={item.href}
                   to={item.href}
                   className={`flex items-center text-white hover:bg-white/20 transition-all rounded-lg group relative ${
-                    sidebarExpanded ? 'w-full px-3 py-2.5 justify-start gap-3' : 'w-10 h-10 justify-center'
+                    sidebarExpanded ? 'w-full px-3 py-2.5 justify-start gap-3' : 'w-12 h-12 justify-center'
                   }`}
                   title={item.label}
                 >
-                  <Icon className="w-4 h-4 flex-shrink-0" />
+                  <Icon className={`flex-shrink-0 ${
+                    sidebarExpanded ? 'w-4 h-4' : 'w-6 h-6'
+                  }`} />
                   {sidebarExpanded && <span className="text-xs font-medium">{item.label}</span>}
                 </Link>
               );
