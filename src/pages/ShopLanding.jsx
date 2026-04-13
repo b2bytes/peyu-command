@@ -49,13 +49,15 @@ export default function ShopLanding() {
   }, [messages]);
 
   useEffect(() => {
+    if (!pageLoaded) return;
     const interval = setInterval(() => {
       setCurrentProductIndex((prev) => (prev + 1) % FEATURED_PRODUCTS.length);
     }, 23000);
     return () => clearInterval(interval);
-  }, []);
+  }, [pageLoaded]);
 
   const initConversation = async () => {
+    if (conversationId) return;
     try {
       const conv = await base44.agents.createConversation({
         agent_name: 'asistente_compras',
@@ -68,17 +70,26 @@ export default function ShopLanding() {
   };
 
   const sendMessage = async (messageText = input) => {
-    if (!messageText.trim()) return;
+    const text = messageText || input;
+    if (!text.trim()) return;
     setInput('');
-    setMessages(prev => [...prev, { role: 'user', content: messageText }]);
+    setMessages(prev => [...prev, { role: 'user', content: text }]);
     setLoading(true);
 
     try {
-      if (!conversationId) await initConversation();
-      if (conversationId) {
-        const conv = await base44.agents.getConversation(conversationId);
-        await base44.agents.addMessage(conv, { role: 'user', content: messageText });
-        const unsubscribe = base44.agents.subscribeToConversation(conversationId, (data) => {
+      let convId = conversationId;
+      if (!convId) {
+        const conv = await base44.agents.createConversation({
+          agent_name: 'asistente_compras',
+          metadata: { context: 'landing' }
+        });
+        convId = conv.id;
+        setConversationId(convId);
+      }
+      if (convId) {
+        const conv = await base44.agents.getConversation(convId);
+        await base44.agents.addMessage(conv, { role: 'user', content: text });
+        const unsubscribe = base44.agents.subscribeToConversation(convId, (data) => {
           setMessages(data.messages || []);
         });
         setTimeout(() => unsubscribe(), 15000);
