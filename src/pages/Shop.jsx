@@ -190,64 +190,85 @@ export default function Shop() {
             </Button>
           </div>
         ) : (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 pb-16">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5 pb-16">
             {filtrado.map((p, idx) => (
               <Link key={p.id} to={`/producto/${p.id}`}>
-                <div className="group bg-white border border-gray-100 rounded-3xl overflow-hidden hover:shadow-2xl hover:-translate-y-1.5 hover:border-gray-200 transition-all duration-300 cursor-pointer flex flex-col h-full">
+                <div className="group bg-white border border-gray-100 rounded-3xl overflow-hidden hover:shadow-2xl hover:-translate-y-2 hover:border-transparent transition-all duration-300 cursor-pointer flex flex-col h-full">
 
                   {/* Image */}
-                  <div className="relative bg-gradient-to-br from-[#0F8B6C]/10 via-[#A7D9C9]/18 to-[#E7D8C6]/25 overflow-hidden flex-shrink-0" style={{ aspectRatio: '1' }}>
+                  <div className="relative bg-gradient-to-br from-[#0F8B6C]/10 via-[#A7D9C9]/20 to-[#E7D8C6]/30 overflow-hidden flex-shrink-0" style={{ aspectRatio: '1' }}>
                     <div className="absolute inset-0 flex flex-col items-center justify-center">
-                      <div className="text-6xl md:text-7xl group-hover:scale-110 group-hover:-translate-y-1 transition-all duration-500 drop-shadow-lg">
+                      <div className="text-8xl md:text-9xl group-hover:scale-110 group-hover:-translate-y-2 transition-all duration-500 drop-shadow-xl filter">
                         {EMOJI_MAP[p.categoria] || '📦'}
                       </div>
-                      <p className="text-[10px] font-semibold text-[#0F8B6C]/60 mt-2 px-3 text-center leading-tight tracking-wide">
-                        {p.sku}
-                      </p>
                     </div>
 
-                    {/* Top badges */}
-                    <div className="absolute top-2.5 left-2.5 flex flex-col gap-1.5">
+                    {/* Gradient overlay at bottom */}
+                    <div className="absolute bottom-0 inset-x-0 h-16 bg-gradient-to-t from-white/30 to-transparent" />
+
+                    {/* Top left badge */}
+                    <div className="absolute top-3 left-3">
                       {p.material?.includes('100%') ? (
-                        <span className="text-[10px] font-bold bg-[#0F8B6C] text-white px-2 py-0.5 rounded-full shadow">♻️ Reciclado</span>
+                        <span className="text-[10px] font-bold bg-[#0F8B6C] text-white px-2.5 py-1 rounded-full shadow-md">♻️ Reciclado</span>
                       ) : (
-                        <span className="text-[10px] font-bold bg-amber-600 text-white px-2 py-0.5 rounded-full shadow">🌾 Compostable</span>
+                        <span className="text-[10px] font-bold bg-amber-500 text-white px-2.5 py-1 rounded-full shadow-md">🌾 Compostable</span>
                       )}
-                      {idx === 0 && <span className="text-[10px] font-bold bg-[#D96B4D] text-white px-2 py-0.5 rounded-full shadow">⭐ Top</span>}
-                      {idx === 2 && <span className="text-[10px] font-bold bg-purple-600 text-white px-2 py-0.5 rounded-full shadow">🔥 Hot</span>}
                     </div>
+
+                    {/* Top right laser badge */}
                     {p.moq_personalizacion && (
-                      <span className="absolute top-2.5 right-2.5 text-[10px] font-bold bg-white/90 backdrop-blur text-purple-600 px-2 py-0.5 rounded-full shadow border border-purple-100">✨ Laser</span>
+                      <span className="absolute top-3 right-3 text-[10px] font-bold bg-white/95 backdrop-blur text-purple-600 px-2.5 py-1 rounded-full shadow-md border border-purple-100">✨ Laser</span>
+                    )}
+
+                    {/* Highlight ribbon */}
+                    {idx === 0 && (
+                      <div className="absolute bottom-3 left-3">
+                        <span className="text-[10px] font-bold bg-[#D96B4D] text-white px-2.5 py-1 rounded-full shadow-md">⭐ Más vendido</span>
+                      </div>
+                    )}
+                    {idx === 2 && (
+                      <div className="absolute bottom-3 left-3">
+                        <span className="text-[10px] font-bold bg-purple-600 text-white px-2.5 py-1 rounded-full shadow-md">🔥 Popular</span>
+                      </div>
                     )}
 
                     {/* Quick add overlay */}
                     <div className="absolute inset-x-3 bottom-3 opacity-0 group-hover:opacity-100 transition-all duration-200 translate-y-1 group-hover:translate-y-0">
                       <button
                         onClick={(e) => agregarRapido(e, p)}
-                        className={`w-full py-2 rounded-xl text-xs font-bold shadow-lg transition-colors ${agregandoId === p.id ? 'bg-green-500 text-white' : 'bg-gray-900/90 backdrop-blur text-white hover:bg-gray-900'}`}>
-                        {agregandoId === p.id ? '✓ Agregado' : '+ Agregar al carrito'}
+                        className={`w-full py-2.5 rounded-2xl text-xs font-bold shadow-xl transition-all ${
+                          agregandoId === p.id
+                            ? 'bg-green-500 text-white'
+                            : 'bg-gray-900/90 backdrop-blur-sm text-white hover:bg-gray-900'
+                        }`}>
+                        {agregandoId === p.id ? '✓ Agregado al carrito' : '+ Agregar al carrito'}
                       </button>
                     </div>
                   </div>
 
                   {/* Info */}
-                  <div className="p-4 flex flex-col flex-1">
-                    <h3 className="font-semibold text-sm text-gray-900 line-clamp-2 leading-snug group-hover:text-[#0F8B6C] transition-colors mb-1">{p.nombre}</h3>
-                    <p className="text-xs text-gray-400 mb-auto">{p.categoria}</p>
-
-                    {/* Rating mini */}
-                    <div className="flex items-center gap-1 my-2">
-                      {[1,2,3,4,5].map(s => <Star key={s} className="w-2.5 h-2.5 fill-yellow-400 text-yellow-400" />)}
-                      <span className="text-[10px] text-gray-400 ml-0.5">(127)</span>
+                  <div className="p-4 flex flex-col flex-1 gap-2">
+                    <div>
+                      <h3 className="font-semibold text-sm text-gray-900 line-clamp-2 leading-snug group-hover:text-[#0F8B6C] transition-colors">{p.nombre}</h3>
+                      <p className="text-[11px] text-gray-400 mt-0.5">{p.categoria}</p>
                     </div>
 
-                    <div className="flex items-end justify-between gap-2">
+                    {/* Rating */}
+                    <div className="flex items-center gap-1">
+                      <div className="flex gap-px">
+                        {[1,2,3,4,5].map(s => <Star key={s} className="w-3 h-3 fill-yellow-400 text-yellow-400" />)}
+                      </div>
+                      <span className="text-[10px] text-gray-400">(127)</span>
+                    </div>
+
+                    {/* Price */}
+                    <div className="flex items-end justify-between mt-auto pt-2 border-t border-gray-50">
                       <div>
                         <p className="text-[10px] text-gray-300 line-through leading-none">${(p.precio_b2c || 9990).toLocaleString('es-CL')}</p>
-                        <p className="font-poppins font-bold text-lg leading-tight text-gray-900">${Math.floor((p.precio_b2c || 9990) * 0.85).toLocaleString('es-CL')}</p>
+                        <p className="font-poppins font-bold text-xl leading-tight text-gray-900">${Math.floor((p.precio_b2c || 9990) * 0.85).toLocaleString('es-CL')}</p>
                       </div>
                       <div className="flex flex-col items-end gap-1">
-                        <span className="text-[10px] bg-green-50 text-green-700 px-2 py-0.5 rounded-lg font-bold">−15%</span>
+                        <span className="text-[10px] bg-green-50 text-green-700 px-2 py-0.5 rounded-lg font-bold border border-green-100">−15%</span>
                         {p.stock_actual !== undefined && p.stock_actual <= 5 && p.stock_actual > 0 && (
                           <span className="text-[9px] text-orange-500 font-bold">⚡ {p.stock_actual} left</span>
                         )}

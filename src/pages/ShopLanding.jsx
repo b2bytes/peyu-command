@@ -151,18 +151,30 @@ export default function ShopLanding() {
 
       {/* ── TRUST BAR ────────────────────────────────────── */}
       <section className="bg-white border-y border-gray-100">
-        <div className="max-w-6xl mx-auto px-5 py-6 grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="max-w-6xl mx-auto px-5 py-5 grid grid-cols-2 md:grid-cols-4 gap-3">
           {VALUES.map((v, i) => (
-            <div key={i} className="flex items-center gap-3 p-3 rounded-2xl hover:bg-gray-50 transition group">
-              <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform" style={{ background: v.color + '15' }}>
+            <div key={i} className="flex items-center gap-3 p-3.5 rounded-2xl bg-gray-50 hover:bg-gray-100 transition group">
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: v.color + '18' }}>
                 <v.icon className="w-5 h-5" style={{ color: v.color }} />
               </div>
               <div>
-                <p className="font-semibold text-sm text-gray-900">{v.label}</p>
+                <p className="font-bold text-sm text-gray-900 leading-tight">{v.label}</p>
                 <p className="text-xs text-gray-400">{v.desc}</p>
               </div>
             </div>
           ))}
+        </div>
+
+        {/* Ticker / logos clientes */}
+        <div className="border-t border-gray-100 py-3 overflow-hidden">
+          <div className="flex items-center gap-8 animate-none">
+            <p className="text-xs font-bold text-gray-300 uppercase tracking-widest pl-5 whitespace-nowrap flex-shrink-0">Confían en nosotros</p>
+            <div className="flex items-center gap-8 flex-wrap">
+              {CLIENTES.map(c => (
+                <span key={c} className="text-xs font-semibold text-gray-300 hover:text-gray-500 transition-colors whitespace-nowrap">{c}</span>
+              ))}
+            </div>
+          </div>
         </div>
       </section>
 
@@ -182,6 +194,17 @@ export default function ShopLanding() {
           </Link>
         </div>
 
+        {/* Category pills */}
+        <div className="flex gap-2 flex-wrap mb-8">
+          {[{e:'🖥️',l:'Escritorio'},{e:'🌱',l:'Hogar'},{e:'🎲',l:'Entretenimiento'},{e:'🎁',l:'Corporativo'},{e:'📱',l:'Carcasas'}].map((c,i) => (
+            <Link key={i} to={`/shop?cat=${c.l}`}>
+              <span className="inline-flex items-center gap-1.5 bg-white border border-gray-200 hover:border-gray-900 hover:bg-gray-900 hover:text-white text-gray-600 text-sm font-semibold px-4 py-2 rounded-2xl transition-all cursor-pointer shadow-sm">
+                {c.e} {c.l}
+              </span>
+            </Link>
+          ))}
+        </div>
+
         {loading ? (
           <div className="grid md:grid-cols-3 gap-5">
             {[1,2,3].map(i => (
@@ -193,7 +216,6 @@ export default function ShopLanding() {
             {productos.map((p, idx) => (
               <Link key={p.id} to={`/producto/${p.id}`}>
                 <div className="group bg-white rounded-3xl overflow-hidden border border-gray-100 hover:border-gray-200 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer">
-                  {/* Image area */}
                   <div className="relative overflow-hidden h-48 md:h-56">
                     <div className="absolute inset-0 bg-gradient-to-br from-[#0F8B6C]/10 via-[#A7D9C9]/20 to-[#E7D8C6]/30 group-hover:scale-105 transition-transform duration-500" />
                     <div className="absolute inset-0 flex flex-col items-center justify-center">
@@ -202,7 +224,6 @@ export default function ShopLanding() {
                       </span>
                       <p className="text-xs font-semibold text-[#0F8B6C] mt-2 px-4 text-center leading-tight">{p.nombre}</p>
                     </div>
-                    {/* Badges */}
                     <div className="absolute top-3 left-3 flex flex-col gap-1.5">
                       {p.material?.includes('100%') && (
                         <span className="text-[10px] font-bold bg-[#0F8B6C] text-white px-2 py-0.5 rounded-full">♻️ Reciclado</span>
@@ -211,14 +232,12 @@ export default function ShopLanding() {
                         <span className="text-[10px] font-bold bg-[#D96B4D] text-white px-2 py-0.5 rounded-full">⭐ Top ventas</span>
                       )}
                     </div>
-                    {/* Quick buy overlay */}
                     <div className="absolute inset-x-3 bottom-3 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                       <div className="bg-gray-900/90 backdrop-blur text-white text-xs font-semibold text-center py-2 rounded-xl">
                         Ver producto →
                       </div>
                     </div>
                   </div>
-
                   <div className="p-4">
                     <h3 className="font-semibold text-sm text-gray-900 leading-tight mb-0.5 line-clamp-1">{p.nombre}</h3>
                     <p className="text-xs text-gray-400 mb-3">{p.categoria}</p>
