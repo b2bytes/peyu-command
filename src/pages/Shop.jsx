@@ -119,54 +119,27 @@ export default function Shop() {
       </header>
 
       {/* HERO SECTION */}
-      <section className="bg-gradient-to-br from-slate-800/60 to-blue-800/60 border-b border-white/10 px-6 py-12">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid lg:grid-cols-3 gap-8 items-start">
-            {/* Left: Title & Content */}
-            <div className="lg:col-span-2 space-y-6">
-              <div>
-                <h1 className="text-5xl lg:text-6xl font-poppins font-black text-white leading-tight mb-4">
-                  Regalos Corporativos<br />
-                  <span className="text-yellow-300">100% Sostenibles</span> Con<br />
-                  <span className="text-emerald-400">Propósito ESG</span>
-                </h1>
-                <p className="text-white/80 text-lg max-w-xl leading-relaxed">Productos de plástico reciclado con personalización láser. Diseña, crea y mide el impacto de tu programa de gifting corporativo.</p>
-              </div>
-              
-              {/* CTA Buttons */}
-              <div className="flex flex-col sm:flex-row gap-3">
-                <Link to="/shop">
-                  <Button className="bg-red-600 hover:bg-red-700 text-white font-bold rounded-full px-8 py-3 gap-2 text-base">
-                    📮 Explorar Regalos
-                  </Button>
-                </Link>
-                <Link to="/b2b/contacto">
-                  <Button className="bg-yellow-400 hover:bg-yellow-500 text-gray-900 font-bold rounded-full px-8 py-3 gap-2 text-base">
-                    ✨ Regalos Corporativos con Propósito
-                  </Button>
-                </Link>
-              </div>
-            </div>
-            
-            {/* Right: Product Showcase */}
-            <div className="bg-gradient-to-br from-orange-500/20 to-red-500/20 border border-orange-400/30 rounded-2xl p-6 space-y-4 h-fit">
-              <div className="aspect-square bg-gradient-to-br from-yellow-200/30 to-orange-300/30 rounded-xl flex items-center justify-center text-8xl shadow-inner">
-                🎁
-              </div>
-              <div>
-                <p className="text-white font-bold text-base mb-3">Canasta Estrelita - Edición Corporativa</p>
-                <div className="flex gap-0.5 mb-2">
-                  {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="w-4 h-4 fill-yellow-300 text-yellow-300" />
-                  ))}
-                </div>
-                <p className="text-yellow-300 text-sm font-bold mb-3">⭐ 5.0 (+2.400 valoraciones)</p>
-                <div className="bg-white/20 border border-white/30 rounded-lg p-3">
-                  <p className="text-white/90 text-xs mb-2">Plástico 100% reciclado • Personalización UV • Garantía 10 años</p>
-                  <p className="text-white font-black text-2xl">$30.099</p>
-                </div>
-              </div>
-            </div>
+      <section className="bg-gradient-to-br from-slate-800 to-blue-800 border-b border-white/10 px-6 py-16">
+        <div className="max-w-7xl mx-auto space-y-6">
+          <h1 className="text-6xl lg:text-7xl font-poppins font-black text-white leading-tight">
+            Regalos Corporativos<br />
+            <span className="text-yellow-300">100% Sostenibles</span> Con<br />
+            <span className="text-emerald-400">Propósito ESG</span>
+          </h1>
+          <p className="text-white/80 text-lg max-w-3xl leading-relaxed">Productos de plástico reciclado con personalización láser. Diseña, crea y mide el impacto de tu programa de gifting corporativo.</p>
+          
+          {/* CTA Buttons */}
+          <div className="flex flex-col sm:flex-row gap-3 pt-2">
+            <Link to="/shop">
+              <Button className="bg-red-600 hover:bg-red-700 text-white font-bold rounded-full px-8 py-3 gap-2 text-base">
+                📮 Explorar Regalos
+              </Button>
+            </Link>
+            <Link to="/b2b/contacto">
+              <Button className="bg-yellow-400 hover:bg-yellow-500 text-gray-900 font-bold rounded-full px-8 py-3 gap-2 text-base">
+                ✨ Regalos Corporativos con Propósito
+              </Button>
+            </Link>
           </div>
         </div>
       </section>
