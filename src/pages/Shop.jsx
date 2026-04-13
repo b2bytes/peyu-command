@@ -214,7 +214,7 @@ export default function Shop() {
         {/* MAIN CONTENT */}
         <main className="lg:col-span-3">
           {/* Products Grid */}
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+           <div className="grid grid-cols-2 lg:grid-cols-3 gap-5">
             {filtered.map(p => (
               <Link
                 key={p.id}
