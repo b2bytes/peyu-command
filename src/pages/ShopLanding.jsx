@@ -107,7 +107,7 @@ export default function ShopLanding() {
           <div className="flex justify-center mb-6">
             <div className="inline-flex items-center gap-2 bg-gradient-to-r from-yellow-400/20 to-orange-400/20 border border-yellow-500/40 rounded-full px-4 py-2">
               <Sparkles className="w-4 h-4 text-yellow-400" />
-              <span className="text-white/90 text-sm font-semibold">♻️ Regalos que Transforman Empresas</span>
+              <span className="text-white/90 text-sm font-semibold">♻️ Regalos Corporativos con Propósito</span>
             </div>
           </div>
 
@@ -117,13 +117,13 @@ export default function ShopLanding() {
             <div className="lg:col-span-1 space-y-6">
               <div className="space-y-4">
                 <h1 className="text-4xl lg:text-5xl font-poppins font-bold leading-[1.1]">
-                  <span className="text-white">Historias</span><br />
-                  <span className="bg-gradient-to-r from-orange-400 to-red-500 bg-clip-text text-transparent">que Transforman</span><br />
-                  <span className="text-white">Equipos</span>
+                  <span className="text-white">Regalos Corporativos</span><br />
+                  <span className="bg-gradient-to-r from-[#0F8B6C] to-[#A7D9C9] bg-clip-text text-transparent">100% Sostenibles</span><br />
+                  <span className="text-white">Con Propósito ESG</span>
                 </h1>
 
                 <p className="text-white/70 text-sm leading-relaxed">
-                  Centraliza, automatiza y mide el ROI de tus programas de beneficios con agentes de IA.
+                  Productos de plástico reciclado con personalización láser. Diseña, crea y mide el impacto de tu programa de gifting corporativo.
                 </p>
               </div>
 
@@ -147,7 +147,7 @@ export default function ShopLanding() {
               {/* Quick Stats */}
               <div className="grid grid-cols-2 gap-2 pt-4">
                 {[
-                  { num: '+2.400', label: 'Historias' },
+                  { num: '+2.400', label: 'Clientes' },
                   { num: '10 años', label: 'Garantía' },
                 ].map((s, i) => (
                   <div key={i} className="bg-white/10 border border-white/20 rounded-lg p-3 text-center">
@@ -246,10 +246,10 @@ export default function ShopLanding() {
                     {[...Array(5)].map((_, i) => (
                       <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
                     ))}
-                    <span className="text-white/50 text-xs ml-auto">(+2.400 clientes)</span>
+                    <span className="text-white/50 text-xs ml-auto">(+2.400 empresas)</span>
                   </div>
-                  <p className="text-white font-bold text-sm">Regalos Corporativos 100% Reciclados</p>
-                  <p className="text-white/70 text-xs">Personalización con láser UV. Entrega express. Garantía 10 años.</p>
+                  <p className="text-white font-bold text-sm">Regalos que Crean Impacto</p>
+                  <p className="text-white/70 text-xs">Plástico 100% reciclado • Personalización UV • Emisión cero • Garantía 10 años</p>
                 </div>
               </div>
 
@@ -268,16 +268,16 @@ export default function ShopLanding() {
       <section className="relative border-t border-white/5 py-16 px-5">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12">
-            <p className="text-white/50 text-xs font-bold uppercase tracking-widest mb-2">POR QUÉ PEYU</p>
-            <h2 className="text-3xl font-poppins font-bold text-white">Lo que te diferencia</h2>
+            <p className="text-white/50 text-xs font-bold uppercase tracking-widest mb-2">DIFERENCIAL PEYU</p>
+            <h2 className="text-3xl font-poppins font-bold text-white">Gifting Corporativo con Propósito</h2>
           </div>
 
           <div className="grid md:grid-cols-4 gap-4">
             {[
-              { icon: Leaf, title: 'Circular', desc: 'Plástico post-consumo reciclado' },
-              { icon: Award, title: '10 Años', desc: 'Garantía en cada pieza' },
-              { icon: Zap, title: 'Express', desc: 'Personalización en 48h' },
-              { icon: Target, title: 'Estratégico', desc: 'Gifting con propósito ESG' },
+              { icon: Leaf, title: 'Sostenible', desc: 'Plástico 100% reciclado post-consumo' },
+              { icon: Award, title: 'Duradero', desc: 'Garantía 10 años en cada regalo' },
+              { icon: Zap, title: 'Rápido', desc: 'Personalización láser en 48h' },
+              { icon: Target, title: 'Estratégico', desc: 'Gifting corporativo con ROI medible' },
             ].map((b, i) => {
               const Icon = b.icon;
               return (
