@@ -28,10 +28,10 @@ const SIDEBAR_ITEMS = [
 ];
 
 const FEATURED_PRODUCTS = [
-  { id: 1, nombre: 'Kit Escritorio Pro', precio: 30099, imagen: 'https://i0.wp.com/peyuchile.cl/wp-content/uploads/2025/11/Kit-Escritorio-Pro-2-1-1.png?fit=1920%2C640&ssl=1', rating: 5.0, reviews: 2400, description: 'Plástico 100% reciclado • Personalización UV • Garantía 10 años' },
-  { id: 2, nombre: 'Soporte de Celular', precio: 6990, imagen: 'https://i0.wp.com/peyuchile.cl/wp-content/uploads/2025/04/carcasas-500x500-1.webp?fit=300%2C300&ssl=1', rating: 5.0, reviews: 1840, description: 'Plástico 100% reciclado • Múltiples colores • Garantía 10 años' },
-  { id: 3, nombre: 'Cachos Corporativos', precio: 18500, imagen: 'https://i0.wp.com/peyuchile.cl/wp-content/uploads/2025/04/4-mixto-1024x1024-1.webp?fit=300%2C300&ssl=1', rating: 5.0, reviews: 1620, description: 'Plástico 100% reciclado • Entretenimiento • Garantía 10 años' },
-  { id: 4, nombre: 'Macetero Eco', precio: 12999, imagen: 'https://i0.wp.com/peyuchile.cl/wp-content/uploads/2022/11/potfinal_porta-Photoroom-1.jpg?fit=300%2C300&ssl=1', rating: 5.0, reviews: 980, description: 'Plástico 100% reciclado • Diseño moderno • Garantía 10 años' },
+  { id: 1, nombre: 'Kit Escritorio Pro', precio: 30099, imagen: 'https://i0.wp.com/peyuchile.cl/wp-content/uploads/2025/11/Kit-Escritorio-Pro-2-1-1.png', rating: 5.0, reviews: 2400, description: 'Plástico 100% reciclado • Personalización UV • Garantía 10 años' },
+  { id: 2, nombre: 'Soporte de Celular', precio: 6990, imagen: 'https://i0.wp.com/peyuchile.cl/wp-content/uploads/2025/04/carcasas-500x500-1.webp', rating: 5.0, reviews: 1840, description: 'Plástico 100% reciclado • Múltiples colores • Garantía 10 años' },
+  { id: 3, nombre: 'Cachos Corporativos', precio: 18500, imagen: 'https://i0.wp.com/peyuchile.cl/wp-content/uploads/2025/04/4-mixto-1024x1024-1.webp', rating: 5.0, reviews: 1620, description: 'Plástico 100% reciclado • Entretenimiento • Garantía 10 años' },
+  { id: 4, nombre: 'Macetero Eco', precio: 12999, imagen: 'https://i0.wp.com/peyuchile.cl/wp-content/uploads/2022/11/potfinal_porta-Photoroom-1.jpg', rating: 5.0, reviews: 980, description: 'Plástico 100% reciclado • Diseño moderno • Garantía 10 años' },
 ];
 
 export default function ShopLanding() {
@@ -48,6 +48,13 @@ export default function ShopLanding() {
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentProductIndex((prev) => (prev + 1) % FEATURED_PRODUCTS.length);
+    }, 23000);
+    return () => clearInterval(interval);
+  }, []);
 
   const initConversation = async () => {
     try {
@@ -235,8 +242,8 @@ export default function ShopLanding() {
             return (
               <>
                 {/* Product Image */}
-                <div className="aspect-square bg-gradient-to-br from-yellow-300/40 via-orange-400/30 to-red-500/20 rounded-2xl md:rounded-3xl flex items-center justify-center shadow-inner overflow-hidden">
-                  <img src={product.imagen} alt={product.nombre} className="w-full h-full object-cover" />
+                <div className="w-full aspect-square bg-gradient-to-br from-yellow-300/40 via-orange-400/30 to-red-500/20 rounded-2xl md:rounded-3xl flex items-center justify-center shadow-inner overflow-hidden">
+                  <img src={product.imagen} alt={product.nombre} className="w-full h-full object-cover object-center" loading="lazy" />
                 </div>
 
                 {/* Rating */}
