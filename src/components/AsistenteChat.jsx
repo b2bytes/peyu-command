@@ -101,7 +101,7 @@ export default function AsistenteChat() {
           </div>
 
           {/* Messages */}
-          <div className="flex-1 overflow-y-auto h-96 space-y-3 p-4 bg-gray-50">
+          <div className="flex-1 overflow-y-auto h-96 space-y-3 p-4 bg-gray-50 flex flex-col">
             {messages.map((msg, i) => (
               <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                 <div
@@ -127,8 +127,8 @@ export default function AsistenteChat() {
             <div ref={messagesEndRef} />
           </div>
 
-          {/* Input */}
-          <div className="border-t border-gray-100 p-3 flex gap-2">
+          {/* Input - Fixed at bottom */}
+          <div className="border-t border-gray-100 p-3 flex gap-2 flex-shrink-0">
             <Input
               value={input}
               onChange={e => setInput(e.target.value)}
