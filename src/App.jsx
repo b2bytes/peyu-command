@@ -45,25 +45,10 @@ import PersonalizacionFlow from './pages/PersonalizacionFlow';
 import SoportePublico from './pages/SoportePublico';
 import SeguimientoPedido from './pages/SeguimientoPedido';
 import CatalogoVisual from './pages/CatalogoVisual';
+import PublicLayout from './components/PublicLayout';
 // Add page imports here
 
-const PublicShopRoutes = () => (
-  <>
-    <Routes>
-      <Route path="/" element={<ShopLanding />} />
-      <Route path="/shop" element={<Shop />} />
-      <Route path="/producto/:id" element={<ProductoDetalle />} />
-      <Route path="/cart" element={<Carrito />} />
-      <Route path="/b2b/contacto" element={<B2BContacto />} />
-      <Route path="/b2b/propuesta" element={<B2BPropuesta />} />
-      <Route path="/b2b/catalogo" element={<CatalogoCorporativo />} />
-      <Route path="/personalizar" element={<PersonalizacionFlow />} />
-      <Route path="/soporte" element={<SoportePublico />} />
-      <Route path="/seguimiento" element={<SeguimientoPedido />} />
-      <Route path="/catalogo-visual" element={<CatalogoVisual />} />
-    </Routes>
-  </>
-);
+
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -130,21 +115,30 @@ const AuthenticatedApp = () => {
 
 
 function App() {
-  // Check if we're on a public shop route
-  const pathName = window.location.pathname;
-  const isPublicShop = pathName === '/' || pathName.startsWith('/shop') || pathName.startsWith('/producto') || pathName.startsWith('/cart') || pathName.startsWith('/b2b');
-
   return (
     <QueryClientProvider client={queryClientInstance}>
       <Router>
-        {isPublicShop ? (
-          <PublicShopRoutes />
-        ) : (
-          <AuthProvider>
-            <AuthenticatedApp />
-            <Toaster />
-          </AuthProvider>
-        )}
+        <Routes>
+          {/* Public Routes */}
+          <Route element={<PublicLayout />}>
+            <Route path="/" element={<ShopLanding />} />
+            <Route path="/shop" element={<Shop />} />
+            <Route path="/producto/:id" element={<ProductoDetalle />} />
+            <Route path="/cart" element={<Carrito />} />
+            <Route path="/b2b/contacto" element={<B2BContacto />} />
+            <Route path="/b2b/propuesta" element={<B2BPropuesta />} />
+            <Route path="/b2b/catalogo" element={<CatalogoCorporativo />} />
+            <Route path="/personalizar" element={<PersonalizacionFlow />} />
+            <Route path="/soporte" element={<SoportePublico />} />
+            <Route path="/seguimiento" element={<SeguimientoPedido />} />
+            <Route path="/catalogo-visual" element={<CatalogoVisual />} />
+          </Route>
+
+          {/* Admin Routes */}
+          <Route element={<AuthProvider><AuthenticatedApp /><Toaster /></AuthProvider>}>
+            {/* Routes will be handled by AuthenticatedApp */}
+          </Route>
+        </Routes>
       </Router>
     </QueryClientProvider>
   )
