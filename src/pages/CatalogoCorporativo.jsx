@@ -2,8 +2,11 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
-import { Building2, Zap, Package, ArrowRight, CheckCircle, MessageCircle, Shield, Recycle } from 'lucide-react';
+import { Building2, Zap, Package, ArrowRight, CheckCircle, MessageCircle, Shield, Recycle, Sliders } from 'lucide-react';
 import WhatsAppWidget from '@/components/WhatsAppWidget';
+import B2BCatalogFilters from '@/components/B2BCatalogFilters';
+import B2BQuoteModal from '@/components/B2BQuoteModal';
+import { toast } from 'sonner';
 
 const PRICE_TIERS = [
   { label: '10–49 u.', discount: 0, badge: 'Laser gratis' },
@@ -13,12 +16,12 @@ const PRICE_TIERS = [
 ];
 
 const KITS = [
-  { id: 'kit-escritorio', nombre: 'Kit Escritorio Pro', descripcion: 'El regalo corporativo estrella. 5 piezas de uso diario para la oficina.', emoji: '🖥️', piezas: ['Soporte celular', 'Soporte notebook', 'Llavero soporte', 'Posavaso', 'Separador'], precio_base: 19990, sku: 'KIT-ESC-PRO', destacado: true },
-  { id: 'posavasos', nombre: 'Set Posavasos Corporativos', descripcion: 'Set de posavasos marmolados 100% reciclados. Presentación premium en caja.', emoji: '🟢', piezas: ['6 posavasos circulares', 'Caja presentación', 'Tarjeta sustentabilidad'], precio_base: 7990, sku: 'POS-COR-SET', destacado: false },
-  { id: 'cachos', nombre: 'Pack Cachos Corporativos', descripcion: 'Juego de cachos en plástico reciclado. Ideal para eventos y aniversarios.', emoji: '🎲', piezas: ['Pack 5 cachos', 'Dados', 'Bolsa algodón orgánico'], precio_base: 21990, sku: 'CAC-COR-P5', destacado: false },
-  { id: 'macetero', nombre: 'Macetero Corporativo', descripcion: 'Macetero marmolado para plantas de escritorio. Diseño único irrepetible.', emoji: '🌱', piezas: ['Macetero con platito', 'Logo grabado láser', 'Instructivo cuidado'], precio_base: 5990, sku: 'MAC-COR-ECO', destacado: false },
-  { id: 'lampara', nombre: 'Lámpara Corporativa Chillka', descripcion: 'Lámpara LED de diseño con material reciclado. El regalo premium.', emoji: '💡', piezas: ['Lámpara LED vintage', 'Base plástico reciclado', 'Cable tejido'], precio_base: 23490, sku: 'LAM-COR-LED', destacado: false },
-  { id: 'soporte-cel', nombre: 'Soporte Celular Corporativo', descripcion: 'Soporte de celular ergonómico para escritorio. El más vendido.', emoji: '📱', piezas: ['Soporte ajustable', 'Antideslizante', '100% reciclado'], precio_base: 6990, sku: 'SOC-COR-ERG', destacado: false },
+  { id: 'kit-escritorio', nombre: 'Kit Escritorio Pro', descripcion: 'El regalo corporativo estrella. 5 piezas de uso diario para la oficina.', emoji: '🖥️', piezas: ['Soporte celular', 'Soporte notebook', 'Llavero soporte', 'Posavaso', 'Separador'], precio_base: 19990, sku: 'KIT-ESC-PRO', categoria: 'Escritorio', material: 'Plástico 100% Reciclado', stock: 'stock', destacado: true },
+  { id: 'posavasos', nombre: 'Set Posavasos Corporativos', descripcion: 'Set de posavasos marmolados 100% reciclados. Presentación premium en caja.', emoji: '🟢', piezas: ['6 posavasos circulares', 'Caja presentación', 'Tarjeta sustentabilidad'], precio_base: 7990, sku: 'POS-COR-SET', categoria: 'Hogar', material: 'Plástico 100% Reciclado', stock: 'stock', destacado: false },
+  { id: 'cachos', nombre: 'Pack Cachos Corporativos', descripcion: 'Juego de cachos en plástico reciclado. Ideal para eventos y aniversarios.', emoji: '🎲', piezas: ['Pack 5 cachos', 'Dados', 'Bolsa algodón orgánico'], precio_base: 21990, sku: 'CAC-COR-P5', categoria: 'Entretenimiento', material: 'Plástico 100% Reciclado', stock: 'stock', destacado: false },
+  { id: 'macetero', nombre: 'Macetero Corporativo', descripcion: 'Macetero marmolado para plantas de escritorio. Diseño único irrepetible.', emoji: '🌱', piezas: ['Macetero con platito', 'Logo grabado láser', 'Instructivo cuidado'], precio_base: 5990, sku: 'MAC-COR-ECO', categoria: 'Hogar', material: 'Fibra de Trigo (Compostable)', stock: 'low_stock', destacado: false },
+  { id: 'lampara', nombre: 'Lámpara Corporativa Chillka', descripcion: 'Lámpara LED de diseño con material reciclado. El regalo premium.', emoji: '💡', piezas: ['Lámpara LED vintage', 'Base plástico reciclado', 'Cable tejido'], precio_base: 23490, sku: 'LAM-COR-LED', categoria: 'Corporativo', material: 'Plástico 100% Reciclado', stock: 'on_demand', destacado: false },
+  { id: 'soporte-cel', nombre: 'Soporte Celular Corporativo', descripcion: 'Soporte de celular ergonómico para escritorio. El más vendido.', emoji: '📱', piezas: ['Soporte ajustable', 'Antideslizante', '100% reciclado'], precio_base: 6990, sku: 'SOC-COR-ERG', categoria: 'Escritorio', material: 'Plástico 100% Reciclado', stock: 'stock', destacado: false },
 ];
 
 function calcPrice(base, qty) {
@@ -31,7 +34,38 @@ function calcPrice(base, qty) {
 
 export default function CatalogoCorporativo() {
   const [qty, setQty] = useState(100);
+  const [filters, setFilters] = useState({ categoria: [], material: [], precio: [], stock: [] });
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [showMobileFilters, setShowMobileFilters] = useState(false);
   const tier = qty >= 500 ? 3 : qty >= 200 ? 2 : qty >= 50 ? 1 : 0;
+
+  const handleFilterChange = (filterType, option, isChecked) => {
+    setFilters(prev => ({
+      ...prev,
+      [filterType]: isChecked
+        ? [...(prev[filterType] || []), option]
+        : (prev[filterType] || []).filter(o => o !== option)
+    }));
+  };
+
+  const applyFilters = (products) => {
+    return products.filter(p => {
+      if (filters.categoria.length > 0 && !filters.categoria.includes(p.categoria)) return false;
+      if (filters.material.length > 0 && !filters.material.includes(p.material)) return false;
+      if (filters.stock.length > 0) {
+        const stockMap = { 'En Stock': 'stock', 'Bajo Stock': 'low_stock', 'Bajo Pedido': 'on_demand' };
+        if (!filters.stock.some(s => stockMap[s] === p.stock)) return false;
+      }
+      if (filters.precio.length > 0) {
+        const priceRanges = { '0-10K': [0, 10000], '10K-20K': [10000, 20000], '20K-50K': [20000, 50000], '50K+': [50000, Infinity] };
+        if (!filters.precio.some(r => p.precio_base >= priceRanges[r][0] && p.precio_base < priceRanges[r][1])) return false;
+      }
+      return true;
+    });
+  };
+
+  const activeFilters = Object.entries(filters).flatMap(([key, vals]) => vals);
+  const filteredKits = applyFilters(KITS);
 
   return (
     <div className="min-h-screen bg-[#FAFAF8] font-inter">
@@ -150,15 +184,59 @@ export default function CatalogoCorporativo() {
       </div>
 
       {/* ── CATÁLOGO ───────────────────────── */}
-      <div className="max-w-6xl mx-auto px-5 py-14">
-        <div className="text-center mb-10">
-          <p className="text-xs font-semibold text-[#0F8B6C] uppercase tracking-widest mb-2">Productos</p>
-          <h2 className="text-3xl font-poppins font-bold text-gray-900">Catálogo completo</h2>
-          <p className="text-gray-400 mt-2 text-sm">Todos incluyen personalización láser UV con tu logo</p>
-        </div>
+      <div className="max-w-7xl mx-auto px-5 py-14">
+        <div className="flex items-start justify-between gap-8">
+          {/* Sidebar Filtros */}
+          <div className="hidden lg:block w-72 space-y-4">
+            <div className="sticky top-20">
+              <h3 className="font-poppins font-bold text-gray-900 mb-4 flex items-center gap-2">
+                <Sliders className="w-5 h-5" /> Filtrar
+              </h3>
+              <B2BCatalogFilters filters={filters} onFilterChange={handleFilterChange} activeFilters={activeFilters} />
+            </div>
+          </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {KITS.map(kit => (
+          {/* Main Content */}
+          <div className="flex-1">
+            {/* Mobile Filters Toggle */}
+            <div className="lg:hidden mb-6 flex items-center justify-between">
+              <p className="text-sm text-gray-600 font-medium">{filteredKits.length} productos encontrados</p>
+              <button
+                onClick={() => setShowMobileFilters(!showMobileFilters)}
+                className="flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-lg text-sm font-medium text-gray-900 hover:bg-gray-50"
+              >
+                <Sliders className="w-4 h-4" /> Filtros
+              </button>
+            </div>
+
+            {showMobileFilters && (
+              <div className="lg:hidden mb-6 p-4 border border-gray-200 rounded-xl bg-gray-50">
+                <B2BCatalogFilters filters={filters} onFilterChange={handleFilterChange} activeFilters={activeFilters} />
+              </div>
+            )}
+
+            {/* Header */}
+            <div className="mb-8">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs font-semibold text-[#0F8B6C] uppercase tracking-widest mb-2">Productos</p>
+                  <h2 className="text-3xl font-poppins font-bold text-gray-900">Catálogo completo</h2>
+                  <p className="text-gray-400 mt-2 text-sm">Todos incluyen personalización láser UV con tu logo</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Productos */}
+            {filteredKits.length === 0 ? (
+              <div className="text-center py-16">
+                <p className="text-gray-500 font-medium mb-2">No hay productos que coincidan con los filtros seleccionados</p>
+                <button onClick={() => setFilters({ categoria: [], material: [], precio: [], stock: [] })} className="text-[#0F8B6C] text-sm font-medium hover:underline">
+                  Limpiar filtros
+                </button>
+              </div>
+            ) : (
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
+                {filteredKits.map(kit => (
             <div key={kit.id} className={`bg-white rounded-3xl overflow-hidden border-2 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 ${kit.destacado ? 'border-[#0F8B6C] shadow-md shadow-[#0F8B6C]/10' : 'border-gray-100'}`}>
               {kit.destacado && (
                 <div className="bg-[#0F8B6C] text-white text-center text-xs py-2 font-bold tracking-widest">⭐ PRODUCTO ESTRELLA</div>
@@ -190,19 +268,34 @@ export default function CatalogoCorporativo() {
                       <div className="text-[10px] font-bold text-[#0F8B6C] bg-[#0F8B6C]/10 px-2 py-0.5 rounded-full">500+ u. → −25%</div>
                     </div>
                   </div>
-                  <Link to={`/b2b/contacto?productoId=${kit.id}&nombre=${encodeURIComponent(kit.nombre)}`}>
-                    <Button className="w-full gap-2 rounded-2xl bg-gray-900 hover:bg-gray-800 text-white font-semibold" size="sm">
-                      <Package className="w-4 h-4" /> Solicitar cotización
-                    </Button>
-                  </Link>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
+                  <button
+                   onClick={() => setSelectedProduct(kit)}
+                   className="w-full gap-2 rounded-2xl bg-gray-900 hover:bg-gray-800 text-white font-semibold py-2 text-sm font-medium flex items-center justify-center"
+                  >
+                   <Package className="w-4 h-4" /> Solicitar cotización
+                  </button>
+                  </div>
+                  </div>
+                  </div>
+                  ))}
+                  </div>
+                  )}
+                  </div>
+                  </div>
+                  </div>
 
-      {/* ── VALORES ─────────────────────────── */}
+                  {/* Quote Modal */}
+                  {selectedProduct && (
+                  <B2BQuoteModal
+                  product={selectedProduct}
+                  onClose={() => setSelectedProduct(null)}
+                  onSuccess={() => {
+                  toast.success(`Solicitud de ${selectedProduct.nombre} enviada correctamente`);
+                  }}
+                  />
+                  )}
+
+                  {/* ── VALORES ─────────────────────────── */}
       <div className="mx-4 md:mx-8 bg-gray-900 rounded-3xl p-8 md:p-12 mb-8">
         <div className="max-w-3xl mx-auto text-center text-white space-y-5">
           <h3 className="text-2xl md:text-3xl font-poppins font-bold">¿Por qué elegir Peyu?</h3>
