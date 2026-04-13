@@ -155,31 +155,24 @@ export default function ShopLanding() {
             {/* Left Column - 60% */}
             <div className="md:col-span-2 space-y-4 sm:space-y-6 md:space-y-8 flex flex-col justify-between overflow-y-auto md:overflow-visible">
               {/* Hero Title */}
-              <div className="space-y-3 sm:space-y-4 md:space-y-6">
-                <div>
-                  <h1 className="text-5xl sm:text-6xl md:text-8xl font-poppins font-black leading-tight text-white drop-shadow-lg mb-2">
-                    Regalos Corporativos
-                  </h1>
-                  <div className="flex flex-col md:flex-row md:items-baseline gap-1 md:gap-3">
-                    <span className="text-5xl sm:text-6xl md:text-7xl font-poppins font-black text-emerald-300">100%</span>
-                    <div>
-                      <span className="text-5xl sm:text-6xl md:text-7xl font-poppins font-black text-emerald-300 block md:inline">Sostenibles</span>
-                      <span className="text-3xl sm:text-4xl md:text-5xl font-poppins font-bold text-white block md:inline md:ml-4">Con Propósito ESG</span>
-                    </div>
-                  </div>
-                </div>
-                <p className="text-white/95 text-base sm:text-lg md:text-lg leading-relaxed drop-shadow font-medium max-w-xl">Productos de plástico reciclado con personalización láser. Diseña, crea y mide el impacto de tu programa de gifting corporativo.</p>
+              <div className="space-y-4">
+                <h1 className="text-5xl sm:text-6xl md:text-7xl font-poppins font-black leading-tight text-white drop-shadow-lg">
+                  Regalos Corporativos <span className="text-teal-400">100%</span>
+                  <br />
+                  <span className="text-emerald-400">Sostenibles</span> Con Propósito ESG
+                </h1>
+                <p className="text-white/90 text-base sm:text-lg leading-relaxed drop-shadow font-medium max-w-2xl">Productos de plástico reciclado con personalización láser. Diseña, crea y mide el impacto de tu programa de gifting corporativo.</p>
               </div>
 
               {/* CTA Buttons */}
-              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 flex-shrink-0">
+              <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 flex-shrink-0 w-full sm:w-auto">
                <Link to="/shop" className="flex-1 sm:flex-none">
-                 <Button className="w-full bg-gradient-to-r from-red-600 to-red-500 hover:from-red-700 hover:to-red-600 text-white font-bold rounded-full px-6 sm:px-10 py-3 md:py-4 gap-2 shadow-xl hover:shadow-2xl text-base md:text-lg transition-all">
-                   🎁 Explorar Regalos
+                 <Button className="w-full bg-red-600 hover:bg-red-700 text-white font-bold rounded-full px-8 py-3 gap-2 shadow-lg hover:shadow-xl text-base transition-all">
+                   📮 Explorar Regalos
                  </Button>
                </Link>
                <Link to="/b2b/contacto" className="flex-1 sm:flex-none">
-                 <Button className="w-full bg-gradient-to-r from-yellow-300 to-yellow-400 hover:from-yellow-400 hover:to-yellow-500 text-gray-900 font-bold rounded-full px-6 sm:px-10 py-3 md:py-4 gap-2 shadow-xl hover:shadow-2xl text-base md:text-lg transition-all">
+                 <Button className="w-full bg-yellow-400 hover:bg-yellow-500 text-gray-900 font-bold rounded-full px-8 py-3 gap-2 shadow-lg hover:shadow-xl text-base transition-all">
                    ✨ Regalos Corporativos con Propósito
                  </Button>
                </Link>
