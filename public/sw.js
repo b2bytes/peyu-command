@@ -1,17 +1,17 @@
-const CACHE_NAME = 'peyu-v1.0.0';
-const STATIC_ASSETS = [
-  '/',
-  '/index.html',
-  '/manifest.json',
-  'https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap'
-];
+const CACHE_NAME = 'peyu-v1.0.1';
+const RUNTIME_CACHE = 'peyu-runtime-v1';
 
 // Install: Cache static assets
 self.addEventListener('install', (event) => {
+  console.log('[SW] Installing...');
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(STATIC_ASSETS).catch(() => {
-        // Some assets might fail to cache, continue anyway
+      return Promise.all([
+        cache.add('/'),
+        cache.add('/index.html'),
+        cache.add('/manifest.json')
+      ]).catch(() => {
+        console.log('[SW] Some assets failed to cache, continuing...');
         return Promise.resolve();
       });
     })
@@ -21,41 +21,44 @@ self.addEventListener('install', (event) => {
 
 // Activate: Clean old caches
 self.addEventListener('activate', (event) => {
+  console.log('[SW] Activating...');
   event.waitUntil(
     caches.keys().then((cacheNames) => {
       return Promise.all(
         cacheNames
-          .filter((name) => name !== CACHE_NAME)
-          .map((name) => caches.delete(name))
+          .filter((name) => name !== CACHE_NAME && name !== RUNTIME_CACHE)
+          .map((name) => {
+            console.log('[SW] Deleting old cache:', name);
+            return caches.delete(name);
+          })
       );
     })
   );
   self.clients.claim();
 });
 
-// Fetch: Network first for dynamic content, cache fallback for static
+// Fetch: Network first, cache fallback
 self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
 
-  // Skip non-GET requests
-  if (request.method !== 'GET') {
-    return;
-  }
+  // Skip non-GET
+  if (request.method !== 'GET') return;
 
-  // API calls: Network first with short timeout
+  // API calls: Network with timeout fallback
   if (url.pathname.includes('/api/') || url.hostname !== location.hostname) {
     event.respondWith(
       Promise.race([
         fetch(request),
-        new Promise((resolve) =>
-          setTimeout(() => resolve(caches.match(request)), 5000)
+        new Promise((_, reject) =>
+          setTimeout(() => reject(new Error('timeout')), 5000)
         )
       ])
         .then((response) => {
-          if (response && response.status === 200) {
-            const cache = caches.open(CACHE_NAME);
-            cache.then((c) => c.put(request, response.clone()));
+          if (response?.status === 200) {
+            caches.open(RUNTIME_CACHE).then((cache) => {
+              cache.put(request, response.clone());
+            });
           }
           return response;
         })
@@ -65,34 +68,30 @@ self.addEventListener('fetch', (event) => {
   }
 
   // Static assets: Cache first
-  if (
-    request.url.includes('.js') ||
-    request.url.includes('.css') ||
-    request.url.includes('.woff') ||
-    request.url.includes('.png') ||
-    request.url.includes('.svg')
-  ) {
+  if (/\.(js|css|woff|png|svg|jpg|jpeg|gif|webp|ico)$/i.test(url.pathname)) {
     event.respondWith(
       caches.match(request).then((response) => {
         return response || fetch(request).then((fetchResponse) => {
-          if (fetchResponse && fetchResponse.status === 200) {
-            const cache = caches.open(CACHE_NAME);
-            cache.then((c) => c.put(request, fetchResponse.clone()));
+          if (fetchResponse?.status === 200) {
+            caches.open(CACHE_NAME).then((cache) => {
+              cache.put(request, fetchResponse.clone());
+            });
           }
           return fetchResponse;
-        });
+        }).catch(() => caches.match('/index.html'));
       })
     );
     return;
   }
 
-  // HTML pages: Network first (for SPA)
+  // HTML/SPA: Network first, fallback to cache/index.html
   event.respondWith(
     fetch(request)
       .then((response) => {
-        if (response && response.status === 200) {
-          const cache = caches.open(CACHE_NAME);
-          cache.then((c) => c.put(request, response.clone()));
+        if (response?.status === 200) {
+          caches.open(RUNTIME_CACHE).then((cache) => {
+            cache.put(request, response.clone());
+          });
         }
         return response;
       })
@@ -102,46 +101,36 @@ self.addEventListener('fetch', (event) => {
   );
 });
 
-// Background sync for offline actions
+// Periodic background sync
 self.addEventListener('sync', (event) => {
-  if (event.tag === 'sync-cart') {
-    event.waitUntil(syncCart());
+  if (event.tag === 'sync-data') {
+    event.waitUntil(syncData());
   }
 });
 
-async function syncCart() {
+async function syncData() {
   try {
-    const cacheStorage = await caches.open(CACHE_NAME);
-    const cachedRequests = await cacheStorage.keys();
-    
-    for (const request of cachedRequests) {
-      if (request.url.includes('/cart')) {
-        const response = await fetch(request);
-        if (response.ok) {
-          await cacheStorage.put(request, response);
-        }
-      }
-    }
+    console.log('[SW] Syncing...');
+    // Sync implementation here
   } catch (error) {
-    console.error('Sync error:', error);
+    console.error('[SW] Sync failed:', error);
   }
 }
 
-// Push notifications (optional)
+// Push notifications
 self.addEventListener('push', (event) => {
+  const data = event.data?.json?.() || {};
   const options = {
-    body: event.data?.text() || 'Notificación de PEYU',
+    body: data.body || 'Nueva notificación de PEYU',
     icon: 'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 192 192%22><rect fill=%22%230F8B6C%22 width=%22192%22 height=%22192%22/><text x=%2250%25%22 y=%2250%25%22 font-size=%22120%22 font-weight=%22bold%22 fill=%22white%22 text-anchor=%22middle%22 dominant-baseline=%22central%22>🐢</text></svg>',
-    badge: 'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 192 192%22><rect fill=%22%230F8B6C%22 width=%22192%22 height=%22192%22/><text x=%2250%25%22 y=%2250%25%22 font-size=%22120%22 font-weight=%22bold%22 fill=%22white%22 text-anchor=%22middle%22 dominant-baseline=%22central%22>🐢</text></svg>',
+    badge: 'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 96 96%22><rect fill=%22%230F8B6C%22 width=%2296%22 height=%2296%22/><text x=%2250%25%22 y=%2250%25%22 font-size=%2260%22 fill=%22white%22 text-anchor=%22middle%22 dominant-baseline=%22central%22>🐢</text></svg>',
     tag: 'peyu-notification',
-    requireInteraction: false,
-    actions: [
-      { action: 'open', title: 'Abrir' },
-      { action: 'close', title: 'Cerrar' }
-    ]
+    badge: 'https://peyu.cl/icon.png'
   };
 
-  event.waitUntil(self.registration.showNotification('PEYU', options));
+  event.waitUntil(
+    self.registration.showNotification('PEYU', options)
+  );
 });
 
 self.addEventListener('notificationclick', (event) => {

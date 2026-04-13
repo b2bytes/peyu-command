@@ -2,16 +2,32 @@
 export const PWA_UTILS = {
   // Detectar si está en modo instalado
   isStandalone: () => {
-    return window.navigator.standalone === true ||
-           window.matchMedia('(display-mode: standalone)').matches ||
-           window.matchMedia('(display-mode: fullscreen)').matches;
+    if (typeof window === 'undefined') return false;
+    return (
+      window.navigator.standalone === true ||
+      window.matchMedia('(display-mode: standalone)').matches ||
+      window.matchMedia('(display-mode: fullscreen)').matches ||
+      window.matchMedia('(display-mode: minimal-ui)').matches
+    );
   },
 
-  // Detectar plataforma
+  // Detectar plataforma - mejorado
   getPlatform: () => {
-    const ua = navigator.userAgent;
-    if (/iPad|iPhone|iPod/.test(ua)) return 'ios';
-    if (/Android/.test(ua)) return 'android';
+    if (typeof navigator === 'undefined') return 'web';
+    
+    const ua = navigator.userAgent.toLowerCase();
+    
+    // iOS primero (más específico)
+    if (/iphone|ipad|ipod|crios|opr\//.test(ua) && !/android/.test(ua)) {
+      return 'ios';
+    }
+    
+    // Android
+    if (/android/.test(ua)) {
+      return 'android';
+    }
+    
+    // Desktop/Web
     return 'web';
   },
 
@@ -70,14 +86,17 @@ export const PWA_UTILS = {
   showInstallBanner() {
     if (this.isStandalone()) return false;
     
-    const platform = this.getPlatform();
-    const lastDismissed = localStorage.getItem('pwa-banner-dismissed');
-    const daysSinceDismissed = lastDismissed 
-      ? (Date.now() - parseInt(lastDismissed)) / (1000 * 60 * 60 * 24)
-      : Infinity;
+    try {
+      const lastDismissed = localStorage.getItem('pwa-banner-dismissed');
+      const daysSinceDismissed = lastDismissed 
+        ? (Date.now() - parseInt(lastDismissed)) / (1000 * 60 * 60 * 24)
+        : Infinity;
 
-    // Show if never dismissed or 7+ days passed
-    return daysSinceDismissed > 7;
+      // Show if never dismissed or 7+ days passed
+      return daysSinceDismissed > 7;
+    } catch (e) {
+      return true; // Show if localStorage fails
+    }
   },
 
   dismissInstallBanner() {

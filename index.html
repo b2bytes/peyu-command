@@ -25,27 +25,31 @@
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
     <script>
+      // Register Service Worker
       if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-          navigator.serviceWorker.register('/sw.js').then((reg) => {
-            console.log('✅ SW registrado:', reg);
-          }).catch((err) => {
-            console.log('❌ SW registro fallido:', err);
-          });
-        });
+        navigator.serviceWorker.register('/sw.js', { scope: '/' })
+          .then((reg) => console.log('[PWA] SW registered'))
+          .catch((err) => console.log('[PWA] SW error:', err));
       }
       
-      // iOS standalone mode detection
-      if (window.navigator.standalone === true) {
+      // Standalone detection
+      const isStandalone = window.navigator.standalone === true || 
+                          window.matchMedia('(display-mode: standalone)').matches;
+      if (isStandalone) {
         document.documentElement.classList.add('pwa-standalone');
       }
       
-      // Install prompt
-      let deferredPrompt;
+      // beforeinstallprompt for Android/Desktop
       window.addEventListener('beforeinstallprompt', (e) => {
         e.preventDefault();
-        deferredPrompt = e;
-        document.body.dispatchEvent(new CustomEvent('pwa-installable'));
+        window.pwaPrompt = e;
+        console.log('[PWA] Install prompt ready');
+      });
+      
+      // App installed event
+      window.addEventListener('appinstalled', () => {
+        console.log('[PWA] App installed successfully');
+        window.pwaPrompt = null;
       });
     </script>
   </body>
