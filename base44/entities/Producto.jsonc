@@ -101,6 +101,10 @@
     "garantia_anios": {
       "type": "number",
       "title": "Garant\u00eda (a\u00f1os)"
+    },
+    "imagen_url": {
+      "type": "string",
+      "title": "URL Imagen Producto"
     }
   },
   "required": [

@@ -15,37 +15,12 @@ export default function Shop() {
   const [agregandoId, setAgregandoId] = useState(null);
 
   const getProductImage = (producto) => {
-    // Mapeo por categoría y nombre (fallback si no hay campo específico de imagen)
-    const categoryImageMap = {
-      'Escritorio': {
-        'Kit Escritorio Pro': 'https://media.base44.com/images/public/69d99b9d61f699701129c103/b5b3cf211_kitclassssprro2.jpg',
-        'Soporte Celular Aguas': 'https://media.base44.com/images/public/69d99b9d61f699701129c103/5085b8b77_WhatsAppImage2026-03-23at51806PM2.jpg',
-        'Soporte Notebook': 'https://media.base44.com/images/public/69d99b9d61f699701129c103/f9a08d799_kitclasico.jpg',
-      },
-      'Hogar': {
-        'Macetero': 'https://media.base44.com/images/public/69d99b9d61f699701129c103/355ca531a_sopooll1.jpg',
-        'Posavasos': 'https://media.base44.com/images/public/69d99b9d61f699701129c103/4bfe4fc51_sopooll.jpg',
-      },
-      'Entretenimiento': {
-        'Cachos': 'https://media.base44.com/images/public/69d99b9d61f699701129c103/da02d09c2_kitclassssprro4.jpg',
-      },
-      'Corporativo': {
-        'Lámpara': 'https://media.base44.com/images/public/69d99b9d61f699701129c103/8f212c064_kitclassssprro1.jpg',
-      }
-    };
-
-    // Intenta encontrar por categoría y nombre
-    if (categoryImageMap[producto.categoria]?.[producto.nombre]) {
-      return categoryImageMap[producto.categoria][producto.nombre];
+    // Si el producto tiene imagen_url, usarla
+    if (producto.imagen_url) {
+      return producto.imagen_url;
     }
 
-    // Fallback por nombre completo
-    const allImages = Object.values(categoryImageMap).reduce((acc, cat) => ({ ...acc, ...cat }), {});
-    if (allImages[producto.nombre]) {
-      return allImages[producto.nombre];
-    }
-
-    // Imagen por defecto según categoría
+    // Fallback a imagen por defecto según categoría
     const defaultByCategory = {
       'Escritorio': 'https://media.base44.com/images/public/69d99b9d61f699701129c103/5085b8b77_WhatsAppImage2026-03-23at51806PM2.jpg',
       'Hogar': 'https://media.base44.com/images/public/69d99b9d61f699701129c103/355ca531a_sopooll1.jpg',
