@@ -79,9 +79,15 @@ export default function Shop() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900" style={{
+      backgroundImage: `linear-gradient(135deg, rgba(15, 23, 42, 0.75) 0%, rgba(15, 78, 137, 0.75) 50%, rgba(15, 23, 42, 0.75) 100%), url('https://media.base44.com/images/public/69d99b9d61f699701129c103/6935b8ac0_image.png')`,
+      backgroundSize: 'cover',
+      backgroundPosition: 'center',
+      backgroundAttachment: 'fixed',
+      backgroundRepeat: 'no-repeat'
+    }}>
       {/* HEADER */}
-      <header className="sticky top-0 z-40 bg-gradient-to-r from-slate-900/95 to-blue-900/95 backdrop-blur-xl border-b border-white/10 px-6 py-4">
+      <header className="sticky top-0 z-40 bg-white/5 backdrop-blur-md border-b border-white/20 px-6 py-4">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2 hover:opacity-80 transition">
             <PEYULogo size="md" showText={true} />
@@ -119,9 +125,9 @@ export default function Shop() {
       </header>
 
       {/* HERO SECTION */}
-      <section className="bg-gradient-to-br from-slate-800 to-blue-800 border-b border-white/10 px-6 py-20">
+      <section className="bg-white/3 backdrop-blur-xs border-b border-white/15 px-6 py-20">
         <div className="max-w-7xl mx-auto space-y-6">
-          <h1 className="text-6xl lg:text-7xl font-poppins font-black text-white leading-tight">
+          <h1 className="text-5xl sm:text-6xl md:text-7xl font-poppins font-black text-white leading-tight">
             Regalos Corporativos<br />
             <span className="text-yellow-300">100% Sostenibles</span> Con<br />
             <span className="text-emerald-400">Propósito ESG</span>
@@ -149,19 +155,19 @@ export default function Shop() {
         <aside className="lg:col-span-1 h-fit">
           <div className="sticky top-24 space-y-4">
             {/* Categories */}
-            <div className="bg-gradient-to-br from-yellow-500/20 to-orange-500/10 border border-yellow-500/30 rounded-2xl overflow-hidden">
-              <div className="bg-yellow-500/30 px-4 py-3 border-b border-yellow-500/20">
-                <p className="text-xs font-bold text-yellow-200 uppercase tracking-widest">CATEGORÍAS</p>
+            <div className="bg-white/5 backdrop-blur-sm border border-white/20 rounded-2xl overflow-hidden">
+            <div className="bg-white/10 px-4 py-3 border-b border-white/20">
+              <p className="text-xs font-bold text-white/80 uppercase tracking-widest">CATEGORÍAS</p>
               </div>
               <div className="space-y-1 p-3">
                 {categorias.map(cat => (
                   <button
                     key={cat}
                     onClick={() => setSelectedCategory(cat)}
-                    className={`w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition-all ${
+                    className={`w-full text-left px-3 py-2 rounded-lg text-sm font-semibold transition-all ${
                       selectedCategory === cat
                         ? 'bg-yellow-500 text-gray-900'
-                        : 'text-white/70 hover:text-white hover:bg-white/10'
+                        : 'text-white/70 hover:text-white hover:bg-white/20'
                     }`}>
                     {cat}
                   </button>
@@ -170,8 +176,8 @@ export default function Shop() {
             </div>
 
             {/* Price Filter */}
-            <div className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden">
-              <div className="bg-white/10 px-4 py-3 border-b border-white/10">
+            <div className="bg-white/5 backdrop-blur-sm border border-white/20 rounded-2xl overflow-hidden">
+            <div className="bg-white/10 px-4 py-3 border-b border-white/20">
                 <p className="text-xs font-bold text-white/70 uppercase tracking-widest">PRECIO (CLP)</p>
               </div>
               <div className="space-y-1 p-3">
@@ -195,7 +201,7 @@ export default function Shop() {
               <Link
                 key={p.id}
                 to={`/producto/${p.id}`}
-                className="group bg-gradient-to-br from-slate-700/40 to-slate-800/40 border border-white/15 rounded-3xl overflow-hidden hover:border-white/30 transition-all hover:shadow-2xl hover:shadow-orange-500/20"
+                className="group bg-white/5 backdrop-blur-sm border border-white/20 rounded-3xl overflow-hidden hover:border-white/40 hover:bg-white/10 transition-all hover:shadow-2xl hover:shadow-orange-500/30"
               >
                 {/* Product Image */}
                 <div className="relative w-full aspect-square bg-gradient-to-br from-gray-700 to-gray-900 flex items-center justify-center overflow-hidden">
@@ -241,7 +247,7 @@ export default function Shop() {
                 {/* Product Info */}
                 <div className="p-5 space-y-4">
                   <div>
-                    <h3 className="font-bold text-base text-white group-hover:text-yellow-300 transition-colors line-clamp-2 mb-2">
+                    <h3 className="font-poppins font-black text-lg text-white group-hover:text-yellow-300 transition-colors line-clamp-2 mb-2">
                       {p.nombre}
                     </h3>
                     <p className="text-xs text-white/60">{p.descripcion}</p>
@@ -259,8 +265,8 @@ export default function Shop() {
 
                   {/* Pricing */}
                   <div className="bg-white/10 border border-white/20 rounded-2xl p-3 space-y-1">
-                    <p className="text-2xl font-black text-white">
-                      CLP ${(p.precio_b2c).toLocaleString('es-CL')}
+                    <p className="text-3xl font-black text-white">
+                      ${(p.precio_b2c).toLocaleString('es-CL')}
                     </p>
                     <p className="text-xs text-white/60">Entrega en 7 días</p>
                   </div>

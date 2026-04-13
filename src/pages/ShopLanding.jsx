@@ -237,7 +237,8 @@ export default function ShopLanding() {
         </div>
 
         {/* RIGHT CONTAINER - Product Carousel */}
-        <div className="w-80 bg-gradient-to-br from-orange-600/10 to-red-600/5 border border-orange-500/20 rounded-3xl p-6 flex flex-col justify-between shadow-xl">
+        <Link to={`/producto/${FEATURED_PRODUCTS[currentProductIndex].id}`}>
+        <div className="w-80 bg-gradient-to-br from-orange-600/10 to-red-600/5 border border-orange-500/20 rounded-3xl p-6 flex flex-col justify-between shadow-xl hover:shadow-2xl hover:border-orange-500/40 transition-all cursor-pointer group">
           {(() => {
             const product = FEATURED_PRODUCTS[currentProductIndex];
             return (
@@ -299,6 +300,7 @@ export default function ShopLanding() {
             );
           })()}
         </div>
+        </Link>
       </div>
     </div>
   );
