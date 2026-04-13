@@ -16,48 +16,48 @@ const navGroups = [
   {
     label: "Operaciones",
     items: [
-      { path: "/admin", label: "Centro de Comando", icon: LayoutDashboard },
-      { path: "/pipeline", label: "Pipeline B2B", icon: Users },
-      { path: "/cotizaciones", label: "Cotizaciones", icon: FileText },
-      { path: "/cpq", label: "CPQ Cotizador", icon: Calculator },
-      { path: "/soporte", label: "Soporte & WhatsApp", icon: MessageSquare },
+      { path: "/admin/", label: "Centro de Comando", icon: LayoutDashboard },
+      { path: "/admin/pipeline", label: "Pipeline B2B", icon: Users },
+      { path: "/admin/cotizaciones", label: "Cotizaciones", icon: FileText },
+      { path: "/admin/cpq", label: "CPQ Cotizador", icon: Calculator },
+      { path: "/admin/soporte", label: "Soporte & WhatsApp", icon: MessageSquare },
     ]
   },
   {
     label: "Comercial",
     items: [
-      { path: "/ecommerce", label: "E-commerce", icon: ShoppingCart },
-      { path: "/tiendas", label: "Tiendas Físicas", icon: Store },
-      { path: "/clientes", label: "Clientes / LTV", icon: UserCheck },
-      { path: "/catalogo", label: "Catálogo SKUs", icon: Package },
+      { path: "/admin/ecommerce", label: "E-commerce", icon: ShoppingCart },
+      { path: "/admin/tiendas", label: "Tiendas Físicas", icon: Store },
+      { path: "/admin/clientes", label: "Clientes / LTV", icon: UserCheck },
+      { path: "/admin/catalogo", label: "Catálogo SKUs", icon: Package },
     ]
   },
   {
     label: "Producción",
     items: [
-      { path: "/operaciones", label: "Operaciones", icon: SettingsIcon },
-      { path: "/trazabilidad", label: "Trazabilidad", icon: HardHat },
-      { path: "/inventario", label: "Inventario", icon: Archive },
-      { path: "/proveedores", label: "Proveedores", icon: Truck },
-      { path: "/compras", label: "Compras & Supply", icon: ShoppingCart },
-      { path: "/esg", label: "Sostenibilidad ESG", icon: Leaf },
+      { path: "/admin/operaciones", label: "Operaciones", icon: SettingsIcon },
+      { path: "/admin/trazabilidad", label: "Trazabilidad", icon: HardHat },
+      { path: "/admin/inventario", label: "Inventario", icon: Archive },
+      { path: "/admin/proveedores", label: "Proveedores", icon: Truck },
+      { path: "/admin/compras", label: "Compras & Supply", icon: ShoppingCart },
+      { path: "/admin/esg", label: "Sostenibilidad ESG", icon: Leaf },
     ]
   },
   {
     label: "Estrategia",
     items: [
-      { path: "/financiero", label: "Financiero", icon: TrendingUp },
-      { path: "/flujo-caja", label: "Flujo de Caja", icon: Store },
-      { path: "/marketing", label: "Marketing", icon: Megaphone },
-      { path: "/analitica", label: "Analítica", icon: BarChart3 },
-      { path: "/equipo", label: "Equipo / RRHH", icon: HardHat },
-      { path: "/okrs", label: "OKRs & Metas", icon: Flag },
-      { path: "/calendario", label: "Agenda Comercial", icon: CalendarDays },
-      { path: "/plan", label: "Plan de Acción", icon: ListChecks },
-      { path: "/ia", label: "Asistente IA", icon: Sparkles },
-      { path: "/reportes", label: "Reportes & Análisis", icon: PieChart },
-      { path: "/configuracion", label: "Configuración", icon: SettingsIcon },
-      { path: "/alertas", label: "Centro de Alertas", icon: AlertTriangle },
+      { path: "/admin/financiero", label: "Financiero", icon: TrendingUp },
+      { path: "/admin/flujo-caja", label: "Flujo de Caja", icon: Store },
+      { path: "/admin/marketing", label: "Marketing", icon: Megaphone },
+      { path: "/admin/analitica", label: "Analítica", icon: BarChart3 },
+      { path: "/admin/equipo", label: "Equipo / RRHH", icon: HardHat },
+      { path: "/admin/okrs", label: "OKRs & Metas", icon: Flag },
+      { path: "/admin/calendario", label: "Agenda Comercial", icon: CalendarDays },
+      { path: "/admin/plan", label: "Plan de Acción", icon: ListChecks },
+      { path: "/admin/ia", label: "Asistente IA", icon: Sparkles },
+      { path: "/admin/reportes", label: "Reportes & Análisis", icon: PieChart },
+      { path: "/admin/configuracion", label: "Configuración", icon: SettingsIcon },
+      { path: "/admin/alertas", label: "Centro de Alertas", icon: AlertTriangle },
     ]
   }
 ];

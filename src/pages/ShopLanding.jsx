@@ -210,8 +210,13 @@ export default function ShopLanding() {
                 <MobileMenu items={MENU_ITEMS} />
                 <PEYULogo size="xs" showText={true} />
               </div>
-              <div className="flex items-center gap-3 flex-shrink-0">
-                <button className="w-10 h-10 lg:w-10 lg:h-10 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center text-white transition-all active:bg-white/40 flex-shrink-0 touch-target">
+              <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
+                <Link to="/admin" className="hidden sm:block">
+                  <button className="text-xs sm:text-sm font-bold px-3 sm:px-4 py-2 rounded-full bg-white/20 hover:bg-white/30 border border-white/30 text-white transition-all active:bg-white/40 touch-target">
+                    👤 Admin
+                  </button>
+                </Link>
+                <button className="w-10 h-10 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center text-white transition-all active:bg-white/40 flex-shrink-0 touch-target hidden sm:flex">
                   <Bell className="w-5 h-5" />
                 </button>
                 <Link to="/cart">

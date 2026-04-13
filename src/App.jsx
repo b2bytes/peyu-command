@@ -70,35 +70,34 @@ const AuthenticatedApp = () => {
   return (
     <Routes>
       <Route element={<Layout />}>
-        <Route path="/admin" element={<Dashboard />} />
-        <Route path="/pipeline" element={<PipelineB2B />} />
-        <Route path="/cpq" element={<CPQCalculator />} />
-        <Route path="/soporte" element={<Soporte />} />
-        <Route path="/financiero" element={<Financiero />} />
-        <Route path="/clientes" element={<Clientes />} />
-        <Route path="/tiendas" element={<Tiendas />} />
-        <Route path="/proveedores" element={<Proveedores />} />
-        <Route path="/equipo" element={<Equipo />} />
-        <Route path="/catalogo" element={<Catalogo />} />
-        <Route path="/okrs" element={<OKRs />} />
-        <Route path="/inventario" element={<Inventario />} />
-        <Route path="/ecommerce" element={<Ecommerce />} />
-        <Route path="/flujo-caja" element={<FlujoCaja />} />
-        <Route path="/trazabilidad" element={<Trazabilidad />} />
-        <Route path="/compras" element={<Compras />} />
-        <Route path="/esg" element={<ESG />} />
-        <Route path="/plan" element={<PlanAccion />} />
-        <Route path="/ia" element={<AsistenteIA />} />
-        <Route path="/cotizaciones" element={<Cotizaciones />} />
-        <Route path="/calendario" element={<Calendario />} />
-        <Route path="/reportes" element={<Reportes />} />
-        <Route path="/configuracion" element={<Configuracion />} />
-        <Route path="/alertas" element={<Alertas />} />
-        <Route path="/operaciones" element={<Operaciones />} />
-        <Route path="/marketing" element={<Marketing />} />
-        <Route path="/analitica" element={<Analitica />} />
-        <Route path="/admin/propuestas" element={<AdminPropuestas />} />
-        <Route path="/admin/b2b-leads" element={<AdminPropuestas />} />
+        <Route index element={<Dashboard />} />
+        <Route path="pipeline" element={<PipelineB2B />} />
+        <Route path="cpq" element={<CPQCalculator />} />
+        <Route path="soporte" element={<Soporte />} />
+        <Route path="financiero" element={<Financiero />} />
+        <Route path="clientes" element={<Clientes />} />
+        <Route path="tiendas" element={<Tiendas />} />
+        <Route path="proveedores" element={<Proveedores />} />
+        <Route path="equipo" element={<Equipo />} />
+        <Route path="catalogo" element={<Catalogo />} />
+        <Route path="okrs" element={<OKRs />} />
+        <Route path="inventario" element={<Inventario />} />
+        <Route path="ecommerce" element={<Ecommerce />} />
+        <Route path="flujo-caja" element={<FlujoCaja />} />
+        <Route path="trazabilidad" element={<Trazabilidad />} />
+        <Route path="compras" element={<Compras />} />
+        <Route path="esg" element={<ESG />} />
+        <Route path="plan" element={<PlanAccion />} />
+        <Route path="ia" element={<AsistenteIA />} />
+        <Route path="cotizaciones" element={<Cotizaciones />} />
+        <Route path="calendario" element={<Calendario />} />
+        <Route path="reportes" element={<Reportes />} />
+        <Route path="configuracion" element={<Configuracion />} />
+        <Route path="alertas" element={<Alertas />} />
+        <Route path="operaciones" element={<Operaciones />} />
+        <Route path="marketing" element={<Marketing />} />
+        <Route path="analitica" element={<Analitica />} />
+        <Route path="propuestas" element={<AdminPropuestas />} />
       </Route>
       <Route path="*" element={<PageNotFound />} />
     </Routes>
@@ -107,31 +106,34 @@ const AuthenticatedApp = () => {
 
 function App() {
   return (
-    <QueryClientProvider client={queryClientInstance}>
-      <Router>
-        <Routes>
-          {/* Landing Page - Standalone */}
-          <Route path="/" element={<ShopLanding />} />
-          
-          {/* Public Routes */}
-          <Route element={<PublicLayout />}>
-            <Route path="/shop" element={<Shop />} />
-            <Route path="/producto/:id" element={<ProductoDetalle />} />
-            <Route path="/cart" element={<Carrito />} />
-            <Route path="/b2b/contacto" element={<B2BContacto />} />
-            <Route path="/b2b/propuesta" element={<B2BPropuesta />} />
-            <Route path="/b2b/catalogo" element={<CatalogoCorporativo />} />
-            <Route path="/personalizar" element={<PersonalizacionFlow />} />
-            <Route path="/soporte" element={<SoportePublico />} />
-            <Route path="/seguimiento" element={<SeguimientoPedido />} />
-            <Route path="/catalogo-visual" element={<CatalogoVisual />} />
-          </Route>
+    <AuthProvider>
+      <QueryClientProvider client={queryClientInstance}>
+        <Router>
+          <Routes>
+            {/* Landing Page - Standalone */}
+            <Route path="/" element={<ShopLanding />} />
+            
+            {/* Public Routes */}
+            <Route element={<PublicLayout />}>
+              <Route path="/shop" element={<Shop />} />
+              <Route path="/producto/:id" element={<ProductoDetalle />} />
+              <Route path="/cart" element={<Carrito />} />
+              <Route path="/b2b/contacto" element={<B2BContacto />} />
+              <Route path="/b2b/propuesta" element={<B2BPropuesta />} />
+              <Route path="/b2b/catalogo" element={<CatalogoCorporativo />} />
+              <Route path="/personalizar" element={<PersonalizacionFlow />} />
+              <Route path="/soporte" element={<SoportePublico />} />
+              <Route path="/seguimiento" element={<SeguimientoPedido />} />
+              <Route path="/catalogo-visual" element={<CatalogoVisual />} />
+            </Route>
 
-          {/* Admin Routes */}
-          <Route element={<AuthProvider><AuthenticatedApp /><Toaster /></AuthProvider>} />
-        </Routes>
-      </Router>
-    </QueryClientProvider>
+            {/* Admin Routes - Protected */}
+            <Route path="/admin/*" element={<AuthenticatedApp />} />
+          </Routes>
+          <Toaster />
+        </Router>
+      </QueryClientProvider>
+    </AuthProvider>
   );
 }
 
