@@ -120,10 +120,10 @@ export default function ShopLanding() {
       backgroundRepeat: 'no-repeat'
     }}>
       {/* Main container with glassmorphism */}
-      <div className="flex-1 flex gap-3 sm:gap-4 p-3 sm:p-4 lg:p-6 relative z-10 w-full flex-col lg:flex-row items-stretch justify-center lg:justify-between">
+      <div className="flex-1 flex gap-3 sm:gap-4 p-3 sm:p-4 lg:p-6 relative z-10 w-full flex-col lg:flex-row items-stretch">
         
         {/* SIDEBAR - Floating vertical */}
-        <div className="hidden lg:flex flex-col items-center gap-1.5 bg-white/10 backdrop-blur-md border border-white/20 rounded-3xl p-2.5 shadow-xl w-16 h-auto self-center">
+        <div className="hidden lg:flex flex-col items-center gap-1.5 bg-white/10 backdrop-blur-md border border-white/20 rounded-3xl p-2.5 shadow-xl w-16 h-fit self-start mt-0">
           {SIDEBAR_ITEMS.map((item) => {
             const Icon = item.icon;
             return (
@@ -141,7 +141,7 @@ export default function ShopLanding() {
         </div>
 
         {/* LEFT CONTAINER - Content */}
-        <div className="flex-1 bg-white/3 backdrop-blur-xs border border-white/15 rounded-2xl lg:rounded-3xl shadow-2xl overflow-hidden flex flex-col min-w-0 max-w-3xl">
+        <div className="flex-1 bg-white/3 backdrop-blur-xs border border-white/15 rounded-2xl lg:rounded-3xl shadow-2xl overflow-hidden flex flex-col min-w-0">
           
           {/* Header */}
           <div className="bg-gradient-to-r from-teal-500/40 to-cyan-500/40 border-b border-white/20 px-3 sm:px-4 py-2.5 sm:py-3 flex items-center justify-between flex-shrink-0">
@@ -186,56 +186,32 @@ export default function ShopLanding() {
             </div>
 
             {/* Chat Agent */}
-            <div className="bg-white/5 backdrop-blur-sm border border-white/15 rounded-2xl lg:rounded-3xl p-3 sm:p-4 flex flex-col shadow-xl flex-1 min-h-48 sm:min-h-56 overflow-hidden">
+            <div className="bg-white/5 backdrop-blur-sm border border-white/15 rounded-2xl lg:rounded-3xl p-3 sm:p-4 flex flex-col shadow-xl flex-1 min-h-48 sm:min-h-56">
               
               {/* Agent Header */}
               <div className="mb-2 pb-2 border-b border-white/20 flex items-center gap-2 flex-shrink-0 min-w-0">
                 <div className="w-8 h-8 rounded-full bg-gradient-to-br from-orange-400 to-red-500 flex items-center justify-center text-white font-bold flex-shrink-0 text-sm shadow-lg">✨</div>
                 <div className="min-w-0">
                   <p className="text-white font-bold text-xs">Asistente PEYU</p>
-                  <p className="text-white/50 text-[10px] line-clamp-1">¿Cómo te puedo ayudar hoy?</p>
+                  <p className="text-white/50 text-[10px] line-clamp-1">¿Te gustaría un recorrido personalizado?</p>
                 </div>
               </div>
 
-              {/* Messages Container */}
-              <div className="flex-1 overflow-y-auto space-y-2 mb-3 scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent">
-                {messages.map((msg, idx) => (
-                  <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                    <div className={`max-w-xs text-xs sm:text-sm rounded-lg px-3 py-2 ${
-                      msg.role === 'user'
-                        ? 'bg-teal-600 text-white rounded-br-none'
-                        : 'bg-white/20 text-white rounded-bl-none'
-                    }`}>
-                      {msg.content}
-                    </div>
-                  </div>
-                ))}
-                {loading && (
-                  <div className="flex justify-start">
-                    <div className="bg-white/20 text-white rounded-lg rounded-bl-none px-3 py-2 text-xs">
-                      <span className="inline-block w-2 h-2 bg-white rounded-full animate-bounce"></span>
-                      <span className="inline-block w-2 h-2 bg-white rounded-full animate-bounce ml-1" style={{animationDelay: '0.2s'}}></span>
-                      <span className="inline-block w-2 h-2 bg-white rounded-full animate-bounce ml-1" style={{animationDelay: '0.4s'}}></span>
-                    </div>
-                  </div>
-                )}
-              </div>
-
               {/* Input */}
-              <div className="flex gap-2 flex-shrink-0 min-w-0">
+              <div className="flex gap-2 mt-2 flex-shrink-0 min-w-0">
                 <Input
                   value={input}
                   onChange={e => setInput(e.target.value)}
                   onKeyPress={e => e.key === 'Enter' && sendMessage()}
                   placeholder="¿Qué necesitas?"
-                  className="bg-white/20 border-white/30 text-white placeholder:text-white/40 text-xs sm:text-sm rounded-lg focus:ring-teal-400/50 flex-1 h-8 sm:h-9"
+                  className="bg-white/20 border-white/30 text-white placeholder:text-white/40 text-xs sm:text-sm rounded-2xl focus:ring-teal-400/50 flex-1 h-9 sm:h-10"
                   disabled={loading}
                 />
                 <Button
                   onClick={sendMessage}
                   disabled={loading || !input.trim()}
-                  className="bg-teal-500 hover:bg-teal-600 text-white rounded-lg w-8 h-8 sm:w-9 sm:h-9 p-0 flex items-center justify-center flex-shrink-0">
-                  <Send className="w-3.5 h-3.5" />
+                  className="bg-teal-500 hover:bg-teal-600 text-white rounded-full w-9 h-9 sm:w-10 sm:h-10 p-0 flex items-center justify-center flex-shrink-0">
+                  <Send className="w-4 h-4" />
                 </Button>
               </div>
 
@@ -260,14 +236,14 @@ export default function ShopLanding() {
         </div>
 
         {/* RIGHT CONTAINER - Product Carousel */}
-        <Link to={`/producto/${FEATURED_PRODUCTS[currentProductIndex].id}`} className="hidden lg:block self-center">
-        <div className="w-64 bg-gradient-to-br from-orange-600/10 to-red-600/5 border border-orange-500/20 rounded-2xl lg:rounded-3xl p-4 lg:p-6 flex flex-col justify-between shadow-xl hover:shadow-2xl hover:border-orange-500/40 transition-all cursor-pointer group flex-shrink-0 h-full max-h-96">
+        <Link to={`/producto/${FEATURED_PRODUCTS[currentProductIndex].id}`} className="hidden lg:block">
+        <div className="w-64 bg-gradient-to-br from-orange-600/10 to-red-600/5 border border-orange-500/20 rounded-2xl lg:rounded-3xl p-4 lg:p-6 flex flex-col justify-between shadow-xl hover:shadow-2xl hover:border-orange-500/40 transition-all cursor-pointer group flex-shrink-0">
           {(() => {
             const product = FEATURED_PRODUCTS[currentProductIndex];
             return (
               <>
                 {/* Product Image */}
-                <div className="w-full h-40 bg-gradient-to-br from-yellow-300/40 via-orange-400/30 to-red-500/20 rounded-xl lg:rounded-2xl flex items-center justify-center shadow-inner overflow-hidden flex-shrink-0">
+                <div className="w-full aspect-square bg-gradient-to-br from-yellow-300/40 via-orange-400/30 to-red-500/20 rounded-xl lg:rounded-2xl flex items-center justify-center shadow-inner overflow-hidden">
                   <img src={product.imagen} alt={product.nombre} className="w-full h-full object-cover object-center" loading="lazy" />
                 </div>
 
