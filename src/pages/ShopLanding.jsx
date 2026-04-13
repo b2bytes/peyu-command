@@ -4,7 +4,7 @@ import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import PEYULogo from '@/components/PEYULogo';
-import { Send, Home, BookOpen, Grid3x3, HelpCircle, ShoppingCart, Bell, Star, Building2 } from 'lucide-react';
+import { Send, Home, BookOpen, Grid3x3, HelpCircle, ShoppingCart, Bell, Star, Building2, ChevronLeft, ChevronRight } from 'lucide-react';
 
 const OCASIONES = [
   { id: 'navidad', label: 'Navidad', icon: '🎄' },
@@ -27,6 +27,12 @@ const SIDEBAR_ITEMS = [
   { href: '/soporte', label: 'Soporte', icon: HelpCircle, color: 'bg-teal-500' },
 ];
 
+const FEATURED_PRODUCTS = [
+  { id: 1, nombre: 'Kit Escritorio Pro', precio: 30099, imagen: 'https://images.unsplash.com/photo-1587825140708-dfaf72ae4b04?w=500&h=500&fit=crop', rating: 5.0, reviews: 2400 },
+  { id: 2, nombre: 'Canasta Hogar Eco', precio: 25499, imagen: 'https://images.unsplash.com/photo-1578500494198-246f612d03b3?w=500&h=500&fit=crop', rating: 5.0, reviews: 1840 },
+  { id: 3, nombre: 'Set Viajero Sostenible', precio: 28999, imagen: 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=500&h=500&fit=crop', rating: 5.0, reviews: 1620 },
+];
+
 export default function ShopLanding() {
   const [conversationId, setConversationId] = useState(null);
   const [messages, setMessages] = useState([
@@ -34,6 +40,7 @@ export default function ShopLanding() {
   ]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
+  const [currentProductIndex, setCurrentProductIndex] = useState(0);
   const messagesEndRef = useRef(null);
   const carrito = JSON.parse(localStorage.getItem('carrito') || '[]');
 
@@ -220,35 +227,68 @@ export default function ShopLanding() {
           </div>
         </div>
 
-        {/* RIGHT CONTAINER - Product Showcase */}
+        {/* RIGHT CONTAINER - Product Carousel */}
         <div className="w-80 bg-gradient-to-br from-orange-600/40 to-red-600/30 border border-orange-500/40 rounded-3xl p-6 flex flex-col justify-between shadow-xl">
-          
-          {/* Product Image */}
-          <div className="aspect-square bg-gradient-to-br from-yellow-300/40 via-orange-400/30 to-red-500/20 rounded-2xl md:rounded-3xl flex items-center justify-center text-8xl md:text-9xl shadow-inner">
-            🎁
-          </div>
+          {(() => {
+            const product = FEATURED_PRODUCTS[currentProductIndex];
+            return (
+              <>
+                {/* Product Image */}
+                <div className="aspect-square bg-gradient-to-br from-yellow-300/40 via-orange-400/30 to-red-500/20 rounded-2xl md:rounded-3xl flex items-center justify-center shadow-inner overflow-hidden">
+                  <img src={product.imagen} alt={product.nombre} className="w-full h-full object-cover" />
+                </div>
 
-          {/* Rating */}
-          <div className="space-y-2">
-            <div className="flex gap-2">
-              {[...Array(5)].map((_, i) => (
-                <Star key={i} className="w-5 h-5 md:w-6 md:h-6 fill-yellow-300 text-yellow-300 drop-shadow" />
-              ))}
-            </div>
-            <div className="flex items-baseline gap-2">
-              <span className="text-yellow-300 font-bold text-lg">⭐ 5.0</span>
-              <span className="text-white/70 text-sm">(+2.400 valoraciones)</span>
-            </div>
-          </div>
+                {/* Rating */}
+                <div className="space-y-2">
+                  <div className="flex gap-2">
+                    {[...Array(5)].map((_, i) => (
+                      <Star key={i} className="w-5 h-5 md:w-6 md:h-6 fill-yellow-300 text-yellow-300 drop-shadow" />
+                    ))}
+                  </div>
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-yellow-300 font-bold text-lg">⭐ {product.rating.toFixed(1)}</span>
+                    <span className="text-white/70 text-sm">({product.reviews.toLocaleString()} valoraciones)</span>
+                  </div>
+                </div>
 
-          {/* Product Details */}
-          <div className="space-y-3 md:space-y-4">
-            <p className="text-white font-bold text-base md:text-lg line-clamp-2">Canasta Estrelita Estrelita - Edición Corporativa</p>
-            <div className="bg-white/20 backdrop-blur border border-white/40 rounded-xl p-4 md:p-5 space-y-2 shadow-lg">
-              <p className="text-white/95 text-xs md:text-sm leading-snug">Plástico 100% reciclado • Personalización UV • Garantía 10 años</p>
-              <p className="text-white font-black text-2xl md:text-3xl">$30.099</p>
-            </div>
-          </div>
+                {/* Product Details */}
+                <div className="space-y-3 md:space-y-4">
+                  <p className="text-white font-bold text-base md:text-lg line-clamp-2">{product.nombre}</p>
+                  <div className="bg-white/20 backdrop-blur border border-white/40 rounded-xl p-4 md:p-5 space-y-2 shadow-lg">
+                    <p className="text-white/95 text-xs md:text-sm leading-snug">Plástico 100% reciclado • Personalización UV • Garantía 10 años</p>
+                    <p className="text-white font-black text-2xl md:text-3xl">${product.precio.toLocaleString()}</p>
+                  </div>
+                </div>
+
+                {/* Carousel Controls */}
+                <div className="flex gap-2 justify-center mt-3">
+                  <button
+                    onClick={() => setCurrentProductIndex((prev) => (prev - 1 + FEATURED_PRODUCTS.length) % FEATURED_PRODUCTS.length)}
+                    className="bg-white/20 hover:bg-white/30 text-white p-2 rounded-full transition-all"
+                  >
+                    <ChevronLeft className="w-5 h-5" />
+                  </button>
+                  <div className="flex gap-1.5 items-center">
+                    {FEATURED_PRODUCTS.map((_, idx) => (
+                      <button
+                        key={idx}
+                        onClick={() => setCurrentProductIndex(idx)}
+                        className={`h-2 rounded-full transition-all ${
+                          idx === currentProductIndex ? 'w-6 bg-white' : 'w-2 bg-white/40'
+                        }`}
+                      />
+                    ))}
+                  </div>
+                  <button
+                    onClick={() => setCurrentProductIndex((prev) => (prev + 1) % FEATURED_PRODUCTS.length)}
+                    className="bg-white/20 hover:bg-white/30 text-white p-2 rounded-full transition-all"
+                  >
+                    <ChevronRight className="w-5 h-5" />
+                  </button>
+                </div>
+              </>
+            );
+          })()}
         </div>
       </div>
     </div>
