@@ -138,8 +138,8 @@ export default function Tiendas() {
     <div className="p-6 space-y-5">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-poppins font-bold text-foreground">Tiendas Físicas</h1>
-          <p className="text-muted-foreground text-sm mt-1">2 locales · Providencia + Macul · Ventas & Grabado Láser</p>
+          <h1 className="text-3xl font-poppins font-bold text-white">Tiendas Físicas</h1>
+          <p className="text-teal-300/70 text-sm mt-1">2 locales · Providencia + Macul · Ventas & Grabado Láser</p>
         </div>
         <Button onClick={openNew} style={{ background: '#0F8B6C' }} className="text-white hover:opacity-90 gap-2">
           <Plus className="w-4 h-4" />Registrar Venta
@@ -149,32 +149,32 @@ export default function Tiendas() {
       {/* Tiendas cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {statsTienda.map(t => (
-          <div key={t.id} className="bg-white rounded-2xl p-5 shadow-sm border border-border">
+          <div key={t.id} className="bg-slate-800/60 rounded-2xl p-5 shadow-lg border border-slate-700/60">
             <div className="flex items-start justify-between mb-3">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: `${t.color}20` }}>
                   <Store className="w-5 h-5" style={{ color: t.color }} />
                 </div>
                 <div>
-                  <p className="font-poppins font-semibold text-foreground">{t.nombre}</p>
-                  <p className="text-xs text-muted-foreground flex items-center gap-1">
+                  <p className="font-poppins font-semibold text-white">{t.nombre}</p>
+                  <p className="text-xs text-gray-400 flex items-center gap-1">
                     <MapPin className="w-3 h-3" />{t.dir}
                   </p>
                 </div>
               </div>
-              <span className="text-xs bg-muted text-muted-foreground px-2 py-1 rounded-lg">{t.horario}</span>
+              <span className="text-xs bg-slate-700/40 text-gray-300 px-2 py-1 rounded-lg">{t.horario}</span>
             </div>
             <div className="grid grid-cols-3 gap-3 mt-2">
-              <div className="text-center p-2 bg-muted/30 rounded-xl">
-                <p className="text-xs text-muted-foreground">Ventas</p>
+              <div className="text-center p-2 bg-slate-700/40 rounded-xl">
+                <p className="text-xs text-teal-300/70">Ventas</p>
                 <p className="font-poppins font-bold text-lg" style={{ color: t.color }}>{t.ventas}</p>
               </div>
-              <div className="text-center p-2 bg-muted/30 rounded-xl">
-                <p className="text-xs text-muted-foreground">Ingresos</p>
+              <div className="text-center p-2 bg-slate-700/40 rounded-xl">
+                <p className="text-xs text-teal-300/70">Ingresos</p>
                 <p className="font-poppins font-bold text-lg" style={{ color: t.color }}>{t.total > 0 ? fmtClp(t.total) : '—'}</p>
               </div>
-              <div className="text-center p-2 bg-muted/30 rounded-xl">
-                <p className="text-xs text-muted-foreground">⚡ Laser</p>
+              <div className="text-center p-2 bg-slate-700/40 rounded-xl">
+                <p className="text-xs text-teal-300/70">⚡ Laser</p>
                 <p className="font-poppins font-bold text-lg" style={{ color: t.color }}>{t.laser}</p>
               </div>
             </div>
@@ -184,17 +184,17 @@ export default function Tiendas() {
 
       {/* Global stats */}
       <div className="grid grid-cols-3 gap-3">
-        <div className="bg-white rounded-xl p-3 shadow-sm border text-center">
-          <p className="text-xs text-muted-foreground">Ingresos Totales</p>
-          <p className="font-poppins font-bold text-xl mt-0.5" style={{ color: '#0F8B6C' }}>{totalGlobal > 0 ? fmtClp(totalGlobal) : '—'}</p>
+        <div className="bg-slate-800/60 rounded-xl p-3 shadow-lg border border-slate-700/60 text-center">
+          <p className="text-xs text-teal-300/70">Ingresos Totales</p>
+          <p className="font-poppins font-bold text-xl mt-0.5 text-cyan-300">{totalGlobal > 0 ? fmtClp(totalGlobal) : '—'}</p>
         </div>
-        <div className="bg-white rounded-xl p-3 shadow-sm border text-center">
-          <p className="text-xs text-muted-foreground">Grabados Láser</p>
-          <p className="font-poppins font-bold text-xl mt-0.5 text-blue-600">{laserTotal}</p>
+        <div className="bg-slate-800/60 rounded-xl p-3 shadow-lg border border-slate-700/60 text-center">
+          <p className="text-xs text-teal-300/70">Grabados Láser</p>
+          <p className="font-poppins font-bold text-xl mt-0.5 text-blue-400">{laserTotal}</p>
         </div>
-        <div className="bg-white rounded-xl p-3 shadow-sm border text-center">
-          <p className="text-xs text-muted-foreground">Total Transacciones</p>
-          <p className="font-poppins font-bold text-xl mt-0.5 text-foreground">{ventas.length}</p>
+        <div className="bg-slate-800/60 rounded-xl p-3 shadow-lg border border-slate-700/60 text-center">
+          <p className="text-xs text-teal-300/70">Total Transacciones</p>
+          <p className="font-poppins font-bold text-xl mt-0.5 text-white">{ventas.length}</p>
         </div>
       </div>
 
@@ -226,11 +226,11 @@ export default function Tiendas() {
               <Button onClick={openNew} variant="outline" className="mt-4 gap-2"><Plus className="w-4 h-4" />Registrar primera venta</Button>
             </div>
           ) : (
-            <div className="bg-white rounded-2xl shadow-sm border border-border overflow-hidden">
+            <div className="bg-slate-800/60 rounded-2xl shadow-lg border border-slate-700/60 overflow-hidden">
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead>
-                    <tr className="text-xs text-muted-foreground border-b border-border bg-muted/30">
+                    <tr className="text-xs text-teal-300/70 border-b border-slate-700/60 bg-slate-700/40">
                       <th className="text-left px-3 py-3 font-medium">Tienda</th>
                       <th className="text-left px-3 py-3 font-medium">Fecha</th>
                       <th className="text-left px-3 py-3 font-medium">Tipo</th>
@@ -243,7 +243,7 @@ export default function Tiendas() {
                   </thead>
                   <tbody>
                         {filtered.map(v => (
-                          <tr key={v.id} className="border-b border-border hover:bg-muted/20 transition-colors">
+                          <tr key={v.id} className="border-b border-slate-700/60 hover:bg-slate-700/20 transition-colors">
                             <td className="py-3 px-3"><span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
                               v.tienda?.includes('Providencia') ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700'}`}>{v.tienda?.includes('Providencia') ? 'Providencia' : 'Macul'}</span></td>
                             <td className="py-3 px-3 text-sm text-muted-foreground">{v.fecha}</td>
@@ -270,9 +270,9 @@ export default function Tiendas() {
         <TabsContent value="analytics" className="space-y-4 mt-4">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             {chartMensual.length > 0 && (
-              <div className="bg-white rounded-2xl p-5 shadow-sm border border-border">
-                <h3 className="font-poppins font-semibold mb-1">Ingresos por Tienda (CLP K)</h3>
-                <p className="text-xs text-muted-foreground mb-4">Mensual · últimos 6 meses</p>
+              <div className="bg-slate-800/60 rounded-2xl p-5 shadow-lg border border-slate-700/60">
+                <h3 className="font-poppins font-semibold mb-1 text-white">Ingresos por Tienda (CLP K)</h3>
+                <p className="text-xs text-gray-400 mb-4">Mensual · últimos 6 meses</p>
                 <ResponsiveContainer width="100%" height={200}>
                   <BarChart data={chartMensual} barSize={14}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
@@ -286,9 +286,9 @@ export default function Tiendas() {
               </div>
             )}
             {porTipo.length > 0 && (
-              <div className="bg-white rounded-2xl p-5 shadow-sm border border-border">
-                <h3 className="font-poppins font-semibold mb-1">Mix por Tipo de Venta</h3>
-                <p className="text-xs text-muted-foreground mb-4">Transacciones</p>
+              <div className="bg-slate-800/60 rounded-2xl p-5 shadow-lg border border-slate-700/60">
+                <h3 className="font-poppins font-semibold mb-1 text-white">Mix por Tipo de Venta</h3>
+                <p className="text-xs text-gray-400 mb-4">Transacciones</p>
                 <ResponsiveContainer width="100%" height={200}>
                   <PieChart>
                     <Pie data={porTipo} cx="50%" cy="50%" outerRadius={70} dataKey="value" label={({ name, percent }) => `${name} ${(percent*100).toFixed(0)}%`}>
