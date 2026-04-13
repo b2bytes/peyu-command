@@ -42,18 +42,17 @@ export default function ShopLanding() {
     }
   };
 
-  const sendMessage = async () => {
-    if (!input.trim()) return;
-    const userMsg = input;
+  const sendMessage = async (messageText = input) => {
+    if (!messageText.trim()) return;
     setInput('');
-    setMessages(prev => [...prev, { role: 'user', content: userMsg }]);
+    setMessages(prev => [...prev, { role: 'user', content: messageText }]);
     setLoading(true);
 
     try {
       if (!conversationId) await initConversation();
       if (conversationId) {
         const conv = await base44.agents.getConversation(conversationId);
-        await base44.agents.addMessage(conv, { role: 'user', content: userMsg });
+        await base44.agents.addMessage(conv, { role: 'user', content: messageText });
         const unsubscribe = base44.agents.subscribeToConversation(conversationId, (data) => {
           setMessages(data.messages || []);
         });
@@ -64,6 +63,12 @@ export default function ShopLanding() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleOccasionClick = async (ocasion) => {
+    if (!conversationId) await initConversation();
+    const mensaje = `Me interesa un regalo corporativo para ${ocasion.label}. ¿Puedes ayudarme?`;
+    sendMessage(mensaje);
   };
 
   return (
@@ -225,15 +230,18 @@ export default function ShopLanding() {
               <div className="space-y-3">
                 <label className="text-white/60 text-xs font-semibold block">OCASIONES ESPECIALES</label>
                 <div className="grid grid-cols-4 gap-2">
-                  {OCASIONES.map(occ => (
-                    <Link key={occ.id} to={`/shop?occasion=${occ.id}`}>
-                      <button className={`w-full aspect-square flex flex-col items-center justify-center gap-1.5 p-2 rounded-2xl border-2 ${occ.color} hover:border-white/40 transition-all group`}>
+                    {OCASIONES.map(occ => (
+                      <button
+                        key={occ.id}
+                        onClick={() => handleOccasionClick(occ)}
+                        className={`w-full aspect-square flex flex-col items-center justify-center gap-1.5 p-2 rounded-2xl border-2 ${occ.color} hover:border-white/40 hover:bg-white/5 transition-all group cursor-pointer`}
+                        title={`Consultar sobre ${occ.label}`}
+                      >
                         <span className="text-3xl group-hover:scale-125 transition-transform">{occ.icon}</span>
                         <span className="text-white text-[8px] font-bold text-center leading-tight group-hover:text-yellow-300">{occ.label}</span>
                       </button>
-                    </Link>
-                  ))}
-                </div>
+                    ))}
+                  </div>
               </div>
 
               {/* Product Showcase Card */}
