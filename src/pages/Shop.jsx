@@ -128,28 +128,13 @@ export default function Shop() {
       </header>
 
       {/* HERO SECTION */}
-      <section className="bg-white/3 backdrop-blur-xs border-b border-white/15 px-6 py-20">
-        <div className="max-w-7xl mx-auto space-y-6">
-          <h1 className="text-5xl sm:text-6xl md:text-7xl font-poppins font-black text-white leading-tight">
-            Regalos Corporativos<br />
-            <span className="text-yellow-300">100% Sostenibles</span> Con<br />
-            <span className="text-emerald-400">Propósito ESG</span>
+      <section className="bg-white/3 backdrop-blur-xs border-b border-white/15 px-6 py-4">
+        <div className="max-w-7xl mx-auto space-y-3">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-poppins font-black text-white leading-tight">
+            Regalos Corporativos
+            <span className="text-yellow-300"> 100% Sostenibles</span>
           </h1>
-          <p className="text-white/80 text-lg max-w-3xl leading-relaxed">Productos de plástico reciclado con personalización láser. Diseña, crea y mide el impacto de tu programa de gifting corporativo.</p>
-          
-          {/* CTA Buttons */}
-          <div className="flex flex-col sm:flex-row gap-3 pt-2">
-            <Link to="/shop">
-              <Button className="bg-red-600 hover:bg-red-700 text-white font-bold rounded-full px-8 py-3 gap-2 text-base">
-                📮 Explorar Regalos
-              </Button>
-            </Link>
-            <Link to="/b2b/contacto">
-              <Button className="bg-yellow-400 hover:bg-yellow-500 text-gray-900 font-bold rounded-full px-8 py-3 gap-2 text-base">
-                ✨ Regalos Corporativos con Propósito
-              </Button>
-            </Link>
-          </div>
+          <p className="text-white/70 text-sm max-w-3xl leading-relaxed">Productos de plástico reciclado con personalización láser.</p>
         </div>
       </section>
 
