@@ -40,6 +40,7 @@ import Carrito from './pages/Carrito';
 import B2BContacto from './pages/B2BContacto';
 import AdminPropuestas from './pages/AdminPropuestas';
 import B2BPropuesta from './pages/B2BPropuesta';
+import CatalogoCorporativo from './pages/CatalogoCorporativo';
 // Add page imports here
 
 const PublicShopRoutes = () => (
@@ -50,6 +51,7 @@ const PublicShopRoutes = () => (
     <Route path="/cart" element={<Carrito />} />
     <Route path="/b2b/contacto" element={<B2BContacto />} />
     <Route path="/b2b/propuesta" element={<B2BPropuesta />} />
+    <Route path="/b2b/catalogo" element={<CatalogoCorporativo />} />
   </Routes>
 );
 

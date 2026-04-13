@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
-import { ShoppingCart, Filter } from 'lucide-react';
+import { ShoppingCart, Filter, Building2 } from 'lucide-react';
+import WhatsAppWidget from '@/components/WhatsAppWidget';
 
 export default function Shop() {
   const [productos, setProductos] = useState([]);
@@ -46,16 +47,24 @@ export default function Shop() {
             <h1 className="text-2xl font-bold" style={{ color: '#0F8B6C' }}>PEYU</h1>
             <p className="text-sm text-muted-foreground">Productos Sustentables</p>
           </div>
-          <Link to="/cart" className="relative">
-            <Button variant="outline" className="gap-2">
-              <ShoppingCart className="w-4 h-4" />
-              {carrito.length > 0 && (
-                <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                  {carrito.length}
-                </span>
-              )}
-            </Button>
-          </Link>
+          <div className="flex items-center gap-2">
+            <Link to="/b2b/catalogo">
+              <Button variant="outline" size="sm" className="gap-1.5 hidden sm:flex" style={{ borderColor: '#006D5B', color: '#006D5B' }}>
+                <Building2 className="w-4 h-4" />
+                Corporativo
+              </Button>
+            </Link>
+            <Link to="/cart" className="relative">
+              <Button variant="outline" className="gap-2">
+                <ShoppingCart className="w-4 h-4" />
+                {carrito.length > 0 && (
+                  <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                    {carrito.length}
+                  </span>
+                )}
+              </Button>
+            </Link>
+          </div>
         </div>
       </div>
 
@@ -134,7 +143,24 @@ export default function Shop() {
             <p className="text-muted-foreground">No hay productos en esta categoría</p>
           </div>
         )}
+
+        {/* B2B Banner */}
+        <div className="mt-12 bg-gradient-to-r from-[#0F172A] to-[#006D5B] rounded-2xl p-6 md:p-8 flex flex-col md:flex-row items-center gap-5 justify-between">
+          <div className="text-white space-y-2">
+            <div className="text-sm text-white/60">Compra en volumen</div>
+            <h3 className="text-xl font-bold font-poppins">Regalos corporativos desde 10 unidades</h3>
+            <p className="text-white/70 text-sm">Personalización láser UV gratis · Propuesta en &lt;24h · -25% desde 500 u.</p>
+          </div>
+          <Link to="/b2b/catalogo" className="shrink-0">
+            <Button size="lg" className="gap-2 bg-white text-[#006D5B] hover:bg-white/90 font-semibold whitespace-nowrap">
+              <Building2 className="w-5 h-5" />
+              Ver Catálogo B2B
+            </Button>
+          </Link>
+        </div>
       </div>
+
+      <WhatsAppWidget context="general" />
     </div>
   );
 }
