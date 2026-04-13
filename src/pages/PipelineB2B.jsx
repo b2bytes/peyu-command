@@ -48,13 +48,13 @@ function LeadCard({ lead, onEdit, onDelete }) {
   const slaProximo = slaLimit && dias === slaLimit;
 
   return (
-    <div className={`bg-white rounded-xl p-4 shadow-sm border transition-shadow hover:shadow-md ${
-      slaVencido ? 'border-red-300' : slaProximo ? 'border-amber-300' : 'border-border'
+    <div className={`bg-slate-800/60 rounded-xl p-4 shadow-lg border transition-shadow hover:shadow-md ${
+      slaVencido ? 'border-red-500/60' : slaProximo ? 'border-amber-500/60' : 'border-slate-700/60'
     }`}>
       <div className="flex items-start justify-between mb-2">
         <div className="flex-1 min-w-0">
-          <p className="font-poppins font-semibold text-sm text-foreground truncate">{lead.empresa}</p>
-          <p className="text-xs text-muted-foreground">{lead.contacto}</p>
+          <p className="font-poppins font-semibold text-sm text-white truncate">{lead.empresa}</p>
+          <p className="text-xs text-gray-400">{lead.contacto}</p>
         </div>
         <div className="flex gap-1 ml-2 flex-shrink-0">
           <button onClick={() => onEdit(lead)} className="p-1.5 hover:bg-muted rounded-lg transition-colors">
@@ -79,16 +79,16 @@ function LeadCard({ lead, onEdit, onDelete }) {
           </span>
         )}
       </div>
-      <div className="space-y-1 text-xs text-muted-foreground">
+      <div className="space-y-1 text-xs text-gray-400">
         {lead.canal && <div className="flex items-center gap-1.5"><MessageSquare className="w-3 h-3" />{lead.canal}</div>}
         {lead.cantidad_estimada && <div className="flex items-center gap-1.5"><FileText className="w-3 h-3" />{lead.cantidad_estimada.toLocaleString()} unidades</div>}
-        {lead.presupuesto_estimado && <div className="flex items-center gap-1.5"><span className="font-medium text-foreground">${lead.presupuesto_estimado.toLocaleString('es-CL')}</span></div>}
+        {lead.presupuesto_estimado && <div className="flex items-center gap-1.5"><span className="font-medium text-cyan-300">${lead.presupuesto_estimado.toLocaleString('es-CL')}</span></div>}
       </div>
       {lead.next_action && (
-        <div className="mt-2 pt-2 border-t border-border text-xs">
-          <span className="font-medium text-foreground">→ </span>
-          <span className="text-muted-foreground">{lead.next_action}</span>
-          {lead.next_action_date && <span className="text-xs text-muted-foreground ml-1">({lead.next_action_date})</span>}
+        <div className="mt-2 pt-2 border-t border-slate-700/60 text-xs">
+          <span className="font-medium text-cyan-300">→ </span>
+          <span className="text-gray-400">{lead.next_action}</span>
+          {lead.next_action_date && <span className="text-xs text-gray-500 ml-1">({lead.next_action_date})</span>}
         </div>
       )}
     </div>
@@ -98,18 +98,18 @@ function LeadCard({ lead, onEdit, onDelete }) {
 function CotizacionRow({ cot, onEdit, onDelete, onCrearOP }) {
   const total = cot.total || (cot.cantidad * cot.precio_unitario * (1 - (cot.descuento_pct || 0) / 100) + (cot.fee_personalizacion || 0) + (cot.fee_packaging || 0));
   return (
-    <div className="bg-white rounded-xl p-4 shadow-sm border border-border hover:shadow-md transition-shadow flex items-center justify-between">
+    <div className="bg-slate-800/60 rounded-xl p-4 shadow-lg border border-slate-700/60 hover:shadow-lg transition-shadow flex items-center justify-between">
       <div className="flex items-center gap-4">
         <div>
-          <p className="font-poppins font-semibold text-sm text-foreground">{cot.empresa}</p>
-          <p className="text-xs text-muted-foreground">{cot.sku} • {(cot.cantidad || 0).toLocaleString()} u</p>
+          <p className="font-poppins font-semibold text-sm text-white">{cot.empresa}</p>
+          <p className="text-xs text-gray-400">{cot.sku} • {(cot.cantidad || 0).toLocaleString()} u</p>
         </div>
         <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${estadoColor[cot.estado] || 'bg-gray-100'}`}>{cot.estado}</span>
       </div>
       <div className="flex items-center gap-4">
         <div className="text-right">
-          <p className="font-poppins font-bold text-sm" style={{ color: '#0F8B6C' }}>${total.toLocaleString('es-CL')}</p>
-          <p className="text-xs text-muted-foreground">{cot.lead_time_dias || '?'} días hábiles</p>
+          <p className="font-poppins font-bold text-sm text-cyan-300">${total.toLocaleString('es-CL')}</p>
+          <p className="text-xs text-gray-400">{cot.lead_time_dias || '?'} días hábiles</p>
         </div>
         <div className="flex gap-1 items-center">
           {cot.estado === 'Aceptada' && (
@@ -238,8 +238,8 @@ export default function PipelineB2B() {
     <div className="p-6 space-y-5">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-poppins font-bold text-foreground">Pipeline B2B</h1>
-          <p className="text-muted-foreground text-sm mt-1">{leads.length} leads • {cotizaciones.length} cotizaciones</p>
+          <h1 className="text-3xl font-poppins font-bold text-white">Pipeline B2B</h1>
+          <p className="text-teal-300/70 text-sm mt-1">{leads.length} leads • {cotizaciones.length} cotizaciones</p>
         </div>
         <Button onClick={openNew} style={{ background: '#0F8B6C' }} className="text-white hover:opacity-90 gap-2">
           <Plus className="w-4 h-4" />
@@ -250,21 +250,21 @@ export default function PipelineB2B() {
       {/* Pipeline KPIs */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         {[
-          { label: 'Leads Activos', value: leadsActivos.length, sub: `${leads.filter(l=>l.calidad_lead==='Caliente').length} calientes`, color: '#0F8B6C', icon: Users },
-          { label: 'Valor Pipeline', value: valorPipeline > 0 ? `$${(valorPipeline/1000000).toFixed(1)}M` : '$—', sub: 'CLP estimado', color: '#0F8B6C', icon: DollarSign },
-          { label: 'SLA Vencidos', value: slaVencidos, sub: 'requieren acción hoy', color: slaVencidos > 0 ? '#D96B4D' : '#0F8B6C', icon: AlertTriangle },
-          { label: 'Tasa Conversión', value: `${tasaConversion}%`, sub: `Meta: 7% • ${leads.filter(l=>l.estado==='Ganado').length} ganados`, color: parseFloat(tasaConversion) >= 7 ? '#0F8B6C' : '#D96B4D', icon: TrendingUp },
+          { label: 'Leads Activos', value: leadsActivos.length, sub: `${leads.filter(l=>l.calidad_lead==='Caliente').length} calientes`, color: '#14b8a6', icon: Users },
+          { label: 'Valor Pipeline', value: valorPipeline > 0 ? `$${(valorPipeline/1000000).toFixed(1)}M` : '$—', sub: 'CLP estimado', color: '#14b8a6', icon: DollarSign },
+          { label: 'SLA Vencidos', value: slaVencidos, sub: 'requieren acción hoy', color: slaVencidos > 0 ? '#f97316' : '#14b8a6', icon: AlertTriangle },
+          { label: 'Tasa Conversión', value: `${tasaConversion}%`, sub: `Meta: 7% • ${leads.filter(l=>l.estado==='Ganado').length} ganados`, color: parseFloat(tasaConversion) >= 7 ? '#14b8a6' : '#f97316', icon: TrendingUp },
         ].map((kpi, i) => {
           const Icon = kpi.icon;
           return (
-            <div key={i} className="bg-white rounded-xl p-4 border border-border shadow-sm">
+            <div key={i} className="bg-slate-800/60 rounded-xl p-4 border border-slate-700/60 shadow-lg">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-xs text-muted-foreground uppercase tracking-wide">{kpi.label}</p>
-                  <p className="font-poppins font-bold text-xl mt-1" style={{ color: kpi.color }}>{kpi.value}</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">{kpi.sub}</p>
+                  <p className="text-xs text-teal-300/70 uppercase tracking-wide">{kpi.label}</p>
+                  <p className="font-poppins font-bold text-xl mt-1 text-white" style={{ color: kpi.color }}>{kpi.value}</p>
+                  <p className="text-xs text-gray-400 mt-0.5">{kpi.sub}</p>
                 </div>
-                <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: kpi.color + '15' }}>
+                <div className="w-9 h-9 rounded-xl flex items-center justify-center bg-slate-700/40">
                   <Icon className="w-4 h-4" style={{ color: kpi.color }} />
                 </div>
               </div>
@@ -327,7 +327,7 @@ export default function PipelineB2B() {
 
         <TabsContent value="kanban" className="mt-4">
           {slaVencidos > 0 && (
-            <div className="mb-3 flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium bg-red-50 text-red-700 border border-red-200">
+            <div className="mb-3 flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium bg-red-950/50 text-red-200 border border-red-700/60">
               <AlertTriangle className="w-4 h-4 flex-shrink-0" />
               {slaVencidos} lead(s) con SLA vencido — actuar ahora (SLA: Nuevo &lt;24h, Cotizado &lt;72h)
             </div>
@@ -340,8 +340,8 @@ export default function PipelineB2B() {
                 <div key={estado} className="flex-shrink-0 w-60">
                   <div className="flex items-center justify-between mb-2 px-1">
                     <div>
-                      <h3 className="font-medium text-sm text-foreground">{estado}</h3>
-                      {SLA_LIMITS[estado] && <p className="text-xs text-muted-foreground">SLA: &lt;{SLA_LIMITS[estado]}d</p>}
+                      <h3 className="font-medium text-sm text-white">{estado}</h3>
+                      {SLA_LIMITS[estado] && <p className="text-xs text-gray-400">SLA: &lt;{SLA_LIMITS[estado]}d</p>}
                     </div>
                     <div className="flex items-center gap-1">
                       {vencidos > 0 && <span className="text-xs bg-red-100 text-red-600 px-1.5 py-0.5 rounded-full font-medium">{vencidos}⚠</span>}
@@ -356,11 +356,11 @@ export default function PipelineB2B() {
                         <div
                           key={l.id}
                           onClick={() => { setActiveTab('leads'); openEdit(l); }}
-                          className={`bg-white rounded-xl p-3 shadow-sm border text-sm cursor-pointer hover:shadow-md transition-all ${
-                            slaV ? 'border-red-300 bg-red-50/30' : 'border-border'
+                          className={`bg-slate-800/60 rounded-xl p-3 shadow-lg border text-sm cursor-pointer hover:shadow-lg transition-all ${
+                            slaV ? 'border-red-500/60 bg-red-950/20' : 'border-slate-700/60'
                           }`}>
-                          <p className="font-semibold text-foreground text-xs leading-tight">{l.empresa}</p>
-                          <p className="text-xs text-muted-foreground">{l.contacto}</p>
+                          <p className="font-semibold text-white text-xs leading-tight">{l.empresa}</p>
+                          <p className="text-xs text-gray-400">{l.contacto}</p>
                           <div className="flex items-center justify-between mt-2">
                             {l.calidad_lead && (
                               <span className={`text-xs px-1.5 py-0.5 rounded-full font-medium ${
