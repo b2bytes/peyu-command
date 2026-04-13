@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
-import { Building2, Star, Send, FileText, MessageCircle, Eye, RefreshCw, TrendingUp, Clock } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Building2, Star, Send, FileText, MessageCircle, Eye, RefreshCw, TrendingUp, Clock, Plus, Trash2, Zap, Copy, Check, ExternalLink } from 'lucide-react';
 
 const LEAD_STATUS = ['Nuevo', 'Contactado', 'En revisión', 'Propuesta enviada', 'Aceptado', 'Perdido'];
 const LEAD_COLORS = {
@@ -27,6 +28,146 @@ function ScorePill({ score }) {
   return <span className={`${bg} text-white text-xs font-bold px-2 py-0.5 rounded-full`}>{s}pts</span>;
 }
 
+const DEFAULT_ITEM = { nombre: '', qty: 50, precio_base: 9990, personalizacion: true };
+
+function GenerarPropuestaModal({ lead, onClose, onDone }) {
+  const [items, setItems] = useState([
+    { nombre: lead.product_interest || 'Kit Escritorio Pro', qty: lead.qty_estimate || 50, precio_base: 19990, personalizacion: lead.personalization_needs !== false },
+  ]);
+  const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState(null);
+  const [copied, setCopied] = useState(false);
+
+  const addItem = () => setItems(prev => [...prev, { ...DEFAULT_ITEM }]);
+  const removeItem = (i) => setItems(prev => prev.filter((_, idx) => idx !== i));
+  const updateItem = (i, key, val) => setItems(prev => prev.map((item, idx) => idx === i ? { ...item, [key]: val } : item));
+
+  const generar = async () => {
+    setLoading(true);
+    const res = await base44.functions.invoke('createCorporateProposal', {
+      leadId: lead.id,
+      items: items.map(it => ({ ...it, qty: Number(it.qty), precio_base: Number(it.precio_base) })),
+    });
+    setResult(res.data);
+    setLoading(false);
+    onDone();
+  };
+
+  const proposalUrl = result ? `${window.location.origin}/b2b/propuesta?id=${result.proposal_id}` : '';
+
+  const copyLink = () => {
+    navigator.clipboard.writeText(proposalUrl);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+      <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
+        <div className="p-5 border-b border-border flex items-center justify-between">
+          <div>
+            <h2 className="font-bold font-poppins">Generar Propuesta IA</h2>
+            <p className="text-sm text-muted-foreground">{lead.company_name} · {lead.contact_name}</p>
+          </div>
+          <button onClick={onClose} className="text-muted-foreground hover:text-foreground text-xl">✕</button>
+        </div>
+        <div className="p-5 space-y-4">
+          {result ? (
+            <div className="space-y-4">
+              <div className="bg-green-50 rounded-xl p-4 border border-green-200">
+                <div className="flex items-center gap-2 text-green-700 font-semibold mb-2">
+                  <Check className="w-5 h-5" /> Propuesta #{result.numero} generada
+                </div>
+                <div className="grid grid-cols-2 gap-3 text-sm">
+                  <div><span className="text-muted-foreground">Total:</span> <span className="font-bold text-[#006D5B]">${result.total?.toLocaleString('es-CL')}</span></div>
+                  <div><span className="text-muted-foreground">Lead time:</span> <span className="font-bold">{result.lead_time_dias} días</span></div>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Link para compartir con el cliente</label>
+                <div className="flex gap-2">
+                  <input readOnly value={proposalUrl} className="flex-1 text-xs border border-input rounded-md px-3 py-2 bg-muted" />
+                  <Button size="sm" variant="outline" onClick={copyLink} className="gap-1.5 shrink-0">
+                    {copied ? <Check className="w-4 h-4 text-green-600" /> : <Copy className="w-4 h-4" />}
+                    {copied ? 'Copiado' : 'Copiar'}
+                  </Button>
+                </div>
+                <a href={proposalUrl} target="_blank" rel="noopener noreferrer">
+                  <Button size="sm" variant="ghost" className="gap-1.5 text-xs">
+                    <ExternalLink className="w-3 h-3" /> Vista previa del cliente
+                  </Button>
+                </a>
+              </div>
+              {lead.email && (
+                <a href={`mailto:${lead.email}?subject=Propuesta Corporativa Peyu Chile&body=${encodeURIComponent(`Hola ${lead.contact_name},\n\nAdjunto el link con tu propuesta personalizada de Peyu Chile:\n${proposalUrl}\n\nQuedamos atentos a cualquier consulta.\n\nCarlos\nPeyu Chile`)}`}>
+                  <Button className="w-full gap-2" style={{ backgroundColor: '#006D5B' }}>
+                    <Send className="w-4 h-4" /> Enviar por email a {lead.email}
+                  </Button>
+                </a>
+              )}
+              <Button variant="outline" className="w-full" onClick={onClose}>Cerrar</Button>
+            </div>
+          ) : (
+            <>
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <label className="text-sm font-medium">Productos / Ítems</label>
+                  <Button size="sm" variant="outline" onClick={addItem} className="gap-1.5 text-xs">
+                    <Plus className="w-3 h-3" /> Agregar
+                  </Button>
+                </div>
+                {items.map((item, i) => (
+                  <div key={i} className="bg-muted rounded-xl p-3 space-y-2">
+                    <div className="flex gap-2">
+                      <Input
+                        placeholder="Nombre producto"
+                        value={item.nombre}
+                        onChange={e => updateItem(i, 'nombre', e.target.value)}
+                        className="flex-1 text-sm h-8"
+                      />
+                      {items.length > 1 && (
+                        <button onClick={() => removeItem(i)} className="text-red-400 hover:text-red-600">
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      )}
+                    </div>
+                    <div className="grid grid-cols-3 gap-2">
+                      <div>
+                        <div className="text-xs text-muted-foreground mb-1">Cantidad</div>
+                        <Input type="number" min="1" value={item.qty} onChange={e => updateItem(i, 'qty', e.target.value)} className="h-7 text-xs" />
+                      </div>
+                      <div>
+                        <div className="text-xs text-muted-foreground mb-1">Precio base (CLP)</div>
+                        <Input type="number" min="1000" step="500" value={item.precio_base} onChange={e => updateItem(i, 'precio_base', e.target.value)} className="h-7 text-xs" />
+                      </div>
+                      <div className="flex items-end pb-0.5">
+                        <label className="flex items-center gap-1.5 text-xs cursor-pointer">
+                          <input type="checkbox" checked={item.personalizacion} onChange={e => updateItem(i, 'personalizacion', e.target.checked)} className="accent-[#006D5B]" />
+                          Con láser
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <Button
+                onClick={generar}
+                disabled={loading || items.some(i => !i.nombre)}
+                className="w-full gap-2 font-semibold"
+                style={{ backgroundColor: '#006D5B' }}
+                size="lg"
+              >
+                <Zap className="w-4 h-4" />
+                {loading ? 'Generando con IA...' : 'Generar propuesta automática'}
+              </Button>
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function AdminPropuestas() {
   const [leads, setLeads] = useState([]);
   const [proposals, setProposals] = useState([]);
@@ -34,6 +175,7 @@ export default function AdminPropuestas() {
   const [tab, setTab] = useState('leads');
   const [updating, setUpdating] = useState(null);
   const [generatingMockup, setGeneratingMockup] = useState(null);
+  const [propuestaModal, setPropuestaModal] = useState(null);
 
   const cargar = async () => {
     setLoading(true);
@@ -55,6 +197,15 @@ export default function AdminPropuestas() {
     setUpdating(id);
     await base44.entities.B2BLead.update(id, data);
     setLeads(prev => prev.map(l => l.id === id ? { ...l, ...data } : l));
+    setUpdating(null);
+  };
+
+  const scoreLead = async (lead) => {
+    setUpdating(lead.id);
+    const res = await base44.functions.invoke('scoreLead', { leadId: lead.id });
+    if (res.data?.lead_score !== undefined) {
+      setLeads(prev => prev.map(l => l.id === lead.id ? { ...l, lead_score: res.data.lead_score, urgency: res.data.urgency } : l));
+    }
     setUpdating(null);
   };
 
@@ -218,6 +369,17 @@ export default function AdminPropuestas() {
                         <MessageCircle className="w-3 h-3" /> WhatsApp
                       </Button>
                     )}
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="gap-1.5 text-xs border-[#006D5B] text-[#006D5B] hover:bg-green-50"
+                      onClick={() => setPropuestaModal(lead)}
+                    >
+                      <Zap className="w-3 h-3" /> Propuesta IA
+                    </Button>
+                    <Button size="sm" variant="ghost" className="gap-1.5 text-xs" onClick={() => scoreLead(lead)} disabled={updating === lead.id}>
+                      <RefreshCw className="w-3 h-3" /> Re-score
+                    </Button>
                     {lead.logo_url && (
                       <Button
                         size="sm"
@@ -301,6 +463,11 @@ export default function AdminPropuestas() {
                     )}
                   </div>
                   <div className="flex flex-col gap-2 shrink-0">
+                    <a href={`/b2b/propuesta?id=${prop.id}`} target="_blank" rel="noopener noreferrer">
+                      <Button size="sm" variant="outline" className="gap-1.5 text-xs w-full">
+                        <ExternalLink className="w-3 h-3" /> Ver propuesta
+                      </Button>
+                    </a>
                     {prop.pdf_url && (
                       <a href={prop.pdf_url} target="_blank" rel="noopener noreferrer">
                         <Button size="sm" variant="outline" className="gap-1.5 text-xs">
@@ -326,6 +493,14 @@ export default function AdminPropuestas() {
             ))
           )}
         </div>
+      )}
+
+      {propuestaModal && (
+        <GenerarPropuestaModal
+          lead={propuestaModal}
+          onClose={() => setPropuestaModal(null)}
+          onDone={() => { cargar(); }}
+        />
       )}
     </div>
   );

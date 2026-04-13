@@ -83,7 +83,7 @@ export default function B2BContacto() {
       const score = calcularScore({ ...form, qty_estimate: Number(form.qty_estimate) || 0 }, !!archivo);
       const urgency = score >= 70 ? 'Alta' : score >= 40 ? 'Normal' : 'Baja';
 
-      await base44.entities.B2BLead.create({
+      const leadCreado = await base44.entities.B2BLead.create({
         ...form,
         qty_estimate: Number(form.qty_estimate) || 0,
         lead_score: score,
@@ -92,6 +92,10 @@ export default function B2BContacto() {
         urgency,
         utm_source: document.referrer || 'directo',
       });
+      // Enrich score async with AI (non-blocking)
+      if (leadCreado?.id) {
+        base44.functions.invoke('scoreLead', { leadId: leadCreado.id }).catch(() => {});
+      }
       setEnviado(true);
     } catch {
       setError('Error al enviar la solicitud. Inténtalo de nuevo o escríbenos por WhatsApp.');
