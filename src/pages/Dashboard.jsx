@@ -12,24 +12,24 @@ import {
   PieChart, Pie, Cell, BarChart, Bar, Legend
 } from "recharts";
 
-const COLORS = ['#0F8B6C', '#D96B4D', '#A7D9C9', '#4B4F54', '#E7D8C6'];
+const COLORS = ['#14b8a6', '#06b6d4', '#0F8B6C', '#D96B4D', '#A7D9C9'];
 
-function StatCard({ title, value, subtitle, icon: Icon, trend, trendLabel, color = "#0F8B6C", bg = "#f0faf7" }) {
+function StatCard({ title, value, subtitle, icon: Icon, trend, trendLabel, color = "#14b8a6", bg = "rgba(20,184,166,0.1)" }) {
   return (
-    <div className="bg-white rounded-2xl p-5 shadow-sm border border-border">
+    <div className="bg-white/10 backdrop-blur-md rounded-2xl p-5 shadow-xl border border-white/20 hover:border-white/40 transition-all hover:bg-white/15">
       <div className="flex items-start justify-between">
         <div className="flex-1">
-          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{title}</p>
-          <p className="text-2xl font-poppins font-bold mt-1" style={{ color: '#1a1a2e' }}>{value}</p>
-          {subtitle && <p className="text-xs text-muted-foreground mt-1">{subtitle}</p>}
+          <p className="text-xs font-medium text-teal-300/80 uppercase tracking-wide">{title}</p>
+          <p className="text-2xl font-poppins font-bold mt-1 text-white" style={{ color: 'white' }}>{value}</p>
+          {subtitle && <p className="text-xs text-gray-300/70 mt-1">{subtitle}</p>}
           {trendLabel && (
-            <div className={`flex items-center gap-1 mt-2 text-xs font-medium ${trend >= 0 ? 'text-green-600' : 'text-red-500'}`}>
+            <div className={`flex items-center gap-1 mt-2 text-xs font-medium ${trend >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
               {trend >= 0 ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
               {trendLabel}
             </div>
           )}
         </div>
-        <div className="w-11 h-11 rounded-xl flex items-center justify-center ml-3 flex-shrink-0" style={{ background: bg }}>
+        <div className="w-11 h-11 rounded-xl flex items-center justify-center ml-3 flex-shrink-0 bg-gradient-to-br" style={{ background: bg }}>
           <Icon className="w-5 h-5" style={{ color }} />
         </div>
       </div>
@@ -192,19 +192,19 @@ export default function Dashboard() {
   ].filter(Boolean);
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-6 space-y-6 min-h-screen">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-poppins font-bold text-foreground">Centro de Comando</h1>
-          <p className="text-muted-foreground text-sm mt-1">Blueprint empresarial Peyu • Actualizado hoy</p>
+          <h1 className="text-3xl font-poppins font-black text-white">Centro de Comando</h1>
+          <p className="text-teal-300/70 text-sm mt-1">Blueprint empresarial PEYU • Actualizado hoy</p>
         </div>
         <button
           onClick={handleSeed}
           disabled={seeding || seedDone}
-          className="flex items-center gap-2 text-xs font-medium px-3 py-2 rounded-xl border border-dashed transition-all hover:bg-muted/50 disabled:opacity-60"
+          className="flex items-center gap-2 text-xs font-medium px-4 py-2.5 rounded-lg border border-teal-400/40 bg-teal-500/10 hover:bg-teal-500/20 transition-all disabled:opacity-60 text-teal-300 touch-target active:bg-teal-500/30"
           title="Carga datos de ejemplo: productos, leads, cotizaciones, campañas">
-          {seeding ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Database className="w-3.5 h-3.5" />}
+          {seeding ? <Loader2 className="w-4 h-4 animate-spin" /> : <Database className="w-4 h-4" />}
           {seedDone ? '✓ Datos cargados' : seeding ? 'Cargando...' : 'Cargar datos demo'}
         </button>
       </div>
@@ -213,11 +213,11 @@ export default function Dashboard() {
       {alerts.length > 0 && (
         <div className="space-y-2">
           {alerts.map((a, i) => (
-            <div key={i} className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium ${
-              a.type === 'danger' ? 'bg-red-50 text-red-700 border border-red-200' :
-              a.type === 'warning' ? 'bg-amber-50 text-amber-700 border border-amber-200' :
-              a.type === 'success' ? 'bg-green-50 text-green-700 border border-green-200' :
-              'bg-blue-50 text-blue-700 border border-blue-200'
+            <div key={i} className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium backdrop-blur-sm border ${
+              a.type === 'danger' ? 'bg-red-500/20 text-red-300 border-red-400/40' :
+              a.type === 'warning' ? 'bg-amber-500/20 text-amber-300 border-amber-400/40' :
+              a.type === 'success' ? 'bg-emerald-500/20 text-emerald-300 border-emerald-400/40' :
+              'bg-blue-500/20 text-blue-300 border-blue-400/40'
             }`}>
               {a.type === 'danger' ? <AlertTriangle className="w-4 h-4 flex-shrink-0" /> :
                a.type === 'success' ? <CheckCircle2 className="w-4 h-4 flex-shrink-0" /> :
@@ -252,7 +252,7 @@ export default function Dashboard() {
       </div>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 touch-target">
         <StatCard
           title="Ventas Web B2C (mes)"
           value={loading ? '...' : ventasWebMes > 0 ? `$${(ventasWebMes/1000000).toFixed(1)}M` : '$0'}
@@ -260,8 +260,8 @@ export default function Dashboard() {
           icon={DollarSign}
           trend={ventasWebMes >= 6000000 ? 1 : -1}
           trendLabel={ventasWebMes >= 6000000 ? '✓ Sobre meta $6M' : `Meta: $6M+ CLP/mes`}
-          color="#D96B4D"
-          bg="#fdf3f0"
+          color="#f97316"
+          bg="rgba(249,115,22,0.1)"
         />
         <StatCard
           title="Ingresos B2B"
@@ -270,69 +270,69 @@ export default function Dashboard() {
           icon={Target}
           trend={0}
           trendLabel="Estable • Meta: 16/mes"
-          color="#0F8B6C"
-          bg="#f0faf7"
+          color="#14b8a6"
+          bg="rgba(20,184,166,0.1)"
         />
         <StatCard
           title="Leads Activos"
           value={loading ? '...' : leadsActivos}
           subtitle={`${leadsCalientes} calientes`}
           icon={Users}
-          color="#0F8B6C"
-          bg="#f0faf7"
+          color="#14b8a6"
+          bg="rgba(20,184,166,0.1)"
         />
         <StatCard
           title="Órdenes Producción"
           value={loading ? '...' : ordenesActivas}
           subtitle={`${ordenesUrgentes} urgentes`}
           icon={Factory}
-          color={ordenesUrgentes > 0 ? "#D96B4D" : "#0F8B6C"}
-          bg={ordenesUrgentes > 0 ? "#fdf3f0" : "#f0faf7"}
+          color={ordenesUrgentes > 0 ? "#f97316" : "#14b8a6"}
+          bg={ordenesUrgentes > 0 ? "rgba(249,115,22,0.1)" : "rgba(20,184,166,0.1)"}
         />
       </div>
 
       {/* B2B Web Pipeline Row */}
-      <div className="bg-white rounded-2xl border border-border p-5 shadow-sm">
+      <div className="bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 p-5 shadow-xl hover:border-white/40 transition-all">
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h3 className="font-poppins font-semibold">Pipeline B2B Web — Tiempo Real</h3>
-            <p className="text-xs text-muted-foreground">Leads del formulario web + catálogo corporativo</p>
+            <h3 className="font-poppins font-semibold text-white">Pipeline B2B Web — Tiempo Real</h3>
+            <p className="text-xs text-teal-300/70">Leads del formulario web + catálogo corporativo</p>
           </div>
-          <Link to="/admin/propuestas" className="text-xs font-medium flex items-center gap-1" style={{ color: '#006D5B' }}>
+          <Link to="/admin/propuestas" className="text-xs font-medium flex items-center gap-1 text-cyan-300 hover:text-cyan-200 transition-colors">
             Ver pipeline completo <ArrowRight className="w-3 h-3" />
           </Link>
         </div>
         <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
           {[
-            { label: 'Leads nuevos', value: loading ? '...' : b2bLeadsNuevos, color: 'text-blue-600', bg: 'bg-blue-50', icon: Users },
-            { label: 'Score ≥70 (calientes)', value: loading ? '...' : b2bLeadsCalientes, color: 'text-yellow-600', bg: 'bg-yellow-50', icon: Zap },
-            { label: 'Propuestas enviadas', value: loading ? '...' : propuestasPendientes, color: 'text-purple-600', bg: 'bg-purple-50', icon: MessageSquare },
-            { label: 'Propuestas aceptadas', value: loading ? '...' : propuestasAceptadas, color: 'text-green-600', bg: 'bg-green-50', icon: CheckCircle2 },
-            { label: 'Pipeline en vuelo', value: loading ? '...' : `$${(pipelineB2BValue/1000).toFixed(0)}K`, color: 'text-[#006D5B]', bg: 'bg-green-50', icon: Target },
+            { label: 'Leads nuevos', value: loading ? '...' : b2bLeadsNuevos, color: 'text-cyan-300', bg: 'bg-cyan-500/20', icon: Users },
+            { label: 'Score ≥70 (calientes)', value: loading ? '...' : b2bLeadsCalientes, color: 'text-yellow-300', bg: 'bg-yellow-500/20', icon: Zap },
+            { label: 'Propuestas enviadas', value: loading ? '...' : propuestasPendientes, color: 'text-purple-300', bg: 'bg-purple-500/20', icon: MessageSquare },
+            { label: 'Propuestas aceptadas', value: loading ? '...' : propuestasAceptadas, color: 'text-emerald-300', bg: 'bg-emerald-500/20', icon: CheckCircle2 },
+            { label: 'Pipeline en vuelo', value: loading ? '...' : `$${(pipelineB2BValue/1000).toFixed(0)}K`, color: 'text-teal-300', bg: 'bg-teal-500/20', icon: Target },
           ].map((k, i) => (
-            <div key={i} className={`${k.bg} rounded-xl p-3 flex items-center gap-3`}>
+            <div key={i} className={`${k.bg} border border-white/10 rounded-xl p-3 flex items-center gap-3 hover:bg-white/15 transition-all backdrop-blur-sm`}>
               <k.icon className={`w-5 h-5 ${k.color} shrink-0`} />
               <div>
                 <div className={`text-xl font-bold font-poppins ${k.color}`}>{k.value}</div>
-                <div className="text-xs text-muted-foreground leading-tight">{k.label}</div>
+                <div className="text-xs text-gray-300/70 leading-tight">{k.label}</div>
               </div>
             </div>
           ))}
         </div>
         {/* Últimos leads */}
         {b2bLeads.slice(0, 3).length > 0 && (
-          <div className="mt-4 pt-4 border-t border-border space-y-2">
-            <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">Últimos leads web</p>
+          <div className="mt-4 pt-4 border-t border-white/10 space-y-2">
+            <p className="text-xs text-teal-300/70 font-medium uppercase tracking-wide">Últimos leads web</p>
             {b2bLeads.slice(0, 3).map(lead => (
               <div key={lead.id} className="flex items-center justify-between text-sm">
                 <div className="flex items-center gap-2">
-                  <div className={`w-2 h-2 rounded-full ${(lead.lead_score || 0) >= 70 ? 'bg-green-500' : (lead.lead_score || 0) >= 40 ? 'bg-yellow-500' : 'bg-gray-300'}`} />
-                  <span className="font-medium">{lead.company_name}</span>
-                  <span className="text-muted-foreground text-xs">{lead.contact_name}</span>
+                  <div className={`w-2 h-2 rounded-full ${(lead.lead_score || 0) >= 70 ? 'bg-emerald-400' : (lead.lead_score || 0) >= 40 ? 'bg-yellow-400' : 'bg-gray-500'}`} />
+                  <span className="font-medium text-white">{lead.company_name}</span>
+                  <span className="text-gray-400 text-xs">{lead.contact_name}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="text-xs bg-muted px-2 py-0.5 rounded-full">{lead.status}</span>
-                  {lead.lead_score && <span className="text-xs font-bold" style={{ color: '#006D5B' }}>{lead.lead_score}pts</span>}
+                  <span className="text-xs bg-white/10 text-gray-300 px-2 py-0.5 rounded-full">{lead.status}</span>
+                  {lead.lead_score && <span className="text-xs font-bold text-cyan-300">{lead.lead_score}pts</span>}
                 </div>
               </div>
             ))}
@@ -347,32 +347,32 @@ export default function Dashboard() {
           value={loading ? '...' : totalVentasHoy > 0 ? `$${(totalVentasHoy/1000).toFixed(0)}K` : '$0'}
           subtitle={`Mes: $${(totalVentasMes/1000).toFixed(0)}K · ${ventas.length} transacciones`}
           icon={Store}
-          color="#0F8B6C"
-          bg="#f0faf7"
+          color="#14b8a6"
+          bg="rgba(20,184,166,0.1)"
         />
         <StatCard
           title="Clientes LTV Total"
           value={loading ? '...' : `$${(totalLTV/1000000).toFixed(1)}M`}
           subtitle={`${clientesVIP} VIP · ${clientesEnRiesgo > 0 ? clientesEnRiesgo+' en riesgo' : 'Sin alertas'}`}
           icon={UserCheck}
-          color={clientesEnRiesgo > 0 ? '#D96B4D' : '#0F8B6C'}
-          bg={clientesEnRiesgo > 0 ? '#fdf3f0' : '#f0faf7'}
+          color={clientesEnRiesgo > 0 ? '#f97316' : '#14b8a6'}
+          bg={clientesEnRiesgo > 0 ? 'rgba(249,115,22,0.1)' : 'rgba(20,184,166,0.1)'}
         />
         <StatCard
           title="Equipo Activo"
           value={loading ? '...' : equipoActivo}
           subtitle={`${colaboradores.length} colaboradores total`}
           icon={Users}
-          color="#4B4F54"
-          bg="#f5f5f5"
+          color="#9ca3af"
+          bg="rgba(156,163,175,0.1)"
         />
         <StatCard
           title="OKRs Avance Global"
           value={loading ? '...' : `${avgOKR}%`}
           subtitle={`${okrs.length} KRs · ${okrsEnRiesgo > 0 ? okrsEnRiesgo+' en riesgo' : 'Sin alertas'}`}
           icon={Flag}
-          color={avgOKR >= 70 ? '#0F8B6C' : avgOKR >= 40 ? '#f59e0b' : '#D96B4D'}
-          bg={avgOKR >= 70 ? '#f0faf7' : avgOKR >= 40 ? '#fffbeb' : '#fdf3f0'}
+          color={avgOKR >= 70 ? '#14b8a6' : avgOKR >= 40 ? '#f59e0b' : '#f97316'}
+          bg={avgOKR >= 70 ? 'rgba(20,184,166,0.1)' : avgOKR >= 40 ? 'rgba(245,158,11,0.1)' : 'rgba(249,115,22,0.1)'}
         />
       </div>
 
