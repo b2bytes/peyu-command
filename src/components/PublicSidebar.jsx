@@ -18,7 +18,7 @@ export default function PublicSidebar() {
       {/* FAB Toggle */}
       <button
         onClick={() => setOpen(!open)}
-        className="fixed top-6 left-6 z-40 w-12 h-12 bg-gradient-to-br from-[#0F8B6C] to-[#06634D] rounded-lg shadow-lg hover:shadow-xl transition-all flex items-center justify-center text-white"
+        className="fixed top-6 left-6 z-50 w-12 h-12 bg-gradient-to-br from-[#0F8B6C] to-[#06634D] rounded-lg shadow-lg hover:shadow-xl transition-all flex items-center justify-center text-white hover:scale-110"
         aria-label="Menú"
       >
         {open ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
@@ -26,15 +26,15 @@ export default function PublicSidebar() {
 
       {/* Sidebar */}
       {open && (
-        <div className="fixed inset-0 z-30 flex">
+        <>
           {/* Overlay */}
           <div
-            className="flex-1 bg-black/40 backdrop-blur-sm"
+            className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm"
             onClick={() => setOpen(false)}
           />
           
           {/* Panel */}
-          <div className="w-64 bg-white shadow-2xl flex flex-col">
+          <div className="fixed top-0 left-0 h-screen w-64 bg-white shadow-2xl flex flex-col z-50 animate-in slide-in-from-left-full duration-300">
             {/* Header */}
             <div className="bg-gradient-to-r from-[#0F8B6C] to-[#06634D] text-white p-6">
               <h3 className="text-xl font-poppins font-bold">PEYU Chile</h3>
@@ -70,7 +70,7 @@ export default function PublicSidebar() {
               </a>
             </div>
           </div>
-        </div>
+        </>
       )}
     </>
   );
