@@ -70,7 +70,7 @@ export default function ShopLanding() {
       if (!convId) {
         const conv = await base44.agents.createConversation({
           agent_name: 'asistente_compras',
-          metadata: { context: 'landing' }
+          metadata: { context: 'landing', timestamp: new Date().toISOString() }
         });
         convId = conv.id;
         setConversationId(convId);
@@ -78,27 +78,54 @@ export default function ShopLanding() {
       if (convId) {
         const conv = await base44.agents.getConversation(convId);
         await base44.agents.addMessage(conv, { role: 'user', content: text });
-        const unsubscribe = base44.agents.subscribeToConversation(convId, (data) => {
-          setMessages(data.messages || []);
+        
+        let unsubscribe = null;
+        let responseTimeout = null;
+        
+        unsubscribe = base44.agents.subscribeToConversation(convId, (data) => {
+          const messages = data.messages || [];
+          setMessages(messages);
+          
+          // Si hay una respuesta del asistente, mantener la suscripción un poco más
+          const hasAssistantResponse = messages.some(msg => msg.role === 'assistant');
+          if (hasAssistantResponse) {
+            // Cancelar timeout anterior si existe
+            if (responseTimeout) clearTimeout(responseTimeout);
+            // Dejar tiempo para que el agente complete su respuesta
+            responseTimeout = setTimeout(() => {
+              if (unsubscribe) unsubscribe();
+              setLoading(false);
+            }, 5000);
+          }
         });
-        setTimeout(() => unsubscribe(), 15000);
+        
+        // Máximo timeout de 30 segundos
+        setTimeout(() => {
+          if (unsubscribe) unsubscribe();
+          if (responseTimeout) clearTimeout(responseTimeout);
+          setLoading(false);
+        }, 30000);
       }
     } catch (e) {
       console.error('Error:', e);
-    } finally {
       setLoading(false);
     }
   };
 
   const handleOccasionClick = async (ocasion) => {
     if (!conversationId) {
-      const conv = await base44.agents.createConversation({
-        agent_name: 'asistente_compras',
-        metadata: { context: 'landing' }
-      });
-      setConversationId(conv.id);
+      try {
+        const conv = await base44.agents.createConversation({
+          agent_name: 'asistente_compras',
+          metadata: { context: 'landing', occasion: ocasion.id, timestamp: new Date().toISOString() }
+        });
+        setConversationId(conv.id);
+      } catch (e) {
+        console.error('Error creando conversación:', e);
+        return;
+      }
     }
-    const mensaje = `Me interesa un regalo corporativo para ${ocasion.label}. ¿Puedes ayudarme?`;
+    const mensaje = `Me gustaría un regalo corporativo para ${ocasion.label}. ¿Cuáles son las opciones disponibles y qué me recomiendas?`;
     await sendMessage(mensaje);
   };
 
@@ -224,6 +251,12 @@ export default function ShopLanding() {
 
                 {/* Messages Container */}
                 <div className="flex-1 overflow-y-auto space-y-2 mb-2 scrollbar-hide">
+                  {messages.length === 0 && (
+                    <div className="text-center text-white/50 text-xs py-4">
+                      <p>Hola 👋 Soy tu asistente PEYU</p>
+                      <p className="text-[10px] mt-1">Usa los botones abajo o escribe tu pregunta</p>
+                    </div>
+                  )}
                   {messages.map((msg, idx) => (
                     <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                       <div className={`${msg.role === 'user' ? 'bg-gradient-to-r from-orange-600 to-red-600 text-white' : 'bg-white/20 border border-white/30 text-white'} rounded-lg px-3 py-2 text-xs sm:text-sm max-w-[85%] break-words`}>
@@ -231,6 +264,17 @@ export default function ShopLanding() {
                       </div>
                     </div>
                   ))}
+                  {loading && (
+                    <div className="flex justify-start">
+                      <div className="bg-white/20 border border-white/30 rounded-lg px-3 py-2 text-white flex items-center gap-2">
+                        <div className="flex gap-1">
+                          <div className="w-1.5 h-1.5 bg-white rounded-full animate-bounce"></div>
+                          <div className="w-1.5 h-1.5 bg-white rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                          <div className="w-1.5 h-1.5 bg-white rounded-full animate-bounce" style={{ animationDelay: '0.4s' }}></div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                   <div ref={messagesEndRef} />
                 </div>
 
@@ -239,9 +283,9 @@ export default function ShopLanding() {
                   <Input
                     value={input}
                     onChange={e => setInput(e.target.value)}
-                    onKeyPress={e => e.key === 'Enter' && sendMessage()}
+                    onKeyPress={e => e.key === 'Enter' && !loading && sendMessage()}
                     placeholder="¿Necesitas?"
-                    className="bg-white/20 border-white/30 text-white placeholder:text-white/40 text-xs sm:text-sm rounded-xl focus:ring-teal-400/50 flex-1 h-10 sm:h-11 px-3 py-2 touch-target"
+                    className="bg-white/20 border-white/30 text-white placeholder:text-white/40 text-xs sm:text-sm rounded-xl focus:ring-teal-400/50 flex-1 h-10 sm:h-11 px-3 py-2 touch-target disabled:opacity-60"
                     disabled={loading}
                   />
                   <Button
