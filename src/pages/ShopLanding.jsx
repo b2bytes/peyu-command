@@ -154,13 +154,13 @@ export default function ShopLanding() {
           {/* Content */}
           <div className="flex flex-col gap-2 sm:gap-3 p-3 sm:p-4 flex-1">
             {/* Hero Title */}
-            <div className="space-y-1.5">
-              <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-poppins font-black leading-tight text-white drop-shadow-lg">
-                Regalos Corporativos <span className="text-teal-400">100%</span>
+            <div className="space-y-2">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-poppins font-black leading-tight text-white drop-shadow-lg">
+                Regalos Corporativos <span className="text-cyan-400">100%</span>
                 <br />
                 <span className="text-emerald-400">Sostenibles</span> Con Propósito ESG
               </h1>
-              <p className="text-white/90 text-xs sm:text-sm leading-tight drop-shadow font-medium max-w-2xl">Productos de plástico reciclado con personalización láser. Diseña, crea y mide el impacto de tu programa de gifting corporativo.</p>
+              <p className="text-white/85 text-sm sm:text-base leading-snug drop-shadow font-medium max-w-2xl">Productos de plástico reciclado con personalización láser. Diseña, crea y mide el impacto de tu programa de gifting corporativo.</p>
             </div>
 
             {/* CTA Buttons */}
