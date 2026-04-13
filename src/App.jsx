@@ -46,14 +46,10 @@ import SoportePublico from './pages/SoportePublico';
 import SeguimientoPedido from './pages/SeguimientoPedido';
 import CatalogoVisual from './pages/CatalogoVisual';
 import PublicLayout from './components/PublicLayout';
-// Add page imports here
-
-
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
 
-  // Show loading spinner while checking app public settings or auth
   if (isLoadingPublicSettings || isLoadingAuth) {
     return (
       <div className="fixed inset-0 flex items-center justify-center">
@@ -62,18 +58,15 @@ const AuthenticatedApp = () => {
     );
   }
 
-  // Handle authentication errors
   if (authError) {
     if (authError.type === 'user_not_registered') {
       return <UserNotRegisteredError />;
     } else if (authError.type === 'auth_required') {
-      // Redirect to login automatically
       navigateToLogin();
       return null;
     }
   }
 
-  // Render the main app
   return (
     <Routes>
       <Route element={<Layout />}>
@@ -106,22 +99,22 @@ const AuthenticatedApp = () => {
         <Route path="/analitica" element={<Analitica />} />
         <Route path="/admin/propuestas" element={<AdminPropuestas />} />
         <Route path="/admin/b2b-leads" element={<AdminPropuestas />} />
-
       </Route>
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );
 };
 
-
 function App() {
   return (
     <QueryClientProvider client={queryClientInstance}>
       <Router>
         <Routes>
+          {/* Landing Page - Standalone */}
+          <Route path="/" element={<ShopLanding />} />
+          
           {/* Public Routes */}
           <Route element={<PublicLayout />}>
-            <Route path="/" element={<ShopLanding />} />
             <Route path="/shop" element={<Shop />} />
             <Route path="/producto/:id" element={<ProductoDetalle />} />
             <Route path="/cart" element={<Carrito />} />
@@ -135,13 +128,11 @@ function App() {
           </Route>
 
           {/* Admin Routes */}
-          <Route element={<AuthProvider><AuthenticatedApp /><Toaster /></AuthProvider>}>
-            {/* Routes will be handled by AuthenticatedApp */}
-          </Route>
+          <Route element={<AuthProvider><AuthenticatedApp /><Toaster /></AuthProvider>} />
         </Routes>
       </Router>
     </QueryClientProvider>
-  )
+  );
 }
 
-export default App
+export default App;
