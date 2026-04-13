@@ -42,7 +42,7 @@ export const SKU_IMAGES = {
   'ENT-CACH6TT':    'https://i0.wp.com/peyuchile.cl/wp-content/uploads/2025/07/66-2.jpg?fit=600%2C600&ssl=1',
   'ENT-CACH6':      'https://i0.wp.com/peyuchile.cl/wp-content/uploads/2025/07/6-3.jpg?fit=600%2C600&ssl=1',
   'ENT-CACH6CF':    'https://i0.wp.com/peyuchile.cl/wp-content/uploads/2025/04/4-mixto-1024x1024-1.webp?fit=600%2C600&ssl=1',
-  'ENT-PALETA':     'https://i0.wp.com/peyuchile.cl/wp-content/uploads/2025/12/66e6cc44-94a5-4efa-82db-d8ec779ece45.jpg?fit=600%2C600&ssl=1',
+  'ENT-PALETA':     'https://i0.wp.com/peyuchile.cl/wp-content/uploads/2025/12/greenpal-3.jpg?fit=600%2C600&ssl=1',
 
   // ── HOGAR ──────────────────────────────────────────────────
   'HOG-CUADRO2':    'https://i0.wp.com/peyuchile.cl/wp-content/uploads/2025/06/image00006-scaled-1.jpeg?fit=600%2C600&ssl=1',
@@ -53,13 +53,13 @@ export const SKU_IMAGES = {
   'HOG-MACE-SM':    'https://i0.wp.com/peyuchile.cl/wp-content/uploads/2025/06/img_4926.jpeg?fit=600%2C600&ssl=1',
   'HOG-PACK-ESC':   'https://i0.wp.com/peyuchile.cl/wp-content/uploads/2025/09/dce80c23-7441-4922-a656-8627018c1e5d-1.jpeg?fit=600%2C600&ssl=1',
   'HOG-PACK-PRO':   'https://i0.wp.com/peyuchile.cl/wp-content/uploads/2025/11/Kit-Escritorio-Pro-2.jpg?fit=600%2C600&ssl=1',
-  'HOG-POC-COL':    'https://i0.wp.com/peyuchile.cl/wp-content/uploads/2025/04/image00008-2048x2027-1.webp?fit=600%2C600&ssl=1',
+  'HOG-POC-COL':    'https://i0.wp.com/peyuchile.cl/wp-content/uploads/2022/11/bowlcoverst-Photoroom.jpg?fit=600%2C600&ssl=1',
   'HOG-POC-NP':     'https://i0.wp.com/peyuchile.cl/wp-content/uploads/2025/04/image00008-2048x2027-1.webp?fit=600%2C600&ssl=1',
   'HOG-MACE3':      'https://i0.wp.com/peyuchile.cl/wp-content/uploads/2025/06/img_9754.jpeg?fit=600%2C600&ssl=1',
   'HOG-MACE3XL':    'https://i0.wp.com/peyuchile.cl/wp-content/uploads/2022/11/bowlcoverst-Photoroom.jpg?fit=600%2C600&ssl=1',
   'HOG-POSAV':      'https://i0.wp.com/peyuchile.cl/wp-content/uploads/2022/07/WhatsApp-Image-2025-09-10-at-6.08.47-PM-2.jpeg?fit=600%2C600&ssl=1',
   'HOG-SOPC':       'https://i0.wp.com/peyuchile.cl/wp-content/uploads/2022/09/greencel-1.jpg?fit=600%2C600&ssl=1',
-  'HOG-SONB':       'https://i0.wp.com/peyuchile.cl/wp-content/uploads/2025/11/Kit-Escritorio-Pro-3.jpg?fit=600%2C600&ssl=1',
+  'HOG-SONB':       'https://i0.wp.com/peyuchile.cl/wp-content/uploads/2025/09/dce80c23-7441-4922-a656-8627018c1e5d-1.jpeg?fit=600%2C600&ssl=1',
 
   // ── CORPORATIVO ────────────────────────────────────────────
   'CORP-CACH4':     'https://i0.wp.com/peyuchile.cl/wp-content/uploads/2025/07/44.jpg?fit=600%2C600&ssl=1',
@@ -101,7 +101,6 @@ export const CATEGORY_SHOWCASE = [
   { label: 'Cachos', count: 10, img: 'https://i0.wp.com/peyuchile.cl/wp-content/uploads/2025/04/4-mixto-1024x1024-1.webp?fit=600%2C600&ssl=1', cat: 'Entretenimiento' },
   { label: 'Escritorio', count: 4, img: 'https://i0.wp.com/peyuchile.cl/wp-content/uploads/2025/09/dce80c23-7441-4922-a656-8627018c1e5d-1.jpeg?fit=600%2C600&ssl=1', cat: 'Hogar' },
   { label: 'Maceteros', count: 5, img: 'https://i0.wp.com/peyuchile.cl/wp-content/uploads/2022/11/potfinal_porta-Photoroom-1.jpg?fit=600%2C600&ssl=1', cat: 'Hogar' },
-  { label: 'Lámparas', count: 1, img: 'https://i0.wp.com/peyuchile.cl/wp-content/uploads/2025/04/foto-lampara-roja-1.jpg?fit=600%2C600&ssl=1', cat: 'Hogar' },
   { label: 'Corporativo', count: 15, img: 'https://i0.wp.com/peyuchile.cl/wp-content/uploads/2025/12/greenpal-3.jpg?fit=600%2C600&ssl=1', cat: 'Corporativo' },
 ];
 
