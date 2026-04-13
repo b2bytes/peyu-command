@@ -1,17 +1,17 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
-import { Plus, Edit2, Trash2, Factory, Clock, CheckCircle2, AlertTriangle, Package, Zap } from "lucide-react";
+import { Plus, Edit2, Trash2, Factory, Clock, CheckCircle2, AlertTriangle, Package, Zap, Sparkles, User, Image } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
 
 const ESTADOS = ["Pendiente", "En Cola", "En Producción", "Control Calidad", "Personalización Láser", "Packaging", "Listo para Despacho", "Despachado"];
 const PRIORIDADES = ["Alta (urgente)", "Normal", "Baja"];
 const INYECTORAS = ["Inyectora 1", "Inyectora 2", "Inyectora 3", "Inyectora 4", "Inyectora 5", "Inyectora 6", "Sin asignar"];
 const LASERES = ["Láser 1", "Láser 2", "No requiere"];
+const PERS_ESTADOS = ['Pendiente','Preview generado','Aprobado','En producción','Completado','Rechazado'];
 
 const estadoConfig = {
   "Pendiente": { color: "bg-gray-100 text-gray-600", icon: Clock },
@@ -30,6 +30,15 @@ const prioridadColor = {
   "Baja": "bg-blue-50 text-blue-500 border border-blue-200",
 };
 
+const persEstadoColor = {
+  'Pendiente': 'bg-gray-100 text-gray-600',
+  'Preview generado': 'bg-blue-100 text-blue-700',
+  'Aprobado': 'bg-green-100 text-green-700',
+  'En producción': 'bg-amber-100 text-amber-700',
+  'Completado': 'bg-emerald-100 text-emerald-700',
+  'Rechazado': 'bg-red-100 text-red-700',
+};
+
 const OP_DEFAULTS = {
   empresa: '', sku: '', cantidad: 0, estado: 'Pendiente', prioridad: 'Normal',
   inyectora: 'Sin asignar', laser: 'No requiere', personalizacion: false,
@@ -38,7 +47,6 @@ const OP_DEFAULTS = {
 
 function OpCard({ op, onEdit, onDelete }) {
   const cfg = estadoConfig[op.estado] || { color: 'bg-gray-100 text-gray-600', icon: Clock };
-  const Icon = cfg.icon;
   const isUrgente = op.prioridad === 'Alta (urgente)';
   const isLate = op.fecha_entrega_prometida && new Date(op.fecha_entrega_prometida) < new Date() && op.estado !== 'Despachado';
 
@@ -57,12 +65,10 @@ function OpCard({ op, onEdit, onDelete }) {
           <button onClick={() => onDelete(op.id)} className="p-1.5 hover:bg-red-50 rounded-lg transition-colors"><Trash2 className="w-3.5 h-3.5 text-red-400" /></button>
         </div>
       </div>
-
       <div className="flex flex-wrap gap-1.5 mb-3">
         <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${cfg.color}`}>{op.estado}</span>
         <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${prioridadColor[op.prioridad] || ''}`}>{op.prioridad}</span>
       </div>
-
       <div className="space-y-1 text-xs text-muted-foreground">
         <div className="flex items-center justify-between">
           <span>Cantidad:</span>
@@ -87,7 +93,6 @@ function OpCard({ op, onEdit, onDelete }) {
           </div>
         )}
       </div>
-
       <div className="flex gap-1.5 mt-3 pt-2 border-t border-border">
         {op.anticipo_pagado && <span className="text-xs px-1.5 py-0.5 rounded bg-green-50 text-green-600">50% pagado</span>}
         {op.personalizacion && <span className="text-xs px-1.5 py-0.5 rounded bg-purple-50 text-purple-600">Personalización</span>}
@@ -99,17 +104,23 @@ function OpCard({ op, onEdit, onDelete }) {
 
 export default function Operaciones() {
   const [ordenes, setOrdenes] = useState([]);
+  const [persJobs, setPersJobs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filterEstado, setFilterEstado] = useState('todos');
   const [filterPrioridad, setFilterPrioridad] = useState('todos');
   const [showModal, setShowModal] = useState(false);
   const [editing, setEditing] = useState(null);
   const [form, setForm] = useState(OP_DEFAULTS);
+  const [tab, setTab] = useState('lista');
 
   const loadData = async () => {
     setLoading(true);
-    const ops = await base44.entities.OrdenProduccion.list('-created_date', 100);
+    const [ops, jobs] = await Promise.all([
+      base44.entities.OrdenProduccion.list('-created_date', 100),
+      base44.entities.PersonalizationJob.list('-created_date', 100),
+    ]);
     setOrdenes(ops);
+    setPersJobs(jobs);
     setLoading(false);
   };
 
@@ -136,9 +147,6 @@ export default function Operaciones() {
     (filterPrioridad === 'todos' || o.prioridad === filterPrioridad)
   );
 
-  const [tab, setTab] = useState('lista');
-
-  // Stats
   const enProduccion = ordenes.filter(o => ['En Producción', 'En Cola', 'Pendiente', 'Control Calidad', 'Personalización Láser', 'Packaging', 'Listo para Despacho'].includes(o.estado)).length;
   const urgentes = ordenes.filter(o => o.prioridad === 'Alta (urgente)' && o.estado !== 'Despachado').length;
   const totalUnidades = ordenes.filter(o => o.estado !== 'Despachado').reduce((s, o) => s + (o.cantidad || 0), 0);
@@ -160,10 +168,10 @@ export default function Operaciones() {
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         {[
-          { label: 'Órdenes Activas', value: enProduccion, color: '#4B4F54', bg: '#f5f5f5' },
-          { label: 'Urgentes', value: urgentes, color: urgentes > 0 ? '#D96B4D' : '#4B4F54', bg: urgentes > 0 ? '#fdf3f0' : '#f5f5f5' },
-          { label: 'Unidades en Proceso', value: totalUnidades.toLocaleString(), color: '#0F8B6C', bg: '#f0faf7' },
-          { label: 'Inyectoras Activas', value: `${inyectorasUsadas}/6`, color: '#0F8B6C', bg: '#f0faf7' },
+          { label: 'Órdenes Activas', value: enProduccion, color: '#4B4F54' },
+          { label: 'Urgentes', value: urgentes, color: urgentes > 0 ? '#D96B4D' : '#4B4F54' },
+          { label: 'Unidades en Proceso', value: totalUnidades.toLocaleString(), color: '#0F8B6C' },
+          { label: 'Inyectoras Activas', value: `${inyectorasUsadas}/6`, color: '#0F8B6C' },
         ].map((s, i) => (
           <div key={i} className="bg-white rounded-xl p-4 shadow-sm border border-border">
             <p className="text-xs font-medium text-muted-foreground">{s.label}</p>
@@ -172,12 +180,19 @@ export default function Operaciones() {
         ))}
       </div>
 
-      {/* Filters + tabs */}
       <Tabs value={tab} onValueChange={setTab}>
         <div className="flex items-center gap-3 flex-wrap">
           <TabsList>
-            <TabsTrigger value="lista">Kanban</TabsTrigger>
+            <TabsTrigger value="lista">Kanban OPs</TabsTrigger>
             <TabsTrigger value="planta">Vista Planta</TabsTrigger>
+            <TabsTrigger value="personalizacion">
+              Personalización
+              {persJobs.filter(j => j.status === 'Pendiente').length > 0 && (
+                <span className="ml-1.5 bg-amber-500 text-white text-xs rounded-full px-1.5 py-0.5">
+                  {persJobs.filter(j => j.status === 'Pendiente').length}
+                </span>
+              )}
+            </TabsTrigger>
           </TabsList>
           <Select value={filterEstado} onValueChange={setFilterEstado}>
             <SelectTrigger className="h-9 w-44"><SelectValue placeholder="Estado" /></SelectTrigger>
@@ -196,37 +211,35 @@ export default function Operaciones() {
           <span className="text-sm text-muted-foreground">{filtered.length} órdenes</span>
         </div>
 
+        {/* Kanban OPs */}
         <TabsContent value="lista" className="mt-4">
-      {/* Kanban por estado */}
-      <div className="flex gap-3 overflow-x-auto pb-4">
-        {ESTADOS.slice(0, 6).map(estado => {
-          const items = filtered.filter(o => o.estado === estado);
-          const cfg = estadoConfig[estado];
-          return (
-            <div key={estado} className="flex-shrink-0 w-56">
-              <div className="flex items-center justify-between mb-2 px-1">
-                <span className="text-xs font-medium text-muted-foreground">{estado}</span>
-                <span className="text-xs bg-muted px-1.5 py-0.5 rounded-full">{items.length}</span>
-              </div>
-              <div className="space-y-2">
-                {items.map(op => <OpCard key={op.id} op={op} onEdit={openEdit} onDelete={handleDelete} />)}
-              </div>
+          <div className="flex gap-3 overflow-x-auto pb-4">
+            {ESTADOS.slice(0, 6).map(estado => {
+              const items = filtered.filter(o => o.estado === estado);
+              return (
+                <div key={estado} className="flex-shrink-0 w-56">
+                  <div className="flex items-center justify-between mb-2 px-1">
+                    <span className="text-xs font-medium text-muted-foreground">{estado}</span>
+                    <span className="text-xs bg-muted px-1.5 py-0.5 rounded-full">{items.length}</span>
+                  </div>
+                  <div className="space-y-2">
+                    {items.map(op => <OpCard key={op.id} op={op} onEdit={openEdit} onDelete={handleDelete} />)}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+          {loading && <div className="text-center py-8 text-muted-foreground">Cargando órdenes...</div>}
+          {!loading && filtered.length === 0 && (
+            <div className="text-center py-16 text-muted-foreground">
+              <Factory className="w-12 h-12 mx-auto mb-3 opacity-30" />
+              <p>No hay órdenes de producción. Crea la primera.</p>
             </div>
-          );
-        })}
-      </div>
-
-      {loading && <div className="text-center py-8 text-muted-foreground">Cargando órdenes...</div>}
-      {!loading && filtered.length === 0 && (
-        <div className="text-center py-16 text-muted-foreground">
-          <Factory className="w-12 h-12 mx-auto mb-3 opacity-30" />
-          <p>No hay órdenes de producción. Crea la primera.</p>
-        </div>
-      )}
+          )}
         </TabsContent>
 
+        {/* Vista Planta */}
         <TabsContent value="planta" className="mt-4">
-          {/* Utilización planta */}
           <div className="mb-4 bg-white rounded-xl p-4 border border-border shadow-sm">
             <div className="flex items-center justify-between mb-2">
               <p className="text-sm font-semibold text-foreground">Utilización Planta</p>
@@ -235,26 +248,23 @@ export default function Operaciones() {
             <div className="h-2.5 bg-muted rounded-full overflow-hidden">
               <div className="h-full rounded-full transition-all" style={{ width: `${utilizacionPct}%`, background: utilizacionPct >= 70 ? '#0F8B6C' : '#D96B4D' }} />
             </div>
-            <p className="text-xs text-muted-foreground mt-1">{inyectorasUsadas} de 6 inyectoras activas • Meta mandato: ≥70%</p>
+            <p className="text-xs text-muted-foreground mt-1">{inyectorasUsadas} de 6 inyectoras activas • Meta: ≥70%</p>
           </div>
-          {/* Grid de inyectoras */}
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-6">
             {['Inyectora 1','Inyectora 2','Inyectora 3','Inyectora 4','Inyectora 5','Inyectora 6'].map(inj => {
               const ops = ordenes.filter(o => o.inyectora === inj && o.estado !== 'Despachado');
               const activa = ops.length > 0;
               const urgente = ops.some(o => o.prioridad === 'Alta (urgente)');
               return (
-                <div key={inj} className={`rounded-xl p-4 border-2 transition-all ${
-                  urgente ? 'border-red-300 bg-red-50/40' : activa ? 'border-green-300 bg-green-50/40' : 'border-dashed border-border bg-muted/30'
-                }`}>
+                <div key={inj} className={`rounded-xl p-4 border-2 transition-all ${urgente ? 'border-red-300 bg-red-50/40' : activa ? 'border-green-300 bg-green-50/40' : 'border-dashed border-border bg-muted/30'}`}>
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-2">
                       <Factory className={`w-4 h-4 ${activa ? 'text-green-600' : 'text-muted-foreground'}`} />
                       <span className="font-medium text-sm">{inj}</span>
                     </div>
-                    <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
-                      urgente ? 'bg-red-100 text-red-600' : activa ? 'bg-green-100 text-green-600' : 'bg-muted text-muted-foreground'
-                    }`}>{urgente ? '⚠ Urgente' : activa ? 'Activa' : 'Libre'}</span>
+                    <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${urgente ? 'bg-red-100 text-red-600' : activa ? 'bg-green-100 text-green-600' : 'bg-muted text-muted-foreground'}`}>
+                      {urgente ? '⚠ Urgente' : activa ? 'Activa' : 'Libre'}
+                    </span>
                   </div>
                   {ops.length === 0 ? (
                     <p className="text-xs text-muted-foreground">Sin órdenes asignadas</p>
@@ -273,25 +283,24 @@ export default function Operaciones() {
               );
             })}
           </div>
-          {/* Láseres */}
           <div className="grid grid-cols-2 gap-3">
             {['Láser 1','Láser 2'].map(laser => {
               const ops = ordenes.filter(o => o.laser === laser && o.estado !== 'Despachado');
               const activo = ops.length > 0;
               return (
-                <div key={laser} className={`rounded-xl p-4 border-2 ${
-                  activo ? 'border-indigo-300 bg-indigo-50/30' : 'border-dashed border-border bg-muted/30'
-                }`}>
+                <div key={laser} className={`rounded-xl p-4 border-2 ${activo ? 'border-indigo-300 bg-indigo-50/30' : 'border-dashed border-border bg-muted/30'}`}>
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-2">
                       <Zap className={`w-4 h-4 ${activo ? 'text-indigo-600' : 'text-muted-foreground'}`} />
                       <span className="font-medium text-sm">{laser} (UV)</span>
                     </div>
-                    <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
-                      activo ? 'bg-indigo-100 text-indigo-600' : 'bg-muted text-muted-foreground'
-                    }`}>{activo ? 'Activo' : 'Libre'}</span>
+                    <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${activo ? 'bg-indigo-100 text-indigo-600' : 'bg-muted text-muted-foreground'}`}>
+                      {activo ? 'Activo' : 'Libre'}
+                    </span>
                   </div>
-                  {ops.length === 0 ? <p className="text-xs text-muted-foreground">Sin trabajos asignados</p> : (
+                  {ops.length === 0 ? (
+                    <p className="text-xs text-muted-foreground">Sin trabajos asignados</p>
+                  ) : (
                     <div className="space-y-1">
                       {ops.map(o => (
                         <div key={o.id} className="text-xs bg-white rounded-lg p-2 border border-border">
@@ -304,6 +313,65 @@ export default function Operaciones() {
                 </div>
               );
             })}
+          </div>
+        </TabsContent>
+
+        {/* Personalización B2C */}
+        <TabsContent value="personalizacion" className="mt-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+            {persJobs.map(job => (
+              <div key={job.id} className="bg-white rounded-xl border border-border p-4 shadow-sm hover:shadow-md transition-shadow">
+                <div className="flex items-start justify-between mb-3">
+                  <div>
+                    <p className="font-semibold text-sm text-foreground">{job.product_name}</p>
+                    <p className="text-xs text-muted-foreground">{job.source_type} · {job.quantity} u.</p>
+                  </div>
+                  <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${persEstadoColor[job.status] || 'bg-gray-100 text-gray-600'}`}>{job.status}</span>
+                </div>
+                {job.laser_text && (
+                  <div className="bg-gray-900 rounded-lg p-2 mb-3 text-center">
+                    <span className="text-yellow-400 font-bold tracking-widest text-xs">{job.laser_text.toUpperCase()}</span>
+                  </div>
+                )}
+                {job.logo_url && (
+                  <div className="mb-3 flex items-center gap-2 text-xs text-blue-600">
+                    <Image className="w-3 h-3" /> Logo adjunto
+                  </div>
+                )}
+                <div className="space-y-1 text-xs text-muted-foreground mb-3">
+                  {job.color_producto && <div>Color: <span className="font-medium text-foreground">{job.color_producto}</span></div>}
+                  {job.customer_name && <div className="flex items-center gap-1"><User className="w-3 h-3" />{job.customer_name}</div>}
+                  {job.customer_email && <div>{job.customer_email}</div>}
+                  {job.estimated_minutes && <div>Tiempo est.: <strong>{job.estimated_minutes} min</strong></div>}
+                </div>
+                <div className="flex gap-2">
+                  <Select
+                    value={job.status}
+                    onValueChange={async (v) => {
+                      await base44.entities.PersonalizationJob.update(job.id, { status: v });
+                      loadData();
+                    }}
+                  >
+                    <SelectTrigger className="h-8 text-xs flex-1"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {PERS_ESTADOS.map(e => <SelectItem key={e} value={e}>{e}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                  <button
+                    onClick={() => { if(confirm('¿Eliminar?')) base44.entities.PersonalizationJob.delete(job.id).then(loadData); }}
+                    className="p-2 hover:bg-red-50 rounded-lg"
+                  >
+                    <Trash2 className="w-3.5 h-3.5 text-red-400" />
+                  </button>
+                </div>
+              </div>
+            ))}
+            {persJobs.length === 0 && !loading && (
+              <div className="col-span-3 text-center py-16 text-muted-foreground">
+                <Sparkles className="w-12 h-12 mx-auto mb-3 opacity-30" />
+                <p>No hay trabajos de personalización.</p>
+              </div>
+            )}
           </div>
         </TabsContent>
       </Tabs>
