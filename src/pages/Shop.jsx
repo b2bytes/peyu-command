@@ -14,7 +14,6 @@ export default function Shop() {
   const [carrito, setCarrito] = useState(JSON.parse(localStorage.getItem('carrito') || '[]'));
   const [agregandoId, setAgregandoId] = useState(null);
 
-  // Map productos a imágenes reales
   const productImageMap = {
     'Kit Escritorio Pro': 'https://images.unsplash.com/photo-1572365992253-3cb3e56dd362?w=600&h=600&fit=crop',
     'Carcasa': 'https://images.unsplash.com/photo-1611532736579-6b16e2b50449?w=600&h=600&fit=crop',
