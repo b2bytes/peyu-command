@@ -34,7 +34,7 @@ export default function PublicSidebar() {
           />
           
           {/* Panel */}
-          <div className="fixed top-0 left-0 h-screen w-64 bg-white shadow-2xl flex flex-col z-50 animate-in slide-in-from-left-full duration-300">
+          <div className="fixed top-0 left-0 h-screen w-64 bg-white shadow-2xl flex flex-col z-50">
             {/* Header */}
             <div className="bg-gradient-to-r from-[#0F8B6C] to-[#06634D] text-white p-6">
               <h3 className="text-xl font-poppins font-bold">PEYU Chile</h3>
