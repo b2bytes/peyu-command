@@ -44,21 +44,25 @@ import CatalogoCorporativo from './pages/CatalogoCorporativo';
 import PersonalizacionFlow from './pages/PersonalizacionFlow';
 import SoportePublico from './pages/SoportePublico';
 import SeguimientoPedido from './pages/SeguimientoPedido';
+import PublicSidebar from './components/PublicSidebar';
 // Add page imports here
 
 const PublicShopRoutes = () => (
-  <Routes>
-    <Route path="/" element={<ShopLanding />} />
-    <Route path="/shop" element={<Shop />} />
-    <Route path="/producto/:id" element={<ProductoDetalle />} />
-    <Route path="/cart" element={<Carrito />} />
-    <Route path="/b2b/contacto" element={<B2BContacto />} />
-    <Route path="/b2b/propuesta" element={<B2BPropuesta />} />
-    <Route path="/b2b/catalogo" element={<CatalogoCorporativo />} />
-    <Route path="/personalizar" element={<PersonalizacionFlow />} />
-    <Route path="/soporte" element={<SoportePublico />} />
-    <Route path="/seguimiento" element={<SeguimientoPedido />} />
-  </Routes>
+  <>
+    <PublicSidebar />
+    <Routes>
+      <Route path="/" element={<ShopLanding />} />
+      <Route path="/shop" element={<Shop />} />
+      <Route path="/producto/:id" element={<ProductoDetalle />} />
+      <Route path="/cart" element={<Carrito />} />
+      <Route path="/b2b/contacto" element={<B2BContacto />} />
+      <Route path="/b2b/propuesta" element={<B2BPropuesta />} />
+      <Route path="/b2b/catalogo" element={<CatalogoCorporativo />} />
+      <Route path="/personalizar" element={<PersonalizacionFlow />} />
+      <Route path="/soporte" element={<SoportePublico />} />
+      <Route path="/seguimiento" element={<SeguimientoPedido />} />
+    </Routes>
+  </>
 );
 
 const AuthenticatedApp = () => {
