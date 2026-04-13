@@ -99,11 +99,16 @@ function GenerarPropuestaModal({ lead, onClose, onDone }) {
                 </a>
               </div>
               {lead.email && (
-                <a href={`mailto:${lead.email}?subject=Propuesta Corporativa Peyu Chile&body=${encodeURIComponent(`Hola ${lead.contact_name},\n\nAdjunto el link con tu propuesta personalizada de Peyu Chile:\n${proposalUrl}\n\nQuedamos atentos a cualquier consulta.\n\nCarlos\nPeyu Chile`)}`}>
-                  <Button className="w-full gap-2" style={{ backgroundColor: '#006D5B' }}>
-                    <Send className="w-4 h-4" /> Enviar por email a {lead.email}
-                  </Button>
-                </a>
+                <Button
+                  className="w-full gap-2"
+                  style={{ backgroundColor: '#006D5B' }}
+                  onClick={async () => {
+                    await base44.functions.invoke('sendProposalEmail', { proposalId: result.proposal_id });
+                    alert('\u2713 Email enviado a ' + lead.email);
+                  }}
+                >
+                  <Send className="w-4 h-4" /> Enviar por email a {lead.email}
+                </Button>
               )}
               <Button variant="outline" className="w-full" onClick={onClose}>Cerrar</Button>
             </div>

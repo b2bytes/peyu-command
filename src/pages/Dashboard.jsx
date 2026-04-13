@@ -69,6 +69,8 @@ export default function Dashboard() {
   const [ventas, setVentas] = useState([]);
   const [colaboradores, setColaboradores] = useState([]);
   const [movimientos, setMovimientos] = useState([]);
+  const [b2bLeads, setB2bLeads] = useState([]);
+  const [proposals, setProposals] = useState([]);
   const [seeding, setSeeding] = useState(false);
   const [seedDone, setSeedDone] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -84,7 +86,9 @@ export default function Dashboard() {
       base44.entities.VentaTienda.list('-created_date', 200),
       base44.entities.Colaborador.list('-created_date', 50),
       base44.entities.MovimientoCaja.list('-fecha', 200),
-    ]).then(([l, c, o, ok, cl, vt, col, mov]) => {
+      base44.entities.B2BLead.list('-created_date', 100),
+      base44.entities.CorporateProposal.list('-created_date', 100),
+    ]).then(([l, c, o, ok, cl, vt, col, mov, bl, props]) => {
       setLeads(l);
       setCotizaciones(c);
       setOrdenes(o);
@@ -93,6 +97,8 @@ export default function Dashboard() {
       setVentas(vt);
       setColaboradores(col);
       setMovimientos(mov);
+      setB2bLeads(bl);
+      setProposals(props);
       setLoading(false);
     }).catch(() => setLoading(false));
   };
@@ -152,6 +158,13 @@ export default function Dashboard() {
   const egresosMes = movMes.filter(m => m.tipo === 'Egreso').reduce((s, m) => s + (m.monto || 0), 0);
   const saldoCaja = ingresosMes - egresosMes;
 
+  // B2B Web pipeline
+  const b2bLeadsNuevos = b2bLeads.filter(l => l.status === 'Nuevo').length;
+  const b2bLeadsCalientes = b2bLeads.filter(l => (l.lead_score || 0) >= 70).length;
+  const propuestasPendientes = proposals.filter(p => p.status === 'Enviada').length;
+  const propuestasAceptadas = proposals.filter(p => p.status === 'Aceptada').length;
+  const pipelineB2BValue = proposals.filter(p => ['Borrador','Enviada'].includes(p.status)).reduce((s, p) => s + (p.total || 0), 0);
+
   // Blueprint funnel metrics
   const totalLeads = leads.length;
   const leadsReales = leads.filter(l => l.calidad_lead === 'Caliente' || l.calidad_lead === 'Tibio').length;
@@ -159,6 +172,8 @@ export default function Dashboard() {
   const pedidosB2BActuales = cotizaciones.filter(c => c.estado === 'Aceptada').length || 8;
 
   const alerts = [
+    b2bLeadsNuevos > 0 && { type: 'warning', msg: `${b2bLeadsNuevos} leads B2B web nuevos sin gestionar → Pipeline B2B` },
+    b2bLeadsCalientes > 0 && { type: 'info', msg: `${b2bLeadsCalientes} leads web con score ≥70 pts listos para propuesta` },
     leadsCalientes > 0 && { type: 'warning', msg: `${leadsCalientes} leads calientes sin cotización enviada` },
     cotEnviadas > 0 && { type: 'info', msg: `${cotEnviadas} cotizaciones esperando respuesta del cliente` },
     ordenesUrgentes > 0 && { type: 'danger', msg: `${ordenesUrgentes} órdenes de producción urgentes` },
@@ -265,6 +280,55 @@ export default function Dashboard() {
           color={ordenesUrgentes > 0 ? "#D96B4D" : "#0F8B6C"}
           bg={ordenesUrgentes > 0 ? "#fdf3f0" : "#f0faf7"}
         />
+      </div>
+
+      {/* B2B Web Pipeline Row */}
+      <div className="bg-white rounded-2xl border border-border p-5 shadow-sm">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h3 className="font-poppins font-semibold">Pipeline B2B Web — Tiempo Real</h3>
+            <p className="text-xs text-muted-foreground">Leads del formulario web + catálogo corporativo</p>
+          </div>
+          <Link to="/admin/propuestas" className="text-xs font-medium flex items-center gap-1" style={{ color: '#006D5B' }}>
+            Ver pipeline completo <ArrowRight className="w-3 h-3" />
+          </Link>
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+          {[
+            { label: 'Leads nuevos', value: loading ? '...' : b2bLeadsNuevos, color: 'text-blue-600', bg: 'bg-blue-50', icon: Users },
+            { label: 'Score ≥70 (calientes)', value: loading ? '...' : b2bLeadsCalientes, color: 'text-yellow-600', bg: 'bg-yellow-50', icon: Zap },
+            { label: 'Propuestas enviadas', value: loading ? '...' : propuestasPendientes, color: 'text-purple-600', bg: 'bg-purple-50', icon: MessageSquare },
+            { label: 'Propuestas aceptadas', value: loading ? '...' : propuestasAceptadas, color: 'text-green-600', bg: 'bg-green-50', icon: CheckCircle2 },
+            { label: 'Pipeline en vuelo', value: loading ? '...' : `$${(pipelineB2BValue/1000).toFixed(0)}K`, color: 'text-[#006D5B]', bg: 'bg-green-50', icon: Target },
+          ].map((k, i) => (
+            <div key={i} className={`${k.bg} rounded-xl p-3 flex items-center gap-3`}>
+              <k.icon className={`w-5 h-5 ${k.color} shrink-0`} />
+              <div>
+                <div className={`text-xl font-bold font-poppins ${k.color}`}>{k.value}</div>
+                <div className="text-xs text-muted-foreground leading-tight">{k.label}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+        {/* Últimos leads */}
+        {b2bLeads.slice(0, 3).length > 0 && (
+          <div className="mt-4 pt-4 border-t border-border space-y-2">
+            <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">Últimos leads web</p>
+            {b2bLeads.slice(0, 3).map(lead => (
+              <div key={lead.id} className="flex items-center justify-between text-sm">
+                <div className="flex items-center gap-2">
+                  <div className={`w-2 h-2 rounded-full ${(lead.lead_score || 0) >= 70 ? 'bg-green-500' : (lead.lead_score || 0) >= 40 ? 'bg-yellow-500' : 'bg-gray-300'}`} />
+                  <span className="font-medium">{lead.company_name}</span>
+                  <span className="text-muted-foreground text-xs">{lead.contact_name}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs bg-muted px-2 py-0.5 rounded-full">{lead.status}</span>
+                  {lead.lead_score && <span className="text-xs font-bold" style={{ color: '#006D5B' }}>{lead.lead_score}pts</span>}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Second row KPIs */}
