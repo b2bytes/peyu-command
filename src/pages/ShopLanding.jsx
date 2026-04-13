@@ -80,31 +80,43 @@ export default function ShopLanding() {
         await base44.agents.addMessage(conv, { role: 'user', content: text });
         
         let unsubscribe = null;
-        let responseTimeout = null;
+        let hasReceivedAssistantMsg = false;
+        let inactivityTimeout = null;
+        
+        // Limpiar timeout de inactividad anterior
+        const resetInactivityTimer = () => {
+          if (inactivityTimeout) clearTimeout(inactivityTimeout);
+          inactivityTimeout = setTimeout(() => {
+            if (unsubscribe) unsubscribe();
+            setLoading(false);
+          }, 8000); // 8 segundos de inactividad
+        };
         
         unsubscribe = base44.agents.subscribeToConversation(convId, (data) => {
           const messages = data.messages || [];
           setMessages(messages);
           
-          // Si hay una respuesta del asistente, mantener la suscripción un poco más
+          // Si recibimos respuesta del asistente
           const hasAssistantResponse = messages.some(msg => msg.role === 'assistant');
-          if (hasAssistantResponse) {
-            // Cancelar timeout anterior si existe
-            if (responseTimeout) clearTimeout(responseTimeout);
-            // Dejar tiempo para que el agente complete su respuesta
-            responseTimeout = setTimeout(() => {
-              if (unsubscribe) unsubscribe();
-              setLoading(false);
-            }, 5000);
+          if (hasAssistantResponse && !hasReceivedAssistantMsg) {
+            hasReceivedAssistantMsg = true;
+          }
+          
+          // Resetear timer de inactividad cada vez que recibimos datos
+          if (hasReceivedAssistantMsg) {
+            resetInactivityTimer();
           }
         });
         
-        // Máximo timeout de 30 segundos
+        // Inicializar timer de inactividad
+        resetInactivityTimer();
+        
+        // Máximo timeout de 45 segundos
         setTimeout(() => {
           if (unsubscribe) unsubscribe();
-          if (responseTimeout) clearTimeout(responseTimeout);
+          if (inactivityTimeout) clearTimeout(inactivityTimeout);
           setLoading(false);
-        }, 30000);
+        }, 45000);
       }
     } catch (e) {
       console.error('Error:', e);
