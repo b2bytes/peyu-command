@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
-import { Calculator, Download, Send, Plus, Trash2 } from "lucide-react";
+import { Calculator, Download, Send, Plus, Trash2, Zap, Copy, Check, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -109,6 +109,10 @@ export default function CPQCalculator() {
   const [lineas, setLineas] = useState([{ producto_id: '', cantidad: 0, personalizacion: true, packaging: false }]);
   const [esExpress, setEsExpress] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [email, setEmail] = useState('');
+  const [generandoProp, setGenerandoProp] = useState(false);
+  const [propResult, setPropResult] = useState(null);
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     base44.entities.Producto.filter({ activo: true }, 'nombre', 200).then(setProductos).catch(() =>
@@ -135,6 +139,36 @@ export default function CPQCalculator() {
 
   const recargo_express = esExpress ? totales.subtotal * RECARGO_EXPRESS / 100 : 0;
   const total = totales.subtotal + totales.fees + recargo_express;
+
+  const handleGenerarPropuesta = async () => {
+    if (!empresa || !contacto || !email) return;
+    setGenerandoProp(true);
+    // Create lead first
+    const lead = await base44.entities.B2BLead.create({
+      contact_name: contacto,
+      company_name: empresa,
+      email,
+      source: 'Formulario Web',
+      status: 'En revisión',
+      product_interest: lineas.map(l => productos.find(p => p.id === l.producto_id)?.nombre).filter(Boolean).join(', '),
+      qty_estimate: lineas.reduce((s, l) => s + (l.cantidad || 0), 0),
+      personalization_needs: lineas.some(l => l.personalizacion),
+    });
+    const items = lineas.filter(l => l.producto_id && l.cantidad > 0).map(l => {
+      const prod = productos.find(p => p.id === l.producto_id);
+      return { nombre: prod?.nombre || '', qty: l.cantidad, precio_base: prod?.precio_base_b2b || 9990, personalizacion: l.personalizacion };
+    });
+    const res = await base44.functions.invoke('createCorporateProposal', { leadId: lead.id, items });
+    setPropResult(res.data);
+    setGenerandoProp(false);
+  };
+
+  const copyPropUrl = () => {
+    const url = `${window.location.origin}/b2b/propuesta?id=${propResult.proposal_id}`;
+    navigator.clipboard.writeText(url);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   const handleGuardar = async () => {
     const linea0 = lineas[0];
@@ -191,6 +225,7 @@ export default function CPQCalculator() {
             <div className="grid grid-cols-2 gap-3">
               <div><label className="text-xs font-medium text-muted-foreground">Empresa</label><Input value={empresa} onChange={e => setEmpresa(e.target.value)} className="mt-1" placeholder="Nombre empresa" /></div>
               <div><label className="text-xs font-medium text-muted-foreground">Contacto</label><Input value={contacto} onChange={e => setContacto(e.target.value)} className="mt-1" placeholder="Nombre contacto" /></div>
+              <div className="col-span-2"><label className="text-xs font-medium text-muted-foreground">Email cliente</label><Input type="email" value={email} onChange={e => setEmail(e.target.value)} className="mt-1" placeholder="correo@empresa.cl" /></div>
             </div>
           </div>
 
@@ -265,8 +300,35 @@ export default function CPQCalculator() {
             )}
 
             <div className="mt-4 space-y-2">
-              <Button onClick={handleGuardar} disabled={!empresa || total === 0}
-                className="w-full text-white gap-2" style={{ background: '#0F8B6C' }}>
+              {propResult ? (
+                <div className="space-y-2">
+                  <div className="bg-green-50 rounded-xl p-3 border border-green-200">
+                    <div className="text-green-700 font-semibold text-sm flex items-center gap-1.5 mb-1"><Check className="w-4 h-4" /> Propuesta #{propResult.numero}</div>
+                    <div className="text-xs text-green-700">Total: ${propResult.total?.toLocaleString('es-CL')} · {propResult.lead_time_dias} días</div>
+                  </div>
+                  <Button onClick={copyPropUrl} variant="outline" size="sm" className="w-full gap-2">
+                    {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                    {copied ? 'Link copiado' : 'Copiar link cliente'}
+                  </Button>
+                  <a href={`/b2b/propuesta?id=${propResult.proposal_id}`} target="_blank" rel="noopener noreferrer">
+                    <Button variant="ghost" size="sm" className="w-full gap-2 text-xs">
+                      <ExternalLink className="w-3 h-3" /> Ver propuesta
+                    </Button>
+                  </a>
+                </div>
+              ) : (
+                <Button
+                  onClick={handleGenerarPropuesta}
+                  disabled={!empresa || !contacto || !email || total === 0 || generandoProp}
+                  className="w-full text-white gap-2"
+                  style={{ background: '#006D5B' }}
+                >
+                  <Zap className="w-4 h-4" />
+                  {generandoProp ? 'Generando con IA...' : 'Generar Propuesta B2B automática'}
+                </Button>
+              )}
+              <Button onClick={handleGuardar} disabled={!empresa || total === 0} variant="outline"
+                className="w-full gap-2">
                 <Send className="w-4 h-4" />
                 {saved ? '✓ Guardada en Cotizaciones' : 'Guardar como Cotización'}
               </Button>

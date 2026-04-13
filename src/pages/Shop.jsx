@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
-import { ShoppingCart, Filter, Building2 } from 'lucide-react';
+import { ShoppingCart, Filter, Building2, Sparkles } from 'lucide-react';
 import WhatsAppWidget from '@/components/WhatsAppWidget';
 
 export default function Shop() {
@@ -144,8 +144,23 @@ export default function Shop() {
           </div>
         )}
 
+        {/* Personalización B2C Banner */}
+        <div className="mt-6 bg-gradient-to-r from-[#1a1a1a] to-[#4B4F54] rounded-2xl p-6 flex flex-col md:flex-row items-center gap-5 justify-between">
+          <div className="text-white space-y-1.5">
+            <div className="text-sm text-white/60">Nuevo · Personalización en tienda</div>
+            <h3 className="text-xl font-bold font-poppins">Grabado láser UV en tu producto</h3>
+            <p className="text-white/70 text-sm">Tu nombre, empresa o frase favorita grabada con láser · Listo en 5 minutos</p>
+          </div>
+          <Link to="/personalizar" className="shrink-0">
+            <Button size="lg" className="gap-2 bg-white text-[#1a1a1a] hover:bg-white/90 font-semibold whitespace-nowrap">
+              <Sparkles className="w-5 h-5" />
+              Personalizar mi producto
+            </Button>
+          </Link>
+        </div>
+
         {/* B2B Banner */}
-        <div className="mt-12 bg-gradient-to-r from-[#0F172A] to-[#006D5B] rounded-2xl p-6 md:p-8 flex flex-col md:flex-row items-center gap-5 justify-between">
+        <div className="mt-6 bg-gradient-to-r from-[#0F172A] to-[#006D5B] rounded-2xl p-6 md:p-8 flex flex-col md:flex-row items-center gap-5 justify-between">
           <div className="text-white space-y-2">
             <div className="text-sm text-white/60">Compra en volumen</div>
             <h3 className="text-xl font-bold font-poppins">Regalos corporativos desde 10 unidades</h3>
@@ -158,9 +173,9 @@ export default function Shop() {
             </Button>
           </Link>
         </div>
-      </div>
+        </div>
 
-      <WhatsAppWidget context="general" />
+        <WhatsAppWidget context="general" />
     </div>
   );
 }

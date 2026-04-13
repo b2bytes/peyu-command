@@ -41,6 +41,7 @@ import B2BContacto from './pages/B2BContacto';
 import AdminPropuestas from './pages/AdminPropuestas';
 import B2BPropuesta from './pages/B2BPropuesta';
 import CatalogoCorporativo from './pages/CatalogoCorporativo';
+import PersonalizacionFlow from './pages/PersonalizacionFlow';
 // Add page imports here
 
 const PublicShopRoutes = () => (
@@ -52,6 +53,7 @@ const PublicShopRoutes = () => (
     <Route path="/b2b/contacto" element={<B2BContacto />} />
     <Route path="/b2b/propuesta" element={<B2BPropuesta />} />
     <Route path="/b2b/catalogo" element={<CatalogoCorporativo />} />
+    <Route path="/personalizar" element={<PersonalizacionFlow />} />
   </Routes>
 );
 
