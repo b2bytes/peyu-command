@@ -15,18 +15,18 @@ export default function Shop() {
   const [agregandoId, setAgregandoId] = useState(null);
 
   // Map productos a imágenes reales
-const productImageMap = {
-  'Kit Escritorio Pro': 'https://images.unsplash.com/photo-1572365992253-3cb3e56dd362?w=600&h=600&fit=crop',
-  'Carcasa': 'https://images.unsplash.com/photo-1611532736579-6b16e2b50449?w=600&h=600&fit=crop',
-  'Cachos': 'https://images.unsplash.com/photo-1491553895911-0055eca6402d?w=600&h=600&fit=crop',
-  'Accesorios Escritorio': 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=600&h=600&fit=crop',
-  'Macetero': 'https://images.unsplash.com/photo-1578500494198-246f612d03b3?w=600&h=600&fit=crop',
-  'Posavasos': 'https://images.unsplash.com/photo-1578507065211-a61d7d29cd83?w=600&h=600&fit=crop',
-};
+  const productImageMap = {
+    'Kit Escritorio Pro': 'https://images.unsplash.com/photo-1572365992253-3cb3e56dd362?w=600&h=600&fit=crop',
+    'Carcasa': 'https://images.unsplash.com/photo-1611532736579-6b16e2b50449?w=600&h=600&fit=crop',
+    'Cachos': 'https://images.unsplash.com/photo-1491553895911-0055eca6402d?w=600&h=600&fit=crop',
+    'Accesorios Escritorio': 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=600&h=600&fit=crop',
+    'Macetero': 'https://images.unsplash.com/photo-1578500494198-246f612d03b3?w=600&h=600&fit=crop',
+    'Posavasos': 'https://images.unsplash.com/photo-1578507065211-a61d7d29cd83?w=600&h=600&fit=crop',
+  };
 
-const getProductImage = (producto) => {
-  return productImageMap[producto.nombre] || 'https://images.unsplash.com/photo-1578432291840-8d3a3a016e4d?w=600&h=600&fit=crop';
-};
+  const getProductImage = (producto) => {
+    return productImageMap[producto.nombre] || 'https://images.unsplash.com/photo-1578432291840-8d3a3a016e4d?w=600&h=600&fit=crop';
+  };
 
   const categorias = ['Todos', 'Navidad', 'Patrias', 'Año Nuevo', 'Día del Trabajador', 'Día de la Secretaria', 'Día del Profesor', 'Bienvenida', 'Día de la Mujer', 'Día de la Madre'];
 
@@ -195,7 +195,7 @@ const getProductImage = (producto) => {
                 className="group bg-gradient-to-br from-slate-700/40 to-slate-800/40 border border-white/15 rounded-3xl overflow-hidden hover:border-white/30 transition-all hover:shadow-2xl hover:shadow-orange-500/20"
               >
                 {/* Product Image */}
-                <div className={`relative w-full aspect-square bg-gradient-to-br ${getProductImage(p)} flex items-center justify-center overflow-hidden`}>
+                <div className="relative w-full aspect-square bg-gradient-to-br from-gray-700 to-gray-900 flex items-center justify-center overflow-hidden">
                   {/* Badges */}
                   <div className="absolute top-3 left-3 flex gap-2 z-10">
                     {p.categoria === 'Escritorio' && (
