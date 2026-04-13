@@ -3,10 +3,16 @@ import { useState } from "react";
 import {
   LayoutDashboard, Users, BarChart3, Megaphone, Turtle, Package,
   Calculator, MessageSquare, TrendingUp, Store, UserCheck, Truck,
-  HardHat, Flag, Archive, ShoppingCart, Settings as SettingsIcon, ChevronLeft, ChevronRight, Leaf, ListChecks, Sparkles, FileText, CalendarDays, PieChart, AlertTriangle
+  HardHat, Flag, Archive, ShoppingCart, Settings as SettingsIcon, ChevronLeft, ChevronRight, Leaf, ListChecks, Sparkles, FileText, CalendarDays, PieChart, AlertTriangle, Building2
 } from "lucide-react";
 
 const navGroups = [
+  {
+    label: "B2B Web",
+    items: [
+      { path: "/admin/propuestas", label: "Pipeline B2B Leads", icon: Building2 },
+    ]
+  },
   {
     label: "Operaciones",
     items: [

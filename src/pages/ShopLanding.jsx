@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { ShoppingCart, Leaf, Award, Truck, Building2 } from 'lucide-react';
+import WhatsAppWidget from '@/components/WhatsAppWidget';
 
 export default function ShopLanding() {
   const [productosDestacados, setProductosDestacados] = useState([]);
@@ -193,6 +194,8 @@ export default function ShopLanding() {
         </div>
       </div>
 
+      <WhatsAppWidget context="general" />
+
       {/* Footer */}
       <footer className="bg-foreground text-white py-8 px-4">
         <div className="max-w-6xl mx-auto grid md:grid-cols-3 gap-8">
@@ -211,8 +214,8 @@ export default function ShopLanding() {
           <div>
             <h4 className="font-bold mb-3">Contacto</h4>
             <p className="text-sm opacity-75">
-              Correo: ventas@peyu.cl<br />
-              WhatsApp: +56 9 xxxx xxxx
+              Correo: ventas@peyuchile.cl<br />
+              WhatsApp: +56 9 3504 0242
             </p>
           </div>
         </div>
