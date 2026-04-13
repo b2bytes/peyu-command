@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
+import { getProductImage } from '@/utils/productImages';
 import { ShoppingCart, Building2, Sparkles, Search, SlidersHorizontal, X, Star, Zap, ArrowRight } from 'lucide-react';
 import WhatsAppWidget from '@/components/WhatsAppWidget';
 
@@ -196,15 +197,16 @@ export default function Shop() {
                 <div className="group bg-white border border-gray-100 rounded-3xl overflow-hidden hover:shadow-2xl hover:-translate-y-2 hover:border-transparent transition-all duration-300 cursor-pointer flex flex-col h-full">
 
                   {/* Image */}
-                  <div className="relative bg-gradient-to-br from-[#0F8B6C]/10 via-[#A7D9C9]/20 to-[#E7D8C6]/30 overflow-hidden flex-shrink-0" style={{ aspectRatio: '1' }}>
-                    <div className="absolute inset-0 flex flex-col items-center justify-center">
-                      <div className="text-8xl md:text-9xl group-hover:scale-110 group-hover:-translate-y-2 transition-all duration-500 drop-shadow-xl filter">
-                        {EMOJI_MAP[p.categoria] || '📦'}
-                      </div>
+                  <div className="relative overflow-hidden flex-shrink-0" style={{ aspectRatio: '1' }}>
+                    <img
+                      src={getProductImage(p.sku, p.categoria)}
+                      alt={p.nombre}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      onError={e => { e.target.style.display='none'; e.target.nextSibling.style.display='flex'; }}
+                    />
+                    <div className="hidden absolute inset-0 bg-gradient-to-br from-[#0F8B6C]/10 via-[#A7D9C9]/20 to-[#E7D8C6]/30 items-center justify-center">
+                      <span className="text-7xl">{EMOJI_MAP[p.categoria] || '📦'}</span>
                     </div>
-
-                    {/* Gradient overlay at bottom */}
-                    <div className="absolute bottom-0 inset-x-0 h-16 bg-gradient-to-t from-white/30 to-transparent" />
 
                     {/* Top left badge */}
                     <div className="absolute top-3 left-3">
