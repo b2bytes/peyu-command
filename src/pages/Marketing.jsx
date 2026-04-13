@@ -1,97 +1,48 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
-import { Plus, Edit2, Trash2, TrendingUp, DollarSign, Eye, MousePointerClick, Target } from "lucide-react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  BarChart, Bar, LineChart, Line, PieChart, Pie, Cell,
+  XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend
+} from "recharts";
+import {
+  TrendingUp, Target, DollarSign, Users, Plus, Edit2, Trash2,
+  Loader2, BarChart3, Megaphone, RefreshCw, Sparkles
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from "recharts";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+
+const CLP = (n) => `$${(n || 0).toLocaleString("es-CL")}`;
+const COLORS = ["#0F8B6C", "#D96B4D", "#4B4F54", "#A7D9C9", "#f59e0b", "#3b82f6", "#9333ea"];
 
 const CANALES = ["Meta Ads", "Google Search", "TikTok Ads", "LinkedIn Ads", "Email", "WhatsApp", "Orgánico Instagram", "Orgánico TikTok"];
 const OBJETIVOS = ["Awareness", "Consideración", "Conversión", "Retargeting", "B2B Lead Gen"];
 const ESTADOS = ["Activa", "Pausada", "Finalizada", "En revisión", "Planificada"];
-const CONTENIDOS = ["Video Reel", "Imagen Estática", "Carrusel", "Story", "Texto", "Video largo"];
+const TIPOS = ["Video Reel", "Imagen Estática", "Carrusel", "Story", "Texto", "Video largo"];
 
-const COLORS = ['#0F8B6C', '#D96B4D', '#A7D9C9', '#4B4F54', '#E7D8C6', '#7c3aed', '#2563eb', '#d97706'];
-
-const canalColor = {
-  "Meta Ads": "bg-blue-100 text-blue-700",
-  "Google Search": "bg-red-100 text-red-700",
-  "TikTok Ads": "bg-gray-900 text-white",
-  "LinkedIn Ads": "bg-blue-700 text-white",
-  "Email": "bg-amber-100 text-amber-700",
-  "WhatsApp": "bg-green-100 text-green-700",
-  "Orgánico Instagram": "bg-pink-100 text-pink-700",
-  "Orgánico TikTok": "bg-gray-100 text-gray-700",
-};
-
-const estadoCampColor = {
-  Activa: "bg-green-100 text-green-700",
-  Pausada: "bg-amber-100 text-amber-700",
-  Finalizada: "bg-gray-100 text-gray-500",
-  "En revisión": "bg-purple-100 text-purple-700",
-  Planificada: "bg-blue-100 text-blue-700",
-};
-
-const CAM_DEFAULTS = {
-  nombre: '', canal: 'Meta Ads', objetivo: 'Conversión', estado: 'Planificada',
+const DEFAULTS = {
+  nombre: '', canal: 'Meta Ads', objetivo: 'Conversión', publico: '', estado: 'Planificada',
+  fecha_inicio: new Date().toISOString().split('T')[0], fecha_fin: '',
   presupuesto_clp: 0, gasto_real_clp: 0, impresiones: 0, clics: 0,
   conversiones: 0, leads_generados: 0, roas: 0, cac_clp: 0, ctr_pct: 0,
-  tipo_contenido: 'Video Reel'
+  tipo_contenido: 'Video Reel', sku_promovido: '', notas: '',
 };
 
-function CampanaCard({ cam, onEdit, onDelete }) {
-  const ctr = cam.ctr_pct || (cam.clics && cam.impresiones ? (cam.clics / cam.impresiones * 100) : 0);
-  const roas = cam.roas || 0;
-  const gasto = cam.gasto_real_clp || cam.presupuesto_clp || 0;
-  const ejecucion = cam.presupuesto_clp ? Math.min(100, Math.round((cam.gasto_real_clp || 0) / cam.presupuesto_clp * 100)) : 0;
-
+function KpiCard({ label, value, sub, icon: Icon, color }) {
   return (
-    <div className="bg-white rounded-xl p-4 shadow-sm border border-border hover:shadow-md transition-shadow">
-      <div className="flex items-start justify-between mb-2">
-        <div className="flex-1">
-          <p className="font-poppins font-semibold text-sm text-foreground">{cam.nombre}</p>
-          <div className="flex gap-1.5 mt-1 flex-wrap">
-            <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${canalColor[cam.canal] || 'bg-gray-100 text-gray-600'}`}>{cam.canal}</span>
-            <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${estadoCampColor[cam.estado] || ''}`}>{cam.estado}</span>
-          </div>
+    <div className="bg-white rounded-xl border border-border p-4 shadow-sm">
+      <div className="flex items-start gap-3">
+        <div className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0" style={{ background: (color || '#0F8B6C') + '20' }}>
+          <Icon className="w-4 h-4" style={{ color: color || '#0F8B6C' }} />
         </div>
-        <div className="flex gap-1 ml-2">
-          <button onClick={() => onEdit(cam)} className="p-1.5 hover:bg-muted rounded-lg transition-colors"><Edit2 className="w-3.5 h-3.5 text-muted-foreground" /></button>
-          <button onClick={() => onDelete(cam.id)} className="p-1.5 hover:bg-red-50 rounded-lg transition-colors"><Trash2 className="w-3.5 h-3.5 text-red-400" /></button>
+        <div>
+          <p className="text-xs text-muted-foreground">{label}</p>
+          <p className="font-poppins font-bold text-lg mt-0.5">{value}</p>
+          {sub && <p className="text-xs text-muted-foreground">{sub}</p>}
         </div>
       </div>
-
-      <div className="grid grid-cols-2 gap-2 my-3 text-xs">
-        <div className="flex items-center gap-1.5 text-muted-foreground"><DollarSign className="w-3 h-3" /><span>${gasto.toLocaleString('es-CL')}</span></div>
-        <div className="flex items-center gap-1.5 text-muted-foreground"><Target className="w-3 h-3" /><span>{cam.objetivo}</span></div>
-        {cam.impresiones > 0 && <div className="flex items-center gap-1.5 text-muted-foreground"><Eye className="w-3 h-3" /><span>{cam.impresiones.toLocaleString()}</span></div>}
-        {ctr > 0 && <div className="flex items-center gap-1.5 text-muted-foreground"><MousePointerClick className="w-3 h-3" /><span>CTR {ctr.toFixed(1)}%</span></div>}
-      </div>
-
-      <div className="grid grid-cols-3 gap-2 pt-2 border-t border-border">
-        <div className="text-center">
-          <p className="text-xs text-muted-foreground">Leads</p>
-          <p className="font-poppins font-bold text-sm" style={{ color: '#0F8B6C' }}>{cam.leads_generados || 0}</p>
-        </div>
-        <div className="text-center">
-          <p className="text-xs text-muted-foreground">ROAS</p>
-          <p className={`font-poppins font-bold text-sm ${roas >= 3 ? 'text-green-600' : roas > 0 ? 'text-amber-600' : 'text-gray-400'}`}>{roas > 0 ? `${roas.toFixed(1)}x` : '-'}</p>
-        </div>
-        <div className="text-center">
-          <p className="text-xs text-muted-foreground">Conv.</p>
-          <p className="font-poppins font-bold text-sm text-foreground">{cam.conversiones || 0}</p>
-        </div>
-      </div>
-
-      {cam.presupuesto_clp > 0 && (
-        <div className="mt-3">
-          <div className="flex justify-between text-xs text-muted-foreground mb-1">
-            <span>Ejecución presupuesto</span><span>{ejecucion}%</span>
-          </div>
-          <div className="h-1.5 bg-muted rounded-full"><div className="h-full rounded-full transition-all" style={{ width: `${ejecucion}%`, background: ejecucion > 90 ? '#D96B4D' : '#0F8B6C' }} /></div>
-        </div>
-      )}
     </div>
   );
 }
@@ -99,235 +50,343 @@ function CampanaCard({ cam, onEdit, onDelete }) {
 export default function Marketing() {
   const [campanas, setCampanas] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [filterCanal, setFilterCanal] = useState('todos');
-  const [filterEstado, setFilterEstado] = useState('todos');
   const [showModal, setShowModal] = useState(false);
   const [editing, setEditing] = useState(null);
-  const [form, setForm] = useState(CAM_DEFAULTS);
+  const [form, setForm] = useState(DEFAULTS);
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiInsight, setAiInsight] = useState('');
 
-  const loadData = async () => {
+  const load = async () => {
     setLoading(true);
-    const data = await base44.entities.Campana.list('-created_date', 100);
+    const data = await base44.entities.Campana.list('-fecha_inicio', 100);
     setCampanas(data);
     setLoading(false);
   };
 
-  useEffect(() => { loadData(); }, []);
+  useEffect(() => { load(); }, []);
 
-  const openNew = () => { setEditing(null); setForm(CAM_DEFAULTS); setShowModal(true); };
-  const openEdit = (c) => { setEditing(c); setForm(c); setShowModal(true); };
-
-  const handleSave = async () => {
+  const save = async () => {
     if (editing) await base44.entities.Campana.update(editing.id, form);
     else await base44.entities.Campana.create(form);
     setShowModal(false);
-    loadData();
+    load();
   };
 
-  const handleDelete = async (id) => {
-    if (!confirm('¿Eliminar esta campaña?')) return;
+  const del = async (id) => {
+    if (!confirm('¿Eliminar campaña?')) return;
     await base44.entities.Campana.delete(id);
-    loadData();
+    load();
   };
 
-  const filtered = campanas.filter(c =>
-    (filterCanal === 'todos' || c.canal === filterCanal) &&
-    (filterEstado === 'todos' || c.estado === filterEstado)
-  );
+  const openEdit = (c) => { setEditing(c); setForm(c); setShowModal(true); };
+  const openNew = () => { setEditing(null); setForm(DEFAULTS); setShowModal(true); };
 
-  // Aggregate stats
-  const totalGasto = campanas.reduce((s, c) => s + (c.gasto_real_clp || c.presupuesto_clp || 0), 0);
+  const generarAnalisisIA = async () => {
+    setAiLoading(true);
+    const activas = campanas.filter(c => c.estado === 'Activa');
+    const totalGasto = campanas.reduce((s, c) => s + (c.gasto_real_clp || 0), 0);
+    const totalConversiones = campanas.reduce((s, c) => s + (c.conversiones || 0), 0);
+    const roasPromedio = campanas.reduce((s, c) => s + (c.roas || 0), 0) / (campanas.length || 1);
+
+    const res = await base44.integrations.Core.InvokeLLM({
+      prompt: `Eres un experto en marketing digital para Peyu Chile, empresa de plástico reciclado. Analiza estas campañas y da 3 recomendaciones accionables en español:
+
+- Campañas activas: ${activas.length}
+- Gasto total: $${totalGasto.toLocaleString('es-CL')} CLP
+- Conversiones totales: ${totalConversiones}
+- ROAS promedio: ${roasPromedio.toFixed(1)}x
+- Canales usados: ${[...new Set(campanas.map(c => c.canal))].join(', ')}
+
+Contexto Peyu: dependen 100% de Meta Ads, no usan Google Ads ni email marketing, reciben 15 consultas WhatsApp diarias (solo 3 son leads reales). Meta objetivo +20% CVR, +30% leads B2B. El CEO admira la estrategia omnicanal de Greenglass.
+
+Sé breve y concreto. Formato: 3 bullets con emoji.`
+    });
+    setAiInsight(res);
+    setAiLoading(false);
+  };
+
+  // KPIs
+  const totalGasto = campanas.reduce((s, c) => s + (c.gasto_real_clp || 0), 0);
+  const totalPresupuesto = campanas.reduce((s, c) => s + (c.presupuesto_clp || 0), 0);
   const totalLeads = campanas.reduce((s, c) => s + (c.leads_generados || 0), 0);
   const totalConversiones = campanas.reduce((s, c) => s + (c.conversiones || 0), 0);
-  const avgRoas = campanas.filter(c => c.roas > 0).length > 0
-    ? campanas.filter(c => c.roas > 0).reduce((s, c) => s + c.roas, 0) / campanas.filter(c => c.roas > 0).length
-    : 0;
+  const roasPromedio = campanas.length ? (campanas.reduce((s, c) => s + (c.roas || 0), 0) / campanas.length).toFixed(1) : 0;
+  const activas = campanas.filter(c => c.estado === 'Activa').length;
 
-  // Chart data: gasto por canal
-  const canalData = CANALES.map(canal => ({
-    canal: canal.replace(' Ads', '').replace('Orgánico ', ''),
-    gasto: campanas.filter(c => c.canal === canal).reduce((s, c) => s + (c.gasto_real_clp || c.presupuesto_clp || 0), 0),
-    leads: campanas.filter(c => c.canal === canal).reduce((s, c) => s + (c.leads_generados || 0), 0),
-  })).filter(d => d.gasto > 0 || d.leads > 0);
+  // Charts
+  const gastoByCanal = CANALES.reduce((acc, canal) => {
+    const total = campanas.filter(c => c.canal === canal).reduce((s, c) => s + (c.gasto_real_clp || 0), 0);
+    if (total > 0) acc.push({ canal: canal.split(' ')[0], total });
+    return acc;
+  }, []);
 
-  const estadoData = ESTADOS.map(e => ({
-    name: e,
-    value: campanas.filter(c => c.estado === e).length
-  })).filter(d => d.value > 0);
-
-  // Presupuesto recomendado
-  const recomendado = [
-    { canal: 'Meta Ads', pct: 60, clp: 1200 },
-    { canal: 'Google Search', pct: 25, clp: 500 },
-    { canal: 'TikTok Ads', pct: 10, clp: 200 },
-    { canal: 'LinkedIn B2B', pct: 5, clp: 100 },
-  ];
+  const estadosData = ESTADOS.reduce((acc, est) => {
+    const count = campanas.filter(c => c.estado === est).length;
+    if (count > 0) acc.push({ name: est, value: count });
+    return acc;
+  }, []);
 
   return (
     <div className="p-6 space-y-5">
-      <div className="flex items-center justify-between">
+      {/* Header */}
+      <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
-          <h1 className="text-2xl font-poppins font-bold text-foreground">Marketing & Campañas</h1>
-          <p className="text-muted-foreground text-sm mt-1">Presupuesto actual: $2.0M CLP/mes • Meta: diversificar canales</p>
+          <h1 className="text-2xl font-poppins font-bold">Marketing & Campañas</h1>
+          <p className="text-sm text-muted-foreground mt-0.5">Meta Ads · TikTok · Google · Email · WhatsApp</p>
         </div>
-        <Button onClick={openNew} style={{ background: '#D96B4D' }} className="text-white hover:opacity-90 gap-2">
-          <Plus className="w-4 h-4" />Nueva Campaña
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm" onClick={load} className="gap-2">
+            <RefreshCw className="w-3.5 h-3.5" /> Actualizar
+          </Button>
+          <Button onClick={generarAnalisisIA} size="sm" disabled={aiLoading} className="gap-2 text-white" style={{ background: '#D96B4D' }}>
+            {aiLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />}
+            Análisis IA
+          </Button>
+          <Button onClick={openNew} size="sm" className="gap-2 text-white" style={{ background: '#0F8B6C' }}>
+            <Plus className="w-3.5 h-3.5" /> Nueva Campaña
+          </Button>
+        </div>
       </div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        {[
-          { label: 'Gasto Total', value: `$${(totalGasto/1000).toFixed(0)}K CLP`, sub: 'Meta: $2.000K/mes', color: '#D96B4D' },
-          { label: 'Leads Generados', value: totalLeads, sub: 'Todos los canales', color: '#0F8B6C' },
-          { label: 'Conversiones', value: totalConversiones, sub: `CVR: ${totalLeads > 0 ? (totalConversiones/totalLeads*100).toFixed(1) : 0}%`, color: '#0F8B6C' },
-          { label: 'ROAS Promedio', value: avgRoas > 0 ? `${avgRoas.toFixed(1)}x` : '-', sub: 'Meta: >3x', color: avgRoas >= 3 ? '#0F8B6C' : '#D96B4D' },
-        ].map((s, i) => (
-          <div key={i} className="bg-white rounded-xl p-4 shadow-sm border border-border">
-            <p className="text-xs font-medium text-muted-foreground">{s.label}</p>
-            <p className="text-2xl font-poppins font-bold mt-1" style={{ color: s.color }}>{s.value}</p>
-            <p className="text-xs text-muted-foreground mt-0.5">{s.sub}</p>
+      {/* AI Insight */}
+      {aiInsight && (
+        <div className="bg-gradient-to-r from-[#D96B4D]/10 to-[#E7D8C6] border border-[#D96B4D]/30 rounded-xl p-4">
+          <div className="flex items-center gap-2 mb-2">
+            <Sparkles className="w-4 h-4 text-[#D96B4D]" />
+            <span className="font-semibold text-sm text-[#D96B4D]">Recomendaciones IA</span>
           </div>
-        ))}
+          <div className="text-sm whitespace-pre-line">{aiInsight}</div>
+        </div>
+      )}
+
+      {/* KPIs */}
+      <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3">
+        <KpiCard label="Campañas Activas" value={activas} icon={Megaphone} color="#0F8B6C" />
+        <KpiCard label="Gasto Total" value={CLP(totalGasto)} sub={`de ${CLP(totalPresupuesto)}`} icon={DollarSign} color="#D96B4D" />
+        <KpiCard label="Leads Generados" value={totalLeads} icon={Users} color="#3b82f6" />
+        <KpiCard label="Conversiones" value={totalConversiones} icon={Target} color="#9333ea" />
+        <KpiCard label="ROAS Promedio" value={`${roasPromedio}x`} sub={roasPromedio >= 3 ? '✓ Meta ≥ 3x' : '↗ Meta: 3x+'} icon={TrendingUp} color={roasPromedio >= 3 ? '#0F8B6C' : '#f59e0b'} />
+        <KpiCard label="Total Campañas" value={campanas.length} icon={BarChart3} color="#4B4F54" />
       </div>
 
-      {/* Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <div className="lg:col-span-2 bg-white rounded-2xl p-5 shadow-sm border border-border">
-          <h3 className="font-poppins font-semibold text-foreground mb-1">Gasto y Leads por Canal</h3>
-          <p className="text-xs text-muted-foreground mb-4">Distribución actual del presupuesto</p>
-          {canalData.length > 0 ? (
-            <ResponsiveContainer width="100%" height={200}>
-              <BarChart data={canalData} barSize={16}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                <XAxis dataKey="canal" tick={{ fontSize: 11 }} />
-                <YAxis yAxisId="left" tick={{ fontSize: 10 }} />
-                <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 10 }} />
-                <Tooltip />
-                <Legend />
-                <Bar yAxisId="left" dataKey="gasto" fill="#D96B4D" name="Gasto (CLP)" radius={[4,4,0,0]} />
-                <Bar yAxisId="right" dataKey="leads" fill="#0F8B6C" name="Leads" radius={[4,4,0,0]} />
-              </BarChart>
-            </ResponsiveContainer>
+      {/* Tabs */}
+      <Tabs defaultValue="campanas">
+        <TabsList>
+          <TabsTrigger value="campanas">Campañas</TabsTrigger>
+          <TabsTrigger value="analitica">Analítica</TabsTrigger>
+        </TabsList>
+
+        {/* ── CAMPAÑAS ── */}
+        <TabsContent value="campanas" className="mt-4">
+          {loading ? (
+            <div className="flex justify-center py-12"><Loader2 className="w-6 h-6 animate-spin text-primary" /></div>
+          ) : campanas.length === 0 ? (
+            <div className="text-center py-16 text-muted-foreground">
+              <Megaphone className="w-12 h-12 mx-auto mb-3 opacity-20" />
+              <p>Sin campañas. Crea la primera.</p>
+            </div>
           ) : (
-            <div className="h-48 flex items-center justify-center text-muted-foreground text-sm">
-              Agrega campañas para ver gráficos
+            <div className="grid gap-3">
+              {campanas.map(c => {
+                const pct = c.presupuesto_clp > 0 ? Math.min(100, Math.round((c.gasto_real_clp || 0) / c.presupuesto_clp * 100)) : 0;
+                const statusColor = c.estado === 'Activa' ? '#0F8B6C' : c.estado === 'Pausada' ? '#f59e0b' : '#9ca3af';
+                return (
+                  <div key={c.id} className="bg-white border border-border rounded-xl p-4 shadow-sm">
+                    <div className="flex items-start justify-between flex-wrap gap-2 mb-3">
+                      <div>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <h3 className="font-semibold text-foreground">{c.nombre}</h3>
+                          <span className="text-xs px-2 py-0.5 rounded-full font-medium" style={{ background: statusColor + '20', color: statusColor }}>{c.estado}</span>
+                          <span className="text-xs bg-muted px-2 py-0.5 rounded-full text-muted-foreground">{c.canal}</span>
+                          {c.tipo_contenido && <span className="text-xs bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full">{c.tipo_contenido}</span>}
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-0.5">{c.objetivo} · {c.publico}</p>
+                      </div>
+                      <div className="flex gap-1">
+                        <button onClick={() => openEdit(c)} className="p-1.5 hover:bg-muted rounded-lg"><Edit2 className="w-3.5 h-3.5 text-muted-foreground" /></button>
+                        <button onClick={() => del(c.id)} className="p-1.5 hover:bg-red-50 rounded-lg"><Trash2 className="w-3.5 h-3.5 text-red-400" /></button>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-4 md:grid-cols-8 gap-3 text-xs mb-3">
+                      {[
+                        { label: 'Presupuesto', value: CLP(c.presupuesto_clp) },
+                        { label: 'Gasto Real', value: CLP(c.gasto_real_clp) },
+                        { label: 'Impresiones', value: (c.impresiones || 0).toLocaleString() },
+                        { label: 'Clics', value: (c.clics || 0).toLocaleString() },
+                        { label: 'CTR', value: `${c.ctr_pct || 0}%` },
+                        { label: 'Conversiones', value: c.conversiones || 0 },
+                        { label: 'Leads', value: c.leads_generados || 0 },
+                        { label: 'ROAS', value: `${c.roas || 0}x` },
+                      ].map((m, i) => (
+                        <div key={i}>
+                          <p className="text-muted-foreground">{m.label}</p>
+                          <p className="font-semibold text-foreground">{m.value}</p>
+                        </div>
+                      ))}
+                    </div>
+                    {c.presupuesto_clp > 0 && (
+                      <div>
+                        <div className="flex justify-between text-xs text-muted-foreground mb-1">
+                          <span>Ejecución presupuesto</span>
+                          <span>{pct}%</span>
+                        </div>
+                        <div className="h-1.5 bg-muted rounded-full overflow-hidden">
+                          <div className="h-full rounded-full" style={{ width: `${pct}%`, background: pct > 90 ? '#D96B4D' : '#0F8B6C' }} />
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           )}
-        </div>
+        </TabsContent>
 
-        {/* Presupuesto recomendado */}
-        <div className="bg-white rounded-2xl p-5 shadow-sm border border-border">
-          <h3 className="font-poppins font-semibold text-foreground mb-1">Mix Recomendado</h3>
-          <p className="text-xs text-muted-foreground mb-3">De $2.0M CLP/mes (Blueprint)</p>
-          <div className="space-y-3">
-            {recomendado.map((r, i) => (
-              <div key={i}>
-                <div className="flex justify-between text-xs mb-1">
-                  <span className="font-medium text-foreground">{r.canal}</span>
-                  <span className="text-muted-foreground">${r.clp}K • {r.pct}%</span>
-                </div>
-                <div className="h-2 bg-muted rounded-full">
-                  <div className="h-full rounded-full" style={{ width: `${r.pct}%`, background: COLORS[i] }} />
-                </div>
-              </div>
-            ))}
-          </div>
-          <div className="mt-4 pt-3 border-t border-border">
-            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">Acciones Urgentes</p>
-            <div className="space-y-1.5 text-xs text-muted-foreground">
-              <p className="flex items-start gap-1"><span className="text-red-500 mt-0.5">→</span> Pausar Advantage+ sin A/B testing</p>
-              <p className="flex items-start gap-1"><span style={{ color: '#0F8B6C' }} className="mt-0.5">→</span> Activar Google Search con keywords B2B</p>
-              <p className="flex items-start gap-1"><span style={{ color: '#0F8B6C' }} className="mt-0.5">→</span> Implementar Meta CAPI + GA4</p>
-              <p className="flex items-start gap-1"><span style={{ color: '#4B4F54' }} className="mt-0.5">→</span> 3 reels/semana de producción</p>
+        {/* ── ANALÍTICA ── */}
+        <TabsContent value="analitica" className="mt-4 space-y-4">
+          <div className="grid lg:grid-cols-2 gap-4">
+            <div className="bg-white border border-border rounded-xl p-5 shadow-sm">
+              <h3 className="font-semibold text-sm mb-4">Gasto por Canal (CLP)</h3>
+              {gastoByCanal.length > 0 ? (
+                <ResponsiveContainer width="100%" height={200}>
+                  <BarChart data={gastoByCanal}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                    <XAxis dataKey="canal" tick={{ fontSize: 11 }} />
+                    <YAxis tick={{ fontSize: 10 }} tickFormatter={v => `$${(v/1000).toFixed(0)}K`} />
+                    <Tooltip formatter={v => CLP(v)} />
+                    <Bar dataKey="total" fill="#0F8B6C" radius={[4, 4, 0, 0]} name="Gasto" />
+                  </BarChart>
+                </ResponsiveContainer>
+              ) : <p className="text-center py-8 text-muted-foreground text-sm">Sin datos</p>}
+            </div>
+            <div className="bg-white border border-border rounded-xl p-5 shadow-sm">
+              <h3 className="font-semibold text-sm mb-4">Estado de Campañas</h3>
+              {estadosData.length > 0 ? (
+                <ResponsiveContainer width="100%" height={200}>
+                  <PieChart>
+                    <Pie data={estadosData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} label={({ name, value }) => `${name} (${value})`} labelLine={false}>
+                      {estadosData.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
+                    </Pie>
+                    <Tooltip />
+                  </PieChart>
+                </ResponsiveContainer>
+              ) : <p className="text-center py-8 text-muted-foreground text-sm">Sin datos</p>}
             </div>
           </div>
-        </div>
-      </div>
 
-      {/* Filters + List */}
-      <div className="flex gap-2 flex-wrap">
-        <Select value={filterCanal} onValueChange={setFilterCanal}>
-          <SelectTrigger className="h-9 w-44"><SelectValue placeholder="Canal" /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="todos">Todos los canales</SelectItem>
-            {CANALES.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-          </SelectContent>
-        </Select>
-        <Select value={filterEstado} onValueChange={setFilterEstado}>
-          <SelectTrigger className="h-9 w-40"><SelectValue placeholder="Estado" /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="todos">Todos</SelectItem>
-            {ESTADOS.map(e => <SelectItem key={e} value={e}>{e}</SelectItem>)}
-          </SelectContent>
-        </Select>
-        <span className="text-sm text-muted-foreground self-center ml-1">{filtered.length} campañas</span>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-        {filtered.map(c => <CampanaCard key={c.id} cam={c} onEdit={openEdit} onDelete={handleDelete} />)}
-        {!loading && filtered.length === 0 && (
-          <div className="col-span-3 text-center py-16 text-muted-foreground">
-            <TrendingUp className="w-12 h-12 mx-auto mb-3 opacity-30" />
-            <p>No hay campañas. Agrega la primera.</p>
+          {/* Matriz ROAS */}
+          <div className="bg-white border border-border rounded-xl p-5 shadow-sm">
+            <h3 className="font-semibold text-sm mb-4">Rendimiento por Campaña (ROAS vs Gasto)</h3>
+            <div className="space-y-2">
+              {campanas.filter(c => c.gasto_real_clp > 0).sort((a, b) => (b.roas || 0) - (a.roas || 0)).map(c => (
+                <div key={c.id} className="flex items-center gap-3">
+                  <div className="w-32 text-xs text-muted-foreground truncate shrink-0">{c.nombre}</div>
+                  <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
+                    <div className="h-full rounded-full" style={{
+                      width: `${Math.min(100, ((c.roas || 0) / 10) * 100)}%`,
+                      background: (c.roas || 0) >= 3 ? '#0F8B6C' : (c.roas || 0) >= 1.5 ? '#f59e0b' : '#D96B4D'
+                    }} />
+                  </div>
+                  <span className="text-xs font-semibold w-12 text-right">{c.roas || 0}x</span>
+                  <span className="text-xs text-muted-foreground w-20 text-right">{CLP(c.gasto_real_clp)}</span>
+                </div>
+              ))}
+              {campanas.filter(c => c.gasto_real_clp > 0).length === 0 && (
+                <p className="text-center py-4 text-muted-foreground text-sm">Ingresa datos de gasto y ROAS en las campañas para ver el análisis</p>
+              )}
+            </div>
           </div>
-        )}
-      </div>
+        </TabsContent>
+      </Tabs>
 
       {/* Modal */}
       <Dialog open={showModal} onOpenChange={setShowModal}>
-        <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
+        <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="font-poppins">{editing ? 'Editar' : 'Nueva'} Campaña</DialogTitle>
           </DialogHeader>
           <div className="space-y-3 mt-2">
-            <div><label className="text-xs font-medium text-muted-foreground">Nombre *</label><Input value={form.nombre||''} onChange={e=>setForm({...form,nombre:e.target.value})} className="mt-1" /></div>
+            <div><label className="text-xs font-medium text-muted-foreground">Nombre *</label>
+              <Input value={form.nombre || ''} onChange={e => setForm({ ...form, nombre: e.target.value })} className="mt-1" />
+            </div>
             <div className="grid grid-cols-2 gap-3">
               <div><label className="text-xs font-medium text-muted-foreground">Canal</label>
-                <Select value={form.canal||''} onValueChange={v=>setForm({...form,canal:v})}>
+                <Select value={form.canal || ''} onValueChange={v => setForm({ ...form, canal: v })}>
                   <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
-                  <SelectContent>{CANALES.map(o=><SelectItem key={o} value={o}>{o}</SelectItem>)}</SelectContent>
+                  <SelectContent>{CANALES.map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
               <div><label className="text-xs font-medium text-muted-foreground">Objetivo</label>
-                <Select value={form.objetivo||''} onValueChange={v=>setForm({...form,objetivo:v})}>
+                <Select value={form.objetivo || ''} onValueChange={v => setForm({ ...form, objetivo: v })}>
                   <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
-                  <SelectContent>{OBJETIVOS.map(o=><SelectItem key={o} value={o}>{o}</SelectItem>)}</SelectContent>
+                  <SelectContent>{OBJETIVOS.map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div><label className="text-xs font-medium text-muted-foreground">Estado</label>
-                <Select value={form.estado||''} onValueChange={v=>setForm({...form,estado:v})}>
+                <Select value={form.estado || ''} onValueChange={v => setForm({ ...form, estado: v })}>
                   <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
-                  <SelectContent>{ESTADOS.map(o=><SelectItem key={o} value={o}>{o}</SelectItem>)}</SelectContent>
+                  <SelectContent>{ESTADOS.map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
               <div><label className="text-xs font-medium text-muted-foreground">Tipo Contenido</label>
-                <Select value={form.tipo_contenido||''} onValueChange={v=>setForm({...form,tipo_contenido:v})}>
+                <Select value={form.tipo_contenido || ''} onValueChange={v => setForm({ ...form, tipo_contenido: v })}>
                   <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
-                  <SelectContent>{CONTENIDOS.map(o=><SelectItem key={o} value={o}>{o}</SelectItem>)}</SelectContent>
+                  <SelectContent>{TIPOS.map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
             </div>
+            <div><label className="text-xs font-medium text-muted-foreground">Público objetivo</label>
+              <Input value={form.publico || ''} onChange={e => setForm({ ...form, publico: e.target.value })} className="mt-1" placeholder="Ej: RRHH empresas, 30-45 años, Santiago" />
+            </div>
             <div className="grid grid-cols-2 gap-3">
-              <div><label className="text-xs font-medium text-muted-foreground">Presupuesto (CLP)</label><Input type="number" value={form.presupuesto_clp||''} onChange={e=>setForm({...form,presupuesto_clp:+e.target.value})} className="mt-1" /></div>
-              <div><label className="text-xs font-medium text-muted-foreground">Gasto Real (CLP)</label><Input type="number" value={form.gasto_real_clp||''} onChange={e=>setForm({...form,gasto_real_clp:+e.target.value})} className="mt-1" /></div>
+              <div><label className="text-xs font-medium text-muted-foreground">Fecha Inicio</label>
+                <Input type="date" value={form.fecha_inicio || ''} onChange={e => setForm({ ...form, fecha_inicio: e.target.value })} className="mt-1" />
+              </div>
+              <div><label className="text-xs font-medium text-muted-foreground">Fecha Fin</label>
+                <Input type="date" value={form.fecha_fin || ''} onChange={e => setForm({ ...form, fecha_fin: e.target.value })} className="mt-1" />
+              </div>
             </div>
-            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide pt-1">Métricas</p>
-            <div className="grid grid-cols-3 gap-2">
-              <div><label className="text-xs font-medium text-muted-foreground">Impresiones</label><Input type="number" value={form.impresiones||''} onChange={e=>setForm({...form,impresiones:+e.target.value})} className="mt-1" /></div>
-              <div><label className="text-xs font-medium text-muted-foreground">Clics</label><Input type="number" value={form.clics||''} onChange={e=>setForm({...form,clics:+e.target.value})} className="mt-1" /></div>
-              <div><label className="text-xs font-medium text-muted-foreground">Leads</label><Input type="number" value={form.leads_generados||''} onChange={e=>setForm({...form,leads_generados:+e.target.value})} className="mt-1" /></div>
+            <div className="grid grid-cols-2 gap-3">
+              <div><label className="text-xs font-medium text-muted-foreground">Presupuesto (CLP)</label>
+                <Input type="number" value={form.presupuesto_clp || ''} onChange={e => setForm({ ...form, presupuesto_clp: +e.target.value })} className="mt-1" />
+              </div>
+              <div><label className="text-xs font-medium text-muted-foreground">Gasto Real (CLP)</label>
+                <Input type="number" value={form.gasto_real_clp || ''} onChange={e => setForm({ ...form, gasto_real_clp: +e.target.value })} className="mt-1" />
+              </div>
             </div>
-            <div className="grid grid-cols-3 gap-2">
-              <div><label className="text-xs font-medium text-muted-foreground">Conversiones</label><Input type="number" value={form.conversiones||''} onChange={e=>setForm({...form,conversiones:+e.target.value})} className="mt-1" /></div>
-              <div><label className="text-xs font-medium text-muted-foreground">ROAS</label><Input type="number" step="0.1" value={form.roas||''} onChange={e=>setForm({...form,roas:+e.target.value})} className="mt-1" /></div>
-              <div><label className="text-xs font-medium text-muted-foreground">CAC (CLP)</label><Input type="number" value={form.cac_clp||''} onChange={e=>setForm({...form,cac_clp:+e.target.value})} className="mt-1" /></div>
+            <div className="grid grid-cols-4 gap-3">
+              {[
+                { label: 'Impresiones', key: 'impresiones' },
+                { label: 'Clics', key: 'clics' },
+                { label: 'Conversiones', key: 'conversiones' },
+                { label: 'Leads generados', key: 'leads_generados' },
+              ].map(f => (
+                <div key={f.key}><label className="text-xs font-medium text-muted-foreground">{f.label}</label>
+                  <Input type="number" value={form[f.key] || ''} onChange={e => setForm({ ...form, [f.key]: +e.target.value })} className="mt-1" />
+                </div>
+              ))}
             </div>
-            <div><label className="text-xs font-medium text-muted-foreground">SKU / Producto Promovido</label><Input value={form.sku_promovido||''} onChange={e=>setForm({...form,sku_promovido:e.target.value})} className="mt-1" /></div>
+            <div className="grid grid-cols-3 gap-3">
+              {[
+                { label: 'ROAS', key: 'roas' },
+                { label: 'CAC (CLP)', key: 'cac_clp' },
+                { label: 'CTR (%)', key: 'ctr_pct' },
+              ].map(f => (
+                <div key={f.key}><label className="text-xs font-medium text-muted-foreground">{f.label}</label>
+                  <Input type="number" step="0.1" value={form[f.key] || ''} onChange={e => setForm({ ...form, [f.key]: +e.target.value })} className="mt-1" />
+                </div>
+              ))}
+            </div>
+            <div><label className="text-xs font-medium text-muted-foreground">SKU promovido</label>
+              <Input value={form.sku_promovido || ''} onChange={e => setForm({ ...form, sku_promovido: e.target.value })} className="mt-1" placeholder="KIT-ESCR-001" />
+            </div>
+            <div><label className="text-xs font-medium text-muted-foreground">Notas</label>
+              <textarea value={form.notas || ''} onChange={e => setForm({ ...form, notas: e.target.value })} className="w-full mt-1 border border-input rounded-lg px-3 py-2 text-sm resize-none h-16" />
+            </div>
             <div className="flex gap-2 pt-2">
-              <Button onClick={handleSave} className="flex-1 text-white" style={{ background: '#D96B4D' }}>Guardar</Button>
+              <Button onClick={save} className="flex-1 text-white" style={{ background: '#0F8B6C' }}>Guardar</Button>
               <Button variant="outline" onClick={() => setShowModal(false)} className="flex-1">Cancelar</Button>
             </div>
           </div>
