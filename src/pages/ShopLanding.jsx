@@ -141,77 +141,74 @@ export default function ShopLanding() {
           {/* Content */}
           <div className="flex flex-col gap-3 sm:gap-4 p-4 sm:p-5 md:p-6 flex-1">
             {/* Hero Title */}
-            <div className="space-y-1 sm:space-y-2">
+            <div className="space-y-2">
               <h1 className="text-3xl sm:text-5xl md:text-6xl font-poppins font-black leading-tight text-white drop-shadow-lg">
-                Regalos <span className="text-teal-400">100%</span>
+                Regalos Corporativos <span className="text-teal-400">100%</span>
                 <br />
-                <span className="text-emerald-400">Sostenibles</span>
+                <span className="text-emerald-400">Sostenibles</span> Con Propósito ESG
               </h1>
-              <p className="text-white/90 text-xs sm:text-base leading-relaxed drop-shadow font-medium max-w-xl">Productos de plástico reciclado con personalización láser. Diseña y mide tu impacto ESG.</p>
+              <p className="text-white/90 text-xs sm:text-sm leading-relaxed drop-shadow font-medium max-w-2xl">Productos de plástico reciclado con personalización láser. Diseña, crea y mide el impacto de tu programa de gifting corporativo.</p>
             </div>
 
             {/* CTA Buttons */}
-            <div className="flex flex-col sm:flex-row gap-1.5 sm:gap-2">
-              <Link to="/shop" className="flex-1 sm:flex-none">
-                <Button className="w-full bg-red-600 hover:bg-red-700 text-white font-bold rounded-full px-5 sm:px-6 py-2 sm:py-2.5 gap-1 shadow-lg hover:shadow-xl text-xs sm:text-sm transition-all">
-                  📮 Explorar
+            <div className="flex gap-2">
+              <Link to="/shop" className="flex-1">
+                <Button className="w-full bg-red-600 hover:bg-red-700 text-white font-bold rounded-full px-6 py-2.5 gap-2 shadow-lg hover:shadow-xl text-sm transition-all">
+                  📮 Explorar Regalos
                 </Button>
               </Link>
-              <Link to="/b2b/contacto" className="flex-1 sm:flex-none">
-                <Button className="w-full bg-yellow-400 hover:bg-yellow-500 text-gray-900 font-bold rounded-full px-5 sm:px-6 py-2 sm:py-2.5 gap-1 shadow-lg hover:shadow-xl text-xs sm:text-sm transition-all">
-                  ✨ B2B
+              <Link to="/b2b/contacto" className="flex-1">
+                <Button className="w-full bg-yellow-400 hover:bg-yellow-500 text-gray-900 font-bold rounded-full px-6 py-2.5 gap-2 shadow-lg hover:shadow-xl text-sm transition-all">
+                  ✨ Regalos Corporativos con Propósito
                 </Button>
               </Link>
             </div>
 
             {/* Chat Agent */}
-            <div className="bg-white/15 backdrop-blur-xl border border-white/30 rounded-2xl sm:rounded-3xl p-3 sm:p-4 md:p-5 flex flex-col shadow-xl h-48 sm:h-56 md:h-64">
+            <div className="bg-white/15 backdrop-blur-xl border border-white/30 rounded-3xl p-4 sm:p-5 flex flex-col shadow-xl flex-1 min-h-56">
               
               {/* Agent Header */}
-              <div className="mb-2 pb-2 border-b border-white/20 flex items-center gap-2 flex-shrink-0">
-                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gradient-to-br from-orange-400 to-red-500 flex items-center justify-center text-white font-bold flex-shrink-0 text-sm sm:text-lg shadow-lg">✨</div>
+              <div className="mb-3 pb-3 border-b border-white/20 flex items-center gap-2 flex-shrink-0">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-orange-400 to-red-500 flex items-center justify-center text-white font-bold flex-shrink-0 text-lg shadow-lg">✨</div>
                 <div className="min-w-0">
-                  <p className="text-white font-bold text-xs sm:text-sm">Asistente PEYU</p>
-                  <p className="text-white/50 text-[10px] sm:text-xs">Diseña tu regalo</p>
+                  <p className="text-white font-bold text-sm">Asistente PEYU</p>
+                  <p className="text-white/50 text-xs">Bienvenido. Con más de una década perfeccionando el arte del gifting estratégico. ¿Te gustaría que lleve a un recorrido personalizado?</p>
                 </div>
               </div>
 
-              {/* Messages */}
-              <div className="flex-1 overflow-y-auto space-y-2 sm:space-y-3 mb-2 scrollbar-hide">
-                {messages.map((msg, i) => (
-                  <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                    <div className={msgClass(msg) + ' text-[11px] sm:text-sm'}>
-                      {msg.content}
-                    </div>
-                  </div>
-                ))}
-                {loading && (
-                  <div className="flex justify-start">
-                    <div className="bg-white/20 border border-white/30 rounded-xl sm:rounded-2xl rounded-bl-none px-3 sm:px-4 py-2 sm:py-3 flex gap-1">
-                      {[0, 1, 2].map(i => (
-                        <div key={i} className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-white/40 rounded-full animate-bounce" style={{ animationDelay: `${i * 150}ms` }} />
-                      ))}
-                    </div>
-                  </div>
-                )}
-                <div ref={messagesEndRef} />
+              {/* Input */}
+              <div className="flex gap-2 mt-3 flex-shrink-0">
+                <Input
+                  value={input}
+                  onChange={e => setInput(e.target.value)}
+                  onKeyPress={e => e.key === 'Enter' && sendMessage()}
+                  placeholder="¿Qué programa necesitas? Cuéntame tu necesidad..."
+                  className="bg-white/20 border-white/30 text-white placeholder:text-white/40 text-sm rounded-2xl focus:ring-teal-400/50 flex-1 h-11"
+                  disabled={loading}
+                />
+                <Button
+                  onClick={sendMessage}
+                  disabled={loading || !input.trim()}
+                  className="bg-teal-500 hover:bg-teal-600 text-white rounded-full w-11 h-11 p-0 flex items-center justify-center flex-shrink-0">
+                  <Send className="w-5 h-5" />
+                </Button>
               </div>
 
 
             </div>
 
             {/* Ocasiones Carousel */}
-            <div className="overflow-x-auto scrollbar-hide flex gap-1.5 sm:gap-2 pb-1">
+            <div className="overflow-x-auto scrollbar-hide flex gap-3 sm:gap-4 pb-2 justify-center sm:justify-start">
               {OCASIONES.map(occ => (
                 <button
                   key={occ.id}
                   onClick={() => handleOccasionClick(occ)}
-                  className="flex flex-col items-center gap-0.5 sm:gap-1 flex-shrink-0 hover:scale-110 transition-transform group"
+                  className="flex flex-col items-center gap-1 sm:gap-2 flex-shrink-0 hover:scale-110 transition-transform group"
                 >
-                  <div className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-full bg-white/20 border border-white/30 flex items-center justify-center text-lg sm:text-2xl md:text-3xl group-hover:bg-white/30 group-hover:border-white/50 transition-all shadow-lg">
+                  <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-white/25 border border-white/40 flex items-center justify-center text-2xl sm:text-3xl group-hover:bg-white/35 group-hover:border-white/60 transition-all shadow-lg">
                     {occ.icon}
                   </div>
-                  <span className="text-white text-[8px] sm:text-[9px] md:text-xs font-bold text-center leading-tight">{occ.label}</span>
+                  <span className="text-white text-[9px] sm:text-xs font-bold text-center leading-tight whitespace-nowrap">{occ.label}</span>
                 </button>
               ))}
             </div>
