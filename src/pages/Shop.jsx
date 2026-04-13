@@ -3,7 +3,8 @@ import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Search, Filter, ShoppingCart, ArrowRight, Sparkles } from 'lucide-react';
+import { Search, ShoppingCart, Star, ChevronRight, ArrowRight, Sparkles } from 'lucide-react';
+import PEYULogo from '@/components/PEYULogo';
 
 export default function Shop() {
   const [productos, setProductos] = useState([]);
@@ -22,7 +23,7 @@ export default function Shop() {
     'Posavasos': 'https://i0.wp.com/peyuchile.cl/wp-content/uploads/2022/07/WhatsApp-Image-2025-09-10-at-6.08.47-PM-2.jpeg?fit=500&ssl=1',
   };
 
-  const categorias = ['Todos', 'Escritorio', 'Hogar', 'Entretenimiento', 'Corporativo', 'Carcasas B2C'];
+  const categorias = ['Todos', 'Navidad', 'Patrias', 'Año Nuevo', 'Día del Trabajador', 'Día de la Secretaria', 'Día del Profesor', 'Bienvenida', 'Día de la Mujer', 'Día de la Madre'];
 
   useEffect(() => {
     const fetchProductos = async () => {
@@ -74,86 +75,75 @@ export default function Shop() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-white">
-      {/* NAVBAR */}
-      <nav className="sticky top-0 z-40 bg-black/60 backdrop-blur-xl border-b border-white/10">
-        <div className="max-w-7xl mx-auto px-5 py-3 flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-[#0F8B6C] to-[#06634D] flex items-center justify-center font-bold text-white">P</div>
-            <div>
-              <p className="font-poppins font-bold text-sm">PEYU</p>
-              <p className="text-white/50 text-[10px]">Historias en Regalos</p>
-            </div>
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900">
+      {/* HEADER */}
+      <header className="sticky top-0 z-40 bg-gradient-to-r from-slate-900/95 to-blue-900/95 backdrop-blur-xl border-b border-white/10 px-6 py-4">
+        <div className="max-w-7xl mx-auto flex items-center justify-between">
+          <Link to="/" className="flex items-center gap-2 hover:opacity-80 transition">
+            <PEYULogo size="md" showText={true} />
           </Link>
 
-          <div className="flex-1 mx-8 flex items-center gap-2 bg-white/10 border border-white/20 rounded-xl px-4 py-2">
-            <Search className="w-4 h-4 text-white/50" />
-            <Input
-              type="text"
-              placeholder="Buscar por nombre, SKU..."
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              className="bg-transparent border-0 text-white placeholder:text-white/40 focus:ring-0 text-sm"
-            />
+          <div className="flex-1 mx-6 max-w-md">
+            <div className="flex items-center gap-2 bg-white/10 border border-white/20 rounded-lg px-4 py-2.5">
+              <Search className="w-4 h-4 text-white/50" />
+              <Input
+                type="text"
+                placeholder="Buscar por nombre, SKU..."
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                className="bg-transparent border-0 text-white placeholder:text-white/40 focus:ring-0 text-sm"
+              />
+            </div>
           </div>
 
           <div className="flex items-center gap-3">
-            <a href="https://wa.me/56935040242" target="_blank" rel="noreferrer">
-              <Button size="sm" className="gap-1 text-base">💬</Button>
-            </a>
+            <button className="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition">
+              🔔
+            </button>
             <Link to="/cart" className="relative">
-              <Button size="sm" className="bg-gradient-to-r from-[#0F8B6C] to-[#0a7558] hover:from-[#0a7558] hover:to-[#084d3a] text-white rounded-lg gap-1">
-                <ShoppingCart className="w-4 h-4" />
+              <button className="w-10 h-10 rounded-full bg-[#0F8B6C] hover:bg-[#0a7558] flex items-center justify-center text-white transition">
+                <ShoppingCart className="w-5 h-5" />
                 {carrito.length > 0 && (
-                  <span className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center">
+                  <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center">
                     {carrito.length}
                   </span>
                 )}
-              </Button>
+              </button>
             </Link>
           </div>
         </div>
-      </nav>
+      </header>
 
       {/* HERO SECTION */}
-      <section className="border-b border-white/5 py-8 px-5">
-        <div className="max-w-7xl mx-auto">
-          <div className="space-y-4">
-            <h1 className="text-5xl font-poppins font-bold leading-tight">
-              <span className="text-white">Regalos Corporativos</span><br />
-              <span className="bg-gradient-to-r from-[#0F8B6C] to-[#A7D9C9] bg-clip-text text-transparent">Historias que Transforman</span>
-            </h1>
-            <p className="text-white/70 text-base max-w-2xl">
-              Productos 100% reciclados con personalización láser UV. Diseña, personaliza y crea impacto ESG con tu equipo.
-            </p>
-            
-            {/* Quick Badges */}
-            <div className="flex gap-3 flex-wrap">
-              <div className="flex items-center gap-1.5 bg-white/10 border border-white/20 rounded-full px-3 py-1.5 text-xs">
-                <span>⭐ 5+ productos</span>
-              </div>
-              <div className="flex items-center gap-1.5 bg-white/10 border border-white/20 rounded-full px-3 py-1.5 text-xs">
-                <span>🚚 Despacho express</span>
-              </div>
-              <div className="flex items-center gap-1.5 bg-white/10 border border-white/20 rounded-full px-3 py-1.5 text-xs">
-                <span>✅ Certificados</span>
-              </div>
-              <div className="flex items-center gap-1.5 bg-white/10 border border-white/20 rounded-full px-3 py-1.5 text-xs">
-                <span>⚡ Ausencias reales</span>
-              </div>
+      <section className="bg-gradient-to-r from-slate-800/50 to-blue-800/50 border-b border-white/10 px-6 py-8">
+        <div className="max-w-7xl mx-auto space-y-3">
+          <h1 className="text-4xl font-poppins font-bold text-white">Regalos Corporativos 100% Sostenibles</h1>
+          <p className="text-white/80 text-sm font-semibold">100% Sostenibles Con Propósito ESG</p>
+          <p className="text-white/70 text-sm max-w-2xl">Productos de plástico reciclado con personalización láser. Navega y descubre soluciones de gifting estratégico.</p>
+          
+          {/* Quick Badges */}
+          <div className="flex gap-2 flex-wrap pt-2">
+            <div className="flex items-center gap-1.5 bg-white/10 border border-white/20 rounded-full px-3 py-1.5 text-xs text-white/80">
+              <span>📦 26 Productos</span>
+            </div>
+            <div className="flex items-center gap-1.5 bg-white/10 border border-white/20 rounded-full px-3 py-1.5 text-xs text-white/80">
+              <span>🚚 Despacho Express</span>
+            </div>
+            <div className="flex items-center gap-1.5 bg-white/10 border border-white/20 rounded-full px-3 py-1.5 text-xs text-white/80">
+              <span>✅ Certificados ESG</span>
             </div>
           </div>
         </div>
       </section>
 
-      <div className="max-w-7xl mx-auto px-5 py-8 grid lg:grid-cols-5 gap-6">
+      <div className="max-w-7xl mx-auto px-6 py-8 grid lg:grid-cols-5 gap-6">
         {/* SIDEBAR - CATEGORÍAS */}
         <aside className="lg:col-span-1">
           <div className="sticky top-24 space-y-4">
             {/* Categories */}
-            <div className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden">
-              <div className="bg-gradient-to-r from-orange-500/20 to-red-500/20 px-4 py-3 border-b border-white/10">
-                <p className="text-xs font-bold text-white/70 uppercase tracking-widest">Categorías</p>
+            <div className="bg-gradient-to-br from-yellow-500/20 to-orange-500/10 border border-yellow-500/30 rounded-2xl overflow-hidden">
+              <div className="bg-yellow-500/30 px-4 py-3 border-b border-yellow-500/20">
+                <p className="text-xs font-bold text-yellow-200 uppercase tracking-widest">CATEGORÍAS</p>
               </div>
               <div className="space-y-1 p-3">
                 {categorias.map(cat => (
@@ -162,7 +152,7 @@ export default function Shop() {
                     onClick={() => setSelectedCategory(cat)}
                     className={`w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition-all ${
                       selectedCategory === cat
-                        ? 'bg-gradient-to-r from-[#0F8B6C] to-[#0a7558] text-white'
+                        ? 'bg-yellow-500 text-gray-900'
                         : 'text-white/70 hover:text-white hover:bg-white/10'
                     }`}>
                     {cat}
@@ -173,11 +163,11 @@ export default function Shop() {
 
             {/* Price Filter */}
             <div className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden">
-              <div className="bg-gradient-to-r from-orange-500/20 to-red-500/20 px-4 py-3 border-b border-white/10">
-                <p className="text-xs font-bold text-white/70 uppercase tracking-widest">Precio (UF)</p>
+              <div className="bg-white/10 px-4 py-3 border-b border-white/10">
+                <p className="text-xs font-bold text-white/70 uppercase tracking-widest">PRECIO (CLP)</p>
               </div>
               <div className="space-y-1 p-3">
-                {['0 - 10 UF', '10 - 50 UF', '50 - 200 UF', '200 - 1.000 UF', 'Más de 1000 UF'].map(range => (
+                {['Todos', '$0 - $50.000 CLP', '$50.000 - $200.000 CLP', '$200.000 - $1.000.000 CLP', 'Más de $1.000.000 CLP'].map(range => (
                   <label key={range} className="flex items-center gap-2 cursor-pointer group">
                     <input type="checkbox" className="w-4 h-4 rounded bg-white/20 border-white/30" />
                     <span className="text-xs text-white/70 group-hover:text-white">{range}</span>
@@ -185,100 +175,94 @@ export default function Shop() {
                 ))}
               </div>
             </div>
-
-            {/* Stock Filter */}
-            <div className="bg-white/5 border border-white/10 rounded-2xl p-4">
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input type="checkbox" className="w-4 h-4 rounded bg-white/20 border-white/30" />
-                <span className="text-xs font-medium text-white/70">Solo en stock</span>
-              </label>
-            </div>
           </div>
         </aside>
 
         {/* MAIN CONTENT */}
         <main className="lg:col-span-4">
-          {/* Section Header */}
-          <div className="mb-8">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-orange-400 to-red-500 flex items-center justify-center font-bold">🏭</div>
-              <div>
-                <h2 className="text-2xl font-poppins font-bold text-white">Productos Sostenibles</h2>
-                <p className="text-xs text-white/60">100% plástico reciclado • Personalización láser • Garantía 10 años</p>
-              </div>
-              <span className="ml-auto text-sm text-white/60 font-semibold">{filtered.length} productos</span>
-            </div>
-          </div>
 
           {/* Products Grid */}
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid md:grid-cols-2 lg:grid-cols-2 gap-6">
             {filtered.map(p => (
               <Link
                 key={p.id}
                 to={`/producto/${p.id}`}
-                className="group bg-white/5 border border-white/10 rounded-2xl overflow-hidden hover:border-white/30 transition-all hover:shadow-xl hover:shadow-orange-500/10"
+                className="group bg-gradient-to-br from-slate-700/40 to-slate-800/40 border border-white/15 rounded-3xl overflow-hidden hover:border-white/30 transition-all hover:shadow-2xl hover:shadow-orange-500/20"
               >
                 {/* Product Image */}
-                <div className="relative w-full aspect-video bg-gray-800 flex items-center justify-center overflow-hidden transition-colors">
-                  {/* Badge */}
-                  {p.categoria === 'Escritorio' && (
-                    <div className="absolute top-3 left-3 bg-orange-500 text-white text-xs font-bold px-2.5 py-1 rounded-full z-10">
-                      MODULAR
-                    </div>
-                  )}
-                  {p.categoria === 'Corporativo' && (
-                    <div className="absolute top-3 left-3 bg-yellow-500 text-gray-900 text-xs font-bold px-2.5 py-1 rounded-full z-10">
-                      CORPORATIVO
-                    </div>
-                  )}
+                <div className="relative w-full aspect-square bg-gradient-to-br from-gray-700 to-gray-900 flex items-center justify-center overflow-hidden">
+                  {/* Badges */}
+                  <div className="absolute top-3 left-3 flex gap-2 z-10">
+                    {p.categoria === 'Escritorio' && (
+                      <div className="bg-emerald-500 text-white text-xs font-bold px-3 py-1 rounded-full uppercase">
+                        Sostenible
+                      </div>
+                    )}
+                    {p.categoria === 'Corporativo' && (
+                      <div className="bg-orange-500 text-white text-xs font-bold px-3 py-1 rounded-full uppercase">
+                        Exclusivo
+                      </div>
+                    )}
+                    {p.categoria === 'Entretenimiento' && (
+                      <div className="bg-purple-500 text-white text-xs font-bold px-3 py-1 rounded-full uppercase">
+                        Experiencia
+                      </div>
+                    )}
+                    {p.categoria === 'Hogar' && (
+                      <div className="bg-emerald-600 text-white text-xs font-bold px-3 py-1 rounded-full uppercase">
+                        Tecnología
+                      </div>
+                    )}
+                    {p.categoria === 'Carcasas B2C' && (
+                      <div className="bg-red-500 text-white text-xs font-bold px-3 py-1 rounded-full uppercase">
+                        Especial
+                      </div>
+                    )}
+                  </div>
                   
                   {/* Product Image */}
                   <img 
                     src={productImages[p.nombre] || 'https://via.placeholder.com/500x500'}
                     alt={p.nombre}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                     onError={(e) => e.target.style.display = 'none'}
                     loading="lazy"
                   />
                 </div>
 
                 {/* Product Info */}
-                <div className="p-4 space-y-3">
+                <div className="p-5 space-y-4">
                   <div>
-                    <p className="text-xs text-white/50 uppercase tracking-widest font-semibold mb-1">{p.sku}</p>
-                    <h3 className="font-bold text-sm text-white group-hover:text-orange-400 transition-colors line-clamp-2">
+                    <h3 className="font-bold text-base text-white group-hover:text-yellow-300 transition-colors line-clamp-2 mb-2">
                       {p.nombre}
                     </h3>
+                    <p className="text-xs text-white/60">{p.descripcion}</p>
                   </div>
 
-                  {/* Stats */}
-                  <div className="flex gap-2 text-xs text-white/60">
-                    {p.material && <span>• {p.material}</span>}
-                    {p.stock_actual > 0 && <span>• En stock</span>}
+                  {/* Rating */}
+                  <div className="flex items-center gap-2">
+                    <div className="flex gap-0.5">
+                      {[...Array(5)].map((_, i) => (
+                        <Star key={i} className="w-3.5 h-3.5 fill-yellow-300 text-yellow-300" />
+                      ))}
+                    </div>
+                    <span className="text-xs text-white/60">(4.8)</span>
                   </div>
 
                   {/* Pricing */}
-                  <div className="space-y-1">
-                    <p className="text-2xl font-bold text-white">
-                      ${(p.precio_b2c / 1000).toFixed(0)}K
+                  <div className="bg-white/10 border border-white/20 rounded-2xl p-3 space-y-1">
+                    <p className="text-2xl font-black text-white">
+                      CLP ${(p.precio_b2c).toLocaleString('es-CL')}
                     </p>
-                    {p.precio_base_b2b && (
-                      <p className="text-xs text-white/50">
-                        Descuento B2B desde {(p.precio_base_b2b / 1000).toFixed(0)}K
-                      </p>
-                    )}
+                    <p className="text-xs text-white/60">Entrega en 7 días</p>
                   </div>
 
                   {/* CTA Button */}
                   <button
                     onClick={(e) => agregarAlCarrito(e, p)}
-                    className={`w-full py-2.5 rounded-xl text-xs font-bold shadow-lg transition-all ${
-                      agregandoId === p.id
-                        ? 'bg-green-600 text-white'
-                        : 'bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white'
-                    }`}
+                    className="w-full py-3 rounded-xl text-sm font-bold shadow-lg bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white transition-all uppercase tracking-wide"
                   >
-                    {agregandoId === p.id ? '✓ Agregado' : 'Cotizar ahora'}
+                    {agregandoId === p.id ? '✓ Agregado' : 'Explorar Regalo'}
                   </button>
                 </div>
               </Link>
@@ -292,31 +276,6 @@ export default function Shop() {
           )}
         </main>
       </div>
-
-      {/* Promotional Banners */}
-      <section className="max-w-7xl mx-auto px-5 pb-12 grid md:grid-cols-2 gap-4">
-        <div className="bg-gradient-to-br from-yellow-500/20 to-orange-500/10 border border-orange-500/30 rounded-2xl p-6">
-          <div className="flex items-center gap-4">
-            <Sparkles className="w-8 h-8 text-yellow-400 shrink-0" />
-            <div>
-              <p className="font-bold text-white text-sm">Personalización con Láser</p>
-              <p className="text-xs text-white/70">Crea tus propios diseños con grabado UV</p>
-            </div>
-            <ArrowRight className="w-5 h-5 text-orange-400 ml-auto" />
-          </div>
-        </div>
-
-        <div className="bg-gradient-to-br from-green-500/20 to-emerald-500/10 border border-green-500/30 rounded-2xl p-6">
-          <div className="flex items-center gap-4">
-            <span className="text-2xl">💼</span>
-            <div>
-              <p className="font-bold text-white text-sm">Catálogo B2B Corporativo</p>
-              <p className="text-xs text-white/70">Precios especiales y propuestas personalizadas</p>
-            </div>
-            <ArrowRight className="w-5 h-5 text-green-400 ml-auto" />
-          </div>
-        </div>
-      </section>
     </div>
   );
 }
