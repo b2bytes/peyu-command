@@ -44,6 +44,7 @@ import CatalogoCorporativo from './pages/CatalogoCorporativo';
 import PersonalizacionFlow from './pages/PersonalizacionFlow';
 import SoportePublico from './pages/SoportePublico';
 import SeguimientoPedido from './pages/SeguimientoPedido';
+import CatalogoVisual from './pages/CatalogoVisual';
 import PublicSidebar from './components/PublicSidebar';
 // Add page imports here
 
@@ -60,6 +61,7 @@ const PublicShopRoutes = () => (
       <Route path="/personalizar" element={<PersonalizacionFlow />} />
       <Route path="/soporte" element={<SoportePublico />} />
       <Route path="/seguimiento" element={<SeguimientoPedido />} />
+      <Route path="/catalogo-visual" element={<CatalogoVisual />} />
     </Routes>
   </>
 );

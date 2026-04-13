@@ -13,6 +13,15 @@ export default function Shop() {
   const [carrito, setCarrito] = useState(JSON.parse(localStorage.getItem('carrito') || '[]'));
   const [agregandoId, setAgregandoId] = useState(null);
 
+  const productImages = {
+    'Kit Escritorio Pro': 'https://i0.wp.com/peyuchile.cl/wp-content/uploads/2025/11/Kit-Escritorio-Pro-2-1-1.png?fit=500&ssl=1',
+    'Carcasa': 'https://i0.wp.com/peyuchile.cl/wp-content/uploads/2025/04/carcasas-500x500-1.webp?fit=500&ssl=1',
+    'Cachos': 'https://i0.wp.com/peyuchile.cl/wp-content/uploads/2025/04/4-mixto-1024x1024-1.webp?fit=500&ssl=1',
+    'Accesorios Escritorio': 'https://i0.wp.com/peyuchile.cl/wp-content/uploads/2025/09/dce80c23-7441-4922-a656-8627018c1e5d-1.jpeg?fit=500&ssl=1',
+    'Macetero': 'https://i0.wp.com/peyuchile.cl/wp-content/uploads/2022/11/potfinal_porta-Photoroom-1.jpg?fit=500&ssl=1',
+    'Posavasos': 'https://i0.wp.com/peyuchile.cl/wp-content/uploads/2022/07/WhatsApp-Image-2025-09-10-at-6.08.47-PM-2.jpeg?fit=500&ssl=1',
+  };
+
   const categorias = ['Todos', 'Escritorio', 'Hogar', 'Entretenimiento', 'Corporativo', 'Carcasas B2C'];
 
   useEffect(() => {
@@ -210,21 +219,26 @@ export default function Shop() {
                 className="group bg-white/5 border border-white/10 rounded-2xl overflow-hidden hover:border-white/30 transition-all hover:shadow-xl hover:shadow-orange-500/10"
               >
                 {/* Product Image */}
-                <div className="relative w-full aspect-video bg-gradient-to-br from-slate-700 to-slate-800 flex items-center justify-center overflow-hidden">
+                <div className="relative w-full aspect-video bg-gray-800 flex items-center justify-center overflow-hidden group-hover:bg-gray-700 transition-colors">
                   {/* Badge */}
                   {p.categoria === 'Escritorio' && (
-                    <div className="absolute top-3 left-3 bg-orange-500 text-white text-xs font-bold px-2.5 py-1 rounded-full">
+                    <div className="absolute top-3 left-3 bg-orange-500 text-white text-xs font-bold px-2.5 py-1 rounded-full z-10">
                       MODULAR
                     </div>
                   )}
                   {p.categoria === 'Corporativo' && (
-                    <div className="absolute top-3 left-3 bg-yellow-500 text-gray-900 text-xs font-bold px-2.5 py-1 rounded-full">
+                    <div className="absolute top-3 left-3 bg-yellow-500 text-gray-900 text-xs font-bold px-2.5 py-1 rounded-full z-10">
                       CORPORATIVO
                     </div>
                   )}
                   
-                  {/* Placeholder */}
-                  <div className="text-6xl group-hover:scale-110 transition-transform duration-300">📦</div>
+                  {/* Product Image */}
+                  <img 
+                    src={productImages[p.nombre] || 'https://via.placeholder.com/500x500'}
+                    alt={p.nombre}
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                    onError={(e) => e.target.style.display = 'none'}
+                  />
                 </div>
 
                 {/* Product Info */}
