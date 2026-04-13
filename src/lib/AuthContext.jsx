@@ -1,5 +1,6 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
+import { retryAsync } from '@/lib/retry-utils';
 import { appParams } from '@/lib/app-params';
 import { createAxiosClient } from '@base44/sdk/dist/utils/axios-client';
 
@@ -88,25 +89,27 @@ export const AuthProvider = ({ children }) => {
   };
 
   const checkUserAuth = async () => {
+    setIsLoadingAuth(true);
     try {
-      // Now check if the user is authenticated
-      setIsLoadingAuth(true);
-      const currentUser = await base44.auth.me();
+      const currentUser = await retryAsync(() => base44.auth.me(), {
+        maxAttempts: 2,
+        delayMs: 300,
+        timeout: 5000,
+      });
       setUser(currentUser);
       setIsAuthenticated(true);
-      setIsLoadingAuth(false);
     } catch (error) {
       console.error('User auth check failed:', error);
-      setIsLoadingAuth(false);
       setIsAuthenticated(false);
       
-      // If user auth fails, it might be an expired token
-      if (error.status === 401 || error.status === 403) {
+      if (error?.status === 401 || error?.status === 403) {
         setAuthError({
           type: 'auth_required',
           message: 'Authentication required'
         });
       }
+    } finally {
+      setIsLoadingAuth(false);
     }
   };
 
