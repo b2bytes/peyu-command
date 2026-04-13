@@ -54,7 +54,7 @@ export default function ShopLanding() {
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentProductIndex((prev) => (prev + 1) % FEATURED_PRODUCTS.length);
-    }, 23000);
+    }, 3000);
     return () => clearInterval(interval);
   }, []);
 
@@ -273,50 +273,53 @@ export default function ShopLanding() {
 
           {/* RIGHT CONTAINER - Product Carousel */}
           <Link to={`/producto/${FEATURED_PRODUCTS[currentProductIndex].id}`} className="hidden lg:block flex-shrink-0">
-            <div className="w-56 bg-gradient-to-br from-orange-600/10 to-red-600/5 border border-orange-500/20 rounded-xl lg:rounded-2xl p-3 lg:p-4 flex flex-col justify-between shadow-xl hover:shadow-2xl hover:border-orange-500/40 transition-all cursor-pointer group h-full">
+            <div className="w-64 bg-gradient-to-br from-teal-600/20 via-cyan-600/10 to-orange-600/10 border border-teal-400/40 rounded-2xl p-4 flex flex-col justify-between shadow-2xl hover:shadow-3xl hover:border-teal-400/60 hover:-translate-y-1 transition-all cursor-pointer group h-full">
               {(() => {
                 const product = FEATURED_PRODUCTS[currentProductIndex];
                 return (
                   <>
                     {/* Product Image */}
-                    <div className="w-full aspect-square bg-gradient-to-br from-yellow-300/40 via-orange-400/30 to-red-500/20 rounded-lg flex items-center justify-center shadow-inner overflow-hidden">
-                      <img src={product.imagen} alt={product.nombre} className="w-full h-full object-cover object-center" loading="lazy" />
+                    <div className="w-full aspect-square bg-gradient-to-br from-yellow-300/50 via-orange-400/40 to-red-500/30 rounded-xl flex items-center justify-center shadow-xl overflow-hidden group-hover:shadow-2xl transition-all">
+                      <img src={product.imagen} alt={product.nombre} className="w-full h-full object-cover object-center group-hover:scale-110 transition-transform duration-500" loading="lazy" />
                     </div>
 
                     {/* Rating */}
-                    <div className="space-y-1">
+                    <div className="space-y-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg p-3">
                       <div className="flex gap-0.5">
                         {[...Array(5)].map((_, i) => (
-                          <Star key={i} className="w-3 h-3 lg:w-4 lg:h-4 fill-yellow-300 text-yellow-300 drop-shadow" />
+                          <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400 drop-shadow-lg" />
                         ))}
                       </div>
-                      <div className="flex items-baseline gap-1.5">
-                        <span className="text-yellow-300 font-bold text-xs lg:text-sm">⭐ {product.rating.toFixed(1)}</span>
-                        <span className="text-white/70 text-[10px] lg:text-xs">({product.reviews.toLocaleString()})</span>
+                      <div className="flex items-center justify-between">
+                        <span className="text-yellow-300 font-bold text-sm">⭐ {product.rating.toFixed(1)}</span>
+                        <span className="text-white/60 text-xs">({product.reviews.toLocaleString()})</span>
                       </div>
                     </div>
 
                     {/* Product Details */}
-                    <div className="space-y-1.5">
-                      <p className="text-white font-poppins font-bold text-xs lg:text-sm line-clamp-2">{product.nombre}</p>
-                      <div className="bg-white/20 backdrop-blur border border-white/40 rounded-lg p-2 lg:p-3 space-y-1 shadow-lg">
-                        <p className="text-white/95 text-[10px] lg:text-xs leading-snug line-clamp-2">{product.description}</p>
-                        <p className="text-white font-black text-lg lg:text-xl">${product.precio.toLocaleString()}</p>
+                    <div className="space-y-2">
+                      <div>
+                        <p className="text-white font-poppins font-bold text-base line-clamp-1 group-hover:text-cyan-300 transition-colors">{product.nombre}</p>
+                        <p className="text-white/70 text-xs mt-1 line-clamp-2 leading-relaxed">{product.description}</p>
+                      </div>
+                      <div className="bg-gradient-to-r from-teal-500/30 to-cyan-500/20 backdrop-blur border border-teal-400/40 rounded-xl p-3 space-y-1">
+                        <p className="text-white/80 text-xs">Precio desde</p>
+                        <p className="text-white font-black text-2xl group-hover:text-teal-300 transition-colors">${product.precio.toLocaleString()}</p>
                       </div>
                     </div>
 
                     {/* Carousel Controls */}
-                    <div className="flex gap-1 justify-center mt-2">
+                    <div className="flex gap-2 justify-between items-center mt-1">
                       <button
                         onClick={(e) => {
                           e.preventDefault();
                           setCurrentProductIndex((prev) => (prev - 1 + FEATURED_PRODUCTS.length) % FEATURED_PRODUCTS.length);
                         }}
-                        className="bg-white/20 hover:bg-white/30 text-white p-1 rounded-full transition-all"
+                        className="bg-white/20 hover:bg-teal-500/40 active:bg-teal-600/50 text-white p-2 rounded-lg transition-all touch-target hover:scale-110"
                       >
-                        <ChevronLeft className="w-3 h-3" />
+                        <ChevronLeft className="w-4 h-4" />
                       </button>
-                      <div className="flex gap-0.5 items-center">
+                      <div className="flex gap-1 items-center">
                         {FEATURED_PRODUCTS.map((_, idx) => (
                           <button
                             key={idx}
@@ -324,8 +327,8 @@ export default function ShopLanding() {
                               e.preventDefault();
                               setCurrentProductIndex(idx);
                             }}
-                            className={`h-1 rounded-full transition-all ${
-                              idx === currentProductIndex ? 'w-4 bg-white' : 'w-1 bg-white/40'
+                            className={`rounded-full transition-all ${
+                              idx === currentProductIndex ? 'w-2.5 h-2.5 bg-teal-400 shadow-lg' : 'w-1.5 h-1.5 bg-white/40 hover:bg-white/60'
                             }`}
                           />
                         ))}
@@ -335,9 +338,9 @@ export default function ShopLanding() {
                           e.preventDefault();
                           setCurrentProductIndex((prev) => (prev + 1) % FEATURED_PRODUCTS.length);
                         }}
-                        className="bg-white/20 hover:bg-white/30 text-white p-1 rounded-full transition-all"
+                        className="bg-white/20 hover:bg-teal-500/40 active:bg-teal-600/50 text-white p-2 rounded-lg transition-all touch-target hover:scale-110"
                       >
-                        <ChevronRight className="w-3 h-3" />
+                        <ChevronRight className="w-4 h-4" />
                       </button>
                     </div>
                   </>
