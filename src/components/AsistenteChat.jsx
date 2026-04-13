@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Send, MessageCircle, X, Loader } from 'lucide-react';
+import { Send, MessageCircle, X } from 'lucide-react';
 
 export default function AsistenteChat() {
   const [open, setOpen] = useState(false);
@@ -11,6 +11,14 @@ export default function AsistenteChat() {
   const [conversationId, setConversationId] = useState(null);
   const [loading, setLoading] = useState(false);
   const messagesEndRef = useRef(null);
+
+  const isPublicPage = typeof window !== 'undefined' && (
+    window.location.pathname === '/' || 
+    window.location.pathname.startsWith('/shop') || 
+    window.location.pathname.startsWith('/producto') || 
+    window.location.pathname.startsWith('/b2b') || 
+    window.location.pathname.startsWith('/cart')
+  );
 
   useEffect(() => {
     if (messagesEndRef.current) {
@@ -22,37 +30,33 @@ export default function AsistenteChat() {
     try {
       const conv = await base44.agents.createConversation({
         agent_name: 'asistente_compras',
-        metadata: { name: 'Chat Asistente Compras', context: 'storefront' }
+        metadata: { context: 'landing' }
       });
       setConversationId(conv.id);
-      setMessages([
-        { role: 'assistant', content: '¡Hola! 👋 Soy tu asistente PEYU. ¿En qué puedo ayudarte? Busco productos, una cotización corporativa, o tienes preguntas sobre personalización. 🌱' }
-      ]);
     } catch (e) {
-      console.error('Error creando conversación:', e);
+      console.error('Error:', e);
     }
   };
 
   const sendMessage = async () => {
-    if (!input.trim() || !conversationId) return;
-
+    if (!input.trim()) return;
     const userMsg = input;
     setInput('');
     setMessages(prev => [...prev, { role: 'user', content: userMsg }]);
     setLoading(true);
 
     try {
-      const conv = await base44.agents.getConversation(conversationId);
-      await base44.agents.addMessage(conv, { role: 'user', content: userMsg });
-
-      const unsubscribe = base44.agents.subscribeToConversation(conversationId, (data) => {
-        setMessages(data.messages || []);
-      });
-
-      setTimeout(() => unsubscribe(), 15000);
+      if (!conversationId) await initConversation();
+      if (conversationId) {
+        const conv = await base44.agents.getConversation(conversationId);
+        await base44.agents.addMessage(conv, { role: 'user', content: userMsg });
+        const unsubscribe = base44.agents.subscribeToConversation(conversationId, (data) => {
+          setMessages(data.messages || []);
+        });
+        setTimeout(() => unsubscribe(), 15000);
+      }
     } catch (e) {
-      console.error('Error enviando mensaje:', e);
-      setMessages(prev => [...prev, { role: 'assistant', content: 'Error procesando tu mensaje. Por favor intenta nuevamente.' }]);
+      console.error('Error:', e);
     } finally {
       setLoading(false);
     }
@@ -63,26 +67,35 @@ export default function AsistenteChat() {
     if (!conversationId) initConversation();
   };
 
+  if (!isPublicPage) return null;
+
   return (
     <>
       {/* FAB Button */}
       {!open && (
-        <button onClick={handleOpen}
-          className="fixed bottom-6 right-6 z-40 w-14 h-14 bg-gradient-to-br from-[#0F8B6C] to-[#06634D] rounded-full shadow-lg hover:shadow-xl transition-all flex items-center justify-center text-white group hover:scale-110">
+        <button
+          onClick={handleOpen}
+          className="fixed bottom-6 right-6 z-40 w-14 h-14 bg-gradient-to-br from-[#0F8B6C] to-[#06634D] rounded-full shadow-lg hover:shadow-xl transition-all flex items-center justify-center text-white group hover:scale-110"
+          aria-label="Abrir chat"
+        >
           <MessageCircle className="w-6 h-6 group-hover:rotate-12 transition-transform" />
         </button>
       )}
 
-      {/* Chat Window */}
+      {/* Chat Window - FIXED position */}
       {open && (
-        <div className="fixed bottom-6 right-6 z-50 w-96 max-w-[calc(100vw-2rem)] bg-white rounded-2xl shadow-2xl border border-gray-100 flex flex-col overflow-hidden">
+        <div className="fixed bottom-6 right-6 z-50 w-96 max-w-[calc(100vw-2rem)] max-h-[90vh] bg-white rounded-2xl shadow-2xl border border-gray-100 flex flex-col overflow-hidden">
           {/* Header */}
           <div className="bg-gradient-to-r from-[#0F8B6C] to-[#06634D] text-white p-4 flex items-center justify-between">
             <div>
               <h3 className="font-bold text-sm">Asistente PEYU</h3>
               <p className="text-xs text-white/70">Respondo en tiempo real</p>
             </div>
-            <button onClick={() => setOpen(false)} className="text-white hover:bg-white/20 p-1 rounded-lg transition">
+            <button
+              onClick={() => setOpen(false)}
+              className="text-white hover:bg-white/20 p-1 rounded-lg transition"
+              aria-label="Cerrar chat"
+            >
               <X className="w-5 h-5" />
             </button>
           </div>
@@ -91,11 +104,13 @@ export default function AsistenteChat() {
           <div className="flex-1 overflow-y-auto h-96 space-y-3 p-4 bg-gray-50">
             {messages.map((msg, i) => (
               <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                <div className={`max-w-[75%] rounded-2xl px-4 py-2.5 text-sm ${
-                  msg.role === 'user'
-                    ? 'bg-gray-900 text-white rounded-br-none'
-                    : 'bg-white border border-gray-200 text-gray-900 rounded-bl-none'
-                }`}>
+                <div
+                  className={`max-w-[75%] rounded-2xl px-4 py-2.5 text-sm ${
+                    msg.role === 'user'
+                      ? 'bg-gray-900 text-white rounded-br-none'
+                      : 'bg-white border border-gray-200 text-gray-900 rounded-bl-none'
+                  }`}
+                >
                   {msg.content}
                 </div>
               </div>
@@ -126,7 +141,8 @@ export default function AsistenteChat() {
               onClick={sendMessage}
               disabled={loading || !input.trim()}
               size="sm"
-              className="bg-[#0F8B6C] hover:bg-[#0a7558] rounded-xl">
+              className="bg-[#0F8B6C] hover:bg-[#0a7558] text-white rounded-xl"
+            >
               <Send className="w-4 h-4" />
             </Button>
           </div>
