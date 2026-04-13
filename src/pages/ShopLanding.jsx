@@ -4,7 +4,7 @@ import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import PEYULogo from '@/components/PEYULogo';
-import { Send, Plus, Home, BookOpen, Grid3x3, Settings, HelpCircle, Lock, Zap, ShoppingCart, Bell, Star } from 'lucide-react';
+import { Send, Home, BookOpen, Grid3x3, HelpCircle, ShoppingCart, Bell, Star, Building2 } from 'lucide-react';
 
 const OCASIONES = [
   { id: 'navidad', label: 'Navidad', icon: '🎄' },
@@ -20,13 +20,11 @@ const OCASIONES = [
 ];
 
 const SIDEBAR_ITEMS = [
-  { icon: Plus, label: 'Crear', color: 'bg-green-400' },
-  { icon: Home, label: 'Inicio', color: 'bg-slate-400' },
-  { icon: BookOpen, label: 'Editorial', color: 'bg-slate-400' },
-  { icon: Grid3x3, label: 'Galería', color: 'bg-slate-400' },
-  { icon: Settings, label: 'Comercial', color: 'bg-slate-400' },
-  { icon: HelpCircle, label: 'Soporte', color: 'bg-slate-400' },
-  { icon: Lock, label: 'Admin', color: 'bg-red-500' },
+  { href: '/', label: 'Inicio', icon: Home, color: 'bg-teal-500' },
+  { href: '/shop', label: 'Tienda', icon: ShoppingCart, color: 'bg-teal-500' },
+  { href: '/b2b/catalogo', label: 'Catálogo', icon: Grid3x3, color: 'bg-teal-500' },
+  { href: '/b2b/contacto', label: 'B2B', icon: Building2, color: 'bg-teal-500' },
+  { href: '/soporte', label: 'Soporte', icon: HelpCircle, color: 'bg-teal-500' },
 ];
 
 export default function ShopLanding() {
@@ -110,17 +108,18 @@ export default function ShopLanding() {
         
         {/* SIDEBAR - Floating vertical */}
         <div className="hidden sm:flex flex-col items-center gap-1 sm:gap-3 bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl sm:rounded-3xl p-2 sm:p-4 shadow-xl w-16 sm:w-20 h-fit self-center my-auto">
-          {SIDEBAR_ITEMS.map((item, idx) => {
+          {SIDEBAR_ITEMS.map((item) => {
             const Icon = item.icon;
             return (
-              <button
-                key={idx}
+              <Link
+                key={item.href}
+                to={item.href}
                 className={`${item.color} w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center text-white shadow-lg hover:scale-110 transition-transform group relative flex-shrink-0`}
                 title={item.label}
               >
                 <Icon className="w-4 h-4 sm:w-5 sm:h-5" />
                 <span className="absolute bottom-full mb-1 bg-white/20 backdrop-blur text-white text-[10px] px-2 py-0.5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">{item.label}</span>
-              </button>
+              </Link>
             );
           })}
         </div>
