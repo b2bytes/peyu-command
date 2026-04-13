@@ -32,9 +32,11 @@ Deno.serve(async (req) => {
     prompt += `Sustainable eco-design aesthetic, premium quality, Chilean manufacturing. `;
     prompt += `Shot angle: 3/4 view showing product details. Clean, minimal background.`;
 
+    // Only pass logoUrl as reference if it's a direct public image URL
+    const isImageUrl = logoUrl && /\.(png|jpg|jpeg|webp|svg)$/i.test(logoUrl.split('?')[0]);
     const result = await base44.integrations.Core.GenerateImage({
       prompt,
-      existing_image_urls: logoUrl ? [logoUrl] : undefined,
+      existing_image_urls: isImageUrl ? [logoUrl] : undefined,
     });
 
     // If jobId provided, update the PersonalizationJob
