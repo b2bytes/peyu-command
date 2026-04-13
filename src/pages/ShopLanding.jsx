@@ -126,7 +126,7 @@ export default function ShopLanding() {
         
         {/* SIDEBAR - Floating vertical with expand/collapse */}
         <div 
-          className={`hidden lg:flex flex-col items-center gap-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-3xl shadow-xl self-stretch transition-all duration-300 ${
+          className={`hidden lg:flex flex-col items-center justify-center gap-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-3xl shadow-xl self-stretch transition-all duration-300 ${
             sidebarExpanded ? 'w-48 px-4 py-6' : 'w-16 p-2.5'
           }`}
           onMouseEnter={() => setSidebarExpanded(true)}
@@ -196,7 +196,7 @@ export default function ShopLanding() {
             </div>
 
             {/* Chat Agent */}
-            <div className="bg-white/5 backdrop-blur-sm border border-white/15 rounded-2xl lg:rounded-3xl p-3 sm:p-4 flex flex-col shadow-xl flex-1 min-h-48 sm:min-h-56">
+            <div className="bg-white/5 backdrop-blur-sm border border-white/15 rounded-2xl lg:rounded-3xl p-3 sm:p-4 flex flex-col shadow-xl flex-1 min-h-48 sm:min-h-56 overflow-hidden">
               
               {/* Agent Header */}
               <div className="mb-2 pb-2 border-b border-white/20 flex items-center gap-2 flex-shrink-0 min-w-0">
@@ -207,8 +207,20 @@ export default function ShopLanding() {
                 </div>
               </div>
 
+              {/* Messages Container */}
+              <div className="flex-1 overflow-y-auto space-y-2 mb-2 scrollbar-hide">
+                {messages.map((msg, idx) => (
+                  <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                    <div className={`${msg.role === 'user' ? 'bg-gradient-to-r from-orange-600 to-red-600 text-white' : 'bg-white/20 border border-white/30 text-white'} rounded-lg px-3 py-2 text-xs sm:text-sm max-w-[85%] break-words`}>
+                      {msg.content}
+                    </div>
+                  </div>
+                ))}
+                <div ref={messagesEndRef} />
+              </div>
+
               {/* Input */}
-              <div className="flex gap-2 mt-2 flex-shrink-0 min-w-0">
+              <div className="flex gap-2 flex-shrink-0 min-w-0">
                 <Input
                   value={input}
                   onChange={e => setInput(e.target.value)}
