@@ -144,7 +144,7 @@ export default function ShopLanding() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 md:gap-8 p-4 sm:p-6 md:p-8 flex-1 overflow-hidden">
             
             {/* Left Column - 60% */}
-            <div className="md:col-span-2 space-y-4 sm:space-y-6 md:space-y-8 flex flex-col justify-between overflow-y-auto md:overflow-visible">
+            <div className="md:col-span-2 flex flex-col justify-start gap-6">
               {/* Hero Title */}
               <div className="space-y-4">
                 <h1 className="text-5xl sm:text-6xl md:text-7xl font-poppins font-black leading-tight text-white drop-shadow-lg">
@@ -170,7 +170,7 @@ export default function ShopLanding() {
               </div>
 
               {/* Chat Agent */}
-              <div className="bg-white/15 backdrop-blur-xl border border-white/30 rounded-3xl p-4 sm:p-5 md:p-7 flex-1 flex flex-col shadow-xl min-h-[280px] sm:min-h-[350px]">
+              <div className="bg-white/15 backdrop-blur-xl border border-white/30 rounded-3xl p-4 sm:p-5 md:p-6 flex flex-col shadow-xl h-64">
                 
                 {/* Agent Header */}
                 <div className="mb-4 md:mb-5 pb-4 md:pb-5 border-b border-white/20 flex items-center gap-3 md:gap-4 flex-shrink-0">
@@ -222,7 +222,7 @@ export default function ShopLanding() {
               </div>
 
               {/* Ocasiones Carousel */}
-              <div className="overflow-x-auto scrollbar-hide flex gap-2 sm:gap-3 pb-2 flex-shrink-0">
+              <div className="overflow-x-auto scrollbar-hide flex gap-2 sm:gap-3 pb-2">
                 {OCASIONES.map(occ => (
                   <button
                     key={occ.id}
