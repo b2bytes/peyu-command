@@ -58,6 +58,7 @@ export default function Analitica() {
   const [okrs, setOkrs] = useState([]);
   const [ordenes, setOrdenes] = useState([]);
   const [movimientos, setMovimientos] = useState([]);
+  const [pedidosWeb, setPedidosWeb] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -70,10 +71,11 @@ export default function Analitica() {
       base44.entities.OKR.list('-created_date', 100),
       base44.entities.OrdenProduccion.list('-created_date', 100),
       base44.entities.MovimientoCaja.list('-fecha', 300),
-    ]).then(([l, c, cam, cl, vt, ok, op, mov]) => {
+      base44.entities.PedidoWeb.list('-fecha', 500),
+    ]).then(([l, c, cam, cl, vt, ok, op, mov, pw]) => {
       setLeads(l); setCotizaciones(c); setCampanas(cam);
       setClientes(cl); setVentas(vt); setOkrs(ok); setOrdenes(op);
-      setMovimientos(mov);
+      setMovimientos(mov); setPedidosWeb(pw);
       setLoading(false);
     });
   }, []);
@@ -216,6 +218,7 @@ export default function Analitica() {
       <Tabs defaultValue="comercial">
         <TabsList className="bg-muted flex flex-wrap h-auto gap-1">
           <TabsTrigger value="comercial">Comercial</TabsTrigger>
+          <TabsTrigger value="ecommerce">E-commerce Web</TabsTrigger>
           <TabsTrigger value="marketing">Marketing</TabsTrigger>
           <TabsTrigger value="operaciones">Operaciones</TabsTrigger>
           <TabsTrigger value="financiero">Financiero</TabsTrigger>
@@ -331,6 +334,114 @@ export default function Analitica() {
               ) : <div className="text-center py-8 text-muted-foreground text-sm">Sin datos</div>}
             </div>
           </div>
+        </TabsContent>
+
+        {/* ── E-COMMERCE WEB ── */}
+        <TabsContent value="ecommerce" className="space-y-4 mt-4">
+          {(() => {
+            const mesActualEco = new Date().toISOString().slice(0, 7);
+            const pwMes = pedidosWeb.filter(p => p.fecha?.startsWith(mesActualEco));
+            const totalPwMes = pwMes.reduce((s, p) => s + (p.total || 0), 0);
+            const pwNuevos = pedidosWeb.filter(p => p.estado === 'Nuevo').length;
+            const pwConPers = pedidosWeb.filter(p => p.requiere_personalizacion).length;
+            const ticketProm = pwMes.length > 0 ? Math.round(totalPwMes / pwMes.length) : 0;
+            const pwPorEstado = ['Nuevo','Confirmado','En Producción','Listo para Despacho','Despachado','Entregado'].map(e => ({
+              estado: e, count: pedidosWeb.filter(p => p.estado === e).length
+            })).filter(e => e.count > 0);
+            const pwPorCanal = pedidosWeb.reduce((acc, p) => {
+              const ex = acc.find(a => a.canal === p.canal);
+              if (ex) { ex.count++; ex.total += (p.total || 0); }
+              else acc.push({ canal: p.canal || 'Sin canal', count: 1, total: p.total || 0 });
+              return acc;
+            }, []).sort((a, b) => b.total - a.total);
+            const ultimos5 = pedidosWeb.slice(0, 5);
+            const colorEstado = { Nuevo: '#3b82f6', Confirmado: '#f59e0b', 'En Producción': '#8b5cf6', 'Listo para Despacho': '#0F8B6C', Despachado: '#A7D9C9', Entregado: '#22c55e' };
+
+            return (
+              <>
+                {pedidosWeb.length === 0 && (
+                  <div className="text-center py-16 text-muted-foreground">
+                    <p className="text-lg font-medium">Sin pedidos web registrados</p>
+                    <p className="text-sm mt-2">Los pedidos de la tienda online aparecerán aquí.</p>
+                  </div>
+                )}
+                {pedidosWeb.length > 0 && (
+                  <>
+                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                      {[
+                        { label: 'Ventas Web Mes', value: fmtCLP(totalPwMes), sub: `${pwMes.length} pedidos`, color: '#0F8B6C' },
+                        { label: 'Ticket Promedio', value: ticketProm > 0 ? fmtCLP(ticketProm) : '—', sub: 'Por pedido web', color: '#0F8B6C' },
+                        { label: 'Pendientes / Nuevos', value: pwNuevos, sub: 'Requieren atención', color: pwNuevos > 0 ? '#D96B4D' : '#0F8B6C' },
+                        { label: 'Con Personalización', value: `${pedidosWeb.length > 0 ? Math.round(pwConPers / pedidosWeb.length * 100) : 0}%`, sub: `${pwConPers} de ${pedidosWeb.length}`, color: '#0F8B6C' },
+                      ].map((k, i) => (
+                        <div key={i} className="bg-white rounded-xl p-4 border border-border shadow-sm">
+                          <p className="text-xs text-muted-foreground uppercase tracking-wide">{k.label}</p>
+                          <p className="text-2xl font-poppins font-bold mt-1" style={{ color: k.color }}>{k.value}</p>
+                          <p className="text-xs text-muted-foreground mt-1">{k.sub}</p>
+                        </div>
+                      ))}
+                    </div>
+
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                      {/* Estado pedidos */}
+                      <div className="bg-white rounded-2xl p-5 shadow-sm border border-border">
+                        <h3 className="font-poppins font-semibold mb-4">Estado de Pedidos Web</h3>
+                        <div className="space-y-2">
+                          {pwPorEstado.map((e, i) => (
+                            <div key={i} className="flex items-center gap-3">
+                              <span className="text-xs w-36 text-muted-foreground truncate">{e.estado}</span>
+                              <div className="flex-1 h-5 bg-muted rounded-lg overflow-hidden">
+                                <div className="h-full rounded-lg flex items-center px-2 text-xs text-white font-medium"
+                                  style={{ width: `${Math.max(e.count / pedidosWeb.length * 100, 8)}%`, background: colorEstado[e.estado] || '#0F8B6C' }}>
+                                  {e.count}
+                                </div>
+                              </div>
+                              <span className="text-xs font-bold w-8 text-right">{e.count}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Ventas por canal */}
+                      <div className="bg-white rounded-2xl p-5 shadow-sm border border-border">
+                        <h3 className="font-poppins font-semibold mb-4">Ventas Web por Canal</h3>
+                        {pwPorCanal.length > 0 ? (
+                          <ResponsiveContainer width="100%" height={180}>
+                            <BarChart data={pwPorCanal} barSize={24} layout="vertical">
+                              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                              <XAxis type="number" tick={{ fontSize: 10 }} tickFormatter={v => fmtCLP(v)} />
+                              <YAxis dataKey="canal" type="category" tick={{ fontSize: 10 }} width={90} />
+                              <Tooltip formatter={v => [fmtCLP(v), 'Ventas']} />
+                              <Bar dataKey="total" fill="#0F8B6C" radius={[0,4,4,0]} name="Ventas" />
+                            </BarChart>
+                          </ResponsiveContainer>
+                        ) : <div className="text-center py-8 text-muted-foreground text-sm">Sin datos</div>}
+                      </div>
+                    </div>
+
+                    {/* Últimos pedidos */}
+                    <div className="bg-white rounded-2xl p-5 shadow-sm border border-border">
+                      <h3 className="font-poppins font-semibold mb-4">Últimos 5 Pedidos Web</h3>
+                      <div className="divide-y divide-border">
+                        {ultimos5.map((p, i) => (
+                          <div key={i} className="py-3 flex items-center justify-between text-sm">
+                            <div>
+                              <p className="font-medium">{p.cliente_nombre}</p>
+                              <p className="text-xs text-muted-foreground">{p.fecha} · {p.canal} · {p.descripcion_items?.slice(0,40)}</p>
+                            </div>
+                            <div className="text-right flex items-center gap-3">
+                              <span className="text-xs px-2 py-0.5 rounded-full font-medium" style={{ background: colorEstado[p.estado] + '20', color: colorEstado[p.estado] || '#0F8B6C' }}>{p.estado}</span>
+                              <span className="font-poppins font-bold" style={{ color: '#0F8B6C' }}>{fmtCLP(p.total || 0)}</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </>
+                )}
+              </>
+            );
+          })()}
         </TabsContent>
 
         {/* ── MARKETING ── */}
