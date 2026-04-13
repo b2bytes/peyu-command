@@ -3,14 +3,14 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { getProductImage } from '@/utils/productImages';
 import {
   ArrowLeft, Check, Building2, ShoppingCart, Shield, Truck, Zap,
-  Star, Recycle, Sparkles, ChevronRight, Heart, Share2, Package,
-  Clock, RotateCcw, BadgeCheck
+  Star, Recycle, Sparkles, ChevronRight, Heart, Share2,
+  RotateCcw, BadgeCheck
 } from 'lucide-react';
 
 const EMOJI_MAP = { 'Escritorio': '🖥️', 'Hogar': '🌱', 'Entretenimiento': '🎲', 'Corporativo': '🎁', 'Carcasas B2C': '📱' };
-
 const VIEWS = ['Vista Frontal', 'Vista Lateral', 'Vista Superior', 'Con Grabado'];
 
 const REVIEWS_MOCK = [
@@ -87,7 +87,7 @@ export default function ProductoDetalle() {
   return (
     <div className="min-h-screen bg-[#FAFAF8] font-inter">
 
-      {/* ── STICKY CTA BAR (appears on scroll) ── */}
+      {/* ── STICKY CTA BAR ── */}
       <div className={`fixed top-0 left-0 right-0 z-[100] transition-all duration-300 ${showStickyBar ? 'translate-y-0' : '-translate-y-full'}`}>
         <div className="bg-white/95 backdrop-blur-xl border-b border-black/5 shadow-lg">
           <div className="max-w-5xl mx-auto px-5 py-3 flex items-center justify-between gap-4">
@@ -106,7 +106,7 @@ export default function ProductoDetalle() {
         </div>
       </div>
 
-      {/* ── NAVBAR ─────────────────────────── */}
+      {/* ── NAVBAR ── */}
       <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-xl border-b border-black/5 shadow-sm">
         <div className="max-w-5xl mx-auto px-5 py-3 flex items-center justify-between">
           <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-gray-500 hover:text-gray-900 transition group">
@@ -146,28 +146,30 @@ export default function ProductoDetalle() {
         <span className="text-gray-700 font-medium">{producto.nombre}</span>
       </div>
 
-      {/* ── MAIN GRID ──────────────────────── */}
-      <div className="max-w-5xl mx-auto px-5 pb-8">
+      {/* ── CONTENT ── */}
+      <div className="max-w-5xl mx-auto px-5 pb-16">
+
+        {/* ── MAIN GRID ── */}
         <div className="grid lg:grid-cols-[1fr_420px] gap-10 lg:gap-14">
 
-          {/* ── LEFT: GALERÍA ──────────────── */}
+          {/* LEFT: GALERÍA */}
           <div className="space-y-4">
             {/* Main image */}
             <div className="relative bg-white border border-gray-100 rounded-3xl overflow-hidden shadow-sm group" style={{ aspectRatio: '4/3' }}>
-              <div className="absolute inset-0 bg-gradient-to-br from-[#0F8B6C]/8 via-[#A7D9C9]/12 to-[#E7D8C6]/20" />
-              <div className="relative h-full flex items-center justify-center">
-                <div className="text-center transition-all duration-500">
-                  <div className="text-[120px] md:text-[160px] leading-none group-hover:scale-105 transition-transform duration-500 drop-shadow-xl">
-                    {EMOJI_MAP[producto.categoria] || '📦'}
+              <img
+                src={getProductImage(producto.sku, producto.categoria)}
+                alt={producto.nombre}
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                onError={e => { e.target.style.display = 'none'; }}
+              />
+              {vistaActiva === 3 && personalizacion && (
+                <div className="absolute inset-0 flex items-end justify-center pb-8">
+                  <div className="bg-gray-900/80 backdrop-blur text-yellow-400 text-sm font-bold tracking-widest px-5 py-2 rounded-xl border border-yellow-400/30"
+                    style={{ textShadow: '0 0 10px rgba(212,175,55,0.5)' }}>
+                    {personalizacion.toUpperCase()}
                   </div>
-                  {vistaActiva === 3 && personalizacion && (
-                    <div className="mt-4 inline-block bg-gray-900/80 backdrop-blur text-yellow-400 text-sm font-bold tracking-widest px-5 py-2 rounded-xl border border-yellow-400/30"
-                      style={{ textShadow: '0 0 10px rgba(212,175,55,0.5)' }}>
-                      {personalizacion.toUpperCase()}
-                    </div>
-                  )}
                 </div>
-              </div>
+              )}
               {/* Material badge */}
               <div className="absolute top-4 left-4">
                 <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full bg-white/90 backdrop-blur border border-gray-200 text-[#0F8B6C] shadow-sm">
@@ -175,7 +177,7 @@ export default function ProductoDetalle() {
                   {producto.material?.includes('100%') ? '100% Reciclado' : 'Compostable'}
                 </span>
               </div>
-              {/* Actions top right */}
+              {/* Actions */}
               <div className="absolute top-4 right-4 flex flex-col gap-2">
                 <button onClick={() => setWishlist(!wishlist)}
                   className="w-9 h-9 bg-white/90 backdrop-blur rounded-xl flex items-center justify-center shadow-sm border border-gray-200 hover:scale-110 transition-transform">
@@ -187,12 +189,12 @@ export default function ProductoDetalle() {
               </div>
             </div>
 
-            {/* Thumbnails / vistas */}
+            {/* Thumbnails */}
             <div className="grid grid-cols-4 gap-2">
               {VIEWS.map((v, i) => (
                 <button key={i} onClick={() => setVistaActiva(i)}
                   className={`aspect-square rounded-2xl flex flex-col items-center justify-center gap-1 text-xs font-medium border-2 transition-all ${vistaActiva === i ? 'border-gray-900 bg-gray-900 text-white shadow-md' : 'border-gray-100 bg-white text-gray-400 hover:border-gray-300'}`}>
-                  <span className="text-xl">{['🔍','↔️','⬆️','✨'][i]}</span>
+                  <span className="text-xl">{['🔍', '↔️', '⬆️', '✨'][i]}</span>
                   <span className="text-[9px] leading-tight text-center px-1">{v}</span>
                 </button>
               ))}
@@ -217,7 +219,7 @@ export default function ProductoDetalle() {
             </div>
           </div>
 
-          {/* ── RIGHT: INFO + CTA ──────────── */}
+          {/* RIGHT: INFO + CTA */}
           <div className="space-y-6">
             {/* Header */}
             <div>
@@ -232,10 +234,9 @@ export default function ProductoDetalle() {
               {producto.descripcion && (
                 <p className="text-sm text-gray-500 leading-relaxed">{producto.descripcion}</p>
               )}
-              {/* Rating */}
               <div className="flex items-center gap-2 mt-3">
                 <div className="flex gap-0.5">
-                  {[1,2,3,4,5].map(s => <Star key={s} className="w-4 h-4 fill-yellow-400 text-yellow-400" />)}
+                  {[1, 2, 3, 4, 5].map(s => <Star key={s} className="w-4 h-4 fill-yellow-400 text-yellow-400" />)}
                 </div>
                 <span className="text-sm font-semibold text-gray-900">5.0</span>
                 <span className="text-xs text-gray-400">· 127 reseñas verificadas</span>
@@ -314,7 +315,6 @@ export default function ProductoDetalle() {
                   <><ShoppingCart className="w-5 h-5" /> Agregar al carrito · ${(precioFinal * cantidad).toLocaleString('es-CL')}</>
                 )}
               </Button>
-
               <div className="grid grid-cols-2 gap-2">
                 <Link to={`/b2b/contacto?productoId=${producto.id}&nombre=${encodeURIComponent(producto.nombre || '')}`}>
                   <Button size="lg" variant="outline"
@@ -369,7 +369,7 @@ export default function ProductoDetalle() {
           </div>
         </div>
 
-        {/* ── REVIEWS ────────────────────────── */}
+        {/* ── REVIEWS ── */}
         <div className="mt-16 space-y-6">
           <div className="flex items-end justify-between">
             <div>
@@ -378,24 +378,23 @@ export default function ProductoDetalle() {
             </div>
             <div className="hidden sm:flex items-center gap-2 bg-white border border-gray-100 rounded-2xl px-4 py-3 shadow-sm">
               <div className="flex gap-0.5">
-                {[1,2,3,4,5].map(s => <Star key={s} className="w-4 h-4 fill-yellow-400 text-yellow-400" />)}
+                {[1, 2, 3, 4, 5].map(s => <Star key={s} className="w-4 h-4 fill-yellow-400 text-yellow-400" />)}
               </div>
               <span className="font-poppins font-bold text-gray-900">5.0</span>
               <span className="text-xs text-gray-400">/ 127 reseñas</span>
             </div>
           </div>
-
           <div className="grid md:grid-cols-3 gap-4">
             {REVIEWS_MOCK.map((r, i) => (
               <div key={i} className="bg-white border border-gray-100 rounded-3xl p-5 shadow-sm hover:shadow-md transition-shadow">
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex gap-0.5">
-                    {[1,2,3,4,5].map(s => (
+                    {[1, 2, 3, 4, 5].map(s => (
                       <Star key={s} className={`w-3.5 h-3.5 ${s <= r.rating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-200'}`} />
                     ))}
                   </div>
                   {r.verificado && (
-                    <span className="flex items-center gap-1 text-[10px] font-bold text-[#0F8B6C] bg-[#0F8B6C]/8 px-2 py-0.5 rounded-full">
+                    <span className="flex items-center gap-1 text-[10px] font-bold text-[#0F8B6C] bg-[#0F8B6C]/10 px-2 py-0.5 rounded-full">
                       <BadgeCheck className="w-3 h-3" /> Verificado
                     </span>
                   )}
@@ -415,7 +414,7 @@ export default function ProductoDetalle() {
           </div>
         </div>
 
-        {/* ── PRODUCTOS RELACIONADOS ─────────── */}
+        {/* ── PRODUCTOS RELACIONADOS ── */}
         {relacionados.length > 0 && (
           <div className="mt-16 space-y-6">
             <div className="flex items-end justify-between">
@@ -431,8 +430,13 @@ export default function ProductoDetalle() {
               {relacionados.map(p => (
                 <Link key={p.id} to={`/producto/${p.id}`}>
                   <div className="group bg-white border border-gray-100 rounded-3xl overflow-hidden hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
-                    <div className="h-36 bg-gradient-to-br from-[#0F8B6C]/8 via-[#A7D9C9]/15 to-[#E7D8C6]/20 flex items-center justify-center">
-                      <span className="text-5xl group-hover:scale-110 transition-transform duration-300">{EMOJI_MAP[p.categoria] || '📦'}</span>
+                    <div className="h-36 overflow-hidden">
+                      <img
+                        src={getProductImage(p.sku, p.categoria)}
+                        alt={p.nombre}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        onError={e => { e.target.style.display = 'none'; }}
+                      />
                     </div>
                     <div className="p-4">
                       <h3 className="font-semibold text-sm text-gray-900 line-clamp-1 group-hover:text-[#0F8B6C] transition-colors">{p.nombre}</h3>
