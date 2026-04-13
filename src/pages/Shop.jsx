@@ -82,40 +82,45 @@ export default function Shop() {
   };
 
   return (
-    <div className="min-h-screen bg-[#FAFAF8] font-inter">
+    <div className="min-h-screen font-inter" style={{
+      backgroundImage: `linear-gradient(135deg, rgba(15, 23, 42, 0.75) 0%, rgba(15, 78, 137, 0.75) 50%, rgba(15, 23, 42, 0.75) 100%), url('https://media.base44.com/images/public/69d99b9d61f699701129c103/6935b8ac0_image.png')`,
+      backgroundSize: 'cover',
+      backgroundPosition: 'center',
+      backgroundAttachment: 'fixed',
+    }}>
       {/* NAVBAR */}
-      <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-xl border-b border-black/5 shadow-sm">
-        <div className="max-w-6xl mx-auto px-5 py-3 flex items-center justify-between">
+      <nav className="sticky top-0 z-50 bg-white/10 backdrop-blur-md border-b border-white/20">
+        <div className="max-w-7xl mx-auto px-5 py-3 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-3 group">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#0F8B6C] to-[#06634D] flex items-center justify-center shadow-md shadow-[#0F8B6C]/20 group-hover:scale-105 transition-transform">
+            <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-teal-400 to-cyan-500 flex items-center justify-center shadow-lg shadow-teal-500/30 group-hover:scale-105 transition-transform">
               <span className="text-white text-sm font-bold">P</span>
             </div>
             <div className="hidden sm:block">
-              <p className="text-[15px] font-poppins font-bold leading-none tracking-tight text-gray-900">PEYU</p>
-              <p className="text-[10px] text-gray-400 leading-none mt-0.5">Tienda B2C</p>
+              <p className="text-[15px] font-poppins font-bold leading-none text-white">PEYU</p>
+              <p className="text-[10px] text-white/60 leading-none mt-0.5">Tienda B2C</p>
             </div>
           </Link>
           <div className="flex-1 mx-4 sm:mx-6 max-w-sm">
-            <div className="flex items-center gap-2 bg-gray-100 border border-gray-200 rounded-xl px-3 py-2">
-              <Search className="w-4 h-4 text-gray-400" />
+            <div className="flex items-center gap-2 bg-white/10 border border-white/30 rounded-lg px-3 py-2 backdrop-blur-sm">
+              <Search className="w-4 h-4 text-white/50" />
               <Input
                 type="text"
                 placeholder="Buscar producto..."
                 value={search}
                 onChange={e => setSearch(e.target.value)}
-                className="bg-transparent border-0 text-gray-900 placeholder:text-gray-400 focus:ring-0 text-sm"
+                className="bg-transparent border-0 text-white placeholder:text-white/40 focus:ring-0 text-sm"
               />
             </div>
           </div>
           <div className="flex items-center gap-2 sm:gap-3">
             <Link to="/b2b/catalogo">
-              <Button variant="ghost" size="sm" className="rounded-lg text-gray-600 hover:text-gray-900 hidden sm:inline-flex">B2B</Button>
+              <Button variant="ghost" size="sm" className="rounded-lg text-white/70 hover:text-white hidden sm:inline-flex">B2B</Button>
             </Link>
             <Link to="/cart" className="relative">
-              <button className="w-10 h-10 rounded-lg bg-[#0F8B6C] hover:bg-[#0a7558] flex items-center justify-center text-white transition-all active:scale-95">
+              <button className="w-10 h-10 rounded-lg bg-gradient-to-r from-teal-500 to-cyan-500 hover:from-teal-600 hover:to-cyan-600 flex items-center justify-center text-white transition-all active:scale-95 shadow-lg shadow-teal-500/30">
                 <ShoppingCart className="w-5 h-5" />
                 {carrito.length > 0 && (
-                  <span className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+                  <span className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center shadow-lg">
                     {carrito.length}
                   </span>
                 )}
@@ -127,27 +132,25 @@ export default function Shop() {
 
       {/* HERO SECTION */}
       <section className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-gray-50 to-gray-100" />
-        <div className="absolute top-0 left-1/3 w-96 h-96 bg-[#0F8B6C] rounded-full blur-[120px] opacity-10" />
         <div className="relative max-w-4xl mx-auto px-5 py-16 sm:py-20 text-center space-y-6">
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-poppins font-bold leading-[1.1] text-gray-900">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-poppins font-bold leading-[1.1] text-white drop-shadow-lg">
             Regalos corporativos
-            <br /><span style={{ color: '#0F8B6C' }}>100% sostenibles</span>
+            <br /><span className="text-cyan-300">100% sostenibles</span>
           </h1>
-          <p className="text-gray-500 max-w-2xl mx-auto text-base sm:text-lg leading-relaxed">
+          <p className="text-white/80 max-w-2xl mx-auto text-base sm:text-lg leading-relaxed drop-shadow font-medium">
             Plástico reciclado con personalización láser. Productos de calidad con garantía 10 años.
           </p>
         </div>
       </section>
 
-      <div className="max-w-7xl mx-auto px-5 py-12 grid lg:grid-cols-4 gap-8">
+      <div className="max-w-7xl mx-auto px-5 py-12 grid lg:grid-cols-4 gap-6">
         {/* SIDEBAR - CATEGORÍAS */}
         <aside className="lg:col-span-1 h-fit">
           <div className="sticky top-20 space-y-4">
             {/* Categories */}
-            <div className="bg-white border border-gray-100 rounded-2xl overflow-hidden shadow-sm">
-              <div className="bg-gray-50 px-4 py-3 border-b border-gray-100">
-                <p className="text-xs font-bold text-gray-600 uppercase tracking-widest">Categorías</p>
+            <div className="bg-white/5 border border-white/20 rounded-xl overflow-hidden backdrop-blur-sm shadow-xl">
+              <div className="bg-white/10 px-4 py-3 border-b border-white/20">
+                <p className="text-xs font-bold text-white/80 uppercase tracking-widest">Categorías</p>
               </div>
               <div className="space-y-1 p-3">
                 {categorias.map(cat => (
@@ -156,8 +159,8 @@ export default function Shop() {
                     onClick={() => setSelectedCategory(cat)}
                     className={`w-full text-left px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
                       selectedCategory === cat
-                        ? 'bg-[#0F8B6C] text-white'
-                        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                        ? 'bg-teal-500/30 text-white border border-teal-500/50'
+                        : 'text-white/70 hover:text-white hover:bg-white/10'
                     }`}>
                     {cat}
                   </button>
@@ -166,15 +169,15 @@ export default function Shop() {
             </div>
 
             {/* Price Filter */}
-            <div className="bg-white border border-gray-100 rounded-2xl overflow-hidden shadow-sm">
-              <div className="bg-gray-50 px-4 py-3 border-b border-gray-100">
-                <p className="text-xs font-bold text-gray-600 uppercase tracking-widest">Precio (CLP)</p>
+            <div className="bg-white/5 border border-white/20 rounded-xl overflow-hidden backdrop-blur-sm shadow-xl">
+              <div className="bg-white/10 px-4 py-3 border-b border-white/20">
+                <p className="text-xs font-bold text-white/80 uppercase tracking-widest">Precio (CLP)</p>
               </div>
               <div className="space-y-2 p-3">
                 {['Todos', '$0 - $50K', '$50K - $200K', '$200K - $1M', '+$1M'].map(range => (
                   <label key={range} className="flex items-center gap-2 cursor-pointer group">
-                    <input type="checkbox" className="w-4 h-4 rounded border-gray-300 accent-[#0F8B6C]" />
-                    <span className="text-sm text-gray-600 group-hover:text-gray-900">{range}</span>
+                    <input type="checkbox" className="w-4 h-4 rounded border-white/30 accent-teal-400" />
+                    <span className="text-sm text-white/70 group-hover:text-white">{range}</span>
                   </label>
                 ))}
               </div>
@@ -190,53 +193,53 @@ export default function Shop() {
               <Link
                 key={p.id}
                 to={`/producto/${p.id}`}
-                className="group bg-white border border-gray-100 rounded-2xl overflow-hidden hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
+                className="group bg-white/5 border border-white/20 rounded-xl overflow-hidden hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 backdrop-blur-sm"
               >
                 {/* Product Image */}
-                <div className="relative w-full aspect-square bg-gray-100 flex items-center justify-center overflow-hidden">
+                <div className="relative w-full aspect-square bg-gradient-to-br from-yellow-300/50 via-orange-400/40 to-red-500/30 flex items-center justify-center overflow-hidden">
                   <img 
                     src={getProductImage(p)}
                     alt={p.nombre}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                     loading="lazy"
                     onError={(e) => e.target.src = 'https://images.unsplash.com/photo-1578432291840-8d3a3a016e4d?w=600&h=600&fit=crop'}
                   />
-                  <div className="absolute top-3 left-3 bg-[#0F8B6C] text-white text-xs font-bold px-3 py-1.5 rounded-full">
+                  <div className="absolute top-3 left-3 bg-teal-600/90 backdrop-blur text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg">
                     {p.categoria}
                   </div>
                 </div>
 
                 {/* Product Info */}
-                <div className="p-4 space-y-3">
+                <div className="p-4 space-y-3 bg-gradient-to-b from-white/10 to-white/5">
                   <div>
-                    <h3 className="font-poppins font-bold text-gray-900 line-clamp-2 text-sm">
+                    <h3 className="font-poppins font-bold text-white line-clamp-2 text-sm drop-shadow">
                       {p.nombre}
                     </h3>
-                    <p className="text-xs text-gray-500 mt-1 line-clamp-2">{p.descripcion}</p>
+                    <p className="text-xs text-white/70 mt-1 line-clamp-2">{p.descripcion}</p>
                   </div>
 
                   {/* Rating */}
                   <div className="flex items-center gap-1.5">
                     <div className="flex gap-0.5">
                       {[...Array(5)].map((_, i) => (
-                        <Star key={i} className="w-3 h-3 fill-yellow-400 text-yellow-400" />
+                        <Star key={i} className="w-3 h-3 fill-yellow-400 text-yellow-400 drop-shadow" />
                       ))}
                     </div>
-                    <span className="text-xs text-gray-500">(4.8)</span>
+                    <span className="text-xs text-white/60">(4.8)</span>
                   </div>
 
                   {/* Pricing */}
-                  <div className="bg-gradient-to-br from-[#0F8B6C]/10 to-[#A7D9C9]/10 border border-[#0F8B6C]/20 rounded-lg p-3">
-                    <p className="text-2xl font-poppins font-bold text-gray-900">
+                  <div className="bg-gradient-to-r from-teal-500/30 to-cyan-500/20 border border-teal-400/40 rounded-lg p-3 backdrop-blur">
+                    <p className="text-2xl font-poppins font-bold text-white drop-shadow">
                       ${(p.precio_b2c).toLocaleString('es-CL')}
                     </p>
-                    <p className="text-xs text-gray-500 mt-0.5">Entrega 7 días</p>
+                    <p className="text-xs text-white/60 mt-0.5">Entrega 7 días</p>
                   </div>
 
                   {/* CTA Button */}
                   <button
                     onClick={(e) => agregarAlCarrito(e, p)}
-                    className="w-full py-2.5 rounded-lg text-xs font-bold bg-[#0F8B6C] hover:bg-[#0a7558] text-white transition-all active:scale-95"
+                    className="w-full py-2.5 rounded-lg text-xs font-bold bg-gradient-to-r from-teal-500 to-cyan-500 hover:from-teal-600 hover:to-cyan-600 text-white transition-all active:scale-95 shadow-lg shadow-teal-500/30"
                   >
                     {agregandoId === p.id ? '✓ En carrito' : 'Agregar'}
                   </button>
@@ -247,7 +250,7 @@ export default function Shop() {
 
           {filtered.length === 0 && (
             <div className="text-center py-16">
-              <p className="text-gray-500 font-medium">No hay productos que coincidan</p>
+              <p className="text-white/70 font-medium">No hay productos que coincidan</p>
             </div>
           )}
         </main>
