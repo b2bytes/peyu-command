@@ -42,6 +42,7 @@ export default function ShopLanding() {
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [currentProductIndex, setCurrentProductIndex] = useState(0);
+  const [sidebarExpanded, setSidebarExpanded] = useState(false);
   const messagesEndRef = useRef(null);
   const carrito = JSON.parse(localStorage.getItem('carrito') || '[]');
 
@@ -112,7 +113,8 @@ export default function ShopLanding() {
   };
 
   return (
-    <div className="min-h-screen w-full relative overflow-hidden flex flex-col lg:flex-row" style={{
+    <div className="h-screen w-full relative overflow-hidden flex flex-col lg:flex-row" style={{
+
       backgroundImage: `linear-gradient(135deg, rgba(15, 23, 42, 0.75) 0%, rgba(15, 78, 137, 0.75) 50%, rgba(15, 23, 42, 0.75) 100%), url('https://media.base44.com/images/public/69d99b9d61f699701129c103/6935b8ac0_image.png')`,
       backgroundSize: 'cover',
       backgroundPosition: 'center',
@@ -120,21 +122,29 @@ export default function ShopLanding() {
       backgroundRepeat: 'no-repeat'
     }}>
       {/* Main container with glassmorphism */}
-      <div className="flex-1 flex gap-3 sm:gap-4 p-3 sm:p-4 lg:p-6 relative z-10 w-full flex-col lg:flex-row items-stretch">
+      <div className="flex-1 flex gap-3 sm:gap-4 p-3 sm:p-4 lg:p-6 relative z-10 w-full flex-col lg:flex-row items-stretch h-full">
         
-        {/* SIDEBAR - Floating vertical */}
-        <div className="hidden lg:flex flex-col items-center gap-1.5 bg-white/10 backdrop-blur-md border border-white/20 rounded-3xl p-2.5 shadow-xl w-16 h-fit self-start mt-0">
+        {/* SIDEBAR - Floating vertical with expand/collapse */}
+        <div 
+          className={`hidden lg:flex flex-col items-center gap-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-3xl shadow-xl self-stretch transition-all duration-300 ${
+            sidebarExpanded ? 'w-48 px-4 py-6' : 'w-16 p-2.5'
+          }`}
+          onMouseEnter={() => setSidebarExpanded(true)}
+          onMouseLeave={() => setSidebarExpanded(false)}
+        >
           {SIDEBAR_ITEMS.map((item) => {
             const Icon = item.icon;
             return (
               <Link
                 key={item.href}
                 to={item.href}
-                className={`${item.color} w-9 h-9 rounded-full flex items-center justify-center text-white shadow-lg hover:scale-105 transition-transform group relative flex-shrink-0`}
+                className={`${item.color} rounded-full flex items-center text-white shadow-lg hover:scale-105 transition-all group relative flex-shrink-0 ${
+                  sidebarExpanded ? 'w-full px-4 py-3 justify-start gap-3' : 'w-9 h-9 justify-center'
+                }`}
                 title={item.label}
               >
-                <Icon className="w-4 h-4" />
-                <span className="absolute left-full ml-2 bg-white/20 backdrop-blur text-white text-xs px-2 py-1 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap font-medium">{item.label}</span>
+                <Icon className={sidebarExpanded ? 'w-5 h-5' : 'w-4 h-4'} />
+                {sidebarExpanded && <span className="text-sm font-medium">{item.label}</span>}
               </Link>
             );
           })}
@@ -218,7 +228,7 @@ export default function ShopLanding() {
             </div>
 
             {/* Ocasiones Carousel */}
-            <div className="overflow-x-auto scrollbar-hide flex gap-2 sm:gap-3 pb-1 justify-start">
+            <div className="overflow-x-auto scrollbar-hide flex gap-2 sm:gap-3 pb-1 justify-center">
               {OCASIONES.map(occ => (
                 <button
                   key={occ.id}
@@ -236,8 +246,8 @@ export default function ShopLanding() {
         </div>
 
         {/* RIGHT CONTAINER - Product Carousel */}
-        <Link to={`/producto/${FEATURED_PRODUCTS[currentProductIndex].id}`} className="hidden lg:block">
-        <div className="w-64 bg-gradient-to-br from-orange-600/10 to-red-600/5 border border-orange-500/20 rounded-2xl lg:rounded-3xl p-4 lg:p-6 flex flex-col justify-between shadow-xl hover:shadow-2xl hover:border-orange-500/40 transition-all cursor-pointer group flex-shrink-0">
+        <Link to={`/producto/${FEATURED_PRODUCTS[currentProductIndex].id}`} className="hidden lg:block flex-shrink-0">
+        <div className="w-64 bg-gradient-to-br from-orange-600/10 to-red-600/5 border border-orange-500/20 rounded-2xl lg:rounded-3xl p-4 lg:p-6 flex flex-col justify-between shadow-xl hover:shadow-2xl hover:border-orange-500/40 transition-all cursor-pointer group h-full">
           {(() => {
             const product = FEATURED_PRODUCTS[currentProductIndex];
             return (
