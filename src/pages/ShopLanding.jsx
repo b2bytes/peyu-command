@@ -69,7 +69,7 @@ export default function ShopLanding() {
       let convId = conversationId;
       if (!convId) {
         const conv = await base44.agents.createConversation({
-          agent_name: 'asistente_compras',
+          agent_name: 'peyu',
           metadata: { context: 'landing', timestamp: new Date().toISOString() }
         });
         convId = conv.id;
@@ -128,7 +128,7 @@ export default function ShopLanding() {
     if (!conversationId) {
       try {
         const conv = await base44.agents.createConversation({
-          agent_name: 'asistente_compras',
+          agent_name: 'peyu',
           metadata: { context: 'landing', occasion: ocasion.id, timestamp: new Date().toISOString() }
         });
         setConversationId(conv.id);
@@ -254,31 +254,36 @@ export default function ShopLanding() {
                 
                 {/* Agent Header */}
                 <div className="mb-2 pb-2 border-b border-white/20 flex items-center gap-2 flex-shrink-0 min-w-0">
-                  <div className="w-7 h-7 rounded-full bg-gradient-to-br from-orange-400 to-red-500 flex items-center justify-center text-white font-bold flex-shrink-0 text-sm shadow-lg">✨</div>
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-teal-400 to-cyan-500 flex items-center justify-center text-white font-bold flex-shrink-0 text-sm shadow-lg">🐢</div>
                   <div className="min-w-0">
-                    <p className="text-white font-bold text-xs">Asistente</p>
-                    <p className="text-white/50 text-[10px] line-clamp-1">¿Necesitas ayuda?</p>
+                    <p className="text-white font-bold text-xs">Peyu</p>
+                    <p className="text-white/50 text-[10px] line-clamp-1">Asistente de Gifting</p>
                   </div>
                 </div>
 
                 {/* Messages Container */}
-                <div className="flex-1 overflow-y-auto space-y-2 mb-2 scrollbar-hide">
+                <div className="flex-1 overflow-y-auto space-y-2.5 mb-3 scrollbar-hide">
                   {messages.length === 0 && (
-                    <div className="text-center text-white/50 text-xs py-4">
-                      <p>Hola 👋 Soy tu asistente PEYU</p>
-                      <p className="text-[10px] mt-1">Usa los botones abajo o escribe tu pregunta</p>
+                    <div className="text-center text-white/60 text-xs py-6 space-y-2">
+                      <p className="text-sm font-medium">👋 Hola, soy Peyu</p>
+                      <p>Tu asistente para regalos corporativos sostenibles</p>
+                      <p className="text-[10px] text-white/40 mt-2">Cuéntame qué necesitas o usa los botones de ocasiones</p>
                     </div>
                   )}
                   {messages.map((msg, idx) => (
-                    <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                      <div className={`${msg.role === 'user' ? 'bg-gradient-to-r from-orange-600 to-red-600 text-white' : 'bg-white/20 border border-white/30 text-white'} rounded-lg px-3 py-2 text-xs sm:text-sm max-w-[85%] break-words`}>
+                    <div key={idx} className={`flex gap-2 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                      {msg.role === 'assistant' && (
+                        <div className="w-6 h-6 rounded-full bg-teal-500/30 flex items-center justify-center flex-shrink-0 text-xs">🐢</div>
+                      )}
+                      <div className={`rounded-xl px-3.5 py-2.5 text-xs sm:text-sm max-w-[75%] break-words leading-relaxed ${msg.role === 'user' ? 'bg-teal-600 text-white rounded-br-none' : 'bg-white/15 text-white border border-white/25 rounded-bl-none backdrop-blur-sm'}`}>
                         {msg.content}
                       </div>
                     </div>
                   ))}
                   {loading && (
-                    <div className="flex justify-start">
-                      <div className="bg-white/20 border border-white/30 rounded-lg px-3 py-2 text-white flex items-center gap-2">
+                    <div className="flex gap-2 justify-start">
+                      <div className="w-6 h-6 rounded-full bg-teal-500/30 flex items-center justify-center flex-shrink-0 text-xs">🐢</div>
+                      <div className="bg-white/15 border border-white/25 rounded-xl rounded-bl-none px-3.5 py-2.5 text-white flex items-center gap-2 backdrop-blur-sm">
                         <div className="flex gap-1">
                           <div className="w-1.5 h-1.5 bg-white rounded-full animate-bounce"></div>
                           <div className="w-1.5 h-1.5 bg-white rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
@@ -296,14 +301,14 @@ export default function ShopLanding() {
                     value={input}
                     onChange={e => setInput(e.target.value)}
                     onKeyPress={e => e.key === 'Enter' && !loading && sendMessage()}
-                    placeholder="¿Necesitas?"
-                    className="bg-white/20 border-white/30 text-white placeholder:text-white/40 text-xs sm:text-sm rounded-xl focus:ring-teal-400/50 flex-1 h-10 sm:h-11 px-3 py-2 touch-target disabled:opacity-60"
+                    placeholder="¿Qué necesitas?"
+                    className="bg-white/20 backdrop-blur-sm border border-white/30 text-white placeholder:text-white/50 text-xs sm:text-sm rounded-full focus:ring-teal-400/50 focus:border-teal-400/50 flex-1 h-10 sm:h-11 px-4 py-2 touch-target disabled:opacity-60 transition-all"
                     disabled={loading}
                   />
                   <Button
                     onClick={sendMessage}
                     disabled={loading || !input.trim()}
-                    className="bg-teal-500 hover:bg-teal-600 active:bg-teal-700 text-white rounded-full w-10 h-10 sm:w-11 sm:h-11 p-0 flex items-center justify-center flex-shrink-0 touch-target">
+                    className="bg-gradient-to-r from-teal-500 to-cyan-500 hover:from-teal-600 hover:to-cyan-600 active:from-teal-700 active:to-cyan-700 text-white rounded-full w-10 h-10 sm:w-11 sm:h-11 p-0 flex items-center justify-center flex-shrink-0 touch-target shadow-lg transition-all disabled:opacity-60">
                     <Send className="w-4 h-4" />
                   </Button>
                 </div>
