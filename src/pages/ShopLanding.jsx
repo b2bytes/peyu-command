@@ -141,12 +141,12 @@ export default function ShopLanding() {
           </div>
 
           {/* Content Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 md:gap-8 p-4 sm:p-6 md:p-8 flex-1 overflow-hidden">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 md:gap-6 p-4 sm:p-6 md:p-6 flex-1 overflow-hidden">
             
             {/* Left Column - 60% */}
-            <div className="md:col-span-2 flex flex-col justify-start gap-6">
+            <div className="md:col-span-2 flex flex-col gap-4">
               {/* Hero Title */}
-              <div className="space-y-4">
+              <div className="space-y-2">
                 <h1 className="text-5xl sm:text-6xl md:text-7xl font-poppins font-black leading-tight text-white drop-shadow-lg">
                   Regalos Corporativos <span className="text-teal-400">100%</span>
                   <br />
@@ -156,7 +156,7 @@ export default function ShopLanding() {
               </div>
 
               {/* CTA Buttons */}
-              <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 flex-shrink-0 w-full sm:w-auto">
+              <div className="flex flex-col sm:flex-row gap-2 sm:gap-2">
                <Link to="/shop" className="flex-1 sm:flex-none">
                  <Button className="w-full bg-red-600 hover:bg-red-700 text-white font-bold rounded-full px-8 py-3 gap-2 shadow-lg hover:shadow-xl text-base transition-all">
                    📮 Explorar Regalos
@@ -170,14 +170,14 @@ export default function ShopLanding() {
               </div>
 
               {/* Chat Agent */}
-              <div className="bg-white/15 backdrop-blur-xl border border-white/30 rounded-3xl p-4 sm:p-5 md:p-6 flex flex-col shadow-xl h-64">
+              <div className="bg-white/15 backdrop-blur-xl border border-white/30 rounded-3xl p-4 sm:p-5 md:p-6 flex flex-col shadow-xl flex-1 min-h-96">
                 
                 {/* Agent Header */}
-                <div className="mb-4 md:mb-5 pb-4 md:pb-5 border-b border-white/20 flex items-center gap-3 md:gap-4 flex-shrink-0">
-                  <div className="w-12 h-12 md:w-14 md:h-14 rounded-full bg-gradient-to-br from-orange-400 to-red-500 flex items-center justify-center text-white font-bold flex-shrink-0 text-2xl shadow-lg">✨</div>
+                <div className="mb-3 pb-3 border-b border-white/20 flex items-center gap-2 flex-shrink-0">
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-orange-400 to-red-500 flex items-center justify-center text-white font-bold flex-shrink-0 text-lg shadow-lg">✨</div>
                   <div className="min-w-0">
-                    <p className="text-white font-bold text-base md:text-lg">Asistente PEYU</p>
-                    <p className="text-white/60 text-sm">Bienvenido. Con más de una década perfeccionando el arte del gifting estratégico.</p>
+                    <p className="text-white font-bold text-sm">Asistente PEYU</p>
+                    <p className="text-white/50 text-xs">Diseña tu regalo ideal</p>
                   </div>
                 </div>
 
