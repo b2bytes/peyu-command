@@ -49,6 +49,7 @@ import SoportePublico from './pages/SoportePublico';
 import SeguimientoPedido from './pages/SeguimientoPedido';
 import CatalogoVisual from './pages/CatalogoVisual';
 import EstadoActual from './pages/EstadoActual';
+import ImportarClientes from './pages/ImportarClientes';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -102,6 +103,7 @@ const AuthenticatedApp = () => {
         <Route path="analitica" element={<Analitica />} />
         <Route path="propuestas" element={<AdminPropuestas />} />
         <Route path="estado-actual" element={<EstadoActual />} />
+        <Route path="importar-clientes" element={<ImportarClientes />} />
       </Route>
       <Route path="*" element={<PageNotFound />} />
     </Routes>

@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import {
-  Users, Plus, Edit2, Trash2, Star, TrendingUp, Phone,
-  Mail, Calendar, Award, AlertTriangle, RefreshCw
+  Users, Plus, Edit2, Trash2, Phone,
+  Mail, Calendar, AlertTriangle, Upload
 } from "lucide-react";
+import { Link } from "react-router-dom";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -176,9 +177,16 @@ export default function Clientes() {
           <h1 className="text-2xl font-poppins font-bold text-foreground">Clientes</h1>
           <p className="text-muted-foreground text-sm mt-1">Base post-venta · LTV · Seguimiento · Recompra</p>
         </div>
-        <Button onClick={openNew} style={{ background: '#0F8B6C' }} className="text-white hover:opacity-90 gap-2">
-          <Plus className="w-4 h-4" />Nuevo Cliente
-        </Button>
+        <div className="flex gap-2">
+          <Link to="/admin/importar-clientes">
+            <Button variant="outline" className="gap-2">
+              <Upload className="w-4 h-4" /> Importar CSV
+            </Button>
+          </Link>
+          <Button onClick={openNew} style={{ background: '#0F8B6C' }} className="text-white hover:opacity-90 gap-2">
+            <Plus className="w-4 h-4" />Nuevo Cliente
+          </Button>
+        </div>
       </div>
 
       {/* KPIs */}
