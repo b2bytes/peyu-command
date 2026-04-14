@@ -47,6 +47,7 @@ import PersonalizacionFlow from './pages/PersonalizacionFlow';
 import SoportePublico from './pages/SoportePublico';
 import SeguimientoPedido from './pages/SeguimientoPedido';
 import CatalogoVisual from './pages/CatalogoVisual';
+import EstadoActual from './pages/EstadoActual';
 import PublicLayout from './components/PublicLayout';
 
 const AuthenticatedApp = () => {
@@ -100,6 +101,7 @@ const AuthenticatedApp = () => {
         <Route path="marketing" element={<Marketing />} />
         <Route path="analitica" element={<Analitica />} />
         <Route path="propuestas" element={<AdminPropuestas />} />
+        <Route path="estado-actual" element={<EstadoActual />} />
       </Route>
       <Route path="*" element={<PageNotFound />} />
     </Routes>
