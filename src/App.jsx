@@ -8,6 +8,7 @@ import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import PWAInstallBanner from '@/components/PWAInstallBanner';
 import Layout from './components/Layout';
+import PublicLayout from './components/PublicLayout';
 import Dashboard from './pages/Dashboard';
 import ShopLanding from './pages/ShopLanding';
 import PipelineB2B from './pages/PipelineB2B';
@@ -48,7 +49,6 @@ import SoportePublico from './pages/SoportePublico';
 import SeguimientoPedido from './pages/SeguimientoPedido';
 import CatalogoVisual from './pages/CatalogoVisual';
 import EstadoActual from './pages/EstadoActual';
-import PublicLayout from './components/PublicLayout';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -115,33 +115,33 @@ function App() {
         <QueryClientProvider client={queryClientInstance}>
           <Router>
             <Routes>
-            {/* Landing Page - Standalone */}
-            <Route path="/" element={<ShopLanding />} />
-            
-            {/* Public Routes */}
-            <Route element={<PublicLayout />}>
-              <Route path="/shop" element={<Shop />} />
-              <Route path="/producto/:id" element={<ProductoDetalle />} />
-              <Route path="/cart" element={<Carrito />} />
-              <Route path="/b2b/contacto" element={<B2BContacto />} />
-              <Route path="/b2b/propuesta" element={<B2BPropuesta />} />
-              <Route path="/b2b/catalogo" element={<CatalogoCorporativo />} />
-              <Route path="/personalizar" element={<PersonalizacionFlow />} />
-              <Route path="/soporte" element={<SoportePublico />} />
-              <Route path="/seguimiento" element={<SeguimientoPedido />} />
-              <Route path="/catalogo-visual" element={<CatalogoVisual />} />
-            </Route>
+              {/* Landing Page - Standalone */}
+              <Route path="/" element={<ShopLanding />} />
 
-            {/* Admin Routes - Protected */}
-            <Route path="/admin/*" element={<AuthenticatedApp />} />
-          </Routes>
-          <Toaster />
-          <PWAInstallBanner />
-            </Router>
-          </QueryClientProvider>
-        </AuthProvider>
-      </ErrorBoundary>
-    );
-  }
+              {/* Public Routes */}
+              <Route element={<PublicLayout />}>
+                <Route path="/shop" element={<Shop />} />
+                <Route path="/producto/:id" element={<ProductoDetalle />} />
+                <Route path="/cart" element={<Carrito />} />
+                <Route path="/b2b/contacto" element={<B2BContacto />} />
+                <Route path="/b2b/propuesta" element={<B2BPropuesta />} />
+                <Route path="/b2b/catalogo" element={<CatalogoCorporativo />} />
+                <Route path="/personalizar" element={<PersonalizacionFlow />} />
+                <Route path="/soporte" element={<SoportePublico />} />
+                <Route path="/seguimiento" element={<SeguimientoPedido />} />
+                <Route path="/catalogo-visual" element={<CatalogoVisual />} />
+              </Route>
+
+              {/* Admin Routes - Protected */}
+              <Route path="/admin/*" element={<AuthenticatedApp />} />
+            </Routes>
+            <Toaster />
+            <PWAInstallBanner />
+          </Router>
+        </QueryClientProvider>
+      </AuthProvider>
+    </ErrorBoundary>
+  );
+}
 
 export default App;
