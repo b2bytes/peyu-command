@@ -87,9 +87,17 @@
       "type": "string",
       "title": "Fecha Aprobaci\u00f3n"
     },
-    "production_notes": {
+"production_notes": {
       "type": "string",
-      "title": "Notas Producci\u00f3n"
+      "title": "Notas Producción"
+    },
+    "approval_token": {
+      "type": "string",
+      "title": "Token Aprobación"
+    },
+    "rejection_reason": {
+      "type": "string",
+      "title": "Motivo Rechazo"
     }
   },
   "required": [
