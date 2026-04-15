@@ -69,22 +69,22 @@ export default function Carrito() {
 
     localStorage.removeItem('carrito');
 
-    // Si es Stripe, redirigir a checkout
+    // Si es Stripe, crear sesion de checkout via base44 function
     if (metodoPago === 'Stripe') {
       try {
-        const response = await fetch('/api/checkout-session', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            pedidoId: pedido.id,
-            total: total * 100, // Stripe maneja centavos
-            email: cliente.email,
-            nombre: cliente.nombre,
-            items: carrito,
-          }),
+        const result = await base44.functions.invoke('stripeCheckout', {
+          pedidoId: pedido.id,
+          total: total * 100, // Stripe maneja centavos
+          email: cliente.email,
+          nombre: cliente.nombre,
+          items: carrito,
         });
-        const { sessionUrl } = await response.json();
-        window.location.href = sessionUrl;
+        
+        if (result.data?.sessionUrl) {
+          window.location.href = result.data.sessionUrl;
+        } else {
+          throw new Error(result.data?.error || 'Error creando sesion de pago');
+        }
       } catch (error) {
         console.error('Error creating Stripe session:', error);
         alert('Error al procesar pago con Stripe. Por favor intenta de nuevo.');

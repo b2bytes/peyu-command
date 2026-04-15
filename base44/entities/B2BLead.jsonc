@@ -107,6 +107,39 @@
       "items": {
         "type": "string"
       }
+    },
+    "proposal_id": {
+      "type": "string",
+      "title": "ID Propuesta Vinculada"
+    },
+    "contact_history": {
+      "type": "array",
+      "title": "Historial de Contactos",
+      "items": {
+        "type": "object",
+        "properties": {
+          "date": { "type": "string" },
+          "channel": { "type": "string" },
+          "note": { "type": "string" },
+          "by": { "type": "string" }
+        }
+      }
+    },
+    "ai_recommendation": {
+      "type": "string",
+      "title": "Recomendacion IA"
+    },
+    "last_contact_date": {
+      "type": "string",
+      "title": "Fecha Ultimo Contacto"
+    },
+    "expected_close_date": {
+      "type": "string",
+      "title": "Fecha Estimada Cierre"
+    },
+    "deal_value": {
+      "type": "number",
+      "title": "Valor Estimado Deal ($)"
     }
   },
   "required": [

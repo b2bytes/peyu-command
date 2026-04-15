@@ -72,7 +72,14 @@ export default function B2BContacto() {
       urgency, utm_source: document.referrer || 'directo',
     });
     if (leadCreado?.id) {
-      base44.functions.invoke('scoreLead', { leadId: leadCreado.id }).catch(() => {});
+      // Invoke B2B triage for auto-scoring, routing, and potential auto-proposal
+      base44.functions.invoke('triageB2BLead', { 
+        leadId: leadCreado.id,
+        autoGenerateProposal: true 
+      }).catch(() => {
+        // Fallback to basic scoring if triage fails
+        base44.functions.invoke('scoreLead', { leadId: leadCreado.id }).catch(() => {});
+      });
     }
     setEnviado(true);
     setLoading(false);

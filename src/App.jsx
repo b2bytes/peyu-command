@@ -54,6 +54,7 @@ import EstadoActual from './pages/EstadoActual';
 import ImportarClientes from './pages/ImportarClientes';
 import ProductionBoard from './pages/ProductionBoard';
 import SoporteAdmin from './pages/SoporteAdmin';
+import B2BLeadAdmin from './pages/B2BLeadAdmin';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -80,6 +81,7 @@ const AuthenticatedApp = () => {
       <Route element={<Layout />}>
         <Route index element={<Dashboard />} />
         <Route path="pipeline" element={<PipelineB2B />} />
+        <Route path="leads" element={<B2BLeadAdmin />} />
         <Route path="cpq" element={<CPQCalculator />} />
         <Route path="soporte" element={<Soporte />} />
         <Route path="financiero" element={<Financiero />} />

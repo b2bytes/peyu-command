@@ -30,6 +30,86 @@ function ScorePill({ score }) {
 
 const DEFAULT_ITEM = { nombre: '', qty: 50, precio_base: 9990, personalizacion: true };
 
+// Volume pricing tiers
+const VOLUME_TIERS = [
+  { min: 500, discount: 0.25, label: '500+ uds', badge: '-25%' },
+  { min: 200, discount: 0.15, label: '200-499', badge: '-15%' },
+  { min: 50, discount: 0.08, label: '50-199', badge: '-8%' },
+  { min: 10, discount: 0, label: '10-49', badge: 'Base' },
+];
+
+function calcVolumeDiscount(qty) {
+  for (const tier of VOLUME_TIERS) {
+    if (qty >= tier.min) return tier;
+  }
+  return { min: 0, discount: 0, label: '1-9', badge: 'Base' };
+}
+
+function VolumePricingCalculator({ items, onUpdate }) {
+  const totals = items.map(item => {
+    const qty = Number(item.qty) || 0;
+    const basePrice = Number(item.precio_base) || 0;
+    const tier = calcVolumeDiscount(qty);
+    const unitPrice = Math.round(basePrice * (1 - tier.discount));
+    const lineTotal = unitPrice * qty;
+    return { ...item, tier, unitPrice, lineTotal };
+  });
+  
+  const subtotal = totals.reduce((s, t) => s + t.lineTotal, 0);
+  const hasPersonalization = items.some(i => i.personalizacion);
+  const personalizationFee = hasPersonalization && items[0]?.qty < 10 ? 5000 * (items[0]?.qty || 0) : 0;
+  const total = subtotal + personalizationFee;
+
+  return (
+    <div className="bg-gradient-to-br from-slate-50 to-slate-100 rounded-xl p-4 space-y-3 border border-slate-200">
+      <div className="flex items-center justify-between">
+        <h4 className="font-semibold text-sm text-slate-700">Calculadora de volumen</h4>
+        <div className="flex gap-1">
+          {VOLUME_TIERS.map(t => (
+            <span key={t.min} className="text-[9px] px-1.5 py-0.5 rounded bg-white border border-slate-200 text-slate-500">
+              {t.label}: <span className="font-bold text-slate-700">{t.badge}</span>
+            </span>
+          ))}
+        </div>
+      </div>
+      
+      <div className="space-y-2">
+        {totals.map((t, i) => (
+          <div key={i} className="flex items-center justify-between text-sm bg-white rounded-lg px-3 py-2 border border-slate-100">
+            <div className="flex items-center gap-2">
+              <span className="font-medium text-slate-700 truncate max-w-[150px]">{t.nombre || 'Producto'}</span>
+              <span className="text-xs px-1.5 py-0.5 rounded bg-green-50 text-green-700 font-semibold">{t.tier.badge}</span>
+            </div>
+            <div className="text-right">
+              <div className="text-xs text-slate-400">
+                {t.qty}u x ${t.unitPrice.toLocaleString('es-CL')}
+              </div>
+              <div className="font-bold text-slate-800">${t.lineTotal.toLocaleString('es-CL')}</div>
+            </div>
+          </div>
+        ))}
+      </div>
+      
+      <div className="border-t border-slate-200 pt-3 space-y-1">
+        <div className="flex justify-between text-sm">
+          <span className="text-slate-500">Subtotal productos</span>
+          <span className="font-medium">${subtotal.toLocaleString('es-CL')}</span>
+        </div>
+        {personalizationFee > 0 && (
+          <div className="flex justify-between text-sm">
+            <span className="text-slate-500">Fee personalizacion (&lt;10u)</span>
+            <span className="font-medium text-orange-600">+${personalizationFee.toLocaleString('es-CL')}</span>
+          </div>
+        )}
+        <div className="flex justify-between text-base pt-1">
+          <span className="font-semibold text-slate-700">Total estimado</span>
+          <span className="font-bold text-[#006D5B] text-lg">${total.toLocaleString('es-CL')}</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function GenerarPropuestaModal({ lead, onClose, onDone }) {
   const [items, setItems] = useState([
     { nombre: lead.product_interest || 'Kit Escritorio Pro', qty: lead.qty_estimate || 50, precio_base: 19990, personalizacion: lead.personalization_needs !== false },
@@ -155,6 +235,10 @@ function GenerarPropuestaModal({ lead, onClose, onDone }) {
                   </div>
                 ))}
               </div>
+              
+              {/* Volume Pricing Calculator */}
+              <VolumePricingCalculator items={items} />
+              
               <Button
                 onClick={generar}
                 disabled={loading || items.some(i => !i.nombre)}
@@ -163,7 +247,7 @@ function GenerarPropuestaModal({ lead, onClose, onDone }) {
                 size="lg"
               >
                 <Zap className="w-4 h-4" />
-                {loading ? 'Generando con IA...' : 'Generar propuesta automática'}
+                {loading ? 'Generando con IA...' : 'Generar propuesta automatica'}
               </Button>
             </>
           )}
