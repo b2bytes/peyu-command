@@ -1,0 +1,93 @@
+{
+  "name": "SupportTicket",
+  "type": "object",
+  "properties": {
+    "titulo": {
+      "type": "string",
+      "title": "Título"
+    },
+    "descripcion": {
+      "type": "string",
+      "title": "Descripción"
+    },
+    "cliente_nombre": {
+      "type": "string",
+      "title": "Nombre Cliente"
+    },
+    "cliente_email": {
+      "type": "string",
+      "title": "Email"
+    },
+    "cliente_telefono": {
+      "type": "string",
+      "title": "Teléfono"
+    },
+    "categoria": {
+      "type": "string",
+      "title": "Categoría",
+      "enum": [
+        "Producto",
+        "Pedido",
+        "Envío",
+        "Pago",
+        "Personalización",
+        "Otro"
+      ]
+    },
+    "status": {
+      "type": "string",
+      "title": "Estado",
+      "enum": [
+        "Abierto",
+        "En progreso",
+        "Pendiente cliente",
+        "Resuelto",
+        "Cerrado"
+      ]
+    },
+    "prioridad": {
+      "type": "string",
+      "title": "Prioridad",
+      "enum": [
+        "Baja",
+        "Normal",
+        "Alta",
+        "Urgente"
+      ]
+    },
+    "assigned_to": {
+      "type": "string",
+      "title": "Asignado a"
+    },
+    "pedido_id": {
+      "type": "string",
+      "title": "ID Pedido Relacionado"
+    },
+    "notas_internas": {
+      "type": "string",
+      "title": "Notas Internas"
+    },
+    "tiempo_resolucion_horas": {
+      "type": "number",
+      "title": "Tiempo Resolución (horas)"
+    },
+    "csat_score": {
+      "type": "number",
+      "title": "CSAT Score (1-5)"
+    },
+    "created_at": {
+      "type": "string",
+      "title": "Creado"
+    },
+    "resolved_at": {
+      "type": "string",
+      "title": "Resuelto"
+    }
+  },
+  "required": [
+    "titulo",
+    "cliente_nombre",
+    "categoria",
+    "status"
+  ]
+}

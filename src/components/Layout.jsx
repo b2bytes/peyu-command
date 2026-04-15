@@ -3,7 +3,7 @@ import { useState } from "react";
 import {
   LayoutDashboard, Users, BarChart3, Megaphone, Turtle, Package,
   Calculator, MessageSquare, TrendingUp, Store, UserCheck, Truck,
-  HardHat, Flag, Archive, ShoppingCart, Settings as SettingsIcon, ChevronLeft, ChevronRight, Leaf, ListChecks, Sparkles, FileText, CalendarDays, PieChart, AlertTriangle, Building2, ClipboardList
+  HardHat, Flag, Archive, ShoppingCart, Settings as SettingsIcon, ChevronLeft, ChevronRight, Leaf, ListChecks, Sparkles, FileText, CalendarDays, PieChart, AlertTriangle, Building2, ClipboardList, Kanban, Headphones
 } from "lucide-react";
 
 const navGroups = [
@@ -20,6 +20,7 @@ const navGroups = [
       { path: "/admin/pipeline", label: "Pipeline B2B", icon: Users },
       { path: "/admin/cotizaciones", label: "Cotizaciones", icon: FileText },
       { path: "/admin/cpq", label: "CPQ Cotizador", icon: Calculator },
+      { path: "/admin/soporte-tickets", label: "Tickets de Soporte", icon: Headphones },
       { path: "/admin/soporte", label: "Soporte & WhatsApp", icon: MessageSquare },
     ]
   },
@@ -35,6 +36,7 @@ const navGroups = [
   {
     label: "Producción",
     items: [
+      { path: "/admin/produccion", label: "Production Board", icon: Kanban },
       { path: "/admin/operaciones", label: "Operaciones", icon: SettingsIcon },
       { path: "/admin/trazabilidad", label: "Trazabilidad", icon: HardHat },
       { path: "/admin/inventario", label: "Inventario", icon: Archive },

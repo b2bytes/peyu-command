@@ -3,7 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Trash2, ArrowLeft, ShoppingBag, CheckCircle2, Truck, Shield, ChevronRight, Lock, Package } from 'lucide-react';
+import { Trash2, ArrowLeft, ShoppingBag, CheckCircle2, Truck, Shield, ChevronRight, Lock, Package, CreditCard } from 'lucide-react';
 
 export default function Carrito() {
   const navigate = useNavigate();
@@ -11,6 +11,7 @@ export default function Carrito() {
   const [cliente, setCliente] = useState({ nombre: '', email: '', telefono: '', ciudad: '', direccion: '' });
   const [creando, setCreando] = useState(false);
   const [pedidoOk, setPedidoOk] = useState(null);
+  const [metodoPago, setMetodoPago] = useState('WebPay');
 
   const eliminar = (id) => {
     const nuevo = carrito.filter(i => i.id !== id);
@@ -41,7 +42,9 @@ export default function Carrito() {
     setCreando(true);
     const numero = `WEB-${Date.now()}`;
     const items = carrito.map(i => `${i.nombre} x${i.cantidad}${i.personalizacion ? ` [${i.personalizacion}]` : ''}`).join(' | ');
-    await base44.entities.PedidoWeb.create({
+    
+    // Crear el pedido
+    const pedido = await base44.entities.PedidoWeb.create({
       numero_pedido: numero,
       fecha: new Date().toISOString().split('T')[0],
       canal: 'Web Propia',
@@ -54,8 +57,8 @@ export default function Carrito() {
       subtotal,
       costo_envio: envio,
       total,
-      medio_pago: 'WebPay',
-      estado: 'Nuevo',
+      medio_pago: metodoPago,
+      estado: metodoPago === 'Stripe' ? 'Pendiente Pago' : 'Nuevo',
       ciudad: cliente.ciudad,
       direccion_envio: cliente.direccion,
       requiere_personalizacion: carrito.some(i => i.personalizacion),
@@ -63,9 +66,34 @@ export default function Carrito() {
       courier: 'Pendiente',
       notas: `Carrito: ${carrito.length} items`,
     });
+
     localStorage.removeItem('carrito');
-    setPedidoOk({ numero, total, email: cliente.email });
-    setCreando(false);
+
+    // Si es Stripe, redirigir a checkout
+    if (metodoPago === 'Stripe') {
+      try {
+        const response = await fetch('/api/checkout-session', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            pedidoId: pedido.id,
+            total: total * 100, // Stripe maneja centavos
+            email: cliente.email,
+            nombre: cliente.nombre,
+            items: carrito,
+          }),
+        });
+        const { sessionUrl } = await response.json();
+        window.location.href = sessionUrl;
+      } catch (error) {
+        console.error('Error creating Stripe session:', error);
+        alert('Error al procesar pago con Stripe. Por favor intenta de nuevo.');
+        setCreando(false);
+      }
+    } else {
+      setPedidoOk({ numero, total, email: cliente.email });
+      setCreando(false);
+    }
   };
 
   // ── ÉXITO ──────────────────────────────────────────────────────────
@@ -248,6 +276,40 @@ export default function Carrito() {
               </div>
             </div>
 
+            {/* Payment Method */}
+            <div className="bg-white border border-gray-100 rounded-3xl p-5 shadow-sm space-y-3">
+              <h3 className="font-poppins font-bold text-gray-900">Medio de pago</h3>
+              <div className="space-y-2">
+                {[
+                  { id: 'WebPay', label: 'WebPay', icon: '🏦', desc: 'Débito/Crédito' },
+                  { id: 'Stripe', label: 'Tarjeta Internacional', icon: '💳', desc: 'Stripe - Cualquier país' },
+                ].map(method => (
+                  <button
+                    key={method.id}
+                    onClick={() => setMetodoPago(method.id)}
+                    className={`w-full px-4 py-3 rounded-xl border-2 transition-all text-left flex items-center gap-3 ${
+                      metodoPago === method.id
+                        ? 'border-gray-900 bg-gray-50'
+                        : 'border-gray-200 bg-white hover:border-gray-300'
+                    }`}
+                  >
+                    <div className="text-2xl">{method.icon}</div>
+                    <div className="flex-1">
+                      <div className="font-semibold text-gray-900">{method.label}</div>
+                      <div className="text-xs text-gray-400">{method.desc}</div>
+                    </div>
+                    <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+                      metodoPago === method.id
+                        ? 'border-gray-900 bg-gray-900'
+                        : 'border-gray-300'
+                    }`}>
+                      {metodoPago === method.id && <div className="w-1.5 h-1.5 bg-white rounded-full" />}
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+
             {/* Checkout */}
             <Button
               onClick={crearPedido}
@@ -263,7 +325,7 @@ export default function Carrito() {
             </Button>
             <div className="flex items-center justify-center gap-1.5 text-xs text-gray-400">
               <Lock className="w-3 h-3" />
-              Pago seguro · WebPay · Crédito y débito
+              Pago seguro · {metodoPago === 'Stripe' ? 'Stripe' : 'WebPay'}
             </div>
             <div className="flex justify-center gap-5 text-xs text-gray-400 pt-1">
               <Link to="/seguimiento" className="hover:text-gray-700">🔍 Seguimiento</Link>

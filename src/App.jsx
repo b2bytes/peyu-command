@@ -46,11 +46,14 @@ import B2BPropuesta from './pages/B2BPropuesta';
 import CatalogoCorporativo from './pages/CatalogoCorporativo';
 import PersonalizacionFlow from './pages/PersonalizacionFlow';
 import PersonalizacionAprobacion from './pages/PersonalizacionAprobacion';
+import PedidoConfirmado from './pages/PedidoConfirmado';
 import SoportePublico from './pages/SoportePublico';
 import SeguimientoPedido from './pages/SeguimientoPedido';
 import CatalogoVisual from './pages/CatalogoVisual';
 import EstadoActual from './pages/EstadoActual';
 import ImportarClientes from './pages/ImportarClientes';
+import ProductionBoard from './pages/ProductionBoard';
+import SoporteAdmin from './pages/SoporteAdmin';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -103,6 +106,8 @@ const AuthenticatedApp = () => {
         <Route path="marketing" element={<Marketing />} />
         <Route path="analitica" element={<Analitica />} />
         <Route path="propuestas" element={<AdminPropuestas />} />
+        <Route path="produccion" element={<ProductionBoard />} />
+        <Route path="soporte-tickets" element={<SoporteAdmin />} />
         <Route path="estado-actual" element={<EstadoActual />} />
         <Route path="importar-clientes" element={<ImportarClientes />} />
       </Route>
@@ -131,6 +136,7 @@ function App() {
                 <Route path="/b2b/catalogo" element={<CatalogoCorporativo />} />
                 <Route path="/personalizar" element={<PersonalizacionFlow />} />
                 <Route path="/personalizar/aprobar" element={<PersonalizacionAprobacion />} />
+                <Route path="/pedido-confirmado" element={<PedidoConfirmado />} />
                 <Route path="/soporte" element={<SoportePublico />} />
                 <Route path="/seguimiento" element={<SeguimientoPedido />} />
                 <Route path="/catalogo-visual" element={<CatalogoVisual />} />

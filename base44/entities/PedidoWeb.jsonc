@@ -76,12 +76,21 @@
       "title": "Medio de Pago",
       "enum": [
         "WebPay",
+        "Stripe",
         "Transferencia",
-        "D\u00e9bito",
-        "Cr\u00e9dito",
+        "Débito",
+        "Crédito",
         "MercadoPago",
         "Efectivo"
       ]
+    },
+    "stripe_session_id": {
+      "type": "string",
+      "title": "Stripe Session ID"
+    },
+    "stripe_payment_intent": {
+      "type": "string",
+      "title": "Stripe Payment Intent"
     },
     "estado": {
       "type": "string",
