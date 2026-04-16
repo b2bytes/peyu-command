@@ -46,18 +46,29 @@ export default function AsistenteChat() {
     setLoading(true);
 
     try {
-      if (!conversationId) await initConversation();
-      if (conversationId) {
+      if (!conversationId) {
+        const conv = await base44.agents.createConversation({
+          agent_name: 'asistente_compras',
+          metadata: { context: 'landing' }
+        });
+        setConversationId(conv.id);
+        await base44.agents.addMessage(conv, { role: 'user', content: userMsg });
+        const unsubscribe = base44.agents.subscribeToConversation(conv.id, (data) => {
+          setMessages(data.messages || []);
+          setLoading(false);
+        });
+        setTimeout(() => unsubscribe(), 30000);
+      } else {
         const conv = await base44.agents.getConversation(conversationId);
         await base44.agents.addMessage(conv, { role: 'user', content: userMsg });
         const unsubscribe = base44.agents.subscribeToConversation(conversationId, (data) => {
           setMessages(data.messages || []);
+          setLoading(false);
         });
-        setTimeout(() => unsubscribe(), 15000);
+        setTimeout(() => unsubscribe(), 30000);
       }
     } catch (e) {
-      console.error('Error:', e);
-    } finally {
+      console.error('Error enviando mensaje:', e);
       setLoading(false);
     }
   };
