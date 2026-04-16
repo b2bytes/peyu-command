@@ -69,7 +69,7 @@ export default function ShopLanding() {
       let convId = conversationId;
       if (!convId) {
         const conv = await base44.agents.createConversation({
-          agent_name: 'peyu',
+          agent_name: 'asistente_compras',
           metadata: { context: 'landing', timestamp: new Date().toISOString() }
         });
         convId = conv.id;
@@ -128,7 +128,7 @@ export default function ShopLanding() {
     if (!conversationId) {
       try {
         const conv = await base44.agents.createConversation({
-          agent_name: 'peyu',
+          agent_name: 'asistente_compras',
           metadata: { context: 'landing', occasion: ocasion.id, timestamp: new Date().toISOString() }
         });
         setConversationId(conv.id);
