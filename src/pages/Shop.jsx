@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { getProductImage } from '@/utils/productImages';
 import { Search, ShoppingCart, Star } from 'lucide-react';
 import PEYULogo from '@/components/PEYULogo';
 
@@ -13,23 +14,6 @@ export default function Shop() {
   const [selectedCategory, setSelectedCategory] = useState('Todos');
   const [carrito, setCarrito] = useState(JSON.parse(localStorage.getItem('carrito') || '[]'));
   const [agregandoId, setAgregandoId] = useState(null);
-
-  const getProductImage = (producto) => {
-    // Si el producto tiene imagen_url, usarla
-    if (producto.imagen_url) {
-      return producto.imagen_url;
-    }
-
-    // Fallback a imagen por defecto según categoría
-    const defaultByCategory = {
-      'Escritorio': 'https://media.base44.com/images/public/69d99b9d61f699701129c103/5085b8b77_WhatsAppImage2026-03-23at51806PM2.jpg',
-      'Hogar': 'https://media.base44.com/images/public/69d99b9d61f699701129c103/355ca531a_sopooll1.jpg',
-      'Entretenimiento': 'https://media.base44.com/images/public/69d99b9d61f699701129c103/da02d09c2_kitclassssprro4.jpg',
-      'Corporativo': 'https://media.base44.com/images/public/69d99b9d61f699701129c103/b5b3cf211_kitclassssprro2.jpg',
-    };
-    
-    return defaultByCategory[producto.categoria] || 'https://images.unsplash.com/photo-1578432291840-8d3a3a016e4d?w=600&h=600&fit=crop';
-  };
 
   const categorias = ['Todos', 'Navidad', 'Patrias', 'Año Nuevo', 'Día del Trabajador', 'Día de la Secretaria', 'Día del Profesor', 'Bienvenida', 'Día de la Mujer', 'Día de la Madre'];
 
@@ -199,7 +183,7 @@ export default function Shop() {
                 {/* Product Image */}
                 <div className="relative w-full aspect-square bg-gradient-to-br from-yellow-300/50 via-orange-400/40 to-red-500/30 flex items-center justify-center overflow-hidden">
                   <img 
-                    src={getProductImage(p)}
+                    src={getProductImage(p.sku, p.categoria)}
                     alt={p.nombre}
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                     loading="lazy"
