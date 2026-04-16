@@ -77,46 +77,34 @@ export default function ShopLanding() {
       }
       if (convId) {
         const conv = await base44.agents.getConversation(convId);
+        const initialMsgCount = conv.messages.length;
+
         await base44.agents.addMessage(conv, { role: 'user', content: text });
-        
+
         let unsubscribe = null;
-        let hasReceivedAssistantMsg = false;
-        let inactivityTimeout = null;
-        
-        // Limpiar timeout de inactividad anterior
-        const resetInactivityTimer = () => {
-          if (inactivityTimeout) clearTimeout(inactivityTimeout);
-          inactivityTimeout = setTimeout(() => {
-            if (unsubscribe) unsubscribe();
-            setLoading(false);
-          }, 8000); // 8 segundos de inactividad
-        };
-        
+        let finished = false;
+
         unsubscribe = base44.agents.subscribeToConversation(convId, (data) => {
           const messages = data.messages || [];
           setMessages(messages);
-          
-          // Si recibimos respuesta del asistente
-          const hasAssistantResponse = messages.some(msg => msg.role === 'assistant');
-          if (hasAssistantResponse && !hasReceivedAssistantMsg) {
-            hasReceivedAssistantMsg = true;
-          }
-          
-          // Resetear timer de inactividad cada vez que recibimos datos
-          if (hasReceivedAssistantMsg) {
-            resetInactivityTimer();
+
+          // Si el agente respondió (hay más mensajes que antes)
+          const hasNewAssistantMsg = messages.length > initialMsgCount + 1;
+          if (hasNewAssistantMsg && !finished) {
+            finished = true;
+            if (unsubscribe) unsubscribe();
+            setLoading(false);
           }
         });
-        
-        // Inicializar timer de inactividad
-        resetInactivityTimer();
-        
-        // Máximo timeout de 45 segundos
-        setTimeout(() => {
-          if (unsubscribe) unsubscribe();
-          if (inactivityTimeout) clearTimeout(inactivityTimeout);
-          setLoading(false);
-        }, 45000);
+
+        // Timeout de 30 segundos máximo
+        const maxTimeout = setTimeout(() => {
+          if (!finished) {
+            finished = true;
+            if (unsubscribe) unsubscribe();
+            setLoading(false);
+          }
+        }, 30000);
       }
     } catch (e) {
       console.error('Error:', e);
