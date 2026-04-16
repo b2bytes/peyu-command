@@ -77,7 +77,7 @@ export default function ShopLanding() {
       }
       if (convId) {
         const conv = await base44.agents.getConversation(convId);
-        const initialMsgCount = conv.messages.length;
+        const countBeforeAdd = conv.messages.length;
 
         await base44.agents.addMessage(conv, { role: 'user', content: text });
 
@@ -88,23 +88,23 @@ export default function ShopLanding() {
           const messages = data.messages || [];
           setMessages(messages);
 
-          // Si el agente respondió (hay más mensajes que antes)
-          const hasNewAssistantMsg = messages.length > initialMsgCount + 1;
-          if (hasNewAssistantMsg && !finished) {
+          // Si hay un mensaje nuevo del asistente (más de countBeforeAdd + 1)
+          const lastMsg = messages[messages.length - 1];
+          if (lastMsg && lastMsg.role === 'assistant' && !finished) {
             finished = true;
             if (unsubscribe) unsubscribe();
             setLoading(false);
           }
         });
 
-        // Timeout de 30 segundos máximo
-        const maxTimeout = setTimeout(() => {
+        // Timeout de 25 segundos máximo
+        setTimeout(() => {
           if (!finished) {
             finished = true;
             if (unsubscribe) unsubscribe();
             setLoading(false);
           }
-        }, 30000);
+        }, 25000);
       }
     } catch (e) {
       console.error('Error:', e);
