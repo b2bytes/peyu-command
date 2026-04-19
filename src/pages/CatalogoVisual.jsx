@@ -1,19 +1,9 @@
-import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, ShoppingCart, Building2, Grid3x3, Home, HelpCircle, Heart, Recycle, Star, Zap } from 'lucide-react';
-import InstagramGallery from '@/components/InstagramGallery';
+import { ArrowRight, ShoppingCart, Building2, Grid3x3, Recycle, Star, Zap } from 'lucide-react';
 import MobileMenu from '@/components/MobileMenu';
-import WhatsAppFloat from '@/components/WhatsAppFloat';
+import InstagramGallery from '@/components/InstagramGallery';
 
-const MENU_ITEMS = [
-  { href: '/', label: 'Inicio', icon: Home },
-  { href: '/shop', label: 'Tienda', icon: ShoppingCart },
-  { href: '/catalogo-visual', label: 'Catálogo', icon: Grid3x3 },
-  { href: '/b2b/contacto', label: 'B2B', icon: Building2 },
-  { href: '/nosotros', label: 'Nosotros', icon: Heart },
-  { href: '/soporte', label: 'Soporte', icon: HelpCircle },
-];
 
 const BADGES = [
   { icon: '♻️', label: '100% Reciclado' },
@@ -29,53 +19,9 @@ const STATS = [
   { value: '0 días', label: 'envío express disponible', icon: Zap },
 ];
 
-const bgStyle = {
-  backgroundImage: `linear-gradient(135deg, rgba(15, 23, 42, 0.82) 0%, rgba(15, 78, 137, 0.75) 50%, rgba(15, 23, 42, 0.82) 100%), url('https://media.base44.com/images/public/69d99b9d61f699701129c103/6935b8ac0_image.png')`,
-  backgroundSize: 'cover',
-  backgroundPosition: 'center',
-  backgroundAttachment: 'fixed',
-};
-
 export default function CatalogoVisual() {
-  const [sidebarExpanded, setSidebarExpanded] = useState(false);
-
   return (
-    <div className="flex min-h-screen w-full font-inter" style={bgStyle}>
-      <WhatsAppFloat />
-
-      {/* SIDEBAR macOS style */}
-      <div
-        className={`hidden lg:flex flex-col backdrop-blur-md border-r border-white/20 transition-all duration-300 overflow-hidden flex-shrink-0 sticky top-0 h-screen ${sidebarExpanded ? 'w-48' : 'w-16'}`}
-        onMouseEnter={() => setSidebarExpanded(true)}
-        onMouseLeave={() => setSidebarExpanded(false)}
-        style={{ background: 'rgba(15,23,42,0.5)' }}
-      >
-        <div className="bg-white/5 border-b border-white/10 px-3 py-2.5 flex items-center gap-2 flex-shrink-0">
-          <div className="flex gap-1.5">
-            <div className="w-2.5 h-2.5 rounded-full bg-red-500 shadow" />
-            <div className="w-2.5 h-2.5 rounded-full bg-yellow-500 shadow" />
-            <div className="w-2.5 h-2.5 rounded-full bg-green-500 shadow" />
-          </div>
-          {sidebarExpanded && <span className="text-xs text-white/50 ml-auto font-medium">PEYU</span>}
-        </div>
-        <div className="flex flex-col items-center gap-1 px-2 py-4 flex-1">
-          {MENU_ITEMS.map((item) => {
-            const Icon = item.icon;
-            const isActive = item.href === '/catalogo-visual';
-            return (
-              <Link key={item.href} to={item.href}
-                className={`flex items-center text-white transition-all rounded-lg ${sidebarExpanded ? 'w-full px-3 py-2.5 justify-start gap-3' : 'w-12 h-12 justify-center'} ${isActive ? 'bg-teal-500/30 border border-teal-500/50' : 'hover:bg-white/20'}`}
-                title={item.label}>
-                <Icon className={`flex-shrink-0 ${sidebarExpanded ? 'w-4 h-4' : 'w-6 h-6'}`} />
-                {sidebarExpanded && <span className="text-xs font-medium">{item.label}</span>}
-              </Link>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* MAIN */}
-      <div className="flex-1 overflow-auto">
+    <div className="flex-1 overflow-auto font-inter">
 
         {/* Header */}
         <div className="bg-gradient-to-r from-teal-500/30 to-cyan-500/30 border-b border-white/20 px-4 sm:px-6 py-3 flex items-center justify-between sticky top-0 z-40 backdrop-blur-md">
@@ -197,7 +143,6 @@ export default function CatalogoVisual() {
             <p>© 2026 PEYU Chile. Todos los derechos reservados.</p>
           </div>
         </footer>
-      </div>
     </div>
   );
 }

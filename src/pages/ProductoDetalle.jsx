@@ -7,11 +7,11 @@ import { getProductImage, SKU_IMAGES } from '@/utils/productImages';
 import {
   ArrowLeft, Check, Building2, ShoppingCart, Shield, Truck, Zap,
   Star, Recycle, Sparkles, ChevronRight, Heart, Share2,
-  RotateCcw, BadgeCheck, Copy, X, Package, Home, Grid3x3, HelpCircle
+  RotateCcw, BadgeCheck, Copy, X
 } from 'lucide-react';
 import WhatsAppWidget from '@/components/WhatsAppWidget';
 import AsistenteChat from '@/components/AsistenteChat';
-import MobileMenu from '@/components/MobileMenu';
+
 
 const EMOJI_MAP = { 'Escritorio': '🖥️', 'Hogar': '🌱', 'Entretenimiento': '🎲', 'Corporativo': '🎁', 'Carcasas B2C': '📱' };
 
@@ -96,21 +96,9 @@ function getPrecioVolumen(producto, cantidad) {
   return null;
 }
 
-const MENU_ITEMS = [
-  { href: '/', label: 'Inicio', icon: Home },
-  { href: '/shop', label: 'Tienda', icon: ShoppingCart },
-  { href: '/catalogo-visual', label: 'Catálogo', icon: Grid3x3 },
-  { href: '/b2b/contacto', label: 'B2B', icon: Building2 },
-  { href: '/nosotros', label: 'Nosotros', icon: Heart },
-  { href: '/soporte', label: 'Soporte', icon: HelpCircle },
-];
 
-const bgStyle = {
-  backgroundImage: `linear-gradient(135deg, rgba(15, 23, 42, 0.88) 0%, rgba(15, 78, 137, 0.80) 50%, rgba(15, 23, 42, 0.88) 100%), url('https://media.base44.com/images/public/69d99b9d61f699701129c103/6935b8ac0_image.png')`,
-  backgroundSize: 'cover',
-  backgroundPosition: 'center',
-  backgroundAttachment: 'fixed',
-};
+
+
 
 export default function ProductoDetalle() {
   const { id } = useParams();
@@ -129,8 +117,6 @@ export default function ProductoDetalle() {
   const [shareMsg, setShareMsg] = useState('');
   const [showB2BTable, setShowB2BTable] = useState(false);
   const [tabActiva, setTabActiva] = useState('descripcion');
-  const [sidebarExpanded, setSidebarExpanded] = useState(false);
-
   useEffect(() => {
     base44.entities.Producto.list().then(data => {
       const prod = data.find(p => p.id === id);
@@ -198,39 +184,7 @@ export default function ProductoDetalle() {
   const colores = getColores(producto);
 
   return (
-    <div className="flex min-h-screen w-full font-inter" style={bgStyle}>
-
-      {/* SIDEBAR macOS */}
-      <div
-        className={`hidden lg:flex flex-col backdrop-blur-md border-r border-white/20 transition-all duration-300 overflow-hidden flex-shrink-0 sticky top-0 h-screen ${sidebarExpanded ? 'w-48' : 'w-16'}`}
-        onMouseEnter={() => setSidebarExpanded(true)}
-        onMouseLeave={() => setSidebarExpanded(false)}
-        style={{ background: 'rgba(15,23,42,0.5)' }}
-      >
-        <div className="bg-white/5 border-b border-white/10 px-3 py-2.5 flex items-center gap-2 flex-shrink-0">
-          <div className="flex gap-1.5">
-            <div className="w-2.5 h-2.5 rounded-full bg-red-500" />
-            <div className="w-2.5 h-2.5 rounded-full bg-yellow-500" />
-            <div className="w-2.5 h-2.5 rounded-full bg-green-500" />
-          </div>
-          {sidebarExpanded && <span className="text-xs text-white/50 ml-auto">PEYU</span>}
-        </div>
-        <div className="flex flex-col items-center gap-1 px-2 py-4 flex-1">
-          {MENU_ITEMS.map((item) => {
-            const Icon = item.icon;
-            return (
-              <Link key={item.href} to={item.href}
-                className={`flex items-center text-white transition-all rounded-lg hover:bg-white/20 ${sidebarExpanded ? 'w-full px-3 py-2.5 justify-start gap-3' : 'w-12 h-12 justify-center'}`}>
-                <Icon className={`flex-shrink-0 ${sidebarExpanded ? 'w-4 h-4' : 'w-6 h-6'}`} />
-                {sidebarExpanded && <span className="text-xs font-medium">{item.label}</span>}
-              </Link>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* MAIN */}
-      <div className="flex-1 overflow-auto">
+    <div className="flex-1 overflow-auto font-inter">
 
         {/* STICKY CTA BAR */}
         <div className={`fixed top-0 left-0 right-0 z-[100] transition-all duration-300 ${showStickyBar ? 'translate-y-0' : '-translate-y-full'}`}>
@@ -261,7 +215,6 @@ export default function ProductoDetalle() {
         {/* HEADER */}
         <div className="bg-gradient-to-r from-teal-500/30 to-cyan-500/30 border-b border-white/20 px-4 sm:px-6 py-3 flex items-center justify-between sticky top-0 z-50 backdrop-blur-md">
           <div className="flex items-center gap-3">
-            <MobileMenu items={MENU_ITEMS} />
             <button onClick={() => navigate(-1)} className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center hover:bg-white/30 transition-colors">
               <ArrowLeft className="w-4 h-4 text-white" />
             </button>
@@ -815,7 +768,6 @@ export default function ProductoDetalle() {
 
         <WhatsAppWidget context="producto" productName={producto.nombre} sku={producto.sku} />
         <AsistenteChat />
-      </div>
     </div>
   );
 }
