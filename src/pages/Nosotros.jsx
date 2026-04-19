@@ -1,8 +1,17 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Leaf, Recycle, Zap, Globe, Heart, Award, Users, Factory } from 'lucide-react';
+import { ArrowLeft, Leaf, Recycle, Zap, Globe, Heart, Award, Users, Factory, Home, ShoppingCart, Grid3x3, Building2, HelpCircle } from 'lucide-react';
 import MobileMenu from '@/components/MobileMenu';
+
+const MENU_ITEMS = [
+  { href: '/', label: 'Inicio', icon: Home },
+  { href: '/shop', label: 'Tienda', icon: ShoppingCart },
+  { href: '/catalogo-visual', label: 'Catálogo', icon: Grid3x3 },
+  { href: '/b2b/contacto', label: 'B2B', icon: Building2 },
+  { href: '/nosotros', label: 'Nosotros', icon: Heart },
+  { href: '/soporte', label: 'Soporte', icon: HelpCircle },
+];
 
 const VALORES = [
   { icon: Recycle, color: '#2dd4bf', title: 'Economía Circular', desc: 'Transformamos residuos plásticos post-consumo en productos de alta calidad. Cada producto equivale a sacar plástico del vertedero.' },

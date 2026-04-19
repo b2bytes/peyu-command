@@ -3,8 +3,17 @@ import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { ChevronDown, ChevronRight, MessageCircle, Search, CheckCircle2, ArrowLeft, HelpCircle, Send } from 'lucide-react';
+import { ChevronDown, ChevronRight, MessageCircle, Search, CheckCircle2, ArrowLeft, HelpCircle, Send, Home, ShoppingCart, Grid3x3, Building2, Heart } from 'lucide-react';
 import MobileMenu from '@/components/MobileMenu';
+
+const MENU_ITEMS = [
+  { href: '/', label: 'Inicio', icon: Home },
+  { href: '/shop', label: 'Tienda', icon: ShoppingCart },
+  { href: '/catalogo-visual', label: 'Catálogo', icon: Grid3x3 },
+  { href: '/b2b/contacto', label: 'B2B', icon: Building2 },
+  { href: '/nosotros', label: 'Nosotros', icon: Heart },
+  { href: '/soporte', label: 'Soporte', icon: HelpCircle },
+];
 
 const FAQS = [
   {

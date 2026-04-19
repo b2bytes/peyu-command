@@ -173,7 +173,7 @@ export default function ProductoDetalle() {
   const galeria = [imgPrincipal, imgAlterna, imgPrincipal, imgAlterna];
 
   if (!producto) return (
-    <div className="min-h-screen flex items-center justify-center" style={bgStyle}>
+    <div className="min-h-screen flex items-center justify-center">
       <div className="text-center space-y-4">
         <div className="w-12 h-12 border-4 border-teal-400/30 border-t-teal-400 rounded-full animate-spin mx-auto" />
         <p className="text-white/60 text-sm font-medium">Cargando producto...</p>

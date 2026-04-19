@@ -1,7 +1,16 @@
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, ShoppingCart, Building2, Grid3x3, Recycle, Star, Zap } from 'lucide-react';
+import { ArrowRight, ShoppingCart, Building2, Grid3x3, Recycle, Star, Zap, Home, HelpCircle, Heart } from 'lucide-react';
 import MobileMenu from '@/components/MobileMenu';
+
+const MENU_ITEMS = [
+  { href: '/', label: 'Inicio', icon: Home },
+  { href: '/shop', label: 'Tienda', icon: ShoppingCart },
+  { href: '/catalogo-visual', label: 'Catálogo', icon: Grid3x3 },
+  { href: '/b2b/contacto', label: 'B2B', icon: Building2 },
+  { href: '/nosotros', label: 'Nosotros', icon: Heart },
+  { href: '/soporte', label: 'Soporte', icon: HelpCircle },
+];
 import InstagramGallery from '@/components/InstagramGallery';
 
 
