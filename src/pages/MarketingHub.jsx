@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react';
 import { base44 } from '@/api/base44Client';
-import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { Sparkles, MessageSquare, Calendar, Target, Image as ImageIcon, Zap } from 'lucide-react';
+import { Sparkles, MessageSquare, Calendar, Target, Zap, Plug } from 'lucide-react';
+import { toast } from 'sonner';
 import MarketingHubChat from '@/components/marketing/MarketingHubChat';
 import MarketingHubStats from '@/components/marketing/MarketingHubStats';
 import ContentPostsList from '@/components/marketing/ContentPostsList';
 import AdCampaignsList from '@/components/marketing/AdCampaignsList';
+import ChannelConnections from '@/components/marketing/ChannelConnections';
 
 export default function MarketingHub() {
   const [posts, setPosts] = useState([]);
@@ -14,6 +15,8 @@ export default function MarketingHub() {
   const [campanas, setCampanas] = useState([]);
   const [assets, setAssets] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [showConnections, setShowConnections] = useState(false);
+  const [connections] = useState({}); // se llenará en Fase 2 con OAuth
 
   const loadAll = async () => {
     const [p, cal, camp, ass] = await Promise.all([
@@ -28,12 +31,17 @@ export default function MarketingHub() {
 
   useEffect(() => {
     loadAll();
-    // Real-time: refresca cuando los agentes crean registros
     const unsubP = base44.entities.ContentPost.subscribe(() => loadAll());
     const unsubC = base44.entities.AdCampaign.subscribe(() => loadAll());
     const unsubCal = base44.entities.ContentCalendar.subscribe(() => loadAll());
     return () => { unsubP(); unsubC(); unsubCal(); };
   }, []);
+
+  const handleConnect = (channel) => {
+    toast.info(`Conexión a ${channel.name} disponible en Fase 2 (mañana).`, {
+      description: 'Se abrirá OAuth oficial del proveedor. Por ahora la página ya está preparada.',
+    });
+  };
 
   return (
     <div className="p-6 space-y-6 max-w-[1600px] mx-auto">
@@ -47,29 +55,36 @@ export default function MarketingHub() {
             <h1 className="font-poppins font-bold text-2xl text-gray-900">Marketing Hub</h1>
             <span className="text-[10px] font-bold bg-gradient-to-r from-purple-500 to-pink-500 text-white px-2 py-0.5 rounded-full">IA</span>
           </div>
-          <p className="text-sm text-gray-500 ml-11">Director IA + 4 agentes especialistas · Fase 1 lista</p>
+          <p className="text-sm text-gray-500 ml-11">Director IA + 4 agentes especialistas orquestados</p>
         </div>
-        <div className="flex items-center gap-2 bg-yellow-50 border border-yellow-200 rounded-xl px-3 py-2 text-xs text-yellow-800">
-          <Zap className="w-4 h-4" />
-          <span>Conexiones reales: Meta · LinkedIn · TikTok · Google Ads (mañana)</span>
-        </div>
+        <button
+          onClick={() => setShowConnections(v => !v)}
+          className="flex items-center gap-2 bg-gray-900 hover:bg-gray-800 text-white rounded-xl px-4 py-2.5 text-sm font-semibold shadow transition-colors">
+          <Plug className="w-4 h-4" />
+          {showConnections ? 'Ocultar conexiones' : 'Conectar canales reales'}
+        </button>
       </div>
+
+      {/* Conexiones de canales (toggle) */}
+      {showConnections && (
+        <ChannelConnections connections={connections} onConnect={handleConnect} />
+      )}
 
       {/* Stats */}
       <MarketingHubStats posts={posts} calendarios={calendarios} campanas={campanas} assets={assets} />
 
-      {/* Main grid: Chat orquestador + Tabs con datos */}
+      {/* Main grid: Chat + Panel lateral — altura fija para evitar que la página entera se mueva */}
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
         {/* Chat orquestador */}
-        <div className="lg:col-span-3">
+        <div className="lg:col-span-3 h-[640px]">
           <MarketingHubChat />
         </div>
 
-        {/* Panel lateral con contenido */}
-        <div className="lg:col-span-2">
-          <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden h-[calc(100vh-200px)] flex flex-col">
+        {/* Panel lateral */}
+        <div className="lg:col-span-2 h-[640px]">
+          <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden h-full flex flex-col">
             <Tabs defaultValue="posts" className="flex flex-col h-full">
-              <TabsList className="grid grid-cols-3 m-3 mb-0">
+              <TabsList className="grid grid-cols-3 m-3 mb-0 flex-shrink-0">
                 <TabsTrigger value="posts" className="text-xs">
                   <MessageSquare className="w-3 h-3 mr-1" /> Posts
                 </TabsTrigger>
@@ -81,7 +96,7 @@ export default function MarketingHub() {
                 </TabsTrigger>
               </TabsList>
 
-              <div className="flex-1 overflow-y-auto p-4">
+              <div className="flex-1 overflow-y-auto p-4 min-h-0">
                 <TabsContent value="posts" className="mt-0">
                   {loading ? <p className="text-sm text-gray-400 text-center py-8">Cargando...</p> : <ContentPostsList posts={posts} />}
                 </TabsContent>
@@ -130,7 +145,7 @@ export default function MarketingHub() {
           </div>
           <div className="bg-white/10 rounded-xl p-3">
             <div className="text-yellow-400 font-bold mb-1">◉ FASE 2 — Mañana</div>
-            <div className="text-gray-300">Conexión OAuth: Meta · LinkedIn · TikTok · Google Ads · GA4</div>
+            <div className="text-gray-300">Conexión OAuth: Meta · LinkedIn · TikTok · Google Ads · GA4 · YouTube · Pinterest</div>
           </div>
           <div className="bg-white/10 rounded-xl p-3">
             <div className="text-gray-400 font-bold mb-1">○ FASE 3 — Esta semana</div>

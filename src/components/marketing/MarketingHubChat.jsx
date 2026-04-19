@@ -38,7 +38,9 @@ export default function MarketingHubChat() {
   }, [conversation?.id]);
 
   useEffect(() => {
-    endRef.current?.scrollIntoView({ behavior: 'smooth' });
+    // Scroll SOLO dentro del contenedor del chat, no de la página entera
+    const container = endRef.current?.parentElement;
+    if (container) container.scrollTop = container.scrollHeight;
   }, [messages]);
 
   const sendMessage = async (text) => {
@@ -53,7 +55,7 @@ export default function MarketingHubChat() {
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-200px)] bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+    <div className="flex flex-col h-full bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
       {/* Header */}
       <div className="border-b border-gray-100 px-5 py-4 bg-gradient-to-r from-purple-50 to-pink-50">
         <div className="flex items-center gap-3">
