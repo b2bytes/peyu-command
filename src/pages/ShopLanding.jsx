@@ -61,28 +61,34 @@ export default function ShopLanding() {
   }, []);
 
   const sendMessage = async (messageText = input) => {
-    const text = (messageText || input).trim();
+    const text = (typeof messageText === 'string' ? messageText : input).trim();
     if (!text || loading) return;
     setInput('');
     setMessages(prev => [...prev, { role: 'user', content: text }]);
     setLoading(true);
 
     try {
+      // Crear conversación si no existe
       let convId = conversationId;
       if (!convId) {
         const conv = await base44.agents.createConversation({
           agent_name: 'asistente_compras',
-          metadata: { context: 'landing', timestamp: new Date().toISOString() }
+          metadata: { context: 'landing' }
         });
         convId = conv.id;
-        setConversationId(conv.id);
+        setConversationId(convId);
       }
 
-      const conv = await base44.agents.getConversation(convId);
-      const prevCount = conv.messages.length;
+      // Obtener conversación actual y registrar cuántos mensajes hay ANTES de enviar
+      const convBefore = await base44.agents.getConversation(convId);
+      const countBefore = (convBefore.messages || []).length;
 
-      await base44.agents.addMessage(conv, { role: 'user', content: text });
+      // Enviar el mensaje del usuario
+      await base44.agents.addMessage(convBefore, { role: 'user', content: text });
 
+      // Suscribirse y esperar que aparezca un mensaje del asistente NUEVO
+      // (más mensajes de los que había antes + el del usuario que acabamos de enviar)
+      const expectedMin = countBefore + 2; // +1 usuario +1 asistente
       let unsubscribe = null;
       let done = false;
 
@@ -95,20 +101,20 @@ export default function ShopLanding() {
 
       unsubscribe = base44.agents.subscribeToConversation(convId, (data) => {
         const msgs = data.messages || [];
-        // Mostrar todos los mensajes incluyendo el del usuario que ya añadimos localmente
         if (msgs.length > 0) setMessages(msgs);
-        // Terminamos cuando hay un mensaje del asistente nuevo (más de prevCount+1)
         const lastMsg = msgs[msgs.length - 1];
-        if (lastMsg && lastMsg.role === 'assistant' && msgs.length > prevCount + 1) {
+        // Terminamos cuando hay suficientes mensajes Y el último es del asistente (no vacío)
+        if (msgs.length >= expectedMin && lastMsg?.role === 'assistant' && lastMsg?.content) {
           finish();
         }
       });
 
-      // Timeout de 30 segundos
-      setTimeout(finish, 30000);
+      // Timeout de seguridad: 45 segundos
+      setTimeout(finish, 45000);
 
     } catch (e) {
       console.error('Error chat:', e);
+      setMessages(prev => [...prev, { role: 'assistant', content: 'Lo siento, hubo un error. Por favor intenta de nuevo o contáctanos por WhatsApp.' }]);
       setLoading(false);
     }
   };
@@ -283,13 +289,13 @@ export default function ShopLanding() {
                   <Input
                     value={input}
                     onChange={e => setInput(e.target.value)}
-                    onKeyPress={e => e.key === 'Enter' && !loading && sendMessage()}
+                    onKeyDown={e => e.key === 'Enter' && !loading && sendMessage(input)}
                     placeholder="¿Qué necesitas?"
                     className="bg-white/20 backdrop-blur-sm border border-white/30 text-white placeholder:text-white/50 text-xs sm:text-sm rounded-full focus:ring-teal-400/50 focus:border-teal-400/50 flex-1 h-10 sm:h-11 px-4 py-2 touch-target disabled:opacity-60 transition-all"
                     disabled={loading}
                   />
                   <Button
-                    onClick={sendMessage}
+                    onClick={() => sendMessage(input)}
                     disabled={loading || !input.trim()}
                     className="bg-gradient-to-r from-teal-500 to-cyan-500 hover:from-teal-600 hover:to-cyan-600 active:from-teal-700 active:to-cyan-700 text-white rounded-full w-10 h-10 sm:w-11 sm:h-11 p-0 flex items-center justify-center flex-shrink-0 touch-target shadow-lg transition-all disabled:opacity-60">
                     <Send className="w-4 h-4" />
