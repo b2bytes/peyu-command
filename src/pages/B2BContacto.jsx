@@ -3,9 +3,10 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { ArrowLeft, MessageCircle, Upload, CheckCircle, Building2, Package, Clock, Zap, Recycle, Star, ShoppingCart, Home, Grid3x3, HelpCircle, Heart, Send } from 'lucide-react';
+import { ArrowLeft, MessageCircle, Upload, CheckCircle, Building2, Package, Clock, Zap, Recycle, Star, ShoppingCart, Home, Grid3x3, HelpCircle, Heart, Send, Image as ImageIcon } from 'lucide-react';
 import MobileMenu from '@/components/MobileMenu';
 import WhatsAppFloat from '@/components/WhatsAppFloat';
+import LogoMockupPreview from '@/components/b2b/LogoMockupPreview';
 
 const MENU_ITEMS = [
   { href: '/', label: 'Inicio', icon: Home },
@@ -278,26 +279,42 @@ export default function B2BContacto() {
                   ))}
                 </div>
 
-                {/* Logo Upload */}
-                <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-white/50 uppercase tracking-wide">Logo o brief (opcional pero recomendado)</label>
-                  <div
-                    className={`border-2 border-dashed rounded-2xl p-8 text-center transition-all cursor-pointer ${archivo ? 'border-teal-400/60 bg-teal-500/10' : 'border-white/20 hover:border-teal-400/40 hover:bg-white/5'}`}
-                    onClick={() => document.getElementById('logo-upload').click()}>
-                    <Upload className={`w-8 h-8 mx-auto mb-3 ${archivo ? 'text-teal-400' : 'text-white/30'}`} />
-                    {archivo ? (
-                      <p className="text-sm text-teal-300 font-semibold">✓ {archivo.name}</p>
-                    ) : (
-                      <>
-                        <p className="text-sm font-medium text-white/70">Arrastra tu archivo o haz clic</p>
-                        <p className="text-xs text-white/40 mt-1">PNG, SVG, PDF, AI, EPS · max 10MB</p>
-                      </>
-                    )}
-                    <input id="logo-upload" type="file" className="hidden"
-                      accept=".png,.svg,.pdf,.jpg,.jpeg,.ai,.eps"
-                      onChange={e => setArchivo(e.target.files[0])} />
+                {/* Logo Upload + Live Mockup */}
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold text-white/50 uppercase tracking-wide flex items-center gap-1.5">
+                      <ImageIcon className="w-3 h-3" /> Logo o brief
+                    </label>
+                    <div
+                      className={`border-2 border-dashed rounded-2xl p-6 text-center transition-all cursor-pointer h-full flex flex-col items-center justify-center min-h-[200px] ${archivo ? 'border-teal-400/60 bg-teal-500/10' : 'border-white/20 hover:border-teal-400/40 hover:bg-white/5'}`}
+                      onClick={() => document.getElementById('logo-upload').click()}>
+                      <Upload className={`w-8 h-8 mb-3 ${archivo ? 'text-teal-400' : 'text-white/30'}`} />
+                      {archivo ? (
+                        <>
+                          <p className="text-sm text-teal-300 font-semibold truncate max-w-full">✓ {archivo.name}</p>
+                          <p className="text-[10px] text-teal-300/60 mt-1">Mockup generándose →</p>
+                          <button type="button" onClick={(e) => { e.stopPropagation(); setArchivo(null); }}
+                            className="mt-2 text-[10px] text-white/50 hover:text-white underline">Cambiar logo</button>
+                        </>
+                      ) : (
+                        <>
+                          <p className="text-sm font-medium text-white/70">Arrastra tu logo o haz clic</p>
+                          <p className="text-xs text-white/40 mt-1">PNG o SVG (recomendado) · max 10MB</p>
+                          <p className="text-[10px] text-teal-300/70 mt-2 font-semibold">Ideal: fondo transparente</p>
+                        </>
+                      )}
+                      <input id="logo-upload" type="file" className="hidden"
+                        accept=".png,.svg,.jpg,.jpeg"
+                        onChange={e => setArchivo(e.target.files[0])} />
+                    </div>
                   </div>
-                  <p className="text-xs text-white/40">Con tu logo generamos un mockup gratuito adjunto a la propuesta.</p>
+
+                  <div>
+                    <label className="text-xs font-semibold text-white/50 uppercase tracking-wide flex items-center gap-1.5 mb-1.5">
+                      <Zap className="w-3 h-3" /> Preview en vivo
+                    </label>
+                    <LogoMockupPreview logoFile={archivo} texto={form.notes ? '' : form.company_name} />
+                  </div>
                 </div>
 
                 {/* Notes */}
