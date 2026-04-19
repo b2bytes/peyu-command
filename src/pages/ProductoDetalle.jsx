@@ -10,6 +10,7 @@ import {
   RotateCcw, BadgeCheck, Copy, X
 } from 'lucide-react';
 import WhatsAppWidget from '@/components/WhatsAppWidget';
+import MockupGenerator from '@/components/MockupGenerator';
 
 
 const COLORES_MARMOLADO = [
@@ -110,6 +111,8 @@ export default function ProductoDetalle() {
   const [shareMsg, setShareMsg] = useState('');
   const [showB2BTable, setShowB2BTable] = useState(false);
   const [tabActiva, setTabActiva] = useState('descripcion');
+  const [mockupOpen, setMockupOpen] = useState(false);
+  const [mockupGenerado, setMockupGenerado] = useState('');
 
   useEffect(() => {
     base44.entities.Producto.list().then(data => {
@@ -508,6 +511,23 @@ export default function ProductoDetalle() {
                       <p className="text-white/30 text-[9px] mt-0.5">Preview del grabado láser</p>
                     </div>
                   )}
+
+                  {/* Mockup IA real */}
+                  <button
+                    type="button"
+                    onClick={() => setMockupOpen(true)}
+                    className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-purple-500/30 to-pink-500/30 hover:from-purple-500/50 hover:to-pink-500/50 border border-purple-400/40 text-white text-xs font-bold rounded-xl py-2.5 transition-all"
+                  >
+                    <Sparkles className="w-3.5 h-3.5 text-yellow-300" />
+                    {mockupGenerado ? 'Regenerar mockup con IA' : 'Probar mi mockup realista con IA'}
+                  </button>
+
+                  {mockupGenerado && (
+                    <div className="rounded-xl overflow-hidden border border-purple-400/40 bg-black/30">
+                      <img src={mockupGenerado} alt="Mockup generado" className="w-full h-auto" />
+                      <p className="text-[10px] text-white/60 text-center py-1.5 bg-purple-500/20">✨ Mockup generado con IA · referencial</p>
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -760,6 +780,17 @@ export default function ProductoDetalle() {
         </div>
 
         <WhatsAppWidget context="producto" productName={producto.nombre} sku={producto.sku} />
+
+        <MockupGenerator
+          open={mockupOpen}
+          onOpenChange={setMockupOpen}
+          productName={producto.nombre}
+          productCategory={producto.categoria}
+          productSku={producto.sku}
+          initialText={personalizacion}
+          initialColor={colores.find(c => c.id === colorSeleccionado)?.label || ''}
+          onGenerated={(url) => setMockupGenerado(url)}
+        />
     </div>
   );
 }

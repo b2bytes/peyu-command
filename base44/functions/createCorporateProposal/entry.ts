@@ -85,6 +85,22 @@ Responde SOLO JSON:
       }
     });
 
+    // Heredar mockups del lead (si se generaron al crear el B2BLead)
+    const leadMockups = Array.isArray(lead.mockup_urls) ? lead.mockup_urls : [];
+
+    // Si el lead no tiene mockup pero tiene logo, generar uno ahora para que entre al PDF
+    let finalMockups = leadMockups;
+    if (finalMockups.length === 0 && (lead.logo_url || lead.company_name)) {
+      try {
+        const first = breakdown[0] || {};
+        const mockupRes = await base44.integrations.Core.GenerateImage({
+          prompt: `Professional corporate gift product mockup for Peyu Chile. Product: "${first.nombre || first.name || first.producto || lead.product_interest || 'Peyu product'}" made of 100% recycled plastic, manufactured in Chile. Clean studio photography, soft white background, marbled recycled plastic texture. ${lead.logo_url ? `Corporate logo applied via UV laser engraving. Professional corporate gift presentation.` : `Laser UV engraved text "${lead.company_name}" clearly visible on the product surface.`} Shot 3/4 view. Premium quality.`,
+          existing_image_urls: lead.logo_url && /\.(png|jpg|jpeg|webp|svg)$/i.test(lead.logo_url.split('?')[0]) ? [lead.logo_url] : undefined,
+        });
+        if (mockupRes?.url) finalMockups = [mockupRes.url];
+      } catch { /* no bloqueante */ }
+    }
+
     // Create proposal entity
     const proposal = await base44.asServiceRole.entities.CorporateProposal.create({
       numero: propNum,
@@ -101,6 +117,7 @@ Responde SOLO JSON:
       anticipo_pct: 50,
       status: 'Borrador',
       auto_generated: true,
+      mockup_urls: finalMockups,
       terms: aiProposal?.terms || 'Anticipo 50% para iniciar producción. Saldo a despacho. Garantía 10 años en productos de plástico reciclado. Fabricación 100% en Chile.',
       production_notes: aiProposal?.production_notes || `Pedido corporativo para ${lead.company_name}. ${hasPersonalization ? 'Requiere personalización láser UV.' : ''} Lead time: ${leadTime} días hábiles.`,
       fecha_envio: new Date().toISOString().split('T')[0],

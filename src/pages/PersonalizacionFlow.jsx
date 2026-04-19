@@ -78,12 +78,20 @@ export default function PersonalizacionFlow() {
       const { file_url } = await base44.integrations.Core.UploadFile({ file: archivo });
       logoUrl = file_url;
     }
-    await base44.entities.PersonalizationJob.create({
+    const job = await base44.entities.PersonalizationJob.create({
       source_type: 'Pedido B2C', product_name: producto?.nombre || '', sku: productoId,
       quantity: 1, laser_required: true, laser_text: texto, logo_url: logoUrl,
       color_producto: color?.label || '', status: 'Pendiente',
       customer_name: nombre, customer_email: email, estimated_minutes: 5,
     });
+    // Generar mockup real con IA en background (no bloquea confirmación)
+    if (job?.id && (logoUrl || texto)) {
+      base44.functions.invoke('generateMockup', {
+        productName: producto?.nombre, productCategory: 'Personalización',
+        sku: productoId, logoUrl, text: texto, color: color?.label,
+        jobId: job.id,
+      }).catch(() => {});
+    }
     if (email) {
       await base44.integrations.Core.SendEmail({
         to: email,

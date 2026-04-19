@@ -113,6 +113,20 @@ export default function B2BContacto() {
     });
     if (leadCreado?.id) {
       base44.functions.invoke('scoreLead', { leadId: leadCreado.id }).catch(() => {});
+      // Generar mockup real con IA y guardarlo en el lead (entra a la propuesta y PDF)
+      if (logoUrl || form.company_name) {
+        base44.functions.invoke('generateMockup', {
+          productName: form.product_interest || 'Producto Peyu',
+          productCategory: 'Corporativo',
+          logoUrl,
+          text: logoUrl ? '' : form.company_name,
+        }).then(res => {
+          const mockupUrl = res?.data?.mockup_url;
+          if (mockupUrl) {
+            base44.entities.B2BLead.update(leadCreado.id, { mockup_urls: [mockupUrl] }).catch(() => {});
+          }
+        }).catch(() => {});
+      }
     }
     setEnviado(true);
     setLoading(false);
