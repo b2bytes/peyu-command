@@ -33,6 +33,7 @@ export default function ShopLanding() {
   const [messages, setMessages] = useState([
     { role: 'assistant', content: '¡Hola! Soy Peyu 🐢. Ayudo a empresas y personas a encontrar el regalo perfecto hecho con plástico 100% reciclado.\n\n¿Buscas regalo para empresa o uso personal?' }
   ]);
+
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [currentProductIndex, setCurrentProductIndex] = useState(0);
@@ -60,61 +61,63 @@ export default function ShopLanding() {
     return () => clearInterval(interval);
   }, []);
 
-  const sendMessage = async (messageText = input) => {
+  const sendMessage = async (messageText) => {
     const text = (typeof messageText === 'string' ? messageText : input).trim();
     if (!text || loading) return;
+
     setInput('');
-    setMessages(prev => [...prev, { role: 'user', content: text }]);
     setLoading(true);
+    setMessages(prev => [...prev, { role: 'user', content: text }]);
 
     try {
-      // Crear conversación si no existe
-      let convId = conversationId;
-      if (!convId) {
-        const conv = await base44.agents.createConversation({
+      // Crear o recuperar conversación
+      let conv;
+      if (!conversationId) {
+        conv = await base44.agents.createConversation({
           agent_name: 'asistente_compras',
           metadata: { context: 'landing' }
         });
-        convId = conv.id;
-        setConversationId(convId);
+        setConversationId(conv.id);
+      } else {
+        conv = await base44.agents.getConversation(conversationId);
       }
 
-      // Obtener conversación actual y registrar cuántos mensajes hay ANTES de enviar
-      const convBefore = await base44.agents.getConversation(convId);
-      const countBefore = (convBefore.messages || []).length;
+      const msgCountBefore = (conv.messages || []).length;
 
-      // Enviar el mensaje del usuario
-      await base44.agents.addMessage(convBefore, { role: 'user', content: text });
+      // Enviar mensaje al agente
+      await base44.agents.addMessage(conv, { role: 'user', content: text });
 
-      // Suscribirse y esperar que aparezca un mensaje del asistente NUEVO
-      // (más mensajes de los que había antes + el del usuario que acabamos de enviar)
-      const expectedMin = countBefore + 2; // +1 usuario +1 asistente
-      let unsubscribe = null;
-      let done = false;
+      // Polling: verificar cada 1.5s si llegó respuesta del agente
+      let attempts = 0;
+      const maxAttempts = 30; // 45 segundos máx
 
-      const finish = () => {
-        if (done) return;
-        done = true;
-        if (unsubscribe) unsubscribe();
-        setLoading(false);
+      const poll = async () => {
+        attempts++;
+        const updated = await base44.agents.getConversation(conv.id);
+        const msgs = (updated.messages || []).filter(m => m.content);
+        const last = msgs[msgs.length - 1];
+
+        // Actualizar mensajes siempre (para mostrar streaming parcial si aplica)
+        if (msgs.length > 0) setMessages(msgs);
+
+        // Respuesta lista: más mensajes que antes, y el último es del asistente
+        if (last?.role === 'assistant' && msgs.length > msgCountBefore + 1) {
+          setLoading(false);
+          return;
+        }
+
+        if (attempts < maxAttempts) {
+          setTimeout(poll, 1500);
+        } else {
+          setLoading(false);
+        }
       };
 
-      unsubscribe = base44.agents.subscribeToConversation(convId, (data) => {
-        const msgs = data.messages || [];
-        if (msgs.length > 0) setMessages(msgs);
-        const lastMsg = msgs[msgs.length - 1];
-        // Terminamos cuando hay suficientes mensajes Y el último es del asistente (no vacío)
-        if (msgs.length >= expectedMin && lastMsg?.role === 'assistant' && lastMsg?.content) {
-          finish();
-        }
-      });
-
-      // Timeout de seguridad: 45 segundos
-      setTimeout(finish, 45000);
+      setTimeout(poll, 1500);
 
     } catch (e) {
       console.error('Error chat:', e);
-      setMessages(prev => [...prev, { role: 'assistant', content: 'Lo siento, hubo un error. Por favor intenta de nuevo o contáctanos por WhatsApp.' }]);
+      setMessages(prev => [...prev, { role: 'assistant', content: '⚠️ Error de conexión. Intenta de nuevo.' }]);
       setLoading(false);
     }
   };
