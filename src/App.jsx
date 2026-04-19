@@ -43,6 +43,7 @@ import Carrito from './pages/Carrito';
 import B2BContacto from './pages/B2BContacto';
 import AdminPropuestas from './pages/AdminPropuestas';
 import B2BPropuesta from './pages/B2BPropuesta';
+import B2BSelfService from './pages/B2BSelfService';
 import CatalogoCorporativo from './pages/CatalogoCorporativo';
 import PersonalizacionFlow from './pages/PersonalizacionFlow';
 import SoportePublico from './pages/SoportePublico';
@@ -139,6 +140,7 @@ function App() {
                 <Route path="/cart" element={<Carrito />} />
                 <Route path="/b2b/contacto" element={<B2BContacto />} />
                 <Route path="/b2b/propuesta" element={<B2BPropuesta />} />
+                <Route path="/b2b/self-service" element={<B2BSelfService />} />
                 <Route path="/b2b/catalogo" element={<CatalogoCorporativo />} />
                 <Route path="/personalizar" element={<PersonalizacionFlow />} />
                 <Route path="/soporte" element={<SoportePublico />} />

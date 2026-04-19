@@ -198,6 +198,18 @@ export default function B2BContacto() {
           {/* Content */}
           <div className="flex-1 max-w-4xl mx-auto w-full px-4 sm:px-6 py-8 space-y-8">
 
+            {/* Self-service CTA */}
+            <Link to="/b2b/self-service">
+              <div className="bg-gradient-to-r from-purple-500/30 to-pink-500/30 border border-purple-400/40 rounded-2xl p-4 flex items-center gap-4 backdrop-blur-sm hover:from-purple-500/40 hover:to-pink-500/40 transition-all cursor-pointer">
+                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center text-2xl flex-shrink-0">⚡</div>
+                <div className="flex-1 min-w-0">
+                  <p className="font-poppins font-bold text-white text-sm">¿Apurado? Genera tu propuesta tú mismo</p>
+                  <p className="text-[11px] text-white/70 mt-0.5">Arma tu pedido, sube tu logo y descarga la propuesta + PDF al instante — sin esperar.</p>
+                </div>
+                <ArrowLeft className="w-5 h-5 text-white rotate-180 flex-shrink-0" />
+              </div>
+            </Link>
+
             {/* Hero */}
             <div className="text-center space-y-4">
               {fromChat && (

@@ -110,14 +110,19 @@ export default function CatalogoCorporativo() {
             100% plástico reciclado · Personalización láser UV gratis desde 10 u. · Fabricado en Chile
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center pt-2">
+            <Link to="/b2b/self-service">
+              <Button size="lg" className="gap-2 bg-gradient-to-r from-teal-500 to-cyan-500 hover:from-teal-600 hover:to-cyan-600 text-white font-bold rounded-lg shadow-xl h-12 px-6">
+                <Zap className="w-5 h-5" /> Genera tu propuesta en 1 min
+              </Button>
+            </Link>
             <Link to="/b2b/contacto">
-              <Button size="lg" className="gap-2 bg-[#0F8B6C] hover:bg-[#0a7558] text-white font-bold rounded-lg shadow-lg h-12 px-6">
-                <Zap className="w-5 h-5" /> Cotización en &lt;24h
+              <Button size="lg" variant="outline" className="gap-2 rounded-lg border-gray-300 text-gray-900 hover:bg-gray-50 h-12 px-6 font-semibold">
+                <Building2 className="w-5 h-5" /> Cotización asistida
               </Button>
             </Link>
             <a href="https://wa.me/56935040242?text=Hola%2C%20me%20interesa%20el%20cat%C3%A1logo%20corporativo%20de%20Peyu%20Chile" target="_blank" rel="noopener noreferrer">
               <Button size="lg" variant="outline" className="gap-2 rounded-lg border-gray-300 text-gray-900 hover:bg-gray-50 h-12 px-6 font-semibold">
-                <MessageCircle className="w-5 h-5" /> WhatsApp Directo
+                <MessageCircle className="w-5 h-5" /> WhatsApp
               </Button>
             </a>
           </div>
