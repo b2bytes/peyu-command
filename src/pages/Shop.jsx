@@ -67,12 +67,7 @@ export default function Shop() {
   };
 
   return (
-    <div className="min-h-screen font-inter" style={{
-      backgroundImage: `linear-gradient(135deg, rgba(15, 23, 42, 0.75) 0%, rgba(15, 78, 137, 0.75) 50%, rgba(15, 23, 42, 0.75) 100%), url('https://media.base44.com/images/public/69d99b9d61f699701129c103/6935b8ac0_image.png')`,
-      backgroundSize: 'cover',
-      backgroundPosition: 'center',
-      backgroundAttachment: 'fixed',
-    }}>
+    <div className="min-h-screen font-inter">
       {/* NAVBAR */}
       <nav className="sticky top-0 z-50 bg-white/10 backdrop-blur-md border-b border-white/20">
         <div className="max-w-7xl mx-auto px-5 py-3 flex items-center justify-between">
