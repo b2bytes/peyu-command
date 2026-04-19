@@ -326,49 +326,47 @@ export default function ShopLanding() {
 
           {/* RIGHT CONTAINER - Product Carousel */}
           <Link to={`/producto/${FEATURED_PRODUCTS[currentProductIndex].id}`} className="hidden lg:block flex-shrink-0">
-            <div className="w-64 bg-gradient-to-br from-teal-600/20 via-cyan-600/10 to-orange-600/10 border border-teal-400/40 rounded-2xl p-4 flex flex-col justify-between shadow-2xl hover:shadow-3xl hover:border-teal-400/60 hover:-translate-y-1 transition-all cursor-pointer group h-full">
+            <div className="w-60 bg-gradient-to-br from-teal-600/20 via-cyan-600/10 to-orange-600/10 border border-teal-400/40 rounded-2xl p-3 flex flex-col gap-2.5 shadow-2xl hover:shadow-3xl hover:border-teal-400/60 hover:-translate-y-1 transition-all cursor-pointer group h-full">
               {(() => {
                 const product = FEATURED_PRODUCTS[currentProductIndex];
                 return (
                   <>
                     {/* Product Image */}
-                    <div className="w-full aspect-square bg-gradient-to-br from-yellow-300/50 via-orange-400/40 to-red-500/30 rounded-xl flex items-center justify-center shadow-xl overflow-hidden group-hover:shadow-2xl transition-all">
+                    <div className="w-full aspect-square bg-gradient-to-br from-yellow-300/50 via-orange-400/40 to-red-500/30 rounded-xl flex items-center justify-center shadow-xl overflow-hidden group-hover:shadow-2xl transition-all flex-shrink-0">
                       <img src={product.imagen} alt={product.nombre} className="w-full h-full object-cover object-center group-hover:scale-110 transition-transform duration-500" loading="lazy" />
                     </div>
 
-                    {/* Rating */}
-                    <div className="space-y-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg p-3">
-                      <div className="flex gap-0.5">
-                        {[...Array(5)].map((_, i) => (
-                          <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400 drop-shadow-lg" />
-                        ))}
+                    {/* Rating + Name + Price — all together */}
+                    <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl p-2.5 space-y-1.5 flex-shrink-0">
+                      {/* Stars + count */}
+                      <div className="flex items-center gap-1.5">
+                        <div className="flex gap-0.5">
+                          {[...Array(5)].map((_, i) => (
+                            <Star key={i} className="w-3 h-3 fill-yellow-400 text-yellow-400" />
+                          ))}
+                        </div>
+                        <span className="text-yellow-300 font-bold text-xs">{product.rating.toFixed(1)}</span>
+                        <span className="text-white/50 text-[10px]">({product.reviews.toLocaleString()})</span>
                       </div>
-                      <div className="flex items-center justify-between">
-                        <span className="text-yellow-300 font-bold text-sm">⭐ {product.rating.toFixed(1)}</span>
-                        <span className="text-white/60 text-xs">({product.reviews.toLocaleString()})</span>
-                      </div>
-                    </div>
-
-                    {/* Product Details */}
-                    <div className="space-y-2">
-                      <div>
-                        <p className="text-white font-poppins font-bold text-base line-clamp-1 group-hover:text-cyan-300 transition-colors">{product.nombre}</p>
-                        <p className="text-white/70 text-xs mt-1 line-clamp-2 leading-relaxed">{product.description}</p>
-                      </div>
-                      <div className="bg-gradient-to-r from-teal-500/30 to-cyan-500/20 backdrop-blur border border-teal-400/40 rounded-xl p-3 space-y-1">
-                        <p className="text-white/80 text-xs">Precio desde</p>
-                        <p className="text-white font-black text-2xl group-hover:text-teal-300 transition-colors">${product.precio.toLocaleString()}</p>
+                      {/* Name */}
+                      <p className="text-white font-poppins font-bold text-sm leading-tight line-clamp-1 group-hover:text-cyan-300 transition-colors">{product.nombre}</p>
+                      {/* Description */}
+                      <p className="text-white/60 text-[10px] leading-relaxed line-clamp-2">{product.description}</p>
+                      {/* Price */}
+                      <div className="flex items-baseline gap-1.5 pt-0.5 border-t border-white/15">
+                        <span className="text-white/60 text-[10px]">Desde</span>
+                        <span className="text-white font-black text-xl group-hover:text-teal-300 transition-colors">${product.precio.toLocaleString()}</span>
                       </div>
                     </div>
 
                     {/* Carousel Controls */}
-                    <div className="flex gap-2 justify-between items-center mt-1">
+                    <div className="flex gap-2 justify-between items-center flex-shrink-0">
                       <button
                         onClick={(e) => {
                           e.preventDefault();
                           setCurrentProductIndex((prev) => (prev - 1 + FEATURED_PRODUCTS.length) % FEATURED_PRODUCTS.length);
                         }}
-                        className="bg-white/20 hover:bg-teal-500/40 active:bg-teal-600/50 text-white p-2 rounded-lg transition-all touch-target hover:scale-110"
+                        className="bg-white/20 hover:bg-teal-500/40 active:bg-teal-600/50 text-white p-1.5 rounded-lg transition-all hover:scale-110"
                       >
                         <ChevronLeft className="w-4 h-4" />
                       </button>
@@ -391,7 +389,7 @@ export default function ShopLanding() {
                           e.preventDefault();
                           setCurrentProductIndex((prev) => (prev + 1) % FEATURED_PRODUCTS.length);
                         }}
-                        className="bg-white/20 hover:bg-teal-500/40 active:bg-teal-600/50 text-white p-2 rounded-lg transition-all touch-target hover:scale-110"
+                        className="bg-white/20 hover:bg-teal-500/40 active:bg-teal-600/50 text-white p-1.5 rounded-lg transition-all hover:scale-110"
                       >
                         <ChevronRight className="w-4 h-4" />
                       </button>
