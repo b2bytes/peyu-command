@@ -3,7 +3,18 @@ import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { ChevronDown, ChevronRight, MessageCircle, Search, CheckCircle2, ArrowLeft } from 'lucide-react';
+import { ChevronDown, ChevronRight, MessageCircle, Search, CheckCircle2, ArrowLeft, ShoppingCart, Grid3x3, Building2, HelpCircle, Heart, Home, Send } from 'lucide-react';
+import MobileMenu from '@/components/MobileMenu';
+import WhatsAppFloat from '@/components/WhatsAppFloat';
+
+const MENU_ITEMS = [
+  { href: '/', label: 'Inicio', icon: Home },
+  { href: '/shop', label: 'Tienda', icon: ShoppingCart },
+  { href: '/catalogo-visual', label: 'Catálogo', icon: Grid3x3 },
+  { href: '/b2b/contacto', label: 'B2B', icon: Building2 },
+  { href: '/nosotros', label: 'Nosotros', icon: Heart },
+  { href: '/soporte', label: 'Soporte', icon: HelpCircle },
+];
 
 const FAQS = [
   {
@@ -28,7 +39,7 @@ const FAQS = [
     categoria: '♻️ Materiales y Calidad',
     items: [
       { q: '¿De qué están hechos los productos?', a: 'Los productos de escritorio, cachos, maceteros y lámparas están fabricados con plástico 100% reciclado post-consumo (PET, HDPE) en nuestra fábrica en Santiago. Las carcasas de celular son de fibra de trigo compostable.' },
-      { q: '¿Cuál es la garantía de los productos?', a: 'Garantía de 2 años en carcasas de celular. Garantía de 10 años en todos los productos de plástico reciclado (cachos, maceteros, posavasos, lámparas, soportes).' },
+      { q: '¿Cuál es la garantía de los productos?', a: 'Garantía de 2 años en carcasas de celular. Garantía de 10 años en todos los productos de plástico reciclado.' },
       { q: '¿Puedo reciclar nuevamente los productos?', a: 'Sí. Los productos de plástico reciclado son 100% reciclables nuevamente. Te recomendamos depositarlos en tu punto limpio más cercano.' },
     ]
   },
@@ -44,7 +55,7 @@ const FAQS = [
     categoria: '💳 Pagos y Devoluciones',
     items: [
       { q: '¿Qué medios de pago aceptan?', a: 'Aceptamos WebPay (tarjetas de crédito y débito), transferencia bancaria y efectivo en tienda.' },
-      { q: '¿Cómo funciona la política de devoluciones?', a: 'Tienes 30 días desde la compra para devolver el producto en su embalaje original sin usar. El costo de envío de la devolución corre por cuenta del cliente.' },
+      { q: '¿Cómo funciona la política de devoluciones?', a: 'Tienes 30 días desde la compra para devolver el producto en su embalaje original sin usar.' },
       { q: '¿Qué hago si recibí un producto defectuoso?', a: 'Escríbenos a ventas@peyuchile.cl o WhatsApp con fotos del producto y número de pedido. Resolvemos en 48 horas.' },
     ]
   },
@@ -53,25 +64,33 @@ const FAQS = [
 function FAQItem({ item }) {
   const [open, setOpen] = useState(false);
   return (
-    <div className="border-b border-gray-100 last:border-0">
+    <div className="border-b border-white/10 last:border-0">
       <button onClick={() => setOpen(!open)}
-        className="w-full flex items-center justify-between gap-3 py-4 text-left hover:bg-gray-50 px-3 rounded-xl transition-colors">
-        <span className="font-medium text-sm text-gray-800">{item.q}</span>
+        className="w-full flex items-center justify-between gap-3 py-4 text-left hover:bg-white/5 px-3 rounded-xl transition-colors">
+        <span className="font-medium text-sm text-white/80">{item.q}</span>
         {open
-          ? <ChevronDown className="w-4 h-4 text-gray-400 flex-shrink-0" />
-          : <ChevronRight className="w-4 h-4 text-gray-400 flex-shrink-0" />
+          ? <ChevronDown className="w-4 h-4 text-teal-400 flex-shrink-0" />
+          : <ChevronRight className="w-4 h-4 text-white/40 flex-shrink-0" />
         }
       </button>
       {open && (
         <div className="px-3 pb-4">
-          <p className="text-sm text-gray-500 leading-relaxed">{item.a}</p>
+          <p className="text-sm text-white/55 leading-relaxed">{item.a}</p>
         </div>
       )}
     </div>
   );
 }
 
+const bgStyle = {
+  backgroundImage: `linear-gradient(135deg, rgba(15, 23, 42, 0.82) 0%, rgba(15, 78, 137, 0.75) 50%, rgba(15, 23, 42, 0.82) 100%), url('https://media.base44.com/images/public/69d99b9d61f699701129c103/6935b8ac0_image.png')`,
+  backgroundSize: 'cover',
+  backgroundPosition: 'center',
+  backgroundAttachment: 'fixed',
+};
+
 export default function SoportePublico() {
+  const [sidebarExpanded, setSidebarExpanded] = useState(false);
   const [search, setSearch] = useState('');
   const [ticketForm, setTicketForm] = useState({ nombre: '', email: '', mensaje: '', tipo: 'Pregunta General' });
   const [enviado, setEnviado] = useState(false);
@@ -92,130 +111,174 @@ export default function SoportePublico() {
   };
 
   return (
-    <div className="min-h-screen bg-[#FAFAF8] font-inter">
+    <div className="flex min-h-screen w-full font-inter" style={bgStyle}>
+      <WhatsAppFloat />
 
-      {/* ── NAVBAR ─────────────────────────── */}
-      <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-xl border-b border-black/5 shadow-sm">
-        <div className="max-w-5xl mx-auto px-5 py-3 flex items-center gap-4">
-          <Link to="/" className="group">
-            <div className="w-8 h-8 bg-gray-100 rounded-xl flex items-center justify-center group-hover:bg-gray-200 transition-colors">
-              <ArrowLeft className="w-4 h-4 text-gray-600" />
-            </div>
+      {/* SIDEBAR */}
+      <div
+        className={`hidden lg:flex flex-col backdrop-blur-md border-r border-white/20 transition-all duration-300 overflow-hidden flex-shrink-0 sticky top-0 h-screen ${sidebarExpanded ? 'w-48' : 'w-16'}`}
+        onMouseEnter={() => setSidebarExpanded(true)}
+        onMouseLeave={() => setSidebarExpanded(false)}
+        style={{ background: 'rgba(15,23,42,0.5)' }}
+      >
+        <div className="bg-white/5 border-b border-white/10 px-3 py-2.5 flex items-center gap-2 flex-shrink-0">
+          <div className="flex gap-1.5">
+            <div className="w-2.5 h-2.5 rounded-full bg-red-500" />
+            <div className="w-2.5 h-2.5 rounded-full bg-yellow-500" />
+            <div className="w-2.5 h-2.5 rounded-full bg-green-500" />
+          </div>
+          {sidebarExpanded && <span className="text-xs text-white/50 ml-auto">PEYU</span>}
+        </div>
+        <div className="flex flex-col items-center gap-1 px-2 py-4 flex-1">
+          {MENU_ITEMS.map((item) => {
+            const Icon = item.icon;
+            const isActive = item.href === '/soporte';
+            return (
+              <Link key={item.href} to={item.href}
+                className={`flex items-center text-white transition-all rounded-lg ${sidebarExpanded ? 'w-full px-3 py-2.5 justify-start gap-3' : 'w-12 h-12 justify-center'} ${isActive ? 'bg-teal-500/30 border border-teal-500/50' : 'hover:bg-white/20'}`}>
+                <Icon className={`flex-shrink-0 ${sidebarExpanded ? 'w-4 h-4' : 'w-6 h-6'}`} />
+                {sidebarExpanded && <span className="text-xs font-medium">{item.label}</span>}
+              </Link>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* MAIN */}
+      <div className="flex-1 overflow-auto">
+
+        {/* Header */}
+        <div className="bg-gradient-to-r from-teal-500/30 to-cyan-500/30 border-b border-white/20 px-4 sm:px-6 py-3 flex items-center gap-3 sticky top-0 z-40 backdrop-blur-md">
+          <MobileMenu items={MENU_ITEMS} />
+          <Link to="/" className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center hover:bg-white/30 transition-colors">
+            <ArrowLeft className="w-4 h-4 text-white" />
           </Link>
           <div>
-            <h1 className="font-poppins font-bold text-gray-900">Centro de Ayuda</h1>
-            <p className="text-xs text-gray-400">Peyu Chile · Soporte</p>
-          </div>
-        </div>
-      </nav>
-
-      <div className="max-w-5xl mx-auto px-5 py-10 space-y-8">
-
-        {/* Hero */}
-        <div className="text-center space-y-4">
-          <h2 className="text-3xl md:text-4xl font-poppins font-bold text-gray-900">¿En qué te ayudamos?</h2>
-          <p className="text-gray-400 text-sm">Respuestas a las preguntas más frecuentes sobre Peyu Chile</p>
-          <div className="relative max-w-lg mx-auto">
-            <Search className="w-4 h-4 absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
-            <Input value={search} onChange={e => setSearch(e.target.value)}
-              placeholder="Buscar en preguntas frecuentes..."
-              className="pl-11 h-12 rounded-2xl text-sm bg-white shadow-sm border-gray-200 focus:ring-2 focus:ring-[#0F8B6C]/20" />
+            <p className="font-poppins font-bold text-white text-sm leading-none">Centro de Ayuda</p>
+            <p className="text-[10px] text-white/60 leading-none mt-0.5">Peyu Chile · Soporte</p>
           </div>
         </div>
 
-        {/* FAQs */}
-        <div className="grid md:grid-cols-2 gap-4">
-          {filteredFaqs.map((cat, i) => (
-            <div key={i} className="bg-white border border-gray-100 rounded-3xl p-5 shadow-sm hover:shadow-md transition-shadow">
-              <h3 className="font-poppins font-bold text-gray-900 mb-3">{cat.categoria}</h3>
-              <div>{cat.items.map((item, j) => <FAQItem key={j} item={item} />)}</div>
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 py-10 space-y-8">
+
+          {/* Hero + Search */}
+          <div className="text-center space-y-4">
+            <div className="inline-flex items-center gap-2 bg-teal-500/20 border border-teal-400/40 text-teal-300 px-4 py-1.5 rounded-full text-sm font-semibold backdrop-blur-sm">
+              <HelpCircle className="w-4 h-4" /> Centro de Ayuda
             </div>
-          ))}
-          {filteredFaqs.length === 0 && (
-            <div className="col-span-2 text-center py-16 text-gray-400 bg-white rounded-3xl border border-gray-100">
-              <p className="font-medium">No encontramos resultados para "{search}"</p>
-              <p className="text-sm mt-1">Intenta con otras palabras o contáctanos.</p>
+            <h1 className="text-3xl md:text-5xl font-poppins font-black text-white drop-shadow-lg">¿En qué te <span className="text-cyan-400">ayudamos?</span></h1>
+            <p className="text-white/60 text-sm">Respuestas a las preguntas más frecuentes sobre Peyu Chile</p>
+            <div className="relative max-w-lg mx-auto">
+              <Search className="w-4 h-4 absolute left-4 top-1/2 -translate-y-1/2 text-white/40" />
+              <Input value={search} onChange={e => setSearch(e.target.value)}
+                placeholder="Buscar en preguntas frecuentes..."
+                className="pl-11 h-12 rounded-2xl text-sm bg-white/10 border-white/20 text-white placeholder:text-white/40 focus:bg-white/15 focus:border-teal-400/60 focus:ring-teal-400/30" />
             </div>
-          )}
-        </div>
+          </div>
 
-        {/* Contacto directo */}
-        <div className="grid md:grid-cols-3 gap-4">
-          {[
-            { icon: '💬', title: 'WhatsApp', desc: 'Respuesta en menos de 2 horas', cta: 'Chatear ahora', href: 'https://wa.me/56935040242', color: '#25D366' },
-            { icon: '📧', title: 'Email', desc: 'ventas@peyuchile.cl', cta: 'Enviar email', href: 'mailto:ventas@peyuchile.cl', color: '#0F8B6C' },
-            { icon: '📍', title: 'Tiendas', desc: 'F. Bilbao 3775 · P. Valdivia 6603', cta: 'Ver horarios', href: '/shop', color: '#D96B4D' },
-          ].map((c, i) => (
-            <a key={i} href={c.href} target={c.href.startsWith('http') ? '_blank' : '_self'} rel="noreferrer"
-              className="bg-white border border-gray-100 rounded-3xl p-6 shadow-sm hover:shadow-lg transition-all hover:-translate-y-0.5 text-center block group">
-              <div className="text-4xl mb-3">{c.icon}</div>
-              <h3 className="font-poppins font-bold text-gray-900">{c.title}</h3>
-              <p className="text-xs text-gray-400 mt-1 mb-4 leading-relaxed">{c.desc}</p>
-              <span className="text-xs font-bold px-3 py-1.5 rounded-xl" style={{ color: c.color, background: c.color + '15' }}>{c.cta} →</span>
-            </a>
-          ))}
-        </div>
-
-        {/* Formulario de ticket */}
-        <div className="bg-white border border-gray-100 rounded-3xl p-6 md:p-8 shadow-sm">
-          <h3 className="font-poppins font-bold text-xl text-gray-900 mb-1">¿No encontraste lo que buscas?</h3>
-          <p className="text-sm text-gray-400 mb-6">Envíanos un mensaje y te respondemos en menos de 24 horas.</p>
-
-          {enviado ? (
-            <div className="text-center py-10 space-y-4">
-              <div className="w-16 h-16 bg-green-50 rounded-3xl flex items-center justify-center mx-auto">
-                <CheckCircle2 className="w-8 h-8 text-green-500" />
-              </div>
-              <p className="font-poppins font-bold text-gray-900 text-lg">¡Mensaje enviado!</p>
-              <p className="text-sm text-gray-400 max-w-xs mx-auto">Te responderemos a la brevedad. También puedes escribirnos al WhatsApp para una respuesta más rápida.</p>
-              <a href="https://wa.me/56935040242" target="_blank" rel="noreferrer">
-                <Button className="gap-2 rounded-xl mt-2" style={{ backgroundColor: '#25D366' }}>
-                  <MessageCircle className="w-4 h-4" /> Ir a WhatsApp
-                </Button>
+          {/* Canales rápidos */}
+          <div className="grid md:grid-cols-3 gap-4">
+            {[
+              { icon: '💬', title: 'WhatsApp', desc: 'Respuesta en menos de 2 horas', cta: 'Chatear ahora', href: 'https://wa.me/56935040242', color: '#22c55e' },
+              { icon: '📧', title: 'Email', desc: 'ventas@peyuchile.cl', cta: 'Enviar email', href: 'mailto:ventas@peyuchile.cl', color: '#2dd4bf' },
+              { icon: '📍', title: 'Tiendas', desc: 'F. Bilbao 3775 · P. Valdivia 6603', cta: 'Ver horarios', href: '/shop', color: '#f97316' },
+            ].map((c, i) => (
+              <a key={i} href={c.href} target={c.href.startsWith('http') ? '_blank' : '_self'} rel="noreferrer"
+                className="bg-white/5 backdrop-blur-sm border border-white/15 rounded-3xl p-6 hover:bg-white/10 hover:-translate-y-1 transition-all text-center block group shadow-lg">
+                <div className="text-4xl mb-3">{c.icon}</div>
+                <h3 className="font-poppins font-bold text-white">{c.title}</h3>
+                <p className="text-xs text-white/50 mt-1 mb-4 leading-relaxed">{c.desc}</p>
+                <span className="text-xs font-bold px-3 py-1.5 rounded-xl" style={{ color: c.color, background: c.color + '20' }}>{c.cta} →</span>
               </a>
-            </div>
-          ) : (
-            <div className="grid md:grid-cols-2 gap-4">
-              {[
-                { label: 'Nombre *', key: 'nombre', placeholder: 'Tu nombre' },
-                { label: 'Email *', key: 'email', placeholder: 'tu@email.com', type: 'email' },
-              ].map(f => (
-                <div key={f.key}>
-                  <label className="text-xs font-semibold text-gray-400 block mb-1.5">{f.label}</label>
-                  <Input type={f.type || 'text'} value={ticketForm[f.key]}
-                    onChange={e => setTicketForm({ ...ticketForm, [f.key]: e.target.value })}
-                    placeholder={f.placeholder}
-                    className="h-11 text-sm rounded-xl border-gray-200 bg-gray-50 focus:bg-white" />
-                </div>
-              ))}
+            ))}
+          </div>
+
+          {/* FAQs */}
+          <div className="grid md:grid-cols-2 gap-4">
+            {filteredFaqs.map((cat, i) => (
+              <div key={i} className="bg-white/5 backdrop-blur-md border border-white/15 rounded-3xl p-5 shadow-lg hover:bg-white/8 transition-all">
+                <h3 className="font-poppins font-bold text-white mb-3">{cat.categoria}</h3>
+                <div>{cat.items.map((item, j) => <FAQItem key={j} item={item} />)}</div>
+              </div>
+            ))}
+            {filteredFaqs.length === 0 && (
+              <div className="col-span-2 text-center py-16 text-white/50 bg-white/5 border border-white/15 rounded-3xl backdrop-blur-sm">
+                <p className="font-medium text-white">No encontramos resultados para "{search}"</p>
+                <p className="text-sm mt-1">Intenta con otras palabras o contáctanos.</p>
+              </div>
+            )}
+          </div>
+
+          {/* Ticket Form */}
+          <div className="bg-white/5 backdrop-blur-md border border-white/15 rounded-3xl p-6 md:p-8 shadow-2xl">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-10 h-10 rounded-xl bg-teal-500/20 border border-teal-400/30 flex items-center justify-center">
+                <Send className="w-5 h-5 text-teal-400" />
+              </div>
               <div>
-                <label className="text-xs font-semibold text-gray-400 block mb-1.5">Tipo de consulta</label>
-                <select value={ticketForm.tipo} onChange={e => setTicketForm({ ...ticketForm, tipo: e.target.value })}
-                  className="w-full h-11 border border-gray-200 rounded-xl px-3 text-sm bg-gray-50">
-                  {['Pregunta General', 'Cotización Corporativa', 'Estado Pedido', 'Personalización Tienda', 'Compra Individual'].map(t => (
-                    <option key={t} value={t}>{t}</option>
-                  ))}
-                </select>
+                <h3 className="font-poppins font-bold text-white text-lg">¿No encontraste lo que buscas?</h3>
+                <p className="text-sm text-white/50">Te respondemos en menos de 24 horas.</p>
               </div>
-              <div className="md:col-span-2">
-                <label className="text-xs font-semibold text-gray-400 block mb-1.5">Mensaje *</label>
-                <textarea value={ticketForm.mensaje} onChange={e => setTicketForm({ ...ticketForm, mensaje: e.target.value })}
-                  placeholder="Cuéntanos en qué podemos ayudarte..."
-                  className="w-full border border-gray-200 bg-gray-50 rounded-xl px-3 py-3 text-sm resize-none h-24 focus:outline-none focus:ring-2 focus:ring-[#0F8B6C]/20 focus:bg-white transition" />
-              </div>
-              <div className="md:col-span-2 flex gap-3 flex-wrap">
-                <Button onClick={enviarTicket} disabled={enviando}
-                  className="gap-2 rounded-xl font-semibold" style={{ backgroundColor: '#0F8B6C' }}>
-                  {enviando ? 'Enviando...' : 'Enviar consulta'}
-                </Button>
+            </div>
+
+            {enviado ? (
+              <div className="text-center py-10 space-y-4">
+                <div className="w-16 h-16 bg-teal-500/20 border border-teal-400/30 rounded-3xl flex items-center justify-center mx-auto">
+                  <CheckCircle2 className="w-8 h-8 text-teal-400" />
+                </div>
+                <p className="font-poppins font-bold text-white text-lg">¡Mensaje enviado!</p>
+                <p className="text-sm text-white/50 max-w-xs mx-auto">Te responderemos a la brevedad. También puedes escribirnos al WhatsApp para una respuesta más rápida.</p>
                 <a href="https://wa.me/56935040242" target="_blank" rel="noreferrer">
-                  <Button variant="outline" className="gap-2 rounded-xl">
-                    <MessageCircle className="w-4 h-4" /> WhatsApp (más rápido)
+                  <Button className="gap-2 rounded-xl mt-2 bg-green-500 hover:bg-green-600 text-white border-0">
+                    <MessageCircle className="w-4 h-4" /> Ir a WhatsApp
                   </Button>
                 </a>
               </div>
-            </div>
-          )}
+            ) : (
+              <div className="grid md:grid-cols-2 gap-4">
+                {[
+                  { label: 'Nombre *', key: 'nombre', placeholder: 'Tu nombre' },
+                  { label: 'Email *', key: 'email', placeholder: 'tu@email.com', type: 'email' },
+                ].map(f => (
+                  <div key={f.key}>
+                    <label className="text-xs font-semibold text-white/50 uppercase tracking-wide block mb-1.5">{f.label}</label>
+                    <Input type={f.type || 'text'} value={ticketForm[f.key]}
+                      onChange={e => setTicketForm({ ...ticketForm, [f.key]: e.target.value })}
+                      placeholder={f.placeholder}
+                      className="h-11 text-sm rounded-xl bg-white/10 border-white/20 text-white placeholder:text-white/30 focus:bg-white/15 focus:border-teal-400/60" />
+                  </div>
+                ))}
+                <div>
+                  <label className="text-xs font-semibold text-white/50 uppercase tracking-wide block mb-1.5">Tipo de consulta</label>
+                  <select value={ticketForm.tipo} onChange={e => setTicketForm({ ...ticketForm, tipo: e.target.value })}
+                    className="w-full h-11 border border-white/20 rounded-xl px-3 text-sm bg-white/10 text-white focus:outline-none focus:ring-2 focus:ring-teal-400/30 focus:border-teal-400/60">
+                    {['Pregunta General', 'Cotización Corporativa', 'Estado Pedido', 'Personalización Tienda', 'Compra Individual'].map(t => (
+                      <option key={t} value={t} className="bg-slate-900">{t}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="md:col-span-2">
+                  <label className="text-xs font-semibold text-white/50 uppercase tracking-wide block mb-1.5">Mensaje *</label>
+                  <textarea value={ticketForm.mensaje} onChange={e => setTicketForm({ ...ticketForm, mensaje: e.target.value })}
+                    placeholder="Cuéntanos en qué podemos ayudarte..."
+                    className="w-full border border-white/20 bg-white/10 text-white placeholder:text-white/30 rounded-xl px-4 py-3 text-sm resize-none h-24 focus:outline-none focus:ring-2 focus:ring-teal-400/30 focus:border-teal-400/60 transition" />
+                </div>
+                <div className="md:col-span-2 flex gap-3 flex-wrap">
+                  <Button onClick={enviarTicket} disabled={enviando}
+                    className="gap-2 rounded-xl font-semibold bg-gradient-to-r from-teal-500 to-cyan-500 hover:from-teal-600 hover:to-cyan-600 text-white border-0 shadow-lg shadow-teal-500/20">
+                    {enviando ? 'Enviando...' : 'Enviar consulta'}
+                  </Button>
+                  <a href="https://wa.me/56935040242" target="_blank" rel="noreferrer">
+                    <Button className="gap-2 rounded-xl bg-white/15 hover:bg-white/25 text-white border border-white/30">
+                      <MessageCircle className="w-4 h-4" /> WhatsApp (más rápido)
+                    </Button>
+                  </a>
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div className="pb-8" />
         </div>
       </div>
     </div>

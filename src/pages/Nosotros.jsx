@@ -1,12 +1,24 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Leaf, Recycle, Zap, Globe, Heart, Award, Users, Factory } from 'lucide-react';
+import { ArrowLeft, Leaf, Recycle, Zap, Globe, Heart, Award, Users, Factory, ShoppingCart, Grid3x3, Building2, HelpCircle, Home } from 'lucide-react';
+import MobileMenu from '@/components/MobileMenu';
+import WhatsAppFloat from '@/components/WhatsAppFloat';
+
+const MENU_ITEMS = [
+  { href: '/', label: 'Inicio', icon: Home },
+  { href: '/shop', label: 'Tienda', icon: ShoppingCart },
+  { href: '/catalogo-visual', label: 'Catálogo', icon: Grid3x3 },
+  { href: '/b2b/contacto', label: 'B2B', icon: Building2 },
+  { href: '/nosotros', label: 'Nosotros', icon: Heart },
+  { href: '/soporte', label: 'Soporte', icon: HelpCircle },
+];
 
 const VALORES = [
-  { icon: Recycle, color: '#0F8B6C', title: 'Economía Circular', desc: 'Transformamos residuos plásticos post-consumo en productos de alta calidad. Cada producto equivale a sacar plástico del vertedero.' },
-  { icon: Zap, color: '#D96B4D', title: 'Personalización Láser UV', desc: 'Tecnología de grabado láser UV sin tintas ni químicos. Tu logo permanente, resistente al agua y al tiempo.' },
-  { icon: Award, color: '#4B4F54', title: 'Garantía 10 Años', desc: 'Tan seguros estamos de nuestra calidad que garantizamos 10 años en todos nuestros productos de plástico reciclado.' },
-  { icon: Globe, color: '#0F8B6C', title: 'Fabricación Local', desc: 'Producimos 100% en Chile. Con 6 inyectoras de última generación en nuestra fábrica en Santiago.' },
+  { icon: Recycle, color: '#2dd4bf', title: 'Economía Circular', desc: 'Transformamos residuos plásticos post-consumo en productos de alta calidad. Cada producto equivale a sacar plástico del vertedero.' },
+  { icon: Zap, color: '#f97316', title: 'Personalización Láser UV', desc: 'Tecnología de grabado láser UV sin tintas ni químicos. Tu logo permanente, resistente al agua y al tiempo.' },
+  { icon: Award, color: '#a78bfa', title: 'Garantía 10 Años', desc: 'Tan seguros estamos de nuestra calidad que garantizamos 10 años en todos nuestros productos de plástico reciclado.' },
+  { icon: Globe, color: '#34d399', title: 'Fabricación Local', desc: 'Producimos 100% en Chile. Con 6 inyectoras de última generación en nuestra fábrica en Santiago.' },
 ];
 
 const HITOS = [
@@ -21,217 +33,233 @@ const HITOS = [
 ];
 
 const TEAM = [
-  {
-    nombre: 'Joaquín Donoso',
-    rol: 'Co-founder & CEO',
-    desc: 'Ingeniero industrial. Obsesionado con cerrar el ciclo del plástico. Ex-consultor de Supply Chain que apostó por la economía circular cuando nadie lo hacía.',
-    emoji: '👷',
-  },
-  {
-    nombre: 'Carlos Morales',
-    rol: 'Co-founder & Head of Sales',
-    desc: 'El vendedor de los regalos sostenibles. Convierte cada cotización corporativa en una historia de impacto. Responde WhatsApps más rápido que cualquier bot.',
-    emoji: '📞',
-  },
+  { nombre: 'Joaquín Donoso', rol: 'Co-founder & CEO', desc: 'Ingeniero industrial. Obsesionado con cerrar el ciclo del plástico. Ex-consultor de Supply Chain que apostó por la economía circular cuando nadie lo hacía.', emoji: '👷' },
+  { nombre: 'Carlos Morales', rol: 'Co-founder & Head of Sales', desc: 'El vendedor de los regalos sostenibles. Convierte cada cotización corporativa en una historia de impacto. Responde WhatsApps más rápido que cualquier bot.', emoji: '📞' },
 ];
 
 const IMPACTO = [
-  { valor: '500.000', label: 'kg de plástico reciclado', icon: Recycle, color: '#0F8B6C' },
-  { valor: '50+', label: 'empresas clientes activas', icon: Users, color: '#D96B4D' },
-  { valor: '6', label: 'inyectoras de producción', icon: Factory, color: '#4B4F54' },
-  { valor: '10 años', label: 'de garantía por producto', icon: Award, color: '#0F8B6C' },
+  { valor: '500K+', label: 'kg de plástico reciclado', icon: Recycle },
+  { valor: '50+', label: 'empresas clientes activas', icon: Users },
+  { valor: '6', label: 'inyectoras de producción', icon: Factory },
+  { valor: '10 años', label: 'de garantía por producto', icon: Award },
 ];
 
-export default function Nosotros() {
-  return (
-    <div className="min-h-screen bg-[#FAFAF8] font-inter">
+const bgStyle = {
+  backgroundImage: `linear-gradient(135deg, rgba(15, 23, 42, 0.82) 0%, rgba(15, 78, 137, 0.75) 50%, rgba(15, 23, 42, 0.82) 100%), url('https://media.base44.com/images/public/69d99b9d61f699701129c103/6935b8ac0_image.png')`,
+  backgroundSize: 'cover',
+  backgroundPosition: 'center',
+  backgroundAttachment: 'fixed',
+};
 
-      {/* NAVBAR */}
-      <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-xl border-b border-black/5 shadow-sm">
-        <div className="max-w-5xl mx-auto px-5 py-3 flex items-center gap-4">
-          <Link to="/" className="group">
-            <div className="w-8 h-8 bg-gray-100 rounded-xl flex items-center justify-center group-hover:bg-gray-200 transition-colors">
-              <ArrowLeft className="w-4 h-4 text-gray-600" />
-            </div>
+export default function Nosotros() {
+  const [sidebarExpanded, setSidebarExpanded] = useState(false);
+
+  return (
+    <div className="flex min-h-screen w-full font-inter" style={bgStyle}>
+      <WhatsAppFloat />
+
+      {/* SIDEBAR */}
+      <div
+        className={`hidden lg:flex flex-col backdrop-blur-md border-r border-white/20 transition-all duration-300 overflow-hidden flex-shrink-0 sticky top-0 h-screen ${sidebarExpanded ? 'w-48' : 'w-16'}`}
+        onMouseEnter={() => setSidebarExpanded(true)}
+        onMouseLeave={() => setSidebarExpanded(false)}
+        style={{ background: 'rgba(15,23,42,0.5)' }}
+      >
+        <div className="bg-white/5 border-b border-white/10 px-3 py-2.5 flex items-center gap-2 flex-shrink-0">
+          <div className="flex gap-1.5">
+            <div className="w-2.5 h-2.5 rounded-full bg-red-500" />
+            <div className="w-2.5 h-2.5 rounded-full bg-yellow-500" />
+            <div className="w-2.5 h-2.5 rounded-full bg-green-500" />
+          </div>
+          {sidebarExpanded && <span className="text-xs text-white/50 ml-auto">PEYU</span>}
+        </div>
+        <div className="flex flex-col items-center gap-1 px-2 py-4 flex-1">
+          {MENU_ITEMS.map((item) => {
+            const Icon = item.icon;
+            const isActive = item.href === '/nosotros';
+            return (
+              <Link key={item.href} to={item.href}
+                className={`flex items-center text-white transition-all rounded-lg ${sidebarExpanded ? 'w-full px-3 py-2.5 justify-start gap-3' : 'w-12 h-12 justify-center'} ${isActive ? 'bg-teal-500/30 border border-teal-500/50' : 'hover:bg-white/20'}`}>
+                <Icon className={`flex-shrink-0 ${sidebarExpanded ? 'w-4 h-4' : 'w-6 h-6'}`} />
+                {sidebarExpanded && <span className="text-xs font-medium">{item.label}</span>}
+              </Link>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* MAIN */}
+      <div className="flex-1 overflow-auto">
+
+        {/* Header */}
+        <div className="bg-gradient-to-r from-teal-500/30 to-cyan-500/30 border-b border-white/20 px-4 sm:px-6 py-3 flex items-center gap-3 sticky top-0 z-40 backdrop-blur-md">
+          <MobileMenu items={MENU_ITEMS} />
+          <Link to="/" className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center hover:bg-white/30 transition-colors">
+            <ArrowLeft className="w-4 h-4 text-white" />
           </Link>
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[#0F8B6C] to-[#06634D] flex items-center justify-center shadow text-lg">🐢</div>
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-teal-400 to-cyan-500 flex items-center justify-center text-lg shadow-lg">🐢</div>
             <div>
-              <p className="text-sm font-poppins font-bold text-gray-900 leading-none">PEYU Chile</p>
-              <p className="text-[10px] text-gray-400 leading-none mt-0.5">Nuestra historia</p>
+              <p className="text-sm font-poppins font-bold text-white leading-none">PEYU Chile</p>
+              <p className="text-[10px] text-white/60 leading-none mt-0.5">Nuestra historia</p>
             </div>
           </div>
         </div>
-      </nav>
 
-      {/* HERO */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-teal-900 text-white py-20 px-5">
-        <div className="absolute inset-0 opacity-10" style={{
-          backgroundImage: `url('https://media.base44.com/images/public/69d99b9d61f699701129c103/6935b8ac0_image.png')`,
-          backgroundSize: 'cover', backgroundPosition: 'center'
-        }} />
-        <div className="relative max-w-4xl mx-auto text-center space-y-6">
-          <div className="inline-flex items-center gap-2 bg-teal-500/20 border border-teal-400/30 text-teal-300 px-4 py-1.5 rounded-full text-sm font-semibold">
+        {/* HERO */}
+        <section className="px-4 sm:px-8 py-16 max-w-5xl mx-auto text-center space-y-6">
+          <div className="inline-flex items-center gap-2 bg-teal-500/20 border border-teal-400/40 text-teal-300 px-4 py-1.5 rounded-full text-sm font-semibold backdrop-blur-sm">
             <Heart className="w-4 h-4" /> Hecha en Chile, con propósito
           </div>
-          <h1 className="text-4xl md:text-6xl font-poppins font-black leading-tight">
+          <h1 className="text-4xl md:text-6xl font-poppins font-black leading-tight text-white drop-shadow-lg">
             Desde una terraza<br />
-            <span className="text-teal-400">hasta una fábrica</span><br />
+            <span className="text-cyan-400">hasta una fábrica</span><br />
             con 6 inyectoras
           </h1>
-          <p className="text-white/70 max-w-2xl mx-auto text-lg leading-relaxed">
+          <p className="text-white/70 max-w-2xl mx-auto text-base md:text-lg leading-relaxed">
             Peyu nació de una idea simple: el plástico que botamos puede convertirse en el regalo más bonito de la oficina. Hoy somos la plataforma líder en gifting corporativo sostenible de Chile.
           </p>
-        </div>
-      </section>
+        </section>
 
-      {/* IMPACTO */}
-      <section className="py-16 px-5 bg-white border-b border-gray-100">
-        <div className="max-w-5xl mx-auto">
-          <p className="text-xs font-bold text-[#0F8B6C] uppercase tracking-widest text-center mb-8">Nuestro impacto hasta hoy</p>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        {/* IMPACTO */}
+        <section className="px-4 sm:px-8 pb-12 max-w-5xl mx-auto">
+          <p className="text-xs font-bold text-teal-400 uppercase tracking-widest text-center mb-6">Nuestro impacto hasta hoy</p>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             {IMPACTO.map((item, i) => (
-              <div key={i} className="text-center p-6 rounded-3xl border border-gray-100 bg-white shadow-sm hover:shadow-md transition-shadow">
-                <item.icon className="w-8 h-8 mx-auto mb-3" style={{ color: item.color }} />
-                <p className="font-poppins font-black text-3xl text-gray-900">{item.valor}</p>
-                <p className="text-xs text-gray-400 mt-1 leading-snug">{item.label}</p>
+              <div key={i} className="bg-white/5 backdrop-blur-sm border border-white/15 rounded-2xl p-6 text-center hover:bg-white/10 hover:-translate-y-1 transition-all shadow-lg">
+                <item.icon className="w-7 h-7 mx-auto mb-3 text-teal-400" />
+                <p className="font-poppins font-black text-2xl text-white">{item.valor}</p>
+                <p className="text-xs text-white/50 mt-1 leading-snug">{item.label}</p>
               </div>
             ))}
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* HISTORIA */}
-      <section className="py-16 px-5">
-        <div className="max-w-4xl mx-auto">
-          <p className="text-xs font-bold text-[#0F8B6C] uppercase tracking-widest mb-3">La historia</p>
-          <h2 className="text-3xl font-poppins font-bold text-gray-900 mb-4">Del vertedero al escritorio</h2>
-          <p className="text-gray-500 leading-relaxed mb-8 text-base max-w-2xl">
-            Todo comenzó en 2019, cuando Joaquín, ingeniero industrial con obsesión por la economía circular, 
-            empezó a fundir botellas plásticas recogidas en su barrio en su terraza. El primer prototipo era feo. 
-            Pero la idea era perfecta: <strong className="text-gray-700">el plástico que ya existe es la mejor materia prima del mundo</strong>.
-          </p>
-          <p className="text-gray-500 leading-relaxed mb-8 text-base max-w-2xl">
-            Carlos se sumó con su visión comercial: empresas chilenas necesitan regalos corporativos con propósito ESG. 
-            Juntos crearon Peyu — la tortuga marina que navega lento pero llega siempre.
-          </p>
+        {/* HISTORIA + TIMELINE */}
+        <section className="px-4 sm:px-8 pb-14 max-w-4xl mx-auto">
+          <div className="bg-white/5 backdrop-blur-md border border-white/15 rounded-3xl p-7 md:p-10 shadow-2xl space-y-6">
+            <div>
+              <p className="text-xs font-bold text-teal-400 uppercase tracking-widest mb-2">La historia</p>
+              <h2 className="text-3xl font-poppins font-bold text-white mb-4">Del vertedero al escritorio</h2>
+              <p className="text-white/60 leading-relaxed text-sm max-w-2xl">
+                Todo comenzó en 2019, cuando Joaquín empezó a fundir botellas plásticas de su barrio en la terraza. El primer prototipo era feo. Pero la idea era perfecta: <strong className="text-white">el plástico que ya existe es la mejor materia prima del mundo</strong>.
+              </p>
+              <p className="text-white/60 leading-relaxed text-sm max-w-2xl mt-3">
+                Carlos se sumó con su visión comercial: empresas chilenas necesitan regalos corporativos con propósito ESG. Juntos crearon Peyu — la tortuga marina que navega lento pero llega siempre.
+              </p>
+            </div>
 
-          {/* Timeline */}
-          <div className="relative">
-            <div className="absolute left-4 top-0 bottom-0 w-0.5 bg-gray-100" />
-            <div className="space-y-6">
-              {HITOS.map((h, i) => (
-                <div key={i} className="flex gap-5 relative pl-10">
-                  <div className="absolute left-0 w-8 h-8 rounded-full bg-[#0F8B6C]/10 border-2 border-[#0F8B6C]/30 flex items-center justify-center flex-shrink-0">
-                    <Leaf className="w-3.5 h-3.5 text-[#0F8B6C]" />
+            {/* Timeline */}
+            <div className="relative">
+              <div className="absolute left-4 top-0 bottom-0 w-px bg-white/10" />
+              <div className="space-y-4">
+                {HITOS.map((h, i) => (
+                  <div key={i} className="flex gap-5 relative pl-10">
+                    <div className="absolute left-0 w-8 h-8 rounded-full bg-teal-500/20 border border-teal-400/40 flex items-center justify-center flex-shrink-0">
+                      <Leaf className="w-3.5 h-3.5 text-teal-400" />
+                    </div>
+                    <div className="bg-white/5 border border-white/10 rounded-2xl p-4 flex-1 hover:bg-white/10 transition-all">
+                      <span className="text-xs font-bold text-teal-400 font-mono">{h.año}</span>
+                      <p className="text-sm text-white/80 mt-0.5">{h.evento}</p>
+                    </div>
                   </div>
-                  <div className="bg-white border border-gray-100 rounded-2xl p-4 shadow-sm flex-1 hover:shadow-md transition-shadow">
-                    <span className="text-xs font-bold text-[#0F8B6C] font-mono">{h.año}</span>
-                    <p className="text-sm text-gray-700 mt-0.5">{h.evento}</p>
-                  </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* EQUIPO */}
-      <section className="py-16 px-5 bg-white border-t border-gray-100">
-        <div className="max-w-5xl mx-auto">
-          <p className="text-xs font-bold text-[#0F8B6C] uppercase tracking-widest mb-3">El equipo fundador</p>
-          <h2 className="text-3xl font-poppins font-bold text-gray-900 mb-8">Las personas detrás del plástico</h2>
-          <div className="grid md:grid-cols-2 gap-6">
+        {/* EQUIPO */}
+        <section className="px-4 sm:px-8 pb-14 max-w-5xl mx-auto">
+          <p className="text-xs font-bold text-teal-400 uppercase tracking-widest mb-3 text-center">El equipo fundador</p>
+          <h2 className="text-3xl font-poppins font-bold text-white mb-7 text-center">Las personas detrás del plástico</h2>
+          <div className="grid md:grid-cols-2 gap-5">
             {TEAM.map((p, i) => (
-              <div key={i} className="bg-gradient-to-br from-[#FAFAF8] to-white border border-gray-100 rounded-3xl p-7 shadow-sm hover:shadow-lg transition-all hover:-translate-y-0.5">
-                <div className="w-16 h-16 rounded-3xl bg-gradient-to-br from-[#0F8B6C]/15 to-teal-100 flex items-center justify-center text-3xl mb-4 shadow-sm">
+              <div key={i} className="bg-white/5 backdrop-blur-md border border-white/15 rounded-3xl p-7 hover:bg-white/10 hover:-translate-y-1 transition-all shadow-lg">
+                <div className="w-16 h-16 rounded-3xl bg-gradient-to-br from-teal-500/25 to-cyan-500/20 border border-teal-400/30 flex items-center justify-center text-3xl mb-4 shadow-lg">
                   {p.emoji}
                 </div>
-                <h3 className="font-poppins font-bold text-xl text-gray-900">{p.nombre}</h3>
-                <p className="text-sm font-semibold text-[#0F8B6C] mb-3">{p.rol}</p>
-                <p className="text-sm text-gray-500 leading-relaxed">{p.desc}</p>
+                <h3 className="font-poppins font-bold text-xl text-white">{p.nombre}</h3>
+                <p className="text-sm font-semibold text-teal-400 mb-3">{p.rol}</p>
+                <p className="text-sm text-white/60 leading-relaxed">{p.desc}</p>
               </div>
             ))}
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* VALORES */}
-      <section className="py-16 px-5 bg-gradient-to-br from-slate-900 to-slate-800 text-white">
-        <div className="max-w-5xl mx-auto">
-          <p className="text-xs font-bold text-teal-300 uppercase tracking-widest mb-3">Nuestros valores</p>
-          <h2 className="text-3xl font-poppins font-bold text-white mb-8">Por qué Peyu importa</h2>
-          <div className="grid md:grid-cols-2 gap-5">
+        {/* VALORES */}
+        <section className="px-4 sm:px-8 pb-14 max-w-5xl mx-auto">
+          <p className="text-xs font-bold text-teal-400 uppercase tracking-widest mb-3 text-center">Nuestros valores</p>
+          <h2 className="text-3xl font-poppins font-bold text-white mb-7 text-center">Por qué Peyu importa</h2>
+          <div className="grid md:grid-cols-2 gap-4">
             {VALORES.map((v, i) => (
-              <div key={i} className="bg-white/5 border border-white/10 rounded-2xl p-6 hover:bg-white/8 transition-colors">
-                <div className="w-12 h-12 rounded-2xl flex items-center justify-center mb-4" style={{ background: v.color + '25' }}>
+              <div key={i} className="bg-white/5 backdrop-blur-sm border border-white/15 rounded-2xl p-6 hover:bg-white/10 transition-all shadow-lg">
+                <div className="w-12 h-12 rounded-2xl flex items-center justify-center mb-4" style={{ background: v.color + '20', border: `1px solid ${v.color}30` }}>
                   <v.icon className="w-6 h-6" style={{ color: v.color }} />
                 </div>
                 <h3 className="font-poppins font-bold text-white mb-2">{v.title}</h3>
-                <p className="text-sm text-white/60 leading-relaxed">{v.desc}</p>
+                <p className="text-sm text-white/55 leading-relaxed">{v.desc}</p>
               </div>
             ))}
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* CTA FINAL */}
-      <section className="py-16 px-5 bg-white text-center">
-        <div className="max-w-xl mx-auto space-y-6">
-          <div className="text-5xl">🐢</div>
-          <h2 className="text-3xl font-poppins font-bold text-gray-900">¿Te unes a la misión?</h2>
-          <p className="text-gray-400 leading-relaxed">
-            Cada regalo Peyu es un paso hacia un Chile con menos plástico en el vertedero y más diseño con propósito.
-          </p>
-          <div className="flex gap-3 justify-center flex-wrap">
-            <Link to="/shop">
-              <Button size="lg" className="rounded-2xl gap-2 font-semibold px-8" style={{ backgroundColor: '#0F8B6C' }}>
-                Ver tienda →
-              </Button>
-            </Link>
-            <Link to="/b2b/contacto">
-              <Button size="lg" variant="outline" className="rounded-2xl gap-2 font-semibold px-8">
-                Cotización corporativa
-              </Button>
-            </Link>
+        {/* CTA */}
+        <section className="px-4 sm:px-8 pb-14 max-w-2xl mx-auto text-center space-y-6">
+          <div className="bg-gradient-to-br from-teal-500/20 to-cyan-500/15 backdrop-blur-md border border-teal-400/30 rounded-3xl p-10 shadow-2xl">
+            <div className="text-5xl mb-4">🐢</div>
+            <h2 className="text-3xl font-poppins font-bold text-white mb-3">¿Te unes a la misión?</h2>
+            <p className="text-white/60 leading-relaxed text-sm mb-6">
+              Cada regalo Peyu es un paso hacia un Chile con menos plástico en el vertedero y más diseño con propósito.
+            </p>
+            <div className="flex gap-3 justify-center flex-wrap">
+              <Link to="/shop">
+                <Button size="lg" className="rounded-2xl gap-2 font-bold px-8 bg-gradient-to-r from-teal-500 to-cyan-500 hover:from-teal-600 hover:to-cyan-600 text-white border-0 shadow-xl shadow-teal-500/30">
+                  Ver tienda →
+                </Button>
+              </Link>
+              <Link to="/b2b/contacto">
+                <Button size="lg" className="rounded-2xl font-bold px-8 bg-white/15 hover:bg-white/25 text-white border border-white/30">
+                  Cotización corporativa
+                </Button>
+              </Link>
+            </div>
+            <p className="text-xs text-white/40 mt-5">
+              ventas@peyuchile.cl · <a href="https://wa.me/56935040242" className="text-teal-400 font-semibold hover:underline">+56 9 3504 0242</a>
+            </p>
           </div>
-          <p className="text-xs text-gray-400">
-            ventas@peyuchile.cl · <a href="https://wa.me/56935040242" className="text-[#0F8B6C] font-semibold hover:underline">+56 9 3504 0242</a>
-          </p>
-        </div>
-      </section>
+        </section>
 
-      {/* FOOTER */}
-      <footer className="bg-gray-900 text-white py-10 px-5">
-        <div className="max-w-5xl mx-auto grid md:grid-cols-3 gap-8 mb-8">
-          <div>
-            <h3 className="font-poppins font-bold text-lg mb-2">🐢 PEYU Chile</h3>
-            <p className="text-gray-400 text-sm">Regalos corporativos 100% sostenibles. Fabricados en Santiago con plástico reciclado.</p>
+        {/* FOOTER */}
+        <footer className="border-t border-white/10 px-4 sm:px-8 py-10">
+          <div className="max-w-5xl mx-auto grid md:grid-cols-3 gap-8 mb-8">
+            <div>
+              <h3 className="font-poppins font-bold text-white text-lg mb-2">🐢 PEYU Chile</h3>
+              <p className="text-white/40 text-sm">Regalos corporativos 100% sostenibles. Fabricados en Santiago.</p>
+            </div>
+            <div>
+              <h4 className="font-bold text-white mb-3 text-sm">Navegación</h4>
+              <ul className="space-y-2 text-sm text-white/50">
+                {[['Tienda B2C', '/shop'], ['Cotización B2B', '/b2b/contacto'], ['Catálogo Visual', '/catalogo-visual'], ['Soporte', '/soporte']].map(([l, h]) => (
+                  <li key={h}><Link to={h} className="hover:text-white transition">{l}</Link></li>
+                ))}
+              </ul>
+            </div>
+            <div>
+              <h4 className="font-bold text-white mb-3 text-sm">Contacto</h4>
+              <ul className="space-y-2 text-sm text-white/50">
+                <li>📱 <a href="https://wa.me/56935040242" className="hover:text-white">+56 9 3504 0242</a></li>
+                <li>📧 <a href="mailto:ventas@peyuchile.cl" className="hover:text-white">ventas@peyuchile.cl</a></li>
+                <li>📍 Fernando Bilbao 3775, Providencia</li>
+                <li>📍 Pedro de Valdivia 6603, Macul</li>
+              </ul>
+            </div>
           </div>
-          <div>
-            <h4 className="font-bold mb-3 text-sm">Navegación</h4>
-            <ul className="space-y-2 text-sm text-gray-400">
-              <li><Link to="/shop" className="hover:text-white">Tienda B2C</Link></li>
-              <li><Link to="/b2b/contacto" className="hover:text-white">Cotización B2B</Link></li>
-              <li><Link to="/catalogo-visual" className="hover:text-white">Catálogo Visual</Link></li>
-              <li><Link to="/nosotros" className="hover:text-white">Nosotros</Link></li>
-              <li><Link to="/soporte" className="hover:text-white">Soporte</Link></li>
-            </ul>
+          <div className="border-t border-white/10 pt-6 text-center text-white/30 text-xs">
+            © 2026 PEYU Chile SpA. Todos los derechos reservados.
           </div>
-          <div>
-            <h4 className="font-bold mb-3 text-sm">Contacto</h4>
-            <ul className="space-y-2 text-sm text-gray-400">
-              <li>📱 <a href="https://wa.me/56935040242" className="hover:text-white">+56 9 3504 0242</a></li>
-              <li>📧 <a href="mailto:ventas@peyuchile.cl" className="hover:text-white">ventas@peyuchile.cl</a></li>
-              <li>📍 Fernando Bilbao 3775, Providencia</li>
-              <li>📍 Pedro de Valdivia 6603, Macul</li>
-            </ul>
-          </div>
-        </div>
-        <div className="border-t border-gray-700 pt-6 text-center text-gray-500 text-xs">
-          © 2026 PEYU Chile SpA. Todos los derechos reservados. RUT: 76.XXX.XXX-X
-        </div>
-      </footer>
+        </footer>
+      </div>
     </div>
   );
 }
