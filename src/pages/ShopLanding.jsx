@@ -31,7 +31,7 @@ const FEATURED_PRODUCTS = [
 export default function ShopLanding() {
   const [conversationId, setConversationId] = useState(null);
   const [messages, setMessages] = useState([
-    { role: 'assistant', content: '✨ Bienvenido. Con más de una década perfeccionando el arte del gifting estratégico. ¿Te gustaría que lleve a un recorrido personalizado?' }
+    { role: 'assistant', content: '¡Hola! Soy Peyu 🐢. Ayudo a empresas y personas a encontrar el regalo perfecto hecho con plástico 100% reciclado.\n\n¿Buscas regalo para empresa o uso personal?' }
   ]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);

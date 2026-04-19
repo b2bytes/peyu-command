@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
-import { Plus, Search, Edit2, Trash2, MessageSquare, FileText, Users, Clock, AlertTriangle, TrendingUp, DollarSign } from "lucide-react";
+import { Plus, Search, Edit2, Trash2, MessageSquare, FileText, Users, Clock, AlertTriangle, TrendingUp, DollarSign, ChevronRight, Zap } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -41,7 +41,7 @@ const calidadColor = {
   "No Comercial": "bg-gray-50 text-gray-400 border border-gray-200",
 };
 
-function LeadCard({ lead, onEdit, onDelete }) {
+function LeadCard({ lead, onEdit, onDelete, onCotizar }) {
   const dias = getDiasEnEtapa(lead);
   const slaLimit = SLA_LIMITS[lead.estado];
   const slaVencido = slaLimit && dias > slaLimit;
@@ -89,6 +89,16 @@ function LeadCard({ lead, onEdit, onDelete }) {
           <span className="font-medium text-cyan-300">→ </span>
           <span className="text-gray-400">{lead.next_action}</span>
           {lead.next_action_date && <span className="text-xs text-gray-500 ml-1">({lead.next_action_date})</span>}
+        </div>
+      )}
+      {!['Ganado','Perdido'].includes(lead.estado) && (
+        <div className="mt-2 pt-2 border-t border-slate-700/60">
+          <button
+            onClick={() => onCotizar(lead)}
+            className="w-full text-xs font-bold py-1.5 rounded-lg bg-teal-500/20 hover:bg-teal-500/30 text-teal-300 border border-teal-500/30 flex items-center justify-center gap-1.5 transition-all"
+          >
+            <Zap className="w-3 h-3" /> Generar Cotización
+          </button>
         </div>
       )}
     </div>
@@ -209,6 +219,19 @@ export default function PipelineB2B() {
     alert(`✅ Orden de Producción creada para ${cot.empresa} — ${cot.sku}`);
   };
 
+  const handleCotizarLead = async (lead) => {
+    setEditing(null);
+    setActiveTab('cotizaciones');
+    setForm({
+      ...COT_DEFAULTS,
+      empresa: lead.empresa,
+      contacto: lead.contacto,
+      email: lead.email,
+      cantidad: lead.cantidad_estimada || 50,
+    });
+    setShowModal(true);
+  };
+
   const filteredLeads = leads.filter(l =>
     (filterEstado === 'todos' || l.estado === filterEstado) &&
     (l.empresa?.toLowerCase().includes(search.toLowerCase()) || l.contacto?.toLowerCase().includes(search.toLowerCase()))
@@ -300,7 +323,7 @@ export default function PipelineB2B() {
         <TabsContent value="leads" className="mt-4">
           {loading ? <div className="text-center py-12 text-muted-foreground">Cargando leads...</div> : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-              {filteredLeads.map(l => <LeadCard key={l.id} lead={l} onEdit={openEdit} onDelete={handleDelete} />)}
+              {filteredLeads.map(l => <LeadCard key={l.id} lead={l} onEdit={openEdit} onDelete={handleDelete} onCotizar={handleCotizarLead} />)}
               {filteredLeads.length === 0 && (
                 <div className="col-span-3 text-center py-16 text-muted-foreground">
                   <Users className="w-12 h-12 mx-auto mb-3 opacity-30" />

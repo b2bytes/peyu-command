@@ -50,6 +50,7 @@ import SeguimientoPedido from './pages/SeguimientoPedido';
 import CatalogoVisual from './pages/CatalogoVisual';
 import Nosotros from './pages/Nosotros';
 import EstadoActual from './pages/EstadoActual';
+import EmbudoVentas from './pages/EmbudoVentas';
 import ImportarClientes from './pages/ImportarClientes';
 
 const AuthenticatedApp = () => {
@@ -104,6 +105,7 @@ const AuthenticatedApp = () => {
         <Route path="analitica" element={<Analitica />} />
         <Route path="propuestas" element={<AdminPropuestas />} />
         <Route path="estado-actual" element={<EstadoActual />} />
+        <Route path="embudo" element={<EmbudoVentas />} />
         <Route path="importar-clientes" element={<ImportarClientes />} />
       </Route>
       <Route path="*" element={<PageNotFound />} />

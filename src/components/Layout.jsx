@@ -11,6 +11,7 @@ const navGroups = [
     label: "B2B Web",
     items: [
       { path: "/admin/propuestas", label: "Pipeline B2B Leads", icon: Building2 },
+      { path: "/admin/embudo", label: "Embudo de Conversión", icon: TrendingUp },
     ]
   },
   {
