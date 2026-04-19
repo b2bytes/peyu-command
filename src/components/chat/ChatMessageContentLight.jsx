@@ -14,7 +14,7 @@ function getChatQty() {
 function addToCart(producto, cantidad) {
   const carrito = JSON.parse(localStorage.getItem('carrito') || '[]');
   const precio = Math.floor((producto.precio_b2c || 9990) * 0.85);
-  carrito.push({
+  const nuevoItem = {
     id: Math.random(),
     productoId: producto.id,
     nombre: producto.nombre,
@@ -23,8 +23,10 @@ function addToCart(producto, cantidad) {
     color: null,
     personalizacion: null,
     imagen: getProductImage(producto.sku, producto.categoria),
-  });
+  };
+  carrito.push(nuevoItem);
   localStorage.setItem('carrito', JSON.stringify(carrito));
+  window.dispatchEvent(new CustomEvent('peyu:cart-added', { detail: nuevoItem }));
 }
 
 const TAG_REGEX = /\[\[(PRODUCTO|ACTION):([^\]]+)\]\]/g;
@@ -46,6 +48,14 @@ function ProductCardLight({ sku }) {
   const b2bUrl = producto
     ? `/b2b/contacto?productoId=${producto.id}&nombre=${encodeURIComponent(producto.nombre || '')}${qtyHint ? `&qty=${qtyHint}` : ''}${producto.moq_personalizacion ? '&personalizacion=1' : ''}&from=chat&notas=${encodeURIComponent('Solicitud iniciada desde chat Peyu. Producto: ' + producto.nombre + (qtyHint ? ` · Cantidad sugerida: ${qtyHint}u.` : ''))}`
     : '#';
+
+  useEffect(() => {
+    if (producto?.id) {
+      localStorage.setItem('peyu_chat_last_product', JSON.stringify({
+        id: producto.id, nombre: producto.nombre, sku: producto.sku,
+      }));
+    }
+  }, [producto]);
 
   const handleAdd = () => {
     if (!producto) return;
@@ -98,31 +108,68 @@ function ProductCardLight({ sku }) {
           )}
         </div>
       </div>
-      <div className="grid grid-cols-3 gap-1.5 mt-2.5">
-        <Link to={`/producto/${producto.id}`}>
-          <button className="w-full flex items-center justify-center gap-1 bg-gray-100 hover:bg-gray-200 border border-gray-200 text-gray-700 text-[11px] font-semibold rounded-lg py-1.5 transition-all">
-            <Package className="w-3 h-3" /> Ficha
+      {qtyHint >= 50 ? (
+        <>
+          <Link to={b2bUrl} className="block mt-2.5">
+            <button className="w-full flex items-center justify-center gap-1.5 bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 text-white text-xs font-bold rounded-lg py-2 transition-all shadow-sm">
+              <Building2 className="w-3.5 h-3.5" /> Cotizar {qtyHint}u con mi logo
+            </button>
+          </Link>
+          <div className="grid grid-cols-2 gap-1.5 mt-1.5">
+            <Link to={`/producto/${producto.id}`}>
+              <button className="w-full flex items-center justify-center gap-1 bg-gray-100 hover:bg-gray-200 border border-gray-200 text-gray-700 text-[11px] font-semibold rounded-lg py-1.5 transition-all">
+                <Package className="w-3 h-3" /> Ver ficha
+              </button>
+            </Link>
+            <button
+              onClick={handleAdd}
+              className={`w-full flex items-center justify-center gap-1 text-[11px] font-semibold rounded-lg py-1.5 transition-all border ${added ? 'bg-green-50 border-green-300 text-green-700' : 'bg-gray-100 hover:bg-gray-200 border-gray-200 text-gray-600'}`}
+            >
+              {added ? <><Check className="w-3 h-3" /> Listo</> : <><ShoppingCart className="w-3 h-3" /> Probar 1u</>}
+            </button>
+          </div>
+        </>
+      ) : (
+        <div className="grid grid-cols-3 gap-1.5 mt-2.5">
+          <Link to={`/producto/${producto.id}`}>
+            <button className="w-full flex items-center justify-center gap-1 bg-gray-100 hover:bg-gray-200 border border-gray-200 text-gray-700 text-[11px] font-semibold rounded-lg py-1.5 transition-all">
+              <Package className="w-3 h-3" /> Ficha
+            </button>
+          </Link>
+          <button
+            onClick={handleAdd}
+            className={`w-full flex items-center justify-center gap-1 text-[11px] font-bold rounded-lg py-1.5 transition-all border ${added ? 'bg-green-50 border-green-300 text-green-700' : 'bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 text-white border-transparent'}`}
+          >
+            {added ? <><Check className="w-3 h-3" /> Agregado</> : <><ShoppingCart className="w-3 h-3" /> Comprar</>}
           </button>
-        </Link>
-        <button
-          onClick={handleAdd}
-          className={`w-full flex items-center justify-center gap-1 text-[11px] font-bold rounded-lg py-1.5 transition-all border ${added ? 'bg-green-50 border-green-300 text-green-700' : 'bg-gray-100 hover:bg-gray-200 border-gray-200 text-gray-700'}`}
-        >
-          {added ? <><Check className="w-3 h-3" /> Agregado</> : <><ShoppingCart className="w-3 h-3" /> Comprar</>}
-        </button>
-        <Link to={b2bUrl}>
-          <button className="w-full flex items-center justify-center gap-1 bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 text-white text-[11px] font-bold rounded-lg py-1.5 transition-all shadow-sm">
-            <Building2 className="w-3 h-3" /> B2B
-          </button>
-        </Link>
-      </div>
-      {qtyHint && (
+          <Link to={b2bUrl}>
+            <button className="w-full flex items-center justify-center gap-1 bg-gray-100 hover:bg-gray-200 border border-gray-200 text-gray-700 text-[11px] font-semibold rounded-lg py-1.5 transition-all">
+              <Building2 className="w-3 h-3" /> B2B
+            </button>
+          </Link>
+        </div>
+      )}
+      {qtyHint && qtyHint < 50 && (
         <p className="text-[10px] text-gray-500 mt-1.5 text-center">
-          Peyu detectó <span className="font-bold text-teal-700">{qtyHint}u.</span> — precargadas en la cotización
+          💡 Peyu detectó <span className="font-bold text-teal-700">{qtyHint}u.</span> — precargadas en B2B
         </p>
       )}
     </div>
   );
+}
+
+function buildB2BUrlFromChat() {
+  const qty = getChatQty();
+  let lastProd = null;
+  try { lastProd = JSON.parse(localStorage.getItem('peyu_chat_last_product') || 'null'); } catch {}
+  const params = new URLSearchParams();
+  params.set('from', 'chat');
+  if (lastProd?.id) params.set('productoId', lastProd.id);
+  if (lastProd?.nombre) params.set('nombre', lastProd.nombre);
+  if (qty) params.set('qty', String(qty));
+  const notas = `Solicitud iniciada desde chat Peyu.${lastProd?.nombre ? ' Producto: ' + lastProd.nombre + '.' : ''}${qty ? ` Cantidad sugerida: ${qty}u.` : ''}`;
+  params.set('notas', notas);
+  return `/b2b/contacto?${params.toString()}`;
 }
 
 function ActionButtonLight({ action }) {
@@ -130,7 +177,7 @@ function ActionButtonLight({ action }) {
     cotizar_b2b: {
       label: 'Completar cotización B2B',
       icon: Building2,
-      to: '/b2b/contacto',
+      to: buildB2BUrlFromChat(),
       color: 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700',
     },
     ir_a_shop: {

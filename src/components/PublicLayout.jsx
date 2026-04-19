@@ -3,6 +3,7 @@ import { Outlet, Link, useLocation } from 'react-router-dom';
 import { Home, ShoppingCart, Grid3x3, Building2, HelpCircle, Heart } from 'lucide-react';
 import WhatsAppFloat from './WhatsAppFloat';
 import AsistenteChat from './AsistenteChat';
+import ChatCartToast from './chat/ChatCartToast';
 
 const MENU_ITEMS = [
   { href: '/', label: 'Inicio', icon: Home, color: 'bg-teal-500' },
@@ -86,6 +87,9 @@ export default function PublicLayout() {
 
       {/* Peyu chat flotante — persiste conversación entre páginas */}
       <AsistenteChat />
+
+      {/* Toast global de "agregado al carrito" desde el chat */}
+      <ChatCartToast />
     </div>
   );
 }
