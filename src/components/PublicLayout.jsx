@@ -4,39 +4,32 @@ import { Home, ShoppingCart, Grid3x3, Building2, HelpCircle, Heart } from 'lucid
 import WhatsAppFloat from './WhatsAppFloat';
 
 const MENU_ITEMS = [
-  { href: '/', label: 'Inicio', icon: Home },
-  { href: '/shop', label: 'Tienda', icon: ShoppingCart },
-  { href: '/catalogo-visual', label: 'Catálogo', icon: Grid3x3 },
-  { href: '/b2b/contacto', label: 'B2B', icon: Building2 },
-  { href: '/nosotros', label: 'Nosotros', icon: Heart },
-  { href: '/soporte', label: 'Soporte', icon: HelpCircle },
+  { href: '/', label: 'Inicio', icon: Home, color: 'bg-teal-500' },
+  { href: '/shop', label: 'Tienda', icon: ShoppingCart, color: 'bg-teal-500' },
+  { href: '/catalogo-visual', label: 'Catálogo', icon: Grid3x3, color: 'bg-teal-500' },
+  { href: '/b2b/contacto', label: 'B2B', icon: Building2, color: 'bg-teal-500' },
+  { href: '/nosotros', label: 'Nosotros', icon: Heart, color: 'bg-teal-500' },
+  { href: '/soporte', label: 'Soporte', icon: HelpCircle, color: 'bg-teal-500' },
 ];
-
-// Rutas con tema CLARO (embudo B2C de compra)
-const LIGHT_ROUTES = ['/shop', '/producto', '/cart'];
 
 export default function PublicLayout() {
   const [sidebarExpanded, setSidebarExpanded] = useState(false);
   const location = useLocation();
 
-  const isLightTheme = LIGHT_ROUTES.some(r => location.pathname.startsWith(r));
-
-  const darkBg = {
-    backgroundImage: `linear-gradient(135deg, rgba(15, 23, 42, 0.85) 0%, rgba(15, 78, 137, 0.80) 50%, rgba(15, 23, 42, 0.85) 100%), url('https://media.base44.com/images/public/69d99b9d61f699701129c103/6935b8ac0_image.png')`,
-    backgroundSize: 'cover',
-    backgroundPosition: 'center',
-  };
-
   return (
-    <div className="flex h-screen w-full overflow-hidden" style={isLightTheme ? { backgroundColor: '#FAFAF8' } : darkBg}>
-      {/* SIDEBAR - adapta al tema */}
+    <div className="flex h-screen w-full overflow-hidden" style={{
+      backgroundImage: `linear-gradient(135deg, rgba(15, 23, 42, 0.85) 0%, rgba(15, 78, 137, 0.80) 50%, rgba(15, 23, 42, 0.85) 100%), url('https://media.base44.com/images/public/69d99b9d61f699701129c103/6935b8ac0_image.png')`,
+      backgroundSize: 'cover',
+      backgroundPosition: 'center',
+    }}>
+      {/* SIDEBAR - macOS style */}
       <div 
-        className={`hidden lg:flex flex-col transition-all duration-300 overflow-hidden border-r ${
+        className={`hidden lg:flex flex-col bg-white/10 backdrop-blur-md border-r border-white/20 transition-all duration-300 overflow-hidden ${
           sidebarExpanded ? 'w-48' : 'w-16'
-        } ${isLightTheme ? 'bg-white border-gray-200' : 'bg-white/10 backdrop-blur-md border-white/20'}`}
+        }`}
         onMouseEnter={() => setSidebarExpanded(true)}
         onMouseLeave={() => setSidebarExpanded(false)}
-        style={isLightTheme ? {} : {
+        style={{
           backgroundImage: `linear-gradient(135deg, rgba(15, 23, 42, 0.75) 0%, rgba(15, 78, 137, 0.75) 50%, rgba(15, 23, 42, 0.75) 100%), url('https://media.base44.com/images/public/69d99b9d61f699701129c103/6935b8ac0_image.png')`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
@@ -44,13 +37,13 @@ export default function PublicLayout() {
         }}
       >
         {/* macOS Header */}
-        <div className={`px-3 py-2.5 flex items-center gap-2 flex-shrink-0 border-b ${isLightTheme ? 'border-gray-100' : 'bg-white/5 border-white/10'}`}>
+        <div className="bg-white/5 border-b border-white/10 px-3 py-2.5 flex items-center gap-2 flex-shrink-0">
           <div className="flex gap-1.5">
             <div className="w-2.5 h-2.5 rounded-full bg-red-500 shadow"></div>
             <div className="w-2.5 h-2.5 rounded-full bg-yellow-500 shadow"></div>
             <div className="w-2.5 h-2.5 rounded-full bg-green-500 shadow"></div>
           </div>
-          {sidebarExpanded && <span className={`text-xs ml-auto font-medium ${isLightTheme ? 'text-gray-400' : 'text-white/50'}`}>PEYU</span>}
+          {sidebarExpanded && <span className="text-xs text-white/50 ml-auto font-medium">PEYU</span>}
         </div>
 
         {/* Menu Items */}
@@ -62,12 +55,10 @@ export default function PublicLayout() {
               <Link
                 key={item.href}
                 to={item.href}
-                className={`flex items-center transition-all rounded-lg group relative ${
+                className={`flex items-center text-white transition-all rounded-lg group relative ${
                   sidebarExpanded ? 'w-full px-3 py-2.5 justify-start gap-3' : 'w-12 h-12 justify-center'
                 } ${
-                  isLightTheme
-                    ? (isActive ? 'bg-teal-50 text-teal-700 border border-teal-200' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900')
-                    : (isActive ? 'bg-teal-500/30 text-white border border-teal-500/50' : 'text-white hover:bg-white/20')
+                  isActive ? 'bg-teal-500/30 border border-teal-500/50' : 'hover:bg-white/20'
                 }`}
                 title={item.label}
               >
@@ -80,7 +71,7 @@ export default function PublicLayout() {
       </div>
 
       {/* MAIN CONTENT */}
-      <div className="flex-1 overflow-auto w-full" style={isLightTheme ? { backgroundColor: '#FAFAF8' } : {
+      <div className="flex-1 overflow-auto w-full" style={{
         backgroundImage: `linear-gradient(135deg, rgba(15, 23, 42, 0.80) 0%, rgba(15, 78, 137, 0.75) 50%, rgba(15, 23, 42, 0.80) 100%), url('https://media.base44.com/images/public/69d99b9d61f699701129c103/6935b8ac0_image.png')`,
         backgroundSize: 'cover',
         backgroundPosition: 'center',

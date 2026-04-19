@@ -102,8 +102,7 @@ export default function B2BContacto() {
 
   if (enviado) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-4 font-inter" style={bgStyle}>
-        <WhatsAppFloat />
+      <div className="min-h-full flex items-center justify-center p-4 font-inter">
         <div className="max-w-md w-full text-center space-y-6">
           <div className="w-24 h-24 rounded-3xl bg-gradient-to-br from-teal-400 to-cyan-500 flex items-center justify-center mx-auto shadow-2xl shadow-teal-500/30">
             <CheckCircle className="w-12 h-12 text-white" />
@@ -130,43 +129,8 @@ export default function B2BContacto() {
   }
 
   return (
-    <div className="flex h-screen w-full overflow-hidden font-inter" style={bgStyle}>
-      <WhatsAppFloat />
-
-      {/* SIDEBAR macOS style */}
-      <div
-        className={`hidden lg:flex flex-col backdrop-blur-md border-r border-white/20 transition-all duration-300 overflow-hidden ${sidebarExpanded ? 'w-48' : 'w-16'}`}
-        onMouseEnter={() => setSidebarExpanded(true)}
-        onMouseLeave={() => setSidebarExpanded(false)}
-        style={{ background: 'rgba(15,23,42,0.5)' }}
-      >
-        <div className="bg-white/5 border-b border-white/10 px-3 py-2.5 flex items-center gap-2 flex-shrink-0">
-          <div className="flex gap-1.5">
-            <div className="w-2.5 h-2.5 rounded-full bg-red-500 shadow"></div>
-            <div className="w-2.5 h-2.5 rounded-full bg-yellow-500 shadow"></div>
-            <div className="w-2.5 h-2.5 rounded-full bg-green-500 shadow"></div>
-          </div>
-          {sidebarExpanded && <span className="text-xs text-white/50 ml-auto font-medium">PEYU</span>}
-        </div>
-        <div className="flex flex-col items-center gap-1 px-2 py-4 flex-1">
-          {MENU_ITEMS.map((item) => {
-            const Icon = item.icon;
-            const isActive = item.href === '/b2b/contacto';
-            return (
-              <Link key={item.href} to={item.href}
-                className={`flex items-center text-white transition-all rounded-lg group ${sidebarExpanded ? 'w-full px-3 py-2.5 justify-start gap-3' : 'w-12 h-12 justify-center'} ${isActive ? 'bg-teal-500/30 border border-teal-500/50' : 'hover:bg-white/20'}`}
-                title={item.label}>
-                <Icon className={`flex-shrink-0 ${sidebarExpanded ? 'w-4 h-4' : 'w-6 h-6'}`} />
-                {sidebarExpanded && <span className="text-xs font-medium">{item.label}</span>}
-              </Link>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* MAIN */}
-      <div className="flex-1 overflow-auto">
-        <div className="min-h-full flex flex-col">
+    <div className="flex-1 overflow-auto font-inter">
+      <div className="min-h-full flex flex-col">
 
           {/* Header */}
           <div className="bg-gradient-to-r from-teal-500/30 to-cyan-500/30 border-b border-white/20 px-4 sm:px-6 py-3 flex items-center justify-between flex-shrink-0 sticky top-0 z-40 backdrop-blur-md">
@@ -376,7 +340,6 @@ export default function B2BContacto() {
 
             <div className="pb-8" />
           </div>
-        </div>
       </div>
     </div>
   );
