@@ -3,7 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Trash2, ArrowLeft, ShoppingBag, CheckCircle2, Truck, Shield, ChevronRight, Lock, Package } from 'lucide-react';
+import { Trash2, ArrowLeft, ShoppingBag, CheckCircle2, Truck, Shield, ChevronRight, Lock, Package, Recycle } from 'lucide-react';
 
 export default function Carrito() {
   const navigate = useNavigate();
@@ -11,6 +11,7 @@ export default function Carrito() {
   const [cliente, setCliente] = useState({ nombre: '', email: '', telefono: '', ciudad: '', direccion: '' });
   const [creando, setCreando] = useState(false);
   const [pedidoOk, setPedidoOk] = useState(null);
+  const [step, setStep] = useState(1); // 1=Carrito, 2=Datos
 
   const eliminar = (id) => {
     const nuevo = carrito.filter(i => i.id !== id);
@@ -29,15 +30,20 @@ export default function Carrito() {
   const envio = subtotal >= 40000 ? 0 : 5990;
   const total = subtotal + envio;
 
-  const crearPedido = async () => {
+  const validarDatos = () => {
     if (!cliente.nombre || !cliente.email || !cliente.telefono) {
       alert('Por favor completa nombre, email y teléfono');
-      return;
+      return false;
     }
     if (!/\S+@\S+\.\S+/.test(cliente.email)) {
       alert('Email inválido');
-      return;
+      return false;
     }
+    return true;
+  };
+
+  const crearPedido = async () => {
+    if (!validarDatos()) return;
     setCreando(true);
     const numero = `WEB-${Date.now()}`;
     const items = carrito.map(i => `${i.nombre} x${i.cantidad}${i.personalizacion ? ` [${i.personalizacion}]` : ''}`).join(' | ');
@@ -71,34 +77,34 @@ export default function Carrito() {
   // ── ÉXITO ──────────────────────────────────────────────────────────
   if (pedidoOk) {
     return (
-      <div className="min-h-screen bg-[#FAFAF8] font-inter flex items-center justify-center p-4">
+      <div className="min-h-full bg-[#FAFAF8] font-inter flex items-center justify-center p-4 py-16">
         <div className="max-w-md w-full text-center space-y-6">
-          <div className="w-24 h-24 rounded-3xl bg-gradient-to-br from-[#0F8B6C] to-[#A7D9C9] flex items-center justify-center mx-auto shadow-lg shadow-[#0F8B6C]/20">
+          <div className="w-24 h-24 rounded-3xl bg-gradient-to-br from-teal-500 to-emerald-600 flex items-center justify-center mx-auto shadow-xl shadow-teal-500/20">
             <CheckCircle2 className="w-12 h-12 text-white" />
           </div>
           <div>
-            <h2 className="text-3xl font-poppins font-bold text-gray-900">¡Pedido recibido!</h2>
-            <p className="text-gray-500 mt-2">Tu pedido <strong className="font-mono text-gray-700">{pedidoOk.numero}</strong> fue procesado exitosamente.</p>
+            <h2 className="text-3xl font-poppins font-bold text-gray-900">¡Pedido confirmado!</h2>
+            <p className="text-gray-500 mt-2">Pedido <strong className="font-mono text-gray-900">{pedidoOk.numero}</strong></p>
           </div>
-          <div className="bg-white border border-gray-100 rounded-2xl p-5 text-left space-y-3 shadow-sm">
+          <div className="bg-white border border-gray-100 rounded-3xl p-6 text-left space-y-3 shadow-sm">
             {[
-              { label: 'Total pagado', value: `$${pedidoOk.total.toLocaleString('es-CL')}`, bold: true, green: true },
+              { label: 'Total pagado', value: `$${pedidoOk.total.toLocaleString('es-CL')}`, accent: true },
               { label: 'Confirmación enviada a', value: pedidoOk.email },
-              { label: 'Tiempo de entrega estimado', value: '3–7 días hábiles' },
+              { label: 'Entrega estimada', value: '3–7 días hábiles' },
             ].map((r, i) => (
               <div key={i} className="flex justify-between items-center text-sm">
                 <span className="text-gray-400">{r.label}</span>
-                <span className={`font-semibold ${r.green ? 'text-[#0F8B6C]' : 'text-gray-900'}`}>{r.value}</span>
+                <span className={`font-semibold ${r.accent ? 'text-teal-600 text-lg' : 'text-gray-900'}`}>{r.value}</span>
               </div>
             ))}
           </div>
-          <div className="bg-green-50 border border-green-100 rounded-2xl p-4 text-sm text-green-700">
-            📧 Revisa tu correo para la confirmación. ¿Preguntas? WhatsApp: <strong>+56 9 3504 0242</strong>
+          <div className="bg-teal-50 border border-teal-100 rounded-2xl p-4 text-sm text-teal-700">
+            📧 Revisa tu correo. ¿Dudas? WhatsApp <strong>+56 9 3504 0242</strong>
           </div>
           <div className="flex gap-3">
-            <Button variant="outline" className="flex-1 rounded-2xl" onClick={() => navigate('/shop')}>Seguir comprando</Button>
+            <Button variant="outline" className="flex-1 rounded-2xl h-12" onClick={() => navigate('/shop')}>Seguir comprando</Button>
             <Link to="/seguimiento" className="flex-1">
-              <Button className="w-full rounded-2xl bg-gray-900 hover:bg-gray-800">Ver mi pedido</Button>
+              <Button className="w-full rounded-2xl bg-gray-900 hover:bg-gray-800 h-12">Seguir pedido</Button>
             </Link>
           </div>
         </div>
@@ -109,17 +115,17 @@ export default function Carrito() {
   // ── VACÍO ──────────────────────────────────────────────────────────
   if (carrito.length === 0) {
     return (
-      <div className="min-h-screen bg-[#FAFAF8] font-inter flex items-center justify-center p-4">
-        <div className="text-center space-y-5">
-          <div className="w-24 h-24 bg-gray-100 rounded-3xl flex items-center justify-center mx-auto">
+      <div className="min-h-full bg-[#FAFAF8] font-inter flex items-center justify-center p-4 py-16">
+        <div className="text-center space-y-5 max-w-sm">
+          <div className="w-24 h-24 bg-white rounded-3xl flex items-center justify-center mx-auto shadow-sm border border-gray-100">
             <ShoppingBag className="w-10 h-10 text-gray-300" />
           </div>
           <div>
-            <p className="text-xl font-poppins font-bold text-gray-900">Tu carrito está vacío</p>
-            <p className="text-sm text-gray-400 mt-1">¿Probamos con nuestros bestsellers?</p>
+            <p className="text-2xl font-poppins font-bold text-gray-900">Tu carrito está vacío</p>
+            <p className="text-sm text-gray-500 mt-2">Descubre productos 100% sostenibles con personalización láser gratis.</p>
           </div>
-          <Button onClick={() => navigate('/shop')} className="gap-2 rounded-2xl bg-gray-900 hover:bg-gray-800 px-8">
-            Ver productos →
+          <Button onClick={() => navigate('/shop')} className="gap-2 rounded-2xl bg-gray-900 hover:bg-gray-800 px-8 h-12">
+            Explorar tienda <ChevronRight className="w-4 h-4" />
           </Button>
         </div>
       </div>
@@ -128,146 +134,205 @@ export default function Carrito() {
 
   // ── PRINCIPAL ──────────────────────────────────────────────────────
   return (
-    <div className="min-h-screen bg-[#FAFAF8] font-inter">
+    <div className="min-h-full bg-[#FAFAF8] font-inter">
 
       {/* Navbar */}
-      <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-xl border-b border-black/5 shadow-sm">
-        <div className="max-w-6xl mx-auto px-5 py-3 flex items-center gap-4">
-          <button onClick={() => navigate('/shop')} className="flex items-center gap-2 text-gray-500 hover:text-gray-900 transition-colors group">
-            <div className="w-8 h-8 bg-gray-100 rounded-xl flex items-center justify-center group-hover:bg-gray-200 transition-colors">
+      <nav className="sticky top-0 z-40 bg-white/85 backdrop-blur-xl border-b border-black/5">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between gap-4">
+          <button onClick={() => navigate('/shop')} className="flex items-center gap-3 text-gray-600 hover:text-gray-900 transition-colors group">
+            <div className="w-9 h-9 bg-gray-100 rounded-xl flex items-center justify-center group-hover:bg-gray-200 transition-colors">
               <ArrowLeft className="w-4 h-4" />
             </div>
+            <div>
+              <h1 className="font-poppins font-bold text-gray-900 text-base leading-none">Tu carrito</h1>
+              <p className="text-xs text-gray-400 mt-0.5">{carrito.length} producto{carrito.length !== 1 ? 's' : ''}</p>
+            </div>
           </button>
-          <div>
-            <h1 className="font-poppins font-bold text-gray-900">Tu carrito</h1>
-            <p className="text-xs text-gray-400">{carrito.length} item{carrito.length !== 1 ? 's' : ''}</p>
+
+          {/* Step indicator */}
+          <div className="hidden sm:flex items-center gap-2 text-xs">
+            <div className={`flex items-center gap-1.5 ${step >= 1 ? 'text-gray-900' : 'text-gray-400'}`}>
+              <div className={`w-6 h-6 rounded-full flex items-center justify-center font-bold ${step >= 1 ? 'bg-gray-900 text-white' : 'bg-gray-100'}`}>1</div>
+              <span className="font-semibold">Carrito</span>
+            </div>
+            <div className="w-6 h-px bg-gray-200" />
+            <div className={`flex items-center gap-1.5 ${step >= 2 ? 'text-gray-900' : 'text-gray-400'}`}>
+              <div className={`w-6 h-6 rounded-full flex items-center justify-center font-bold ${step >= 2 ? 'bg-gray-900 text-white' : 'bg-gray-100'}`}>2</div>
+              <span className="font-semibold">Datos</span>
+            </div>
+            <div className="w-6 h-px bg-gray-200" />
+            <div className="flex items-center gap-1.5 text-gray-400">
+              <div className="w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center font-bold">3</div>
+              <span className="font-semibold">Pago</span>
+            </div>
           </div>
         </div>
       </nav>
 
-      <div className="max-w-6xl mx-auto px-5 py-8">
-        <div className="grid lg:grid-cols-3 gap-6">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
+        <div className="grid lg:grid-cols-3 gap-5 lg:gap-6">
 
-          {/* ── ITEMS ──────────────────────── */}
-          <div className="lg:col-span-2 space-y-3">
-            {carrito.map(item => (
-              <div key={item.id} className="bg-white border border-gray-100 rounded-3xl p-5 flex gap-4 shadow-sm hover:shadow-md transition-shadow">
-                <div className="w-20 h-20 bg-gradient-to-br from-[#0F8B6C]/15 via-[#A7D9C9]/25 to-[#E7D8C6]/30 rounded-2xl flex-shrink-0 flex items-center justify-center text-3xl">
-                  📦
-                </div>
-                <div className="flex-1 min-w-0">
-                  <h3 className="font-semibold text-gray-900">{item.nombre}</h3>
-                  {item.personalizacion && (
-                    <p className="text-xs text-purple-600 mt-0.5 font-medium">✨ {item.personalizacion}</p>
-                  )}
-                  <div className="flex items-center justify-between mt-4">
-                    {/* Qty */}
-                    <div className="flex items-center border border-gray-200 rounded-xl overflow-hidden">
-                      <button onClick={() => actualizar(item.id, item.cantidad - 1)} className="w-9 h-9 hover:bg-gray-50 font-bold text-gray-600 transition-colors">−</button>
-                      <span className="px-3 text-sm font-bold text-gray-900">{item.cantidad}</span>
-                      <button onClick={() => actualizar(item.id, item.cantidad + 1)} className="w-9 h-9 hover:bg-gray-50 font-bold text-gray-600 transition-colors">+</button>
+          {/* ── LEFT: ITEMS / DATOS ───────── */}
+          <div className="lg:col-span-2 space-y-4">
+            {step === 1 && (
+              <>
+                {carrito.map(item => (
+                  <div key={item.id} className="bg-white border border-gray-100 rounded-3xl p-4 sm:p-5 flex gap-4 shadow-sm hover:shadow-md transition-shadow">
+                    <div className="w-20 h-20 sm:w-24 sm:h-24 bg-gradient-to-br from-teal-50 to-emerald-50 rounded-2xl flex-shrink-0 overflow-hidden flex items-center justify-center">
+                      {item.imagen ? (
+                        <img src={item.imagen} alt={item.nombre} className="w-full h-full object-cover" />
+                      ) : (
+                        <span className="text-4xl">📦</span>
+                      )}
                     </div>
-                    <div className="flex items-center gap-3">
-                      <span className="font-poppins font-bold text-gray-900">${(item.precio * item.cantidad).toLocaleString('es-CL')}</span>
-                      <button onClick={() => eliminar(item.id)} className="w-8 h-8 rounded-xl bg-red-50 flex items-center justify-center hover:bg-red-100 transition-colors group">
-                        <Trash2 className="w-3.5 h-3.5 text-red-400 group-hover:text-red-600" />
-                      </button>
+                    <div className="flex-1 min-w-0 flex flex-col justify-between">
+                      <div>
+                        <h3 className="font-semibold text-gray-900 leading-snug line-clamp-2">{item.nombre}</h3>
+                        {item.personalizacion && (
+                          <p className="text-xs text-purple-600 mt-1 font-medium flex items-center gap-1">✨ Grabado: "{item.personalizacion}"</p>
+                        )}
+                        {item.color && (
+                          <p className="text-xs text-gray-400 mt-0.5 capitalize">Color: {item.color}</p>
+                        )}
+                      </div>
+                      <div className="flex items-center justify-between mt-3">
+                        <div className="flex items-center border border-gray-200 rounded-xl overflow-hidden bg-gray-50">
+                          <button onClick={() => actualizar(item.id, item.cantidad - 1)} className="w-9 h-9 hover:bg-white font-bold text-gray-600 transition-colors">−</button>
+                          <span className="px-3 text-sm font-bold text-gray-900 min-w-[32px] text-center">{item.cantidad}</span>
+                          <button onClick={() => actualizar(item.id, item.cantidad + 1)} className="w-9 h-9 hover:bg-white font-bold text-gray-600 transition-colors">+</button>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <span className="font-poppins font-bold text-gray-900 text-base">${(item.precio * item.cantidad).toLocaleString('es-CL')}</span>
+                          <button onClick={() => eliminar(item.id)} className="w-8 h-8 rounded-xl bg-gray-50 flex items-center justify-center hover:bg-red-50 transition-colors group">
+                            <Trash2 className="w-3.5 h-3.5 text-gray-400 group-hover:text-red-500" />
+                          </button>
+                        </div>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </div>
-            ))}
+                ))}
 
-            {/* Trust */}
-            <div className="grid grid-cols-3 gap-3 pt-2">
-              {[
-                { icon: Shield, text: 'Garantía 10 años', sub: 'En plástico reciclado', color: '#0F8B6C' },
-                { icon: Truck, text: 'Envío gratis', sub: 'Sobre $40.000', color: '#4B4F54' },
-                { icon: Package, text: 'Hecho en Chile', sub: 'Fábrica Santiago', color: '#D96B4D' },
-              ].map((b, i) => (
-                <div key={i} className="bg-white rounded-2xl p-3 border border-gray-100 text-center shadow-sm">
-                  <b.icon className="w-5 h-5 mx-auto mb-1.5" style={{ color: b.color }} />
-                  <p className="text-xs font-semibold text-gray-700">{b.text}</p>
-                  <p className="text-[10px] text-gray-400 mt-0.5">{b.sub}</p>
+                {/* Trust */}
+                <div className="grid grid-cols-3 gap-2 sm:gap-3 pt-2">
+                  {[
+                    { icon: Shield, text: 'Garantía 10 años', sub: 'Plástico reciclado', color: 'text-teal-600' },
+                    { icon: Truck, text: 'Envío gratis', sub: 'Sobre $40.000', color: 'text-blue-600' },
+                    { icon: Recycle, text: '100% reciclado', sub: 'Hecho en Chile', color: 'text-emerald-600' },
+                  ].map((b, i) => (
+                    <div key={i} className="bg-white rounded-2xl p-3 border border-gray-100 text-center shadow-sm">
+                      <b.icon className={`w-5 h-5 mx-auto mb-1.5 ${b.color}`} />
+                      <p className="text-xs font-bold text-gray-900 leading-tight">{b.text}</p>
+                      <p className="text-[10px] text-gray-400 mt-0.5">{b.sub}</p>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
+
+                <Link to="/shop" className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-900 font-medium pt-2">
+                  <ArrowLeft className="w-3.5 h-3.5" /> Seguir comprando
+                </Link>
+              </>
+            )}
+
+            {step === 2 && (
+              <div className="bg-white border border-gray-100 rounded-3xl p-5 sm:p-6 shadow-sm space-y-5">
+                <div>
+                  <h3 className="font-poppins font-bold text-gray-900 text-lg">Datos de envío</h3>
+                  <p className="text-xs text-gray-400 mt-1">Completa tus datos para recibir tu pedido</p>
+                </div>
+                <div className="space-y-4">
+                  {[
+                    { label: 'Nombre completo', key: 'nombre', placeholder: 'Tu nombre', req: true },
+                    { label: 'Email', key: 'email', placeholder: 'tu@email.com', type: 'email', req: true },
+                    { label: 'Teléfono / WhatsApp', key: 'telefono', placeholder: '+56 9 xxxx xxxx', req: true },
+                    { label: 'Ciudad', key: 'ciudad', placeholder: 'Santiago' },
+                    { label: 'Dirección de despacho', key: 'direccion', placeholder: 'Calle, número, depto' },
+                  ].map(f => (
+                    <div key={f.key}>
+                      <label className="text-xs font-semibold text-gray-700 block mb-1.5">
+                        {f.label} {f.req && <span className="text-red-500">*</span>}
+                      </label>
+                      <Input
+                        type={f.type || 'text'}
+                        value={cliente[f.key]}
+                        onChange={e => setCliente({ ...cliente, [f.key]: e.target.value })}
+                        placeholder={f.placeholder}
+                        className="h-11 text-sm rounded-xl border-gray-200 bg-gray-50 focus:bg-white focus:border-gray-400"
+                      />
+                    </div>
+                  ))}
+                </div>
+                <button onClick={() => setStep(1)} className="text-sm text-gray-500 hover:text-gray-900 font-medium inline-flex items-center gap-1.5">
+                  <ArrowLeft className="w-3.5 h-3.5" /> Volver al carrito
+                </button>
+              </div>
+            )}
           </div>
 
-          {/* ── SIDEBAR ────────────────────── */}
-          <div className="space-y-4">
+          {/* ── RIGHT SIDEBAR ─────────────── */}
+          <div className="space-y-4 lg:sticky lg:top-20 lg:self-start">
             {/* Resumen */}
-            <div className="bg-white border border-gray-100 rounded-3xl p-5 shadow-sm space-y-3">
-              <h3 className="font-poppins font-bold text-gray-900">Resumen</h3>
-              <div className="space-y-2 text-sm">
+            <div className="bg-white border border-gray-100 rounded-3xl p-5 shadow-sm">
+              <h3 className="font-poppins font-bold text-gray-900 mb-4">Resumen</h3>
+              <div className="space-y-2.5 text-sm">
                 <div className="flex justify-between text-gray-600">
                   <span>Subtotal ({carrito.reduce((s, i) => s + i.cantidad, 0)} items)</span>
-                  <span>${subtotal.toLocaleString('es-CL')}</span>
+                  <span className="font-semibold text-gray-900">${subtotal.toLocaleString('es-CL')}</span>
                 </div>
                 <div className="flex justify-between text-gray-600">
                   <span>Envío</span>
                   {envio === 0
-                    ? <span className="text-[#0F8B6C] font-bold">GRATIS</span>
-                    : <span>${envio.toLocaleString('es-CL')}</span>
+                    ? <span className="text-teal-600 font-bold">GRATIS</span>
+                    : <span className="font-semibold text-gray-900">${envio.toLocaleString('es-CL')}</span>
                   }
                 </div>
                 {subtotal < 40000 && (
-                  <p className="text-xs text-amber-600 bg-amber-50 rounded-xl p-2.5">
-                    🎯 Agrega ${(40000 - subtotal).toLocaleString('es-CL')} más para envío gratis
-                  </p>
+                  <div className="bg-amber-50 border border-amber-100 rounded-xl p-3 mt-3">
+                    <p className="text-xs text-amber-800 font-medium">
+                      🎯 Agrega <strong>${(40000 - subtotal).toLocaleString('es-CL')}</strong> más y el envío es gratis
+                    </p>
+                    <div className="w-full h-1.5 bg-amber-100 rounded-full mt-2 overflow-hidden">
+                      <div className="h-full bg-amber-500 transition-all" style={{ width: `${Math.min(100, (subtotal / 40000) * 100)}%` }} />
+                    </div>
+                  </div>
                 )}
               </div>
-              <div className="border-t border-gray-100 pt-3 flex justify-between items-center">
-                <span className="font-bold text-gray-900">Total</span>
+              <div className="border-t border-gray-100 pt-3 mt-4 flex justify-between items-baseline">
+                <span className="font-bold text-gray-900 text-sm">Total</span>
                 <span className="font-poppins font-bold text-2xl text-gray-900">${total.toLocaleString('es-CL')}</span>
               </div>
             </div>
 
-            {/* Datos del cliente */}
-            <div className="bg-white border border-gray-100 rounded-3xl p-5 shadow-sm space-y-4">
-              <h3 className="font-poppins font-bold text-gray-900">Tus datos</h3>
-              <div className="space-y-3">
-                {[
-                  { label: 'Nombre completo *', key: 'nombre', placeholder: 'Tu nombre' },
-                  { label: 'Email *', key: 'email', placeholder: 'tu@email.com', type: 'email' },
-                  { label: 'Teléfono / WhatsApp *', key: 'telefono', placeholder: '+56 9 xxxx xxxx' },
-                  { label: 'Ciudad', key: 'ciudad', placeholder: 'Santiago' },
-                  { label: 'Dirección de despacho', key: 'direccion', placeholder: 'Calle, número, depto' },
-                ].map(f => (
-                  <div key={f.key}>
-                    <label className="text-xs font-semibold text-gray-400 block mb-1">{f.label}</label>
-                    <Input
-                      type={f.type || 'text'}
-                      value={cliente[f.key]}
-                      onChange={e => setCliente({ ...cliente, [f.key]: e.target.value })}
-                      placeholder={f.placeholder}
-                      className="h-10 text-sm rounded-xl border-gray-200 bg-gray-50 focus:bg-white"
-                    />
-                  </div>
-                ))}
-              </div>
-            </div>
+            {/* CTA */}
+            {step === 1 ? (
+              <Button
+                onClick={() => setStep(2)}
+                size="lg"
+                className="w-full font-semibold gap-2 rounded-2xl bg-gray-900 hover:bg-gray-800 text-white shadow-lg h-13 py-4">
+                Continuar <ChevronRight className="w-4 h-4" />
+              </Button>
+            ) : (
+              <Button
+                onClick={crearPedido}
+                disabled={creando}
+                size="lg"
+                className="w-full font-semibold gap-2 rounded-2xl bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 text-white shadow-lg h-13 py-4">
+                {creando ? (
+                  <><div className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" /> Procesando...</>
+                ) : (
+                  <><Lock className="w-4 h-4" /> Pagar ${total.toLocaleString('es-CL')}</>
+                )}
+              </Button>
+            )}
 
-            {/* Checkout */}
-            <Button
-              onClick={crearPedido}
-              disabled={creando}
-              size="lg"
-              className="w-full font-semibold gap-2 rounded-2xl bg-gray-900 hover:bg-gray-800 text-white shadow-lg h-13"
-            >
-              {creando ? (
-                <><div className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" /> Procesando...</>
-              ) : (
-                <>Finalizar compra · ${total.toLocaleString('es-CL')} <ChevronRight className="w-4 h-4" /></>
-              )}
-            </Button>
             <div className="flex items-center justify-center gap-1.5 text-xs text-gray-400">
               <Lock className="w-3 h-3" />
-              Pago seguro · WebPay · Crédito y débito
+              Pago 100% seguro · WebPay
             </div>
+
+            {/* Footer links */}
             <div className="flex justify-center gap-5 text-xs text-gray-400 pt-1">
-              <Link to="/seguimiento" className="hover:text-gray-700">🔍 Seguimiento</Link>
-              <Link to="/soporte" className="hover:text-gray-700">❓ Ayuda</Link>
+              <Link to="/seguimiento" className="hover:text-gray-900">🔍 Seguimiento</Link>
+              <Link to="/soporte" className="hover:text-gray-900">❓ Ayuda</Link>
             </div>
           </div>
         </div>
