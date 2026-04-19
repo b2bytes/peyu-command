@@ -33,12 +33,13 @@ export default function PublicFooter() {
         </div>
 
         <div>
-          <h4 className="font-bold mb-4 text-sm text-gray-300 uppercase tracking-wider">Corporativo</h4>
+          <h4 className="font-bold mb-4 text-sm text-gray-300 uppercase tracking-wider">Empresa</h4>
           <ul className="space-y-2.5 text-sm text-gray-400">
             <li><Link to="/b2b/catalogo" className="hover:text-white transition-colors">Catálogo B2B</Link></li>
             <li><Link to="/b2b/contacto" className="hover:text-white transition-colors">Solicitar cotización</Link></li>
             <li><Link to="/nosotros" className="hover:text-white transition-colors">Quiénes somos</Link></li>
-            <li><Link to="/soporte" className="hover:text-white transition-colors">Centro de ayuda</Link></li>
+            <li><Link to="/blog" className="hover:text-white transition-colors">Blog</Link></li>
+            <li><Link to="/faq" className="hover:text-white transition-colors">Preguntas frecuentes</Link></li>
           </ul>
         </div>
 
@@ -64,10 +65,14 @@ export default function PublicFooter() {
       </div>
 
       <div className="border-t border-gray-700 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-gray-500">
-        <p>© 2026 PEYU Chile SpA · RUT 76.XXX.XXX-X · Todos los derechos reservados</p>
-        <div className="flex gap-4">
-          <Link to="/soporte" className="hover:text-gray-300">Términos y condiciones</Link>
-          <Link to="/soporte" className="hover:text-gray-300">Política de privacidad</Link>
+        <p>© 2026 PEYU Chile SpA · Todos los derechos reservados</p>
+        <div className="flex gap-4 flex-wrap justify-center">
+          <Link to="/terminos" className="hover:text-gray-300">Términos</Link>
+          <Link to="/privacidad" className="hover:text-gray-300">Privacidad</Link>
+          <Link to="/cookies" className="hover:text-gray-300">Cookies</Link>
+          <Link to="/envios" className="hover:text-gray-300">Envíos</Link>
+          <Link to="/cambios" className="hover:text-gray-300">Cambios</Link>
+          <Link to="/contacto" className="hover:text-gray-300">Contacto</Link>
         </div>
       </div>
     </footer>

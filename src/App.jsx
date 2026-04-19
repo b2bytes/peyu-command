@@ -51,6 +51,13 @@ import CatalogoVisual from './pages/CatalogoVisual';
 import Nosotros from './pages/Nosotros';
 import Blog from './pages/Blog';
 import BlogPostPage from './pages/BlogPost';
+import Terminos from './pages/Terminos';
+import Privacidad from './pages/Privacidad';
+import Cookies from './pages/Cookies';
+import Cambios from './pages/Cambios';
+import Envios from './pages/Envios';
+import FAQ from './pages/FAQ';
+import Contacto from './pages/Contacto';
 import EstadoActual from './pages/EstadoActual';
 import EmbudoVentas from './pages/EmbudoVentas';
 import ImportarClientes from './pages/ImportarClientes';
@@ -140,6 +147,13 @@ function App() {
                 <Route path="/nosotros" element={<Nosotros />} />
                 <Route path="/blog" element={<Blog />} />
                 <Route path="/blog/:slug" element={<BlogPostPage />} />
+                <Route path="/contacto" element={<Contacto />} />
+                <Route path="/faq" element={<FAQ />} />
+                <Route path="/envios" element={<Envios />} />
+                <Route path="/cambios" element={<Cambios />} />
+                <Route path="/terminos" element={<Terminos />} />
+                <Route path="/privacidad" element={<Privacidad />} />
+                <Route path="/cookies" element={<Cookies />} />
               </Route>
 
               {/* Admin Routes - Protected */}

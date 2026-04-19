@@ -4,7 +4,7 @@ import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import PEYULogo from '@/components/PEYULogo';
-import { Send, ShoppingCart, Bell, Star, ChevronLeft, ChevronRight, Home, Grid3x3, Building2, HelpCircle, Heart } from 'lucide-react';
+import { Send, ShoppingCart, Bell, Star, ChevronLeft, ChevronRight, Home, Grid3x3, Building2, HelpCircle, Heart, BookOpen, Sparkles, Package } from 'lucide-react';
 import MobileMenu from '@/components/MobileMenu';
 import WhatsAppFloat from '@/components/WhatsAppFloat';
 import ChatMessageContent from '@/components/chat/ChatMessageContent';
@@ -48,8 +48,11 @@ export default function ShopLanding() {
     { href: '/', label: 'Inicio', icon: Home },
     { href: '/shop', label: 'Tienda', icon: ShoppingCart },
     { href: '/catalogo-visual', label: 'Catálogo', icon: Grid3x3 },
+    { href: '/personalizar', label: 'Personalizar', icon: Sparkles },
+    { href: '/blog', label: 'Blog', icon: BookOpen },
     { href: '/b2b/contacto', label: 'B2B', icon: Building2 },
     { href: '/nosotros', label: 'Nosotros', icon: Heart },
+    { href: '/seguimiento', label: 'Seguimiento', icon: Package },
     { href: '/soporte', label: 'Soporte', icon: HelpCircle },
   ];
 
