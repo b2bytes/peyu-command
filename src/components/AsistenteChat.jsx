@@ -18,6 +18,7 @@ export default function AsistenteChat() {
   const [loading, setLoading] = useState(false);
   const messagesEndRef = useRef(null);
   const unsubRef = useRef(null);
+  const firstMountRef = useRef(true);
 
   // Do NOT render on landing — landing page has its own embedded chat UI
   const path = location.pathname;
@@ -41,6 +42,19 @@ export default function AsistenteChat() {
   useEffect(() => {
     localStorage.setItem(OPEN_KEY, open ? '1' : '0');
   }, [open]);
+
+  // Auto-abrir al cambiar de página si ya existe una conversación activa,
+  // para que el cliente sepa que Peyu lo sigue acompañando.
+  useEffect(() => {
+    if (isLanding) return;
+    if (firstMountRef.current) {
+      firstMountRef.current = false;
+      if (conversationId) setOpen(true);
+      return;
+    }
+    if (conversationId) setOpen(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.pathname, isLanding]);
 
   // Load existing conversation (if any) from persisted id when mounting on a new page
   useEffect(() => {
@@ -108,11 +122,11 @@ export default function AsistenteChat() {
 
   return (
     <>
-      {/* FAB Button */}
+      {/* FAB Button — posicionado encima del botón de WhatsApp */}
       {!open && (
         <button
           onClick={handleOpen}
-          className="fixed bottom-6 right-6 z-40 w-14 h-14 bg-gradient-to-br from-teal-500 to-cyan-600 rounded-full shadow-xl hover:shadow-2xl transition-all flex items-center justify-center text-white group hover:scale-110"
+          className="fixed bottom-24 right-6 z-40 w-14 h-14 bg-gradient-to-br from-teal-500 to-cyan-600 rounded-full shadow-xl hover:shadow-2xl transition-all flex items-center justify-center text-white group hover:scale-110"
           aria-label="Abrir chat con Peyu"
         >
           <span className="text-2xl group-hover:rotate-12 transition-transform">🐢</span>
@@ -126,7 +140,7 @@ export default function AsistenteChat() {
 
       {/* Chat Window */}
       {open && (
-        <div className="fixed bottom-6 right-6 z-50 w-96 max-w-[calc(100vw-2rem)] max-h-[85vh] bg-white rounded-2xl shadow-2xl border border-gray-100 flex flex-col overflow-hidden">
+        <div className="fixed bottom-24 right-6 z-50 w-96 max-w-[calc(100vw-2rem)] max-h-[80vh] bg-white rounded-2xl shadow-2xl border border-gray-100 flex flex-col overflow-hidden">
           {/* Header */}
           <div className="bg-gradient-to-r from-teal-600 to-cyan-600 text-white p-4 flex items-center justify-between flex-shrink-0">
             <div className="flex items-center gap-2.5">
