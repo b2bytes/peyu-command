@@ -10,7 +10,6 @@ import {
   RotateCcw, BadgeCheck, Copy, X
 } from 'lucide-react';
 import WhatsAppWidget from '@/components/WhatsAppWidget';
-import AsistenteChat from '@/components/AsistenteChat';
 
 
 const COLORES_MARMOLADO = [
@@ -761,7 +760,6 @@ export default function ProductoDetalle() {
         </div>
 
         <WhatsAppWidget context="producto" productName={producto.nombre} sku={producto.sku} />
-        <AsistenteChat />
     </div>
   );
 }

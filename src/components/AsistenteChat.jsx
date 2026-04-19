@@ -1,85 +1,110 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
+import { useLocation } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Send, MessageCircle, X } from 'lucide-react';
 import ChatProductContentLight from '@/components/chat/ChatMessageContentLight';
 
+const STORAGE_KEY = 'peyu_chat_conversation_id';
+const OPEN_KEY = 'peyu_chat_open';
+
 export default function AsistenteChat() {
-  const [open, setOpen] = useState(false);
+  const location = useLocation();
+  const [open, setOpen] = useState(() => localStorage.getItem(OPEN_KEY) === '1');
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
-  const [conversationId, setConversationId] = useState(null);
+  const [conversationId, setConversationId] = useState(() => localStorage.getItem(STORAGE_KEY) || null);
   const [loading, setLoading] = useState(false);
   const messagesEndRef = useRef(null);
+  const unsubRef = useRef(null);
 
-  const isPublicPage = typeof window !== 'undefined' && (
-    window.location.pathname === '/' || 
-    window.location.pathname.startsWith('/shop') || 
-    window.location.pathname.startsWith('/producto') || 
-    window.location.pathname.startsWith('/b2b') || 
-    window.location.pathname.startsWith('/cart')
+  // Do NOT render on landing — landing page has its own embedded chat UI
+  const path = location.pathname;
+  const isLanding = path === '/';
+  const isPublicPage = (
+    path.startsWith('/shop') ||
+    path.startsWith('/producto') ||
+    path.startsWith('/b2b') ||
+    path.startsWith('/cart') ||
+    path.startsWith('/catalogo-visual') ||
+    path.startsWith('/nosotros') ||
+    path.startsWith('/soporte') ||
+    path.startsWith('/seguimiento') ||
+    path.startsWith('/personalizar')
   );
 
   useEffect(() => {
-    if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
-    }
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  const initConversation = async () => {
-    try {
-      const conv = await base44.agents.createConversation({
-        agent_name: 'asistente_compras',
-        metadata: { context: 'landing' }
-      });
-      setConversationId(conv.id);
-    } catch (e) {
-      console.error('Error:', e);
-    }
-  };
+  useEffect(() => {
+    localStorage.setItem(OPEN_KEY, open ? '1' : '0');
+  }, [open]);
 
-  const sendMessage = async () => {
-    if (!input.trim()) return;
-    const userMsg = input;
-    setInput('');
-    setMessages(prev => [...prev, { role: 'user', content: userMsg }]);
-    setLoading(true);
-
-    try {
-      if (!conversationId) {
-        const conv = await base44.agents.createConversation({
-          agent_name: 'asistente_compras',
-          metadata: { context: 'landing' }
-        });
-        setConversationId(conv.id);
-        await base44.agents.addMessage(conv, { role: 'user', content: userMsg });
-        const unsubscribe = base44.agents.subscribeToConversation(conv.id, (data) => {
-          setMessages(data.messages || []);
-          setLoading(false);
-        });
-        setTimeout(() => unsubscribe(), 30000);
-      } else {
+  // Load existing conversation (if any) from persisted id when mounting on a new page
+  useEffect(() => {
+    if (!conversationId || isLanding) return;
+    let alive = true;
+    (async () => {
+      try {
         const conv = await base44.agents.getConversation(conversationId);
-        await base44.agents.addMessage(conv, { role: 'user', content: userMsg });
-        const unsubscribe = base44.agents.subscribeToConversation(conversationId, (data) => {
-          setMessages(data.messages || []);
-          setLoading(false);
-        });
-        setTimeout(() => unsubscribe(), 30000);
+        if (alive && conv?.messages) setMessages(conv.messages.filter(m => m.content));
+      } catch (e) {
+        localStorage.removeItem(STORAGE_KEY);
+        setConversationId(null);
       }
+    })();
+    return () => { alive = false; };
+  }, [conversationId, isLanding]);
+
+  // Subscribe to live updates while a conversation exists
+  useEffect(() => {
+    if (!conversationId) return;
+    try {
+      unsubRef.current = base44.agents.subscribeToConversation(conversationId, (data) => {
+        const msgs = (data.messages || []).filter(m => m.content);
+        setMessages(msgs);
+        const last = msgs[msgs.length - 1];
+        if (last?.role === 'assistant') setLoading(false);
+      });
+    } catch (e) { /* no-op */ }
+    return () => { unsubRef.current?.(); };
+  }, [conversationId]);
+
+  const sendMessage = useCallback(async () => {
+    const text = input.trim();
+    if (!text || loading) return;
+    setInput('');
+    setLoading(true);
+    setMessages(prev => [...prev, { role: 'user', content: text }]);
+
+    try {
+      let convId = conversationId;
+      let conv;
+      if (!convId) {
+        conv = await base44.agents.createConversation({
+          agent_name: 'asistente_compras',
+          metadata: { context: 'floating' },
+        });
+        convId = conv.id;
+        localStorage.setItem(STORAGE_KEY, convId);
+        setConversationId(convId);
+      } else {
+        conv = await base44.agents.getConversation(convId);
+      }
+      await base44.agents.addMessage(conv, { role: 'user', content: text });
     } catch (e) {
       console.error('Error enviando mensaje:', e);
       setLoading(false);
     }
-  };
+  }, [input, loading, conversationId]);
 
-  const handleOpen = () => {
-    setOpen(true);
-    if (!conversationId) initConversation();
-  };
+  const handleOpen = () => setOpen(true);
 
-  if (!isPublicPage) return null;
+  if (isLanding || !isPublicPage) return null;
+
+  const hasHistory = messages.length > 0;
 
   return (
     <>
@@ -87,33 +112,50 @@ export default function AsistenteChat() {
       {!open && (
         <button
           onClick={handleOpen}
-          className="fixed bottom-6 right-6 z-40 w-14 h-14 bg-gradient-to-br from-[#0F8B6C] to-[#06634D] rounded-full shadow-lg hover:shadow-xl transition-all flex items-center justify-center text-white group hover:scale-110"
-          aria-label="Abrir chat"
+          className="fixed bottom-6 right-6 z-40 w-14 h-14 bg-gradient-to-br from-teal-500 to-cyan-600 rounded-full shadow-xl hover:shadow-2xl transition-all flex items-center justify-center text-white group hover:scale-110"
+          aria-label="Abrir chat con Peyu"
         >
-          <MessageCircle className="w-6 h-6 group-hover:rotate-12 transition-transform" />
+          <span className="text-2xl group-hover:rotate-12 transition-transform">🐢</span>
+          {hasHistory && (
+            <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-white">
+              {messages.filter(m => m.role === 'assistant').length}
+            </span>
+          )}
         </button>
       )}
 
-      {/* Chat Window - FIXED position */}
+      {/* Chat Window */}
       {open && (
-        <div className="fixed bottom-6 right-6 z-50 w-96 max-w-[calc(100vw-2rem)] max-h-[90vh] bg-white rounded-2xl shadow-2xl border border-gray-100 flex flex-col overflow-hidden">
+        <div className="fixed bottom-6 right-6 z-50 w-96 max-w-[calc(100vw-2rem)] max-h-[85vh] bg-white rounded-2xl shadow-2xl border border-gray-100 flex flex-col overflow-hidden">
           {/* Header */}
-          <div className="bg-gradient-to-r from-[#0F8B6C] to-[#06634D] text-white p-4 flex items-center justify-between">
-            <div>
-              <h3 className="font-bold text-sm">Asistente PEYU</h3>
-              <p className="text-xs text-white/70">Respondo en tiempo real</p>
+          <div className="bg-gradient-to-r from-teal-600 to-cyan-600 text-white p-4 flex items-center justify-between flex-shrink-0">
+            <div className="flex items-center gap-2.5">
+              <div className="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center text-xl">🐢</div>
+              <div>
+                <h3 className="font-bold text-sm">Peyu · PEYU Chile</h3>
+                <p className="text-xs text-white/80 flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-green-300 animate-pulse" />
+                  En línea · sigue tu conversación
+                </p>
+              </div>
             </div>
             <button
               onClick={() => setOpen(false)}
               className="text-white hover:bg-white/20 p-1 rounded-lg transition"
-              aria-label="Cerrar chat"
+              aria-label="Minimizar chat"
             >
               <X className="w-5 h-5" />
             </button>
           </div>
 
           {/* Messages */}
-          <div className="flex-1 overflow-y-auto h-96 space-y-3 p-4 bg-gray-50 flex flex-col">
+          <div className="flex-1 overflow-y-auto min-h-[320px] max-h-[60vh] space-y-3 p-4 bg-gray-50 flex flex-col">
+            {messages.length === 0 && !loading && (
+              <div className="text-center text-gray-500 text-xs py-8 space-y-2">
+                <p className="text-sm font-medium">👋 ¡Hola! Soy Peyu</p>
+                <p>Tu asistente de gifting sostenible. Cuéntame qué necesitas.</p>
+              </div>
+            )}
             {messages.map((msg, i) => (
               <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                 <div
@@ -141,21 +183,21 @@ export default function AsistenteChat() {
             <div ref={messagesEndRef} />
           </div>
 
-          {/* Input - Fixed at bottom */}
-          <div className="border-t border-gray-100 p-3 flex gap-2 flex-shrink-0">
+          {/* Input */}
+          <div className="border-t border-gray-100 p-3 flex gap-2 flex-shrink-0 bg-white">
             <Input
               value={input}
               onChange={e => setInput(e.target.value)}
-              onKeyPress={e => e.key === 'Enter' && sendMessage()}
+              onKeyDown={e => e.key === 'Enter' && !loading && sendMessage()}
               placeholder="Escribe tu consulta..."
-              className="text-sm rounded-xl border-gray-200 focus:ring-[#0F8B6C]"
+              className="text-sm rounded-xl border-gray-200 focus-visible:ring-teal-500"
               disabled={loading}
             />
             <Button
               onClick={sendMessage}
               disabled={loading || !input.trim()}
               size="sm"
-              className="bg-[#0F8B6C] hover:bg-[#0a7558] text-white rounded-xl"
+              className="bg-gradient-to-r from-teal-600 to-cyan-600 hover:from-teal-700 hover:to-cyan-700 text-white rounded-xl px-4"
             >
               <Send className="w-4 h-4" />
             </Button>

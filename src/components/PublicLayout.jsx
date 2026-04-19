@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { Home, ShoppingCart, Grid3x3, Building2, HelpCircle, Heart } from 'lucide-react';
 import WhatsAppFloat from './WhatsAppFloat';
+import AsistenteChat from './AsistenteChat';
 
 const MENU_ITEMS = [
   { href: '/', label: 'Inicio', icon: Home, color: 'bg-teal-500' },
@@ -82,6 +83,9 @@ export default function PublicLayout() {
 
       {/* WhatsApp flotante */}
       <WhatsAppFloat />
+
+      {/* Peyu chat flotante — persiste conversación entre páginas */}
+      <AsistenteChat />
     </div>
   );
 }

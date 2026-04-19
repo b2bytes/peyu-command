@@ -29,8 +29,10 @@ const FEATURED_PRODUCTS = [
   { id: 4, nombre: 'Soporte Aguas Andinas', precio: 12999, imagen: 'https://media.base44.com/images/public/69d99b9d61f699701129c103/407f18312_WhatsAppImage2026-03-23at51544PM.jpg', rating: 5.0, reviews: 980, description: 'Plástico 100% reciclado • Diseño moderno • Garantía 10 años' },
 ];
 
+const STORAGE_KEY = 'peyu_chat_conversation_id';
+
 export default function ShopLanding() {
-  const [conversationId, setConversationId] = useState(null);
+  const [conversationId, setConversationId] = useState(() => localStorage.getItem(STORAGE_KEY) || null);
   const [messages, setMessages] = useState([
     { role: 'assistant', content: '¡Hola! Soy Peyu 🐢. Ayudo a empresas y personas a encontrar el regalo perfecto hecho con plástico 100% reciclado.\n\n¿Buscas regalo para empresa o uso personal?' }
   ]);
@@ -55,6 +57,23 @@ export default function ShopLanding() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
+  // Recuperar conversación existente al montar (si el usuario vuelve al home)
+  useEffect(() => {
+    if (!conversationId) return;
+    let alive = true;
+    (async () => {
+      try {
+        const conv = await base44.agents.getConversation(conversationId);
+        const msgs = (conv?.messages || []).filter(m => m.content);
+        if (alive && msgs.length > 0) setMessages(msgs);
+      } catch {
+        localStorage.removeItem(STORAGE_KEY);
+        setConversationId(null);
+      }
+    })();
+    return () => { alive = false; };
+  }, []);
+
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentProductIndex((prev) => (prev + 1) % FEATURED_PRODUCTS.length);
@@ -71,7 +90,7 @@ export default function ShopLanding() {
     setMessages(prev => [...prev, { role: 'user', content: text }]);
 
     try {
-      // Crear o recuperar conversación
+      // Crear o recuperar conversación (persistida para continuar en otras páginas)
       let conv;
       if (!conversationId) {
         conv = await base44.agents.createConversation({
@@ -79,6 +98,7 @@ export default function ShopLanding() {
           metadata: { context: 'landing' }
         });
         setConversationId(conv.id);
+        localStorage.setItem(STORAGE_KEY, conv.id);
       } else {
         conv = await base44.agents.getConversation(conversationId);
       }
