@@ -17,6 +17,7 @@ export default function MockupGenerator({
   productName,
   productCategory,
   productSku,
+  productImageUrl = '',
   initialText = '',
   initialColor = '',
   jobId = null,
@@ -55,6 +56,7 @@ export default function MockupGenerator({
       const res = await base44.functions.invoke('generateMockup', {
         productName,
         productCategory,
+        productImageUrl,
         sku: productSku,
         logoUrl,
         text: texto,

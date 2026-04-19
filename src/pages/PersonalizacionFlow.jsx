@@ -3,13 +3,17 @@ import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { ArrowLeft, ArrowRight, Sparkles, CheckCircle, Upload, Zap } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Sparkles, CheckCircle, Upload, Zap, Loader2, RefreshCw } from 'lucide-react';
 
 const PRODUCTOS = [
-  { id: 'soporte-cel', nombre: 'Soporte Celular', emoji: '📱', precio: 6990, area: '40×20mm' },
-  { id: 'posavaso', nombre: 'Posavaso Circular', emoji: '🟢', precio: 3990, area: '35×35mm' },
-  { id: 'macetero', nombre: 'Macetero Escritorio', emoji: '🌱', precio: 5990, area: '30×15mm' },
-  { id: 'llavero', nombre: 'Llavero Soporte', emoji: '🔑', precio: 2990, area: '20×10mm' },
+  { id: 'soporte-cel', nombre: 'Soporte Celular', emoji: '📱', precio: 6990, area: '40×20mm',
+    imageUrl: 'https://i0.wp.com/peyuchile.cl/wp-content/uploads/2022/08/IMG_2468-scaled.jpg?fit=600%2C600&ssl=1' },
+  { id: 'posavaso', nombre: 'Posavaso Circular', emoji: '🟢', precio: 3990, area: '35×35mm',
+    imageUrl: 'https://i0.wp.com/peyuchile.cl/wp-content/uploads/2022/08/IMG_2453-scaled.jpg?fit=600%2C600&ssl=1' },
+  { id: 'macetero', nombre: 'Macetero Escritorio', emoji: '🌱', precio: 5990, area: '30×15mm',
+    imageUrl: 'https://i0.wp.com/peyuchile.cl/wp-content/uploads/2022/11/bowlcoverst-Photoroom.jpg?fit=600%2C600&ssl=1' },
+  { id: 'llavero', nombre: 'Llavero Soporte', emoji: '🔑', precio: 2990, area: '20×10mm',
+    imageUrl: 'https://i0.wp.com/peyuchile.cl/wp-content/uploads/2022/08/IMG_2468-scaled.jpg?fit=600%2C600&ssl=1' },
 ];
 
 const COLORES = [
@@ -62,32 +66,75 @@ export default function PersonalizacionFlow() {
   const [colorId, setColorId] = useState('negro');
   const [texto, setTexto] = useState('');
   const [archivo, setArchivo] = useState(null);
+  const [logoUrlSubido, setLogoUrlSubido] = useState('');
   const [nombre, setNombre] = useState('');
   const [email, setEmail] = useState('');
   const [telefono, setTelefono] = useState('');
   const [loading, setLoading] = useState(false);
   const [done, setDone] = useState(false);
+  // Mockup IA (misma inteligencia que MockupGenerator por producto)
+  const [mockupUrl, setMockupUrl] = useState('');
+  const [mockupLoading, setMockupLoading] = useState(false);
+  const [mockupError, setMockupError] = useState('');
 
   const producto = PRODUCTOS.find(p => p.id === productoId);
   const color = COLORES.find(c => c.id === colorId);
 
+  // Invalida mockup si cambian inputs
+  const resetMockupIfNeeded = () => { if (mockupUrl) setMockupUrl(''); };
+
+  const handleGenerateMockup = async () => {
+    if (!texto && !archivo) {
+      setMockupError('Agrega un texto o sube tu logo para generar el mockup.');
+      return;
+    }
+    setMockupLoading(true);
+    setMockupError('');
+    try {
+      let logoUrl = logoUrlSubido;
+      if (archivo && !logoUrlSubido) {
+        const { file_url } = await base44.integrations.Core.UploadFile({ file: archivo });
+        logoUrl = file_url;
+        setLogoUrlSubido(file_url);
+      }
+      const res = await base44.functions.invoke('generateMockup', {
+        productName: producto?.nombre,
+        productCategory: 'Personalización',
+        productImageUrl: producto?.imageUrl,
+        sku: productoId,
+        logoUrl,
+        text: texto,
+        color: color?.label,
+      });
+      const url = res?.data?.mockup_url;
+      if (!url) throw new Error(res?.data?.error || 'No se pudo generar el mockup');
+      setMockupUrl(url);
+    } catch (e) {
+      setMockupError(e.message || 'Error generando mockup');
+    } finally {
+      setMockupLoading(false);
+    }
+  };
+
   const handleSubmit = async () => {
     setLoading(true);
-    let logoUrl = '';
-    if (archivo) {
+    let logoUrl = logoUrlSubido;
+    if (archivo && !logoUrlSubido) {
       const { file_url } = await base44.integrations.Core.UploadFile({ file: archivo });
       logoUrl = file_url;
     }
     const job = await base44.entities.PersonalizationJob.create({
       source_type: 'Pedido B2C', product_name: producto?.nombre || '', sku: productoId,
       quantity: 1, laser_required: true, laser_text: texto, logo_url: logoUrl,
-      color_producto: color?.label || '', status: 'Pendiente',
+      color_producto: color?.label || '', status: mockupUrl ? 'Preview generado' : 'Pendiente',
+      mockup_urls: mockupUrl ? [mockupUrl] : [],
       customer_name: nombre, customer_email: email, estimated_minutes: 5,
     });
-    // Generar mockup real con IA en background (no bloquea confirmación)
-    if (job?.id && (logoUrl || texto)) {
+    // Si no hay mockup aún, generarlo en background (no bloquea)
+    if (job?.id && !mockupUrl && (logoUrl || texto)) {
       base44.functions.invoke('generateMockup', {
         productName: producto?.nombre, productCategory: 'Personalización',
+        productImageUrl: producto?.imageUrl,
         sku: productoId, logoUrl, text: texto, color: color?.label,
         jobId: job.id,
       }).catch(() => {});
@@ -144,7 +191,7 @@ export default function PersonalizacionFlow() {
       </div>
       <div className="grid grid-cols-2 gap-3">
         {PRODUCTOS.map(p => (
-          <button key={p.id} onClick={() => setProductoId(p.id)}
+          <button key={p.id} onClick={() => { setProductoId(p.id); setMockupUrl(''); }}
             className={`p-4 rounded-2xl border-2 transition-all text-left hover:-translate-y-0.5 ${productoId === p.id ? 'border-gray-900 bg-gray-900 text-white shadow-lg' : 'border-gray-200 bg-white hover:border-gray-900'}`}>
             <div className="text-3xl mb-2">{p.emoji}</div>
             <div className={`font-semibold text-sm ${productoId === p.id ? 'text-white' : 'text-gray-900'}`}>{p.nombre}</div>
@@ -162,7 +209,7 @@ export default function PersonalizacionFlow() {
       </div>
       <div className="space-y-2">
         {COLORES.map(c => (
-          <button key={c.id} onClick={() => setColorId(c.id)}
+          <button key={c.id} onClick={() => { setColorId(c.id); setMockupUrl(''); }}
             className={`w-full flex items-center gap-4 p-4 rounded-2xl border-2 transition-all ${colorId === c.id ? 'border-gray-900 bg-gray-50 shadow-md' : 'border-gray-200 bg-white hover:border-gray-400'}`}>
             <div className="w-9 h-9 rounded-xl border-2 border-white shadow-md flex-shrink-0" style={{ backgroundColor: c.hex }} />
             <span className="font-semibold text-sm text-gray-900">{c.label}</span>
@@ -172,17 +219,29 @@ export default function PersonalizacionFlow() {
       </div>
     </div>,
 
-    // Step 2 — Personalización
+    // Step 2 — Personalización + Mockup IA real
     <div key="pers" className="space-y-5">
       <div className="text-center">
         <h2 className="text-2xl font-poppins font-bold text-gray-900 mb-1">Tu personalización</h2>
         <p className="text-gray-400 text-sm">Grabado láser UV permanente e irrepetible</p>
       </div>
-      <LaserPreview texto={texto} productoId={productoId} colorId={colorId} />
+
+      {/* Preview: mockup IA real si existe, si no → placeholder estilizado */}
+      {mockupUrl ? (
+        <div className="relative rounded-3xl overflow-hidden border border-gray-200 bg-gray-50 shadow-lg">
+          <img src={mockupUrl} alt="Mockup generado con IA" className="w-full h-auto" />
+          <div className="absolute top-3 left-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-[10px] font-bold px-2.5 py-1 rounded-full flex items-center gap-1 shadow">
+            <Sparkles className="w-3 h-3" /> Generado con IA
+          </div>
+        </div>
+      ) : (
+        <LaserPreview texto={texto} productoId={productoId} colorId={colorId} />
+      )}
+
       <div className="space-y-3">
         <div>
           <label className="text-xs font-semibold text-gray-400 block mb-1.5">Texto a grabar (máx. 20 caracteres)</label>
-          <Input value={texto} onChange={e => setTexto(e.target.value.slice(0, 20))}
+          <Input value={texto} onChange={e => { setTexto(e.target.value.slice(0, 20)); resetMockupIfNeeded(); }}
             placeholder="Tu nombre, empresa, frase..."
             className="text-center font-bold tracking-widest h-11 rounded-xl border-gray-200 bg-gray-50 focus:bg-white" />
           <p className="text-xs text-gray-300 text-right mt-1">{texto.length}/20</p>
@@ -201,8 +260,31 @@ export default function PersonalizacionFlow() {
             <p className="text-sm text-gray-400">PNG, SVG, AI · Subir logo</p>
           )}
           <input id="pers-logo" type="file" className="hidden" accept=".png,.svg,.ai,.pdf,.jpg"
-            onChange={e => setArchivo(e.target.files[0])} />
+            onChange={e => { setArchivo(e.target.files[0]); setLogoUrlSubido(''); resetMockupIfNeeded(); }} />
         </div>
+
+        {/* Botón de generar mockup real con IA */}
+        <Button
+          type="button"
+          onClick={handleGenerateMockup}
+          disabled={mockupLoading || (!texto && !archivo)}
+          className="w-full h-12 rounded-2xl bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-bold gap-2 shadow-lg shadow-purple-500/20"
+        >
+          {mockupLoading ? (
+            <><Loader2 className="w-4 h-4 animate-spin" /> Generando mockup con IA... (~15s)</>
+          ) : mockupUrl ? (
+            <><RefreshCw className="w-4 h-4" /> Regenerar mockup con IA</>
+          ) : (
+            <><Sparkles className="w-4 h-4" /> Ver mockup realista con IA</>
+          )}
+        </Button>
+
+        {mockupError && (
+          <div className="bg-red-50 border border-red-200 text-red-600 text-xs rounded-xl px-3 py-2">{mockupError}</div>
+        )}
+        <p className="text-[10px] text-gray-400 text-center">
+          {mockupUrl ? '✓ Mockup incluido en tu pedido · resultado referencial' : 'Simulación fotorrealista sobre tu producto real · opcional'}
+        </p>
       </div>
     </div>,
 

@@ -787,6 +787,7 @@ export default function ProductoDetalle() {
           productName={producto.nombre}
           productCategory={producto.categoria}
           productSku={producto.sku}
+          productImageUrl={galeria[vistaActiva] || imgPrincipal}
           initialText={personalizacion}
           initialColor={colores.find(c => c.id === colorSeleccionado)?.label || ''}
           onGenerated={(url) => setMockupGenerado(url)}
