@@ -1,0 +1,106 @@
+{
+  "name": "BlogPost",
+  "type": "object",
+  "properties": {
+    "titulo": {
+      "type": "string",
+      "title": "T\u00edtulo"
+    },
+    "slug": {
+      "type": "string",
+      "title": "Slug (URL)"
+    },
+    "excerpt": {
+      "type": "string",
+      "title": "Resumen corto"
+    },
+    "contenido_md": {
+      "type": "string",
+      "title": "Contenido (Markdown)"
+    },
+    "categoria": {
+      "type": "string",
+      "title": "Categor\u00eda",
+      "enum": [
+        "Historia PEYU",
+        "Reciclaje y Medio Ambiente",
+        "Gu\u00edas y Tips",
+        "Casos de \u00c9xito",
+        "Noticias y Prensa",
+        "Regalos Corporativos",
+        "Educaci\u00f3n Ambiental"
+      ]
+    },
+    "tags": {
+      "type": "array",
+      "title": "Tags",
+      "items": {
+        "type": "string"
+      }
+    },
+    "imagen_portada": {
+      "type": "string",
+      "title": "URL imagen portada"
+    },
+    "imagenes_galeria": {
+      "type": "array",
+      "title": "Galer\u00eda de im\u00e1genes",
+      "items": {
+        "type": "string"
+      }
+    },
+    "autor": {
+      "type": "string",
+      "title": "Autor",
+      "default": "Equipo PEYU"
+    },
+    "fecha_publicacion": {
+      "type": "string",
+      "title": "Fecha publicaci\u00f3n",
+      "format": "date"
+    },
+    "tiempo_lectura_min": {
+      "type": "number",
+      "title": "Tiempo lectura (min)",
+      "default": 5
+    },
+    "fuente_original": {
+      "type": "string",
+      "title": "Fuente original (medio)"
+    },
+    "fuente_url": {
+      "type": "string",
+      "title": "URL fuente"
+    },
+    "destacado": {
+      "type": "boolean",
+      "title": "Destacado",
+      "default": false
+    },
+    "publicado": {
+      "type": "boolean",
+      "title": "Publicado",
+      "default": true
+    },
+    "generado_por_ia": {
+      "type": "boolean",
+      "title": "Generado por IA",
+      "default": false
+    },
+    "vistas": {
+      "type": "number",
+      "title": "Vistas",
+      "default": 0
+    },
+    "seo_description": {
+      "type": "string",
+      "title": "Meta descripci\u00f3n SEO"
+    }
+  },
+  "required": [
+    "titulo",
+    "slug",
+    "categoria",
+    "excerpt"
+  ]
+}
