@@ -3,6 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Send, MessageCircle, X } from 'lucide-react';
+import ChatProductContentLight from '@/components/chat/ChatMessageContentLight';
 
 export default function AsistenteChat() {
   const [open, setOpen] = useState(false);
@@ -116,13 +117,15 @@ export default function AsistenteChat() {
             {messages.map((msg, i) => (
               <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                 <div
-                  className={`max-w-[75%] rounded-2xl px-4 py-2.5 text-sm ${
+                  className={`rounded-2xl px-4 py-2.5 text-sm ${
                     msg.role === 'user'
-                      ? 'bg-gray-900 text-white rounded-br-none'
-                      : 'bg-white border border-gray-200 text-gray-900 rounded-bl-none'
+                      ? 'bg-gray-900 text-white rounded-br-none max-w-[75%]'
+                      : 'bg-white border border-gray-200 text-gray-900 rounded-bl-none max-w-[90%] w-full'
                   }`}
                 >
-                  {msg.content}
+                  {msg.role === 'assistant'
+                    ? <ChatProductContentLight content={msg.content} />
+                    : msg.content}
                 </div>
               </div>
             ))}

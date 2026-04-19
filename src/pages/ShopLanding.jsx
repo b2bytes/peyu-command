@@ -7,6 +7,7 @@ import PEYULogo from '@/components/PEYULogo';
 import { Send, ShoppingCart, Bell, Star, ChevronLeft, ChevronRight, Home, Grid3x3, Building2, HelpCircle, Heart } from 'lucide-react';
 import MobileMenu from '@/components/MobileMenu';
 import WhatsAppFloat from '@/components/WhatsAppFloat';
+import ChatMessageContent from '@/components/chat/ChatMessageContent';
 
 const OCASIONES = [
   { id: 'navidad', label: 'Navidad', icon: '🎄' },
@@ -267,8 +268,10 @@ export default function ShopLanding() {
                       {msg.role === 'assistant' && (
                         <div className="w-6 h-6 rounded-full bg-teal-500/30 flex items-center justify-center flex-shrink-0 text-xs">🐢</div>
                       )}
-                      <div className={`rounded-xl px-3.5 py-2.5 text-xs sm:text-sm max-w-[75%] break-words leading-relaxed ${msg.role === 'user' ? 'bg-teal-600 text-white rounded-br-none' : 'bg-white/15 text-white border border-white/25 rounded-bl-none backdrop-blur-sm'}`}>
-                        {msg.content}
+                      <div className={`rounded-xl px-3.5 py-2.5 text-xs sm:text-sm break-words leading-relaxed ${msg.role === 'user' ? 'bg-teal-600 text-white rounded-br-none max-w-[75%]' : 'bg-white/15 text-white border border-white/25 rounded-bl-none backdrop-blur-sm max-w-[85%] w-full'}`}>
+                        {msg.role === 'assistant'
+                          ? <ChatMessageContent content={msg.content} />
+                          : msg.content}
                       </div>
                     </div>
                   ))}
