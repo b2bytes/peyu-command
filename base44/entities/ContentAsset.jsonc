@@ -1,0 +1,103 @@
+{
+  "name": "ContentAsset",
+  "type": "object",
+  "properties": {
+    "nombre": {
+      "type": "string",
+      "title": "Nombre"
+    },
+    "tipo": {
+      "type": "string",
+      "title": "Tipo",
+      "enum": [
+        "Imagen",
+        "Video",
+        "GIF",
+        "Infograf\u00eda",
+        "Carrusel",
+        "Logo",
+        "Plantilla",
+        "Copy",
+        "Audio"
+      ]
+    },
+    "url": {
+      "type": "string",
+      "title": "URL asset"
+    },
+    "thumbnail_url": {
+      "type": "string",
+      "title": "URL miniatura"
+    },
+    "formato": {
+      "type": "string",
+      "title": "Formato",
+      "enum": [
+        "Cuadrado 1:1",
+        "Story 9:16",
+        "Reel 9:16",
+        "Horizontal 16:9",
+        "Vertical 4:5",
+        "Pinterest 2:3",
+        "Otro"
+      ]
+    },
+    "dimension_px": {
+      "type": "string",
+      "title": "Dimensi\u00f3n (px)"
+    },
+    "generado_por_ia": {
+      "type": "boolean",
+      "title": "Generado por IA",
+      "default": false
+    },
+    "prompt_ia": {
+      "type": "string",
+      "title": "Prompt IA (si aplica)"
+    },
+    "categoria": {
+      "type": "string",
+      "title": "Categor\u00eda",
+      "enum": [
+        "Producto",
+        "Sostenibilidad",
+        "Lifestyle",
+        "Proceso productivo",
+        "Equipo",
+        "Testimonios",
+        "Branding",
+        "Promoci\u00f3n"
+      ]
+    },
+    "producto_sku": {
+      "type": "string",
+      "title": "SKU asociado"
+    },
+    "tags": {
+      "type": "array",
+      "title": "Tags",
+      "items": {
+        "type": "string"
+      }
+    },
+    "usado_en_posts": {
+      "type": "number",
+      "title": "Veces usado en posts",
+      "default": 0
+    },
+    "aprobado": {
+      "type": "boolean",
+      "title": "Aprobado para uso",
+      "default": false
+    },
+    "notas": {
+      "type": "string",
+      "title": "Notas"
+    }
+  },
+  "required": [
+    "nombre",
+    "tipo",
+    "url"
+  ]
+}

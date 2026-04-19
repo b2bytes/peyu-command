@@ -50,6 +50,7 @@ const navGroups = [
       { path: "/admin/financiero", label: "Financiero", icon: TrendingUp },
       { path: "/admin/flujo-caja", label: "Flujo de Caja", icon: Store },
       { path: "/admin/marketing", label: "Marketing", icon: Megaphone },
+      { path: "/admin/marketing-hub", label: "Marketing Hub IA", icon: Sparkles },
       { path: "/admin/analitica", label: "Analítica", icon: BarChart3 },
       { path: "/admin/equipo", label: "Equipo / RRHH", icon: HardHat },
       { path: "/admin/okrs", label: "OKRs & Metas", icon: Flag },

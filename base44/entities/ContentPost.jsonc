@@ -1,0 +1,175 @@
+{
+  "name": "ContentPost",
+  "type": "object",
+  "properties": {
+    "titulo": {
+      "type": "string",
+      "title": "T\u00edtulo interno"
+    },
+    "red_social": {
+      "type": "string",
+      "title": "Red Social",
+      "enum": [
+        "Instagram",
+        "Facebook",
+        "LinkedIn",
+        "TikTok",
+        "Twitter/X",
+        "YouTube",
+        "Pinterest",
+        "Threads"
+      ]
+    },
+    "tipo_post": {
+      "type": "string",
+      "title": "Tipo",
+      "enum": [
+        "Reel",
+        "Post Imagen",
+        "Carrusel",
+        "Story",
+        "Video largo",
+        "Texto",
+        "Live"
+      ]
+    },
+    "copy": {
+      "type": "string",
+      "title": "Copy / Texto"
+    },
+    "hashtags": {
+      "type": "string",
+      "title": "Hashtags"
+    },
+    "cta": {
+      "type": "string",
+      "title": "Call-to-Action"
+    },
+    "imagen_url": {
+      "type": "string",
+      "title": "URL Imagen/Video"
+    },
+    "imagenes_galeria": {
+      "type": "array",
+      "title": "Galer\u00eda (carrusel)",
+      "items": {
+        "type": "string"
+      }
+    },
+    "fecha_publicacion": {
+      "type": "string",
+      "title": "Fecha publicaci\u00f3n programada"
+    },
+    "hora_publicacion": {
+      "type": "string",
+      "title": "Hora \u00f3ptima"
+    },
+    "estado": {
+      "type": "string",
+      "title": "Estado",
+      "enum": [
+        "Borrador",
+        "En revisi\u00f3n",
+        "Aprobado",
+        "Programado",
+        "Publicado",
+        "Pausado",
+        "Archivado"
+      ],
+      "default": "Borrador"
+    },
+    "pillar_contenido": {
+      "type": "string",
+      "title": "Pilar de contenido",
+      "enum": [
+        "Producto",
+        "Sostenibilidad/ESG",
+        "Educativo",
+        "Detr\u00e1s de escena",
+        "Testimonios",
+        "Promoci\u00f3n",
+        "Branding",
+        "Comunidad"
+      ]
+    },
+    "objetivo": {
+      "type": "string",
+      "title": "Objetivo",
+      "enum": [
+        "Awareness",
+        "Engagement",
+        "Tr\u00e1fico web",
+        "Leads B2B",
+        "Conversi\u00f3n B2C",
+        "Fidelizaci\u00f3n"
+      ]
+    },
+    "producto_relacionado_sku": {
+      "type": "string",
+      "title": "SKU relacionado"
+    },
+    "campana_id": {
+      "type": "string",
+      "title": "ID Campa\u00f1a (si pertenece)"
+    },
+    "generado_por_ia": {
+      "type": "boolean",
+      "title": "Generado por IA",
+      "default": false
+    },
+    "agente_creador": {
+      "type": "string",
+      "title": "Agente IA que lo cre\u00f3"
+    },
+    "impresiones": {
+      "type": "number",
+      "title": "Impresiones"
+    },
+    "alcance": {
+      "type": "number",
+      "title": "Alcance"
+    },
+    "likes": {
+      "type": "number",
+      "title": "Likes"
+    },
+    "comentarios": {
+      "type": "number",
+      "title": "Comentarios"
+    },
+    "shares": {
+      "type": "number",
+      "title": "Shares"
+    },
+    "saves": {
+      "type": "number",
+      "title": "Guardados"
+    },
+    "clicks": {
+      "type": "number",
+      "title": "Clicks"
+    },
+    "engagement_rate": {
+      "type": "number",
+      "title": "Engagement Rate (%)"
+    },
+    "link_publicado": {
+      "type": "string",
+      "title": "URL post publicado"
+    },
+    "post_id_externo": {
+      "type": "string",
+      "title": "ID del post en la red"
+    },
+    "notas": {
+      "type": "string",
+      "title": "Notas"
+    }
+  },
+  "required": [
+    "titulo",
+    "red_social",
+    "tipo_post",
+    "estado"
+  ]
+}

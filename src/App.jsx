@@ -14,6 +14,7 @@ import ShopLanding from './pages/ShopLanding';
 import PipelineB2B from './pages/PipelineB2B';
 import Operaciones from './pages/Operaciones';
 import Marketing from './pages/Marketing';
+import MarketingHub from './pages/MarketingHub';
 import Analitica from './pages/Analitica';
 import Catalogo from './pages/Catalogo';
 import CPQCalculator from './pages/CPQCalculator';
@@ -112,6 +113,7 @@ const AuthenticatedApp = () => {
         <Route path="alertas" element={<Alertas />} />
         <Route path="operaciones" element={<Operaciones />} />
         <Route path="marketing" element={<Marketing />} />
+        <Route path="marketing-hub" element={<MarketingHub />} />
         <Route path="analitica" element={<Analitica />} />
         <Route path="propuestas" element={<AdminPropuestas />} />
         <Route path="estado-actual" element={<EstadoActual />} />

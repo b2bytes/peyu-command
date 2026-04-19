@@ -1,0 +1,94 @@
+{
+  "name": "ContentCalendar",
+  "type": "object",
+  "properties": {
+    "nombre": {
+      "type": "string",
+      "title": "Nombre del calendario"
+    },
+    "periodo": {
+      "type": "string",
+      "title": "Per\u00edodo",
+      "enum": [
+        "Semanal",
+        "Quincenal",
+        "Mensual",
+        "Trimestral",
+        "Campa\u00f1a puntual"
+      ]
+    },
+    "fecha_inicio": {
+      "type": "string",
+      "title": "Fecha inicio"
+    },
+    "fecha_fin": {
+      "type": "string",
+      "title": "Fecha fin"
+    },
+    "objetivo_principal": {
+      "type": "string",
+      "title": "Objetivo estrat\u00e9gico"
+    },
+    "okr_relacionado": {
+      "type": "string",
+      "title": "OKR vinculado"
+    },
+    "temas_clave": {
+      "type": "array",
+      "title": "Temas / Pilares",
+      "items": {
+        "type": "string"
+      }
+    },
+    "redes_incluidas": {
+      "type": "array",
+      "title": "Redes incluidas",
+      "items": {
+        "type": "string"
+      }
+    },
+    "frecuencia_post_semana": {
+      "type": "number",
+      "title": "Posts por semana"
+    },
+    "num_posts_planificados": {
+      "type": "number",
+      "title": "N\u00b0 posts planificados"
+    },
+    "num_posts_publicados": {
+      "type": "number",
+      "title": "N\u00b0 posts publicados"
+    },
+    "estado": {
+      "type": "string",
+      "title": "Estado",
+      "enum": [
+        "Borrador",
+        "Activo",
+        "Completado",
+        "Archivado"
+      ],
+      "default": "Borrador"
+    },
+    "responsable": {
+      "type": "string",
+      "title": "Responsable"
+    },
+    "generado_por_ia": {
+      "type": "boolean",
+      "title": "Generado por IA",
+      "default": false
+    },
+    "notas_estrategia": {
+      "type": "string",
+      "title": "Notas de estrategia"
+    }
+  },
+  "required": [
+    "nombre",
+    "periodo",
+    "fecha_inicio",
+    "fecha_fin",
+    "estado"
+  ]
+}
