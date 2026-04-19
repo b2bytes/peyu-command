@@ -2,7 +2,34 @@ import { useEffect, useState, memo } from 'react';
 import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { getProductImage } from '@/utils/productImages';
-import { ShoppingCart, Building2, MessageCircle, Star, Sparkles, ArrowRight, Package } from 'lucide-react';
+import { ShoppingCart, Building2, MessageCircle, Star, Sparkles, ArrowRight, Package, Check } from 'lucide-react';
+
+// Extracts the last quantity mentioned by the user in the current conversation
+// (scans backwards through messages stored on DOM-adjacent state — we keep it
+// stateless here and rely on a small helper reading the URL or returning null).
+function getChatQty() {
+  // Look for a global hint stashed by the page (set by ShopLanding/AsistenteChat)
+  try {
+    const v = parseInt(localStorage.getItem('peyu_chat_last_qty') || '', 10);
+    return Number.isFinite(v) && v > 0 ? v : null;
+  } catch { return null; }
+}
+
+function addToCart(producto, cantidad) {
+  const carrito = JSON.parse(localStorage.getItem('carrito') || '[]');
+  const precio = Math.floor((producto.precio_b2c || 9990) * 0.85);
+  carrito.push({
+    id: Math.random(),
+    productoId: producto.id,
+    nombre: producto.nombre,
+    precio,
+    cantidad: cantidad || 1,
+    color: null,
+    personalizacion: null,
+    imagen: getProductImage(producto.sku, producto.categoria),
+  });
+  localStorage.setItem('carrito', JSON.stringify(carrito));
+}
 
 /**
  * Parses the assistant text looking for tags like:
@@ -16,6 +43,7 @@ const TAG_REGEX = /\[\[(PRODUCTO|ACTION):([^\]]+)\]\]/g;
 function ProductCard({ sku }) {
   const [producto, setProducto] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [added, setAdded] = useState(false);
 
   useEffect(() => {
     let alive = true;
@@ -24,6 +52,18 @@ function ProductCard({ sku }) {
       .finally(() => { if (alive) setLoading(false); });
     return () => { alive = false; };
   }, [sku]);
+
+  const qtyHint = getChatQty();
+  const b2bUrl = producto
+    ? `/b2b/contacto?productoId=${producto.id}&nombre=${encodeURIComponent(producto.nombre || '')}${qtyHint ? `&qty=${qtyHint}` : ''}${producto.moq_personalizacion ? '&personalizacion=1' : ''}&from=chat&notas=${encodeURIComponent('Solicitud iniciada desde chat Peyu. Producto: ' + producto.nombre + (qtyHint ? ` · Cantidad sugerida: ${qtyHint}u.` : ''))}`
+    : '#';
+
+  const handleAdd = () => {
+    if (!producto) return;
+    addToCart(producto, qtyHint && qtyHint < 50 ? qtyHint : 1);
+    setAdded(true);
+    setTimeout(() => setAdded(false), 2500);
+  };
 
   if (loading) {
     return (
@@ -69,18 +109,29 @@ function ProductCard({ sku }) {
           )}
         </div>
       </div>
-      <div className="grid grid-cols-2 gap-1.5 mt-2.5">
+      <div className="grid grid-cols-3 gap-1.5 mt-2.5">
         <Link to={`/producto/${producto.id}`}>
           <button className="w-full flex items-center justify-center gap-1 bg-white/10 hover:bg-white/20 border border-white/20 text-white text-[11px] font-semibold rounded-lg py-1.5 transition-all">
-            <Package className="w-3 h-3" /> Ver detalle
+            <Package className="w-3 h-3" /> Ficha
           </button>
         </Link>
-        <Link to={`/b2b/contacto?productoId=${producto.id}&nombre=${encodeURIComponent(producto.nombre || '')}`}>
+        <button
+          onClick={handleAdd}
+          className={`w-full flex items-center justify-center gap-1 text-[11px] font-bold rounded-lg py-1.5 transition-all border ${added ? 'bg-green-500/30 border-green-400/50 text-green-100' : 'bg-white/10 hover:bg-white/20 border-white/20 text-white'}`}
+        >
+          {added ? <><Check className="w-3 h-3" /> Agregado</> : <><ShoppingCart className="w-3 h-3" /> Comprar</>}
+        </button>
+        <Link to={b2bUrl}>
           <button className="w-full flex items-center justify-center gap-1 bg-gradient-to-r from-teal-500 to-cyan-500 hover:from-teal-600 hover:to-cyan-600 text-white text-[11px] font-bold rounded-lg py-1.5 transition-all shadow-md">
-            <Building2 className="w-3 h-3" /> Cotizar B2B
+            <Building2 className="w-3 h-3" /> B2B
           </button>
         </Link>
       </div>
+      {qtyHint && (
+        <p className="text-[10px] text-white/50 mt-1.5 text-center">
+          Peyu detectó <span className="font-bold text-teal-300">{qtyHint}u.</span> — precargadas en la cotización
+        </p>
+      )}
     </div>
   );
 }

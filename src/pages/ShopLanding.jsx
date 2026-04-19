@@ -89,6 +89,13 @@ export default function ShopLanding() {
     setLoading(true);
     setMessages(prev => [...prev, { role: 'user', content: text }]);
 
+    // Detectar cantidad mencionada por el usuario (ej: "necesito 100 unidades")
+    const qtyMatch = text.match(/\b(\d{2,5})\b\s*(u\.?|unidades|pcs|piezas|regalos)?/i);
+    if (qtyMatch) {
+      const n = parseInt(qtyMatch[1], 10);
+      if (n >= 10 && n <= 10000) localStorage.setItem('peyu_chat_last_qty', String(n));
+    }
+
     try {
       // Crear o recuperar conversación (persistida para continuar en otras páginas)
       let conv;

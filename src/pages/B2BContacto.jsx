@@ -51,13 +51,22 @@ export default function B2BContacto() {
   const [searchParams] = useSearchParams();
   const productoId = searchParams.get('productoId');
   const productoNombre = searchParams.get('nombre');
+  const qtyParam = parseInt(searchParams.get('qty') || '', 10);
+  const personalizacionParam = searchParams.get('personalizacion') === '1';
+  const fromChat = searchParams.get('from') === 'chat';
+  const notasParam = searchParams.get('notas') || '';
   const [sidebarExpanded, setSidebarExpanded] = useState(false);
 
   const [form, setForm] = useState({
     contact_name: '', company_name: '', email: '', phone: '', rut: '',
-    product_interest: productoNombre || '', qty_estimate: '', delivery_date: '',
-    personalization_needs: false, has_plastic: false, notes: '',
-    source: 'Formulario Web', status: 'Nuevo', urgency: 'Normal',
+    product_interest: productoNombre || '',
+    qty_estimate: Number.isFinite(qtyParam) && qtyParam > 0 ? String(qtyParam) : '',
+    delivery_date: '',
+    personalization_needs: personalizacionParam,
+    has_plastic: false,
+    notes: notasParam,
+    source: 'Formulario Web',
+    status: 'Nuevo', urgency: 'Normal',
   });
 
   const [archivo, setArchivo] = useState(null);
@@ -85,7 +94,8 @@ export default function B2BContacto() {
     const leadCreado = await base44.entities.B2BLead.create({
       ...form, qty_estimate: Number(form.qty_estimate) || 0,
       lead_score: score, logo_url: logoUrl, brief_url: logoUrl,
-      urgency, utm_source: document.referrer || 'directo',
+      urgency,
+      utm_source: fromChat ? 'chat_peyu' : (document.referrer || 'directo'),
     });
     if (leadCreado?.id) {
       base44.functions.invoke('scoreLead', { leadId: leadCreado.id }).catch(() => {});
@@ -162,6 +172,11 @@ export default function B2BContacto() {
 
             {/* Hero */}
             <div className="text-center space-y-4">
+              {fromChat && (
+                <div className="inline-flex items-center gap-2 bg-purple-500/20 border border-purple-400/40 text-purple-200 px-4 py-1.5 rounded-full text-xs font-semibold backdrop-blur-sm">
+                  🐢 Peyu ya precargó tu solicitud — solo completa tus datos
+                </div>
+              )}
               <div className="inline-flex items-center gap-2 bg-teal-500/20 border border-teal-400/40 text-teal-300 px-4 py-1.5 rounded-full text-sm font-semibold backdrop-blur-sm">
                 <Building2 className="w-4 h-4" /> Cotización Corporativa B2B
               </div>

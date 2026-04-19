@@ -93,6 +93,13 @@ export default function AsistenteChat() {
     setLoading(true);
     setMessages(prev => [...prev, { role: 'user', content: text }]);
 
+    // Detectar cantidad para precargar cotizador B2B desde tarjetas
+    const qtyMatch = text.match(/\b(\d{2,5})\b\s*(u\.?|unidades|pcs|piezas|regalos)?/i);
+    if (qtyMatch) {
+      const n = parseInt(qtyMatch[1], 10);
+      if (n >= 10 && n <= 10000) localStorage.setItem('peyu_chat_last_qty', String(n));
+    }
+
     try {
       let convId = conversationId;
       let conv;
