@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
-import { Home, ShoppingCart, Grid3x3, Building2, HelpCircle, Heart, BookOpen } from 'lucide-react';
+import { Home, ShoppingCart, Grid3x3, Building2, HelpCircle, Heart, BookOpen, Sparkles, Package } from 'lucide-react';
 import WhatsAppFloat from './WhatsAppFloat';
 import AsistenteChat from './AsistenteChat';
 import ChatCartToast from './chat/ChatCartToast';
@@ -9,9 +9,11 @@ const MENU_ITEMS = [
   { href: '/', label: 'Inicio', icon: Home, color: 'bg-teal-500' },
   { href: '/shop', label: 'Tienda', icon: ShoppingCart, color: 'bg-teal-500' },
   { href: '/catalogo-visual', label: 'Catálogo', icon: Grid3x3, color: 'bg-teal-500' },
+  { href: '/personalizar', label: 'Personalizar', icon: Sparkles, color: 'bg-teal-500' },
   { href: '/blog', label: 'Blog', icon: BookOpen, color: 'bg-teal-500' },
   { href: '/b2b/contacto', label: 'B2B', icon: Building2, color: 'bg-teal-500' },
   { href: '/nosotros', label: 'Nosotros', icon: Heart, color: 'bg-teal-500' },
+  { href: '/seguimiento', label: 'Seguimiento', icon: Package, color: 'bg-teal-500' },
   { href: '/soporte', label: 'Soporte', icon: HelpCircle, color: 'bg-teal-500' },
 ];
 
