@@ -7,6 +7,7 @@ import { ArrowLeft, MessageCircle, Upload, CheckCircle, Building2, Package, Cloc
 import MobileMenu from '@/components/MobileMenu';
 import WhatsAppFloat from '@/components/WhatsAppFloat';
 import LogoMockupPreview from '@/components/b2b/LogoMockupPreview';
+import { getProductImage } from '@/utils/productImages';
 
 const MENU_ITEMS = [
   { href: '/', label: 'Inicio', icon: Home },
@@ -113,11 +114,24 @@ export default function B2BContacto() {
     });
     if (leadCreado?.id) {
       base44.functions.invoke('scoreLead', { leadId: leadCreado.id }).catch(() => {});
-      // Generar mockup real con IA y guardarlo en el lead (entra a la propuesta y PDF)
+      // Generar mockup real con IA sobre la imagen REAL del producto elegido
       if (logoUrl || form.company_name) {
+        // Buscar la imagen real del producto que eligió el cliente en el catálogo
+        let productImageUrl = '';
+        let productCategory = 'Corporativo';
+        try {
+          const productos = await base44.entities.Producto.filter({ activo: true });
+          const prod = productos.find(p => p.nombre === form.product_interest);
+          if (prod) {
+            productImageUrl = getProductImage(prod.sku, prod.categoria);
+            productCategory = prod.categoria || 'Corporativo';
+          }
+        } catch {}
+
         base44.functions.invoke('generateMockup', {
           productName: form.product_interest || 'Producto Peyu',
-          productCategory: 'Corporativo',
+          productCategory,
+          productImageUrl,
           logoUrl,
           text: logoUrl ? '' : form.company_name,
         }).then(res => {

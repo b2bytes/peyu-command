@@ -84,12 +84,25 @@ export default function MockupGenerator({
             Mockup con IA — {productName}
           </DialogTitle>
           <DialogDescription>
-            Sube tu logo o escribe un texto. Generamos una simulación fotorrealista del grabado láser UV sobre tu producto en segundos.
+            Generamos el grabado láser sobre la <strong>imagen real del producto que elegiste</strong>.
           </DialogDescription>
         </DialogHeader>
 
         {!mockupUrl && (
           <div className="space-y-4">
+            {/* Preview de la imagen BASE sobre la que se generará el mockup */}
+            {productImageUrl ? (
+              <div className="relative rounded-2xl overflow-hidden border border-gray-200 bg-gray-50">
+                <img src={productImageUrl} alt={productName} className="w-full h-40 object-contain bg-white" />
+                <div className="absolute top-2 left-2 bg-gray-900/85 text-white text-[10px] font-bold px-2 py-1 rounded-full flex items-center gap-1">
+                  ✓ Esta es la imagen base
+                </div>
+              </div>
+            ) : (
+              <div className="rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-xs p-3">
+                ⚠️ No detectamos imagen del producto — el mockup se generará desde cero.
+              </div>
+            )}
             <div>
               <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Texto a grabar</label>
               <Input

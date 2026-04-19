@@ -85,21 +85,22 @@ Deno.serve(async (req) => {
 
     if (hasProductRef) {
       // La imagen de referencia es el producto real → no inventar uno nuevo
-      prompt += `CRITICAL: Use the EXACT product shown in the reference image as the base. Do NOT invent or replace the product. Keep the same product, same shape, same material, same angle, same lighting as the reference image. `;
-      prompt += `This is a Peyu Chile product: "${productName}"${productCategory ? ` (${productCategory})` : ''}, made from 100% recycled plastic in Chile. `;
+      prompt += `⚠️ ABSOLUTE CRITICAL RULE: The FIRST reference image IS the exact product the customer chose from our e-commerce. You MUST use it as the base image. DO NOT generate a new product. DO NOT change the product shape, color, material, angle, lighting, background, or framing. Preserve the image EXACTLY as provided — you are ONLY allowed to add a laser engraving on top of it. `;
+      prompt += `Product: "${productName}"${productCategory ? ` (category: ${productCategory})` : ''} — Peyu Chile, made in Chile from 100% recycled plastic. `;
 
       if (hasLogoRef) {
-        prompt += `ADD a UV laser engraving of the provided logo (second reference image) onto the product surface. `;
-        prompt += `The engraving must look PHYSICALLY ENGRAVED into the recycled plastic: subtle depth, slight darkening or lighter etched tone depending on base color, micro shadow inside the engraving, no floating stickers, no flat overlay, no glowing effects. `;
-        prompt += `Integrate the logo naturally with realistic lighting, following the product's curvature and marbled texture. `;
+        prompt += `TASK: Add a UV laser engraving of the provided logo (SECOND reference image) onto the product surface shown in the first image. `;
+        prompt += `The engraving MUST look PHYSICALLY ENGRAVED into the recycled plastic: micro depth, subtle darkening or lighter etched tone depending on base color, tiny shadow inside the engraved strokes, follows the product curvature and marbled texture. NO floating stickers, NO flat overlay, NO glow, NO added light sources. `;
+        prompt += `Keep the logo proportional to the product's engraving area (roughly 30-40% of the visible flat surface). Center it on the natural engraving zone of the product. `;
       } else if (text && text.trim()) {
-        prompt += `ADD a UV laser engraving of the text "${text}" onto the product surface. `;
-        prompt += `The text must look PHYSICALLY ENGRAVED into the recycled plastic: clean sans-serif typography, subtle depth, slight darkening inside the engraving, micro shadow, follows the product curvature, blends with the marbled recycled plastic texture. No floating stickers, no flat overlay. `;
+        prompt += `TASK: Add a UV laser engraving of the text "${text}" onto the product surface shown in the first image. `;
+        prompt += `The text MUST look PHYSICALLY ENGRAVED into the recycled plastic: clean sans-serif typography (like Inter or Helvetica), micro depth, subtle darkening inside the strokes, tiny shadow, follows the product curvature, blends with the marbled recycled plastic texture. NO floating stickers, NO flat overlay, NO glow. `;
+        prompt += `Size the text proportionally to the product's engraving area. Center it on the natural engraving zone. `;
       } else {
-        prompt += `Show the product in clean studio presentation without engraving. `;
+        prompt += `Show the product identical to the reference, no engraving added. `;
       }
 
-      prompt += `Keep the exact same background, framing and camera angle as the reference. Only add the engraving. Photorealistic, high detail, sharp focus on the engraved area.`;
+      prompt += `Final output: photorealistic, identical background/framing/angle/lighting to the first reference image, sharp focus on the engraved area, high detail. The result must look like the SAME product photo with the engraving added physically.`;
     } else {
       // Fallback: no tenemos imagen del producto → generamos desde cero con descripción
       prompt += `Photorealistic product photograph of a Peyu Chile corporate gift: "${productName}"`;

@@ -37,9 +37,11 @@ export default function MarketingHub() {
     return () => { unsubP(); unsubC(); unsubCal(); };
   }, []);
 
-  const handleConnect = (channel) => {
-    toast.info(`Conexión a ${channel.name} disponible en Fase 2 (mañana).`, {
-      description: 'Se abrirá OAuth oficial del proveedor. Por ahora la página ya está preparada.',
+  const handleAuthorize = (channel) => {
+    // Redirigimos al usuario a pedirlo por chat — el builder (yo) dispararé el request_oauth_authorization real
+    toast.info(`Autorizar ${channel.name}`, {
+      description: `Pídeme en el chat: "Conecta ${channel.name}" y lanzaré el flujo OAuth oficial. Tus tokens quedan encriptados en Base44.`,
+      duration: 7000,
     });
   };
 
@@ -67,7 +69,7 @@ export default function MarketingHub() {
 
       {/* Conexiones de canales (toggle) */}
       {showConnections && (
-        <ChannelConnections connections={connections} onConnect={handleConnect} />
+        <ChannelConnections connections={connections} onAuthorize={handleAuthorize} />
       )}
 
       {/* Stats */}
@@ -144,8 +146,8 @@ export default function MarketingHub() {
             <div className="text-gray-300">Entidades + 5 agentes IA + Dashboard orquestador</div>
           </div>
           <div className="bg-white/10 rounded-xl p-3">
-            <div className="text-yellow-400 font-bold mb-1">◉ FASE 2 — Mañana</div>
-            <div className="text-gray-300">Conexión OAuth: Meta · LinkedIn · TikTok · Google Ads · GA4 · YouTube · Pinterest</div>
+            <div className="text-yellow-400 font-bold mb-1">◉ FASE 2 — Disponible</div>
+            <div className="text-gray-300">OAuth nativo: LinkedIn · TikTok · GA4 · Gmail · Drive. Custom: Meta · Google Ads · YouTube · Pinterest</div>
           </div>
           <div className="bg-white/10 rounded-xl p-3">
             <div className="text-gray-400 font-bold mb-1">○ FASE 3 — Esta semana</div>
