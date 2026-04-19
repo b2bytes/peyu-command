@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
@@ -24,7 +24,8 @@ const FEATURES = [
   { icon: Recycle, label: 'Plástico 100% reciclado', sub: 'Impacto ESG real', color: '#a3e635' },
 ];
 
-const PRODUCTOS_CORPORATIVOS = [
+// Fallback estático (se reemplaza con productos reales del inventario al montar)
+const PRODUCTOS_FALLBACK = [
   'Kit Escritorio (5 piezas)', 'Posavasos Corporativos', 'Maceteros Corporativos',
   'Cachos / Cubiletes', 'Lámparas Corporativas', 'Paletas Corporativas', 'Otro / Consultar',
 ];
@@ -73,6 +74,19 @@ export default function B2BContacto() {
   const [loading, setLoading] = useState(false);
   const [enviado, setEnviado] = useState(false);
   const [error, setError] = useState('');
+  const [productosCatalogo, setProductosCatalogo] = useState(PRODUCTOS_FALLBACK);
+
+  // Cargar productos reales del inventario (B2B + B2B/B2C) para el selector
+  useEffect(() => {
+    base44.entities.Producto.filter({ activo: true }).then(list => {
+      const b2b = (list || [])
+        .filter(p => p.canal === 'B2B Exclusivo' || p.canal === 'B2B + B2C')
+        .map(p => p.nombre)
+        .filter(Boolean);
+      const unique = Array.from(new Set(b2b)).sort();
+      if (unique.length) setProductosCatalogo([...unique, 'Otro / Consultar']);
+    }).catch(() => {});
+  }, []);
 
   const update = (key, val) => setForm(prev => ({ ...prev, [key]: val }));
 
@@ -250,18 +264,36 @@ export default function B2BContacto() {
                 {/* Product + Qty */}
                 <div className="grid md:grid-cols-2 gap-4">
                   <div className="space-y-1.5">
-                    <label className="text-xs font-semibold text-white/50 uppercase tracking-wide">Producto de interés</label>
+                    <label className="text-xs font-semibold text-white/50 uppercase tracking-wide flex items-center gap-2">
+                      Producto de interés
+                      {fromChat && form.product_interest && (
+                        <span className="text-[10px] text-purple-300 font-bold bg-purple-500/20 border border-purple-400/30 px-2 py-0.5 rounded-full normal-case tracking-normal">
+                          ✨ Precargado desde chat
+                        </span>
+                      )}
+                    </label>
                     <select value={form.product_interest} onChange={e => update('product_interest', e.target.value)}
                       className="flex h-11 w-full rounded-xl border border-white/20 bg-white/10 text-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-400/30 focus:border-teal-400/60">
                       <option value="" className="bg-slate-900">Seleccionar producto...</option>
-                      {PRODUCTOS_CORPORATIVOS.map(p => <option key={p} value={p} className="bg-slate-900">{p}</option>)}
+                      {/* Si el producto precargado no está en el catálogo, mostrarlo igual */}
+                      {form.product_interest && !productosCatalogo.includes(form.product_interest) && (
+                        <option value={form.product_interest} className="bg-slate-900">{form.product_interest}</option>
+                      )}
+                      {productosCatalogo.map(p => <option key={p} value={p} className="bg-slate-900">{p}</option>)}
                     </select>
                   </div>
                   <div className="space-y-1.5">
-                    <label className="text-xs font-semibold text-white/50 uppercase tracking-wide">Cantidad estimada (u)</label>
+                    <label className="text-xs font-semibold text-white/50 uppercase tracking-wide flex items-center gap-2">
+                      Cantidad estimada (u)
+                      {fromChat && form.qty_estimate && (
+                        <span className="text-[10px] text-purple-300 font-bold bg-purple-500/20 border border-purple-400/30 px-2 py-0.5 rounded-full normal-case tracking-normal">
+                          ✨ Detectada en chat
+                        </span>
+                      )}
+                    </label>
                     <Input type="number" value={form.qty_estimate} onChange={e => update('qty_estimate', e.target.value)}
                       placeholder="Ej: 50, 100, 500" min="1"
-                      className="h-11 text-sm rounded-xl bg-white/10 border-white/20 text-white placeholder:text-white/30 focus:bg-white/15 focus:border-teal-400/60 focus:ring-teal-400/30" />
+                      className={`h-11 text-sm rounded-xl text-white placeholder:text-white/30 focus:bg-white/15 focus:ring-teal-400/30 ${fromChat && form.qty_estimate ? 'bg-purple-500/10 border-purple-400/40 focus:border-purple-400/60' : 'bg-white/10 border-white/20 focus:border-teal-400/60'}`} />
                   </div>
                 </div>
 
