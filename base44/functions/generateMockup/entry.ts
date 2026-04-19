@@ -32,12 +32,19 @@ Deno.serve(async (req) => {
     prompt += `Sustainable eco-design aesthetic, premium quality, Chilean manufacturing. `;
     prompt += `Shot angle: 3/4 view showing product details. Clean, minimal background.`;
 
-    // Only pass logoUrl as reference if it's a direct public image URL
-    const isImageUrl = logoUrl && /\.(png|jpg|jpeg|webp|svg)$/i.test(logoUrl.split('?')[0]);
-    const result = await base44.integrations.Core.GenerateImage({
-      prompt,
-      existing_image_urls: isImageUrl ? [logoUrl] : undefined,
-    });
+    // Only pass logoUrl as reference if it's a raster image (SVG/PDF/AI no funcionan como referencia)
+    const isRasterImage = logoUrl && /\.(png|jpg|jpeg|webp)(\?|$)/i.test(logoUrl);
+    let result;
+    try {
+      result = await base44.integrations.Core.GenerateImage({
+        prompt,
+        existing_image_urls: isRasterImage ? [logoUrl] : undefined,
+      });
+    } catch (imgErr) {
+      // Si la IA no puede leer la imagen de referencia, reintenta sin logo
+      console.warn('Retry sin imagen de referencia:', imgErr.message);
+      result = await base44.integrations.Core.GenerateImage({ prompt });
+    }
 
     // If jobId provided, update the PersonalizationJob
     if (jobId) {
