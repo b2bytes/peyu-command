@@ -4,8 +4,9 @@ import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import PEYULogo from '@/components/PEYULogo';
-import { Send, ShoppingCart, Bell, Star, ChevronLeft, ChevronRight, Home, Grid3x3, Building2, HelpCircle } from 'lucide-react';
+import { Send, ShoppingCart, Bell, Star, ChevronLeft, ChevronRight, Home, Grid3x3, Building2, HelpCircle, Heart } from 'lucide-react';
 import MobileMenu from '@/components/MobileMenu';
+import WhatsAppFloat from '@/components/WhatsAppFloat';
 
 const OCASIONES = [
   { id: 'navidad', label: 'Navidad', icon: '🎄' },
@@ -44,6 +45,7 @@ export default function ShopLanding() {
     { href: '/shop', label: 'Tienda', icon: ShoppingCart },
     { href: '/catalogo-visual', label: 'Catálogo', icon: Grid3x3 },
     { href: '/b2b/contacto', label: 'B2B', icon: Building2 },
+    { href: '/nosotros', label: 'Nosotros', icon: Heart },
     { href: '/soporte', label: 'Soporte', icon: HelpCircle },
   ];
 
@@ -59,8 +61,8 @@ export default function ShopLanding() {
   }, []);
 
   const sendMessage = async (messageText = input) => {
-    const text = messageText || input;
-    if (!text.trim()) return;
+    const text = (messageText || input).trim();
+    if (!text || loading) return;
     setInput('');
     setMessages(prev => [...prev, { role: 'user', content: text }]);
     setLoading(true);
@@ -73,64 +75,52 @@ export default function ShopLanding() {
           metadata: { context: 'landing', timestamp: new Date().toISOString() }
         });
         convId = conv.id;
-        setConversationId(convId);
+        setConversationId(conv.id);
       }
-      if (convId) {
-        const conv = await base44.agents.getConversation(convId);
-        const countBeforeAdd = conv.messages.length;
 
-        await base44.agents.addMessage(conv, { role: 'user', content: text });
+      const conv = await base44.agents.getConversation(convId);
+      const prevCount = conv.messages.length;
 
-        let unsubscribe = null;
-        let finished = false;
+      await base44.agents.addMessage(conv, { role: 'user', content: text });
 
-        unsubscribe = base44.agents.subscribeToConversation(convId, (data) => {
-          const messages = data.messages || [];
-          setMessages(messages);
+      let unsubscribe = null;
+      let done = false;
 
-          // Si hay un mensaje nuevo del asistente (más de countBeforeAdd + 1)
-          const lastMsg = messages[messages.length - 1];
-          if (lastMsg && lastMsg.role === 'assistant' && !finished) {
-            finished = true;
-            if (unsubscribe) unsubscribe();
-            setLoading(false);
-          }
-        });
+      const finish = () => {
+        if (done) return;
+        done = true;
+        if (unsubscribe) unsubscribe();
+        setLoading(false);
+      };
 
-        // Timeout de 25 segundos máximo
-        setTimeout(() => {
-          if (!finished) {
-            finished = true;
-            if (unsubscribe) unsubscribe();
-            setLoading(false);
-          }
-        }, 25000);
-      }
+      unsubscribe = base44.agents.subscribeToConversation(convId, (data) => {
+        const msgs = data.messages || [];
+        // Mostrar todos los mensajes incluyendo el del usuario que ya añadimos localmente
+        if (msgs.length > 0) setMessages(msgs);
+        // Terminamos cuando hay un mensaje del asistente nuevo (más de prevCount+1)
+        const lastMsg = msgs[msgs.length - 1];
+        if (lastMsg && lastMsg.role === 'assistant' && msgs.length > prevCount + 1) {
+          finish();
+        }
+      });
+
+      // Timeout de 30 segundos
+      setTimeout(finish, 30000);
+
     } catch (e) {
-      console.error('Error:', e);
+      console.error('Error chat:', e);
       setLoading(false);
     }
   };
 
   const handleOccasionClick = async (ocasion) => {
-    if (!conversationId) {
-      try {
-        const conv = await base44.agents.createConversation({
-          agent_name: 'asistente_compras',
-          metadata: { context: 'landing', occasion: ocasion.id, timestamp: new Date().toISOString() }
-        });
-        setConversationId(conv.id);
-      } catch (e) {
-        console.error('Error creando conversación:', e);
-        return;
-      }
-    }
     const mensaje = `Me gustaría un regalo corporativo para ${ocasion.label}. ¿Cuáles son las opciones disponibles y qué me recomiendas?`;
     await sendMessage(mensaje);
   };
 
   return (
     <div className="flex h-screen w-full overflow-hidden bg-gradient-to-br from-slate-900 to-slate-800">
+      <WhatsAppFloat />
       {/* SIDEBAR - macOS style */}
       <div 
         className={`hidden lg:flex flex-col bg-white/10 backdrop-blur-md border-r border-white/20 transition-all duration-300 overflow-hidden ${sidebarExpanded ? 'w-48' : 'w-16'}`}

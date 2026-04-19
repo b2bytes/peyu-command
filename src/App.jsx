@@ -48,6 +48,7 @@ import PersonalizacionFlow from './pages/PersonalizacionFlow';
 import SoportePublico from './pages/SoportePublico';
 import SeguimientoPedido from './pages/SeguimientoPedido';
 import CatalogoVisual from './pages/CatalogoVisual';
+import Nosotros from './pages/Nosotros';
 import EstadoActual from './pages/EstadoActual';
 import ImportarClientes from './pages/ImportarClientes';
 
@@ -132,6 +133,7 @@ function App() {
                 <Route path="/soporte" element={<SoportePublico />} />
                 <Route path="/seguimiento" element={<SeguimientoPedido />} />
                 <Route path="/catalogo-visual" element={<CatalogoVisual />} />
+                <Route path="/nosotros" element={<Nosotros />} />
               </Route>
 
               {/* Admin Routes - Protected */}

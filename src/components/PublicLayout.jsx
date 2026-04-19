@@ -1,13 +1,15 @@
 import { useState } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
-import { Home, ShoppingCart, Grid3x3, Building2, HelpCircle, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Home, ShoppingCart, Grid3x3, Building2, HelpCircle, Heart } from 'lucide-react';
 import PEYULogo from './PEYULogo';
+import WhatsAppFloat from './WhatsAppFloat';
 
 const MENU_ITEMS = [
   { href: '/', label: 'Inicio', icon: Home, color: 'bg-teal-500' },
   { href: '/shop', label: 'Tienda', icon: ShoppingCart, color: 'bg-teal-500' },
   { href: '/catalogo-visual', label: 'Catálogo', icon: Grid3x3, color: 'bg-teal-500' },
   { href: '/b2b/contacto', label: 'B2B', icon: Building2, color: 'bg-teal-500' },
+  { href: '/nosotros', label: 'Nosotros', icon: Heart, color: 'bg-teal-500' },
   { href: '/soporte', label: 'Soporte', icon: HelpCircle, color: 'bg-teal-500' },
 ];
 
@@ -71,6 +73,9 @@ export default function PublicLayout() {
       <div className="flex-1 overflow-auto w-full">
         <Outlet />
       </div>
+
+      {/* WhatsApp flotante */}
+      <WhatsAppFloat />
     </div>
   );
 }
