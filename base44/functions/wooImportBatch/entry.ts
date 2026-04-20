@@ -111,35 +111,52 @@ function mapOrder(o) {
 }
 
 // Fetch a WC con timeout + reintentos con backoff exponencial
-async function fetchWCWithRetry(url, auth) {
+// Reintenta ante: 202 (cache miss), 429 (rate limit), 5xx, timeouts, errores de red.
+async function fetchWCWithRetry(baseUrl, auth) {
   let lastErr = null;
   for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), WC_TIMEOUT_MS);
     try {
+      // Cache-buster para saltarse plugins de cache (LiteSpeed, WP Rocket, Cloudflare)
+      const sep = baseUrl.includes('?') ? '&' : '?';
+      const url = `${baseUrl}${sep}_wc_nocache=${Date.now()}${attempt}`;
+
       const res = await fetch(url, {
-        headers: { Authorization: auth, 'Accept': 'application/json' },
+        headers: {
+          Authorization: auth,
+          'Accept': 'application/json',
+          'Cache-Control': 'no-cache, no-store',
+          'Pragma': 'no-cache',
+          'User-Agent': 'Base44-Integration/1.0',
+        },
         signal: controller.signal,
         redirect: 'follow',
       });
       clearTimeout(timer);
 
       const contentType = res.headers.get('content-type') || '';
-      if (!contentType.includes('application/json')) {
-        const txt = await res.text();
-        const snippet = txt.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 200);
-        return { ok: false, status: res.status, error: `WC devolvió HTML (HTTP ${res.status}). Probable firewall/plugin bloqueando. Snippet: "${snippet}"`, retryable: false };
-      }
 
-      // 5xx y 429 son retryables
-      if (res.status >= 500 || res.status === 429) {
+      // 202 (cache en proceso), 5xx, 429 son retryables
+      if (res.status === 202 || res.status >= 500 || res.status === 429) {
         lastErr = `HTTP ${res.status}`;
         if (attempt < MAX_RETRIES) {
-          await new Promise(r => setTimeout(r, 800 * attempt));
+          await new Promise(r => setTimeout(r, 1200 * attempt));
           continue;
         }
         const txt = await res.text().catch(() => '');
-        return { ok: false, status: res.status, error: `WC HTTP ${res.status} tras ${MAX_RETRIES} intentos: ${txt.slice(0, 200)}`, retryable: true };
+        return {
+          ok: false,
+          status: res.status,
+          error: `WC HTTP ${res.status} tras ${MAX_RETRIES} intentos${res.status === 202 ? ' (plugin de cache interceptando)' : ''}: ${txt.slice(0, 200)}`,
+          retryable: true,
+        };
+      }
+
+      if (!contentType.includes('application/json')) {
+        const txt = await res.text();
+        const snippet = txt.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 200);
+        return { ok: false, status: res.status, error: `WC devolvió ${contentType || 'sin content-type'} (HTTP ${res.status}). Probable firewall/plugin bloqueando. Snippet: "${snippet}"`, retryable: false };
       }
 
       if (!res.ok) {
@@ -158,7 +175,7 @@ async function fetchWCWithRetry(url, auth) {
       clearTimeout(timer);
       lastErr = e.name === 'AbortError' ? `Timeout ${WC_TIMEOUT_MS}ms` : e.message;
       if (attempt < MAX_RETRIES) {
-        await new Promise(r => setTimeout(r, 800 * attempt));
+        await new Promise(r => setTimeout(r, 1200 * attempt));
         continue;
       }
     }

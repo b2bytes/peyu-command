@@ -26,31 +26,91 @@ Deno.serve(async (req) => {
     const auth = 'Basic ' + btoa(`${key}:${secret}`);
     const base = `${cleanUrl}/wp-json/wc/v3`;
 
-    // Fetch helper con diagnóstico claro
-    async function wcGet(path) {
-      let res;
-      try {
-        res = await fetch(`${base}/${path}`, {
-          headers: { Authorization: auth, 'Accept': 'application/json' },
-          redirect: 'follow',
-        });
-      } catch (netErr) {
-        return { ok: false, error: `Error de red accediendo a ${base}/${path}: ${netErr.message}. Verifica que la URL sea correcta y accesible.` };
+    // Fetch helper con diagnóstico claro + reintentos para 202/5xx (cache/cold-start)
+    async function wcGet(path, maxRetries = 4) {
+      let lastRes = null;
+      let lastErr = null;
+
+      for (let attempt = 1; attempt <= maxRetries; attempt++) {
+        // Cache-buster + no-cache headers para saltarse LiteSpeed/WP Rocket/Cloudflare
+        const sep = path.includes('?') ? '&' : '?';
+        const cacheBuster = `${sep}_wc_nocache=${Date.now()}${attempt}`;
+        const fullUrl = `${base}/${path}${cacheBuster}`;
+
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), 20000);
+
+        try {
+          const res = await fetch(fullUrl, {
+            headers: {
+              Authorization: auth,
+              'Accept': 'application/json',
+              'Cache-Control': 'no-cache, no-store',
+              'Pragma': 'no-cache',
+              'User-Agent': 'Base44-Integration/1.0',
+            },
+            redirect: 'follow',
+            signal: controller.signal,
+          });
+          clearTimeout(timer);
+          lastRes = res;
+
+          const contentType = res.headers.get('content-type') || '';
+
+          // HTTP 202 = cache miss en proceso → esperar y reintentar
+          // HTTP 5xx / 429 = error transitorio → reintentar
+          if (res.status === 202 || res.status >= 500 || res.status === 429) {
+            if (attempt < maxRetries) {
+              const delay = 1200 * attempt;
+              await new Promise(r => setTimeout(r, delay));
+              continue;
+            }
+            const text = await res.text().catch(() => '');
+            const snippet = text.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 200);
+            return {
+              ok: false,
+              error: `WooCommerce devolvió HTTP ${res.status} (${res.status === 202 ? 'cache en proceso — un plugin como LiteSpeed, WP Rocket o Cloudflare está interceptando' : 'error del servidor'}) tras ${maxRetries} intentos. ${snippet ? `Respuesta: "${snippet}"` : 'Respuesta vacía.'} Solución: añade una regla para excluir /wp-json/wc/v3/* del cache, o desactiva temporalmente el plugin de cache.`
+            };
+          }
+
+          // Si devuelve HTML con status OK → problema de firewall/login/URL
+          if (!contentType.includes('application/json')) {
+            const text = await res.text();
+            const snippet = text.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 200);
+            return {
+              ok: false,
+              error: `WooCommerce devolvió ${contentType || 'sin content-type'} en vez de JSON en /${path} (HTTP ${res.status}). Causas: (1) URL incorrecta, (2) plugin de seguridad (Wordfence, iThemes) bloqueando, (3) API REST deshabilitada, (4) plugin de cache devolviendo HTML. Respuesta: "${snippet}"`
+            };
+          }
+
+          const total = parseInt(res.headers.get('X-WP-Total') || '0', 10);
+          if (!res.ok) { /* manejado abajo */ } else {
+            try {
+              const data = await res.json();
+              return { ok: true, data, total, attempts: attempt };
+            } catch (e) {
+              return { ok: false, error: `Respuesta JSON inválida de /${path}: ${e.message}` };
+            }
+          }
+
+          // Fall-through para status no-ok no-retryable (401/404/etc)
+          break;
+        } catch (netErr) {
+          clearTimeout(timer);
+          lastErr = netErr;
+          if (attempt < maxRetries) {
+            await new Promise(r => setTimeout(r, 1200 * attempt));
+            continue;
+          }
+          return { ok: false, error: `Error de red tras ${maxRetries} intentos en ${base}/${path}: ${netErr.message}` };
+        }
       }
 
-      const contentType = res.headers.get('content-type') || '';
-      const total = parseInt(res.headers.get('X-WP-Total') || '0', 10);
-
-      // Si devuelve HTML es que hay un problema de WP (firewall, login requerido, URL mala)
-      if (!contentType.includes('application/json')) {
-        const text = await res.text();
-        const snippet = text.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 200);
-        return {
-          ok: false,
-          error: `WooCommerce devolvió HTML en vez de JSON en /${path} (HTTP ${res.status}). Esto suele pasar cuando: (1) la URL no es correcta, (2) un plugin de seguridad (Wordfence, iThemes) está bloqueando el acceso, (3) la API REST está deshabilitada. Respuesta: "${snippet}"`
-        };
+      // Si salimos sin respuesta válida, procesa el último status
+      const res = lastRes;
+      if (!res) {
+        return { ok: false, error: `Sin respuesta de WC tras ${maxRetries} intentos: ${lastErr?.message || 'desconocido'}` };
       }
-
       if (!res.ok) {
         let body;
         try { body = await res.json(); } catch { body = { message: await res.text() }; }
@@ -64,12 +124,7 @@ Deno.serve(async (req) => {
         return { ok: false, error: `WC /${path} → HTTP ${res.status}: ${msg}` };
       }
 
-      try {
-        const data = await res.json();
-        return { ok: true, data, total };
-      } catch (e) {
-        return { ok: false, error: `Respuesta JSON inválida de /${path}: ${e.message}` };
-      }
+      return { ok: false, error: `WC /${path} → estado inesperado HTTP ${res.status}` };
     }
 
     // 1) Test principal: products (el más confiable)
