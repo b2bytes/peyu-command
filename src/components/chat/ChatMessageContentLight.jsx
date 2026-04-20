@@ -11,6 +11,13 @@ function getChatQty() {
   } catch { return null; }
 }
 
+// Marca que el AGENTE está a punto de navegar (el usuario tocó un link sugerido
+// por Peyu en el chat). El AsistenteChat usa este flag para mantener el chat
+// abierto tras el cambio de ruta.
+function markAgentNavigation() {
+  try { localStorage.setItem('peyu_chat_agent_navigated_at', String(Date.now())); } catch {}
+}
+
 function addToCart(producto, cantidad) {
   const carrito = JSON.parse(localStorage.getItem('carrito') || '[]');
   const precio = Math.floor((producto.precio_b2c || 9990) * 0.85);
@@ -110,13 +117,13 @@ function ProductCardLight({ sku }) {
       </div>
       {qtyHint >= 50 ? (
         <>
-          <Link to={b2bUrl} className="block mt-2.5">
+          <Link to={b2bUrl} onClick={markAgentNavigation} className="block mt-2.5">
             <button className="w-full flex items-center justify-center gap-1.5 bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 text-white text-xs font-bold rounded-lg py-2 transition-all shadow-sm">
               <Building2 className="w-3.5 h-3.5" /> Cotizar {qtyHint}u con mi logo
             </button>
           </Link>
           <div className="grid grid-cols-2 gap-1.5 mt-1.5">
-            <Link to={`/producto/${producto.id}`}>
+            <Link to={`/producto/${producto.id}`} onClick={markAgentNavigation}>
               <button className="w-full flex items-center justify-center gap-1 bg-gray-100 hover:bg-gray-200 border border-gray-200 text-gray-700 text-[11px] font-semibold rounded-lg py-1.5 transition-all">
                 <Package className="w-3 h-3" /> Ver ficha
               </button>
@@ -131,7 +138,7 @@ function ProductCardLight({ sku }) {
         </>
       ) : (
         <div className="grid grid-cols-3 gap-1.5 mt-2.5">
-          <Link to={`/producto/${producto.id}`}>
+          <Link to={`/producto/${producto.id}`} onClick={markAgentNavigation}>
             <button className="w-full flex items-center justify-center gap-1 bg-gray-100 hover:bg-gray-200 border border-gray-200 text-gray-700 text-[11px] font-semibold rounded-lg py-1.5 transition-all">
               <Package className="w-3 h-3" /> Ficha
             </button>
@@ -142,11 +149,11 @@ function ProductCardLight({ sku }) {
           >
             {added ? <><Check className="w-3 h-3" /> Agregado</> : <><ShoppingCart className="w-3 h-3" /> Comprar</>}
           </button>
-          <Link to={b2bUrl}>
-            <button className="w-full flex items-center justify-center gap-1 bg-gray-100 hover:bg-gray-200 border border-gray-200 text-gray-700 text-[11px] font-semibold rounded-lg py-1.5 transition-all">
-              <Building2 className="w-3 h-3" /> B2B
-            </button>
-          </Link>
+          <Link to={b2bUrl} onClick={markAgentNavigation}>
+              <button className="w-full flex items-center justify-center gap-1 bg-gray-100 hover:bg-gray-200 border border-gray-200 text-gray-700 text-[11px] font-semibold rounded-lg py-1.5 transition-all">
+                <Building2 className="w-3 h-3" /> B2B
+              </button>
+            </Link>
         </div>
       )}
       {qtyHint && qtyHint < 50 && (
@@ -206,7 +213,7 @@ function ActionButtonLight({ action }) {
     </button>
   );
   if (a.href) return <a href={a.href} target="_blank" rel="noreferrer">{inner}</a>;
-  return <Link to={a.to}>{inner}</Link>;
+  return <Link to={a.to} onClick={markAgentNavigation}>{inner}</Link>;
 }
 
 function ChatMessageContentLight({ content }) {

@@ -8,6 +8,11 @@ import ChatProductContentLight from '@/components/chat/ChatMessageContentLight';
 
 const STORAGE_KEY = 'peyu_chat_conversation_id';
 const OPEN_KEY = 'peyu_chat_open';
+const AGENT_NAV_KEY = 'peyu_chat_agent_navigated_at';
+// Cuando el AGENTE navega (vía tool_call o por instrucción en chat), seteamos este
+// timestamp. Si el usuario entra a la página dentro de los próximos 8s, asumimos
+// que la navegación la disparó el agente y mantenemos el chat abierto.
+const AGENT_NAV_WINDOW_MS = 8000;
 
 export default function AsistenteChat() {
   const location = useLocation();
@@ -43,16 +48,26 @@ export default function AsistenteChat() {
     localStorage.setItem(OPEN_KEY, open ? '1' : '0');
   }, [open]);
 
-  // Auto-abrir al cambiar de página si ya existe una conversación activa,
-  // para que el cliente sepa que Peyu lo sigue acompañando.
+  // Lógica de apertura al navegar:
+  // - Primer montaje: respeta lo que el usuario dejó guardado (OPEN_KEY).
+  // - Navegación posterior:
+  //     · Si el AGENTE acaba de navegar (timestamp reciente en AGENT_NAV_KEY),
+  //       mantenemos el chat ABIERTO para que el usuario vea la conversación.
+  //     · Si el USUARIO navegó por su cuenta, CONTRAEMOS el chat (FAB visible).
   useEffect(() => {
     if (isLanding) return;
     if (firstMountRef.current) {
       firstMountRef.current = false;
-      if (conversationId) setOpen(true);
       return;
     }
-    if (conversationId) setOpen(true);
+    const navTs = parseInt(localStorage.getItem(AGENT_NAV_KEY) || '0', 10);
+    const agentJustNavigated = navTs && (Date.now() - navTs) < AGENT_NAV_WINDOW_MS;
+    if (agentJustNavigated) {
+      setOpen(true);
+      localStorage.removeItem(AGENT_NAV_KEY);
+    } else {
+      setOpen(false);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.pathname, isLanding]);
 
