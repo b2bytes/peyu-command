@@ -10,7 +10,16 @@ import {
 
 const STEPS = ['Productos', 'Empresa', 'Personalización', 'Propuesta'];
 
-function calcPrice(base, qty) {
+// Precio por volumen basado en la TABLA REAL del producto (misma que ProductoDetalle).
+// Fallback a descuentos genéricos solo si el producto no tiene precios de volumen configurados.
+function calcPrice(producto, qty) {
+  if (!producto) return 0;
+  const base = producto.precio_base_b2b || producto.precio_b2c || 5000;
+  if (qty >= 500 && producto.precio_500_mas) return producto.precio_500_mas;
+  if (qty >= 200 && producto.precio_200_499) return producto.precio_200_499;
+  if (qty >= 50 && producto.precio_50_199) return producto.precio_50_199;
+  if (qty >= 10 && producto.precio_base_b2b) return producto.precio_base_b2b;
+  // Fallback si no hay tabla: descuentos porcentuales suaves sobre precio_b2c
   let discount = 0;
   if (qty >= 500) discount = 0.25;
   else if (qty >= 200) discount = 0.15;
@@ -74,10 +83,7 @@ export default function B2BSelfService() {
 
   const removeFromCart = (id) => setCart(cart.filter(c => c.producto.id !== id));
 
-  const subtotalEstimado = cart.reduce((s, c) => {
-    const base = c.producto.precio_base_b2b || c.producto.precio_b2c || 5000;
-    return s + (calcPrice(base, c.cantidad) * c.cantidad);
-  }, 0);
+  const subtotalEstimado = cart.reduce((s, c) => s + (calcPrice(c.producto, c.cantidad) * c.cantidad), 0);
 
   const canContinue = (s) => {
     if (s === 0) return cart.length > 0;
@@ -100,7 +106,14 @@ export default function B2BSelfService() {
         nombre: c.producto.nombre,
         qty: c.cantidad,
         cantidad: c.cantidad,
-        precio_base: c.producto.precio_base_b2b || c.producto.precio_b2c || 5000,
+        // Pasamos toda la tabla de volumen + precio_b2c para que el backend use los mismos tiers que ProductoDetalle
+        precio_b2c: c.producto.precio_b2c,
+        precio_base_b2b: c.producto.precio_base_b2b,
+        precio_50_199: c.producto.precio_50_199,
+        precio_200_499: c.producto.precio_200_499,
+        precio_500_mas: c.producto.precio_500_mas,
+        imagen_url: c.producto.imagen_url || '',
+        categoria: c.producto.categoria,
         personalizacion: personalizar,
       }));
 
@@ -250,8 +263,7 @@ export default function B2BSelfService() {
                 ) : (
                   <div className="space-y-2 max-h-80 overflow-y-auto">
                     {cart.map(c => {
-                      const base = c.producto.precio_base_b2b || c.producto.precio_b2c || 5000;
-                      const unitario = calcPrice(base, c.cantidad);
+                      const unitario = calcPrice(c.producto, c.cantidad);
                       return (
                         <div key={c.producto.id} className="bg-white/5 rounded-xl p-2.5 space-y-2">
                           <div className="flex items-start justify-between gap-2">

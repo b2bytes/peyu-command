@@ -1,22 +1,38 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
-// Volume pricing rules (mismo que createCorporateProposal)
+// === Pricing usando la TABLA REAL del producto (misma lógica que ProductoDetalle.jsx) ===
+function calcUnitPrice(item) {
+  const qty = item.qty || item.cantidad || 0;
+  const base = item.precio_base_b2b || item.precio_base || item.precio_b2c || 5000;
+
+  // Tabla por tramos — idéntica a ProductoDetalle
+  if (qty >= 500 && item.precio_500_mas) return { unit: item.precio_500_mas, tier: '500+ u.' };
+  if (qty >= 200 && item.precio_200_499) return { unit: item.precio_200_499, tier: '200-499 u.' };
+  if (qty >= 50 && item.precio_50_199) return { unit: item.precio_50_199, tier: '50-199 u.' };
+  if (qty >= 10 && item.precio_base_b2b) return { unit: item.precio_base_b2b, tier: '10-49 u.' };
+
+  // Fallback sólo si el producto no trae la tabla
+  let discount = 0;
+  if (qty >= 500) discount = 0.25;
+  else if (qty >= 200) discount = 0.15;
+  else if (qty >= 50) discount = 0.08;
+  return { unit: Math.round(base * (1 - discount)), tier: '1-9 u.' };
+}
+
 function calcPricing(items) {
   let subtotal = 0;
   const breakdown = items.map(item => {
     const qty = item.qty || item.cantidad || 0;
-    const basePrice = item.precio_base || item.precio_b2b || item.precio_base_b2b || 5000;
-    let discount = 0;
-    if (qty >= 500) discount = 0.25;
-    else if (qty >= 200) discount = 0.15;
-    else if (qty >= 50) discount = 0.08;
-    const unitPrice = Math.round(basePrice * (1 - discount));
-    const lineTotal = unitPrice * qty;
+    const { unit, tier } = calcUnitPrice(item);
+    const refB2C = item.precio_b2c || item.precio_base_b2b || unit;
+    const descuentoPct = refB2C > 0 ? Math.round((1 - unit / refB2C) * 100) : 0;
+    const lineTotal = unit * qty;
     subtotal += lineTotal;
     return {
       ...item,
-      precio_unitario: unitPrice,
-      descuento_pct: Math.round(discount * 100),
+      precio_unitario: unit,
+      descuento_pct: Math.max(0, descuentoPct),
+      tier,
       line_total: lineTotal,
     };
   });
@@ -46,7 +62,7 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Debes incluir al menos un producto' }, { status: 400 });
     }
 
-    // 1. Crear B2BLead (self-service)
+    // 1. Crear B2BLead
     const totalQty = items.reduce((s, i) => s + (i.qty || i.cantidad || 0), 0);
     const hasPersonalization = items.some(i => i.personalizacion);
     const lead = await base44.asServiceRole.entities.B2BLead.create({
@@ -68,64 +84,81 @@ Deno.serve(async (req) => {
       utm_source: 'self_service',
     });
 
-    // 2. Calcular precios y lead time
+    // 2. Calcular precios (misma tabla que ProductoDetalle) y lead time
     const { breakdown, subtotal } = calcPricing(items);
-    const feePersonalizacion = 0;
-    const total = subtotal + feePersonalizacion;
+    const total = subtotal;
     const leadTime = calcLeadTime(items);
 
-    // 3. Generar número y validez
+    // 3. Numero + vencimiento
     const propNum = `PEY-${Date.now().toString().slice(-6)}`;
     const expiryDate = new Date();
     expiryDate.setDate(expiryDate.getDate() + 15);
 
-    // 4. Generar mockup con IA (no bloqueante si falla)
+    // 4. Mockup: misma técnica que `generateMockup` (imagen del producto + logo como referencia)
+    //    La replicamos inline aquí para evitar llamadas cruzadas function→function que pueden
+    //    sufrir timeouts. GenerateImage tarda ~10-15s, por eso lo ejecutamos directamente.
     let mockupUrls = [];
-    try {
-      const firstItem = breakdown[0] || {};
-      const prompt = `Professional corporate gift product mockup photograph for Peyu Chile sustainable brand. Product: "${firstItem.nombre || firstItem.name || 'Peyu corporate gift'}" made from 100% recycled plastic, manufactured in Chile. Clean studio photography, soft white/neutral background, professional soft lighting. High quality product shot showing the unique marbled texture of recycled plastic material. ${logoUrl ? `Corporate logo applied to product via UV laser engraving. Professional corporate gift presentation.` : `Laser UV engraved text "${company_name}" clearly visible on the product surface. Corporate branding.`} Sustainable eco-design aesthetic, premium quality, Chilean manufacturing. Shot angle: 3/4 view showing product details.`;
-      const isRaster = logoUrl && /\.(png|jpg|jpeg|webp)(\?|$)/i.test(logoUrl);
-      let imgRes;
+    if (hasPersonalization) {
       try {
-        imgRes = await base44.integrations.Core.GenerateImage({
-          prompt,
-          existing_image_urls: isRaster ? [logoUrl] : undefined,
-        });
-      } catch {
-        imgRes = await base44.integrations.Core.GenerateImage({ prompt });
+        const firstItem = breakdown[0] || {};
+        const productName = firstItem.nombre || firstItem.name || 'Producto Peyu';
+        const productCategory = firstItem.categoria || '';
+        const productImageUrl = firstItem.imagen_url || '';
+
+        const isRaster = (u) => !!u && /\.(png|jpg|jpeg|webp)(\?|$)/i.test(u);
+        const isSvg = (u) => !!u && /\.svg(\?|$)/i.test(u);
+        const svgToPng = (u) => {
+          try {
+            const url = new URL(u);
+            return `https://images.weserv.nl/?url=${encodeURIComponent(url.hostname + url.pathname)}&output=png&w=1024`;
+          } catch { return null; }
+        };
+
+        const hasProductRef = isRaster(productImageUrl);
+        let effectiveLogoUrl = null;
+        if (isRaster(logoUrl)) effectiveLogoUrl = logoUrl;
+        else if (isSvg(logoUrl)) effectiveLogoUrl = svgToPng(logoUrl) || logoUrl;
+        const hasLogoRef = !!effectiveLogoUrl;
+        const engraveText = hasLogoRef ? '' : company_name;
+
+        let prompt = '';
+        if (hasProductRef) {
+          prompt += `⚠️ ABSOLUTE CRITICAL RULE: The FIRST reference image IS the exact product the customer chose. You MUST use it as the base. DO NOT generate a new product. DO NOT change shape, color, material, angle, lighting, background, or framing. You are ONLY allowed to add a laser engraving on top of it. `;
+          prompt += `Product: "${productName}"${productCategory ? ` (${productCategory})` : ''} — Peyu Chile, made in Chile from 100% recycled plastic. `;
+          if (hasLogoRef) {
+            prompt += `⚠️ SECOND CRITICAL RULE: The SECOND reference image IS the customer's EXACT logo. Reproduce it LITERALLY — same shapes, letters, proportions. DO NOT invent, redesign, simplify or substitute. If it contains text, copy character-by-character. `;
+            prompt += `TASK: Add a UV laser engraving that is a 1:1 reproduction of the SECOND image onto the product surface. Physically engraved look: monochrome single tone, micro depth, subtle darkening, follows curvature. NO stickers, NO overlay, NO glow. Proportional to engraving area (30-40% of flat surface). Preserve aspect ratio. `;
+          } else if (engraveText) {
+            prompt += `TASK: Engrave the text "${engraveText}" onto the product, clean sans-serif typography, physically engraved look, micro depth, subtle shadow, follows curvature. NO stickers, NO overlay. Copy character-by-character. `;
+          }
+          prompt += `Output: photorealistic, identical background/angle/lighting to the reference, sharp focus, high detail.`;
+        } else {
+          prompt += `Photorealistic product photograph of a Peyu Chile corporate gift: "${productName}". 100% recycled plastic, marbled texture, made in Chile. Studio photography, soft neutral background, 3/4 view. `;
+          if (engraveText) prompt += `UV laser engraved text "${engraveText}" on the surface. `;
+          if (hasLogoRef) prompt += `UV laser engraved corporate logo (reference image) on the surface. `;
+        }
+
+        const references = [];
+        if (hasProductRef) references.push(productImageUrl);
+        if (hasLogoRef) references.push(effectiveLogoUrl);
+
+        let imgRes;
+        if (references.length > 0) {
+          try {
+            imgRes = await base44.integrations.Core.GenerateImage({ prompt, existing_image_urls: references });
+          } catch {
+            imgRes = await base44.integrations.Core.GenerateImage({ prompt });
+          }
+        } else {
+          imgRes = await base44.integrations.Core.GenerateImage({ prompt });
+        }
+        if (imgRes?.url) mockupUrls = [imgRes.url];
+      } catch (e) {
+        console.warn('Mockup opcional falló, continuando sin él:', e?.message);
       }
-      if (imgRes?.url) mockupUrls = [imgRes.url];
-    } catch (e) {
-      console.warn('Mockup opcional falló, continuando:', e?.message);
     }
 
-    // 5. Generar terms + production_notes con IA (opcional)
-    let aiProposal = null;
-    try {
-      aiProposal = await base44.integrations.Core.InvokeLLM({
-        prompt: `Genera "terms" y "production_notes" para una propuesta comercial self-service de Peyu Chile.
-Empresa: ${company_name}
-Productos: ${breakdown.map(i => `${i.cantidad || i.qty}x ${i.nombre || i.name}`).join(', ')}
-Total: $${total.toLocaleString('es-CL')} CLP
-Lead time: ${leadTime} días hábiles
-Personalización: ${hasPersonalization ? 'Sí, láser UV' : 'No'}
-
-Responde SOLO JSON:
-{
-  "terms": "1 párrafo con condiciones (anticipo 50%, garantía 10 años, envío Chile)",
-  "production_notes": "1 párrafo de notas para producción"
-}`,
-        response_json_schema: {
-          type: "object",
-          properties: {
-            terms: { type: "string" },
-            production_notes: { type: "string" }
-          }
-        }
-      });
-    } catch {}
-
-    // 6. Crear propuesta
+    // 5. Crear propuesta
     const proposal = await base44.asServiceRole.entities.CorporateProposal.create({
       numero: propNum,
       b2b_lead_id: lead.id,
@@ -134,7 +167,7 @@ Responde SOLO JSON:
       email,
       items_json: JSON.stringify(breakdown),
       subtotal,
-      fee_personalizacion: feePersonalizacion,
+      fee_personalizacion: 0,
       total,
       lead_time_dias: leadTime,
       validity_days: 15,
@@ -142,8 +175,8 @@ Responde SOLO JSON:
       status: 'Enviada',
       auto_generated: true,
       mockup_urls: mockupUrls,
-      terms: aiProposal?.terms || 'Anticipo 50% para iniciar producción. Saldo contra despacho. Garantía 10 años en plástico reciclado. Fabricación 100% en Chile.',
-      production_notes: aiProposal?.production_notes || `Pedido self-service de ${company_name}. ${hasPersonalization ? 'Requiere personalización láser UV.' : ''} Lead time: ${leadTime} días hábiles.`,
+      terms: 'Anticipo 50% para iniciar produccion. Saldo contra despacho. Garantia 10 anos en plastico reciclado. Fabricacion 100% en Chile.',
+      production_notes: `Pedido self-service de ${company_name}. ${hasPersonalization ? 'Requiere personalizacion laser UV.' : ''} Lead time: ${leadTime} dias habiles.`,
       fecha_envio: new Date().toISOString().split('T')[0],
       fecha_vencimiento: expiryDate.toISOString().split('T')[0],
     });

@@ -9,6 +9,33 @@ const LIGHT = [241, 245, 249];
 
 const fmtCLP = (n) => '$' + (n || 0).toLocaleString('es-CL');
 
+// jsPDF con fuente Helvetica solo soporta caracteres WinAnsi (Latin1).
+// Emojis, símbolos especiales y ciertos acentos ampliados salen como "Þ", "þ", "ð" o cuadros.
+// Limpia el texto preservando tildes/ñ/ü y reemplaza símbolos por equivalentes ASCII seguros.
+function safeTxt(s) {
+  if (s === undefined || s === null) return '';
+  return String(s)
+    // Símbolos comunes que jsPDF/helvetica no renderiza
+    .replace(/[✓✔☑]/g, '>')
+    .replace(/[✗✘❌]/g, 'x')
+    .replace(/[♻]/g, '[R]')
+    .replace(/[🌍🌎🌏]/g, '[ES]')
+    .replace(/[🔋⚡]/g, '[E]')
+    .replace(/[🛡️🛡]/g, '[G]')
+    .replace(/[🌱🌿🍃]/g, '[Eco]')
+    .replace(/[📦🎁]/g, '')
+    .replace(/[★☆]/g, '*')
+    .replace(/[–—]/g, '-')
+    .replace(/[""«»]/g, '"')
+    .replace(/['']/g, "'")
+    .replace(/…/g, '...')
+    .replace(/[·•]/g, '-')
+    .replace(/°/g, 'o')
+    // Elimina cualquier caracter no imprimible / fuera de WinAnsi (emojis restantes, símbolos raros)
+    .replace(/[\u0000-\u001F\u007F]/g, '')
+    .replace(/[^\x20-\xFF]/g, '');
+}
+
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
@@ -49,25 +76,25 @@ Deno.serve(async (req) => {
     doc.setFontSize(8);
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(167, 217, 201);
-    doc.text('REGALOS CORPORATIVOS · 100% RECICLADOS · HECHO EN CHILE', 20, 48);
+    doc.text(safeTxt('REGALOS CORPORATIVOS - 100% RECICLADOS - HECHO EN CHILE'), 20, 48);
 
     // Title
     doc.setTextColor(255, 255, 255);
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(22);
-    doc.text('Propuesta Comercial', 20, 72);
+    doc.text(safeTxt('Propuesta Comercial'), 20, 72);
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(11);
     doc.setTextColor(200, 215, 225);
-    doc.text(`Preparada para ${p.empresa}`, 20, 82);
+    doc.text(safeTxt(`Preparada para ${p.empresa}`), 20, 82);
 
     // Numero & fecha (right)
     doc.setFontSize(9);
     doc.setTextColor(167, 217, 201);
-    if (p.numero) doc.text(`N° ${p.numero}`, pw - 20, 40, { align: 'right' });
+    if (p.numero) doc.text(safeTxt(`N° ${p.numero}`), pw - 20, 40, { align: 'right' });
     doc.setTextColor(200, 215, 225);
-    doc.text(`Emisión: ${fechaEnvio}`, pw - 20, 48, { align: 'right' });
-    if (fechaVenc) doc.text(`Validez: ${fechaVenc}`, pw - 20, 54, { align: 'right' });
+    doc.text(safeTxt(`Emision: ${fechaEnvio}`), pw - 20, 48, { align: 'right' });
+    if (fechaVenc) doc.text(safeTxt(`Validez: ${fechaVenc}`), pw - 20, 54, { align: 'right' });
 
     y = 125;
 
@@ -84,13 +111,13 @@ Deno.serve(async (req) => {
 
     doc.setTextColor(...DARK);
     doc.setFontSize(11);
-    doc.text(p.empresa || '—', 22, y + 17);
-    doc.text(p.contacto || '—', 82, y + 17);
+    doc.text(safeTxt(p.empresa || '-'), 22, y + 17);
+    doc.text(safeTxt(p.contacto || '-'), 82, y + 17);
 
     doc.setFontSize(8);
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(...GRAY);
-    if (p.email) doc.text(p.email, 82, y + 23);
+    if (p.email) doc.text(safeTxt(p.email), 82, y + 23);
 
     // Total big
     doc.setFont('helvetica', 'bold');
@@ -100,53 +127,68 @@ Deno.serve(async (req) => {
     doc.setFontSize(8);
     doc.setTextColor(...GRAY);
     doc.setFont('helvetica', 'normal');
-    doc.text('CLP · IVA incluido', pw - 22, y + 25, { align: 'right' });
+    doc.text(safeTxt('CLP - IVA incluido'), pw - 22, y + 25, { align: 'right' });
 
     // Mini metrics row
     const metricsY = y + 30;
     const metrics = [
-      ['Lead time', `${p.lead_time_dias || 7} días`],
+      ['Lead time', `${p.lead_time_dias || 7} dias`],
       ['Anticipo', `${p.anticipo_pct || 50}%`],
-      ['Validez', `${p.validity_days || 15} días`],
-      ['Ítems', `${items.length}`],
+      ['Validez', `${p.validity_days || 15} dias`],
+      ['Items', `${items.length}`],
     ];
     metrics.forEach((m, i) => {
       const x = 22 + i * 45;
       doc.setFontSize(6.5);
       doc.setTextColor(...GRAY);
       doc.setFont('helvetica', 'bold');
-      doc.text(m[0].toUpperCase(), x, metricsY);
+      doc.text(safeTxt(m[0].toUpperCase()), x, metricsY);
       doc.setTextColor(...DARK);
       doc.setFontSize(9);
-      doc.text(m[1], x, metricsY + 5);
+      doc.text(safeTxt(m[1]), x, metricsY + 5);
     });
 
     y += 52;
 
     // ----- MOCKUP -----
+    // Cargamos imagen con byte-safe chunking (evita stack overflow con imágenes grandes)
+    async function fetchImageAsBase64(url) {
+      const resp = await fetch(url);
+      if (!resp.ok) throw new Error('fetch failed');
+      const buf = new Uint8Array(await resp.arrayBuffer());
+      let bin = '';
+      const CHUNK = 0x8000;
+      for (let i = 0; i < buf.length; i += CHUNK) {
+        bin += String.fromCharCode.apply(null, buf.subarray(i, i + CHUNK));
+      }
+      const b64 = btoa(bin);
+      const ct = (resp.headers.get('content-type') || '').toLowerCase();
+      const fmt = ct.includes('png') || url.toLowerCase().includes('.png') ? 'PNG' : 'JPEG';
+      return { b64, fmt };
+    }
+
     if (p.mockup_urls?.length > 0) {
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(12);
       doc.setTextColor(...DARK);
-      doc.text('Vista previa del producto', 15, y);
+      doc.text(safeTxt('Vista previa del producto'), 15, y);
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(8);
       doc.setTextColor(...GRAY);
-      doc.text('Mockup referencial con tu logo aplicado en láser UV', 15, y + 5);
+      doc.text(safeTxt('Mockup referencial con tu logo aplicado en laser UV'), 15, y + 5);
 
+      let mockupRendered = false;
       try {
-        const img = p.mockup_urls[0];
-        const resp = await fetch(img);
-        const buf = await resp.arrayBuffer();
-        const b64 = btoa(String.fromCharCode(...new Uint8Array(buf)));
-        const fmt = img.toLowerCase().includes('.png') ? 'PNG' : 'JPEG';
+        const { b64, fmt } = await fetchImageAsBase64(p.mockup_urls[0]);
         doc.addImage(`data:image/${fmt.toLowerCase()};base64,${b64}`, fmt, 15, y + 9, 70, 70);
-      } catch {
+        mockupRendered = true;
+      } catch (e) {
+        console.warn('Mockup no renderizado:', e?.message);
         doc.setFillColor(...LIGHT);
         doc.roundedRect(15, y + 9, 70, 70, 3, 3, 'F');
         doc.setTextColor(...GRAY);
         doc.setFontSize(8);
-        doc.text('(Mockup adjunto digitalmente)', 50, y + 48, { align: 'center' });
+        doc.text(safeTxt('(Mockup adjunto digitalmente)'), 50, y + 48, { align: 'center' });
       }
 
       // ESG box to the right of mockup
@@ -155,19 +197,20 @@ Deno.serve(async (req) => {
       doc.setTextColor(255, 255, 255);
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(10);
-      doc.text('Impacto ESG', 102, y + 20);
+      doc.text(safeTxt('Impacto ESG'), 102, y + 20);
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(8);
       const esgLines = [
-        '♻  Plástico post-consumo rescatado',
-        '🌍  Fabricación 100% local — Chile',
-        '🔋  Proceso con energía renovable',
-        '🛡  Garantía 10 años sobre defectos',
-        '🌱  Reduce tu huella corporativa',
+        '> Plastico post-consumo rescatado',
+        '> Fabricacion 100% local - Chile',
+        '> Proceso con energia renovable',
+        '> Garantia 10 anos sobre defectos',
+        '> Reduce tu huella corporativa',
       ];
-      esgLines.forEach((l, i) => doc.text(l, 102, y + 32 + i * 7));
+      esgLines.forEach((l, i) => doc.text(safeTxt(l), 102, y + 32 + i * 7));
 
       y += 90;
+      if (!mockupRendered) void 0;
     }
 
     // ----- TABLA DE ITEMS -----
@@ -176,7 +219,7 @@ Deno.serve(async (req) => {
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(12);
     doc.setTextColor(...DARK);
-    doc.text('Detalle técnico y económico', 15, y);
+    doc.text(safeTxt('Detalle tecnico y economico'), 15, y);
     y += 8;
 
     // Header
@@ -203,13 +246,13 @@ Deno.serve(async (req) => {
       }
       doc.setTextColor(...DARK);
       doc.setFont('helvetica', 'bold');
-      const name = (it.nombre || it.name || it.producto || '—').substring(0, 40);
+      const name = safeTxt(it.nombre || it.name || it.producto || '-').substring(0, 40);
       doc.text(name, 20, y);
       if (it.personalizacion) {
         doc.setFont('helvetica', 'normal');
         doc.setFontSize(7);
         doc.setTextColor(...TEAL);
-        doc.text('+ Personalización láser UV', 20, y + 4);
+        doc.text(safeTxt('+ Personalizacion laser UV'), 20, y + 4);
         doc.setFontSize(9);
       }
       doc.setTextColor(...DARK);
@@ -217,7 +260,7 @@ Deno.serve(async (req) => {
       doc.text(`${it.cantidad || it.qty || 0}`, 115, y);
       doc.text(fmtCLP(it.precio_unitario), 140, y);
       doc.setTextColor(...TEAL);
-      doc.text(it.descuento_pct ? `-${it.descuento_pct}%` : '—', 165, y);
+      doc.text(it.descuento_pct ? `-${it.descuento_pct}%` : '-', 165, y);
       doc.setTextColor(...DARK);
       doc.setFont('helvetica', 'bold');
       doc.text(fmtCLP(it.line_total || (it.precio_unitario * (it.cantidad || it.qty))), pw - 20, y, { align: 'right' });
@@ -234,14 +277,14 @@ Deno.serve(async (req) => {
       doc.setFontSize(bold ? 11 : 9);
       doc.setFont('helvetica', bold ? 'bold' : 'normal');
       doc.setTextColor(...color);
-      doc.text(label, pw - 80, y);
+      doc.text(safeTxt(label), pw - 80, y);
       doc.text(fmtCLP(val), pw - 20, y, { align: 'right' });
       y += bold ? 7 : 5;
     };
 
     if (p.subtotal) totRow('Subtotal', p.subtotal);
     if (p.descuento_pct > 0) totRow(`Descuento (${p.descuento_pct}%)`, -Math.round((p.subtotal || 0) * p.descuento_pct / 100), false, TEAL);
-    if (p.fee_personalizacion > 0) totRow('Fee personalización', p.fee_personalizacion);
+    if (p.fee_personalizacion > 0) totRow('Fee personalizacion', p.fee_personalizacion);
     if (p.fee_packaging > 0) totRow('Fee packaging', p.fee_packaging);
     y += 2;
     doc.setDrawColor(...TEAL);
@@ -258,20 +301,20 @@ Deno.serve(async (req) => {
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(10);
     doc.setTextColor(...DARK);
-    doc.text('Términos y condiciones', 22, y + 8);
+    doc.text(safeTxt('Terminos y condiciones'), 22, y + 8);
 
     const conds = [
-      `Anticipo ${p.anticipo_pct || 50}% para iniciar producción. Saldo contra despacho.`,
-      `Entrega en ${p.lead_time_dias || 7} días hábiles desde anticipo y aprobación de mockup.`,
-      'Garantía de 10 años contra defectos de fabricación en plástico reciclado.',
-      'Grabado láser UV incluido gratis desde 10 unidades. Área estándar 40×25mm.',
-      'Despacho a todo Chile vía Starken/Chilexpress. Costo según destino.',
-      `Propuesta válida por ${p.validity_days || 15} días desde la fecha de emisión.`,
+      `Anticipo ${p.anticipo_pct || 50}% para iniciar produccion. Saldo contra despacho.`,
+      `Entrega en ${p.lead_time_dias || 7} dias habiles desde anticipo y aprobacion de mockup.`,
+      'Garantia de 10 anos contra defectos de fabricacion en plastico reciclado.',
+      'Grabado laser UV incluido gratis desde 10 unidades. Area estandar 40x25mm.',
+      'Despacho a todo Chile via Starken/Chilexpress. Costo segun destino.',
+      `Propuesta valida por ${p.validity_days || 15} dias desde la fecha de emision.`,
     ];
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(8);
     doc.setTextColor(...GRAY);
-    conds.forEach((c, i) => doc.text(`✓  ${c}`, 22, y + 16 + i * 5.5));
+    conds.forEach((c, i) => doc.text(safeTxt(`>  ${c}`), 22, y + 16 + i * 5.5));
 
     y += 58;
 
@@ -286,12 +329,18 @@ Deno.serve(async (req) => {
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(7.5);
     doc.setTextColor(167, 217, 201);
-    doc.text('peyuchile.com · +56 9 3504 0242 · hola@peyuchile.com', 15, footerY + 12);
+    doc.text(safeTxt('peyuchile.com - +56 9 3504 0242 - hola@peyuchile.com'), 15, footerY + 12);
     doc.setTextColor(200, 215, 225);
-    doc.text('Providencia · Macul · Santiago, Chile', pw - 15, footerY + 12, { align: 'right' });
+    doc.text(safeTxt('Providencia - Macul - Santiago, Chile'), pw - 15, footerY + 12, { align: 'right' });
 
-    const pdfBytes = doc.output('arraybuffer');
-    const pdfBase64 = btoa(String.fromCharCode(...new Uint8Array(pdfBytes)));
+    // Encoding byte-safe (chunked) — evita stack overflow con PDFs grandes
+    const pdfBytes = new Uint8Array(doc.output('arraybuffer'));
+    let bin = '';
+    const CHUNK = 0x8000;
+    for (let i = 0; i < pdfBytes.length; i += CHUNK) {
+      bin += String.fromCharCode.apply(null, pdfBytes.subarray(i, i + CHUNK));
+    }
+    const pdfBase64 = btoa(bin);
 
     return Response.json({
       success: true,
