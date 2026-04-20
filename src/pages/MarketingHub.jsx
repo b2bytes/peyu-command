@@ -8,6 +8,7 @@ import MarketingHubStats from '@/components/marketing/MarketingHubStats';
 import ContentPostsList from '@/components/marketing/ContentPostsList';
 import AdCampaignsList from '@/components/marketing/AdCampaignsList';
 import ChannelConnections from '@/components/marketing/ChannelConnections';
+import ContentGeneratorPanel from '@/components/marketing/ContentGeneratorPanel';
 
 export default function MarketingHub() {
   const [posts, setPosts] = useState([]);
@@ -74,6 +75,9 @@ export default function MarketingHub() {
 
       {/* Stats */}
       <MarketingHubStats posts={posts} calendarios={calendarios} campanas={campanas} assets={assets} />
+
+      {/* Generador Agéntico de Contenido */}
+      <ContentGeneratorPanel onGenerated={loadAll} />
 
       {/* Main grid: Chat + Panel lateral — altura fija para evitar que la página entera se mueva */}
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
