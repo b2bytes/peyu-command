@@ -3,8 +3,10 @@ import { useLocation } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Send, MessageCircle, X } from 'lucide-react';
+import { Send, X, History } from 'lucide-react';
 import ChatProductContentLight from '@/components/chat/ChatMessageContentLight';
+import ChatHistoryPanel from '@/components/chat/ChatHistoryPanel';
+import { ensureFreshSession, addToHistory } from '@/lib/chat-history';
 
 const STORAGE_KEY = 'peyu_chat_conversation_id';
 const OPEN_KEY = 'peyu_chat_open';
@@ -16,7 +18,12 @@ const AGENT_NAV_WINDOW_MS = 8000;
 
 export default function AsistenteChat() {
   const location = useLocation();
+  // Al montar por primera vez en una sesión nueva (pestaña reabierta), archivamos
+  // la conversación activa al historial para arrancar limpio. Si el usuario quiere
+  // seguir la conversación anterior, la reabre desde el panel de historial.
+  const [freshSession] = useState(() => ensureFreshSession());
   const [open, setOpen] = useState(() => localStorage.getItem(OPEN_KEY) === '1');
+  const [showHistory, setShowHistory] = useState(false);
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [conversationId, setConversationId] = useState(() => localStorage.getItem(STORAGE_KEY) || null);
@@ -71,9 +78,11 @@ export default function AsistenteChat() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.pathname, isLanding]);
 
-  // Load existing conversation (if any) from persisted id when mounting on a new page
+  // Load existing conversation (if any) from persisted id when mounting on a new page.
+  // Si es una sesión fresca (pestaña reabierta), ensureFreshSession ya archivó la
+  // conversación anterior y limpió el active id → arrancamos vacíos por diseño.
   useEffect(() => {
-    if (!conversationId || isLanding) return;
+    if (!conversationId || isLanding || freshSession) return;
     let alive = true;
     (async () => {
       try {
@@ -85,7 +94,7 @@ export default function AsistenteChat() {
       }
     })();
     return () => { alive = false; };
-  }, [conversationId, isLanding]);
+  }, [conversationId, isLanding, freshSession]);
 
   // Subscribe to live updates while a conversation exists
   useEffect(() => {
@@ -130,11 +139,42 @@ export default function AsistenteChat() {
         conv = await base44.agents.getConversation(convId);
       }
       await base44.agents.addMessage(conv, { role: 'user', content: text });
+      // Registrar/actualizar esta conversación en el historial (título = primer mensaje del user)
+      addToHistory(convId, text);
     } catch (e) {
       console.error('Error enviando mensaje:', e);
       setLoading(false);
     }
   }, [input, loading, conversationId]);
+
+  // Reabrir una conversación del historial
+  const handleResume = useCallback(async (id) => {
+    setShowHistory(false);
+    localStorage.setItem(STORAGE_KEY, id);
+    setConversationId(id);
+    try {
+      const conv = await base44.agents.getConversation(id);
+      if (conv?.messages) setMessages(conv.messages.filter(m => m.content));
+    } catch {
+      // si falla, limpiamos
+      localStorage.removeItem(STORAGE_KEY);
+      setConversationId(null);
+      setMessages([]);
+    }
+  }, []);
+
+  // Empezar un nuevo chat (archiva el actual al historial)
+  const handleNewChat = useCallback(() => {
+    const currentId = conversationId;
+    if (currentId) {
+      const firstUser = messages.find(m => m.role === 'user')?.content || '';
+      addToHistory(currentId, firstUser);
+    }
+    localStorage.removeItem(STORAGE_KEY);
+    setConversationId(null);
+    setMessages([]);
+    setShowHistory(false);
+  }, [conversationId, messages]);
 
   const handleOpen = () => setOpen(true);
 
@@ -164,7 +204,7 @@ export default function AsistenteChat() {
       {open && (
         <div className="fixed bottom-24 right-6 z-50 w-96 max-w-[calc(100vw-2rem)] max-h-[80vh] bg-white rounded-2xl shadow-2xl border border-gray-100 flex flex-col overflow-hidden">
           {/* Header */}
-          <div className="bg-gradient-to-r from-teal-600 to-cyan-600 text-white p-4 flex items-center justify-between flex-shrink-0">
+          <div className="bg-gradient-to-r from-teal-600 to-cyan-600 text-white p-4 flex items-center justify-between flex-shrink-0 relative">
             <div className="flex items-center gap-2.5">
               <div className="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center text-xl">🐢</div>
               <div>
@@ -175,21 +215,56 @@ export default function AsistenteChat() {
                 </p>
               </div>
             </div>
-            <button
-              onClick={() => setOpen(false)}
-              className="text-white hover:bg-white/20 p-1 rounded-lg transition"
-              aria-label="Minimizar chat"
-            >
-              <X className="w-5 h-5" />
-            </button>
+            <div className="flex items-center gap-1">
+              <button
+                onClick={() => setShowHistory(v => !v)}
+                className="text-white hover:bg-white/20 p-1.5 rounded-lg transition"
+                aria-label="Ver historial"
+                title="Conversaciones anteriores"
+              >
+                <History className="w-4 h-4" />
+              </button>
+              <button
+                onClick={() => setOpen(false)}
+                className="text-white hover:bg-white/20 p-1 rounded-lg transition"
+                aria-label="Minimizar chat"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
           </div>
+
+          {/* Panel de historial (overlay encima del chat) */}
+          {showHistory && (
+            <ChatHistoryPanel
+              onResume={handleResume}
+              onClose={() => setShowHistory(false)}
+            />
+          )}
 
           {/* Messages */}
           <div className="flex-1 overflow-y-auto min-h-[320px] max-h-[60vh] space-y-3 p-4 bg-gray-50 flex flex-col">
             {messages.length === 0 && !loading && (
-              <div className="text-center text-gray-500 text-xs py-8 space-y-2">
+              <div className="text-center text-gray-500 text-xs py-8 space-y-3">
                 <p className="text-sm font-medium">👋 ¡Hola! Soy Peyu</p>
                 <p>Tu asistente de gifting sostenible. Cuéntame qué necesitas.</p>
+                {typeof window !== 'undefined' && (() => {
+                  try {
+                    const raw = localStorage.getItem('peyu_chat_history');
+                    const hist = raw ? JSON.parse(raw) : [];
+                    if (Array.isArray(hist) && hist.length > 0) {
+                      return (
+                        <button
+                          onClick={() => setShowHistory(true)}
+                          className="inline-flex items-center gap-1.5 mt-2 px-3 py-1.5 rounded-full bg-teal-50 hover:bg-teal-100 border border-teal-200 text-teal-700 text-[11px] font-semibold transition"
+                        >
+                          <History className="w-3 h-3" /> Retomar conversación anterior ({hist.length})
+                        </button>
+                      );
+                    }
+                  } catch {}
+                  return null;
+                })()}
               </div>
             )}
             {messages.map((msg, i) => (

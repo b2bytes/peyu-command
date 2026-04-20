@@ -8,6 +8,9 @@ import { Send, ShoppingCart, Bell, Star, ChevronLeft, ChevronRight, Home, Grid3x
 import MobileMenu from '@/components/MobileMenu';
 import WhatsAppFloat from '@/components/WhatsAppFloat';
 import ChatMessageContent from '@/components/chat/ChatMessageContent';
+import ChatHistoryPanel from '@/components/chat/ChatHistoryPanel';
+import { ensureFreshSession, addToHistory, readHistory } from '@/lib/chat-history';
+import { History } from 'lucide-react';
 
 const OCASIONES = [
   { id: 'navidad', label: 'Navidad', icon: '🎄' },
@@ -30,12 +33,15 @@ const FEATURED_PRODUCTS = [
 ];
 
 const STORAGE_KEY = 'peyu_chat_conversation_id';
+const WELCOME_MSG = { role: 'assistant', content: '¡Hola! Soy Peyu 🐢. Ayudo a empresas y personas a encontrar el regalo perfecto hecho con plástico 100% reciclado.\n\n¿Buscas regalo para empresa o uso personal?' };
 
 export default function ShopLanding() {
+  // Si la pestaña es nueva (usuario cerró y volvió), archivar la conv anterior al historial.
+  const [freshSession] = useState(() => ensureFreshSession());
   const [conversationId, setConversationId] = useState(() => localStorage.getItem(STORAGE_KEY) || null);
-  const [messages, setMessages] = useState([
-    { role: 'assistant', content: '¡Hola! Soy Peyu 🐢. Ayudo a empresas y personas a encontrar el regalo perfecto hecho con plástico 100% reciclado.\n\n¿Buscas regalo para empresa o uso personal?' }
-  ]);
+  const [messages, setMessages] = useState([WELCOME_MSG]);
+  const [showHistory, setShowHistory] = useState(false);
+  const [historyCount, setHistoryCount] = useState(() => readHistory().length);
 
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -60,9 +66,10 @@ export default function ShopLanding() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  // Recuperar conversación existente al montar (si el usuario vuelve al home)
+  // Recuperar conversación existente al montar SOLO si la sesión sigue viva
+  // (usuario navegó a otra página y volvió). Si es sesión nueva, arrancamos limpio.
   useEffect(() => {
-    if (!conversationId) return;
+    if (!conversationId || freshSession) return;
     let alive = true;
     (async () => {
       try {
@@ -75,7 +82,22 @@ export default function ShopLanding() {
       }
     })();
     return () => { alive = false; };
-  }, []);
+  }, [freshSession, conversationId]);
+
+  const handleResumeFromHistory = async (id) => {
+    setShowHistory(false);
+    localStorage.setItem(STORAGE_KEY, id);
+    setConversationId(id);
+    try {
+      const conv = await base44.agents.getConversation(id);
+      const msgs = (conv?.messages || []).filter(m => m.content);
+      setMessages(msgs.length > 0 ? msgs : [WELCOME_MSG]);
+    } catch {
+      localStorage.removeItem(STORAGE_KEY);
+      setConversationId(null);
+      setMessages([WELCOME_MSG]);
+    }
+  };
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -112,6 +134,10 @@ export default function ShopLanding() {
       } else {
         conv = await base44.agents.getConversation(conversationId);
       }
+
+      // Registrar/actualizar esta conversación en el historial con el texto del usuario
+      addToHistory(conv.id, text);
+      setHistoryCount(readHistory().length);
 
       const msgCountBefore = (conv.messages || []).length;
 
@@ -288,16 +314,35 @@ export default function ShopLanding() {
               </div>
 
               {/* Chat Agent */}
-              <div className="bg-white/5 backdrop-blur-sm border border-white/15 rounded-xl lg:rounded-2xl p-2 sm:p-3 flex flex-col shadow-xl flex-1 min-h-40 sm:min-h-48 lg:min-h-[420px] overflow-hidden">
+              <div className="bg-white/5 backdrop-blur-sm border border-white/15 rounded-xl lg:rounded-2xl p-2 sm:p-3 flex flex-col shadow-xl flex-1 min-h-40 sm:min-h-48 lg:min-h-[420px] overflow-hidden relative">
                 
                 {/* Agent Header */}
                 <div className="mb-2 pb-2 border-b border-white/20 flex items-center gap-2 flex-shrink-0 min-w-0">
                   <div className="w-8 h-8 rounded-full bg-gradient-to-br from-teal-400 to-cyan-500 flex items-center justify-center text-white font-bold flex-shrink-0 text-sm shadow-lg">🐢</div>
-                  <div className="min-w-0">
+                  <div className="min-w-0 flex-1">
                     <p className="text-white font-bold text-xs">Peyu</p>
                     <p className="text-white/50 text-[10px] line-clamp-1">Asistente de Gifting</p>
                   </div>
+                  {historyCount > 0 && (
+                    <button
+                      onClick={() => setShowHistory(true)}
+                      className="flex items-center gap-1 px-2 py-1 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 text-white/90 text-[10px] font-semibold transition flex-shrink-0"
+                      title="Conversaciones anteriores"
+                    >
+                      <History className="w-3 h-3" />
+                      <span className="hidden sm:inline">Anteriores ({historyCount})</span>
+                      <span className="sm:hidden">{historyCount}</span>
+                    </button>
+                  )}
                 </div>
+
+                {/* Panel de historial (overlay dentro del chat) */}
+                {showHistory && (
+                  <ChatHistoryPanel
+                    onResume={handleResumeFromHistory}
+                    onClose={() => setShowHistory(false)}
+                  />
+                )}
 
                 {/* Messages Container */}
                 <div className="flex-1 overflow-y-auto space-y-2.5 mb-3 scrollbar-hide">
