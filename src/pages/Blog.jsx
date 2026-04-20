@@ -31,11 +31,11 @@ export default function Blog() {
   const resto = filtrados.filter(p => p.id !== destacado?.id);
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
         {/* Header */}
         <div className="mb-10">
-          <Link to="/" className="inline-flex items-center gap-2 text-white/60 hover:text-white text-sm mb-4">
+          <Link to="/" className="inline-flex items-center gap-2 text-white/80 hover:text-white text-sm mb-4 font-medium">
             <ArrowLeft className="w-4 h-4" /> Volver al inicio
           </Link>
           <div className="flex items-center gap-3 mb-3">
@@ -44,7 +44,7 @@ export default function Blog() {
             </div>
             <div>
               <h1 className="text-3xl sm:text-4xl font-bold text-white">Blog PEYU</h1>
-              <p className="text-white/60 text-sm">Historias reales, reciclaje y diseño consciente desde Chile</p>
+              <p className="text-white/85 text-sm">Historias reales, reciclaje y diseño consciente desde Chile</p>
             </div>
           </div>
         </div>
@@ -55,10 +55,10 @@ export default function Blog() {
             <button
               key={c}
               onClick={() => setCategoria(c)}
-              className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+              className={`px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all ${
                 categoria === c
-                  ? 'bg-teal-500 text-white shadow-lg'
-                  : 'bg-white/5 text-white/60 hover:bg-white/10 border border-white/10'
+                  ? 'bg-teal-500 text-white shadow-lg shadow-teal-500/30'
+                  : 'bg-slate-800/70 text-white/85 hover:bg-slate-700 border border-white/15'
               }`}
             >
               {c}
@@ -67,10 +67,10 @@ export default function Blog() {
         </div>
 
         {loading ? (
-          <div className="text-center py-20 text-white/50">Cargando artículos...</div>
+          <div className="text-center py-20 text-white/70">Cargando artículos...</div>
         ) : filtrados.length === 0 ? (
-          <div className="text-center py-20 text-white/50">
-            <Sparkles className="w-10 h-10 mx-auto mb-3 opacity-40" />
+          <div className="text-center py-20 text-white/70">
+            <Sparkles className="w-10 h-10 mx-auto mb-3 opacity-60" />
             <p>No hay artículos en esta categoría todavía.</p>
           </div>
         ) : (
