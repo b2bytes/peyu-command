@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Zap, CheckCircle2, AlertCircle, RefreshCw, Shield, Database, ArrowRight } from 'lucide-react';
 import WooStatsCard from '@/components/woocommerce/WooStatsCard';
 import WooCredentialsGuide from '@/components/woocommerce/WooCredentialsGuide';
+import WooStagingPreviewModal from '@/components/woocommerce/WooStagingPreviewModal';
 
 const TYPES = ['product', 'customer', 'order'];
 
@@ -14,6 +15,7 @@ export default function IntegracionWoo() {
   const [busy, setBusy] = useState(null); // { type, action: 'import'|'promote' }
   const [progress, setProgress] = useState(null); // { type, label, current, total }
   const [logs, setLogs] = useState([]);
+  const [previewType, setPreviewType] = useState(null);
 
   const addLog = (msg, type = 'info') => {
     setLogs(prev => [{ ts: new Date(), msg, type }, ...prev.slice(0, 29)]);
@@ -87,6 +89,22 @@ export default function IntegracionWoo() {
       await loadStats();
     } catch (e) {
       addLog(`❌ Error promote: ${e.message}`, 'error');
+    }
+    setBusy(null);
+  };
+
+  const clearStaging = async (type) => {
+    const confirmMsg = `¿Borrar TODOS los registros de ${type} del staging? Esto no afecta las entidades reales ya promovidas.`;
+    if (!window.confirm(confirmMsg)) return;
+    setBusy({ type, action: 'clear' });
+    addLog(`🧹 Limpiando staging de ${type}s…`);
+    try {
+      const { data } = await base44.functions.invoke('wooStagingClear', { resource_type: type, status: 'all' });
+      if (data?.ok) addLog(`✅ ${data.deleted} registros del staging eliminados`);
+      else addLog(`❌ ${data?.error || 'Error desconocido'}`, 'error');
+      await loadStats();
+    } catch (e) {
+      addLog(`❌ ${e.message}`, 'error');
     }
     setBusy(null);
   };
@@ -172,6 +190,8 @@ export default function IntegracionWoo() {
                 remoteCount={type === 'product' ? connection.counts.products : type === 'customer' ? connection.counts.customers : connection.counts.orders_last_12m}
                 onImport={() => importAll(type)}
                 onPromote={() => promoteAll(type)}
+                onPreview={() => setPreviewType(type)}
+                onClear={() => clearStaging(type)}
                 busy={getBusyFor(type)}
                 progress={progress?.type === type ? progress : null}
               />
@@ -179,6 +199,9 @@ export default function IntegracionWoo() {
           </div>
         </>
       )}
+
+      {/* Modal de preview */}
+      {previewType && <WooStagingPreviewModal resourceType={previewType} onClose={() => setPreviewType(null)} />}
 
       {/* Logs */}
       {logs.length > 0 && (

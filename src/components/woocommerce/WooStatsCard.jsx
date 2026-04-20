@@ -1,4 +1,4 @@
-import { Package, Users, ShoppingBag } from 'lucide-react';
+import { Package, Users, ShoppingBag, Eye, Trash2 } from 'lucide-react';
 
 const CONFIG = {
   product: { label: 'Productos', icon: Package, color: 'from-blue-500 to-indigo-500' },
@@ -6,7 +6,7 @@ const CONFIG = {
   order: { label: 'Pedidos (12m)', icon: ShoppingBag, color: 'from-orange-500 to-pink-500' },
 };
 
-export default function WooStatsCard({ type, stats, remoteCount, onImport, onPromote, busy, progress }) {
+export default function WooStatsCard({ type, stats, remoteCount, onImport, onPromote, onPreview, onClear, busy, progress }) {
   const cfg = CONFIG[type];
   const Icon = cfg.icon;
   const s = stats || { pending: 0, promoted: 0, skipped: 0, error: 0, total: 0 };
@@ -69,7 +69,7 @@ export default function WooStatsCard({ type, stats, remoteCount, onImport, onPro
         </div>
       )}
 
-      <div className="flex gap-2">
+      <div className="flex gap-2 mb-2">
         <button
           onClick={onImport}
           disabled={busy}
@@ -77,7 +77,7 @@ export default function WooStatsCard({ type, stats, remoteCount, onImport, onPro
             busy ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : `bg-gradient-to-r ${cfg.color} text-white hover:opacity-90`
           }`}
         >
-          {busy === 'import' ? 'Importando…' : s.total > 0 ? 'Re-importar' : '1. Importar a staging'}
+          {busy === 'import' ? 'Importando…' : s.total > 0 ? 'Re-importar' : '1. Importar'}
         </button>
         <button
           onClick={onPromote}
@@ -89,6 +89,23 @@ export default function WooStatsCard({ type, stats, remoteCount, onImport, onPro
           }`}
         >
           {busy === 'promote' ? 'Promoviendo…' : `2. Promover (${s.pending})`}
+        </button>
+      </div>
+
+      <div className="flex gap-2">
+        <button
+          onClick={onPreview}
+          disabled={s.total === 0}
+          className="flex-1 text-[11px] font-semibold rounded-lg py-1.5 border transition disabled:opacity-40 disabled:cursor-not-allowed border-indigo-200 text-indigo-700 hover:bg-indigo-50 flex items-center justify-center gap-1"
+        >
+          <Eye className="w-3 h-3" /> Preview
+        </button>
+        <button
+          onClick={onClear}
+          disabled={busy || s.total === 0}
+          className="flex-1 text-[11px] font-semibold rounded-lg py-1.5 border transition disabled:opacity-40 disabled:cursor-not-allowed border-red-200 text-red-700 hover:bg-red-50 flex items-center justify-center gap-1"
+        >
+          <Trash2 className="w-3 h-3" /> Limpiar
         </button>
       </div>
     </div>
