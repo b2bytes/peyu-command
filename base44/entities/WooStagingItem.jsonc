@@ -5,7 +5,7 @@
   "properties": {
     "woo_id": {
       "type": "number",
-      "title": "ID en WooCommerce"
+      "title": "ID en WooCommerce (0 si es guest)"
     },
     "resource_type": {
       "type": "string",
@@ -13,6 +13,7 @@
       "enum": [
         "product",
         "customer",
+        "customer_guest",
         "order"
       ]
     },

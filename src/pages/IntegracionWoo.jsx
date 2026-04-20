@@ -6,7 +6,7 @@ import WooStatsCard from '@/components/woocommerce/WooStatsCard';
 import WooCredentialsGuide from '@/components/woocommerce/WooCredentialsGuide';
 import WooStagingPreviewModal from '@/components/woocommerce/WooStagingPreviewModal';
 
-const TYPES = ['product', 'customer', 'order'];
+const TYPES = ['product', 'customer', 'customer_guest', 'order'];
 
 export default function IntegracionWoo() {
   const [testing, setTesting] = useState(false);
@@ -27,7 +27,7 @@ export default function IntegracionWoo() {
     try {
       const { data } = await base44.functions.invoke('wooTestConnection', {});
       setConnection(data);
-      if (data.ok) addLog(`✅ Conexión OK: ${data.counts.products} productos, ${data.counts.customers} clientes, ${data.counts.orders_last_12m} pedidos`);
+      if (data.ok) addLog(`✅ Conexión OK: ${data.counts.products} productos · ${data.counts.customers_registered} clientes registrados · ${data.counts.orders_total} pedidos (histórico completo)`);
       else addLog(`❌ ${data.error}`, 'error');
     } catch (e) {
       setConnection({ ok: false, error: e.message });
@@ -140,11 +140,14 @@ export default function IntegracionWoo() {
             <div className="flex-1">
               <h3 className="font-bold text-green-900">Conectado a {connection.site?.site_url || 'WooCommerce'}</h3>
               <p className="text-xs text-green-800 mt-0.5">WC v{connection.site?.wc_version} · Moneda {connection.site?.currency || '—'}</p>
-              <div className="flex gap-4 mt-2 text-xs text-green-900">
+              <div className="flex gap-4 mt-2 text-xs text-green-900 flex-wrap">
                 <span><b>{connection.counts.products}</b> productos</span>
-                <span><b>{connection.counts.customers}</b> clientes</span>
-                <span><b>{connection.counts.orders_last_12m}</b> pedidos (12m)</span>
+                <span><b>{connection.counts.customers_registered}</b> clientes registrados</span>
+                <span><b>{connection.counts.orders_total}</b> pedidos (histórico)</span>
               </div>
+              {connection.note && (
+                <p className="text-[11px] text-green-700 mt-1.5 italic">💡 {connection.note}</p>
+              )}
             </div>
           </div>
         ) : (
@@ -181,21 +184,33 @@ export default function IntegracionWoo() {
           </div>
 
           {/* Cards de recursos */}
-          <div className="grid md:grid-cols-3 gap-4">
-            {TYPES.map(type => (
-              <WooStatsCard
-                key={type}
-                type={type}
-                stats={stats?.[type]}
-                remoteCount={type === 'product' ? connection.counts.products : type === 'customer' ? connection.counts.customers : connection.counts.orders_last_12m}
-                onImport={() => importAll(type)}
-                onPromote={() => promoteAll(type)}
-                onPreview={() => setPreviewType(type)}
-                onClear={() => clearStaging(type)}
-                busy={getBusyFor(type)}
-                progress={progress?.type === type ? progress : null}
-              />
-            ))}
+          <div className="grid md:grid-cols-2 xl:grid-cols-4 gap-4">
+            {TYPES.map(type => {
+              const remoteCount =
+                type === 'product' ? connection.counts.products :
+                type === 'customer' ? connection.counts.customers_registered :
+                type === 'customer_guest' ? connection.counts.orders_total : // techo (1 guest máx por pedido único)
+                connection.counts.orders_total;
+              return (
+                <WooStatsCard
+                  key={type}
+                  type={type}
+                  stats={stats?.[type]}
+                  remoteCount={remoteCount}
+                  onImport={() => importAll(type)}
+                  onPromote={() => promoteAll(type)}
+                  onPreview={() => setPreviewType(type)}
+                  onClear={() => clearStaging(type)}
+                  busy={getBusyFor(type)}
+                  progress={progress?.type === type ? progress : null}
+                />
+              );
+            })}
+          </div>
+
+          <div className="bg-cyan-50 border border-cyan-200 rounded-2xl p-4 text-xs text-cyan-900">
+            <p className="font-bold mb-1">💡 Sobre la extracción de clientes</p>
+            <p>WooCommerce tiene <b>dos tipos</b> de clientes: <b>registrados</b> (crearon cuenta en WP, quedan en <code>/customers</code>) y <b>guest</b> (compraron sin registrarse — son la mayoría). Para obtener la base completa que menciona Joaquín, importa <b>ambos</b>: primero "Clientes registrados", luego "Clientes guest". Al promover, se de-duplican por email automáticamente.</p>
           </div>
         </>
       )}

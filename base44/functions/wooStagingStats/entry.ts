@@ -10,7 +10,7 @@ Deno.serve(async (req) => {
     }
     const svc = base44.asServiceRole;
 
-    const types = ['product', 'customer', 'order'];
+    const types = ['product', 'customer', 'customer_guest', 'order'];
     const statuses = ['pending', 'promoted', 'skipped', 'error'];
     const result = {};
 

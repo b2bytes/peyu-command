@@ -1,9 +1,10 @@
-import { Package, Users, ShoppingBag, Eye, Trash2 } from 'lucide-react';
+import { Package, Users, UserPlus, ShoppingBag, Eye, Trash2 } from 'lucide-react';
 
 const CONFIG = {
   product: { label: 'Productos', icon: Package, color: 'from-blue-500 to-indigo-500' },
-  customer: { label: 'Clientes', icon: Users, color: 'from-emerald-500 to-teal-500' },
-  order: { label: 'Pedidos (12m)', icon: ShoppingBag, color: 'from-orange-500 to-pink-500' },
+  customer: { label: 'Clientes registrados', icon: Users, color: 'from-emerald-500 to-teal-500' },
+  customer_guest: { label: 'Clientes guest (desde pedidos)', icon: UserPlus, color: 'from-cyan-500 to-sky-500' },
+  order: { label: 'Pedidos (histórico completo)', icon: ShoppingBag, color: 'from-orange-500 to-pink-500' },
 };
 
 export default function WooStatsCard({ type, stats, remoteCount, onImport, onPromote, onPreview, onClear, busy, progress }) {

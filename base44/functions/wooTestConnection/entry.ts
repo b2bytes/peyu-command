@@ -81,18 +81,17 @@ Deno.serve(async (req) => {
     // 2) Customers
     const customersRes = await wcGet('customers?per_page=1');
 
-    // 3) Orders (últimos 12 meses)
-    const since = new Date();
-    since.setMonth(since.getMonth() - 12);
-    const ordersRes = await wcGet(`orders?per_page=1&after=${encodeURIComponent(since.toISOString())}`);
+    // 3) Orders (TODO el histórico, sin filtro de fecha)
+    const ordersRes = await wcGet(`orders?per_page=1`);
 
     return Response.json({
       ok: true,
       counts: {
         products: productsRes.total || 0,
-        customers: customersRes.ok ? (customersRes.total || 0) : 0,
-        orders_last_12m: ordersRes.ok ? (ordersRes.total || 0) : 0,
+        customers_registered: customersRes.ok ? (customersRes.total || 0) : 0,
+        orders_total: ordersRes.ok ? (ordersRes.total || 0) : 0,
       },
+      note: 'Clientes "guest" (que compraron sin registrarse) se extraen desde los pedidos al importar — suelen ser la mayoría.',
       warnings: [
         !customersRes.ok ? `Clientes: ${customersRes.error}` : null,
         !ordersRes.ok ? `Pedidos: ${ordersRes.error}` : null,

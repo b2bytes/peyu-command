@@ -13,8 +13,8 @@ Deno.serve(async (req) => {
 
     const body = await req.json();
     const { resource_type, limit = 100 } = body || {};
-    if (!['product', 'customer', 'order'].includes(resource_type)) {
-      return Response.json({ error: 'resource_type debe ser product, customer u order' }, { status: 400 });
+    if (!['product', 'customer', 'customer_guest', 'order'].includes(resource_type)) {
+      return Response.json({ error: 'resource_type debe ser product, customer, customer_guest u order' }, { status: 400 });
     }
 
     const svc = base44.asServiceRole;
@@ -49,11 +49,18 @@ Deno.serve(async (req) => {
           }
         }
 
-        else if (resource_type === 'customer') {
+        else if (resource_type === 'customer' || resource_type === 'customer_guest') {
           if (!data.email) { await svc.entities.WooStagingItem.update(row.id, { status: 'skipped', error_message: 'Sin email' }); skipped++; continue; }
           const existing = await svc.entities.Cliente.filter({ email: data.email });
           if (existing?.[0]) {
-            await svc.entities.Cliente.update(existing[0].id, data);
+            // No sobreescribir campos ya existentes con datos más pobres — merge conservador
+            const merged = { ...existing[0], ...data };
+            // Preservar primera compra más antigua
+            if (existing[0].fecha_primera_compra && data.fecha_primera_compra) {
+              merged.fecha_primera_compra = existing[0].fecha_primera_compra < data.fecha_primera_compra
+                ? existing[0].fecha_primera_compra : data.fecha_primera_compra;
+            }
+            await svc.entities.Cliente.update(existing[0].id, merged);
             await svc.entities.WooStagingItem.update(row.id, { status: 'promoted', target_id: existing[0].id });
             updated++;
           } else {
