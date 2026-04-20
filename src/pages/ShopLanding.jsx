@@ -159,7 +159,22 @@ export default function ShopLanding() {
   };
 
   return (
-    <div className="flex h-screen w-full overflow-hidden bg-gradient-to-br from-slate-900 to-slate-800">
+    <div
+      className="flex w-full overflow-hidden bg-gradient-to-br from-slate-900 to-slate-800 landing-zoom-root"
+      style={{
+        // Escala visual al 75% en desktop (sensación de "zoom out") — el contenedor
+        // compensa con 133.33% de ancho/alto para llenar la pantalla real.
+        transform: 'scale(var(--landing-zoom, 1))',
+        transformOrigin: 'top left',
+        width: 'calc(100% / var(--landing-zoom, 1))',
+        height: 'calc(100vh / var(--landing-zoom, 1))',
+      }}
+    >
+      <style>{`
+        @media (min-width: 1024px) {
+          .landing-zoom-root { --landing-zoom: 0.75; }
+        }
+      `}</style>
       <WhatsAppFloat />
       {/* SIDEBAR - macOS style */}
       <div 
@@ -273,7 +288,7 @@ export default function ShopLanding() {
               </div>
 
               {/* Chat Agent */}
-              <div className="bg-white/5 backdrop-blur-sm border border-white/15 rounded-xl lg:rounded-2xl p-2 sm:p-3 flex flex-col shadow-xl flex-1 min-h-40 sm:min-h-48 overflow-hidden">
+              <div className="bg-white/5 backdrop-blur-sm border border-white/15 rounded-xl lg:rounded-2xl p-2 sm:p-3 flex flex-col shadow-xl flex-1 min-h-40 sm:min-h-48 lg:min-h-[420px] overflow-hidden">
                 
                 {/* Agent Header */}
                 <div className="mb-2 pb-2 border-b border-white/20 flex items-center gap-2 flex-shrink-0 min-w-0">
