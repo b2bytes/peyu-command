@@ -195,28 +195,12 @@ export default function ShopLanding() {
           inset: 0;
           width: 100vw;
           height: 100vh;
-          height: 100svh; /* móvil: evita saltos por la barra de URL */
+          height: 100svh;
           overflow: hidden;
           background: linear-gradient(to bottom right, #0f172a, #1e293b);
           display: flex;
         }
-        /* En escritorio aplicamos el "zoom out" escalando el contenido interno,
-           compensando ancho/alto para que llene el viewport sin dejar vacío. */
-        .landing-zoom-inner {
-          width: 100%;
-          height: 100%;
-          display: flex;
-        }
-        @media (min-width: 1024px) {
-          .landing-zoom-inner {
-            transform: scale(0.75);
-            transform-origin: top left;
-            width: 133.3334%;
-            height: 133.3334%;
-          }
-        }
       `}</style>
-      <div className="landing-zoom-inner">
       <WhatsAppFloat />
       {/* SIDEBAR - macOS style */}
       <div 
@@ -274,7 +258,7 @@ export default function ShopLanding() {
         backgroundRepeat: 'no-repeat'
       }}>
         {/* Main container with glassmorphism */}
-        <div className="flex gap-2 sm:gap-3 lg:gap-4 p-2 sm:p-3 lg:p-4 relative z-10 w-full flex-col lg:flex-row items-stretch min-h-full lg:h-full">
+        <div className="flex gap-2 sm:gap-3 lg:gap-4 p-2 sm:p-3 lg:p-4 relative z-10 w-full flex-col lg:flex-row items-stretch min-h-full lg:h-full lg:min-w-full">
           {/* LEFT CONTAINER - Content */}
           <div className="flex-1 bg-white/3 backdrop-blur-xs border border-white/15 rounded-2xl lg:rounded-3xl shadow-2xl overflow-hidden flex flex-col min-w-0">
             
@@ -433,8 +417,8 @@ export default function ShopLanding() {
           </div>
 
           {/* RIGHT CONTAINER - Product Carousel */}
-          <Link to={`/producto/${FEATURED_PRODUCTS[currentProductIndex].id}`} className="hidden lg:block flex-shrink-0">
-            <div className="w-60 bg-gradient-to-br from-teal-600/20 via-cyan-600/10 to-orange-600/10 border border-teal-400/40 rounded-2xl p-3 flex flex-col gap-2.5 shadow-2xl hover:shadow-3xl hover:border-teal-400/60 hover:-translate-y-1 transition-all cursor-pointer group h-full">
+          <Link to={`/producto/${FEATURED_PRODUCTS[currentProductIndex].id}`} className="hidden lg:block flex-shrink-0 lg:w-72 xl:w-80 2xl:w-96">
+            <div className="w-full bg-gradient-to-br from-teal-600/20 via-cyan-600/10 to-orange-600/10 border border-teal-400/40 rounded-2xl p-4 flex flex-col gap-3 shadow-2xl hover:shadow-3xl hover:border-teal-400/60 hover:-translate-y-1 transition-all cursor-pointer group h-full">
               {(() => {
                 const product = FEATURED_PRODUCTS[currentProductIndex];
                 return (
@@ -508,7 +492,6 @@ export default function ShopLanding() {
             </div>
           </Link>
         </div>
-      </div>
       </div>
     </div>
   );
