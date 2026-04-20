@@ -185,26 +185,42 @@ export default function ShopLanding() {
   };
 
   return (
-    <div
-      className="flex w-full overflow-hidden bg-gradient-to-br from-slate-900 to-slate-800 landing-zoom-root"
-      style={{
-        // Escala visual al 75% en desktop (sensación de "zoom out") — el contenedor
-        // compensa con 133.33% de ancho/alto para llenar la pantalla real.
-        transform: 'scale(var(--landing-zoom, 1))',
-        transformOrigin: 'top left',
-        width: 'calc(100% / var(--landing-zoom, 1))',
-        height: 'calc(100vh / var(--landing-zoom, 1))',
-      }}
-    >
+    <div className="landing-viewport">
       <style>{`
+        /* Estabilización global del landing: sin overflow, sin espacios blancos,
+           altura exacta al viewport (con fallback a svh para mobile dinámico). */
+        html, body { margin: 0; padding: 0; background: #0f172a; overscroll-behavior: none; }
+        .landing-viewport {
+          position: fixed;
+          inset: 0;
+          width: 100vw;
+          height: 100vh;
+          height: 100svh; /* móvil: evita saltos por la barra de URL */
+          overflow: hidden;
+          background: linear-gradient(to bottom right, #0f172a, #1e293b);
+          display: flex;
+        }
+        /* En escritorio aplicamos el "zoom out" escalando el contenido interno,
+           compensando ancho/alto para que llene el viewport sin dejar vacío. */
+        .landing-zoom-inner {
+          width: 100%;
+          height: 100%;
+          display: flex;
+        }
         @media (min-width: 1024px) {
-          .landing-zoom-root { --landing-zoom: 0.75; }
+          .landing-zoom-inner {
+            transform: scale(0.75);
+            transform-origin: top left;
+            width: 133.3334%;
+            height: 133.3334%;
+          }
         }
       `}</style>
+      <div className="landing-zoom-inner">
       <WhatsAppFloat />
       {/* SIDEBAR - macOS style */}
       <div 
-        className={`hidden lg:flex flex-col bg-white/10 backdrop-blur-md border-r border-white/20 transition-all duration-300 overflow-hidden ${sidebarExpanded ? 'w-48' : 'w-16'}`}
+        className={`hidden lg:flex flex-col bg-white/10 backdrop-blur-md border-r border-white/20 transition-all duration-300 overflow-hidden h-full flex-shrink-0 ${sidebarExpanded ? 'w-48' : 'w-16'}`}
         onMouseEnter={() => setSidebarExpanded(true)}
         onMouseLeave={() => setSidebarExpanded(false)}
         style={{
@@ -251,15 +267,14 @@ export default function ShopLanding() {
       </div>
 
       {/* Main content area */}
-      <div className="flex-1 overflow-auto w-full relative" style={{
-        backgroundImage: `linear-gradient(135deg, rgba(15, 23, 42, 0.75) 0%, rgba(15, 78, 137, 0.75) 50%, rgba(15, 23, 42, 0.75) 100%), url('https://media.base44.com/images/public/69d99b9d61f699701129c103/6935b8ac0_image.png')`,
+      <div className="flex-1 overflow-y-auto overflow-x-hidden w-full relative peyu-scrollbar-light h-full" style={{
+        backgroundImage: `linear-gradient(135deg, rgba(15, 23, 42, 0.85) 0%, rgba(15, 78, 137, 0.85) 50%, rgba(15, 23, 42, 0.85) 100%), url('https://media.base44.com/images/public/69d99b9d61f699701129c103/6935b8ac0_image.png')`,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
-        backgroundAttachment: 'fixed',
         backgroundRepeat: 'no-repeat'
       }}>
         {/* Main container with glassmorphism */}
-        <div className="flex gap-2 sm:gap-3 lg:gap-4 p-2 sm:p-3 lg:p-4 relative z-10 w-full flex-col lg:flex-row items-stretch h-full">
+        <div className="flex gap-2 sm:gap-3 lg:gap-4 p-2 sm:p-3 lg:p-4 relative z-10 w-full flex-col lg:flex-row items-stretch min-h-full lg:h-full">
           {/* LEFT CONTAINER - Content */}
           <div className="flex-1 bg-white/3 backdrop-blur-xs border border-white/15 rounded-2xl lg:rounded-3xl shadow-2xl overflow-hidden flex flex-col min-w-0">
             
@@ -493,6 +508,7 @@ export default function ShopLanding() {
             </div>
           </Link>
         </div>
+      </div>
       </div>
     </div>
   );
