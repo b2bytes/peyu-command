@@ -63,6 +63,7 @@ import Contacto from './pages/Contacto';
 import EstadoActual from './pages/EstadoActual';
 import EmbudoVentas from './pages/EmbudoVentas';
 import ImportarClientes from './pages/ImportarClientes';
+import Backlinks from './pages/Backlinks';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -119,6 +120,7 @@ const AuthenticatedApp = () => {
         <Route path="estado-actual" element={<EstadoActual />} />
         <Route path="embudo" element={<EmbudoVentas />} />
         <Route path="importar-clientes" element={<ImportarClientes />} />
+        <Route path="backlinks" element={<Backlinks />} />
       </Route>
       <Route path="*" element={<PageNotFound />} />
     </Routes>

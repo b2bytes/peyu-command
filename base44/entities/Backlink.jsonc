@@ -1,0 +1,107 @@
+{
+  "name": "Backlink",
+  "type": "object",
+  "properties": {
+    "url": {
+      "type": "string",
+      "title": "URL"
+    },
+    "titulo": {
+      "type": "string",
+      "title": "T\u00edtulo / Headline"
+    },
+    "extracto": {
+      "type": "string",
+      "title": "Extracto / Descripci\u00f3n"
+    },
+    "dominio": {
+      "type": "string",
+      "title": "Dominio"
+    },
+    "tipo": {
+      "type": "string",
+      "title": "Tipo",
+      "enum": [
+        "Prensa / Medio",
+        "Sitio Propio",
+        "Instagram",
+        "TikTok",
+        "Facebook",
+        "YouTube",
+        "LinkedIn",
+        "Directorio",
+        "Blog",
+        "Foro",
+        "Menci\u00f3n",
+        "Otro"
+      ],
+      "default": "Otro"
+    },
+    "categoria": {
+      "type": "string",
+      "title": "Categor\u00eda",
+      "enum": [
+        "Producto",
+        "Corporativo",
+        "Prensa",
+        "Reconocimiento",
+        "Contenido propio",
+        "Menci\u00f3n de terceros",
+        "Institucional"
+      ]
+    },
+    "autoridad": {
+      "type": "string",
+      "title": "Autoridad SEO",
+      "enum": [
+        "Alta (Emol, T13, BioBio, gov)",
+        "Media (Blogs, Medios nicho)",
+        "Baja (Redes, foros)",
+        "Sin clasificar"
+      ],
+      "default": "Sin clasificar"
+    },
+    "dofollow": {
+      "type": "boolean",
+      "title": "\u00bfDofollow? (pasa autoridad SEO)",
+      "default": false
+    },
+    "idioma": {
+      "type": "string",
+      "title": "Idioma",
+      "enum": [
+        "Espa\u00f1ol",
+        "Ingl\u00e9s",
+        "Portugu\u00e9s",
+        "Otro"
+      ],
+      "default": "Espa\u00f1ol"
+    },
+    "fecha_publicacion": {
+      "type": "string",
+      "title": "Fecha publicaci\u00f3n"
+    },
+    "estado": {
+      "type": "string",
+      "title": "Estado",
+      "enum": [
+        "Activo",
+        "Roto / 404",
+        "Sin verificar"
+      ],
+      "default": "Sin verificar"
+    },
+    "engagement": {
+      "type": "string",
+      "title": "Engagement (likes/views/shares)"
+    },
+    "notas": {
+      "type": "string",
+      "title": "Notas internas"
+    }
+  },
+  "required": [
+    "url",
+    "tipo"
+  ]
+}

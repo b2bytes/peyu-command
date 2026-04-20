@@ -1,0 +1,56 @@
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
+
+const BACKLINKS = [
+  // ── SITIO PROPIO ──────────────────────────────────────
+  { url: 'https://peyuchile.cl/', titulo: 'Peyu: reciclaje plástico y eco-diseño en Chile', extracto: 'Creamos productos únicos a partir de plástico reciclado, promoviendo el diseño consciente, el juego y la educación ambiental en comunidades chilenas.', dominio: 'peyuchile.cl', tipo: 'Sitio Propio', categoria: 'Institucional', autoridad: 'Media (Blogs, Medios nicho)', dofollow: true, idioma: 'Español', estado: 'Activo' },
+  { url: 'https://peyuchile.cl/corporativos/', titulo: 'Corporativos - Peyu Chile', extracto: 'Regalos corporativos personalizados hechos 100% con plásticos reciclados: Cachos, Lámparas, Maceteros, Posavasos.', dominio: 'peyuchile.cl', tipo: 'Sitio Propio', categoria: 'Corporativo', autoridad: 'Media (Blogs, Medios nicho)', dofollow: true, idioma: 'Español', estado: 'Activo' },
+  { url: 'https://peyuchile.cl/nosotros/', titulo: 'Nosotros - Peyu Chile', extracto: 'Empresa dedicada al reciclaje del "desecho plástico", transformándolo en productos únicos de excelente calidad y novedosos diseños.', dominio: 'peyuchile.cl', tipo: 'Sitio Propio', categoria: 'Institucional', autoridad: 'Media (Blogs, Medios nicho)', dofollow: true, idioma: 'Español', estado: 'Activo' },
+  { url: 'https://peyuchile.cl/categoria-producto/hogar/', titulo: 'Categoría Hogar - Peyu Chile', extracto: 'Cuadros personalizados, maceteros y productos para el hogar en plástico reciclado.', dominio: 'peyuchile.cl', tipo: 'Sitio Propio', categoria: 'Producto', autoridad: 'Media (Blogs, Medios nicho)', dofollow: true, idioma: 'Español', estado: 'Activo' },
+  { url: 'https://peyuchile.cl/producto/cuadro-personalizado-100-reciclado/', titulo: 'Cuadro personalizado | Retrato Ecológico Grabado a Láser', extracto: 'Cuadro personalizado retrato ecológico grabado láser en plástico 100% reciclado.', dominio: 'peyuchile.cl', tipo: 'Sitio Propio', categoria: 'Producto', autoridad: 'Media (Blogs, Medios nicho)', dofollow: true, idioma: 'Español', estado: 'Activo' },
+
+  // ── PRENSA / MEDIOS ────────────────────────────────────
+  { url: 'https://www.emol.com/noticias/Economia/2025/04/03/1162421/empresa-chilena-plastico-reutilizable-fundadores.html', titulo: 'Peyu, la empresa que transforma el plástico en productos reutilizables', extracto: 'Peyu es una empresa de reciclaje que busca terminar con el ciclo de contaminación de los plásticos creando productos NO desechables. Su próximo gran objetivo es incursionar en la industria de la construcción.', dominio: 'emol.com', tipo: 'Prensa / Medio', categoria: 'Prensa', autoridad: 'Alta (Emol, T13, BioBio, gov)', dofollow: false, idioma: 'Español', fecha_publicacion: '2025-04-03', estado: 'Activo' },
+
+  // ── INSTAGRAM (cuenta propia + menciones) ──────────────
+  { url: 'https://www.instagram.com/peyuchile/', titulo: 'PEYU® 𓆉 (@peyuchile) · Santiago - Instagram', extracto: '217K followers · Hasta que el plástico deje de ser basura ♻️ · Tienda física Francisco Bilbao 3775, local 6, Providencia.', dominio: 'instagram.com', tipo: 'Instagram', categoria: 'Contenido propio', autoridad: 'Alta (Emol, T13, BioBio, gov)', dofollow: false, idioma: 'Español', estado: 'Activo', engagement: '217K followers' },
+  { url: 'https://www.instagram.com/reel/DJVW9-0xJO8/', titulo: 'Cotiza los mejores regalos corporativos en PEYU', extracto: 'Los años han pasado, pasamos de picar plástico con una licuadora a formar una empresa para reciclar la mayor cantidad de plástico posible.', dominio: 'instagram.com', tipo: 'Instagram', categoria: 'Contenido propio', autoridad: 'Media (Blogs, Medios nicho)', dofollow: false, idioma: 'Español', estado: 'Activo' },
+  { url: 'https://www.instagram.com/reel/DR7F9HbDk71/', titulo: '1 kg de plástico por cada par de paletas ♻️', extracto: '687 likes, 57 comments - peyuchile on December 6, 2025. Emprendimiento y reciclaje.', dominio: 'instagram.com', tipo: 'Instagram', categoria: 'Contenido propio', autoridad: 'Media (Blogs, Medios nicho)', dofollow: false, idioma: 'Español', fecha_publicacion: '2025-12-06', estado: 'Activo', engagement: '687 likes · 57 comments' },
+  { url: 'https://www.instagram.com/p/ChDafYZOANS/', titulo: 'Kit home office PEYU 100% plástico reciclado', extracto: '1397 likes, 53 comments - peyuchile on August 9, 2022.', dominio: 'instagram.com', tipo: 'Instagram', categoria: 'Contenido propio', autoridad: 'Media (Blogs, Medios nicho)', dofollow: false, idioma: 'Español', fecha_publicacion: '2022-08-09', estado: 'Activo', engagement: '1,397 likes' },
+  { url: 'https://www.instagram.com/reel/DMIUVkLRYem/', titulo: 'BancoEstado: Innovación con Peyu', extracto: 'En BancoEstado nos importa que los emprendedores y empresas tengan oportunidades de crecimiento. Mención y colaboración con BancoEstado.', dominio: 'instagram.com', tipo: 'Instagram', categoria: 'Mención de terceros', autoridad: 'Alta (Emol, T13, BioBio, gov)', dofollow: false, idioma: 'Español', estado: 'Activo' },
+  { url: 'https://www.instagram.com/reel/DHuMURvRssh/', titulo: 'Nuestro objetivo siempre ha sido el mismo', extracto: 'Historia del proyecto de reciclaje Peyu, desde el video pidiendo tapitas.', dominio: 'instagram.com', tipo: 'Instagram', categoria: 'Contenido propio', autoridad: 'Media (Blogs, Medios nicho)', dofollow: false, idioma: 'Español', estado: 'Activo' },
+
+  // ── TIKTOK ─────────────────────────────────────────────
+  { url: 'https://www.tiktok.com/@peyuchile', titulo: 'PEYU (@peyuchile) - TikTok', extracto: 'El Arte de reciclar ♻️ · IG: @peyuchile.cl · Envíos a todo Chile en www.peyuchile.cl', dominio: 'tiktok.com', tipo: 'TikTok', categoria: 'Contenido propio', autoridad: 'Alta (Emol, T13, BioBio, gov)', dofollow: false, idioma: 'Español', estado: 'Activo' },
+  { url: 'https://www.tiktok.com/@peyuchile/video/7569369036404968712', titulo: 'Fábrica de reciclaje de plástico: nuevo producto en Chile', extracto: 'Un año nos costó tener la fábrica andando al 100. Se vienen nuevos productos y miles de kilos de plástico a reciclar ♻️.', dominio: 'tiktok.com', tipo: 'TikTok', categoria: 'Contenido propio', autoridad: 'Media (Blogs, Medios nicho)', dofollow: false, idioma: 'Español', estado: 'Activo' },
+  { url: 'https://www.tiktok.com/@peyuchile/video/7629112587153853704', titulo: 'Hasta que el plástico deje de ser basura ♻️', extracto: 'Regalos con plástico reciclado en Chile, productos personalizados, llaveritos originales para empresa, soportes de celular.', dominio: 'tiktok.com', tipo: 'TikTok', categoria: 'Contenido propio', autoridad: 'Media (Blogs, Medios nicho)', dofollow: false, idioma: 'Español', estado: 'Activo' },
+  { url: 'https://www.tiktok.com/@peyuchile/video/7193019163856751877', titulo: '¿Qué es PEYU y quiénes están detrás de esta marca?', extracto: 'Entrevista hecha por @BancoEstado Oficial y @cnn_chile. #viral #tendencia #reciclaje #sustentable.', dominio: 'tiktok.com', tipo: 'TikTok', categoria: 'Mención de terceros', autoridad: 'Alta (Emol, T13, BioBio, gov)', dofollow: false, idioma: 'Español', estado: 'Activo' },
+  { url: 'https://www.tiktok.com/@peyuchile/video/7486644107377429766', titulo: 'Reciclaje Transformador: De la Terraza a la Empresa', extracto: 'Descubre cómo iniciamos un viaje de reciclaje que busca eliminar el plástico como basura.', dominio: 'tiktok.com', tipo: 'TikTok', categoria: 'Contenido propio', autoridad: 'Media (Blogs, Medios nicho)', dofollow: false, idioma: 'Español', estado: 'Activo' },
+  { url: 'https://www.tiktok.com/@peyuchile/video/7397238750490676486', titulo: 'Conoce al Equipo detrás de PEYU en Chile', extracto: 'Video del equipo fundador de PEYU. #historia #creador #juego.', dominio: 'tiktok.com', tipo: 'TikTok', categoria: 'Contenido propio', autoridad: 'Media (Blogs, Medios nicho)', dofollow: false, idioma: 'Español', estado: 'Activo' },
+
+  // ── FACEBOOK ───────────────────────────────────────────
+  { url: 'https://www.facebook.com/100063704654550/videos/el-mejor-pack-home-office-/2371120400058721/', titulo: 'El mejor pack Home Office - Peyuchile', extracto: 'Llevamos 5 años transformando "basura plástica" en los mejores productos.', dominio: 'facebook.com', tipo: 'Facebook', categoria: 'Contenido propio', autoridad: 'Media (Blogs, Medios nicho)', dofollow: false, idioma: 'Español', estado: 'Activo' },
+  { url: 'https://www.facebook.com/100063704654550/photos/d41d8cd9/1407884544678354/', titulo: 'Peyuchile - Página oficial en Facebook', extracto: 'Disponible en www.peyuchile.cl. Av Bilbao.', dominio: 'facebook.com', tipo: 'Facebook', categoria: 'Contenido propio', autoridad: 'Media (Blogs, Medios nicho)', dofollow: false, idioma: 'Español', estado: 'Activo' },
+
+  // ── MENCIONES DE TERCEROS ──────────────────────────────
+  { url: 'https://www.tiktok.com/@peyuoficial/video/7369372792451632390', titulo: 'PEYU: Carcasas y accesorios para tu celular - Mall Plaza Trébol', extracto: 'La mejor lámina para tu celular en Mall Plaza Trébol. Ideal para cortes láser, grabado, señalética.', dominio: 'tiktok.com', tipo: 'TikTok', categoria: 'Mención de terceros', autoridad: 'Media (Blogs, Medios nicho)', dofollow: false, idioma: 'Español', estado: 'Activo', notas: 'Cuenta @peyuoficial (distinta a @peyuchile)' },
+  { url: 'https://www.tiktok.com/@el_peeyi/video/7567036073486912789', titulo: 'Mantenimiento Preventivo - Mención Peyu home office', extracto: 'Visítanos en peyu.cl! #homeoffice #reciclado.', dominio: 'tiktok.com', tipo: 'TikTok', categoria: 'Mención de terceros', autoridad: 'Baja (Redes, foros)', dofollow: false, idioma: 'Español', estado: 'Activo' },
+  { url: 'https://www.tiktok.com/@digitalhook/video/7221853625809702149', titulo: 'Digital Hook menciona Peyu Chile', extracto: 'Encuentra nuestros productos reciclados en www.peyuchile.cl.', dominio: 'tiktok.com', tipo: 'TikTok', categoria: 'Mención de terceros', autoridad: 'Baja (Redes, foros)', dofollow: false, idioma: 'Español', estado: 'Activo' },
+];
+
+Deno.serve(async (req) => {
+  try {
+    const base44 = createClientFromRequest(req);
+    const user = await base44.auth.me();
+    if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    if (user.role !== 'admin') return Response.json({ error: 'Forbidden: admin only' }, { status: 403 });
+
+    const existing = await base44.asServiceRole.entities.Backlink.list('-created_date', 500);
+    const existingUrls = new Set((existing || []).map(x => x.url));
+    const toCreate = BACKLINKS.filter(b => !existingUrls.has(b.url));
+    if (!toCreate.length) return Response.json({ ok: true, created: 0, total_existing: existing.length, message: 'Todos los backlinks ya existen' });
+    await base44.asServiceRole.entities.Backlink.bulkCreate(toCreate);
+    return Response.json({ ok: true, created: toCreate.length, total_existing: existing.length });
+  } catch (error) {
+    return Response.json({ error: error.message }, { status: 500 });
+  }
+});
