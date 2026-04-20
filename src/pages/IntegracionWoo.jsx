@@ -45,6 +45,23 @@ export default function IntegracionWoo() {
 
   useEffect(() => { loadStats(); }, [loadStats]);
 
+  // Invoca una función con reintentos ante errores transitorios (red, 5xx, timeouts)
+  const invokeWithRetry = async (fn, payload, maxRetries = 3) => {
+    let lastErr = null;
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        const res = await base44.functions.invoke(fn, payload);
+        return res?.data || {};
+      } catch (e) {
+        lastErr = e;
+        if (attempt < maxRetries) {
+          await new Promise(r => setTimeout(r, 1500 * attempt));
+        }
+      }
+    }
+    return { error: `Fallo de red tras ${maxRetries} intentos: ${lastErr?.message || 'desconocido'}`, retryable: true };
+  };
+
   const importAll = async (type) => {
     setBusy({ type, action: 'import' });
     addLog(`⏳ Iniciando import de ${type}s…`);
@@ -52,20 +69,48 @@ export default function IntegracionWoo() {
       let page = 1;
       let totalItems = 0;
       let imported = 0;
+      let skipped = 0;
+      let consecutiveErrors = 0;
+      const MAX_CONSECUTIVE_ERRORS = 3;
+
       while (true) {
-        const { data } = await base44.functions.invoke('wooImportBatch', { resource: type, page });
-        if (data.error) { addLog(`❌ ${data.error}`, 'error'); break; }
+        const data = await invokeWithRetry('wooImportBatch', { resource: type, page });
+
+        if (data.error) {
+          consecutiveErrors++;
+          addLog(`⚠️ Página ${page}: ${data.error}`, 'error');
+          if (!data.retryable || consecutiveErrors >= MAX_CONSECUTIVE_ERRORS) {
+            addLog(`❌ Demasiados errores consecutivos, abortando en página ${page}`, 'error');
+            break;
+          }
+          // Saltamos esta página y seguimos
+          addLog(`⏭️ Saltando página ${page} y continuando…`);
+          page++;
+          await new Promise(r => setTimeout(r, 2000));
+          continue;
+        }
+
+        consecutiveErrors = 0;
         totalItems = data.totalItems || totalItems;
         imported += data.imported || 0;
-        setProgress({ type, label: `Página ${page}/${data.totalPages || '?'}`, current: imported, total: totalItems || imported });
+        skipped += data.skippedDuplicates || 0;
+        setProgress({
+          type,
+          label: `Página ${page}/${data.totalPages || '?'}`,
+          current: imported + skipped,
+          total: totalItems || imported,
+        });
         if (!data.hasMore) break;
         page++;
+        // Pausa pequeña entre batches para no saturar WC
+        await new Promise(r => setTimeout(r, 250));
       }
-      addLog(`✅ ${imported} ${type}s importados al staging`);
+
+      addLog(`✅ ${imported} ${type}s nuevos${skipped > 0 ? ` (${skipped} ya existían)` : ''}`);
       setProgress(null);
       await loadStats();
     } catch (e) {
-      addLog(`❌ Error import: ${e.message}`, 'error');
+      addLog(`❌ Error fatal import: ${e.message}`, 'error');
     }
     setBusy(null);
   };
@@ -74,21 +119,49 @@ export default function IntegracionWoo() {
     setBusy({ type, action: 'promote' });
     addLog(`⏳ Promoviendo ${type}s al sistema…`);
     try {
-      let totalPromoted = 0, totalUpdated = 0, totalSkipped = 0;
-      while (true) {
-        const { data } = await base44.functions.invoke('wooPromoteStaging', { resource_type: type, limit: 100 });
-        if (data.error) { addLog(`❌ ${data.error}`, 'error'); break; }
+      let totalPromoted = 0, totalUpdated = 0, totalSkipped = 0, totalErrors = 0, totalProcessed = 0;
+      let consecutiveErrors = 0;
+      let rounds = 0;
+      const MAX_ROUNDS = 200; // tope de seguridad (200 × 50 = 10.000 items)
+
+      while (rounds < MAX_ROUNDS) {
+        rounds++;
+        const data = await invokeWithRetry('wooPromoteStaging', { resource_type: type, limit: 50 });
+
+        if (data.error) {
+          consecutiveErrors++;
+          addLog(`⚠️ Promoción ronda ${rounds}: ${data.error}`, 'error');
+          if (!data.retryable || consecutiveErrors >= 3) {
+            addLog(`❌ Abortando promoción tras errores consecutivos`, 'error');
+            break;
+          }
+          await new Promise(r => setTimeout(r, 2000));
+          continue;
+        }
+
+        consecutiveErrors = 0;
         totalPromoted += data.promoted || 0;
         totalUpdated += data.updated || 0;
         totalSkipped += data.skipped || 0;
-        setProgress({ type, label: 'Promoviendo…', current: totalPromoted + totalUpdated, total: totalPromoted + totalUpdated + (data.hasMore ? 100 : 0) });
+        totalErrors += data.errors || 0;
+        totalProcessed += data.processed || 0;
+
+        setProgress({
+          type,
+          label: `Promoviendo ronda ${rounds}…`,
+          current: totalProcessed,
+          total: totalProcessed + (data.hasMore ? 50 : 0),
+        });
+
         if (!data.hasMore) break;
+        await new Promise(r => setTimeout(r, 200));
       }
-      addLog(`✅ ${totalPromoted} creados, ${totalUpdated} actualizados, ${totalSkipped} omitidos`);
+
+      addLog(`✅ ${totalPromoted} creados, ${totalUpdated} actualizados${totalSkipped ? `, ${totalSkipped} omitidos` : ''}${totalErrors ? `, ${totalErrors} errores` : ''}`);
       setProgress(null);
       await loadStats();
     } catch (e) {
-      addLog(`❌ Error promote: ${e.message}`, 'error');
+      addLog(`❌ Error fatal promote: ${e.message}`, 'error');
     }
     setBusy(null);
   };

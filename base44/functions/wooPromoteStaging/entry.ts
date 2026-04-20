@@ -1,7 +1,15 @@
 // Promueve registros del staging a las entidades reales (Producto/Cliente/PedidoWeb).
 // De-duplica: productos por SKU, clientes por email, pedidos por numero_pedido.
-// Solo admin. Procesa en lotes de `limit` (default 100).
+//
+// Mejoras de robustez:
+//  - Chunks más pequeños (default 50) para no exceder timeout
+//  - Errores individuales no rompen el batch
+//  - Siempre devuelve 200 con JSON (el frontend decide si seguir)
+//  - Reporta cuántos quedan pendientes para que el loop del front sepa cuándo parar
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
+
+const DEFAULT_LIMIT = 50;
+const MAX_LIMIT = 100;
 
 Deno.serve(async (req) => {
   try {
@@ -11,22 +19,29 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Forbidden: Admin only' }, { status: 403 });
     }
 
-    const body = await req.json();
-    const { resource_type, limit = 100 } = body || {};
+    const body = await req.json().catch(() => ({}));
+    const { resource_type } = body || {};
+    const limit = Math.min(body?.limit || DEFAULT_LIMIT, MAX_LIMIT);
+
     if (!['product', 'customer', 'customer_guest', 'order'].includes(resource_type)) {
-      return Response.json({ error: 'resource_type debe ser product, customer, customer_guest u order' }, { status: 400 });
+      return Response.json({ error: 'resource_type inválido' }, { status: 200 });
     }
 
     const svc = base44.asServiceRole;
 
-    const pending = await svc.entities.WooStagingItem.filter(
-      { resource_type, status: 'pending' },
-      'imported_at',
-      limit
-    );
+    let pending;
+    try {
+      pending = await svc.entities.WooStagingItem.filter(
+        { resource_type, status: 'pending' },
+        'imported_at',
+        limit
+      );
+    } catch (e) {
+      return Response.json({ error: `Error leyendo staging: ${e.message}`, retryable: true }, { status: 200 });
+    }
 
-    if (pending.length === 0) {
-      return Response.json({ promoted: 0, updated: 0, skipped: 0, remaining: 0 });
+    if (!pending || pending.length === 0) {
+      return Response.json({ promoted: 0, updated: 0, skipped: 0, errors: 0, processed: 0, hasMore: false });
     }
 
     let promoted = 0, updated = 0, skipped = 0, errors = 0;
@@ -36,7 +51,10 @@ Deno.serve(async (req) => {
         const data = row.mapped_preview || {};
 
         if (resource_type === 'product') {
-          if (!data.sku) { await svc.entities.WooStagingItem.update(row.id, { status: 'skipped', error_message: 'Sin SKU' }); skipped++; continue; }
+          if (!data.sku) {
+            await svc.entities.WooStagingItem.update(row.id, { status: 'skipped', error_message: 'Sin SKU' });
+            skipped++; continue;
+          }
           const existing = await svc.entities.Producto.filter({ sku: data.sku });
           if (existing?.[0]) {
             await svc.entities.Producto.update(existing[0].id, data);
@@ -50,28 +68,39 @@ Deno.serve(async (req) => {
         }
 
         else if (resource_type === 'customer' || resource_type === 'customer_guest') {
-          if (!data.email) { await svc.entities.WooStagingItem.update(row.id, { status: 'skipped', error_message: 'Sin email' }); skipped++; continue; }
-          const existing = await svc.entities.Cliente.filter({ email: data.email });
+          const email = (data.email || '').toLowerCase().trim();
+          if (!email) {
+            await svc.entities.WooStagingItem.update(row.id, { status: 'skipped', error_message: 'Sin email' });
+            skipped++; continue;
+          }
+          const existing = await svc.entities.Cliente.filter({ email });
           if (existing?.[0]) {
-            // No sobreescribir campos ya existentes con datos más pobres — merge conservador
-            const merged = { ...existing[0], ...data };
-            // Preservar primera compra más antigua
-            if (existing[0].fecha_primera_compra && data.fecha_primera_compra) {
-              merged.fecha_primera_compra = existing[0].fecha_primera_compra < data.fecha_primera_compra
-                ? existing[0].fecha_primera_compra : data.fecha_primera_compra;
+            // Merge conservador — no pisar campos no vacíos con vacíos
+            const base = existing[0];
+            const merged = { ...base };
+            for (const [k, v] of Object.entries(data)) {
+              if (v !== undefined && v !== null && v !== '') merged[k] = v;
             }
-            await svc.entities.Cliente.update(existing[0].id, merged);
-            await svc.entities.WooStagingItem.update(row.id, { status: 'promoted', target_id: existing[0].id });
+            if (base.fecha_primera_compra && data.fecha_primera_compra) {
+              merged.fecha_primera_compra = base.fecha_primera_compra < data.fecha_primera_compra
+                ? base.fecha_primera_compra : data.fecha_primera_compra;
+            }
+            delete merged.id; delete merged.created_date; delete merged.updated_date; delete merged.created_by;
+            await svc.entities.Cliente.update(base.id, merged);
+            await svc.entities.WooStagingItem.update(row.id, { status: 'promoted', target_id: base.id });
             updated++;
           } else {
-            const created = await svc.entities.Cliente.create(data);
+            const created = await svc.entities.Cliente.create({ ...data, email });
             await svc.entities.WooStagingItem.update(row.id, { status: 'promoted', target_id: created.id });
             promoted++;
           }
         }
 
         else if (resource_type === 'order') {
-          if (!data.numero_pedido) { await svc.entities.WooStagingItem.update(row.id, { status: 'skipped', error_message: 'Sin número' }); skipped++; continue; }
+          if (!data.numero_pedido) {
+            await svc.entities.WooStagingItem.update(row.id, { status: 'skipped', error_message: 'Sin número' });
+            skipped++; continue;
+          }
           const existing = await svc.entities.PedidoWeb.filter({ numero_pedido: data.numero_pedido });
           if (existing?.[0]) {
             await svc.entities.PedidoWeb.update(existing[0].id, data);
@@ -85,17 +114,30 @@ Deno.serve(async (req) => {
         }
       } catch (e) {
         errors++;
-        try { await svc.entities.WooStagingItem.update(row.id, { status: 'error', error_message: String(e.message || e).slice(0, 500) }); } catch {}
+        try {
+          await svc.entities.WooStagingItem.update(row.id, {
+            status: 'error',
+            error_message: String(e.message || e).slice(0, 500),
+          });
+        } catch {}
       }
     }
 
-    // Contar restantes
-    const remainingList = await svc.entities.WooStagingItem.filter({ resource_type, status: 'pending' }, undefined, 1);
-    const remaining = pending.length === limit ? pending.length : 0; // estimación simple
-    const moreLeft = remainingList.length > 0;
+    // ¿Quedan más pendientes? Consulta rápida con límite 1
+    let hasMore = false;
+    try {
+      const probe = await svc.entities.WooStagingItem.filter(
+        { resource_type, status: 'pending' }, undefined, 1
+      );
+      hasMore = (probe?.length || 0) > 0;
+    } catch {}
 
-    return Response.json({ promoted, updated, skipped, errors, hasMore: moreLeft, processed: pending.length });
+    return Response.json({
+      promoted, updated, skipped, errors,
+      processed: pending.length,
+      hasMore,
+    });
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    return Response.json({ error: `Error interno: ${error.message}`, retryable: true }, { status: 200 });
   }
 });

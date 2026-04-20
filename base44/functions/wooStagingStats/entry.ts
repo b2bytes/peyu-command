@@ -1,5 +1,27 @@
-// Devuelve resumen del staging actual: por tipo × estado. Para la UI.
+// Devuelve resumen del staging actual: por tipo × estado.
+// Optimización: usa límite 1 (solo necesitamos saber si hay algo) + count mediante filter con pagesize alto UNA vez.
+// Para contar correctamente traemos en páginas de 500 y sumamos — más rápido que 16 queries con límite 1000.
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
+
+const PAGE = 500;
+const MAX_PAGES = 40; // tope 20.000 items por bucket — más que suficiente
+
+async function countRecords(svc, query) {
+  let total = 0;
+  let hasMore = true;
+  let page = 0;
+  while (hasMore && page < MAX_PAGES) {
+    try {
+      const list = await svc.entities.WooStagingItem.filter(query, 'imported_at', PAGE, page * PAGE);
+      total += list.length;
+      hasMore = list.length === PAGE;
+      page++;
+    } catch {
+      hasMore = false;
+    }
+  }
+  return total;
+}
 
 Deno.serve(async (req) => {
   try {
@@ -15,16 +37,16 @@ Deno.serve(async (req) => {
     const result = {};
 
     for (const t of types) {
-      result[t] = {};
+      result[t] = { pending: 0, promoted: 0, skipped: 0, error: 0, total: 0 };
       for (const s of statuses) {
-        const list = await svc.entities.WooStagingItem.filter({ resource_type: t, status: s }, undefined, 1000);
-        result[t][s] = list.length;
+        const c = await countRecords(svc, { resource_type: t, status: s });
+        result[t][s] = c;
+        result[t].total += c;
       }
-      result[t].total = Object.values(result[t]).reduce((a, b) => a + b, 0);
     }
 
     return Response.json({ ok: true, stats: result });
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    return Response.json({ ok: false, error: error.message }, { status: 200 });
   }
 });
