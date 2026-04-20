@@ -1,7 +1,23 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
-// Solo imágenes raster que GenerateImage puede leer como referencia
+// Imágenes raster que GenerateImage puede leer directamente como referencia
 const isRasterImage = (url) => !!url && /\.(png|jpg|jpeg|webp)(\?|$)/i.test(url);
+// SVG y otros vectoriales: se aceptan pero se convierten a PNG antes de pasarlos
+const isSvgImage = (url) => !!url && /\.svg(\?|$)/i.test(url);
+// Cualquier imagen válida como logo (raster o svg)
+const isValidLogo = (url) => isRasterImage(url) || isSvgImage(url);
+
+// Convierte un SVG remoto a PNG usando el proxy público weserv.nl (rasteriza SVG a PNG)
+function svgToPngUrl(svgUrl) {
+  try {
+    const u = new URL(svgUrl);
+    const clean = `${u.hostname}${u.pathname}`;
+    // w=1024 + output=png → PNG alta resolución, fondo transparente preservado
+    return `https://images.weserv.nl/?url=${encodeURIComponent(clean)}&output=png&w=1024`;
+  } catch {
+    return null;
+  }
+}
 
 // Intenta descargar una imagen desde una o más variantes de URL
 async function tryFetchImage(url) {
@@ -79,7 +95,17 @@ Deno.serve(async (req) => {
 
     // Construir prompt: enfatizar que la imagen de referencia ES el producto a usar
     const hasProductRef = isRasterImage(productImageUrl);
-    const hasLogoRef = isRasterImage(logoUrl);
+
+    // Logo: aceptar PNG/JPG/WEBP directos y SVG (convertido a PNG vía weserv)
+    let effectiveLogoUrl = null;
+    if (isRasterImage(logoUrl)) {
+      effectiveLogoUrl = logoUrl;
+    } else if (isSvgImage(logoUrl)) {
+      // Primero intentamos rasterizar con weserv; si falla, mirrorToBase44 lo hará más abajo
+      effectiveLogoUrl = svgToPngUrl(logoUrl) || logoUrl;
+      console.log('Logo SVG detectado → convertido a PNG:', logoUrl, '→', effectiveLogoUrl);
+    }
+    const hasLogoRef = !!effectiveLogoUrl;
 
     let prompt = '';
 
@@ -89,10 +115,15 @@ Deno.serve(async (req) => {
       prompt += `Product: "${productName}"${productCategory ? ` (category: ${productCategory})` : ''} — Peyu Chile, made in Chile from 100% recycled plastic. `;
 
       if (hasLogoRef) {
-        prompt += `TASK: Add a UV laser engraving of the provided logo (SECOND reference image) onto the product surface shown in the first image. `;
-        prompt += `The engraving MUST look PHYSICALLY ENGRAVED into the recycled plastic: micro depth, subtle darkening or lighter etched tone depending on base color, tiny shadow inside the engraved strokes, follows the product curvature and marbled texture. NO floating stickers, NO flat overlay, NO glow, NO added light sources. `;
-        prompt += `Keep the logo proportional to the product's engraving area (roughly 30-40% of the visible flat surface). Center it on the natural engraving zone of the product. `;
+        prompt += `⚠️ SECOND CRITICAL RULE: The SECOND reference image IS the customer's EXACT logo/brand mark. You MUST reproduce it LITERALLY — same shapes, same letters, same proportions, same internal details. DO NOT invent, redesign, simplify, stylize, re-letter or substitute the logo with a different one. If the logo contains text, copy the text character-by-character exactly as shown. Treat the second image as a stencil to be burned, not as inspiration. `;
+        prompt += `TASK: Add a UV laser engraving that is a faithful 1:1 reproduction of the SECOND reference image onto the product surface shown in the first image. `;
+        prompt += `The engraving MUST look PHYSICALLY ENGRAVED into the recycled plastic: monochrome (single tone, no colors from the original logo — lasers engrave in a single tone determined by the material), micro depth, subtle darkening or lighter etched tone depending on base color, tiny shadow inside the engraved strokes, follows the product curvature and marbled texture. NO floating stickers, NO flat overlay, NO glow, NO added light sources, NO color fills. `;
+        prompt += `Keep the logo proportional to the product's engraving area (roughly 30-40% of the visible flat surface). Center it on the natural engraving zone of the product. Preserve the logo's original aspect ratio — do not stretch or distort. `;
+        if (text && text.trim()) {
+          prompt += `Additionally, engrave the tagline "${text}" in clean sans-serif typography directly below the logo, same engraved style, smaller size. Copy the tagline character-by-character exactly as written, including accents and punctuation. `;
+        }
       } else if (text && text.trim()) {
+        prompt += `⚠️ SECOND CRITICAL RULE: The customer's text is "${text}". You MUST engrave it LITERALLY, character-by-character, preserving every letter, accent, space and punctuation mark EXACTLY as written. DO NOT paraphrase, translate, abbreviate or substitute any character. `;
         prompt += `TASK: Add a UV laser engraving of the text "${text}" onto the product surface shown in the first image. `;
         prompt += `The text MUST look PHYSICALLY ENGRAVED into the recycled plastic: clean sans-serif typography (like Inter or Helvetica), micro depth, subtle darkening inside the strokes, tiny shadow, follows the product curvature, blends with the marbled recycled plastic texture. NO floating stickers, NO flat overlay, NO glow. `;
         prompt += `Size the text proportionally to the product's engraving area. Center it on the natural engraving zone. `;
@@ -117,10 +148,10 @@ Deno.serve(async (req) => {
       prompt += `Sustainable eco-design, premium quality.`;
     }
 
-    // Pasar referencias: producto primero (si existe), luego logo
+    // Pasar referencias: producto primero (si existe), luego logo (ya rasterizado si era SVG)
     const references = [];
     if (hasProductRef) references.push(productImageUrl);
-    if (hasLogoRef) references.push(logoUrl);
+    if (hasLogoRef) references.push(effectiveLogoUrl);
 
     let result;
     if (references.length > 0) {
