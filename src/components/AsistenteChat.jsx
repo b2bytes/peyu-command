@@ -243,7 +243,7 @@ export default function AsistenteChat() {
           )}
 
           {/* Messages */}
-          <div className="flex-1 overflow-y-auto min-h-[320px] max-h-[60vh] space-y-3 p-4 bg-gray-50 flex flex-col">
+          <div className="peyu-scrollbar flex-1 overflow-y-auto min-h-[320px] max-h-[60vh] space-y-3 p-4 bg-gradient-to-b from-gray-50 to-white flex flex-col">
             {messages.length === 0 && !loading && (
               <div className="text-center text-gray-500 text-xs py-8 space-y-3">
                 <p className="text-sm font-medium">👋 ¡Hola! Soy Peyu</p>

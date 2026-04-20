@@ -345,7 +345,7 @@ export default function ShopLanding() {
                 )}
 
                 {/* Messages Container */}
-                <div className="flex-1 overflow-y-auto space-y-2.5 mb-3 scrollbar-hide">
+                <div className="peyu-scrollbar-light flex-1 overflow-y-auto space-y-2.5 mb-3 pr-1">
                   {messages.length === 0 && (
                     <div className="text-center text-white/60 text-xs py-6 space-y-2">
                       <p className="text-sm font-medium">👋 Hola, soy Peyu</p>
