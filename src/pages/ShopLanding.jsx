@@ -48,7 +48,20 @@ export default function ShopLanding() {
   const [currentProductIndex, setCurrentProductIndex] = useState(0);
   const [sidebarExpanded, setSidebarExpanded] = useState(false);
   const messagesEndRef = useRef(null);
-  const carrito = JSON.parse(localStorage.getItem('carrito') || '[]');
+  const [carrito, setCarrito] = useState(() => JSON.parse(localStorage.getItem('carrito') || '[]'));
+
+  // Mantener el badge del carrito sincronizado cuando el chat agrega items
+  useEffect(() => {
+    const refresh = () => setCarrito(JSON.parse(localStorage.getItem('carrito') || '[]'));
+    window.addEventListener('peyu:cart-added', refresh);
+    window.addEventListener('peyu:cart-cleared', refresh);
+    window.addEventListener('storage', refresh);
+    return () => {
+      window.removeEventListener('peyu:cart-added', refresh);
+      window.removeEventListener('peyu:cart-cleared', refresh);
+      window.removeEventListener('storage', refresh);
+    };
+  }, []);
 
   const MENU_ITEMS = [
     { href: '/', label: 'Inicio', icon: Home },

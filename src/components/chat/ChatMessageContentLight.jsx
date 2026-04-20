@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { getProductImage } from '@/utils/productImages';
 import { ShoppingCart, Building2, MessageCircle, Star, Sparkles, ArrowRight, Package, Check } from 'lucide-react';
+import ChatNavLink from '@/components/chat/ChatNavLink';
+import ChatCheckoutCard from '@/components/chat/ChatCheckoutCard';
 
 function getChatQty() {
   try {
@@ -36,7 +38,7 @@ function addToCart(producto, cantidad) {
   window.dispatchEvent(new CustomEvent('peyu:cart-added', { detail: nuevoItem }));
 }
 
-const TAG_REGEX = /\[\[(PRODUCTO|ACTION):([^\]]+)\]\]/g;
+const TAG_REGEX = /\[\[(PRODUCTO|ACTION|NAV|CHECKOUT|CART):?([^\]]*)\]\]/g;
 
 function ProductCardLight({ sku }) {
   const [producto, setProducto] = useState(null);
@@ -216,6 +218,38 @@ function ActionButtonLight({ action }) {
   return <Link to={a.to} onClick={markAgentNavigation}>{inner}</Link>;
 }
 
+function CartInjectLight({ spec }) {
+  const [sku, qtyRaw] = spec.split(':');
+  const qty = Math.max(1, parseInt(qtyRaw || '1', 10) || 1);
+  const [done, setDone] = useState(false);
+  const [nombre, setNombre] = useState('');
+
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      const list = await base44.entities.Producto.filter({ sku });
+      const producto = list?.[0];
+      if (!producto || !alive) return;
+      const key = `peyu_chat_cart_added_${sku}_${qty}`;
+      if (!sessionStorage.getItem(key)) {
+        addToCart(producto, qty);
+        sessionStorage.setItem(key, '1');
+      }
+      setNombre(producto.nombre);
+      setDone(true);
+    })();
+    return () => { alive = false; };
+  }, [sku, qty]);
+
+  if (!done) return null;
+  return (
+    <div className="my-1.5 bg-green-50 border border-green-200 rounded-lg px-2.5 py-1.5 text-[11px] text-green-700 flex items-center gap-1.5">
+      <Check className="w-3 h-3" />
+      <span>Agregado: <b>{nombre}</b> × {qty}</span>
+    </div>
+  );
+}
+
 function ChatMessageContentLight({ content }) {
   if (!content) return null;
   const tokens = [];
@@ -224,7 +258,7 @@ function ChatMessageContentLight({ content }) {
   const re = new RegExp(TAG_REGEX.source, 'g');
   while ((match = re.exec(content)) !== null) {
     if (match.index > lastIdx) tokens.push({ type: 'text', value: content.slice(lastIdx, match.index) });
-    tokens.push({ type: match[1], value: match[2].trim() });
+    tokens.push({ type: match[1], value: (match[2] || '').trim() });
     lastIdx = match.index + match[0].length;
   }
   if (lastIdx < content.length) tokens.push({ type: 'text', value: content.slice(lastIdx) });
@@ -234,6 +268,12 @@ function ChatMessageContentLight({ content }) {
       {tokens.map((tk, i) => {
         if (tk.type === 'PRODUCTO') return <ProductCardLight key={i} sku={tk.value} />;
         if (tk.type === 'ACTION') return <ActionButtonLight key={i} action={tk.value} />;
+        if (tk.type === 'CHECKOUT') return <ChatCheckoutCard key={i} variant="light" />;
+        if (tk.type === 'CART') return <CartInjectLight key={i} spec={tk.value} />;
+        if (tk.type === 'NAV') {
+          const [to, label] = tk.value.split('|').map(s => s.trim());
+          return <ChatNavLink key={i} to={to} label={label} variant="light" />;
+        }
         const text = tk.value.replace(/\n{3,}/g, '\n\n').trim();
         if (!text) return null;
         return <p key={i} className="whitespace-pre-wrap leading-relaxed">{text}</p>;

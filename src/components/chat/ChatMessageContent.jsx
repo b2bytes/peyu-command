@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { getProductImage } from '@/utils/productImages';
 import { ShoppingCart, Building2, MessageCircle, Star, Sparkles, ArrowRight, Package, Check } from 'lucide-react';
+import ChatNavLink from '@/components/chat/ChatNavLink';
+import ChatCheckoutCard from '@/components/chat/ChatCheckoutCard';
 
 // Extracts the last quantity mentioned by the user in the current conversation
 // (scans backwards through messages stored on DOM-adjacent state — we keep it
@@ -41,7 +43,14 @@ function addToCart(producto, cantidad) {
  * and renders plain text in between.
  */
 
-const TAG_REGEX = /\[\[(PRODUCTO|ACTION):([^\]]+)\]\]/g;
+// Soporta:
+//  [[PRODUCTO:SKU]]
+//  [[ACTION:name]]            (cotizar_b2b | ir_a_shop | whatsapp)
+//  [[NAV:/ruta]]              navegación interna
+//  [[NAV:/ruta|Label]]        navegación con etiqueta custom
+//  [[CHECKOUT]]               tarjeta de checkout in-chat
+//  [[CART:SKU:qty]]           agregar producto directamente al carrito
+const TAG_REGEX = /\[\[(PRODUCTO|ACTION|NAV|CHECKOUT|CART):?([^\]]*)\]\]/g;
 
 function ProductCard({ sku }) {
   const [producto, setProducto] = useState(null);
@@ -225,10 +234,47 @@ function ActionButton({ action }) {
   return <Link to={a.to}>{inner}</Link>;
 }
 
+/**
+ * Lee SKU + qty de [[CART:SKU:qty]] y agrega al carrito silenciosamente.
+ * Muestra un badge de confirmación.
+ */
+function CartInject({ spec }) {
+  const [sku, qtyRaw] = spec.split(':');
+  const qty = Math.max(1, parseInt(qtyRaw || '1', 10) || 1);
+  const [done, setDone] = useState(false);
+  const [nombre, setNombre] = useState('');
+
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      const list = await base44.entities.Producto.filter({ sku });
+      const producto = list?.[0];
+      if (!producto || !alive) return;
+      // Evitar duplicados si el mensaje se re-renderiza
+      const carrito = JSON.parse(localStorage.getItem('carrito') || '[]');
+      const key = `peyu_chat_cart_added_${sku}_${qty}`;
+      if (!sessionStorage.getItem(key)) {
+        addToCart(producto, qty);
+        sessionStorage.setItem(key, '1');
+      }
+      setNombre(producto.nombre);
+      setDone(true);
+    })();
+    return () => { alive = false; };
+  }, [sku, qty]);
+
+  if (!done) return null;
+  return (
+    <div className="my-1.5 bg-green-500/20 border border-green-400/40 rounded-lg px-2.5 py-1.5 text-[11px] text-green-100 flex items-center gap-1.5">
+      <Check className="w-3 h-3" />
+      <span>Agregado: <b>{nombre}</b> × {qty}</span>
+    </div>
+  );
+}
+
 function ChatMessageContent({ content }) {
   if (!content) return null;
 
-  // Tokenize into text + special tags
   const tokens = [];
   let lastIdx = 0;
   let match;
@@ -237,7 +283,7 @@ function ChatMessageContent({ content }) {
     if (match.index > lastIdx) {
       tokens.push({ type: 'text', value: content.slice(lastIdx, match.index) });
     }
-    tokens.push({ type: match[1], value: match[2].trim() });
+    tokens.push({ type: match[1], value: (match[2] || '').trim() });
     lastIdx = match.index + match[0].length;
   }
   if (lastIdx < content.length) tokens.push({ type: 'text', value: content.slice(lastIdx) });
@@ -247,6 +293,12 @@ function ChatMessageContent({ content }) {
       {tokens.map((tk, i) => {
         if (tk.type === 'PRODUCTO') return <ProductCard key={i} sku={tk.value} />;
         if (tk.type === 'ACTION') return <ActionButton key={i} action={tk.value} />;
+        if (tk.type === 'CHECKOUT') return <ChatCheckoutCard key={i} variant="dark" />;
+        if (tk.type === 'CART') return <CartInject key={i} spec={tk.value} />;
+        if (tk.type === 'NAV') {
+          const [to, label] = tk.value.split('|').map(s => s.trim());
+          return <ChatNavLink key={i} to={to} label={label} variant="dark" />;
+        }
         const text = tk.value.replace(/\n{3,}/g, '\n\n').trim();
         if (!text) return null;
         return (
