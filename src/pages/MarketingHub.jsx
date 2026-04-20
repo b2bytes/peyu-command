@@ -104,7 +104,7 @@ export default function MarketingHub() {
 
               <div className="flex-1 overflow-y-auto p-4 min-h-0">
                 <TabsContent value="posts" className="mt-0">
-                  {loading ? <p className="text-sm text-gray-400 text-center py-8">Cargando...</p> : <ContentPostsList posts={posts} />}
+                  {loading ? <p className="text-sm text-gray-400 text-center py-8">Cargando...</p> : <ContentPostsList posts={posts} onUpdated={loadAll} />}
                 </TabsContent>
                 <TabsContent value="ads" className="mt-0">
                   {loading ? <p className="text-sm text-gray-400 text-center py-8">Cargando...</p> : <AdCampaignsList campanas={campanas} />}
