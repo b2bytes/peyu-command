@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import WhatsAppWidget from '@/components/WhatsAppWidget';
 import MockupGenerator from '@/components/MockupGenerator';
+import { saveMockupDraft } from '@/lib/mockup-draft';
 
 
 const COLORES_MARMOLADO = [
@@ -568,7 +569,24 @@ export default function ProductoDetalle() {
                     ¿Necesitas +10 unidades con tu logo? Cotización con mockup en menos de 24 horas. Precios por volumen y personalización láser gratis.
                   </p>
                   <div className="grid grid-cols-2 gap-2">
-                    <Link to={`/b2b/contacto?productoId=${producto.id}&nombre=${encodeURIComponent(producto.nombre || '')}`}>
+                    <Link
+                      to={`/b2b/contacto?productoId=${producto.id}&nombre=${encodeURIComponent(producto.nombre || '')}${mockupGenerado ? '&mockup=1' : ''}${personalizacion ? `&texto=${encodeURIComponent(personalizacion)}` : ''}`}
+                      onClick={() => {
+                        // Si hay personalización en curso o mockup generado, lo persistimos
+                        // para que B2BContacto lo recupere sin perder nada.
+                        if (mockupGenerado || personalizacion) {
+                          saveMockupDraft({
+                            productoId: producto.id,
+                            productoNombre: producto.nombre,
+                            productoSku: producto.sku,
+                            productoCategoria: producto.categoria,
+                            color: colores.find(c => c.id === colorSeleccionado)?.label || '',
+                            texto: personalizacion || '',
+                            mockupUrl: mockupGenerado || '',
+                          });
+                        }
+                      }}
+                    >
                       <Button size="sm" className="w-full font-bold gap-1.5 rounded-xl bg-blue-500/30 hover:bg-blue-500/50 text-blue-200 border border-blue-400/30 h-10 text-xs">
                         <Building2 className="w-3.5 h-3.5" /> Cotizar B2B
                       </Button>
@@ -790,7 +808,20 @@ export default function ProductoDetalle() {
           productImageUrl={galeria[vistaActiva] || imgPrincipal}
           initialText={personalizacion}
           initialColor={colores.find(c => c.id === colorSeleccionado)?.label || ''}
-          onGenerated={(url) => setMockupGenerado(url)}
+          onGenerated={(url, extra = {}) => {
+            setMockupGenerado(url);
+            // Persistir draft con todo el contexto para que B2BContacto lo recupere
+            saveMockupDraft({
+              productoId: producto.id,
+              productoNombre: producto.nombre,
+              productoSku: producto.sku,
+              productoCategoria: producto.categoria,
+              color: colores.find(c => c.id === colorSeleccionado)?.label || '',
+              texto: extra.texto || personalizacion || '',
+              logoUrl: extra.logoUrl || '',
+              mockupUrl: url,
+            });
+          }}
         />
     </div>
   );

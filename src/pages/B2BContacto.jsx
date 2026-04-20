@@ -8,6 +8,7 @@ import MobileMenu from '@/components/MobileMenu';
 import WhatsAppFloat from '@/components/WhatsAppFloat';
 import LogoMockupPreview from '@/components/b2b/LogoMockupPreview';
 import { getProductImage } from '@/utils/productImages';
+import { readMockupDraft, clearMockupDraft } from '@/lib/mockup-draft';
 
 const MENU_ITEMS = [
   { href: '/', label: 'Inicio', icon: Home },
@@ -77,6 +78,15 @@ export default function B2BContacto() {
   const [error, setError] = useState('');
   const [productosCatalogo, setProductosCatalogo] = useState(PRODUCTOS_FALLBACK);
 
+  // ✨ Draft de personalización/mockup traído desde la página del producto.
+  // Si el cliente generó un mockup y luego hizo clic en "Cotizar B2B", recuperamos
+  // el mockup, logo y texto aquí — evitando regenerar nada.
+  const [draft, setDraft] = useState(null);
+  const [draftLogoPreview, setDraftLogoPreview] = useState(''); // preview en el dropzone cuando el logo viene del draft
+  // 👤 Flags para saber si precargamos datos desde perfil autenticado
+  const [userPrefilled, setUserPrefilled] = useState(false);
+  const [clientePrefilled, setClientePrefilled] = useState(false);
+
   // Cargar productos reales del inventario (B2B + B2B/B2C) para el selector
   useEffect(() => {
     base44.entities.Producto.filter({ activo: true }).then(list => {
@@ -89,6 +99,61 @@ export default function B2BContacto() {
     }).catch(() => {});
   }, []);
 
+  // 🎨 Recuperar draft de mockup/personalización (viene de ProductoDetalle)
+  useEffect(() => {
+    const d = readMockupDraft(productoId);
+    if (!d) return;
+    setDraft(d);
+    if (d.logoUrl) setDraftLogoPreview(d.logoUrl);
+    setForm(prev => ({
+      ...prev,
+      // Priorizar producto/texto del draft si no vinieron por URL
+      product_interest: prev.product_interest || d.productoNombre || '',
+      personalization_needs: true,
+      notes: prev.notes || (d.texto ? `Texto/mensaje para grabado: "${d.texto}"${d.color ? ` · Color: ${d.color}` : ''}` : prev.notes),
+    }));
+  }, [productoId]);
+
+  // 👤 Precarga datos del usuario autenticado + ficha Cliente (si existe)
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const me = await base44.auth.me();
+        if (!me || cancelled) return;
+
+        // 1. Precarga desde la cuenta (nombre + email)
+        setForm(prev => ({
+          ...prev,
+          contact_name: prev.contact_name || me.full_name || '',
+          email: prev.email || me.email || '',
+        }));
+        setUserPrefilled(true);
+
+        // 2. Buscar ficha Cliente por email (datos corporativos)
+        if (me.email) {
+          try {
+            const matches = await base44.entities.Cliente.filter({ email: me.email });
+            const cliente = matches?.[0];
+            if (cliente && !cancelled) {
+              setForm(prev => ({
+                ...prev,
+                company_name: prev.company_name || cliente.empresa || '',
+                phone: prev.phone || cliente.telefono || '',
+                rut: prev.rut || cliente.rut || '',
+                contact_name: prev.contact_name || cliente.contacto || me.full_name || '',
+              }));
+              setClientePrefilled(true);
+            }
+          } catch {}
+        }
+      } catch {
+        // Usuario no autenticado → flujo normal, no hacemos nada
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
   const update = (key, val) => setForm(prev => ({ ...prev, [key]: val }));
 
   const handleSubmit = async (e) => {
@@ -99,24 +164,37 @@ export default function B2BContacto() {
     }
     setLoading(true);
     setError('');
-    let logoUrl = '';
+
+    // Logo: nuevo archivo > logo del draft > nada
+    let logoUrl = draft?.logoUrl || '';
     if (archivo) {
       const { file_url } = await base44.integrations.Core.UploadFile({ file: archivo });
       logoUrl = file_url;
     }
-    const score = calcularScore({ ...form, qty_estimate: Number(form.qty_estimate) || 0 }, !!archivo);
+
+    // Mockup ya generado en el draft (lo reutilizamos sin regenerar)
+    const existingMockup = draft?.mockupUrl || '';
+
+    const tieneArchivoOLogo = !!archivo || !!logoUrl;
+    const score = calcularScore({ ...form, qty_estimate: Number(form.qty_estimate) || 0 }, tieneArchivoOLogo);
     const urgency = score >= 70 ? 'Alta' : score >= 40 ? 'Normal' : 'Baja';
+
     const leadCreado = await base44.entities.B2BLead.create({
-      ...form, qty_estimate: Number(form.qty_estimate) || 0,
-      lead_score: score, logo_url: logoUrl, brief_url: logoUrl,
+      ...form,
+      qty_estimate: Number(form.qty_estimate) || 0,
+      lead_score: score,
+      logo_url: logoUrl,
+      brief_url: logoUrl,
       urgency,
+      mockup_urls: existingMockup ? [existingMockup] : [],
       utm_source: fromChat ? 'chat_peyu' : (document.referrer || 'directo'),
     });
+
     if (leadCreado?.id) {
       base44.functions.invoke('scoreLead', { leadId: leadCreado.id }).catch(() => {});
-      // Generar mockup real con IA sobre la imagen REAL del producto elegido
-      if (logoUrl || form.company_name) {
-        // Buscar la imagen real del producto que eligió el cliente en el catálogo
+
+      // Solo generar mockup si NO viene uno del draft y tenemos material base
+      if (!existingMockup && (logoUrl || form.company_name)) {
         let productImageUrl = '';
         let productCategory = 'Corporativo';
         try {
@@ -142,6 +220,9 @@ export default function B2BContacto() {
         }).catch(() => {});
       }
     }
+
+    // Draft consumido → limpiarlo para no contaminar futuras solicitudes
+    clearMockupDraft();
     setEnviado(true);
     setLoading(false);
   };
@@ -229,6 +310,21 @@ export default function B2BContacto() {
               {fromChat && (
                 <div className="inline-flex items-center gap-2 bg-purple-500/20 border border-purple-400/40 text-purple-200 px-4 py-1.5 rounded-full text-xs font-semibold backdrop-blur-sm">
                   🐢 Peyu ya precargó tu solicitud — solo completa tus datos
+                </div>
+              )}
+              {draft && (draft.mockupUrl || draft.logoUrl || draft.texto) && (
+                <div className="inline-flex items-center gap-2 bg-pink-500/20 border border-pink-400/40 text-pink-200 px-4 py-1.5 rounded-full text-xs font-semibold backdrop-blur-sm">
+                  ✨ Tu mockup y personalización fueron traídos desde <b>&nbsp;{draft.productoNombre || 'el producto'}</b>
+                </div>
+              )}
+              {clientePrefilled && (
+                <div className="inline-flex items-center gap-2 bg-emerald-500/20 border border-emerald-400/40 text-emerald-200 px-4 py-1.5 rounded-full text-xs font-semibold backdrop-blur-sm">
+                  👋 ¡Hola de nuevo! Completamos tus datos de empresa automáticamente
+                </div>
+              )}
+              {userPrefilled && !clientePrefilled && (
+                <div className="inline-flex items-center gap-2 bg-blue-500/20 border border-blue-400/40 text-blue-200 px-4 py-1.5 rounded-full text-xs font-semibold backdrop-blur-sm">
+                  👤 Sesión iniciada — precargamos tu nombre y email
                 </div>
               )}
               <div className="inline-flex items-center gap-2 bg-teal-500/20 border border-teal-400/40 text-teal-300 px-4 py-1.5 rounded-full text-sm font-semibold backdrop-blur-sm">
@@ -371,20 +467,34 @@ export default function B2BContacto() {
                   <div className="space-y-1.5">
                     <label className="text-xs font-semibold text-white/50 uppercase tracking-wide flex items-center gap-1.5">
                       <ImageIcon className="w-3 h-3" /> Logo o brief
+                      {draftLogoPreview && !archivo && (
+                        <span className="text-[10px] text-pink-300 font-bold bg-pink-500/20 border border-pink-400/30 px-2 py-0.5 rounded-full normal-case tracking-normal">
+                          ✨ Precargado
+                        </span>
+                      )}
                     </label>
                     <div
-                      className={`border-2 border-dashed rounded-2xl p-6 text-center transition-all cursor-pointer h-full flex flex-col items-center justify-center min-h-[200px] ${archivo ? 'border-teal-400/60 bg-teal-500/10' : 'border-white/20 hover:border-teal-400/40 hover:bg-white/5'}`}
+                      className={`border-2 border-dashed rounded-2xl p-6 text-center transition-all cursor-pointer h-full flex flex-col items-center justify-center min-h-[200px] ${archivo || draftLogoPreview ? 'border-teal-400/60 bg-teal-500/10' : 'border-white/20 hover:border-teal-400/40 hover:bg-white/5'}`}
                       onClick={() => document.getElementById('logo-upload').click()}>
-                      <Upload className={`w-8 h-8 mb-3 ${archivo ? 'text-teal-400' : 'text-white/30'}`} />
                       {archivo ? (
                         <>
+                          <Upload className="w-8 h-8 mb-3 text-teal-400" />
                           <p className="text-sm text-teal-300 font-semibold truncate max-w-full">✓ {archivo.name}</p>
-                          <p className="text-[10px] text-teal-300/60 mt-1">Mockup generándose →</p>
+                          <p className="text-[10px] text-teal-300/60 mt-1">Nuevo logo cargado</p>
                           <button type="button" onClick={(e) => { e.stopPropagation(); setArchivo(null); }}
                             className="mt-2 text-[10px] text-white/50 hover:text-white underline">Cambiar logo</button>
                         </>
+                      ) : draftLogoPreview ? (
+                        <>
+                          <img src={draftLogoPreview} alt="Logo precargado" className="w-16 h-16 object-contain rounded-lg bg-white/10 p-1.5 mb-2" />
+                          <p className="text-sm text-teal-300 font-semibold">✓ Logo guardado</p>
+                          <p className="text-[10px] text-teal-300/60 mt-1">Traído desde el producto</p>
+                          <button type="button" onClick={(e) => { e.stopPropagation(); setDraftLogoPreview(''); }}
+                            className="mt-2 text-[10px] text-white/50 hover:text-white underline">Usar otro logo</button>
+                        </>
                       ) : (
                         <>
+                          <Upload className="w-8 h-8 mb-3 text-white/30" />
                           <p className="text-sm font-medium text-white/70">Arrastra tu logo o haz clic</p>
                           <p className="text-xs text-white/40 mt-1">PNG o SVG (recomendado) · max 10MB</p>
                           <p className="text-[10px] text-teal-300/70 mt-2 font-semibold">Ideal: fondo transparente</p>
@@ -399,8 +509,22 @@ export default function B2BContacto() {
                   <div>
                     <label className="text-xs font-semibold text-white/50 uppercase tracking-wide flex items-center gap-1.5 mb-1.5">
                       <Zap className="w-3 h-3" /> Preview en vivo
+                      {draft?.mockupUrl && !archivo && (
+                        <span className="text-[10px] text-pink-300 font-bold bg-pink-500/20 border border-pink-400/30 px-2 py-0.5 rounded-full normal-case tracking-normal">
+                          ✨ Mockup listo
+                        </span>
+                      )}
                     </label>
-                    <LogoMockupPreview logoFile={archivo} texto={form.notes ? '' : form.company_name} />
+                    {draft?.mockupUrl && !archivo ? (
+                      <div className="rounded-2xl overflow-hidden border border-pink-400/40 bg-black/30 shadow-xl">
+                        <img src={draft.mockupUrl} alt="Mockup generado" className="w-full h-auto" />
+                        <p className="text-[10px] text-white/60 text-center py-1.5 bg-pink-500/20 border-t border-pink-400/30">
+                          ✨ Mockup generado con IA · incluido en tu cotización
+                        </p>
+                      </div>
+                    ) : (
+                      <LogoMockupPreview logoFile={archivo} texto={form.notes ? '' : form.company_name} />
+                    )}
                   </div>
                 </div>
 
