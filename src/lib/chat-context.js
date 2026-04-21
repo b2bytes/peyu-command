@@ -6,6 +6,61 @@
 
 import { base44 } from '@/api/base44Client';
 
+// Cache en memoria del top de productos para no golpear la API en cada mensaje.
+let _productCache = null;
+let _productCacheAt = 0;
+const CACHE_TTL_MS = 2 * 60 * 1000; // 2 minutos
+
+async function loadTopProducts() {
+  const now = Date.now();
+  if (_productCache && (now - _productCacheAt) < CACHE_TTL_MS) return _productCache;
+
+  try {
+    const list = await base44.entities.Producto.filter({ activo: true });
+    _productCache = Array.isArray(list) ? list : [];
+    _productCacheAt = now;
+    return _productCache;
+  } catch {
+    return _productCache || [];
+  }
+}
+
+// Selecciona un subset diverso de productos para inyectar en el contexto.
+// Preferimos productos populares/destacados y cubrimos distintas categorías.
+function pickTopSkus(all, { excludeSku = null, maxItems = 12 } = {}) {
+  if (!all?.length) return [];
+
+  // Agrupar por categoría y tomar hasta 3 por categoría para diversidad
+  const byCat = new Map();
+  for (const p of all) {
+    if (!p.sku || !p.nombre) continue;
+    if (excludeSku && p.sku === excludeSku) continue;
+    const cat = p.categoria || 'Otros';
+    if (!byCat.has(cat)) byCat.set(cat, []);
+    if (byCat.get(cat).length < 3) byCat.get(cat).push(p);
+  }
+
+  // Aplanar intercalando categorías (round-robin) para diversidad
+  const result = [];
+  const arrays = [...byCat.values()];
+  let idx = 0;
+  while (result.length < maxItems && arrays.some(a => a.length > 0)) {
+    const arr = arrays[idx % arrays.length];
+    if (arr.length > 0) result.push(arr.shift());
+    idx++;
+    if (idx > 200) break; // safety
+  }
+  return result;
+}
+
+function formatSkuLine(p) {
+  const precio = p.precio_b2c || p.precio_base_b2b || 0;
+  // SKU|nombre|categoria|precio — nombre sin | ni comas para no romper el parsing
+  const nombre = (p.nombre || '').replace(/[|,]/g, ' ').slice(0, 50);
+  const cat = (p.categoria || '').replace(/[|,]/g, ' ');
+  return `${p.sku}|${nombre}|${cat}|${precio}`;
+}
+
 export async function buildChatContext() {
   const ctx = {};
 
@@ -14,13 +69,15 @@ export async function buildChatContext() {
     ctx.page = window.location.pathname;
   }
 
+  // Cargar productos disponibles (con cache)
+  const allProducts = await loadTopProducts();
+
   // Producto visto (si estamos en /producto/:id)
   try {
     if (ctx.page && ctx.page.startsWith('/producto/')) {
       const id = ctx.page.split('/producto/')[1]?.split('?')[0]?.split('/')[0];
       if (id) {
-        const productos = await base44.entities.Producto.list();
-        const p = productos.find(x => x.id === id);
+        const p = allProducts.find(x => x.id === id);
         if (p) {
           ctx.viewing_sku = p.sku || null;
           ctx.viewing_name = p.nombre || null;
@@ -55,6 +112,20 @@ export async function buildChatContext() {
       ctx.user_email = user.email || null;
     }
   } catch { /* not logged in, ignore */ }
+
+  // 🎯 Top SKUs reales disponibles — la línea más importante:
+  // garantiza que el agente SOLO use SKUs que existen y pueda mostrarlos con [[PRODUCTO:sku]]
+  try {
+    const picks = pickTopSkus(allProducts, { excludeSku: ctx.viewing_sku, maxItems: 12 });
+    if (picks.length) {
+      ctx.top_skus = picks.map(formatSkuLine).join(', ');
+    }
+    // Categorías con stock activo
+    const cats = [...new Set(allProducts.map(p => p.categoria).filter(Boolean))];
+    if (cats.length) {
+      ctx.categorias_disponibles = cats.join(', ');
+    }
+  } catch { /* no-op */ }
 
   return ctx;
 }
