@@ -106,9 +106,23 @@ export const CATEGORY_SHOWCASE = [
 
 /**
  * Returns the best validated product image.
- * Priority: SKU-specific → Category fallback
+ * Priority: real imagen_url (from Woo) → SKU-specific → Category fallback
+ *
+ * Uso preferido: getProductImage(producto)
+ * Legacy: getProductImage(sku, categoria) sigue funcionando.
  */
-export function getProductImage(sku, categoria) {
+export function getProductImage(skuOrProducto, categoria) {
+  // Llamada nueva: getProductImage(producto)
+  if (skuOrProducto && typeof skuOrProducto === 'object') {
+    const p = skuOrProducto;
+    if (p.imagen_url && typeof p.imagen_url === 'string' && p.imagen_url.startsWith('http')) {
+      return p.imagen_url;
+    }
+    if (p.sku && SKU_IMAGES[p.sku]) return SKU_IMAGES[p.sku];
+    return CATEGORY_IMAGES[p.categoria] || CATEGORY_IMAGES['Hogar'];
+  }
+  // Llamada legacy: getProductImage(sku, categoria)
+  const sku = skuOrProducto;
   if (sku && SKU_IMAGES[sku]) return SKU_IMAGES[sku];
   return CATEGORY_IMAGES[categoria] || CATEGORY_IMAGES['Hogar'];
 }

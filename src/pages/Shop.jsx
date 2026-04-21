@@ -81,7 +81,7 @@ export default function Shop() {
     const nuevo = [...carrito, {
       id: Math.random(), productoId: producto.id, nombre: producto.nombre,
       precio, cantidad: 1, sku: producto.sku,
-      imagen: getProductImage(producto.sku, producto.categoria),
+      imagen: getProductImage(producto),
     }];
     setCarrito(nuevo);
     localStorage.setItem('carrito', JSON.stringify(nuevo));
@@ -289,7 +289,7 @@ export default function Shop() {
                   {/* Image */}
                   <div className="relative aspect-square bg-gradient-to-br from-slate-800 to-slate-900 overflow-hidden">
                     <img 
-                      src={getProductImage(p.sku, p.categoria)}
+                      src={getProductImage(p)}
                       alt={p.nombre}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                       loading="lazy"

@@ -146,7 +146,7 @@ export default function ProductoDetalle() {
       precio: precioActual, cantidad,
       color: colorSeleccionado || null,
       personalizacion: personalizacion || null,
-      imagen: getProductImage(producto.sku, producto.categoria),
+      imagen: getProductImage(producto),
     };
     const nuevo = [...carrito, item];
     setCarrito(nuevo);
@@ -166,7 +166,7 @@ export default function ProductoDetalle() {
     }
   };
 
-  const imgPrincipal = producto ? getProductImage(producto.sku, producto.categoria) : '';
+  const imgPrincipal = producto ? getProductImage(producto) : '';
   const imgAlterna = producto ? (SKU_IMAGES_ALT[producto.sku] || imgPrincipal) : '';
   const galeria = [imgPrincipal, imgAlterna, imgPrincipal, imgAlterna];
 
@@ -779,7 +779,7 @@ export default function ProductoDetalle() {
                     <div className="group bg-white/5 backdrop-blur-sm border border-white/15 rounded-2xl overflow-hidden hover:bg-white/10 hover:border-teal-400/40 hover:-translate-y-1 transition-all duration-300 shadow-lg">
                       <div className="aspect-square overflow-hidden">
                         <img
-                          src={getProductImage(p.sku, p.categoria)}
+                          src={getProductImage(p)}
                           alt={p.nombre}
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                           onError={e => { e.target.src = 'https://i0.wp.com/peyuchile.cl/wp-content/uploads/2025/04/carcasas-500x500-1.webp?fit=600%2C600&ssl=1'; }}
