@@ -10,7 +10,15 @@ import WhatsAppFloat from '@/components/WhatsAppFloat';
 import ChatMessageContent from '@/components/chat/ChatMessageContent';
 import ChatHistoryPanel from '@/components/chat/ChatHistoryPanel';
 import { ensureFreshSession, addToHistory, readHistory } from '@/lib/chat-history';
+import { withContext } from '@/lib/chat-context';
 import { History } from 'lucide-react';
+
+// Limpia el bloque [CONTEXTO] que se inyecta al agente — no debe verse en la UI.
+const stripContext = (m) => {
+  if (!m || m.role !== 'user' || !m.content) return m;
+  const cleaned = m.content.replace(/^\[CONTEXTO\][^\n]*\n+/, '').trim();
+  return { ...m, content: cleaned };
+};
 
 const OCASIONES = [
   { id: 'navidad', label: 'Navidad', icon: '🎄' },
@@ -87,7 +95,7 @@ export default function ShopLanding() {
     (async () => {
       try {
         const conv = await base44.agents.getConversation(conversationId);
-        const msgs = (conv?.messages || []).filter(m => m.content);
+        const msgs = (conv?.messages || []).filter(m => m.content).map(stripContext);
         if (alive && msgs.length > 0) setMessages(msgs);
       } catch {
         localStorage.removeItem(STORAGE_KEY);
@@ -103,7 +111,7 @@ export default function ShopLanding() {
     setConversationId(id);
     try {
       const conv = await base44.agents.getConversation(id);
-      const msgs = (conv?.messages || []).filter(m => m.content);
+      const msgs = (conv?.messages || []).filter(m => m.content).map(stripContext);
       setMessages(msgs.length > 0 ? msgs : [WELCOME_MSG]);
     } catch {
       localStorage.removeItem(STORAGE_KEY);
@@ -154,8 +162,9 @@ export default function ShopLanding() {
 
       const msgCountBefore = (conv.messages || []).length;
 
-      // Enviar mensaje al agente
-      await base44.agents.addMessage(conv, { role: 'user', content: text });
+      // Enviar mensaje al agente con contexto de página inyectado (invisible en UI)
+      const contextualized = await withContext(text);
+      await base44.agents.addMessage(conv, { role: 'user', content: contextualized });
 
       // Polling: verificar cada 1.5s si llegó respuesta del agente
       let attempts = 0;
@@ -164,7 +173,7 @@ export default function ShopLanding() {
       const poll = async () => {
         attempts++;
         const updated = await base44.agents.getConversation(conv.id);
-        const msgs = (updated.messages || []).filter(m => m.content);
+        const msgs = (updated.messages || []).filter(m => m.content).map(stripContext);
         const last = msgs[msgs.length - 1];
 
         // Actualizar mensajes siempre (para mostrar streaming parcial si aplica)

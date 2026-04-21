@@ -7,6 +7,7 @@ import { Send, X, History } from 'lucide-react';
 import ChatProductContentLight from '@/components/chat/ChatMessageContentLight';
 import ChatHistoryPanel from '@/components/chat/ChatHistoryPanel';
 import { ensureFreshSession, addToHistory } from '@/lib/chat-history';
+import { withContext } from '@/lib/chat-context';
 
 const STORAGE_KEY = 'peyu_chat_conversation_id';
 const OPEN_KEY = 'peyu_chat_open';
@@ -15,6 +16,13 @@ const AGENT_NAV_KEY = 'peyu_chat_agent_navigated_at';
 // timestamp. Si el usuario entra a la página dentro de los próximos 8s, asumimos
 // que la navegación la disparó el agente y mantenemos el chat abierto.
 const AGENT_NAV_WINDOW_MS = 8000;
+
+// Limpia el bloque [CONTEXTO] que se inyecta al agente — no debe verse en la UI.
+const stripContext = (m) => {
+  if (!m || m.role !== 'user' || !m.content) return m;
+  const cleaned = m.content.replace(/^\[CONTEXTO\][^\n]*\n+/, '').trim();
+  return { ...m, content: cleaned };
+};
 
 export default function AsistenteChat() {
   const location = useLocation();
@@ -87,7 +95,7 @@ export default function AsistenteChat() {
     (async () => {
       try {
         const conv = await base44.agents.getConversation(conversationId);
-        if (alive && conv?.messages) setMessages(conv.messages.filter(m => m.content));
+        if (alive && conv?.messages) setMessages(conv.messages.filter(m => m.content).map(stripContext));
       } catch (e) {
         localStorage.removeItem(STORAGE_KEY);
         setConversationId(null);
@@ -101,7 +109,7 @@ export default function AsistenteChat() {
     if (!conversationId) return;
     try {
       unsubRef.current = base44.agents.subscribeToConversation(conversationId, (data) => {
-        const msgs = (data.messages || []).filter(m => m.content);
+        const msgs = (data.messages || []).filter(m => m.content).map(stripContext);
         setMessages(msgs);
         const last = msgs[msgs.length - 1];
         if (last?.role === 'assistant') setLoading(false);
@@ -138,7 +146,10 @@ export default function AsistenteChat() {
       } else {
         conv = await base44.agents.getConversation(convId);
       }
-      await base44.agents.addMessage(conv, { role: 'user', content: text });
+      // Inyectamos el contexto de página (producto visto, carrito, ruta) al mensaje
+      // que recibe el agente. El usuario sigue viendo solo su texto en la UI.
+      const contextualized = await withContext(text);
+      await base44.agents.addMessage(conv, { role: 'user', content: contextualized });
       // Registrar/actualizar esta conversación en el historial (título = primer mensaje del user)
       addToHistory(convId, text);
     } catch (e) {
@@ -154,7 +165,7 @@ export default function AsistenteChat() {
     setConversationId(id);
     try {
       const conv = await base44.agents.getConversation(id);
-      if (conv?.messages) setMessages(conv.messages.filter(m => m.content));
+      if (conv?.messages) setMessages(conv.messages.filter(m => m.content).map(stripContext));
     } catch {
       // si falla, limpiamos
       localStorage.removeItem(STORAGE_KEY);
