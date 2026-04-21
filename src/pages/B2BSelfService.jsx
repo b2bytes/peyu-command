@@ -57,6 +57,30 @@ export default function B2BSelfService() {
       .then(list => {
         const b2b = (list || []).filter(p => p.canal === 'B2B Exclusivo' || p.canal === 'B2B + B2C');
         setCatalogo(b2b);
+
+        // Repetir pedido: si venimos del panel "Mi cuenta" con sessionStorage cargado,
+        // precargamos carrito y form, y saltamos directo al paso de Personalización.
+        try {
+          const params = new URLSearchParams(window.location.search);
+          if (params.get('repeat') === '1') {
+            const raw = sessionStorage.getItem('peyu_b2b_repeat');
+            if (raw) {
+              const { cart: savedCart, form: savedForm } = JSON.parse(raw);
+              const rebuilt = (savedCart || [])
+                .map(c => {
+                  const producto = b2b.find(p => p.sku === c.sku);
+                  return producto ? { producto, cantidad: c.cantidad || 10 } : null;
+                })
+                .filter(Boolean);
+              if (rebuilt.length > 0) {
+                setCart(rebuilt);
+                if (savedForm) setForm(f => ({ ...f, ...savedForm }));
+                setStep(2); // saltar a Personalización
+              }
+              sessionStorage.removeItem('peyu_b2b_repeat');
+            }
+          }
+        } catch { /* ignore */ }
       })
       .finally(() => setLoadingCat(false));
   }, []);
