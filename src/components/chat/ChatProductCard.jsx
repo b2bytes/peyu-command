@@ -41,7 +41,7 @@ function addToCart(producto, cantidad) {
     cantidad: cantidad || 1,
     color: null,
     personalizacion: null,
-    imagen: getProductImage(producto.sku, producto.categoria),
+    imagen: getProductImage(producto),
   };
   carrito.push(nuevoItem);
   localStorage.setItem('carrito', JSON.stringify(carrito));
@@ -126,7 +126,7 @@ function ChatProductCard({ sku, variant = 'dark' }) {
 
   if (!producto) return null;
 
-  const img = getProductImage(producto.sku, producto.categoria);
+  const img = getProductImage(producto);
   const { precio, label: priceLabel, tier } = getPriceForQty(producto, qtyHint || 1);
   const precioOnlineB2C = Math.floor((producto.precio_b2c || 9990) * 0.85);
   const story = buildStory(producto, isB2B, qtyHint || 1);

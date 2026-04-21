@@ -25,7 +25,7 @@ function addToCart(producto, cantidad) {
     cantidad: cantidad || 1,
     color: null,
     personalizacion: null,
-    imagen: getProductImage(producto.sku, producto.categoria),
+    imagen: getProductImage(producto),
   };
   carrito.push(nuevoItem);
   localStorage.setItem('carrito', JSON.stringify(carrito));

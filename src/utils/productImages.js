@@ -88,6 +88,62 @@ export const CATEGORY_IMAGES = {
   'Escritorio':     'https://i0.wp.com/peyuchile.cl/wp-content/uploads/2022/09/greencel-1.jpg?fit=600%2C600&ssl=1',
 };
 
+// Matching inteligente por keywords en el nombre del producto.
+// Si el SKU no está mapeado, intenta inferir la imagen por palabras clave.
+// ORDEN IMPORTA: de más específico a más genérico.
+export const NAME_KEYWORD_IMAGES = [
+  // Carcasas (muy específicas)
+  { keywords: ['airpods', 'airpod'], img: SKU_IMAGES['CARC-AIRP-12'] },
+  { keywords: ['carcasa iphone', 'funda iphone', 'carcasa ip'], img: SKU_IMAGES['CARC-IP14'] },
+  { keywords: ['carcasa huawei', 'funda huawei'], img: SKU_IMAGES['CARC-HW-P30'] },
+  { keywords: ['carcasa', 'funda celular', 'funda movil'], img: SKU_IMAGES['CARC-IP14'] },
+
+  // Cachos / Jenga / Paleta
+  { keywords: ['jenga'], img: SKU_IMAGES['ENT-JENGA'] },
+  { keywords: ['paleta'], img: SKU_IMAGES['ENT-PALETA'] },
+  { keywords: ['pack 6 cachos', '6 cachos', 'set 6 cachos'], img: SKU_IMAGES['ENT-CACH6'] },
+  { keywords: ['pack 5 cachos', '5 cachos', 'set 5 cachos'], img: SKU_IMAGES['ENT-CACH5'] },
+  { keywords: ['pack 4 cachos', '4 cachos', 'set 4 cachos'], img: SKU_IMAGES['ENT-CACH4'] },
+  { keywords: ['cacho', 'cubilete'], img: SKU_IMAGES['ENT-CACH6'] },
+
+  // Kit escritorio / portanotebook (antes de "macetero" para evitar colisiones)
+  { keywords: ['kit escritorio pro', 'kit pro'], img: SKU_IMAGES['HOG-PACK-PRO'] },
+  { keywords: ['kit escritorio', 'set escritorio', 'portanotebook', 'porta notebook', 'porta laptop', 'soporte notebook'], img: SKU_IMAGES['HOG-PACK-ESC'] },
+
+  // Maceteros (macetero ≠ portanotebook)
+  { keywords: ['macetero con platito', 'macetero ecologico', 'macetero eco', 'macetero grande', 'macetero xl'], img: SKU_IMAGES['HOG-MACE-XL'] },
+  { keywords: ['macetero 3', 'trio macetero', 'set macetero'], img: SKU_IMAGES['HOG-MACE3'] },
+  { keywords: ['macetero chico', 'macetero pequeño', 'macetero small'], img: SKU_IMAGES['HOG-MACE-SM'] },
+  { keywords: ['macetero', 'maceta'], img: SKU_IMAGES['HOG-MACE-XL'] },
+
+  // Hogar varios
+  { keywords: ['lampara', 'lámpara'], img: SKU_IMAGES['HOG-LAMP'] },
+  { keywords: ['llavero', 'llaveros'], img: SKU_IMAGES['HOG-LLAV'] },
+  { keywords: ['posavaso'], img: SKU_IMAGES['HOG-POSAV'] },
+  { keywords: ['porta celular', 'portacelular', 'soporte celular'], img: SKU_IMAGES['HOG-SOPC'] },
+  { keywords: ['cuadro'], img: SKU_IMAGES['HOG-CUADRO1'] },
+  { keywords: ['pocillo', 'bowl', 'tapa bowl'], img: SKU_IMAGES['HOG-POC-COL'] },
+];
+
+// Helper: matchea imagen por nombre del producto
+function matchImageByName(nombre) {
+  if (!nombre) return null;
+  const n = nombre.toLowerCase().trim();
+  for (const rule of NAME_KEYWORD_IMAGES) {
+    if (rule.keywords.some(kw => n.includes(kw))) return rule.img;
+  }
+  return null;
+}
+
+// Validación simple de URL de imagen
+function isValidImageUrl(url) {
+  if (!url || typeof url !== 'string') return false;
+  if (!url.startsWith('http')) return false;
+  // Filtrar placeholders y urls claramente inválidas
+  if (url.includes('placeholder') || url.length < 20) return false;
+  return true;
+}
+
 // Hero banners
 export const HERO_IMAGES = [
   'https://i0.wp.com/peyuchile.cl/wp-content/uploads/2025/11/Kit-Escritorio-Pro-2-1-1.png?fit=1920%2C640&ssl=1',
@@ -105,23 +161,41 @@ export const CATEGORY_SHOWCASE = [
 ];
 
 /**
- * Returns the best validated product image.
- * Priority: real imagen_url (from Woo) → SKU-specific → Category fallback
+ * Resuelve la mejor imagen para un producto.
+ *
+ * PRIORIDAD (una sola fuente de verdad en toda la app):
+ *   1. SKU exacto en el mapa (imágenes reales curadas) — más confiable
+ *   2. imagen_url del producto (si es válida y http)
+ *   3. Match inteligente por keywords del nombre (ej. "macetero" → macetero)
+ *   4. Fallback por categoría
+ *   5. Fallback universal
+ *
+ * IMPORTANTE: el SKU gana sobre imagen_url porque WooCommerce suele traer
+ * imágenes desactualizadas o cruzadas entre productos similares.
  *
  * Uso preferido: getProductImage(producto)
  * Legacy: getProductImage(sku, categoria) sigue funcionando.
  */
 export function getProductImage(skuOrProducto, categoria) {
-  // Llamada nueva: getProductImage(producto)
+  // Firma nueva: getProductImage(producto)
   if (skuOrProducto && typeof skuOrProducto === 'object') {
     const p = skuOrProducto;
-    if (p.imagen_url && typeof p.imagen_url === 'string' && p.imagen_url.startsWith('http')) {
-      return p.imagen_url;
-    }
+
+    // 1. SKU curado (máxima prioridad)
     if (p.sku && SKU_IMAGES[p.sku]) return SKU_IMAGES[p.sku];
+
+    // 2. imagen_url válida
+    if (isValidImageUrl(p.imagen_url)) return p.imagen_url;
+
+    // 3. Match por keywords del nombre
+    const byName = matchImageByName(p.nombre);
+    if (byName) return byName;
+
+    // 4. Categoría
     return CATEGORY_IMAGES[p.categoria] || CATEGORY_IMAGES['Hogar'];
   }
-  // Llamada legacy: getProductImage(sku, categoria)
+
+  // Firma legacy: getProductImage(sku, categoria)
   const sku = skuOrProducto;
   if (sku && SKU_IMAGES[sku]) return SKU_IMAGES[sku];
   return CATEGORY_IMAGES[categoria] || CATEGORY_IMAGES['Hogar'];
