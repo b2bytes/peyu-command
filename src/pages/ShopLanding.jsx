@@ -12,6 +12,8 @@ import ChatHistoryPanel from '@/components/chat/ChatHistoryPanel';
 import { ensureFreshSession, addToHistory, readHistory } from '@/lib/chat-history';
 import { withContext } from '@/lib/chat-context';
 import { History } from 'lucide-react';
+import { useAppBackground, getBackgroundById, buildBackgroundImageCSS } from '@/lib/background';
+import BackgroundSwitcher from '@/components/BackgroundSwitcher';
 
 // Limpia el bloque [CONTEXTO] que se inyecta al agente — no debe verse en la UI.
 const stripContext = (m) => {
@@ -55,6 +57,9 @@ export default function ShopLanding() {
   const [loading, setLoading] = useState(false);
   const [currentProductIndex, setCurrentProductIndex] = useState(0);
   const [sidebarExpanded, setSidebarExpanded] = useState(false);
+  const [bgId] = useAppBackground();
+  const bg = getBackgroundById(bgId);
+  const bgImage = buildBackgroundImageCSS(bg.url);
   const messagesEndRef = useRef(null);
   const [carrito, setCarrito] = useState(() => JSON.parse(localStorage.getItem('carrito') || '[]'));
 
@@ -224,13 +229,14 @@ export default function ShopLanding() {
         }
       `}</style>
       <WhatsAppFloat />
+      <BackgroundSwitcher />
       {/* SIDEBAR - macOS style */}
       <div 
         className={`hidden lg:flex flex-col bg-white/10 backdrop-blur-md border-r border-white/20 transition-all duration-300 overflow-hidden h-full flex-shrink-0 ${sidebarExpanded ? 'w-48' : 'w-16'}`}
         onMouseEnter={() => setSidebarExpanded(true)}
         onMouseLeave={() => setSidebarExpanded(false)}
         style={{
-          backgroundImage: `linear-gradient(135deg, rgba(15, 23, 42, 0.75) 0%, rgba(15, 78, 137, 0.75) 50%, rgba(15, 23, 42, 0.75) 100%), url('https://media.base44.com/images/public/69d99b9d61f699701129c103/6935b8ac0_image.png')`,
+          backgroundImage: bgImage,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           backgroundAttachment: 'fixed',
@@ -274,7 +280,7 @@ export default function ShopLanding() {
 
       {/* Main content area */}
       <div className="flex-1 overflow-y-auto overflow-x-hidden w-full relative peyu-scrollbar-light h-full" style={{
-        backgroundImage: `linear-gradient(135deg, rgba(15, 23, 42, 0.85) 0%, rgba(15, 78, 137, 0.85) 50%, rgba(15, 23, 42, 0.85) 100%), url('https://media.base44.com/images/public/69d99b9d61f699701129c103/6935b8ac0_image.png')`,
+        backgroundImage: bgImage,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         backgroundRepeat: 'no-repeat'

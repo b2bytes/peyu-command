@@ -6,6 +6,8 @@ import AsistenteChat from './AsistenteChat';
 import ChatCartToast from './chat/ChatCartToast';
 import PublicMobileNav from './PublicMobileNav';
 import PublicMobileHeader from './PublicMobileHeader';
+import BackgroundSwitcher from './BackgroundSwitcher';
+import { useAppBackground, getBackgroundById, buildBackgroundImageCSS } from '@/lib/background';
 
 const MENU_ITEMS = [
   { href: '/', label: 'Inicio', icon: Home, color: 'bg-teal-500' },
@@ -22,10 +24,13 @@ const MENU_ITEMS = [
 export default function PublicLayout() {
   const [sidebarExpanded, setSidebarExpanded] = useState(false);
   const location = useLocation();
+  const [bgId] = useAppBackground();
+  const bg = getBackgroundById(bgId);
+  const bgImage = buildBackgroundImageCSS(bg.url);
 
   return (
     <div className="flex h-screen w-full overflow-hidden" style={{
-      backgroundImage: `linear-gradient(135deg, rgba(15, 23, 42, 0.85) 0%, rgba(15, 78, 137, 0.80) 50%, rgba(15, 23, 42, 0.85) 100%), url('https://media.base44.com/images/public/69d99b9d61f699701129c103/6935b8ac0_image.png')`,
+      backgroundImage: bgImage,
       backgroundSize: 'cover',
       backgroundPosition: 'center',
     }}>
@@ -37,7 +42,7 @@ export default function PublicLayout() {
         onMouseEnter={() => setSidebarExpanded(true)}
         onMouseLeave={() => setSidebarExpanded(false)}
         style={{
-          backgroundImage: `linear-gradient(135deg, rgba(15, 23, 42, 0.75) 0%, rgba(15, 78, 137, 0.75) 50%, rgba(15, 23, 42, 0.75) 100%), url('https://media.base44.com/images/public/69d99b9d61f699701129c103/6935b8ac0_image.png')`,
+          backgroundImage: bgImage,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           backgroundAttachment: 'fixed',
@@ -79,10 +84,10 @@ export default function PublicLayout() {
 
       {/* MAIN CONTENT */}
       <div className="flex-1 overflow-auto w-full pb-16 lg:pb-0 flex flex-col" style={{
-        backgroundImage: `linear-gradient(135deg, rgba(15, 23, 42, 0.80) 0%, rgba(15, 78, 137, 0.75) 50%, rgba(15, 23, 42, 0.80) 100%), url('https://media.base44.com/images/public/69d99b9d61f699701129c103/6935b8ac0_image.png')`,
+        backgroundImage: bgImage,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
-        backgroundAttachment: 'fixed',
+        // NO usar backgroundAttachment: 'fixed' aquí: rompe el scroll suave en iOS Safari.
       }}>
         {/* Header móvil con menú hamburguesa + logo + carrito */}
         <PublicMobileHeader />
@@ -100,6 +105,9 @@ export default function PublicLayout() {
 
       {/* Toast global de "agregado al carrito" desde el chat */}
       <ChatCartToast />
+
+      {/* Selector de fondo flotante */}
+      <BackgroundSwitcher />
     </div>
   );
 }
