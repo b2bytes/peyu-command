@@ -239,7 +239,7 @@ export default function ShopLanding() {
 
       {/* SIDEBAR - overlay flotante (no empuja el contenido, no duplica fondo) */}
       <aside
-        className={`hidden lg:flex flex-col absolute left-0 top-0 bottom-0 z-30 bg-slate-900/60 backdrop-blur-md border-r border-white/10 transition-[width] duration-200 ease-out overflow-hidden ${
+        className={`hidden lg:flex flex-col fixed left-0 top-0 bottom-0 z-[60] bg-slate-900/70 backdrop-blur-md border-r border-white/10 transition-[width] duration-200 ease-out overflow-hidden ${
           sidebarExpanded ? 'w-48 shadow-2xl shadow-black/40' : 'w-14'
         }`}
         onMouseEnter={() => setSidebarExpanded(true)}
