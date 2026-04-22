@@ -68,6 +68,7 @@ import Backlinks from './pages/Backlinks';
 import IntegracionWoo from './pages/IntegracionWoo';
 import ProcesarPedidos from './pages/ProcesarPedidos';
 import Cliente360 from './pages/Cliente360';
+import PineconeBrain from './pages/PineconeBrain';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -128,6 +129,7 @@ const AuthenticatedApp = () => {
         <Route path="woocommerce" element={<IntegracionWoo />} />
         <Route path="procesar-pedidos" element={<ProcesarPedidos />} />
         <Route path="cliente-360" element={<Cliente360 />} />
+        <Route path="brain" element={<PineconeBrain />} />
       </Route>
       <Route path="*" element={<PageNotFound />} />
     </Routes>

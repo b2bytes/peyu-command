@@ -220,7 +220,7 @@ export default function ShopLanding() {
         backgroundColor: bg.tint || '#0f172a',
         backgroundImage: isTheme
           ? `${THEME_OVERLAY}, url('${bg.url}')`
-          : buildBackgroundImageCSS(bg.url),
+          : buildBackgroundImageCSS(bg.url, bg.gradient),
         backgroundSize: isTheme ? 'auto 100%, cover' : 'cover',
         backgroundPosition: 'center',
         backgroundRepeat: 'no-repeat',
