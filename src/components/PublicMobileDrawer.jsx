@@ -4,6 +4,7 @@ import {
   Home, ShoppingCart, Grid3x3, Building2, HelpCircle, Heart, BookOpen,
   Sparkles, Package, X, Menu, Phone, Instagram, MapPin
 } from 'lucide-react';
+import BackgroundSwitcher from './BackgroundSwitcher';
 
 const MENU_ITEMS = [
   { href: '/', label: 'Inicio', icon: Home },
@@ -94,6 +95,11 @@ export default function PublicMobileDrawer({ open, onClose }) {
             );
           })}
         </nav>
+
+        {/* Fondo de la app */}
+        <div className="border-t border-white/10 px-3 py-2 flex-shrink-0">
+          <BackgroundSwitcher expanded />
+        </div>
 
         {/* Contact footer */}
         <div className="border-t border-white/10 p-4 space-y-2 flex-shrink-0 pb-[max(1rem,env(safe-area-inset-bottom))]">

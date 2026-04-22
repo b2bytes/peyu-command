@@ -3,15 +3,15 @@ import { ImageIcon, X } from 'lucide-react';
 import BackgroundPicker from './BackgroundPicker';
 
 /**
- * Botón flotante discreto que abre un panel con BackgroundPicker.
- * - Visible en desktop y mobile.
- * - Posicionado para no colisionar con WhatsAppFloat (bottom-right) ni bottom nav móvil.
- * - Se puede ocultar con la X del panel (persistente por sesión).
+ * Botón para el sidebar que abre un modal con BackgroundPicker.
+ * Se renderiza como un ítem más del menú lateral (no flotante).
+ *
+ * Props:
+ *   - expanded: bool — si el sidebar está expandido (muestra label).
  */
-export default function BackgroundSwitcher() {
+export default function BackgroundSwitcher({ expanded = false }) {
   const [open, setOpen] = useState(false);
 
-  // Cerrar con ESC
   useEffect(() => {
     if (!open) return;
     const onKey = (e) => e.key === 'Escape' && setOpen(false);
@@ -21,18 +21,20 @@ export default function BackgroundSwitcher() {
 
   return (
     <>
-      {/* Trigger flotante — bottom-left para no chocar con WhatsApp (bottom-right) y bottom nav móvil */}
       <button
         type="button"
         onClick={() => setOpen(true)}
-        aria-label="Cambiar fondo"
-        title="Cambiar fondo de la app"
-        className="fixed z-[70] left-3 lg:left-[4.25rem] bottom-[calc(env(safe-area-inset-bottom)+4.5rem)] lg:bottom-4 w-11 h-11 rounded-full bg-white/15 hover:bg-white/25 active:bg-white/35 backdrop-blur-md border border-white/25 text-white shadow-lg flex items-center justify-center transition-all hover:scale-105"
+        title="Cambiar fondo"
+        className={`flex items-center rounded-lg transition-colors h-11 text-white/80 hover:bg-white/10 hover:text-white ${
+          expanded ? 'px-3 gap-3 justify-start' : 'justify-center'
+        }`}
       >
-        <ImageIcon className="w-4 h-4" />
+        <ImageIcon className="w-[18px] h-[18px] flex-shrink-0" />
+        {expanded && (
+          <span className="text-xs font-medium whitespace-nowrap overflow-hidden">Fondo</span>
+        )}
       </button>
 
-      {/* Panel modal */}
       {open && (
         <div
           className="fixed inset-0 z-[80] flex items-end lg:items-center justify-center p-0 lg:p-4"
@@ -44,9 +46,7 @@ export default function BackgroundSwitcher() {
             className="absolute inset-0 bg-black/60 backdrop-blur-sm"
             onClick={() => setOpen(false)}
           />
-          <div
-            className="relative w-full lg:max-w-2xl bg-gradient-to-b from-slate-900 to-slate-950 border-t lg:border border-white/15 rounded-t-3xl lg:rounded-2xl shadow-2xl max-h-[85vh] overflow-hidden flex flex-col animate-in slide-in-from-bottom duration-200"
-          >
+          <div className="relative w-full lg:max-w-2xl bg-gradient-to-b from-slate-900 to-slate-950 border-t lg:border border-white/15 rounded-t-3xl lg:rounded-2xl shadow-2xl max-h-[85vh] overflow-hidden flex flex-col animate-in slide-in-from-bottom duration-200">
             <div className="flex items-center justify-between p-4 border-b border-white/10 flex-shrink-0">
               <div className="flex items-center gap-2">
                 <ImageIcon className="w-4 h-4 text-teal-400" />

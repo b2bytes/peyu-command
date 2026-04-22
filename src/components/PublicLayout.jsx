@@ -88,6 +88,11 @@ export default function PublicLayout() {
             );
           })}
         </nav>
+
+        {/* Footer del sidebar: selector de fondo */}
+        <div className="px-1.5 pb-3 pt-2 border-t border-white/10">
+          <BackgroundSwitcher expanded={sidebarExpanded} />
+        </div>
       </aside>
 
       {/* MAIN CONTENT — sin backgroundImage propio, reserva espacio solo para el sidebar colapsado en desktop */}
@@ -108,8 +113,6 @@ export default function PublicLayout() {
       {/* Toast global de "agregado al carrito" desde el chat */}
       <ChatCartToast />
 
-      {/* Selector de fondo flotante */}
-      <BackgroundSwitcher />
     </div>
   );
 }
