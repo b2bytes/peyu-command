@@ -1,21 +1,28 @@
 User-agent: *
 Allow: /
-Disallow: /admin/
-Disallow: /cart
-Disallow: /seguimiento
-Disallow: /api/
 
-# Bots de IA (permitidos para indexar contenido público)
+# Áreas privadas
+Disallow: /admin/
+Disallow: /b2b/mi-cuenta
+Disallow: /cart
+Disallow: /seguimiento?*
+
+# Evita indexar parámetros de tracking
+Disallow: /*?utm_
+Disallow: /*?fbclid=
+Disallow: /*?gclid=
+
+# Crawlers agresivos de IA — permitir pero con delay
 User-agent: GPTBot
 Allow: /
+Crawl-delay: 2
 
 User-agent: ClaudeBot
 Allow: /
+Crawl-delay: 2
 
 User-agent: PerplexityBot
 Allow: /
 
-User-agent: Google-Extended
-Allow: /
-
+# Sitemap
 Sitemap: https://peyuchile.cl/sitemap.xml
