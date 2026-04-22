@@ -5,8 +5,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
   ArrowLeft, ArrowRight, Building2, Plus, Minus, Trash2, Upload,
-  Sparkles, Download, CheckCircle, FileText, Loader2, Zap, Package, Wand2
+  Sparkles, Download, CheckCircle, FileText, Loader2, Zap, Package, Wand2, ShoppingBag, X
 } from 'lucide-react';
+import CartPanel from '@/components/b2b/selfservice/CartPanel';
 
 const STEPS = ['Productos', 'Empresa', 'Personalización', 'Propuesta'];
 
@@ -51,6 +52,9 @@ export default function B2BSelfService() {
   const [propuesta, setPropuesta] = useState(null);
   const [error, setError] = useState('');
   const [descargando, setDescargando] = useState(false);
+
+  // Drawer del carrito (solo móvil)
+  const [cartOpen, setCartOpen] = useState(false);
 
   useEffect(() => {
     base44.entities.Producto.filter({ activo: true })
@@ -184,50 +188,85 @@ export default function B2BSelfService() {
   };
 
   return (
-    <div className="flex-1 overflow-auto font-inter">
-      {/* Header */}
-      <div className="bg-gradient-to-r from-teal-500/30 to-cyan-500/30 border-b border-white/20 px-4 sm:px-6 py-3 flex items-center justify-between sticky top-0 z-40 backdrop-blur-md">
-        <div className="flex items-center gap-3">
-          <button onClick={() => step > 0 && !propuesta ? setStep(step - 1) : navigate(-1)}
-            className="w-9 h-9 bg-white/20 rounded-lg flex items-center justify-center hover:bg-white/30">
+    <div className="flex-1 overflow-auto font-inter pb-[calc(env(safe-area-inset-bottom)+6rem)] lg:pb-8">
+      {/* Header sticky */}
+      <div className="bg-gradient-to-r from-teal-500/30 to-cyan-500/30 border-b border-white/20 px-3 sm:px-6 py-2.5 sm:py-3 flex items-center justify-between sticky top-0 z-40 backdrop-blur-md">
+        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+          <button
+            onClick={() => step > 0 && !propuesta ? setStep(step - 1) : navigate(-1)}
+            className="w-9 h-9 bg-white/20 rounded-lg flex items-center justify-center hover:bg-white/30 active:bg-white/40 flex-shrink-0"
+            aria-label="Atrás"
+          >
             <ArrowLeft className="w-4 h-4 text-white" />
           </button>
-          <div className="flex items-center gap-2">
-            <Wand2 className="w-5 h-5 text-yellow-300" />
-            <div>
-              <p className="text-sm font-poppins font-bold text-white leading-none">Propuesta Self-Service</p>
-              <p className="text-[10px] text-white/60 leading-none mt-0.5">Genera y descarga tu propuesta al instante</p>
+          <div className="flex items-center gap-2 min-w-0">
+            <Wand2 className="w-5 h-5 text-yellow-300 flex-shrink-0" />
+            <div className="min-w-0">
+              <p className="text-sm font-poppins font-bold text-white leading-none truncate">Propuesta Self-Service</p>
+              <p className="text-[10px] text-white/60 leading-none mt-0.5 hidden sm:block">Genera y descarga tu propuesta al instante</p>
+              <p className="text-[10px] text-white/60 leading-none mt-0.5 sm:hidden">Paso {step + 1} de {STEPS.length}</p>
             </div>
           </div>
         </div>
+
+        {/* Botón carrito (solo móvil, steps 0-2) */}
+        {step === 0 && cart.length > 0 && (
+          <button
+            onClick={() => setCartOpen(true)}
+            className="lg:hidden relative flex items-center gap-1.5 bg-teal-500 hover:bg-teal-600 active:bg-teal-700 text-white text-xs font-bold px-3 py-2 rounded-xl shadow-lg"
+          >
+            <ShoppingBag className="w-4 h-4" />
+            <span>{cart.length}</span>
+            <span className="absolute -top-1.5 -right-1.5 bg-yellow-400 text-yellow-950 text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center border-2 border-slate-900">
+              {cart.reduce((s, c) => s + c.cantidad, 0)}
+            </span>
+          </button>
+        )}
       </div>
 
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 space-y-6">
-        {/* Steps indicator */}
-        <div className="flex items-center gap-2 bg-white/5 border border-white/15 rounded-2xl p-3">
-          {STEPS.map((label, i) => (
-            <div key={i} className="flex-1 flex items-center gap-2">
-              <div className={`flex-1 h-1.5 rounded-full ${i <= step ? 'bg-teal-400' : 'bg-white/15'}`} />
-              <span className={`text-[10px] font-bold whitespace-nowrap ${i === step ? 'text-teal-300' : 'text-white/40'}`}>
-                {i + 1}. {label}
-              </span>
+      <div className="max-w-5xl mx-auto px-3 sm:px-6 py-4 sm:py-6 space-y-5">
+        {/* Steps indicator — compacto en móvil */}
+        <div className="bg-white/5 border border-white/15 rounded-2xl p-2.5 sm:p-3">
+          {/* Desktop: barras con label */}
+          <div className="hidden sm:flex items-center gap-2">
+            {STEPS.map((label, i) => (
+              <div key={i} className="flex-1 flex items-center gap-2">
+                <div className={`flex-1 h-1.5 rounded-full ${i <= step ? 'bg-teal-400' : 'bg-white/15'}`} />
+                <span className={`text-[10px] font-bold whitespace-nowrap ${i === step ? 'text-teal-300' : 'text-white/40'}`}>
+                  {i + 1}. {label}
+                </span>
+              </div>
+            ))}
+          </div>
+          {/* Móvil: solo barras + label actual */}
+          <div className="sm:hidden">
+            <div className="flex items-center gap-1.5 mb-1.5">
+              {STEPS.map((_, i) => (
+                <div key={i} className={`flex-1 h-1.5 rounded-full ${i <= step ? 'bg-teal-400' : 'bg-white/15'}`} />
+              ))}
             </div>
-          ))}
+            <p className="text-[11px] font-bold text-teal-300 text-center">
+              {step + 1}/{STEPS.length} · {STEPS[step]}
+            </p>
+          </div>
         </div>
 
         {/* STEP 0 — Productos */}
         {step === 0 && (
           <div className="space-y-4">
             <div>
-              <h2 className="text-2xl font-poppins font-bold text-white">Arma tu pedido corporativo</h2>
-              <p className="text-white/60 text-sm">Selecciona productos, ajusta cantidades, y genera tu propuesta en 1 minuto.</p>
+              <h2 className="text-xl sm:text-2xl font-poppins font-bold text-white">Arma tu pedido corporativo</h2>
+              <p className="text-white/60 text-xs sm:text-sm">Selecciona productos, ajusta cantidades, y genera tu propuesta en 1 minuto.</p>
             </div>
 
             {/* Filtro categoría */}
-            <div className="flex gap-2 overflow-x-auto pb-1">
+            <div className="flex gap-2 overflow-x-auto pb-1 -mx-3 px-3 sm:mx-0 sm:px-0">
               {categorias.map(cat => (
-                <button key={cat} onClick={() => setFiltroCategoria(cat)}
-                  className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all ${filtroCategoria === cat ? 'bg-teal-500 text-white' : 'bg-white/10 text-white/60 hover:bg-white/20'}`}>
+                <button
+                  key={cat}
+                  onClick={() => setFiltroCategoria(cat)}
+                  className={`px-3 py-2 rounded-full text-xs font-semibold whitespace-nowrap transition-all ${filtroCategoria === cat ? 'bg-teal-500 text-white' : 'bg-white/10 text-white/60 hover:bg-white/20 active:bg-white/25'}`}
+                >
                   {cat === 'todos' ? 'Todos' : cat}
                 </button>
               ))}
@@ -244,28 +283,30 @@ export default function B2BSelfService() {
                 ) : catalogoFiltrado.length === 0 ? (
                   <div className="text-center py-16 text-white/60">No hay productos en esta categoría.</div>
                 ) : (
-                  <div className="grid sm:grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     {catalogoFiltrado.map(p => {
                       const inCart = cart.find(c => c.producto.id === p.id);
                       const precioBase = p.precio_base_b2b || p.precio_b2c || 5000;
                       return (
-                        <div key={p.id} className={`bg-white/5 border rounded-2xl p-4 backdrop-blur-sm transition-all ${inCart ? 'border-teal-400/60 bg-teal-500/10' : 'border-white/15 hover:border-white/30'}`}>
+                        <div key={p.id} className={`bg-white/5 border rounded-2xl p-3.5 sm:p-4 backdrop-blur-sm transition-all ${inCart ? 'border-teal-400/60 bg-teal-500/10' : 'border-white/15 hover:border-white/30'}`}>
                           <div className="flex items-start justify-between gap-2 mb-2">
                             <div className="min-w-0">
-                              <h3 className="font-semibold text-sm text-white truncate">{p.nombre}</h3>
+                              <h3 className="font-semibold text-sm text-white line-clamp-2">{p.nombre}</h3>
                               <p className="text-[10px] text-white/40 font-mono mt-0.5">{p.sku}</p>
                             </div>
                             {p.categoria && (
-                              <span className="text-[9px] bg-white/10 text-white/60 px-2 py-0.5 rounded-full whitespace-nowrap">{p.categoria}</span>
+                              <span className="text-[9px] bg-white/10 text-white/60 px-2 py-0.5 rounded-full whitespace-nowrap flex-shrink-0">{p.categoria}</span>
                             )}
                           </div>
-                          <div className="flex items-end justify-between">
-                            <div>
-                              <p className="text-xs text-white/50">Desde 10 u.</p>
-                              <p className="font-poppins font-bold text-lg text-white">${precioBase.toLocaleString('es-CL')}</p>
+                          <div className="flex items-end justify-between gap-2">
+                            <div className="min-w-0">
+                              <p className="text-[10px] text-white/50">Desde 10 u.</p>
+                              <p className="font-poppins font-bold text-base sm:text-lg text-white">${precioBase.toLocaleString('es-CL')}</p>
                             </div>
-                            <button onClick={() => addToCart(p)}
-                              className="bg-teal-500 hover:bg-teal-600 text-white text-xs font-bold px-3 py-2 rounded-xl flex items-center gap-1 transition-all">
+                            <button
+                              onClick={() => addToCart(p)}
+                              className="bg-teal-500 hover:bg-teal-600 active:bg-teal-700 text-white text-xs font-bold px-3 py-2.5 rounded-xl flex items-center gap-1 transition-all flex-shrink-0"
+                            >
                               <Plus className="w-3.5 h-3.5" /> {inCart ? 'Agregado' : 'Agregar'}
                             </button>
                           </div>
@@ -276,49 +317,16 @@ export default function B2BSelfService() {
                 )}
               </div>
 
-              {/* Carrito */}
-              <div className="bg-white/5 border border-white/15 rounded-2xl p-4 backdrop-blur-sm sticky top-24 self-start">
-                <div className="flex items-center gap-2 mb-3">
-                  <Package className="w-4 h-4 text-teal-400" />
-                  <h3 className="font-bold text-white text-sm">Tu pedido ({cart.length})</h3>
-                </div>
-                {cart.length === 0 ? (
-                  <p className="text-white/40 text-xs text-center py-6">Agrega productos desde el catálogo.</p>
-                ) : (
-                  <div className="space-y-2 max-h-80 overflow-y-auto">
-                    {cart.map(c => {
-                      const unitario = calcPrice(c.producto, c.cantidad);
-                      return (
-                        <div key={c.producto.id} className="bg-white/5 rounded-xl p-2.5 space-y-2">
-                          <div className="flex items-start justify-between gap-2">
-                            <p className="text-xs font-semibold text-white truncate flex-1">{c.producto.nombre}</p>
-                            <button onClick={() => removeFromCart(c.producto.id)} className="text-white/40 hover:text-red-400">
-                              <Trash2 className="w-3 h-3" />
-                            </button>
-                          </div>
-                          <div className="flex items-center justify-between gap-2">
-                            <div className="flex items-center bg-white/10 rounded-lg">
-                              <button onClick={() => updateQty(c.producto.id, -10)} className="w-7 h-7 text-white hover:bg-white/10 rounded-l-lg">−</button>
-                              <input type="number" value={c.cantidad} onChange={e => setQty(c.producto.id, e.target.value)}
-                                className="w-14 h-7 text-center text-white text-xs bg-transparent focus:outline-none" />
-                              <button onClick={() => updateQty(c.producto.id, 10)} className="w-7 h-7 text-white hover:bg-white/10 rounded-r-lg">+</button>
-                            </div>
-                            <p className="text-xs font-bold text-teal-300">${(unitario * c.cantidad).toLocaleString('es-CL')}</p>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-                {cart.length > 0 && (
-                  <div className="border-t border-white/10 mt-3 pt-3 space-y-1">
-                    <div className="flex justify-between text-xs text-white/60">
-                      <span>Subtotal estimado</span>
-                      <span className="font-bold text-white">${subtotalEstimado.toLocaleString('es-CL')}</span>
-                    </div>
-                    <p className="text-[10px] text-white/40">IVA incluido · descuento por volumen aplicado</p>
-                  </div>
-                )}
+              {/* Carrito — solo desktop (sidebar sticky) */}
+              <div className="hidden lg:block sticky top-24 self-start">
+                <CartPanel
+                  cart={cart}
+                  calcPrice={calcPrice}
+                  updateQty={updateQty}
+                  setQty={setQty}
+                  removeFromCart={removeFromCart}
+                  subtotalEstimado={subtotalEstimado}
+                />
               </div>
             </div>
           </div>
@@ -328,8 +336,8 @@ export default function B2BSelfService() {
         {step === 1 && (
           <div className="space-y-4 max-w-2xl">
             <div>
-              <h2 className="text-2xl font-poppins font-bold text-white">Datos de tu empresa</h2>
-              <p className="text-white/60 text-sm">Los necesitamos para emitir la propuesta y la factura.</p>
+              <h2 className="text-xl sm:text-2xl font-poppins font-bold text-white">Datos de tu empresa</h2>
+              <p className="text-white/60 text-xs sm:text-sm">Los necesitamos para emitir la propuesta y la factura.</p>
             </div>
             <div className="grid md:grid-cols-2 gap-3">
               {[
@@ -361,19 +369,23 @@ export default function B2BSelfService() {
         {step === 2 && (
           <div className="space-y-4 max-w-2xl">
             <div>
-              <h2 className="text-2xl font-poppins font-bold text-white">Personalización con tu logo</h2>
-              <p className="text-white/60 text-sm">Grabado láser UV gratis desde 10 unidades. Opcional.</p>
+              <h2 className="text-xl sm:text-2xl font-poppins font-bold text-white">Personalización con tu logo</h2>
+              <p className="text-white/60 text-xs sm:text-sm">Grabado láser UV gratis desde 10 unidades. Opcional.</p>
             </div>
 
-            <div className="flex gap-3">
-              <button onClick={() => setPersonalizar(true)}
-                className={`flex-1 p-4 rounded-2xl border-2 transition-all ${personalizar ? 'border-teal-400 bg-teal-500/20' : 'border-white/20 bg-white/5 hover:border-white/40'}`}>
+            <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
+              <button
+                onClick={() => setPersonalizar(true)}
+                className={`p-3 sm:p-4 rounded-2xl border-2 transition-all ${personalizar ? 'border-teal-400 bg-teal-500/20' : 'border-white/20 bg-white/5 hover:border-white/40 active:border-white/50'}`}
+              >
                 <Sparkles className="w-5 h-5 mx-auto mb-2 text-yellow-300" />
                 <p className="font-bold text-sm text-white">Sí, con logo</p>
                 <p className="text-[10px] text-white/50 mt-0.5">Láser UV gratis</p>
               </button>
-              <button onClick={() => { setPersonalizar(false); setArchivo(null); }}
-                className={`flex-1 p-4 rounded-2xl border-2 transition-all ${!personalizar ? 'border-teal-400 bg-teal-500/20' : 'border-white/20 bg-white/5 hover:border-white/40'}`}>
+              <button
+                onClick={() => { setPersonalizar(false); setArchivo(null); }}
+                className={`p-3 sm:p-4 rounded-2xl border-2 transition-all ${!personalizar ? 'border-teal-400 bg-teal-500/20' : 'border-white/20 bg-white/5 hover:border-white/40 active:border-white/50'}`}
+              >
                 <Package className="w-5 h-5 mx-auto mb-2 text-white" />
                 <p className="font-bold text-sm text-white">Sin personalización</p>
                 <p className="text-[10px] text-white/50 mt-0.5">Producto estándar</p>
@@ -425,25 +437,25 @@ export default function B2BSelfService() {
         {/* STEP 3 — Resultado */}
         {step === 3 && propuesta && (
           <div className="space-y-5">
-            <div className="bg-gradient-to-br from-teal-600/30 to-emerald-700/30 border border-teal-400/40 rounded-3xl p-6 md:p-8 text-center backdrop-blur-sm">
-              <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-teal-500 to-emerald-600 flex items-center justify-center mx-auto mb-4 shadow-2xl shadow-teal-500/30">
-                <CheckCircle className="w-10 h-10 text-white" />
+            <div className="bg-gradient-to-br from-teal-600/30 to-emerald-700/30 border border-teal-400/40 rounded-3xl p-5 sm:p-6 md:p-8 text-center backdrop-blur-sm">
+              <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-3xl bg-gradient-to-br from-teal-500 to-emerald-600 flex items-center justify-center mx-auto mb-4 shadow-2xl shadow-teal-500/30">
+                <CheckCircle className="w-8 h-8 sm:w-10 sm:h-10 text-white" />
               </div>
-              <h2 className="text-3xl font-poppins font-bold text-white mb-2">¡Propuesta lista!</h2>
-              <p className="text-white/70 text-sm mb-4">N° <span className="font-mono font-bold text-teal-300">{propuesta.numero}</span></p>
+              <h2 className="text-2xl sm:text-3xl font-poppins font-bold text-white mb-2">¡Propuesta lista!</h2>
+              <p className="text-white/70 text-xs sm:text-sm mb-4">N° <span className="font-mono font-bold text-teal-300">{propuesta.numero}</span></p>
 
-              <div className="grid grid-cols-3 gap-3 max-w-md mx-auto mt-6">
-                <div className="bg-white/10 rounded-xl p-3 border border-white/15">
-                  <p className="text-[10px] text-white/50 uppercase">Total</p>
-                  <p className="font-poppins font-bold text-white text-lg">${propuesta.total.toLocaleString('es-CL')}</p>
+              <div className="grid grid-cols-3 gap-2 sm:gap-3 max-w-md mx-auto mt-5 sm:mt-6">
+                <div className="bg-white/10 rounded-xl p-2.5 sm:p-3 border border-white/15">
+                  <p className="text-[9px] sm:text-[10px] text-white/50 uppercase">Total</p>
+                  <p className="font-poppins font-bold text-white text-sm sm:text-lg">${propuesta.total.toLocaleString('es-CL')}</p>
                 </div>
-                <div className="bg-white/10 rounded-xl p-3 border border-white/15">
-                  <p className="text-[10px] text-white/50 uppercase">Lead time</p>
-                  <p className="font-poppins font-bold text-white text-lg">{propuesta.lead_time_dias}d</p>
+                <div className="bg-white/10 rounded-xl p-2.5 sm:p-3 border border-white/15">
+                  <p className="text-[9px] sm:text-[10px] text-white/50 uppercase">Lead time</p>
+                  <p className="font-poppins font-bold text-white text-sm sm:text-lg">{propuesta.lead_time_dias}d</p>
                 </div>
-                <div className="bg-white/10 rounded-xl p-3 border border-white/15">
-                  <p className="text-[10px] text-white/50 uppercase">Ítems</p>
-                  <p className="font-poppins font-bold text-white text-lg">{propuesta.items?.length || 0}</p>
+                <div className="bg-white/10 rounded-xl p-2.5 sm:p-3 border border-white/15">
+                  <p className="text-[9px] sm:text-[10px] text-white/50 uppercase">Ítems</p>
+                  <p className="font-poppins font-bold text-white text-sm sm:text-lg">{propuesta.items?.length || 0}</p>
                 </div>
               </div>
 
@@ -456,8 +468,12 @@ export default function B2BSelfService() {
             </div>
 
             <div className="grid md:grid-cols-2 gap-3">
-              <Button onClick={handleDescargarPDF} disabled={descargando} size="lg"
-                className="h-14 rounded-2xl bg-gradient-to-r from-slate-900 to-slate-800 hover:from-slate-800 hover:to-slate-700 text-white font-bold gap-2 shadow-xl">
+              <Button
+                onClick={handleDescargarPDF}
+                disabled={descargando}
+                size="lg"
+                className="h-14 rounded-2xl bg-gradient-to-r from-slate-900 to-slate-800 hover:from-slate-800 hover:to-slate-700 text-white font-bold gap-2 shadow-xl"
+              >
                 {descargando ? (
                   <><Loader2 className="w-5 h-5 animate-spin" /> Generando PDF...</>
                 ) : (
@@ -484,32 +500,102 @@ export default function B2BSelfService() {
           </div>
         )}
 
-        {/* Footer nav (no en step 3) */}
+        {/* Footer nav — sticky en móvil para no tapar con bottom nav */}
         {step < 3 && (
-          <div className="flex items-center justify-between gap-3 pt-4 border-t border-white/10">
-            <Button onClick={() => setStep(Math.max(0, step - 1))} variant="outline"
-              disabled={step === 0}
-              className="rounded-xl border-white/30 text-white hover:bg-white/10">
-              <ArrowLeft className="w-4 h-4 mr-1.5" /> Atrás
-            </Button>
-            {step < 2 ? (
-              <Button onClick={() => setStep(step + 1)} disabled={!canContinue(step)}
-                className="rounded-xl bg-teal-500 hover:bg-teal-600 text-white font-bold gap-2">
-                Continuar <ArrowRight className="w-4 h-4" />
+          <div
+            className="lg:relative fixed bottom-0 inset-x-0 lg:inset-auto bg-slate-900/95 lg:bg-transparent backdrop-blur-md lg:backdrop-blur-none border-t lg:border-t border-white/15 lg:border-white/10 px-3 lg:px-0 py-3 lg:pt-4 z-30"
+            style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 0.75rem)' }}
+          >
+            <div className="flex items-center justify-between gap-2 sm:gap-3 max-w-5xl mx-auto">
+              <Button
+                onClick={() => setStep(Math.max(0, step - 1))}
+                variant="outline"
+                disabled={step === 0}
+                className="rounded-xl border-white/30 text-white hover:bg-white/10 h-11"
+              >
+                <ArrowLeft className="w-4 h-4 sm:mr-1.5" />
+                <span className="hidden sm:inline">Atrás</span>
               </Button>
-            ) : (
-              <Button onClick={handleGenerar} disabled={generando}
-                className="rounded-xl bg-gradient-to-r from-teal-500 to-cyan-500 hover:from-teal-600 hover:to-cyan-600 text-white font-bold gap-2 shadow-lg">
-                {generando ? (
-                  <><Loader2 className="w-4 h-4 animate-spin" /> Generando propuesta + mockup IA...</>
-                ) : (
-                  <><Wand2 className="w-4 h-4" /> Generar propuesta y PDF</>
-                )}
-              </Button>
-            )}
+              {step < 2 ? (
+                <Button
+                  onClick={() => setStep(step + 1)}
+                  disabled={!canContinue(step)}
+                  className="flex-1 sm:flex-initial rounded-xl bg-teal-500 hover:bg-teal-600 active:bg-teal-700 text-white font-bold gap-2 h-11"
+                >
+                  Continuar <ArrowRight className="w-4 h-4" />
+                </Button>
+              ) : (
+                <Button
+                  onClick={handleGenerar}
+                  disabled={generando}
+                  className="flex-1 sm:flex-initial rounded-xl bg-gradient-to-r from-teal-500 to-cyan-500 hover:from-teal-600 hover:to-cyan-600 text-white font-bold gap-2 shadow-lg h-11 px-3 sm:px-6"
+                >
+                  {generando ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin flex-shrink-0" />
+                      <span className="text-xs sm:text-sm truncate">Generando propuesta...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Wand2 className="w-4 h-4 flex-shrink-0" />
+                      <span className="text-xs sm:text-sm">Generar propuesta</span>
+                    </>
+                  )}
+                </Button>
+              )}
+            </div>
           </div>
         )}
       </div>
+
+      {/* Drawer del carrito (solo móvil) */}
+      {cartOpen && (
+        <div className="lg:hidden fixed inset-0 z-[70]" role="dialog" aria-modal="true">
+          <div
+            className="absolute inset-0 bg-black/70 backdrop-blur-sm"
+            onClick={() => setCartOpen(false)}
+          />
+          <div className="absolute inset-x-0 bottom-0 bg-gradient-to-b from-slate-900 to-slate-950 border-t border-white/15 rounded-t-3xl shadow-2xl max-h-[85vh] flex flex-col animate-in slide-in-from-bottom duration-300">
+            <div className="flex items-center justify-between p-4 border-b border-white/10 flex-shrink-0">
+              <div className="flex items-center gap-2">
+                <Package className="w-5 h-5 text-teal-400" />
+                <h3 className="font-bold text-white">Tu pedido ({cart.length})</h3>
+              </div>
+              <button
+                onClick={() => setCartOpen(false)}
+                className="w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 active:bg-white/30 flex items-center justify-center text-white"
+                aria-label="Cerrar"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <div className="flex-1 overflow-y-auto p-4">
+              <CartPanel
+                cart={cart}
+                calcPrice={calcPrice}
+                updateQty={updateQty}
+                setQty={setQty}
+                removeFromCart={removeFromCart}
+                subtotalEstimado={subtotalEstimado}
+                compact
+              />
+            </div>
+            {cart.length > 0 && (
+              <div
+                className="border-t border-white/10 p-3 flex-shrink-0"
+                style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 0.75rem)' }}
+              >
+                <Button
+                  onClick={() => { setCartOpen(false); setStep(1); }}
+                  className="w-full h-12 rounded-xl bg-teal-500 hover:bg-teal-600 active:bg-teal-700 text-white font-bold gap-2"
+                >
+                  Continuar con {cart.length} producto{cart.length > 1 ? 's' : ''} <ArrowRight className="w-4 h-4" />
+                </Button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
