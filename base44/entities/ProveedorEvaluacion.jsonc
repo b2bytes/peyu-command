@@ -1,0 +1,115 @@
+{
+  "name": "ProveedorEvaluacion",
+  "type": "object",
+  "description": "Evaluaci\u00f3n peri\u00f3dica (trimestral/anual) de un proveedor con scorecard 360\u00b0 de 6 dimensiones.",
+  "properties": {
+    "proveedor_id": {
+      "type": "string",
+      "title": "ID Proveedor"
+    },
+    "proveedor_nombre": {
+      "type": "string",
+      "title": "Nombre Proveedor"
+    },
+    "periodo": {
+      "type": "string",
+      "title": "Per\u00edodo",
+      "enum": [
+        "Q1 2026",
+        "Q2 2026",
+        "Q3 2026",
+        "Q4 2026",
+        "Q1 2027",
+        "Q2 2027",
+        "Q3 2027",
+        "Q4 2027",
+        "Anual 2026",
+        "Anual 2027"
+      ]
+    },
+    "fecha_evaluacion": {
+      "type": "string",
+      "title": "Fecha de evaluaci\u00f3n"
+    },
+    "evaluador": {
+      "type": "string",
+      "title": "Evaluador"
+    },
+    "score_calidad": {
+      "type": "number",
+      "title": "Calidad (0-100)"
+    },
+    "score_entrega_otif": {
+      "type": "number",
+      "title": "OTIF (0-100)"
+    },
+    "score_precio": {
+      "type": "number",
+      "title": "Precio (0-100)"
+    },
+    "score_servicio": {
+      "type": "number",
+      "title": "Servicio (0-100)"
+    },
+    "score_esg": {
+      "type": "number",
+      "title": "ESG (0-100)"
+    },
+    "score_riesgo": {
+      "type": "number",
+      "title": "Riesgo (0-100)"
+    },
+    "score_global": {
+      "type": "number",
+      "title": "Score Global Ponderado"
+    },
+    "num_pedidos_periodo": {
+      "type": "number",
+      "title": "N\u00b0 pedidos en el per\u00edodo"
+    },
+    "monto_periodo_clp": {
+      "type": "number",
+      "title": "Monto per\u00edodo (CLP)"
+    },
+    "incidencias": {
+      "type": "number",
+      "title": "Incidencias registradas"
+    },
+    "otif_pct": {
+      "type": "number",
+      "title": "OTIF efectivo (%)"
+    },
+    "defectos_ppm": {
+      "type": "number",
+      "title": "Defectos (PPM)"
+    },
+    "fortalezas": {
+      "type": "string",
+      "title": "Fortalezas"
+    },
+    "debilidades": {
+      "type": "string",
+      "title": "Debilidades / Oportunidades"
+    },
+    "acciones_mejora": {
+      "type": "string",
+      "title": "Plan de acci\u00f3n / Mejoras requeridas"
+    },
+    "recomendacion": {
+      "type": "string",
+      "title": "Recomendaci\u00f3n",
+      "enum": [
+        "Mantener",
+        "Ampliar volumen",
+        "Reducir volumen",
+        "Reemplazar",
+        "Suspender"
+      ]
+    }
+  },
+  "required": [
+    "proveedor_id",
+    "periodo",
+    "fecha_evaluacion"
+  ]
+}
