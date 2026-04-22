@@ -197,7 +197,10 @@ export default function AsistenteChat() {
     <>
       {/* FAB Button — posicionado encima del botón de WhatsApp */}
       {!open && (
-        <div className="fixed bottom-24 right-6 z-40 flex items-center gap-2">
+        <div
+          className="fixed right-4 sm:right-6 z-40 flex items-center gap-2"
+          style={{ bottom: 'calc(env(safe-area-inset-bottom) + 10.5rem)' }}
+        >
           {hasHistory && (
             <button
               onClick={handleOpen}
@@ -221,9 +224,15 @@ export default function AsistenteChat() {
         </div>
       )}
 
-      {/* Chat Window */}
+      {/* Chat Window — en móvil ocupa ancho completo y respeta bottom nav */}
       {open && (
-        <div className="fixed bottom-24 right-6 z-50 w-96 max-w-[calc(100vw-2rem)] max-h-[80vh] bg-white rounded-2xl shadow-2xl border border-gray-100 flex flex-col overflow-hidden">
+        <div
+          className="fixed right-2 sm:right-6 left-2 sm:left-auto z-50 w-auto sm:w-96 max-w-[calc(100vw-1rem)] sm:max-w-[calc(100vw-2rem)] bg-white rounded-2xl shadow-2xl border border-gray-100 flex flex-col overflow-hidden"
+          style={{
+            bottom: 'calc(env(safe-area-inset-bottom) + 5rem)',
+            maxHeight: 'calc(100vh - env(safe-area-inset-bottom) - 6rem)',
+          }}
+        >
           {/* Header */}
           <div className="bg-gradient-to-r from-teal-600 to-cyan-600 text-white p-4 flex items-center justify-between flex-shrink-0 relative">
             <div className="flex items-center gap-2.5">
