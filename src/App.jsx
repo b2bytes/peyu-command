@@ -53,7 +53,7 @@ import SeguimientoPedido from './pages/SeguimientoPedido';
 import CatalogoVisual from './pages/CatalogoVisual';
 import Nosotros from './pages/Nosotros';
 import Blog from './pages/Blog';
-import BlogPostPage from './pages/BlogPost';
+import BlogPostPage from './pages/BlogPost.jsx';
 import Terminos from './pages/Terminos';
 import Privacidad from './pages/Privacidad';
 import Cookies from './pages/Cookies';
