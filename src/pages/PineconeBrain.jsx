@@ -13,6 +13,9 @@ const NS_META = {
   conversations:  { icon: Brain,    label: 'Memoria Chat',   color: '#EC4899' },
 };
 
+// Orden de visualización por importancia
+const NS_ORDER = ['products', 'customers', 'conversations', 'policies_faq', 'brand_voice', 'sustainability'];
+
 export default function PineconeBrain() {
   const [status, setStatus] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -67,6 +70,19 @@ export default function PineconeBrain() {
     setAction(null);
   };
 
+  const handleSeedClientes = async () => {
+    setAction('clientes');
+    addLog('info', '👥 Vectorizando clientes 360°...');
+    try {
+      const res = await base44.functions.invoke('pineconeSeedClientes', {});
+      addLog('success', `✅ ${res.data?.upserted || 0} clientes vectorizados`);
+      loadStatus();
+    } catch (e) {
+      addLog('error', e.message);
+    }
+    setAction(null);
+  };
+
   const handleSearch = async () => {
     if (!query.trim()) return;
     setSearching(true);
@@ -80,7 +96,8 @@ export default function PineconeBrain() {
   };
 
   const namespaces = status?.stats?.namespaces || {};
-  const totalVectors = Object.values(namespaces).reduce((s, n) => s + (n?.vector_count || 0), 0);
+  const totalVectors = status?.stats?.totalVectorCount
+    || Object.values(namespaces).reduce((s, n) => s + (n?.vectorCount || n?.vector_count || 0), 0);
 
   return (
     <div className="p-6 space-y-5">
@@ -129,10 +146,11 @@ export default function PineconeBrain() {
       {/* Namespaces grid */}
       {status?.exists && status?.ready && (
         <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
-          {Object.entries(NS_META).map(([ns, meta]) => {
+          {NS_ORDER.map((ns) => {
+            const meta = NS_META[ns];
             const data = namespaces[ns];
             const Icon = meta.icon;
-            const count = data?.vector_count || 0;
+            const count = data?.vectorCount || data?.vector_count || 0;
             return (
               <div key={ns} className="bg-white rounded-xl p-4 border border-border shadow-sm">
                 <div className="flex items-center gap-2 mb-2">
@@ -174,6 +192,14 @@ export default function PineconeBrain() {
             disabled={action === 'seed' || !status?.ready}
             loading={action === 'seed'}
             cta={totalVectors > 0 ? 'Re-sembrar (actualizar)' : 'Sembrar ahora'}
+          />
+          <ActionCard
+            title="3️⃣ Vectorizar Clientes 360°"
+            desc="Sincroniza la base de clientes para que Peyu reconozca recurrentes y personalice."
+            onClick={handleSeedClientes}
+            disabled={action === 'clientes' || !status?.ready}
+            loading={action === 'clientes'}
+            cta="Sincronizar clientes"
           />
         </div>
       </div>

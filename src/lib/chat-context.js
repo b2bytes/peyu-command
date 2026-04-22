@@ -141,10 +141,37 @@ export function serializeContext(ctx) {
   return parts.length ? `[CONTEXTO] ${parts.join(' ')}` : '';
 }
 
-// Helper unificado: arma el contexto y lo antepone al mensaje del usuario.
+// 🧠 Brain lookup: consulta Pinecone con el mensaje del usuario y devuelve
+// un bloque compacto con productos/políticas/memoria más relevantes.
+// Falla silenciosamente si el Brain no está disponible — degrada al modo legacy.
+async function brainLookup(userMessage, userEmail) {
+  try {
+    const res = await base44.functions.invoke('askPeyuBrain', {
+      query: userMessage,
+      top_k: 4,
+      format: 'context',
+      namespaces: userEmail
+        ? ['products', 'policies_faq', 'sustainability', 'conversations', 'customers']
+        : ['products', 'policies_faq', 'sustainability'],
+    });
+    return res?.data?.context || '';
+  } catch {
+    return '';
+  }
+}
+
+// Helper unificado: arma el contexto, lo enriquece con RAG del Brain y lo antepone al mensaje.
 export async function withContext(userMessage) {
   const ctx = await buildChatContext();
   const ctxLine = serializeContext(ctx);
-  if (!ctxLine) return userMessage;
-  return `${ctxLine}\n\n${userMessage}`;
+
+  // 🧠 Consulta al Brain en paralelo — mejora precisión de SKUs recomendados
+  const brainBlock = await brainLookup(userMessage, ctx.user_email);
+
+  const parts = [];
+  if (ctxLine) parts.push(ctxLine);
+  if (brainBlock) parts.push(`[BRAIN]\n${brainBlock}`);
+  parts.push(userMessage);
+
+  return parts.join('\n\n');
 }

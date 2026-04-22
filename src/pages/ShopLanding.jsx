@@ -11,6 +11,7 @@ import ChatMessageContent from '@/components/chat/ChatMessageContent';
 import ChatHistoryPanel from '@/components/chat/ChatHistoryPanel';
 import { ensureFreshSession, addToHistory, readHistory } from '@/lib/chat-history';
 import { withContext } from '@/lib/chat-context';
+import { closeConversation } from '@/lib/chat-brain';
 import { History } from 'lucide-react';
 import { useAppBackground, getBackgroundById, buildBackgroundImageCSS, BG_OVERLAY, THEME_OVERLAY } from '@/lib/background';
 import BackgroundSwitcher from '@/components/BackgroundSwitcher';
@@ -132,6 +133,25 @@ export default function ShopLanding() {
     }, 3000);
     return () => clearInterval(interval);
   }, []);
+
+  // 🧠 Al cerrar la pestaña: destilar resumen de la conversación y guardarlo
+  // como memoria vectorial de largo plazo (Fase 5).
+  useEffect(() => {
+    const handleUnload = () => {
+      if (conversationId && messages.length >= 3) {
+        // Fire-and-forget: el navegador puede cortar la request, pero suele llegar.
+        try {
+          base44.functions.invoke('summarizeAndSaveConversation', {
+            conversation_id: conversationId,
+            messages: messages.slice(-20).map(m => ({ role: m.role, content: m.content })),
+            last_query: messages.filter(m => m.role === 'user').slice(-1)[0]?.content || '',
+          });
+        } catch { /* best-effort */ }
+      }
+    };
+    window.addEventListener('beforeunload', handleUnload);
+    return () => window.removeEventListener('beforeunload', handleUnload);
+  }, [conversationId, messages]);
 
   const sendMessage = async (messageText) => {
     const text = (typeof messageText === 'string' ? messageText : input).trim();
