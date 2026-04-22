@@ -6,7 +6,7 @@ const INDEX_NAME = 'peyu-brain';
 
 async function getIndexHost(apiKey) {
   const descRes = await fetch(`https://api.pinecone.io/indexes/${INDEX_NAME}`, {
-    headers: { 'Api-Key': apiKey, 'X-Pinecone-API-Version': '2024-10' }
+    headers: { 'Api-Key': apiKey, 'X-Pinecone-API-Version': '2025-01' }
   });
   const desc = await descRes.json();
   return desc.host;
@@ -29,7 +29,7 @@ Deno.serve(async (req) => {
     if (delete_all) {
       const res = await fetch(`https://${host}/namespaces/${namespace}`, {
         method: 'DELETE',
-        headers: { 'Api-Key': apiKey, 'X-Pinecone-API-Version': '2024-10' },
+        headers: { 'Api-Key': apiKey, 'X-Pinecone-API-Version': '2025-01' },
       });
       return Response.json({ ok: res.ok, status: res.status });
     }
@@ -37,7 +37,7 @@ Deno.serve(async (req) => {
     if (Array.isArray(ids) && ids.length > 0) {
       const res = await fetch(`https://${host}/vectors/delete`, {
         method: 'POST',
-        headers: { 'Api-Key': apiKey, 'Content-Type': 'application/json', 'X-Pinecone-API-Version': '2024-10' },
+        headers: { 'Api-Key': apiKey, 'Content-Type': 'application/json', 'X-Pinecone-API-Version': '2025-01' },
         body: JSON.stringify({ ids, namespace }),
       });
       return Response.json({ ok: res.ok, deleted: ids.length });

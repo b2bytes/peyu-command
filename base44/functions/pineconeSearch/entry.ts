@@ -14,7 +14,7 @@ const INDEX_NAME = 'peyu-brain';
 
 async function getIndexHost(apiKey) {
   const descRes = await fetch(`https://api.pinecone.io/indexes/${INDEX_NAME}`, {
-    headers: { 'Api-Key': apiKey, 'X-Pinecone-API-Version': '2024-10' }
+    headers: { 'Api-Key': apiKey, 'X-Pinecone-API-Version': '2025-01' }
   });
   if (!descRes.ok) throw new Error('Índice no encontrado');
   const desc = await descRes.json();
@@ -59,7 +59,7 @@ Deno.serve(async (req) => {
       headers: {
         'Api-Key': apiKey,
         'Content-Type': 'application/json',
-        'X-Pinecone-API-Version': '2024-10',
+        'X-Pinecone-API-Version': '2025-01',
       },
       body: JSON.stringify(body),
     });

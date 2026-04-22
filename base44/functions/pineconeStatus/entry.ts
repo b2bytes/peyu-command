@@ -16,7 +16,7 @@ Deno.serve(async (req) => {
 
     // 1) Descripción del índice
     const descRes = await fetch(`https://api.pinecone.io/indexes/${INDEX_NAME}`, {
-      headers: { 'Api-Key': apiKey, 'X-Pinecone-API-Version': '2024-10' }
+      headers: { 'Api-Key': apiKey, 'X-Pinecone-API-Version': '2025-01' }
     });
     if (descRes.status === 404) {
       return Response.json({ ok: false, exists: false, message: 'Índice no creado aún. Ejecuta pineconeInit.' });
@@ -30,7 +30,7 @@ Deno.serve(async (req) => {
     if (ready && host) {
       const statsRes = await fetch(`https://${host}/describe_index_stats`, {
         method: 'POST',
-        headers: { 'Api-Key': apiKey, 'Content-Type': 'application/json', 'X-Pinecone-API-Version': '2024-10' },
+        headers: { 'Api-Key': apiKey, 'Content-Type': 'application/json', 'X-Pinecone-API-Version': '2025-01' },
         body: JSON.stringify({}),
       });
       stats = await statsRes.json();

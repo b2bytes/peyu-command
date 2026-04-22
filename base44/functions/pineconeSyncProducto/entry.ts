@@ -6,7 +6,7 @@ const INDEX_NAME = 'peyu-brain';
 
 async function getIndexHost(apiKey) {
   const r = await fetch(`https://api.pinecone.io/indexes/${INDEX_NAME}`, {
-    headers: { 'Api-Key': apiKey, 'X-Pinecone-API-Version': '2024-10' }
+    headers: { 'Api-Key': apiKey, 'X-Pinecone-API-Version': '2025-01' }
   });
   if (!r.ok) throw new Error('Índice no encontrado');
   const d = await r.json();
@@ -60,7 +60,7 @@ Deno.serve(async (req) => {
     if (producto.activo === false || event?.type === 'delete') {
       await fetch(`https://${host}/vectors/delete`, {
         method: 'POST',
-        headers: { 'Api-Key': apiKey, 'Content-Type': 'application/json', 'X-Pinecone-API-Version': '2024-10' },
+        headers: { 'Api-Key': apiKey, 'Content-Type': 'application/json', 'X-Pinecone-API-Version': '2025-01' },
         body: JSON.stringify({ ids: [`prod-${producto.sku}`], namespace: 'products' }),
       });
       return Response.json({ ok: true, action: 'deleted', sku: producto.sku });
@@ -70,7 +70,7 @@ Deno.serve(async (req) => {
     const record = buildProductRecord(producto);
     const res = await fetch(`https://${host}/records/namespaces/products/upsert`, {
       method: 'POST',
-      headers: { 'Api-Key': apiKey, 'Content-Type': 'application/x-ndjson', 'X-Pinecone-API-Version': '2024-10' },
+      headers: { 'Api-Key': apiKey, 'Content-Type': 'application/x-ndjson', 'X-Pinecone-API-Version': '2025-01' },
       body: JSON.stringify(record),
     });
     if (!res.ok) {

@@ -17,7 +17,7 @@ const ALL_NS = ['products', 'policies_faq', 'brand_voice', 'sustainability'];
 
 async function getIndexHost(apiKey) {
   const r = await fetch(`https://api.pinecone.io/indexes/${INDEX_NAME}`, {
-    headers: { 'Api-Key': apiKey, 'X-Pinecone-API-Version': '2024-10' }
+    headers: { 'Api-Key': apiKey, 'X-Pinecone-API-Version': '2025-01' }
   });
   if (!r.ok) throw new Error('Índice no encontrado');
   const d = await r.json();
@@ -31,7 +31,7 @@ async function searchNs(host, apiKey, ns, query, topK, filter) {
   };
   const res = await fetch(`https://${host}/records/namespaces/${ns}/search`, {
     method: 'POST',
-    headers: { 'Api-Key': apiKey, 'Content-Type': 'application/json', 'X-Pinecone-API-Version': '2024-10' },
+    headers: { 'Api-Key': apiKey, 'Content-Type': 'application/json', 'X-Pinecone-API-Version': '2025-01' },
     body: JSON.stringify(body),
   });
   if (!res.ok) return [];

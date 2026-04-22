@@ -19,9 +19,17 @@ Deno.serve(async (req) => {
 
     // 1) Listar índices existentes
     const listRes = await fetch('https://api.pinecone.io/indexes', {
-      headers: { 'Api-Key': apiKey, 'X-Pinecone-API-Version': '2024-10' }
+      headers: { 'Api-Key': apiKey, 'X-Pinecone-API-Version': '2025-01' }
     });
-    const listData = await listRes.json();
+    const listText = await listRes.text();
+    console.log('[pineconeInit] list status:', listRes.status, 'body:', listText.slice(0, 500));
+
+    if (!listRes.ok) {
+      return Response.json({ error: 'List failed', status: listRes.status, details: listText }, { status: 500 });
+    }
+
+    let listData;
+    try { listData = JSON.parse(listText); } catch { listData = {}; }
     const existing = (listData?.indexes || []).find(i => i.name === INDEX_NAME);
 
     if (existing) {
@@ -39,7 +47,7 @@ Deno.serve(async (req) => {
       headers: {
         'Api-Key': apiKey,
         'Content-Type': 'application/json',
-        'X-Pinecone-API-Version': '2024-10',
+        'X-Pinecone-API-Version': '2025-01',
       },
       body: JSON.stringify({
         name: INDEX_NAME,
@@ -52,10 +60,15 @@ Deno.serve(async (req) => {
       }),
     });
 
-    const createData = await createRes.json();
+    const createText = await createRes.text();
+    console.log('[pineconeInit] create status:', createRes.status, 'body:', createText.slice(0, 800));
+
     if (!createRes.ok) {
-      return Response.json({ error: 'Create failed', details: createData }, { status: 500 });
+      return Response.json({ error: 'Create failed', status: createRes.status, details: createText }, { status: 500 });
     }
+
+    let createData;
+    try { createData = JSON.parse(createText); } catch { createData = {}; }
 
     return Response.json({
       ok: true,
