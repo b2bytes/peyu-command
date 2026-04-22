@@ -197,18 +197,28 @@ export default function AsistenteChat() {
     <>
       {/* FAB Button — posicionado encima del botón de WhatsApp */}
       {!open && (
-        <button
-          onClick={handleOpen}
-          className="fixed bottom-24 right-6 z-40 w-14 h-14 bg-gradient-to-br from-teal-500 to-cyan-600 rounded-full shadow-xl hover:shadow-2xl transition-all flex items-center justify-center text-white group hover:scale-110"
-          aria-label="Abrir chat con Peyu"
-        >
-          <span className="text-2xl group-hover:rotate-12 transition-transform">🐢</span>
+        <div className="fixed bottom-24 right-6 z-40 flex items-center gap-2">
           {hasHistory && (
-            <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-white">
-              {messages.filter(m => m.role === 'assistant').length}
-            </span>
+            <button
+              onClick={handleOpen}
+              className="hidden sm:flex items-center gap-1.5 bg-white/95 backdrop-blur border border-teal-200 text-teal-700 text-xs font-semibold px-3 py-1.5 rounded-full shadow-lg hover:bg-teal-50 transition animate-pulse"
+            >
+              💬 Retomar chat
+            </button>
           )}
-        </button>
+          <button
+            onClick={handleOpen}
+            className="relative w-14 h-14 bg-gradient-to-br from-teal-500 to-cyan-600 rounded-full shadow-xl hover:shadow-2xl transition-all flex items-center justify-center text-white group hover:scale-110"
+            aria-label="Abrir chat con Peyu"
+          >
+            <span className="text-2xl group-hover:rotate-12 transition-transform">🐢</span>
+            {hasHistory && (
+              <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-white">
+                {messages.filter(m => m.role === 'assistant').length}
+              </span>
+            )}
+          </button>
+        </div>
       )}
 
       {/* Chat Window */}
