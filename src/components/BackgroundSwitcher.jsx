@@ -27,7 +27,7 @@ export default function BackgroundSwitcher() {
         onClick={() => setOpen(true)}
         aria-label="Cambiar fondo"
         title="Cambiar fondo de la app"
-        className="fixed z-[55] left-3 bottom-[calc(env(safe-area-inset-bottom)+4.5rem)] lg:bottom-4 w-11 h-11 rounded-full bg-white/15 hover:bg-white/25 active:bg-white/35 backdrop-blur-md border border-white/25 text-white shadow-lg flex items-center justify-center transition-all hover:scale-105"
+        className="fixed z-[70] left-3 lg:left-[4.25rem] bottom-[calc(env(safe-area-inset-bottom)+4.5rem)] lg:bottom-4 w-11 h-11 rounded-full bg-white/15 hover:bg-white/25 active:bg-white/35 backdrop-blur-md border border-white/25 text-white shadow-lg flex items-center justify-center transition-all hover:scale-105"
       >
         <ImageIcon className="w-4 h-4" />
       </button>
@@ -35,7 +35,7 @@ export default function BackgroundSwitcher() {
       {/* Panel modal */}
       {open && (
         <div
-          className="fixed inset-0 z-[60] flex items-end lg:items-center justify-center p-0 lg:p-4"
+          className="fixed inset-0 z-[80] flex items-end lg:items-center justify-center p-0 lg:p-4"
           role="dialog"
           aria-modal="true"
           aria-label="Selector de fondo"
