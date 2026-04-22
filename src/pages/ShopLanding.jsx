@@ -335,7 +335,7 @@ export default function ShopLanding() {
               </div>
 
               {/* Chat Agent */}
-              <div className="bg-white/5 backdrop-blur-sm border border-white/15 rounded-xl lg:rounded-2xl p-2 sm:p-3 flex flex-col shadow-xl flex-1 min-h-40 sm:min-h-48 lg:min-h-[420px] overflow-hidden relative">
+              <div className="bg-white/5 backdrop-blur-sm border border-white/15 rounded-xl lg:rounded-2xl p-2 sm:p-3 flex flex-col shadow-xl flex-1 min-h-0 h-[55vh] sm:h-[50vh] lg:h-auto lg:min-h-[420px] max-h-[65vh] lg:max-h-none overflow-hidden relative">
                 
                 {/* Agent Header */}
                 <div className="mb-2 pb-2 border-b border-white/20 flex items-center gap-2 flex-shrink-0 min-w-0">

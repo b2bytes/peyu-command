@@ -52,8 +52,8 @@ import SoportePublico from './pages/SoportePublico';
 import SeguimientoPedido from './pages/SeguimientoPedido';
 import CatalogoVisual from './pages/CatalogoVisual';
 import Nosotros from './pages/Nosotros';
-import Blog from './pages/Blog.jsx';
-import BlogPostPage from './pages/BlogPost.jsx';
+import Blog from './pages/Blog';
+import BlogPostPage from './pages/BlogPost';
 import Terminos from './pages/Terminos';
 import Privacidad from './pages/Privacidad';
 import Cookies from './pages/Cookies';
@@ -66,8 +66,8 @@ import EmbudoVentas from './pages/EmbudoVentas';
 import ImportarClientes from './pages/ImportarClientes';
 import Backlinks from './pages/Backlinks';
 import IntegracionWoo from './pages/IntegracionWoo';
-import ProcesarPedidos from './pages/ProcesarPedidos.jsx';
-import Cliente360 from './pages/Cliente360.jsx';
+import ProcesarPedidos from './pages/ProcesarPedidos';
+import Cliente360 from './pages/Cliente360';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
