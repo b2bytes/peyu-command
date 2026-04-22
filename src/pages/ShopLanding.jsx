@@ -212,7 +212,14 @@ export default function ShopLanding() {
   };
 
   return (
-    <div className="landing-viewport">
+    <div
+      className="landing-viewport"
+      style={{
+        backgroundImage: bgImage,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+      }}
+    >
       <style>{`
         /* Estabilización global del landing: sin overflow, sin espacios blancos,
            altura exacta al viewport (con fallback a svh para mobile dinámico). */
@@ -224,36 +231,32 @@ export default function ShopLanding() {
           height: 100vh;
           height: 100svh;
           overflow: hidden;
-          background: linear-gradient(to bottom right, #0f172a, #1e293b);
-          display: flex;
+          background-color: #0f172a;
         }
       `}</style>
       <WhatsAppFloat />
       <BackgroundSwitcher />
-      {/* SIDEBAR - macOS style */}
-      <div 
-        className={`hidden lg:flex flex-col bg-white/10 backdrop-blur-md border-r border-white/20 transition-all duration-300 overflow-hidden h-full flex-shrink-0 ${sidebarExpanded ? 'w-48' : 'w-16'}`}
+
+      {/* SIDEBAR - overlay flotante (no empuja el contenido, no duplica fondo) */}
+      <aside
+        className={`hidden lg:flex flex-col absolute left-0 top-0 bottom-0 z-30 bg-slate-900/60 backdrop-blur-md border-r border-white/10 transition-[width] duration-200 ease-out overflow-hidden ${
+          sidebarExpanded ? 'w-48 shadow-2xl shadow-black/40' : 'w-14'
+        }`}
         onMouseEnter={() => setSidebarExpanded(true)}
         onMouseLeave={() => setSidebarExpanded(false)}
-        style={{
-          backgroundImage: bgImage,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundAttachment: 'fixed',
-        }}
       >
         {/* macOS Header */}
-        <div className="bg-white/5 border-b border-white/10 px-3 py-2.5 flex items-center gap-2 flex-shrink-0">
+        <div className="px-3 py-2.5 flex items-center gap-2 flex-shrink-0 border-b border-white/10">
           <div className="flex gap-1.5">
-            <div className="w-2.5 h-2.5 rounded-full bg-red-500 shadow"></div>
-            <div className="w-2.5 h-2.5 rounded-full bg-yellow-500 shadow"></div>
-            <div className="w-2.5 h-2.5 rounded-full bg-green-500 shadow"></div>
+            <span className="w-2.5 h-2.5 rounded-full bg-red-500/90" />
+            <span className="w-2.5 h-2.5 rounded-full bg-yellow-500/90" />
+            <span className="w-2.5 h-2.5 rounded-full bg-green-500/90" />
           </div>
-          {sidebarExpanded && <span className="text-xs text-white/50 ml-auto font-medium">PEYU</span>}
+          {sidebarExpanded && <span className="text-[10px] text-white/50 ml-auto font-semibold tracking-wide">PEYU</span>}
         </div>
 
         {/* Menu Items */}
-        <div className="flex flex-col items-center gap-1 px-2 py-4 flex-1 justify-start">
+        <nav className="flex flex-col items-stretch gap-0.5 px-1.5 py-3 flex-1">
           {MENU_ITEMS.map((item) => {
             const Icon = item.icon;
             const isActive = item.href === '/';
@@ -261,30 +264,23 @@ export default function ShopLanding() {
               <Link
                 key={item.href}
                 to={item.href}
-                className={`flex items-center text-white transition-all rounded-lg group relative ${
-                  sidebarExpanded ? 'w-full px-3 py-2.5 justify-start gap-3' : 'w-12 h-12 justify-center'
-                } ${
-                  isActive ? 'bg-teal-500/30 border border-teal-500/50' : 'hover:bg-white/20'
-                }`}
                 title={item.label}
+                className={`flex items-center rounded-lg transition-colors h-11 ${
+                  sidebarExpanded ? 'px-3 gap-3 justify-start' : 'justify-center'
+                } ${
+                  isActive ? 'bg-teal-500/25 text-white ring-1 ring-teal-400/40' : 'text-white/80 hover:bg-white/10 hover:text-white'
+                }`}
               >
-                <Icon className={`flex-shrink-0 ${
-                  sidebarExpanded ? 'w-4 h-4' : 'w-6 h-6'
-                }`} />
-                {sidebarExpanded && <span className="text-xs font-medium">{item.label}</span>}
+                <Icon className="w-[18px] h-[18px] flex-shrink-0" />
+                {sidebarExpanded && <span className="text-xs font-medium whitespace-nowrap overflow-hidden">{item.label}</span>}
               </Link>
             );
           })}
-        </div>
-      </div>
+        </nav>
+      </aside>
 
-      {/* Main content area */}
-      <div className="flex-1 overflow-y-auto overflow-x-hidden w-full relative peyu-scrollbar-light h-full" style={{
-        backgroundImage: bgImage,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundRepeat: 'no-repeat'
-      }}>
+      {/* Main content area — sin background propio, reserva espacio solo para sidebar colapsado */}
+      <div className="absolute inset-0 lg:pl-14 overflow-y-auto overflow-x-hidden peyu-scrollbar-light">
         {/* Main container with glassmorphism */}
         <div className="flex gap-2 sm:gap-3 lg:gap-4 p-2 sm:p-3 lg:p-4 relative z-10 w-full flex-col lg:flex-row items-stretch min-h-full lg:h-full lg:min-w-full">
           {/* LEFT CONTAINER - Content */}
