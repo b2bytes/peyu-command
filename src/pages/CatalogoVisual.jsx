@@ -11,7 +11,7 @@ const MENU_ITEMS = [
   { href: '/nosotros', label: 'Nosotros', icon: Heart },
   { href: '/soporte', label: 'Soporte', icon: HelpCircle },
 ];
-import InstagramGallery from '@/components/InstagramGallery';
+import SocialProductFeed from '@/components/SocialProductFeed';
 
 
 const BADGES = [
@@ -85,17 +85,17 @@ export default function CatalogoVisual() {
           </div>
         </section>
 
-        {/* Instagram Gallery */}
+        {/* Feed de Productos estilo Instagram — con compra real */}
         <section className="px-4 sm:px-8 pb-10 max-w-7xl mx-auto">
-          <div className="bg-white/5 backdrop-blur-md border border-white/15 rounded-3xl p-6 shadow-2xl">
-            <div className="flex items-center gap-3 mb-6">
+          <div className="bg-white/5 backdrop-blur-md border border-white/15 rounded-3xl p-4 sm:p-6 shadow-2xl">
+            <div className="flex items-center gap-3 mb-5">
               <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-pink-500/30 to-purple-500/30 border border-pink-400/30 flex items-center justify-center text-lg">📷</div>
-              <div>
-                <h2 className="font-poppins font-bold text-white text-lg">Galería de Productos</h2>
-                <p className="text-white/50 text-xs">Fotos reales de nuestros regalos corporativos</p>
+              <div className="flex-1 min-w-0">
+                <h2 className="font-poppins font-bold text-white text-lg">Feed de Productos</h2>
+                <p className="text-white/50 text-xs">Toca una foto para ver el detalle · compra o cotiza B2B</p>
               </div>
             </div>
-            <InstagramGallery />
+            <SocialProductFeed />
           </div>
         </section>
 
