@@ -52,7 +52,7 @@ import SoportePublico from './pages/SoportePublico';
 import SeguimientoPedido from './pages/SeguimientoPedido';
 import CatalogoVisual from './pages/CatalogoVisual';
 import Nosotros from './pages/Nosotros';
-import Blog from './pages/Blog';
+import Blog from './pages/Blog.jsx';
 import BlogPostPage from './pages/BlogPost.jsx';
 import Terminos from './pages/Terminos';
 import Privacidad from './pages/Privacidad';

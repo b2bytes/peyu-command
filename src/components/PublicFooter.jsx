@@ -1,8 +1,29 @@
 import { Link } from 'react-router-dom';
+import { MessageCircle, Mail, MapPin, ArrowRight } from 'lucide-react';
 
 export default function PublicFooter() {
   return (
-    <footer className="bg-gray-900 text-white py-12 px-5">
+    <footer className="bg-gray-900 text-white pt-12 pb-24 lg:pb-12 px-5">
+      {/* CTA fuerte antes del grid */}
+      <div className="max-w-7xl mx-auto mb-10 bg-gradient-to-r from-teal-600/30 to-cyan-600/30 border border-teal-400/20 rounded-3xl p-6 md:p-8 flex flex-col md:flex-row items-center justify-between gap-4">
+        <div>
+          <h3 className="font-poppins font-bold text-xl md:text-2xl">¿Listo para regalar con propósito?</h3>
+          <p className="text-sm text-white/70 mt-1">Cotiza tu pedido corporativo en menos de 24 horas.</p>
+        </div>
+        <div className="flex gap-2 flex-wrap">
+          <Link to="/b2b/contacto" className="inline-flex items-center gap-1.5 bg-white text-gray-900 font-bold text-sm px-4 py-2.5 rounded-xl hover:bg-teal-50 transition-colors">
+            Cotizar B2B <ArrowRight className="w-4 h-4" />
+          </Link>
+          <a
+            href="https://wa.me/56935040242?text=Hola%20PEYU%2C%20me%20interesa%20cotizar"
+            target="_blank" rel="noreferrer"
+            className="inline-flex items-center gap-1.5 bg-green-500 hover:bg-green-600 text-white font-bold text-sm px-4 py-2.5 rounded-xl transition-colors"
+          >
+            <MessageCircle className="w-4 h-4" /> WhatsApp
+          </a>
+        </div>
+      </div>
+
       <div className="max-w-7xl mx-auto grid md:grid-cols-4 gap-8 mb-8">
         <div>
           <div className="flex items-center gap-2 mb-3">
@@ -47,18 +68,23 @@ export default function PublicFooter() {
           <h4 className="font-bold mb-4 text-sm text-gray-300 uppercase tracking-wider">Contacto</h4>
           <ul className="space-y-2.5 text-sm text-gray-400">
             <li>
-              <a href="https://wa.me/56935040242" target="_blank" rel="noreferrer" className="hover:text-white flex items-center gap-2">
-                💬 +56 9 3504 0242
+              <a href="https://wa.me/56935040242?text=Hola%20PEYU" target="_blank" rel="noreferrer" className="hover:text-white flex items-center gap-2">
+                <MessageCircle className="w-4 h-4 text-green-400" /> +56 9 3504 0242
               </a>
             </li>
             <li>
               <a href="mailto:ventas@peyuchile.cl" className="hover:text-white flex items-center gap-2">
-                📧 ventas@peyuchile.cl
+                <Mail className="w-4 h-4 text-teal-400" /> ventas@peyuchile.cl
               </a>
             </li>
             <li className="flex items-start gap-2">
-              <span>📍</span>
+              <MapPin className="w-4 h-4 text-orange-400 flex-shrink-0 mt-0.5" />
               <span>F. Bilbao 3775, Providencia<br />P. Valdivia 6603, Macul</span>
+            </li>
+            <li className="pt-2">
+              <Link to="/contacto" className="text-teal-300 hover:text-teal-200 font-semibold inline-flex items-center gap-1">
+                Ver todos los canales <ArrowRight className="w-3 h-3" />
+              </Link>
             </li>
           </ul>
         </div>

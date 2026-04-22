@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Calendar, Search, LayoutGrid, List as ListIcon } from 'lucide-react';
 import PostMockup from './mockups/PostMockup';
 import PostPreviewModal from './PostPreviewModal';
@@ -16,12 +16,17 @@ const ESTADO_COLORS = {
 const REDES_FILTER = ['Todas', 'Instagram', 'Facebook', 'LinkedIn', 'TikTok', 'Twitter/X', 'Pinterest', 'Threads', 'YouTube'];
 const ESTADOS_FILTER = ['Todos', 'Borrador', 'En revisión', 'Aprobado', 'Programado', 'Publicado'];
 
-export default function ContentPostsList({ posts, onUpdated }) {
+export default function ContentPostsList({ posts, onUpdated, initialEstado }) {
   const [selected, setSelected] = useState(null);
   const [red, setRed] = useState('Todas');
   const [estado, setEstado] = useState('Todos');
   const [search, setSearch] = useState('');
   const [view, setView] = useState('grid');
+
+  // Filtro externo desde panel de sugerencias IA
+  useEffect(() => {
+    if (initialEstado) setEstado(initialEstado);
+  }, [initialEstado]);
 
   const filtered = useMemo(() => {
     return posts.filter(p => {

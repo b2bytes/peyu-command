@@ -29,6 +29,16 @@ export default function MarketingHubChat() {
     })();
   }, []);
 
+  // Escucha prompts automáticos desde el panel de sugerencias IA
+  useEffect(() => {
+    const handler = (e) => {
+      if (e.detail && conversation) sendMessage(e.detail);
+    };
+    window.addEventListener('peyu:marketing-chat-prompt', handler);
+    return () => window.removeEventListener('peyu:marketing-chat-prompt', handler);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [conversation]);
+
   useEffect(() => {
     if (!conversation?.id) return;
     const unsub = base44.agents.subscribeToConversation(conversation.id, (data) => {

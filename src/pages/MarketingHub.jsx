@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { Sparkles, MessageSquare, Calendar, Target, Zap, Plug } from 'lucide-react';
+import { Sparkles, MessageSquare, CalendarDays, Target, Zap, Plug, LayoutGrid } from 'lucide-react';
 import { toast } from 'sonner';
 import MarketingHubChat from '@/components/marketing/MarketingHubChat';
 import MarketingHubStats from '@/components/marketing/MarketingHubStats';
@@ -9,6 +9,8 @@ import ContentPostsList from '@/components/marketing/ContentPostsList';
 import AdCampaignsList from '@/components/marketing/AdCampaignsList';
 import ChannelConnections from '@/components/marketing/ChannelConnections';
 import ContentGeneratorPanel from '@/components/marketing/ContentGeneratorPanel';
+import AISuggestionsPanel from '@/components/marketing/AISuggestionsPanel';
+import ContentCalendarView from '@/components/marketing/ContentCalendarView';
 
 export default function MarketingHub() {
   const [posts, setPosts] = useState([]);
@@ -18,6 +20,14 @@ export default function MarketingHub() {
   const [loading, setLoading] = useState(true);
   const [showConnections, setShowConnections] = useState(false);
   const [connections] = useState({}); // se llenará en Fase 2 con OAuth
+  const chatRef = useRef(null);
+
+  const askDirector = (prompt) => {
+    chatRef.current?.sendPrompt(prompt);
+    // Auto-scroll al chat
+    document.getElementById('director-chat')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    toast.success('Enviado al Director IA', { description: prompt.slice(0, 80) + '...' });
+  };
 
   const loadAll = async () => {
     const [p, cal, camp, ass] = await Promise.all([
@@ -76,14 +86,30 @@ export default function MarketingHub() {
       {/* Stats */}
       <MarketingHubStats posts={posts} calendarios={calendarios} campanas={campanas} assets={assets} />
 
+      {/* Sugerencias proactivas del Director IA */}
+      {!loading && <AISuggestionsPanel posts={posts} campanas={campanas} onAskDirector={askDirector} />}
+
       {/* Generador Agéntico de Contenido */}
       <ContentGeneratorPanel onGenerated={loadAll} />
 
+      {/* Vista calendario mensual — full width */}
+      <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5">
+        <div className="flex items-center gap-2 mb-3">
+          <CalendarDays className="w-4 h-4 text-purple-600" />
+          <h3 className="font-poppins font-bold text-sm text-gray-900">Calendario editorial</h3>
+          <span className="text-[10px] text-gray-500">Click en un post para editar · Click en + para generar</span>
+        </div>
+        {loading
+          ? <p className="text-sm text-gray-400 text-center py-8">Cargando...</p>
+          : <ContentCalendarView posts={posts} onUpdated={loadAll} onAskDirector={askDirector} />
+        }
+      </div>
+
       {/* Main grid: Chat + Panel lateral — altura fija para evitar que la página entera se mueva */}
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+      <div id="director-chat" className="grid grid-cols-1 lg:grid-cols-5 gap-6 scroll-mt-4">
         {/* Chat orquestador */}
         <div className="lg:col-span-3 h-[640px]">
-          <MarketingHubChat />
+          <MarketingHubChat ref={chatRef} />
         </div>
 
         {/* Panel lateral */}
@@ -98,7 +124,7 @@ export default function MarketingHub() {
                   <Target className="w-3 h-3 mr-1" /> Ads
                 </TabsTrigger>
                 <TabsTrigger value="calendars" className="text-xs">
-                  <Calendar className="w-3 h-3 mr-1" /> Calendarios
+                  <LayoutGrid className="w-3 h-3 mr-1" /> Plan
                 </TabsTrigger>
               </TabsList>
 
@@ -112,9 +138,15 @@ export default function MarketingHub() {
                 <TabsContent value="calendars" className="mt-0">
                   {loading ? <p className="text-sm text-gray-400 text-center py-8">Cargando...</p> : (
                     calendarios.length === 0 ? (
-                      <div className="text-center py-12 text-gray-400 text-sm">
-                        <Calendar className="w-8 h-8 mx-auto mb-2 opacity-40" />
-                        Pide al Director IA que arme tu primer calendario editorial.
+                      <div className="text-center py-12 text-gray-400 text-sm space-y-3">
+                        <CalendarDays className="w-8 h-8 mx-auto opacity-40" />
+                        <p>Aún no hay planes editoriales guardados.</p>
+                        <button
+                          onClick={() => askDirector('Arma un calendario editorial mensual para PEYU con 4 posts por semana rotando pilares. Guárdalo como ContentCalendar.')}
+                          className="text-[11px] font-bold bg-purple-100 hover:bg-purple-200 text-purple-700 px-3 py-1.5 rounded-lg"
+                        >
+                          ✨ Pedir al Director IA
+                        </button>
                       </div>
                     ) : (
                       <div className="space-y-2">
