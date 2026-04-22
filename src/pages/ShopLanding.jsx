@@ -277,11 +277,10 @@ export default function ShopLanding() {
           })}
         </nav>
 
-        {/* Footer del sidebar: selector de fondo */}
-        <div className="px-1.5 pb-3 pt-2 border-t border-white/10">
-          <BackgroundSwitcher expanded={sidebarExpanded} />
-        </div>
       </aside>
+
+      {/* Selector de fondo — flotante independiente */}
+      <BackgroundSwitcher />
 
       {/* Main content area — sin background propio, reserva espacio solo para sidebar colapsado */}
       <div className="absolute inset-0 lg:pl-14 overflow-y-auto overflow-x-hidden peyu-scrollbar-light">

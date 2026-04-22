@@ -3,12 +3,11 @@ import { ImageIcon } from 'lucide-react';
 import BackgroundCarousel from './BackgroundCarousel';
 
 /**
- * Botón para el sidebar/drawer que abre el carrusel fullscreen de fondos.
- *
- * Props:
- *   - expanded: bool — si el sidebar está expandido (muestra label).
+ * Botón flotante INDEPENDIENTE del sidebar para abrir el selector de fondo.
+ * Se ubica en la esquina inferior izquierda, sobre el sidebar pero sin formar parte de él.
+ * Visible solo en desktop (en móvil el selector se ofrece desde el drawer/menú).
  */
-export default function BackgroundSwitcher({ expanded = false }) {
+export default function BackgroundSwitcher() {
   const [open, setOpen] = useState(false);
 
   return (
@@ -17,14 +16,10 @@ export default function BackgroundSwitcher({ expanded = false }) {
         type="button"
         onClick={() => setOpen(true)}
         title="Cambiar fondo"
-        className={`flex items-center rounded-lg transition-colors h-11 text-white/80 hover:bg-white/10 hover:text-white w-full ${
-          expanded ? 'px-3 gap-3 justify-start' : 'justify-center'
-        }`}
+        aria-label="Cambiar fondo de la app"
+        className="hidden lg:flex fixed bottom-4 left-4 z-[70] w-11 h-11 rounded-full bg-slate-900/80 hover:bg-slate-800 backdrop-blur-md border border-white/15 text-white/85 hover:text-white items-center justify-center shadow-xl shadow-black/40 transition-all hover:scale-105 active:scale-95"
       >
-        <ImageIcon className="w-[18px] h-[18px] flex-shrink-0" />
-        {expanded && (
-          <span className="text-xs font-medium whitespace-nowrap overflow-hidden">Fondo</span>
-        )}
+        <ImageIcon className="w-[18px] h-[18px]" />
       </button>
 
       <BackgroundCarousel open={open} onClose={() => setOpen(false)} />

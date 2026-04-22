@@ -89,11 +89,10 @@ export default function PublicLayout() {
           })}
         </nav>
 
-        {/* Footer del sidebar: selector de fondo */}
-        <div className="px-1.5 pb-3 pt-2 border-t border-white/10">
-          <BackgroundSwitcher expanded={sidebarExpanded} />
-        </div>
       </aside>
+
+      {/* Selector de fondo — flotante independiente */}
+      <BackgroundSwitcher />
 
       {/* MAIN CONTENT — sin backgroundImage propio, reserva espacio solo para el sidebar colapsado en desktop */}
       <main className="absolute inset-0 overflow-auto pb-16 lg:pb-0 lg:pl-14 flex flex-col">

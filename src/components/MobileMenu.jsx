@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Menu, X } from 'lucide-react';
-import BackgroundSwitcher from './BackgroundSwitcher';
 
 export default function MobileMenu({ items }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -68,13 +67,8 @@ export default function MobileMenu({ items }) {
           })}
         </nav>
 
-        {/* Background switcher */}
-        <div className="border-t border-white/20 px-3 py-2 flex-shrink-0">
-          <BackgroundSwitcher expanded />
-        </div>
-
         {/* Menu Footer */}
-        <div className="border-t border-white/20 px-4 py-3 flex-shrink-0 text-white/60 text-xs text-center">
+        <div className="border-t border-white/20 px-4 py-4 flex-shrink-0 text-white/60 text-xs text-center">
           <p>PEYU © 2026</p>
         </div>
       </div>
