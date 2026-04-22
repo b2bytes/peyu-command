@@ -238,6 +238,69 @@ export default function ShopLanding() {
           overflow: hidden;
           background-color: #0f172a;
         }
+
+        /* ============================================================
+           LIQUID GLASS — iOS 26 / visionOS style (2026-2027 UX trend)
+           Dejamos ver MUCHO más la imagen de fondo:
+           - Transparencia real (bg 6-8%)
+           - Blur sutil + saturate para "vidrio líquido"
+           - Doble capa de luz: highlight superior + borde refractivo
+           - Inner shadow suave para profundidad
+           ============================================================ */
+        .peyu-liquid-glass {
+          background:
+            linear-gradient(180deg, rgba(255,255,255,0.10) 0%, rgba(255,255,255,0.04) 40%, rgba(255,255,255,0.06) 100%);
+          backdrop-filter: blur(18px) saturate(160%);
+          -webkit-backdrop-filter: blur(18px) saturate(160%);
+          border: 1px solid rgba(255,255,255,0.18);
+          box-shadow:
+            0 1px 0 0 rgba(255,255,255,0.25) inset,          /* highlight superior */
+            0 -1px 0 0 rgba(255,255,255,0.06) inset,         /* highlight inferior */
+            0 20px 60px -20px rgba(0,0,0,0.55),              /* sombra profundidad */
+            0 0 0 1px rgba(255,255,255,0.04) inset;          /* refracción */
+          position: relative;
+        }
+        /* Brillo de luz superior (hot spot) — característico del liquid glass */
+        .peyu-liquid-glass::before {
+          content: "";
+          position: absolute;
+          inset: 0;
+          border-radius: inherit;
+          background: radial-gradient(120% 60% at 20% 0%, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0) 55%);
+          pointer-events: none;
+          mix-blend-mode: screen;
+          opacity: 0.8;
+        }
+
+        /* Variante interior (chat) — aún más translúcida */
+        .peyu-liquid-glass-inner {
+          background:
+            linear-gradient(180deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.03) 100%);
+          backdrop-filter: blur(14px) saturate(150%);
+          -webkit-backdrop-filter: blur(14px) saturate(150%);
+          border: 1px solid rgba(255,255,255,0.14);
+          box-shadow:
+            0 1px 0 0 rgba(255,255,255,0.20) inset,
+            0 10px 40px -10px rgba(0,0,0,0.45);
+        }
+
+        /* Modo temático cálido (Día del Trabajador / campañas) */
+        .peyu-liquid-glass-warm {
+          background:
+            linear-gradient(180deg, rgba(244,162,97,0.10) 0%, rgba(120,53,15,0.06) 100%) !important;
+          border-color: rgba(251,191,36,0.22) !important;
+          box-shadow:
+            0 1px 0 0 rgba(253,230,138,0.25) inset,
+            0 10px 40px -10px rgba(0,0,0,0.45),
+            0 0 40px rgba(244,162,97,0.12) !important;
+        }
+
+        /* Fallback para navegadores sin backdrop-filter (raros en 2026) */
+        @supports not (backdrop-filter: blur(1px)) {
+          .peyu-liquid-glass, .peyu-liquid-glass-inner {
+            background: rgba(15,23,42,0.55);
+          }
+        }
       `}</style>
       <WhatsAppFloat />
 
@@ -289,13 +352,13 @@ export default function ShopLanding() {
 
       {/* Main content area — sin background propio, reserva espacio solo para sidebar colapsado */}
       <div className="absolute inset-0 lg:pl-14 overflow-y-auto overflow-x-hidden peyu-scrollbar-light">
-        {/* Main container with glassmorphism */}
+        {/* Main container — Liquid Glass (iOS 26 / visionOS style) */}
         <div className="flex gap-2 sm:gap-3 lg:gap-4 p-2 sm:p-3 lg:p-4 relative z-10 w-full flex-col lg:flex-row items-stretch min-h-full lg:h-full lg:min-w-full">
-          {/* LEFT CONTAINER - Content */}
-          <div className="flex-1 bg-white/3 backdrop-blur-xs border border-white/15 rounded-2xl lg:rounded-3xl shadow-2xl overflow-hidden flex flex-col min-w-0">
-            
+          {/* LEFT CONTAINER - Liquid Glass */}
+          <div className="peyu-liquid-glass flex-1 rounded-2xl lg:rounded-3xl overflow-hidden flex flex-col min-w-0">
+
             {/* Header */}
-            <div className="bg-gradient-to-r from-teal-500/40 to-cyan-500/40 border-b border-white/20 px-3 sm:px-4 py-2.5 sm:py-3 flex items-center justify-between flex-shrink-0">
+            <div className="bg-gradient-to-r from-teal-500/20 to-cyan-500/20 border-b border-white/15 px-3 sm:px-4 py-2.5 sm:py-3 flex items-center justify-between flex-shrink-0 backdrop-blur-md">
               <div className="flex items-center gap-2 flex-1 min-w-0">
                 <MobileMenu items={MENU_ITEMS} />
                 <PEYULogo size="xs" showText={true} />
@@ -344,12 +407,10 @@ export default function ShopLanding() {
                 </Link>
               </div>
 
-              {/* Chat Agent — en modo "Temas" toma un aura cálida del día (ámbar/dorado) */}
+              {/* Chat Agent — Liquid Glass; en modo "Temas" toma un aura cálida del día */}
               <div
-                className={`backdrop-blur-md rounded-xl lg:rounded-2xl p-2 sm:p-3 flex flex-col flex-1 min-h-0 h-[55vh] sm:h-[50vh] lg:h-auto lg:min-h-[420px] max-h-[65vh] lg:max-h-none overflow-hidden relative transition-all duration-500 ${
-                  isTheme
-                    ? 'bg-amber-950/25 border border-amber-300/30 shadow-[0_0_40px_rgba(244,162,97,0.15)]'
-                    : 'bg-white/5 border border-white/15 shadow-xl'
+                className={`peyu-liquid-glass-inner rounded-xl lg:rounded-2xl p-2 sm:p-3 flex flex-col flex-1 min-h-0 h-[55vh] sm:h-[50vh] lg:h-auto lg:min-h-[420px] max-h-[65vh] lg:max-h-none overflow-hidden relative transition-all duration-500 ${
+                  isTheme ? 'peyu-liquid-glass-warm' : ''
                 }`}
               >
                 {/* Glow temático sutil arriba-izquierda — solo en modo Temas */}
@@ -462,9 +523,9 @@ export default function ShopLanding() {
             </div>
           </div>
 
-          {/* RIGHT CONTAINER - Product Carousel */}
+          {/* RIGHT CONTAINER - Product Carousel (Liquid Glass) */}
           <Link to={`/producto/${FEATURED_PRODUCTS[currentProductIndex].id}`} className="hidden lg:block flex-shrink-0 lg:w-72 xl:w-80 2xl:w-96">
-            <div className="w-full bg-gradient-to-br from-teal-600/20 via-cyan-600/10 to-orange-600/10 border border-teal-400/40 rounded-2xl p-4 flex flex-col gap-3 shadow-2xl hover:shadow-3xl hover:border-teal-400/60 hover:-translate-y-1 transition-all cursor-pointer group h-full">
+            <div className="peyu-liquid-glass w-full rounded-2xl p-4 flex flex-col gap-3 hover:-translate-y-1 transition-all cursor-pointer group h-full">
               {(() => {
                 const product = FEATURED_PRODUCTS[currentProductIndex];
                 return (
