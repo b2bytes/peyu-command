@@ -5,6 +5,7 @@ import WhatsAppFloat from './WhatsAppFloat';
 import AsistenteChat from './AsistenteChat';
 import ChatCartToast from './chat/ChatCartToast';
 import PublicMobileNav from './PublicMobileNav';
+import PublicMobileHeader from './PublicMobileHeader';
 
 const MENU_ITEMS = [
   { href: '/', label: 'Inicio', icon: Home, color: 'bg-teal-500' },
@@ -77,12 +78,14 @@ export default function PublicLayout() {
       </div>
 
       {/* MAIN CONTENT */}
-      <div className="flex-1 overflow-auto w-full pb-16 lg:pb-0" style={{
+      <div className="flex-1 overflow-auto w-full pb-16 lg:pb-0 flex flex-col" style={{
         backgroundImage: `linear-gradient(135deg, rgba(15, 23, 42, 0.80) 0%, rgba(15, 78, 137, 0.75) 50%, rgba(15, 23, 42, 0.80) 100%), url('https://media.base44.com/images/public/69d99b9d61f699701129c103/6935b8ac0_image.png')`,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         backgroundAttachment: 'fixed',
       }}>
+        {/* Header móvil con menú hamburguesa + logo + carrito */}
+        <PublicMobileHeader />
         <Outlet />
       </div>
 

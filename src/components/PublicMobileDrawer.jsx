@@ -4,7 +4,6 @@ import {
   Home, ShoppingCart, Grid3x3, Building2, HelpCircle, Heart, BookOpen,
   Sparkles, Package, X, Menu, Phone, Instagram, MapPin
 } from 'lucide-react';
-import PEYULogo from './PEYULogo';
 
 const MENU_ITEMS = [
   { href: '/', label: 'Inicio', icon: Home },
@@ -49,7 +48,22 @@ export default function PublicMobileDrawer({ open, onClose }) {
       <div className="absolute inset-y-0 left-0 w-[85%] max-w-sm bg-gradient-to-b from-slate-900 via-slate-900 to-slate-950 border-r border-white/10 shadow-2xl flex flex-col animate-in slide-in-from-left duration-300">
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-white/10 flex-shrink-0 pt-[max(1rem,env(safe-area-inset-top))]">
-          <PEYULogo size="sm" showText={true} />
+          <Link to="/" onClick={onClose} className="flex items-center gap-2">
+            <div className="w-9 h-9 bg-gradient-to-br from-teal-500 to-emerald-600 rounded-lg flex items-center justify-center shadow-lg p-0.5">
+              <svg viewBox="0 0 100 100" className="w-full h-full">
+                <ellipse cx="50" cy="55" rx="28" ry="32" fill="white" />
+                <circle cx="50" cy="28" r="16" fill="white" />
+                <ellipse cx="28" cy="72" rx="6" ry="10" fill="white" />
+                <ellipse cx="72" cy="72" rx="6" ry="10" fill="white" />
+                <circle cx="45" cy="24" r="2" fill="#0F8B6C" />
+                <circle cx="55" cy="24" r="2" fill="#0F8B6C" />
+              </svg>
+            </div>
+            <div className="flex flex-col gap-0.5">
+              <span className="text-sm font-poppins font-black text-white leading-none">PEYU</span>
+              <span className="text-[10px] text-white/50 leading-none">Chile</span>
+            </div>
+          </Link>
           <button
             onClick={onClose}
             className="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 active:bg-white/30 flex items-center justify-center text-white transition"
