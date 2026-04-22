@@ -487,11 +487,18 @@ export default function B2BSelfService() {
               </Link>
             </div>
 
-            <div className="bg-white/5 border border-white/15 rounded-2xl p-4 backdrop-blur-sm text-center">
-              <p className="text-xs text-white/70">
-                También te enviamos la propuesta por email a <span className="font-bold text-white">{form.email}</span>.
-                Nuestro equipo se pondrá en contacto en menos de 24h para coordinar.
-              </p>
+            <div className={`rounded-2xl p-4 backdrop-blur-sm text-center border ${propuesta.email_sent ? 'bg-emerald-500/15 border-emerald-400/40' : 'bg-white/5 border-white/15'}`}>
+              {propuesta.email_sent ? (
+                <p className="text-xs text-white/90 flex items-center justify-center gap-2 flex-wrap">
+                  <CheckCircle className="w-4 h-4 text-emerald-300 flex-shrink-0" />
+                  <span>Propuesta enviada a <span className="font-bold text-emerald-200">{propuesta.email_to || form.email}</span>. Revisa tu bandeja (y spam).</span>
+                </p>
+              ) : (
+                <p className="text-xs text-white/70">
+                  Propuesta lista en <span className="font-bold text-white">{form.email}</span>.
+                  Nuestro equipo se pondrá en contacto en menos de 24h.
+                </p>
+              )}
             </div>
 
             <Link to="/shop">

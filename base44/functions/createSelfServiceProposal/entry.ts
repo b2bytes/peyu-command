@@ -181,6 +181,20 @@ Deno.serve(async (req) => {
       fecha_vencimiento: expiryDate.toISOString().split('T')[0],
     });
 
+    // 6. Disparar email automático con resumen + link a la propuesta.
+    //    Lo hacemos vía invoke para que el cliente vea la respuesta rápido;
+    //    si falla no bloquea la creación (el cliente ya tiene la propuesta online).
+    let emailSent = false;
+    try {
+      const emailRes = await base44.functions.invoke('sendSelfServiceProposalEmail', {
+        proposalId: proposal.id,
+        form: { contact_name, company_name, email, phone, rut, notes },
+      });
+      emailSent = !!emailRes?.data?.success;
+    } catch (e) {
+      console.warn('Email automático falló:', e?.message);
+    }
+
     return Response.json({
       success: true,
       proposal_id: proposal.id,
@@ -191,6 +205,8 @@ Deno.serve(async (req) => {
       items: breakdown,
       mockup_urls: mockupUrls,
       proposal_url: `/b2b/propuesta?id=${proposal.id}`,
+      email_sent: emailSent,
+      email_to: email,
     });
   } catch (error) {
     return Response.json({ error: error.message, stack: error.stack }, { status: 500 });
