@@ -66,6 +66,8 @@ import EmbudoVentas from './pages/EmbudoVentas';
 import ImportarClientes from './pages/ImportarClientes';
 import Backlinks from './pages/Backlinks';
 import IntegracionWoo from './pages/IntegracionWoo';
+import ProcesarPedidos from './pages/ProcesarPedidos.jsx';
+import Cliente360 from './pages/Cliente360.jsx';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -124,6 +126,8 @@ const AuthenticatedApp = () => {
         <Route path="importar-clientes" element={<ImportarClientes />} />
         <Route path="backlinks" element={<Backlinks />} />
         <Route path="woocommerce" element={<IntegracionWoo />} />
+        <Route path="procesar-pedidos" element={<ProcesarPedidos />} />
+        <Route path="cliente-360" element={<Cliente360 />} />
       </Route>
       <Route path="*" element={<PageNotFound />} />
     </Routes>
