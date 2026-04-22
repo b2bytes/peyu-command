@@ -136,23 +136,45 @@ Deno.serve(async (req) => {
     const baseUrl = origin.replace(/\/$/, '').split('/').slice(0, 3).join('/');
     const proposalUrl = `${baseUrl}/b2b/propuesta?id=${proposal.id}`;
 
-    // 1. Email al cliente (usa service role para permitir envío a emails externos)
+    // Envío vía Resend (soporta emails externos; SendEmail de Base44 no lo permite).
+    // Mientras no verifiques tu dominio en Resend, el "from" debe ser onboarding@resend.dev.
+    const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');
+    if (!RESEND_API_KEY) {
+      return Response.json({ error: 'RESEND_API_KEY no configurada' }, { status: 500 });
+    }
+    const FROM_ADDR = 'PEYU Chile <onboarding@resend.dev>';
+
+    const sendViaResend = async ({ to, subject, html }) => {
+      const r = await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${RESEND_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ from: FROM_ADDR, to: [to], subject, html }),
+      });
+      if (!r.ok) {
+        const err = await r.text();
+        throw new Error(`Resend ${r.status}: ${err}`);
+      }
+      return r.json();
+    };
+
+    // 1. Email al cliente
     if (proposal.email) {
-      await base44.asServiceRole.integrations.Core.SendEmail({
-        from_name: 'PEYU Chile',
+      await sendViaResend({
         to: proposal.email,
         subject: `🌱 Tu propuesta PEYU N° ${proposal.numero} — ${fmtCLP(proposal.total)}`,
-        body: buildClientHtml({ proposal, items, proposalUrl }),
+        html: buildClientHtml({ proposal, items, proposalUrl }),
       });
     }
 
-    // 2. Notificación interna al equipo comercial
+    // 2. Notificación interna al equipo comercial (no bloquea al cliente)
     try {
-      await base44.asServiceRole.integrations.Core.SendEmail({
-        from_name: 'PEYU Self-Service',
+      await sendViaResend({
         to: 'ventas@peyuchile.cl',
-        subject: `[Nueva] ${proposal.numero} · ${proposal.empresa} · ${fmtCLP(proposal.total)}`,
-        body: buildInternalHtml({ proposal, items, form: form || { contact_name: proposal.contacto, company_name: proposal.empresa, email: proposal.email } }),
+        subject: `[Nueva propuesta] ${proposal.numero} · ${proposal.empresa} · ${fmtCLP(proposal.total)}`,
+        html: buildInternalHtml({ proposal, items, form: form || { contact_name: proposal.contacto, company_name: proposal.empresa, email: proposal.email } }),
       });
     } catch (e) {
       console.warn('Email interno falló (no bloquea al cliente):', e?.message);
