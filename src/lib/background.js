@@ -13,11 +13,18 @@ const EVENT_NAME = 'peyu:bg-change';
 export const BACKGROUNDS = [
   // ——— Temáticos / Campañas ———
   {
-    id: 'dia-trabajador',
-    name: 'Día del Trabajador',
-    description: 'Homenaje a quienes construyen un futuro sostenible',
+    id: 'dia-trabajador-editorial',
+    name: '1° de Mayo · Editorial',
+    description: 'Manos que construyen un futuro sostenible — PEYU',
     category: 'Temas',
-    url: 'https://media.base44.com/images/public/69d99b9d61f699701129c103/cf9a410d7_generated_image.png',
+    url: 'https://media.base44.com/images/public/69d99b9d61f699701129c103/87c8679a9_generated_image.png',
+  },
+  {
+    id: 'dia-trabajador-poster',
+    name: '1° de Mayo · Poster',
+    description: 'Hecho con manos chilenas. Hecho con propósito.',
+    category: 'Temas',
+    url: 'https://media.base44.com/images/public/69d99b9d61f699701129c103/d6cae8fb6_generated_image.png',
   },
 
   // ——— Naturaleza ———
