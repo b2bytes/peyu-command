@@ -12,7 +12,7 @@ import ChatHistoryPanel from '@/components/chat/ChatHistoryPanel';
 import { ensureFreshSession, addToHistory, readHistory } from '@/lib/chat-history';
 import { withContext } from '@/lib/chat-context';
 import { History } from 'lucide-react';
-import { useAppBackground, getBackgroundById, buildBackgroundImageCSS, BG_OVERLAY } from '@/lib/background';
+import { useAppBackground, getBackgroundById, buildBackgroundImageCSS, BG_OVERLAY, THEME_OVERLAY } from '@/lib/background';
 import BackgroundSwitcher from '@/components/BackgroundSwitcher';
 
 // Limpia el bloque [CONTEXTO] que se inyecta al agente — no debe verse en la UI.
@@ -214,12 +214,13 @@ export default function ShopLanding() {
   return (
     <div
       className="landing-viewport transition-colors duration-500"
+      data-theme-mode={isTheme ? 'theme' : 'nature'}
       style={{
         backgroundColor: bg.tint || '#0f172a',
         backgroundImage: isTheme
-          ? `${BG_OVERLAY}, url('${bg.url}')`
+          ? `${THEME_OVERLAY}, url('${bg.url}')`
           : buildBackgroundImageCSS(bg.url),
-        backgroundSize: isTheme ? 'auto 100%, contain' : 'cover',
+        backgroundSize: isTheme ? 'auto 100%, cover' : 'cover',
         backgroundPosition: 'center',
         backgroundRepeat: 'no-repeat',
       }}
@@ -343,8 +344,22 @@ export default function ShopLanding() {
                 </Link>
               </div>
 
-              {/* Chat Agent */}
-              <div className="bg-white/5 backdrop-blur-sm border border-white/15 rounded-xl lg:rounded-2xl p-2 sm:p-3 flex flex-col shadow-xl flex-1 min-h-0 h-[55vh] sm:h-[50vh] lg:h-auto lg:min-h-[420px] max-h-[65vh] lg:max-h-none overflow-hidden relative">
+              {/* Chat Agent — en modo "Temas" toma un aura cálida del día (ámbar/dorado) */}
+              <div
+                className={`backdrop-blur-md rounded-xl lg:rounded-2xl p-2 sm:p-3 flex flex-col flex-1 min-h-0 h-[55vh] sm:h-[50vh] lg:h-auto lg:min-h-[420px] max-h-[65vh] lg:max-h-none overflow-hidden relative transition-all duration-500 ${
+                  isTheme
+                    ? 'bg-amber-950/25 border border-amber-300/30 shadow-[0_0_40px_rgba(244,162,97,0.15)]'
+                    : 'bg-white/5 border border-white/15 shadow-xl'
+                }`}
+              >
+                {/* Glow temático sutil arriba-izquierda — solo en modo Temas */}
+                {isTheme && (
+                  <div
+                    aria-hidden="true"
+                    className="pointer-events-none absolute -top-16 -left-16 w-48 h-48 rounded-full opacity-40 blur-3xl"
+                    style={{ backgroundColor: bg.accent || '#F4A261' }}
+                  />
+                )}
                 
                 {/* Agent Header */}
                 <div className="mb-2 pb-2 border-b border-white/20 flex items-center gap-2 flex-shrink-0 min-w-0">

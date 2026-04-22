@@ -7,7 +7,7 @@ import ChatCartToast from './chat/ChatCartToast';
 import PublicMobileNav from './PublicMobileNav';
 import PublicMobileHeader from './PublicMobileHeader';
 import BackgroundSwitcher from './BackgroundSwitcher';
-import { useAppBackground, getBackgroundById, buildBackgroundImageCSS, BG_OVERLAY } from '@/lib/background';
+import { useAppBackground, getBackgroundById, buildBackgroundImageCSS, BG_OVERLAY, THEME_OVERLAY } from '@/lib/background';
 
 const MENU_ITEMS = [
   { href: '/', label: 'Inicio', icon: Home },
@@ -34,12 +34,13 @@ export default function PublicLayout() {
     // evitando que el mensaje se corte. Para naturaleza se usa cover clásico.
     <div
       className="relative h-screen w-full overflow-hidden transition-colors duration-500"
+      data-theme-mode={isTheme ? 'theme' : 'nature'}
       style={{
         backgroundColor: bg.tint || '#0f172a',
         backgroundImage: isTheme
-          ? `${BG_OVERLAY}, url('${bg.url}')`
+          ? `${THEME_OVERLAY}, url('${bg.url}')`
           : buildBackgroundImageCSS(bg.url),
-        backgroundSize: isTheme ? 'auto 100%, contain' : 'cover',
+        backgroundSize: isTheme ? 'auto 100%, cover' : 'cover',
         backgroundPosition: 'center',
         backgroundRepeat: 'no-repeat',
       }}

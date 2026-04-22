@@ -129,6 +129,12 @@ export function getBackgroundById(id) {
 export const BG_OVERLAY =
   'linear-gradient(135deg, rgba(15, 23, 42, 0.80) 0%, rgba(15, 78, 137, 0.75) 50%, rgba(15, 23, 42, 0.80) 100%)';
 
+// Overlay más denso para fondos temáticos (posters con texto/mensaje). Evita
+// que elementos como "1° de Mayo" compitan con el contenido y da un aire
+// atmosférico sutil cálido. El fondo se percibe pero no distrae.
+export const THEME_OVERLAY =
+  'linear-gradient(135deg, rgba(20, 14, 8, 0.88) 0%, rgba(40, 24, 14, 0.82) 50%, rgba(20, 14, 8, 0.88) 100%)';
+
 export function buildBackgroundImageCSS(url) {
   return `${BG_OVERLAY}, url('${url}')`;
 }
