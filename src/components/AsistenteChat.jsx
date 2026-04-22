@@ -86,11 +86,11 @@ export default function AsistenteChat() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.pathname, isLanding]);
 
-  // Load existing conversation (if any) from persisted id when mounting on a new page.
-  // Si es una sesión fresca (pestaña reabierta), ensureFreshSession ya archivó la
-  // conversación anterior y limpió el active id → arrancamos vacíos por diseño.
+  // Load existing conversation (if any) from persisted id when mounting.
+  // Siempre cargamos el hilo previo — el chat persiste entre visitas/pestañas
+  // para que el usuario retome su conversación con Peyu donde la dejó.
   useEffect(() => {
-    if (!conversationId || isLanding || freshSession) return;
+    if (!conversationId || isLanding) return;
     let alive = true;
     (async () => {
       try {

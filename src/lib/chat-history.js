@@ -55,14 +55,13 @@ export function removeFromHistory(id) {
   localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
 }
 
-// Detecta si la sesión es nueva (usuario cerró pestaña y volvió).
-// Si es nueva: archiva la conversación activa y retorna true.
-// Si es la misma sesión: no hace nada y retorna false.
+// Marca la sesión como viva. NO archiva la conversación activa: queremos que el
+// chat widget mantenga el hilo con el usuario entre pestañas y visitas, igual
+// que WhatsApp. El usuario puede archivar manualmente con "Nuevo chat".
+// Retorna true si es la primera vez en esta sesión (útil para telemetría).
 export function ensureFreshSession() {
   const alive = sessionStorage.getItem(SESSION_KEY);
   if (alive) return false;
-  // Nueva sesión → archivar lo activo
-  archiveActiveConversation();
   sessionStorage.setItem(SESSION_KEY, '1');
   return true;
 }
