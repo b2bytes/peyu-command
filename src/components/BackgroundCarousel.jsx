@@ -96,23 +96,24 @@ export default function BackgroundCarousel({ open, onClose }) {
 
   return (
     <div
-      className="fixed inset-0 z-[90] flex flex-col animate-in fade-in duration-200"
+      className="fixed inset-0 z-[90] flex flex-col animate-in fade-in zoom-in-95 duration-300"
       role="dialog"
       aria-modal="true"
       aria-label="Selector de fondo"
     >
-      {/* Fondo con blur profundo del fondo actual — feedback inmediato */}
+      {/* Fondo con blur profundo del fondo actual — feedback inmediato y transición suave */}
       <div
-        className="absolute inset-0"
+        key={`bg-${current?.id}`}
+        className="absolute inset-0 animate-in fade-in duration-500"
         style={{
           backgroundImage: `url('${current?.url}')`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
-          filter: 'blur(40px) brightness(0.4)',
-          transform: 'scale(1.1)',
+          filter: 'blur(48px) brightness(0.35) saturate(1.1)',
+          transform: 'scale(1.15)',
         }}
       />
-      <div className="absolute inset-0 bg-black/50" />
+      <div className="absolute inset-0 bg-black/55" />
 
       {/* HEADER */}
       <header className="relative z-10 flex items-center justify-between px-4 sm:px-6 py-3.5 border-b border-white/10 backdrop-blur-md bg-black/30 flex-shrink-0 pt-[max(0.875rem,env(safe-area-inset-top))]">
@@ -193,13 +194,26 @@ export default function BackgroundCarousel({ open, onClose }) {
           <ChevronRight className="w-5 h-5" />
         </button>
 
-        {/* Card preview */}
-        <div className="relative w-full max-w-4xl aspect-video rounded-2xl sm:rounded-3xl overflow-hidden shadow-2xl border border-white/20 bg-slate-800">
+        {/* Card preview — la imagen se muestra COMPLETA (contain) sobre fondo decorativo del mismo fondo difuminado */}
+        <div className="relative w-full max-w-4xl aspect-video rounded-2xl sm:rounded-3xl overflow-hidden shadow-2xl border border-white/20 bg-slate-900">
+          {/* Fondo decorativo — misma imagen en cover+blur para rellenar elegantemente las bandas */}
+          <div
+            key={`deco-${current?.id}`}
+            className="absolute inset-0 animate-in fade-in duration-400"
+            style={{
+              backgroundImage: `url('${current?.url}')`,
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+              filter: 'blur(24px) brightness(0.55) saturate(1.2)',
+              transform: 'scale(1.1)',
+            }}
+          />
+          {/* Imagen principal completa, sin recorte */}
           <img
             key={current?.id}
             src={current?.url}
             alt={current?.name}
-            className="w-full h-full object-cover animate-in fade-in duration-300"
+            className="relative w-full h-full object-contain animate-in fade-in zoom-in-95 duration-400"
             draggable={false}
           />
           {/* Overlay con nombre y descripción */}

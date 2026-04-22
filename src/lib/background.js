@@ -18,6 +18,8 @@ export const BACKGROUNDS = [
     description: 'Manos que construyen un futuro sostenible — PEYU',
     category: 'Temas',
     url: 'https://media.base44.com/images/public/69d99b9d61f699701129c103/87c8679a9_generated_image.png',
+    accent: '#D4914A', // terracota dorado
+    tint: '#3a2818',   // base oscura cálida
   },
   {
     id: 'dia-trabajador-poster',
@@ -25,6 +27,8 @@ export const BACKGROUNDS = [
     description: 'Hecho con manos chilenas. Hecho con propósito.',
     category: 'Temas',
     url: 'https://media.base44.com/images/public/69d99b9d61f699701129c103/d6cae8fb6_generated_image.png',
+    accent: '#F4A261', // naranjo sunrise
+    tint: '#1e2a3a',   // azul andino profundo
   },
 
   // ——— Naturaleza ———
@@ -140,12 +144,17 @@ export function loadSavedBackgroundId() {
 // Aplica el fondo a nivel global vía CSS variable en <html>.
 // Los layouts pueden leer `var(--app-bg)` o, si prefieren control fino,
 // usar `buildBackgroundImageCSS(url)` directamente.
+// También expone --app-accent y --app-tint para que el resto del sistema
+// pueda aplicar acentos contextuales sin cambiar el tema base.
 export function applyBackground(id) {
   const bg = getBackgroundById(id);
   const root = document.documentElement;
   root.style.setProperty('--app-bg', buildBackgroundImageCSS(bg.url));
   root.style.setProperty('--app-bg-url', `url('${bg.url}')`);
+  root.style.setProperty('--app-accent', bg.accent || '#14B8A6'); // teal por defecto
+  root.style.setProperty('--app-tint', bg.tint || '#0f172a');     // slate por defecto
   root.setAttribute('data-bg-id', bg.id);
+  root.setAttribute('data-bg-category', bg.category || 'Naturaleza');
 }
 
 export function setBackground(id) {

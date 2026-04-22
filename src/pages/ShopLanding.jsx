@@ -12,7 +12,7 @@ import ChatHistoryPanel from '@/components/chat/ChatHistoryPanel';
 import { ensureFreshSession, addToHistory, readHistory } from '@/lib/chat-history';
 import { withContext } from '@/lib/chat-context';
 import { History } from 'lucide-react';
-import { useAppBackground, getBackgroundById, buildBackgroundImageCSS } from '@/lib/background';
+import { useAppBackground, getBackgroundById, buildBackgroundImageCSS, BG_OVERLAY } from '@/lib/background';
 import BackgroundSwitcher from '@/components/BackgroundSwitcher';
 
 // Limpia el bloque [CONTEXTO] que se inyecta al agente — no debe verse en la UI.
@@ -59,7 +59,7 @@ export default function ShopLanding() {
   const [sidebarExpanded, setSidebarExpanded] = useState(false);
   const [bgId] = useAppBackground();
   const bg = getBackgroundById(bgId);
-  const bgImage = buildBackgroundImageCSS(bg.url);
+  const isTheme = bg.category === 'Temas';
   const messagesEndRef = useRef(null);
   const [carrito, setCarrito] = useState(() => JSON.parse(localStorage.getItem('carrito') || '[]'));
 
@@ -213,11 +213,15 @@ export default function ShopLanding() {
 
   return (
     <div
-      className="landing-viewport"
+      className="landing-viewport transition-colors duration-500"
       style={{
-        backgroundImage: bgImage,
-        backgroundSize: 'cover',
+        backgroundColor: bg.tint || '#0f172a',
+        backgroundImage: isTheme
+          ? `${BG_OVERLAY}, url('${bg.url}')`
+          : buildBackgroundImageCSS(bg.url),
+        backgroundSize: isTheme ? 'auto 100%, contain' : 'cover',
         backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
       }}
     >
       <style>{`

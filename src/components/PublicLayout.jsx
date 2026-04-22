@@ -7,7 +7,7 @@ import ChatCartToast from './chat/ChatCartToast';
 import PublicMobileNav from './PublicMobileNav';
 import PublicMobileHeader from './PublicMobileHeader';
 import BackgroundSwitcher from './BackgroundSwitcher';
-import { useAppBackground, getBackgroundById, buildBackgroundImageCSS } from '@/lib/background';
+import { useAppBackground, getBackgroundById, buildBackgroundImageCSS, BG_OVERLAY } from '@/lib/background';
 
 const MENU_ITEMS = [
   { href: '/', label: 'Inicio', icon: Home },
@@ -26,16 +26,22 @@ export default function PublicLayout() {
   const location = useLocation();
   const [bgId] = useAppBackground();
   const bg = getBackgroundById(bgId);
-  const bgImage = buildBackgroundImageCSS(bg.url);
+  const isTheme = bg.category === 'Temas';
 
   return (
     // Un SOLO contenedor con el fondo. Evita repintar la imagen 3 veces.
+    // Si es un tema (poster/editorial con texto), se muestra COMPLETO sobre un tinte,
+    // evitando que el mensaje se corte. Para naturaleza se usa cover clásico.
     <div
-      className="relative h-screen w-full overflow-hidden"
+      className="relative h-screen w-full overflow-hidden transition-colors duration-500"
       style={{
-        backgroundImage: bgImage,
-        backgroundSize: 'cover',
+        backgroundColor: bg.tint || '#0f172a',
+        backgroundImage: isTheme
+          ? `${BG_OVERLAY}, url('${bg.url}')`
+          : buildBackgroundImageCSS(bg.url),
+        backgroundSize: isTheme ? 'auto 100%, contain' : 'cover',
         backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
       }}
     >
       {/* SIDEBAR - overlay flotante, no empuja el contenido */}
