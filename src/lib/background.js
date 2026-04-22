@@ -11,41 +11,99 @@ const EVENT_NAME = 'peyu:bg-change';
 
 // Catálogo de fondos disponibles. El primero es el default histórico para no romper nada.
 export const BACKGROUNDS = [
+  // ——— Temáticos / Campañas ———
+  {
+    id: 'dia-trabajador',
+    name: 'Día del Trabajador',
+    description: 'Homenaje a quienes construyen un futuro sostenible',
+    category: 'Temas',
+    url: 'https://media.base44.com/images/public/69d99b9d61f699701129c103/cf9a410d7_generated_image.png',
+  },
+
+  // ——— Naturaleza ———
   {
     id: 'tropical-original',
     name: 'Tropical original',
     description: 'El fondo clásico de PEYU',
+    category: 'Naturaleza',
     url: 'https://media.base44.com/images/public/69d99b9d61f699701129c103/6935b8ac0_image.png',
   },
   {
     id: 'forest-canopy',
     name: 'Canopia selvática',
     description: 'Bosque tropical desde el aire, luz dorada',
+    category: 'Naturaleza',
     url: 'https://media.base44.com/images/public/69d99b9d61f699701129c103/8e94ae04a_generated_image.png',
   },
   {
     id: 'ocean-rays',
     name: 'Océano profundo',
     description: 'Rayos de luz bajo el agua turquesa',
+    category: 'Naturaleza',
     url: 'https://media.base44.com/images/public/69d99b9d61f699701129c103/b41261247_generated_image.png',
   },
   {
     id: 'moss-macro',
     name: 'Musgo esmeralda',
     description: 'Detalle natural con rocío matinal',
+    category: 'Naturaleza',
     url: 'https://media.base44.com/images/public/69d99b9d61f699701129c103/36c3ac81c_generated_image.png',
   },
   {
     id: 'andes-dawn',
     name: 'Andes al amanecer',
     description: 'Montañas neblinosas, calma total',
+    category: 'Naturaleza',
     url: 'https://media.base44.com/images/public/69d99b9d61f699701129c103/97da95963_generated_image.png',
   },
   {
     id: 'fiber-organic',
     name: 'Fibras orgánicas',
     description: 'Textura artesanal y sostenible',
+    category: 'Naturaleza',
     url: 'https://media.base44.com/images/public/69d99b9d61f699701129c103/0e285adb8_generated_image.png',
+  },
+  {
+    id: 'patagonia-lake',
+    name: 'Lago patagónico',
+    description: 'Andes reflejados en agua turquesa al atardecer',
+    category: 'Naturaleza',
+    url: 'https://media.base44.com/images/public/69d99b9d61f699701129c103/485330aa0_generated_image.png',
+  },
+  {
+    id: 'fern-emerald',
+    name: 'Helecho esmeralda',
+    description: 'Macro botánico con gotas de rocío',
+    category: 'Naturaleza',
+    url: 'https://media.base44.com/images/public/69d99b9d61f699701129c103/92f9418bb_generated_image.png',
+  },
+  {
+    id: 'coral-aerial',
+    name: 'Arrecife aéreo',
+    description: 'Arrecife de coral visto desde arriba',
+    category: 'Naturaleza',
+    url: 'https://media.base44.com/images/public/69d99b9d61f699701129c103/0ec153883_generated_image.png',
+  },
+  {
+    id: 'lavender-provence',
+    name: 'Lavanda al atardecer',
+    description: 'Campos de lavanda con luz dorada',
+    category: 'Naturaleza',
+    url: 'https://media.base44.com/images/public/69d99b9d61f699701129c103/9d80ea118_generated_image.png',
+  },
+  {
+    id: 'autumn-canopy',
+    name: 'Otoño japonés',
+    description: 'Copas de árboles con hojas ámbar y rojo',
+    category: 'Naturaleza',
+    url: 'https://media.base44.com/images/public/69d99b9d61f699701129c103/57e22d910_generated_image.png',
+  },
+  {
+    id: 'atacama-dusk',
+    name: 'Atacama al ocaso',
+    description: 'Dunas rosadas bajo cielo índigo',
+    category: 'Naturaleza',
+    url: 'https://media.base44.com/images/public/69d99b9d61f699701129c103/76cf75175_generated_image.png',
   },
 ];
 
