@@ -14,6 +14,7 @@ import { withContext } from '@/lib/chat-context';
 import { History } from 'lucide-react';
 import { useAppBackground, getBackgroundById, buildBackgroundImageCSS, BG_OVERLAY, THEME_OVERLAY } from '@/lib/background';
 import BackgroundSwitcher from '@/components/BackgroundSwitcher';
+import CelebrationBanner from '@/components/landing/CelebrationBanner';
 
 // Limpia el bloque [CONTEXTO] que se inyecta al agente — no debe verse en la UI.
 const stripContext = (m) => {
@@ -383,6 +384,9 @@ export default function ShopLanding() {
 
             {/* Content */}
             <div className="flex flex-col gap-2 sm:gap-3 p-3 sm:p-4 flex-1 overflow-y-auto">
+              {/* Celebration Banner — se renderiza solo si hay celebración activa */}
+              <CelebrationBanner onChatPrompt={sendMessage} />
+
               {/* Hero Title */}
               <div className="space-y-1.5 flex-shrink-0">
                 <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-poppins font-black leading-tight text-white drop-shadow-lg">
