@@ -1,0 +1,27 @@
+{
+  "name": "DriveFolder",
+  "type": "object",
+  "description": "Registro de carpetas creadas por PEYU en Google Drive. Permite reutilizar carpetas entre invocaciones (necesario con scope drive.file que solo ve archivos creados por la app).",
+  "properties": {
+    "key": {
+      "type": "string",
+      "title": "Clave \u00fanica (ej: propuestas_b2b, contratos)"
+    },
+    "name": {
+      "type": "string",
+      "title": "Nombre en Drive"
+    },
+    "folder_id": {
+      "type": "string",
+      "title": "ID Drive"
+    },
+    "web_view_link": {
+      "type": "string",
+      "title": "Link Drive"
+    }
+  },
+  "required": [
+    "key",
+    "folder_id"
+  ]
+}

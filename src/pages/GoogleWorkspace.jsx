@@ -18,6 +18,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import GmailTester from '@/components/google/GmailTester';
 import CalendarTester from '@/components/google/CalendarTester';
+import DriveTester from '@/components/google/DriveTester';
 
 const SERVICES = [
   { key: 'gmail', name: 'Gmail', icon: Mail, color: 'bg-red-100 text-red-700 border-red-200', desc: 'Enviar propuestas B2B, leer consultas' },
@@ -228,12 +229,15 @@ export default function GoogleWorkspace() {
         </CardHeader>
         <CardContent>
           <Tabs defaultValue="gmail" className="w-full">
-            <TabsList className="grid w-full grid-cols-2 max-w-md">
+            <TabsList className="grid w-full grid-cols-3 max-w-xl">
               <TabsTrigger value="gmail" className="gap-2">
                 <Mail className="w-4 h-4" /> Gmail
               </TabsTrigger>
               <TabsTrigger value="calendar" className="gap-2">
                 <CalendarPlus className="w-4 h-4" /> Calendar
+              </TabsTrigger>
+              <TabsTrigger value="drive" className="gap-2">
+                <HardDrive className="w-4 h-4" /> Drive + Docs
               </TabsTrigger>
             </TabsList>
             <TabsContent value="gmail" className="mt-4">
@@ -241,6 +245,9 @@ export default function GoogleWorkspace() {
             </TabsContent>
             <TabsContent value="calendar" className="mt-4">
               <CalendarTester />
+            </TabsContent>
+            <TabsContent value="drive" className="mt-4">
+              <DriveTester />
             </TabsContent>
           </Tabs>
         </CardContent>
@@ -289,10 +296,10 @@ export default function GoogleWorkspace() {
               </div>
             </li>
             <li className="flex items-start gap-3">
-              <span className="flex-shrink-0 w-6 h-6 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center text-xs font-bold">3</span>
+              <span className="flex-shrink-0 w-6 h-6 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center text-xs font-bold">✓</span>
               <div>
-                <p className="font-semibold text-slate-700">Fase 3 — Documentación (Drive + Docs + Slides)</p>
-                <p className="text-slate-500 text-xs">Propuestas PDF en Drive corporativo, Docs dinámicos</p>
+                <p className="font-semibold text-slate-900">Fase 3 — Documentación (Drive + Docs) — completado</p>
+                <p className="text-slate-500 text-xs">✓ Carpetas PEYU · ✓ Upload PDFs · ✓ Google Docs dinámicos con formato</p>
               </div>
             </li>
             <li className="flex items-start gap-3">
