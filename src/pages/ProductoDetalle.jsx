@@ -14,6 +14,7 @@ import MockupGenerator from '@/components/MockupGenerator';
 import { saveMockupDraft } from '@/lib/mockup-draft';
 import SEO from '@/components/SEO';
 import { buildOrganizationSchema, buildProductSchema, buildBreadcrumbSchema, combineSchemas } from '@/lib/schemas-peyu';
+import { trackAddToCart } from '@/lib/analytics-peyu';
 
 
 const COLORES_MARMOLADO = [
@@ -154,6 +155,8 @@ export default function ProductoDetalle() {
     setCarrito(nuevo);
     localStorage.setItem('carrito', JSON.stringify(nuevo));
     setAgregado(true);
+    // 📊 Funnel event: add_to_cart
+    trackAddToCart({ ...item, sku: producto.sku, categoria: producto.categoria });
   };
 
   const handleShare = async () => {

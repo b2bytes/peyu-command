@@ -1,8 +1,9 @@
 import { useEffect } from 'react';
+import { ensureGtagLoaded, getMeasurementId } from '@/lib/analytics-peyu';
 
 /**
  * Componente SEO ligero para SPA sin Next/Remix.
- * Inyecta title, meta description, OG, canonical y JSON-LD sin dependencias externas.
+ * Inyecta title, meta description, OG, canonical, JSON-LD y gtag.js (GA4).
  */
 export default function SEO({
   title,
@@ -12,7 +13,14 @@ export default function SEO({
   type = 'website',
   jsonLd = null,
   noindex = false,
+  measurementId, // opcional; si no se pasa, se lee de localStorage (peyu_ga4_measurement_id)
 }) {
+  // Inyecta gtag.js una sola vez por measurement id
+  useEffect(() => {
+    const mid = measurementId || getMeasurementId();
+    if (mid) ensureGtagLoaded(mid);
+  }, [measurementId]);
+
   useEffect(() => {
     const prevTitle = document.title;
     if (title) document.title = title;

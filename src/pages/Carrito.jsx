@@ -4,6 +4,7 @@ import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Trash2, ArrowLeft, ShoppingBag, CheckCircle2, Truck, Shield, ChevronRight, Lock, Package, Recycle } from 'lucide-react';
+import { trackBeginCheckout, trackPurchase } from '@/lib/analytics-peyu';
 
 export default function Carrito() {
   const navigate = useNavigate();
@@ -70,6 +71,8 @@ export default function Carrito() {
       notas: `Carrito: ${carrito.length} items`,
     });
     localStorage.removeItem('carrito');
+    // 📊 Funnel event: purchase
+    trackPurchase({ transactionId: numero, total, shipping: envio, cart: carrito });
     setPedidoOk({ numero, total, email: cliente.email });
     setCreando(false);
   };
@@ -305,7 +308,11 @@ export default function Carrito() {
             {/* CTA */}
             {step === 1 ? (
               <Button
-                onClick={() => setStep(2)}
+                onClick={() => {
+                  // 📊 Funnel event: begin_checkout
+                  trackBeginCheckout(carrito, subtotal);
+                  setStep(2);
+                }}
                 size="lg"
                 className="w-full font-semibold gap-2 rounded-2xl bg-gray-900 hover:bg-gray-800 text-white shadow-lg h-13 py-4">
                 Continuar <ChevronRight className="w-4 h-4" />
