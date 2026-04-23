@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { Link, useLocation } from 'react-router-dom';
 import { Menu, X, ShoppingCart, Phone } from 'lucide-react';
 import PEYULogo from '@/components/PEYULogo';
@@ -19,17 +20,10 @@ export default function MobileMenu({ items }) {
     setIsOpen(false);
   }, [location.pathname]);
 
-  return (
+  // Portal: renderizamos overlay + panel fuera del árbol para escapar del
+  // stacking context del landing (position: fixed con inset: 0).
+  const overlayAndPanel = (
     <>
-      {/* Hamburger Button */}
-      <button
-        onClick={() => setIsOpen(true)}
-        className="lg:hidden w-11 h-11 flex items-center justify-center text-white hover:bg-white/20 rounded-full transition-all active:bg-white/30 flex-shrink-0"
-        aria-label="Abrir menú"
-      >
-        <Menu className="w-6 h-6" />
-      </button>
-
       {/* Overlay */}
       <div
         className={`fixed inset-0 bg-black/60 backdrop-blur-sm lg:hidden z-[9998] transition-opacity duration-300 ${
@@ -119,6 +113,22 @@ export default function MobileMenu({ items }) {
           PEYU · Regalos corporativos sostenibles
         </div>
       </aside>
+    </>
+  );
+
+  return (
+    <>
+      {/* Hamburger Button */}
+      <button
+        onClick={() => setIsOpen(true)}
+        className="lg:hidden w-11 h-11 flex items-center justify-center text-white hover:bg-white/20 rounded-full transition-all active:bg-white/30 flex-shrink-0"
+        aria-label="Abrir menú"
+      >
+        <Menu className="w-6 h-6" />
+      </button>
+
+      {/* Portal al body para escapar de stacking contexts */}
+      {typeof document !== 'undefined' && createPortal(overlayAndPanel, document.body)}
     </>
   );
 }
