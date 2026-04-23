@@ -1,25 +1,23 @@
 // ============================================================================
-// /admin/ads-command — Google Ads Command Center
-// ============================================================================
-// Genera campañas con el Ads Commander, exporta CSV para Google Ads Editor,
-// y analiza performance real con el Ads Scientist.
+// AdsCommand — Google Ads Command Center (grado militar + científico)
 // ----------------------------------------------------------------------------
-
+// Genera campañas con ads_commander, las exporta a CSV Google Ads Editor,
+// analiza performance con ads_scientist.
+// ============================================================================
 import { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Target, Radar, FlaskConical, DollarSign } from 'lucide-react';
-import CampaignGenerator from '@/components/ads/CampaignGenerator';
+import { Crosshair, Rocket } from 'lucide-react';
+import CampaignGeneratorForm from '@/components/ads/CampaignGeneratorForm';
 import CampaignDraftCard from '@/components/ads/CampaignDraftCard';
 
 export default function AdsCommand() {
   const [drafts, setDrafts] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  const load = async () => {
-    setLoading(true);
+  const loadDrafts = async () => {
     try {
-      const data = await base44.entities.AdCampaignDraft.list('-created_date', 50);
+      const data = await base44.entities.AdCampaignDraft.list('-created_date', 30);
       setDrafts(data);
     } catch (e) {
       console.error(e);
@@ -28,89 +26,42 @@ export default function AdsCommand() {
     }
   };
 
-  useEffect(() => { load(); }, []);
-
-  // Stats agregadas
-  const totalBudget = drafts.reduce((a, d) => a + (d.daily_budget_usd || 0), 0);
-  const activeCount = drafts.filter(d => ['Activa', 'Subida a Ads', 'Ganadora'].includes(d.status)).length;
-  const winnerCount = drafts.filter(d => d.status === 'Ganadora').length;
+  useEffect(() => { loadDrafts(); }, []);
 
   return (
-    <div className="p-6 space-y-6 max-w-7xl mx-auto">
-      <div>
-        <h1 className="text-2xl font-black text-slate-900 flex items-center gap-2">
-          <Target className="w-7 h-7 text-red-600" />
-          Ads Command Center
-        </h1>
-        <p className="text-sm text-slate-500 mt-1">
-          Agentes Commander (táctico) + Scientist (análisis) · Export directo a Google Ads Editor
-        </p>
-      </div>
-
-      {/* Stats */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <div className="p-3 rounded-xl bg-gradient-to-br from-red-50 to-white border border-red-100">
-          <div className="flex items-center gap-1.5 text-[10px] font-bold text-red-700 uppercase">
-            <Radar className="w-3 h-3" /> Drafts
-          </div>
-          <p className="text-2xl font-black text-red-900 mt-1">{drafts.length}</p>
+    <div className="p-6 max-w-7xl mx-auto space-y-6">
+      <div className="flex items-center gap-3">
+        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-slate-900 to-orange-600 flex items-center justify-center text-white shadow-lg">
+          <Crosshair className="w-6 h-6" />
         </div>
-        <div className="p-3 rounded-xl bg-gradient-to-br from-emerald-50 to-white border border-emerald-100">
-          <div className="flex items-center gap-1.5 text-[10px] font-bold text-emerald-700 uppercase">
-            <Target className="w-3 h-3" /> Activas
-          </div>
-          <p className="text-2xl font-black text-emerald-900 mt-1">{activeCount}</p>
-        </div>
-        <div className="p-3 rounded-xl bg-gradient-to-br from-amber-50 to-white border border-amber-100">
-          <div className="flex items-center gap-1.5 text-[10px] font-bold text-amber-700 uppercase">
-            <FlaskConical className="w-3 h-3" /> Ganadoras
-          </div>
-          <p className="text-2xl font-black text-amber-900 mt-1">{winnerCount}</p>
-        </div>
-        <div className="p-3 rounded-xl bg-gradient-to-br from-blue-50 to-white border border-blue-100">
-          <div className="flex items-center gap-1.5 text-[10px] font-bold text-blue-700 uppercase">
-            <DollarSign className="w-3 h-3" /> Budget total/día
-          </div>
-          <p className="text-2xl font-black text-blue-900 mt-1">${totalBudget} USD</p>
+        <div>
+          <h1 className="text-2xl font-bold text-slate-900">Ads Command Center</h1>
+          <p className="text-sm text-slate-500">Commander táctico · Scientist analítico · Export a Google Ads Editor</p>
         </div>
       </div>
 
-      {/* Generator */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Desplegar nueva campaña</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <CampaignGenerator onGenerated={(d) => d && load()} />
-        </CardContent>
-      </Card>
+      {/* Operations briefing */}
+      <CampaignGeneratorForm onGenerated={loadDrafts} />
 
-      {/* Drafts list */}
+      {/* Drafts existentes */}
       <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Campañas ({drafts.length})</CardTitle>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base flex items-center gap-2">
+            <Rocket className="w-4 h-4 text-orange-600" />
+            Operaciones generadas ({drafts.length})
+          </CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="space-y-3">
           {loading ? (
-            <div className="space-y-2">
-              {[1, 2, 3].map(i => <div key={i} className="h-32 bg-slate-100 rounded-xl animate-pulse" />)}
-            </div>
+            <p className="text-sm text-slate-500">Cargando operaciones…</p>
           ) : drafts.length === 0 ? (
-            <div className="p-8 text-center text-sm text-slate-500 border-2 border-dashed border-slate-200 rounded-xl">
-              <Radar className="w-8 h-8 mx-auto text-slate-300 mb-2" />
-              No hay campañas aún. Despliega la primera arriba.
-            </div>
+            <p className="text-sm text-slate-500">
+              Ninguna campaña generada aún. Usa el briefing de arriba para ordenar la primera operación.
+            </p>
           ) : (
-            <div className="space-y-3">
-              {drafts.map(d => (
-                <CampaignDraftCard
-                  key={d.id}
-                  draft={d}
-                  onExported={load}
-                  onAnalyzed={load}
-                />
-              ))}
-            </div>
+            drafts.map(d => (
+              <CampaignDraftCard key={d.id} draft={d} onUpdated={loadDrafts} />
+            ))
           )}
         </CardContent>
       </Card>

@@ -3,7 +3,7 @@ import { useState } from "react";
 import {
   LayoutDashboard, Users, BarChart3, Megaphone, Turtle, Package,
   Calculator, MessageSquare, TrendingUp, Store, UserCheck, Truck,
-  HardHat, Flag, Archive, ShoppingCart, Settings as SettingsIcon, ChevronLeft, ChevronRight, Leaf, ListChecks, Sparkles, FileText, CalendarDays, PieChart, AlertTriangle, Building2, ClipboardList, Zap
+  HardHat, Flag, Archive, ShoppingCart, Settings as SettingsIcon, ChevronLeft, ChevronRight, Leaf, ListChecks, Sparkles, FileText, CalendarDays, PieChart, AlertTriangle, Building2, ClipboardList, Zap, Radar, Crosshair
 } from "lucide-react";
 
 const navGroups = [
@@ -61,6 +61,13 @@ const navGroups = [
       { path: "/admin/configuracion", label: "Configuración", icon: SettingsIcon },
       { path: "/admin/alertas", label: "Centro de Alertas", icon: AlertTriangle },
       { path: "/admin/estado-actual", label: "Estado & Actualización", icon: ClipboardList },
+    ]
+  },
+  {
+    label: "🚀 Launch Warfare",
+    items: [
+      { path: "/admin/indexacion", label: "War Room · Indexación", icon: Radar },
+      { path: "/admin/ads-command", label: "Ads Command Center", icon: Crosshair },
     ]
   },
   {

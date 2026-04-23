@@ -50,7 +50,6 @@ const CAMPAIGN_SCHEMA = {
           path1: { type: 'string' },
           path2: { type: 'string' },
         },
-        required: ['name', 'keywords', 'headlines', 'descriptions'],
       },
     },
     negative_keywords: { type: 'array', items: { type: 'string' } },
@@ -82,7 +81,7 @@ const CAMPAIGN_SCHEMA = {
     expected_conversions_week: { type: 'number' },
     expected_cac_clp: { type: 'number' },
   },
-  required: ['campaign_name', 'strategic_rationale', 'ad_groups', 'negative_keywords'],
+  required: ['campaign_name'],
 };
 
 Deno.serve(async (req) => {
@@ -152,8 +151,13 @@ Responde SOLO el JSON estructurado.`;
     const result = await base44.asServiceRole.integrations.Core.InvokeLLM({
       prompt,
       response_json_schema: CAMPAIGN_SCHEMA,
-      model: 'claude_sonnet_4_6',
+      model: 'gpt_5_mini',
     });
+
+    // Fallback de seguridad: si el LLM no devolvió campaign_name, construir uno básico
+    if (!result.campaign_name) {
+      result.campaign_name = `${codename} · ${audience} · ${campaign_type}`;
+    }
 
     // Calcular UTMs consistentes
     const utm_params = {
