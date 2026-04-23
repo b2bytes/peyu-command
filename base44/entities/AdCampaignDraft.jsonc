@@ -1,0 +1,320 @@
+{
+  "name": "AdCampaignDraft",
+  "type": "object",
+  "description": "Borrador de campa\u00f1a Google Ads generado por IA, listo para exportar a Google Ads Editor v\u00eda CSV. Dise\u00f1ado para military-grade launch blitz.",
+  "properties": {
+    "codename": {
+      "type": "string",
+      "title": "Codename (ej: OPERATION_LAUNCH_01)"
+    },
+    "campaign_name": {
+      "type": "string",
+      "title": "Nombre Campa\u00f1a"
+    },
+    "campaign_type": {
+      "type": "string",
+      "title": "Tipo",
+      "enum": [
+        "Search",
+        "Shopping",
+        "Performance Max",
+        "Display",
+        "Video",
+        "Discovery"
+      ]
+    },
+    "objective": {
+      "type": "string",
+      "title": "Objetivo",
+      "enum": [
+        "Awareness",
+        "Traffic",
+        "Leads B2B",
+        "Sales B2C",
+        "Brand Search Defense",
+        "Competitor Conquest"
+      ]
+    },
+    "audience_segment": {
+      "type": "string",
+      "title": "Segmento target",
+      "enum": [
+        "B2B Corporativo",
+        "B2B Pyme",
+        "B2C Regalos",
+        "B2C Sostenibilidad",
+        "Remarketing",
+        "Lookalike"
+      ]
+    },
+    "daily_budget_clp": {
+      "type": "number",
+      "title": "Presupuesto diario (CLP)"
+    },
+    "daily_budget_usd": {
+      "type": "number",
+      "title": "Presupuesto diario (USD)"
+    },
+    "bid_strategy": {
+      "type": "string",
+      "title": "Estrategia de puja",
+      "enum": [
+        "Maximize Conversions",
+        "Target CPA",
+        "Target ROAS",
+        "Maximize Clicks",
+        "Manual CPC",
+        "Maximize Conversion Value"
+      ]
+    },
+    "target_cpa_clp": {
+      "type": "number",
+      "title": "CPA objetivo (CLP)"
+    },
+    "target_roas_pct": {
+      "type": "number",
+      "title": "ROAS objetivo (%)"
+    },
+    "locations": {
+      "type": "array",
+      "title": "Ubicaciones",
+      "items": {
+        "type": "string"
+      }
+    },
+    "languages": {
+      "type": "array",
+      "title": "Idiomas",
+      "items": {
+        "type": "string"
+      }
+    },
+    "keywords": {
+      "type": "array",
+      "title": "Keywords",
+      "items": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string"
+          },
+          "match_type": {
+            "type": "string",
+            "enum": [
+              "Exact",
+              "Phrase",
+              "Broad"
+            ]
+          },
+          "intent": {
+            "type": "string"
+          },
+          "estimated_volume": {
+            "type": "number"
+          },
+          "estimated_cpc_clp": {
+            "type": "number"
+          },
+          "competition": {
+            "type": "string",
+            "enum": [
+              "Low",
+              "Medium",
+              "High"
+            ]
+          }
+        }
+      }
+    },
+    "negative_keywords": {
+      "type": "array",
+      "title": "Negative keywords",
+      "items": {
+        "type": "string"
+      }
+    },
+    "ad_groups": {
+      "type": "array",
+      "title": "Ad Groups",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "theme": {
+            "type": "string"
+          },
+          "keywords": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "responsive_search_ads": {
+      "type": "array",
+      "title": "Responsive Search Ads",
+      "items": {
+        "type": "object",
+        "properties": {
+          "ad_group": {
+            "type": "string"
+          },
+          "headlines": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "descriptions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "final_url": {
+            "type": "string"
+          },
+          "final_url_mobile": {
+            "type": "string"
+          },
+          "path1": {
+            "type": "string"
+          },
+          "path2": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "sitelinks": {
+      "type": "array",
+      "title": "Sitelinks extensions",
+      "items": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string"
+          },
+          "description1": {
+            "type": "string"
+          },
+          "description2": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "callouts": {
+      "type": "array",
+      "title": "Callout extensions",
+      "items": {
+        "type": "string"
+      }
+    },
+    "structured_snippets": {
+      "type": "array",
+      "title": "Structured snippets",
+      "items": {
+        "type": "object",
+        "properties": {
+          "header": {
+            "type": "string"
+          },
+          "values": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "utm_params": {
+      "type": "object",
+      "title": "UTM parameters",
+      "properties": {
+        "utm_source": {
+          "type": "string"
+        },
+        "utm_medium": {
+          "type": "string"
+        },
+        "utm_campaign": {
+          "type": "string"
+        }
+      }
+    },
+    "strategic_rationale": {
+      "type": "string",
+      "title": "Racional estrat\u00e9gico (agente commander)"
+    },
+    "scientific_hypothesis": {
+      "type": "string",
+      "title": "Hip\u00f3tesis cient\u00edfica a validar"
+    },
+    "expected_ctr_pct": {
+      "type": "number",
+      "title": "CTR esperado (%)"
+    },
+    "expected_cpc_clp": {
+      "type": "number",
+      "title": "CPC esperado (CLP)"
+    },
+    "expected_conversions_week": {
+      "type": "number",
+      "title": "Conversiones esperadas / semana"
+    },
+    "expected_cac_clp": {
+      "type": "number",
+      "title": "CAC esperado (CLP)"
+    },
+    "status": {
+      "type": "string",
+      "title": "Estado",
+      "enum": [
+        "Draft IA",
+        "Revisada",
+        "Exportada CSV",
+        "Subida a Ads",
+        "Activa",
+        "Pausada",
+        "Ganadora",
+        "Perdedora"
+      ],
+      "default": "Draft IA"
+    },
+    "generated_by_agent": {
+      "type": "string",
+      "title": "Agente que la gener\u00f3"
+    },
+    "exported_csv_url": {
+      "type": "string",
+      "title": "URL CSV export"
+    },
+    "launched_at": {
+      "type": "string",
+      "title": "Fecha de subida a Ads"
+    },
+    "performance_score": {
+      "type": "number",
+      "title": "Score de performance (0-100)"
+    },
+    "scientist_analysis": {
+      "type": "string",
+      "title": "An\u00e1lisis del agente scientist"
+    }
+  },
+  "required": [
+    "campaign_name",
+    "campaign_type",
+    "objective",
+    "status"
+  ]
+}

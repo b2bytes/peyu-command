@@ -70,6 +70,8 @@ import ProcesarPedidos from './pages/ProcesarPedidos';
 import Cliente360 from './pages/Cliente360';
 import PineconeBrain from './pages/PineconeBrain';
 import GoogleWorkspace from './pages/GoogleWorkspace';
+import Indexacion from './pages/Indexacion';
+import AdsCommand from './pages/AdsCommand';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -132,6 +134,8 @@ const AuthenticatedApp = () => {
         <Route path="cliente-360" element={<Cliente360 />} />
         <Route path="brain" element={<PineconeBrain />} />
         <Route path="google" element={<GoogleWorkspace />} />
+        <Route path="indexacion" element={<Indexacion />} />
+        <Route path="ads-command" element={<AdsCommand />} />
       </Route>
       <Route path="*" element={<PageNotFound />} />
     </Routes>

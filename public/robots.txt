@@ -1,28 +1,24 @@
+# PEYU Chile — robots.txt
+# Prioridad de crawl para Googlebot y Bingbot
+
 User-agent: *
 Allow: /
 
-# Áreas privadas
+# Bloquear admin (no-index)
 Disallow: /admin/
-Disallow: /b2b/mi-cuenta
-Disallow: /cart
-Disallow: /seguimiento?*
+Disallow: /admin
 
-# Evita indexar parámetros de tracking
-Disallow: /*?utm_
-Disallow: /*?fbclid=
-Disallow: /*?gclid=
+# Permitir explícitamente landings clave
+Allow: /shop
+Allow: /b2b/
+Allow: /blog
+Allow: /producto/
+Allow: /catalogo-visual
+Allow: /personalizar
+Allow: /nosotros
 
-# Crawlers agresivos de IA — permitir pero con delay
-User-agent: GPTBot
-Allow: /
-Crawl-delay: 2
-
-User-agent: ClaudeBot
-Allow: /
-Crawl-delay: 2
-
-User-agent: PerplexityBot
-Allow: /
-
-# Sitemap
+# Sitemaps
 Sitemap: https://peyuchile.cl/sitemap.xml
+
+# Host canonical
+Host: https://peyuchile.cl

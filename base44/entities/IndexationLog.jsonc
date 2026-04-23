@@ -1,0 +1,103 @@
+{
+  "name": "IndexationLog",
+  "type": "object",
+  "description": "Registro cronol\u00f3gico de acciones de indexaci\u00f3n en Search Console, IndexNow, pings y auditor\u00edas. Permite trazar qu\u00e9 URLs se enviaron, cu\u00e1ndo y con qu\u00e9 resultado.",
+  "properties": {
+    "action_type": {
+      "type": "string",
+      "title": "Tipo de acci\u00f3n",
+      "enum": [
+        "sitemap_submit",
+        "url_inspection",
+        "url_request_indexing",
+        "indexnow_ping",
+        "google_ping",
+        "gsc_audit",
+        "bing_ping"
+      ]
+    },
+    "site_url": {
+      "type": "string",
+      "title": "Site (ej: https://peyuchile.cl/)"
+    },
+    "target_url": {
+      "type": "string",
+      "title": "URL espec\u00edfica (si aplica)"
+    },
+    "sitemap_url": {
+      "type": "string",
+      "title": "URL del sitemap"
+    },
+    "status": {
+      "type": "string",
+      "title": "Resultado",
+      "enum": [
+        "success",
+        "partial",
+        "error",
+        "pending"
+      ]
+    },
+    "http_code": {
+      "type": "number",
+      "title": "HTTP response code"
+    },
+    "response_summary": {
+      "type": "string",
+      "title": "Resumen respuesta API"
+    },
+    "response_raw": {
+      "type": "object",
+      "title": "Respuesta cruda",
+      "additionalProperties": true
+    },
+    "pages_submitted": {
+      "type": "number",
+      "title": "P\u00e1ginas enviadas"
+    },
+    "pages_indexed": {
+      "type": "number",
+      "title": "P\u00e1ginas indexadas al momento"
+    },
+    "pages_errors": {
+      "type": "number",
+      "title": "P\u00e1ginas con error"
+    },
+    "coverage_valid": {
+      "type": "number",
+      "title": "Coverage: v\u00e1lidas"
+    },
+    "coverage_excluded": {
+      "type": "number",
+      "title": "Coverage: excluidas"
+    },
+    "coverage_error": {
+      "type": "number",
+      "title": "Coverage: error"
+    },
+    "total_clicks_28d": {
+      "type": "number",
+      "title": "Clicks \u00faltimos 28d"
+    },
+    "total_impressions_28d": {
+      "type": "number",
+      "title": "Impresiones \u00faltimos 28d"
+    },
+    "avg_ctr_pct": {
+      "type": "number",
+      "title": "CTR promedio (%)"
+    },
+    "avg_position": {
+      "type": "number",
+      "title": "Posici\u00f3n promedio"
+    },
+    "notes": {
+      "type": "string",
+      "title": "Notas"
+    }
+  },
+  "required": [
+    "action_type",
+    "status"
+  ]
+}
