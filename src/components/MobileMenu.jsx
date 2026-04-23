@@ -40,9 +40,10 @@ export default function MobileMenu({ items }) {
 
       {/* Panel */}
       <aside
-        className={`fixed left-0 top-0 bottom-0 w-[82vw] max-w-[340px] sm:max-w-[380px] bg-gradient-to-b from-slate-900 via-slate-900 to-slate-950 border-r border-white/10 shadow-2xl transform transition-transform duration-300 ease-out z-[9999] lg:hidden flex flex-col ${
+        className={`fixed left-0 top-0 bottom-0 w-[82vw] max-w-[340px] sm:max-w-[380px] border-r border-white/10 shadow-2xl transform transition-transform duration-300 ease-out z-[9999] lg:hidden flex flex-col ${
           isOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
+        style={{ backgroundColor: '#0B1220', backgroundImage: 'linear-gradient(180deg, #0f172a 0%, #0B1220 100%)' }}
         role="dialog"
         aria-modal="true"
         aria-label="Menú principal"
