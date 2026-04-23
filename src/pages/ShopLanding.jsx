@@ -394,33 +394,41 @@ export default function ShopLanding() {
           <div className="peyu-liquid-glass flex-1 rounded-2xl lg:rounded-3xl overflow-hidden flex flex-col min-w-0">
 
             {/* Header */}
-            <div className="bg-gradient-to-r from-teal-500/20 to-cyan-500/20 border-b border-white/15 px-3 sm:px-4 py-2.5 sm:py-3 flex items-center justify-between flex-shrink-0 backdrop-blur-md">
+            <div className="bg-gradient-to-r from-teal-500/20 to-cyan-500/20 border-b border-white/15 px-3 sm:px-4 py-2.5 sm:py-3 flex items-center justify-between gap-3 flex-shrink-0 backdrop-blur-md">
               <div className="flex items-center gap-2 flex-1 min-w-0">
                 <MobileMenu items={MENU_ITEMS} />
-                <PEYULogo size="xs" showText={true} />
+                <PEYULogo size="sm" showText={true} />
               </div>
-              <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
+              <div className="flex items-center gap-2 flex-shrink-0">
                 <Link to="/admin" className="hidden sm:block">
-                  <button className="text-xs sm:text-sm font-bold px-3 sm:px-4 py-2 rounded-full bg-white/20 hover:bg-white/30 border border-white/30 text-white transition-all active:bg-white/40 touch-target">
-                    👤 Admin
+                  <button className="h-10 px-4 inline-flex items-center gap-1.5 text-xs sm:text-sm font-semibold rounded-full bg-white/15 hover:bg-white/25 border border-white/25 text-white transition-all active:bg-white/35">
+                    <span>👤</span>
+                    <span>Admin</span>
                   </button>
                 </Link>
-                <button className="w-10 h-10 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center text-white transition-all active:bg-white/40 flex-shrink-0 touch-target hidden sm:flex">
-                  <Bell className="w-5 h-5" />
+                <button className="hidden sm:inline-flex w-10 h-10 items-center justify-center rounded-full bg-white/15 hover:bg-white/25 border border-white/20 text-white transition-all active:bg-white/35">
+                  <Bell className="w-[18px] h-[18px]" />
                 </button>
                 <Link to="/cart">
-                  <button className="w-10 h-10 bg-teal-500 hover:bg-teal-600 rounded-full flex items-center justify-center text-white transition-all relative flex-shrink-0 active:bg-teal-700 touch-target">
-                    <ShoppingCart className="w-5 h-5" />
-                    {carrito.length > 0 && <span className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">{carrito.length}</span>}
+                  <button className="relative w-10 h-10 inline-flex items-center justify-center rounded-full bg-teal-500 hover:bg-teal-600 border border-teal-400/50 text-white transition-all active:bg-teal-700 shadow-md">
+                    <ShoppingCart className="w-[18px] h-[18px]" />
+                    {carrito.length > 0 && (
+                      <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center ring-2 ring-[#0f172a]/60">
+                        {carrito.length}
+                      </span>
+                    )}
                   </button>
                 </Link>
               </div>
             </div>
 
+            {/* Celebration Banner — barra independiente entre header y contenido */}
+            <div className="px-3 sm:px-4 pt-3 sm:pt-4">
+              <CelebrationBanner onChatPrompt={sendMessage} />
+            </div>
+
             {/* Content */}
             <div className="flex flex-col gap-2 sm:gap-3 p-3 sm:p-4 flex-1 overflow-y-auto">
-              {/* Celebration Banner — se renderiza solo si hay celebración activa */}
-              <CelebrationBanner onChatPrompt={sendMessage} />
 
               {/* Hero Title */}
               <div className="space-y-1.5 flex-shrink-0">
