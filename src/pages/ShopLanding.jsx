@@ -451,9 +451,9 @@ export default function ShopLanding() {
                 </div>
               </div>
 
-              {/* Chat Agent — Liquid Glass; epicentro del landing, ocupa el máximo de alto disponible */}
+              {/* Chat Agent — Liquid Glass; epicentro del landing, flex-1 se encarga de la altura */}
               <div
-                className={`peyu-liquid-glass-inner rounded-xl lg:rounded-2xl p-2.5 sm:p-3 flex flex-col flex-1 min-h-[480px] lg:min-h-[400px] overflow-hidden relative transition-all duration-500 ${
+                className={`peyu-liquid-glass-inner rounded-xl lg:rounded-2xl p-2.5 sm:p-3 flex flex-col flex-1 min-h-[400px] lg:min-h-0 overflow-hidden relative transition-all duration-500 ${
                   isTheme ? 'peyu-liquid-glass-warm' : ''
                 }`}
               >
@@ -530,37 +530,42 @@ export default function ShopLanding() {
                   <div ref={messagesEndRef} />
                 </div>
 
-                {/* Input */}
-                <div className="flex gap-2 flex-shrink-0 min-w-0">
+                {/* Quick Replies — ocasiones como chips dentro del chat (patrón Intercom/WhatsApp Business) */}
+                <div className="flex-shrink-0 mb-2">
+                  <div className="flex items-center gap-1.5 mb-1.5 px-1">
+                    <span className="text-white/50 text-[9px] font-bold uppercase tracking-wider">💡 Sugerencias rápidas</span>
+                  </div>
+                  <div className="overflow-x-auto scrollbar-hide flex gap-1.5 pb-1">
+                    {OCASIONES.map(occ => (
+                      <button
+                        key={occ.id}
+                        onClick={() => handleOccasionClick(occ)}
+                        className="flex items-center gap-1.5 flex-shrink-0 bg-white/10 hover:bg-teal-500/30 border border-white/20 hover:border-teal-400/50 active:bg-teal-600/40 transition-all rounded-full px-3 py-1.5 shadow-sm"
+                      >
+                        <span className="text-sm leading-none">{occ.icon}</span>
+                        <span className="text-white text-[11px] font-semibold whitespace-nowrap">{occ.label}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Input — protagonista, con sombra clara para destacar */}
+                <div className="flex gap-2 flex-shrink-0 min-w-0 bg-white/15 rounded-full p-1.5 border border-white/25 backdrop-blur-md shadow-lg">
                   <Input
                     value={input}
                     onChange={e => setInput(e.target.value)}
                     onKeyDown={e => e.key === 'Enter' && !loading && sendMessage(input)}
-                    placeholder="¿Qué necesitas?"
-                    className="bg-white/20 backdrop-blur-sm border border-white/30 text-white placeholder:text-white/50 text-xs sm:text-sm rounded-full focus:ring-teal-400/50 focus:border-teal-400/50 flex-1 h-10 sm:h-11 px-4 py-2 touch-target disabled:opacity-60 transition-all"
+                    placeholder="Escribe tu mensaje a Peyu…"
+                    className="bg-transparent border-0 text-white placeholder:text-white/50 text-sm rounded-full focus:ring-0 focus-visible:ring-0 flex-1 h-10 px-4 disabled:opacity-60 shadow-none"
                     disabled={loading}
                   />
                   <Button
                     onClick={() => sendMessage(input)}
                     disabled={loading || !input.trim()}
-                    className="bg-gradient-to-r from-teal-500 to-cyan-500 hover:from-teal-600 hover:to-cyan-600 active:from-teal-700 active:to-cyan-700 text-white rounded-full w-10 h-10 sm:w-11 sm:h-11 p-0 flex items-center justify-center flex-shrink-0 touch-target shadow-lg transition-all disabled:opacity-60">
+                    className="bg-gradient-to-r from-teal-500 to-cyan-500 hover:from-teal-600 hover:to-cyan-600 active:from-teal-700 active:to-cyan-700 text-white rounded-full w-10 h-10 p-0 flex items-center justify-center flex-shrink-0 shadow-lg transition-all disabled:opacity-60">
                     <Send className="w-4 h-4" />
                   </Button>
                 </div>
-              </div>
-
-              {/* Ocasiones Carousel — chips horizontales compactos */}
-              <div className="overflow-x-auto scrollbar-hide flex gap-1.5 pb-0.5 justify-start lg:justify-center flex-shrink-0">
-                {OCASIONES.map(occ => (
-                  <button
-                    key={occ.id}
-                    onClick={() => handleOccasionClick(occ)}
-                    className="flex items-center gap-1.5 flex-shrink-0 bg-white/15 hover:bg-white/25 border border-white/25 hover:border-white/45 active:bg-white/35 transition-all rounded-full px-2.5 py-1 shadow-md"
-                  >
-                    <span className="text-xs leading-none">{occ.icon}</span>
-                    <span className="text-white text-[10px] font-bold whitespace-nowrap">{occ.label}</span>
-                  </button>
-                ))}
               </div>
             </div>
           </div>
