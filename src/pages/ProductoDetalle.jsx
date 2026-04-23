@@ -12,6 +12,8 @@ import {
 import WhatsAppWidget from '@/components/WhatsAppWidget';
 import MockupGenerator from '@/components/MockupGenerator';
 import { saveMockupDraft } from '@/lib/mockup-draft';
+import SEO from '@/components/SEO';
+import { buildOrganizationSchema, buildProductSchema, buildBreadcrumbSchema, combineSchemas } from '@/lib/schemas-peyu';
 
 
 const COLORES_MARMOLADO = [
@@ -181,7 +183,38 @@ export default function ProductoDetalle() {
 
   const colores = getColores(producto);
 
+  // SEO: schema.org Product + Breadcrumb + Organization en un solo @graph
+  const canonicalUrl = `https://peyuchile.cl/producto/${producto.id}`;
+  const productImageForSeo = imgPrincipal;
+  const productJsonLd = combineSchemas(
+    buildOrganizationSchema(),
+    buildBreadcrumbSchema([
+      { name: 'Inicio', url: 'https://peyuchile.cl/' },
+      { name: 'Tienda', url: 'https://peyuchile.cl/shop' },
+      { name: producto.categoria, url: `https://peyuchile.cl/shop?cat=${encodeURIComponent(producto.categoria || '')}` },
+      { name: producto.nombre, url: canonicalUrl },
+    ]),
+    buildProductSchema({
+      ...producto,
+      imagen_url: productImageForSeo,
+    }),
+  );
+
+  const seoTitle = `${producto.nombre} · ${producto.material?.includes('100%') ? '100% Reciclado' : 'Compostable'} · PEYU Chile`;
+  const seoDescription = (producto.descripcion?.replace(/[⭐🌾]/g, '').trim() ||
+    `${producto.nombre} · ${producto.material || 'material sostenible'}. Fabricado en Chile, grabado láser UV, envío a todo el país. Desde $${precioFinal.toLocaleString('es-CL')}.`
+  ).slice(0, 160);
+
   return (
+    <>
+    <SEO
+      title={seoTitle}
+      description={seoDescription}
+      canonical={canonicalUrl}
+      image={productImageForSeo}
+      type="product"
+      jsonLd={productJsonLd}
+    />
     <div className="flex-1 overflow-auto font-inter">
 
         {/* STICKY CTA BAR */}
@@ -824,5 +857,6 @@ export default function ProductoDetalle() {
           }}
         />
     </div>
+    </>
   );
 }

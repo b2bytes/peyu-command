@@ -16,6 +16,8 @@ import { History } from 'lucide-react';
 import { useAppBackground, getBackgroundById, buildBackgroundImageCSS, BG_OVERLAY, THEME_OVERLAY } from '@/lib/background';
 import BackgroundSwitcher from '@/components/BackgroundSwitcher';
 import CelebrationBanner from '@/components/landing/CelebrationBanner';
+import SEO from '@/components/SEO';
+import { buildOrganizationSchema, buildWebSiteSchema, combineSchemas } from '@/lib/schemas-peyu';
 
 // Limpia el bloque [CONTEXTO] que se inyecta al agente — no debe verse en la UI.
 const stripContext = (m) => {
@@ -232,7 +234,20 @@ export default function ShopLanding() {
     await sendMessage(mensaje);
   };
 
+  const landingJsonLd = combineSchemas(
+    buildOrganizationSchema(),
+    buildWebSiteSchema(),
+  );
+
   return (
+    <>
+    <SEO
+      title="PEYU Chile · Regalos Corporativos 100% Reciclados · Hecho en Chile"
+      description="Regalos corporativos sostenibles en plástico 100% reciclado y fibra de trigo compostable. Personalización láser UV, producción local en Santiago. Cotización B2B en 4h."
+      canonical="https://peyuchile.cl/"
+      image="https://media.base44.com/images/public/69d99b9d61f699701129c103/b5b3cf211_kitclassssprro2.jpg"
+      jsonLd={landingJsonLd}
+    />
     <div
       className="landing-viewport transition-colors duration-500"
       data-theme-mode={isTheme ? 'theme' : 'nature'}
@@ -625,5 +640,6 @@ export default function ShopLanding() {
         </div>
       </div>
     </div>
+    </>
   );
 }
