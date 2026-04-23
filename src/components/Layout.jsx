@@ -66,6 +66,7 @@ const navGroups = [
   {
     label: "Integraciones",
     items: [
+      { path: "/admin/google", label: "Google Workspace", icon: Sparkles },
       { path: "/admin/woocommerce", label: "WooCommerce Import", icon: Zap },
     ]
   }
