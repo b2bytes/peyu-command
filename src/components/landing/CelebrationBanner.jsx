@@ -27,7 +27,9 @@ export default function CelebrationBanner({ onChatPrompt, compact = false }) {
 
   return (
     <div
-      className="relative overflow-hidden rounded-xl lg:rounded-2xl p-3 sm:p-4 lg:p-5 transition-all"
+      className={`relative overflow-hidden rounded-xl lg:rounded-2xl transition-all ${
+        compact ? 'p-2.5 sm:p-3' : 'p-3 sm:p-4 lg:p-5'
+      }`}
       style={{
         background: `linear-gradient(135deg, ${palette.tint} 0%, rgba(0,0,0,0.25) 100%)`,
         backdropFilter: 'blur(16px) saturate(160%)',
@@ -47,7 +49,7 @@ export default function CelebrationBanner({ onChatPrompt, compact = false }) {
         style={{ backgroundColor: palette.accent }}
       />
 
-      <div className="relative z-10 flex flex-col gap-3">
+      <div className={`relative z-10 flex flex-col ${compact ? 'gap-1.5' : 'gap-3'}`}>
         {/* Header: emoji + kicker + countdown */}
         <div className="flex items-center justify-between gap-2 flex-wrap">
           <div className="flex items-center gap-2 min-w-0">
@@ -72,7 +74,9 @@ export default function CelebrationBanner({ onChatPrompt, compact = false }) {
 
         {/* Título + highlight */}
         <div>
-          <h2 className="text-white font-poppins font-black text-lg sm:text-xl lg:text-2xl leading-tight drop-shadow-lg">
+          <h2 className={`text-white font-poppins font-black leading-tight drop-shadow-lg ${
+            compact ? 'text-sm sm:text-base lg:text-lg' : 'text-lg sm:text-xl lg:text-2xl'
+          }`}>
             {copy.title}{' '}
             <span style={{ color: palette.accent }} className="drop-shadow">
               {copy.highlight}
@@ -92,7 +96,8 @@ export default function CelebrationBanner({ onChatPrompt, compact = false }) {
           </p>
         )}
 
-        {/* Grid de beneficios */}
+        {/* Grid de beneficios — oculto en modo compact (home landing) */}
+        {!compact && (
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-1.5 sm:gap-2">
           {copy.benefits.map((b, i) => (
             <div
@@ -111,8 +116,10 @@ export default function CelebrationBanner({ onChatPrompt, compact = false }) {
             </div>
           ))}
         </div>
+        )}
 
-        {/* Urgencia + CTAs */}
+        {/* Urgencia + CTAs — oculto en compact */}
+        {!compact && (
         <div className="flex flex-col sm:flex-row gap-2 items-stretch">
           <Link to={copy.ctaPrimary.href} className="flex-1">
             <button
@@ -142,9 +149,10 @@ export default function CelebrationBanner({ onChatPrompt, compact = false }) {
             </Link>
           )}
         </div>
+        )}
 
-        {/* Urgencia deadline */}
-        {daysToDeadline !== null && daysToDeadline >= 0 && (
+        {/* Urgencia deadline — oculto en compact */}
+        {!compact && daysToDeadline !== null && daysToDeadline >= 0 && (
           <div className="flex items-center gap-1.5 text-[10px] sm:text-[11px] text-white/70 italic">
             <Clock className="w-3 h-3 flex-shrink-0" style={{ color: palette.accent }} />
             <span className="leading-snug">{copy.urgency}</span>
