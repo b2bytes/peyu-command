@@ -423,39 +423,37 @@ export default function ShopLanding() {
               </div>
             </div>
 
-            {/* Celebration Banner — barra independiente entre header y contenido */}
-            <div className="px-3 sm:px-4 pt-2">
+            {/* Celebration Banner — barra mini entre header y contenido */}
+            <div className="px-3 sm:px-4 pt-1.5">
               <CelebrationBanner onChatPrompt={sendMessage} compact />
             </div>
 
             {/* Content */}
-            <div className="flex flex-col gap-2 p-3 sm:p-4 flex-1 min-h-0 overflow-hidden">
+            <div className="flex flex-col gap-1.5 p-2.5 sm:p-3 flex-1 min-h-0 overflow-hidden">
 
-              {/* Hero Title — compacto, una línea en desktop */}
-              <div className="flex-shrink-0">
-                <h1 className="text-base sm:text-lg lg:text-xl font-poppins font-black leading-tight text-white drop-shadow-lg">
+              {/* Hero Title + CTAs — fila única compacta para dar protagonismo al chat */}
+              <div className="flex items-center justify-between gap-3 flex-shrink-0 flex-wrap">
+                <h1 className="text-sm sm:text-base lg:text-lg font-poppins font-black leading-tight text-white drop-shadow-lg flex-1 min-w-[200px]">
                   Regalos Corporativos <span className="text-cyan-400">100%</span>{' '}
                   <span className="text-emerald-400">Sostenibles</span>
                 </h1>
+                <div className="flex gap-1.5 flex-shrink-0">
+                  <Link to="/shop">
+                    <Button className="bg-red-600 hover:bg-red-700 active:bg-red-800 text-white font-bold rounded-full px-3 py-1.5 h-auto shadow-lg text-[11px] transition-all">
+                      📮 Explorar
+                    </Button>
+                  </Link>
+                  <Link to="/b2b/contacto">
+                    <Button className="bg-yellow-400 hover:bg-yellow-500 active:bg-yellow-600 text-gray-900 font-bold rounded-full px-3 py-1.5 h-auto shadow-lg text-[11px] transition-all">
+                      ✨ B2B
+                    </Button>
+                  </Link>
+                </div>
               </div>
 
-              {/* CTA Buttons */}
-              <div className="flex gap-2 flex-col sm:flex-row flex-shrink-0">
-                <Link to="/shop" className="flex-1 min-w-0">
-                  <Button className="w-full bg-red-600 hover:bg-red-700 active:bg-red-800 text-white font-bold rounded-full px-4 py-2 gap-2 shadow-lg hover:shadow-xl text-xs transition-all">
-                    📮 Explorar Regalos
-                  </Button>
-                </Link>
-                <Link to="/b2b/contacto" className="flex-1 min-w-0">
-                  <Button className="w-full bg-yellow-400 hover:bg-yellow-500 active:bg-yellow-600 text-gray-900 font-bold rounded-full px-4 py-2 gap-2 shadow-lg hover:shadow-xl text-xs transition-all">
-                    ✨ B2B Corporativo
-                  </Button>
-                </Link>
-              </div>
-
-              {/* Chat Agent — Liquid Glass; en modo "Temas" toma un aura cálida del día */}
+              {/* Chat Agent — Liquid Glass; epicentro del landing, ocupa el máximo de alto disponible */}
               <div
-                className={`peyu-liquid-glass-inner rounded-xl lg:rounded-2xl p-2.5 sm:p-3 flex flex-col flex-1 min-h-[320px] lg:min-h-0 overflow-hidden relative transition-all duration-500 ${
+                className={`peyu-liquid-glass-inner rounded-xl lg:rounded-2xl p-2.5 sm:p-3 flex flex-col flex-1 min-h-[480px] lg:min-h-[400px] overflow-hidden relative transition-all duration-500 ${
                   isTheme ? 'peyu-liquid-glass-warm' : ''
                 }`}
               >
@@ -551,18 +549,16 @@ export default function ShopLanding() {
                 </div>
               </div>
 
-              {/* Ocasiones Carousel — compacto */}
+              {/* Ocasiones Carousel — chips horizontales compactos */}
               <div className="overflow-x-auto scrollbar-hide flex gap-1.5 pb-0.5 justify-start lg:justify-center flex-shrink-0">
                 {OCASIONES.map(occ => (
                   <button
                     key={occ.id}
                     onClick={() => handleOccasionClick(occ)}
-                    className="flex flex-col items-center gap-1 flex-shrink-0 hover:scale-105 active:scale-95 transition-transform group"
+                    className="flex items-center gap-1.5 flex-shrink-0 bg-white/15 hover:bg-white/25 border border-white/25 hover:border-white/45 active:bg-white/35 transition-all rounded-full px-2.5 py-1 shadow-md"
                   >
-                    <div className="w-9 h-9 rounded-full bg-white/25 border border-white/40 flex items-center justify-center text-base group-hover:bg-white/35 group-hover:border-white/60 active:bg-white/40 transition-all shadow-lg">
-                      {occ.icon}
-                    </div>
-                    <span className="text-white text-[8px] font-bold text-center leading-none whitespace-nowrap">{occ.label}</span>
+                    <span className="text-xs leading-none">{occ.icon}</span>
+                    <span className="text-white text-[10px] font-bold whitespace-nowrap">{occ.label}</span>
                   </button>
                 ))}
               </div>
