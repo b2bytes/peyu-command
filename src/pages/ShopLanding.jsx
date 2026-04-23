@@ -488,8 +488,8 @@ export default function ShopLanding() {
                   />
                 )}
 
-                {/* Messages Container — alineado al fondo tipo WhatsApp, sin hueco raro */}
-                <div className="peyu-scrollbar-light flex-1 overflow-y-auto mb-3 pr-1 flex flex-col justify-end gap-2.5">
+                {/* Messages Container — scroll natural; los nuevos mensajes quedan abajo vía scrollIntoView */}
+                <div className="peyu-scrollbar-light flex-1 overflow-y-auto overflow-x-hidden mb-3 pr-1 flex flex-col gap-2.5 min-h-0">
                   {messages.length === 0 && (
                     <div className="text-center text-white/60 text-xs py-6 space-y-2">
                       <p className="text-sm font-medium">👋 Hola, soy Peyu</p>
