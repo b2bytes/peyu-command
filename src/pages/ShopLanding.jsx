@@ -423,33 +423,27 @@ export default function ShopLanding() {
               </div>
             </div>
 
-            {/* Celebration Banner — barra mini entre header y contenido */}
-            <div className="px-3 sm:px-4 pt-1.5">
-              <CelebrationBanner onChatPrompt={sendMessage} compact />
+            {/* Barra superior unificada: celebration pill + CTAs — una sola línea ultra-compacta */}
+            <div className="px-3 sm:px-4 pt-2 flex items-center gap-2 flex-wrap">
+              <div className="flex-1 min-w-[240px]">
+                <CelebrationBanner onChatPrompt={sendMessage} compact />
+              </div>
+              <div className="flex gap-1.5 flex-shrink-0">
+                <Link to="/shop">
+                  <Button className="bg-red-600 hover:bg-red-700 active:bg-red-800 text-white font-bold rounded-full px-3 py-1.5 h-auto shadow-lg text-[11px] transition-all">
+                    📮 Explorar
+                  </Button>
+                </Link>
+                <Link to="/b2b/contacto">
+                  <Button className="bg-yellow-400 hover:bg-yellow-500 active:bg-yellow-600 text-gray-900 font-bold rounded-full px-3 py-1.5 h-auto shadow-lg text-[11px] transition-all">
+                    ✨ B2B
+                  </Button>
+                </Link>
+              </div>
             </div>
 
             {/* Content */}
             <div className="flex flex-col gap-1.5 p-2.5 sm:p-3 flex-1 min-h-0 overflow-hidden">
-
-              {/* Hero Title + CTAs — fila única compacta para dar protagonismo al chat */}
-              <div className="flex items-center justify-between gap-3 flex-shrink-0 flex-wrap">
-                <h1 className="text-sm sm:text-base lg:text-lg font-poppins font-black leading-tight text-white drop-shadow-lg flex-1 min-w-[200px]">
-                  Regalos Corporativos <span className="text-cyan-400">100%</span>{' '}
-                  <span className="text-emerald-400">Sostenibles</span>
-                </h1>
-                <div className="flex gap-1.5 flex-shrink-0">
-                  <Link to="/shop">
-                    <Button className="bg-red-600 hover:bg-red-700 active:bg-red-800 text-white font-bold rounded-full px-3 py-1.5 h-auto shadow-lg text-[11px] transition-all">
-                      📮 Explorar
-                    </Button>
-                  </Link>
-                  <Link to="/b2b/contacto">
-                    <Button className="bg-yellow-400 hover:bg-yellow-500 active:bg-yellow-600 text-gray-900 font-bold rounded-full px-3 py-1.5 h-auto shadow-lg text-[11px] transition-all">
-                      ✨ B2B
-                    </Button>
-                  </Link>
-                </div>
-              </div>
 
               {/* Chat Agent — Liquid Glass; epicentro del landing, flex-1 se encarga de la altura */}
               <div
