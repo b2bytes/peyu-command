@@ -388,8 +388,9 @@ export default function ShopLanding() {
 
       {/* Main content area — sin background propio, reserva espacio solo para sidebar colapsado */}
       <div className="absolute inset-0 lg:pl-14 overflow-y-auto overflow-x-hidden peyu-scrollbar-light">
-        {/* Main container — Liquid Glass (iOS 26 / visionOS style) */}
-        <div className="flex gap-2 sm:gap-3 lg:gap-4 p-2 sm:p-3 lg:p-4 relative z-10 w-full flex-col lg:flex-row items-stretch min-h-full lg:h-full lg:min-w-full">
+        {/* Main container — Liquid Glass (iOS 26 / visionOS style)
+            Centrado y con ancho máx ~70% en desktop para look premium. */}
+        <div className="flex gap-2 sm:gap-3 lg:gap-4 p-2 sm:p-3 lg:p-4 relative z-10 flex-col lg:flex-row items-stretch min-h-full lg:h-full w-full lg:max-w-[min(1280px,78vw)] lg:mx-auto">
           {/* LEFT CONTAINER - Liquid Glass */}
           <div className="peyu-liquid-glass flex-1 rounded-2xl lg:rounded-3xl overflow-hidden flex flex-col min-w-0">
 
@@ -423,21 +424,20 @@ export default function ShopLanding() {
             </div>
 
             {/* Celebration Banner — barra independiente entre header y contenido */}
-            <div className="px-3 sm:px-4 pt-3 sm:pt-4">
-              <CelebrationBanner onChatPrompt={sendMessage} />
+            <div className="px-3 sm:px-4 pt-2 sm:pt-3">
+              <CelebrationBanner onChatPrompt={sendMessage} compact />
             </div>
 
             {/* Content */}
-            <div className="flex flex-col gap-2 sm:gap-3 p-3 sm:p-4 flex-1 overflow-y-auto">
+            <div className="flex flex-col gap-2 p-3 sm:p-4 flex-1 overflow-y-auto">
 
-              {/* Hero Title */}
-              <div className="space-y-1.5 flex-shrink-0">
-                <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-poppins font-black leading-tight text-white drop-shadow-lg">
-                  Regalos Corporativos <span className="text-cyan-400">100%</span>
-                  <br />
-                  <span className="text-emerald-400">Sostenibles</span> ESG
+              {/* Hero Title — compacto, cabe sin scroll */}
+              <div className="space-y-1 flex-shrink-0">
+                <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-[2rem] font-poppins font-black leading-[1.1] text-white drop-shadow-lg">
+                  Regalos Corporativos <span className="text-cyan-400">100%</span>{' '}
+                  <span className="text-emerald-400">Sostenibles</span>
                 </h1>
-                <p className="text-white/85 text-xs sm:text-sm leading-snug drop-shadow font-medium max-w-xl">Plástico reciclado con personalización láser. Gifting corporativo con impacto.</p>
+                <p className="text-white/85 text-[11px] sm:text-xs leading-snug drop-shadow font-medium max-w-xl">Plástico reciclado con personalización láser. Gifting con impacto.</p>
               </div>
 
               {/* CTA Buttons */}
