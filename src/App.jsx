@@ -72,6 +72,9 @@ import PineconeBrain from './pages/PineconeBrain';
 import GoogleWorkspace from './pages/GoogleWorkspace';
 import Indexacion from './pages/Indexacion';
 import AdsCommand from './pages/AdsCommand';
+import LaunchMap from './pages/LaunchMap';
+import GA4Realtime from './pages/GA4Realtime';
+import Lanzamiento from './pages/Lanzamiento';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -136,6 +139,8 @@ const AuthenticatedApp = () => {
         <Route path="google" element={<GoogleWorkspace />} />
         <Route path="indexacion" element={<Indexacion />} />
         <Route path="ads-command" element={<AdsCommand />} />
+        <Route path="launch-map" element={<LaunchMap />} />
+        <Route path="ga-realtime" element={<GA4Realtime />} />
       </Route>
       <Route path="*" element={<PageNotFound />} />
     </Routes>
@@ -151,6 +156,9 @@ function App() {
             <Routes>
               {/* Landing Page - Standalone */}
               <Route path="/" element={<ShopLanding />} />
+
+              {/* /lanzamiento - Pure conversion landing (standalone, sin PublicLayout) */}
+              <Route path="/lanzamiento" element={<Lanzamiento />} />
 
               {/* Public Routes */}
               <Route element={<PublicLayout />}>

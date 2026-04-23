@@ -3,7 +3,7 @@ import { useState } from "react";
 import {
   LayoutDashboard, Users, BarChart3, Megaphone, Turtle, Package,
   Calculator, MessageSquare, TrendingUp, Store, UserCheck, Truck,
-  HardHat, Flag, Archive, ShoppingCart, Settings as SettingsIcon, ChevronLeft, ChevronRight, Leaf, ListChecks, Sparkles, FileText, CalendarDays, PieChart, AlertTriangle, Building2, ClipboardList, Zap, Radar, Crosshair
+  HardHat, Flag, Archive, ShoppingCart, Settings as SettingsIcon, ChevronLeft, ChevronRight, Leaf, ListChecks, Sparkles, FileText, CalendarDays, PieChart, AlertTriangle, Building2, ClipboardList, Zap, Radar, Crosshair, Map as MapIcon
 } from "lucide-react";
 
 const navGroups = [
@@ -66,8 +66,10 @@ const navGroups = [
   {
     label: "🚀 Launch Warfare",
     items: [
+      { path: "/admin/launch-map", label: "Launch Map (War Room)", icon: MapIcon },
       { path: "/admin/indexacion", label: "War Room · Indexación", icon: Radar },
       { path: "/admin/ads-command", label: "Ads Command Center", icon: Crosshair },
+      { path: "/admin/ga-realtime", label: "GA4 Realtime", icon: BarChart3 },
     ]
   },
   {
