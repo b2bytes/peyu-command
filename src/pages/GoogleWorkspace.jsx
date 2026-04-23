@@ -13,8 +13,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import {
   CheckCircle2, XCircle, Loader2, RefreshCw, Mail, Calendar, HardDrive,
-  FileText, Table2, BarChart3, Search, ExternalLink, Zap, ShieldCheck
+  FileText, Table2, BarChart3, Search, ExternalLink, Zap, ShieldCheck, Send, CalendarPlus
 } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import GmailTester from '@/components/google/GmailTester';
+import CalendarTester from '@/components/google/CalendarTester';
 
 const SERVICES = [
   { key: 'gmail', name: 'Gmail', icon: Mail, color: 'bg-red-100 text-red-700 border-red-200', desc: 'Enviar propuestas B2B, leer consultas' },
@@ -212,6 +215,55 @@ export default function GoogleWorkspace() {
         })}
       </div>
 
+      {/* Playground Fase 2 — Gmail + Calendar */}
+      <Card className="border-slate-200">
+        <CardHeader>
+          <CardTitle className="text-lg flex items-center gap-2">
+            <Send className="w-5 h-5 text-teal-600" />
+            Playground Fase 2 — Gmail & Calendar
+          </CardTitle>
+          <p className="text-xs text-slate-500 mt-1">
+            Prueba las integraciones en vivo. Los emails se envían desde <strong>ti@peyuchile.cl</strong>.
+          </p>
+        </CardHeader>
+        <CardContent>
+          <Tabs defaultValue="gmail" className="w-full">
+            <TabsList className="grid w-full grid-cols-2 max-w-md">
+              <TabsTrigger value="gmail" className="gap-2">
+                <Mail className="w-4 h-4" /> Gmail
+              </TabsTrigger>
+              <TabsTrigger value="calendar" className="gap-2">
+                <CalendarPlus className="w-4 h-4" /> Calendar
+              </TabsTrigger>
+            </TabsList>
+            <TabsContent value="gmail" className="mt-4">
+              <GmailTester />
+            </TabsContent>
+            <TabsContent value="calendar" className="mt-4">
+              <CalendarTester />
+            </TabsContent>
+          </Tabs>
+        </CardContent>
+      </Card>
+
+      {/* Automatización activa */}
+      <Card className="border-emerald-200 bg-emerald-50/50">
+        <CardContent className="p-4 flex items-start gap-3">
+          <div className="w-10 h-10 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center flex-shrink-0">
+            <Zap className="w-5 h-5" />
+          </div>
+          <div className="flex-1 text-sm">
+            <p className="font-semibold text-emerald-900">
+              ✓ Automatización activa: Gmail → Auto-crear Consultas
+            </p>
+            <p className="text-emerald-700 text-xs mt-1">
+              Cada email nuevo en <strong>ti@peyuchile.cl</strong> genera automáticamente una Consulta en el CRM
+              con clasificación inteligente (cotización, personalización, pedido, etc.)
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Roadmap de fases */}
       <Card className="border-slate-200">
         <CardHeader>
@@ -230,10 +282,10 @@ export default function GoogleWorkspace() {
               </div>
             </li>
             <li className="flex items-start gap-3">
-              <span className="flex-shrink-0 w-6 h-6 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center text-xs font-bold">2</span>
+              <span className="flex-shrink-0 w-6 h-6 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center text-xs font-bold">✓</span>
               <div>
-                <p className="font-semibold text-slate-900">Fase 2 — Comunicación (Gmail + Calendar)</p>
-                <p className="text-slate-500 text-xs">Envío automático de propuestas, ingesta de consultas, agendamiento de reuniones</p>
+                <p className="font-semibold text-slate-900">Fase 2 — Comunicación (Gmail + Calendar) — completado</p>
+                <p className="text-slate-500 text-xs">✓ Envío MIME UTF-8 · ✓ Calendar + Meet · ✓ Webhook ingesta → Consultas</p>
               </div>
             </li>
             <li className="flex items-start gap-3">
