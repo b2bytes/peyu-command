@@ -386,8 +386,8 @@ export default function ShopLanding() {
       {/* Selector de fondo — flotante independiente */}
       <BackgroundSwitcher />
 
-      {/* Main content area — sin background propio, reserva espacio solo para sidebar colapsado */}
-      <div className="absolute inset-0 lg:pl-14 overflow-y-auto overflow-x-hidden peyu-scrollbar-light">
+      {/* Main content area — reserva espacio dinámico según sidebar (colapsado 56px / expandido 192px) */}
+      <div className={`absolute inset-0 overflow-y-auto overflow-x-hidden peyu-scrollbar-light transition-[padding] duration-200 ease-out ${sidebarExpanded ? 'lg:pl-48' : 'lg:pl-14'}`}>
         {/* Main container — Liquid Glass (iOS 26 / visionOS style)
             Centrado y con ancho máx ~70% en desktop para look premium. */}
         <div className="flex gap-2 sm:gap-3 lg:gap-4 p-2 sm:p-3 lg:p-5 relative z-10 flex-col lg:flex-row items-stretch min-h-full lg:h-full w-full lg:max-w-[1400px] lg:mx-auto">
@@ -496,8 +496,8 @@ export default function ShopLanding() {
                   />
                 )}
 
-                {/* Messages Container */}
-                <div className="peyu-scrollbar-light flex-1 overflow-y-auto space-y-2.5 mb-3 pr-1">
+                {/* Messages Container — alineado al fondo tipo WhatsApp, sin hueco raro */}
+                <div className="peyu-scrollbar-light flex-1 overflow-y-auto mb-3 pr-1 flex flex-col justify-end gap-2.5">
                   {messages.length === 0 && (
                     <div className="text-center text-white/60 text-xs py-6 space-y-2">
                       <p className="text-sm font-medium">👋 Hola, soy Peyu</p>
@@ -510,7 +510,7 @@ export default function ShopLanding() {
                       {msg.role === 'assistant' && (
                         <div className="w-6 h-6 rounded-full bg-teal-500/30 flex items-center justify-center flex-shrink-0 text-xs">🐢</div>
                       )}
-                      <div className={`rounded-xl px-3.5 py-2.5 text-xs sm:text-sm break-words leading-relaxed ${msg.role === 'user' ? 'bg-teal-600 text-white rounded-br-none max-w-[75%]' : 'bg-white/15 text-white border border-white/25 rounded-bl-none backdrop-blur-sm max-w-[85%] w-full'}`}>
+                      <div className={`rounded-2xl px-3.5 py-2 text-xs sm:text-sm break-words leading-relaxed shadow-sm ${msg.role === 'user' ? 'bg-teal-600 text-white rounded-br-sm max-w-[75%]' : 'bg-white/15 text-white border border-white/25 rounded-bl-sm backdrop-blur-sm max-w-[85%]'}`}>
                         {msg.role === 'assistant'
                           ? <ChatMessageContent content={msg.content} />
                           : msg.content}
