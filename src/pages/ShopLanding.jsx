@@ -190,8 +190,14 @@ export default function ShopLanding() {
 
       const msgCountBefore = (conv.messages || []).length;
 
-      // Enviar mensaje al agente con contexto de página inyectado (invisible en UI)
-      const contextualized = await withContext(text);
+      // Enviar mensaje al agente con contexto de página inyectado (invisible en UI).
+      // Si withContext falla (RAG, productos, etc.), enviamos el texto puro para no bloquear.
+      let contextualized = text;
+      try {
+        contextualized = await withContext(text);
+      } catch (ctxErr) {
+        console.warn('withContext falló, uso texto puro:', ctxErr);
+      }
       await base44.agents.addMessage(conv, { role: 'user', content: contextualized });
 
       // Polling: verificar cada 1.5s si llegó respuesta del agente
@@ -224,7 +230,8 @@ export default function ShopLanding() {
 
     } catch (e) {
       console.error('Error chat:', e);
-      setMessages(prev => [...prev, { role: 'assistant', content: '⚠️ Error de conexión. Intenta de nuevo.' }]);
+      const detail = e?.message || e?.response?.data?.error || 'sin detalle';
+      setMessages(prev => [...prev, { role: 'assistant', content: `⚠️ Error de conexión: ${detail}. Intenta de nuevo.` }]);
       setLoading(false);
     }
   };
