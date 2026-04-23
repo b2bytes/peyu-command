@@ -32,7 +32,7 @@ export default function MobileMenu({ items }) {
 
       {/* Overlay */}
       <div
-        className={`fixed inset-0 bg-black/60 backdrop-blur-sm lg:hidden z-[80] transition-opacity duration-300 ${
+        className={`fixed inset-0 bg-black/60 backdrop-blur-sm lg:hidden z-[9998] transition-opacity duration-300 ${
           isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
         }`}
         onClick={() => setIsOpen(false)}
@@ -40,7 +40,7 @@ export default function MobileMenu({ items }) {
 
       {/* Panel */}
       <aside
-        className={`fixed left-0 top-0 bottom-0 w-[82vw] max-w-[340px] sm:max-w-[380px] bg-gradient-to-b from-slate-900 via-slate-900 to-slate-950 border-r border-white/10 shadow-2xl transform transition-transform duration-300 ease-out z-[90] lg:hidden flex flex-col ${
+        className={`fixed left-0 top-0 bottom-0 w-[82vw] max-w-[340px] sm:max-w-[380px] bg-gradient-to-b from-slate-900 via-slate-900 to-slate-950 border-r border-white/10 shadow-2xl transform transition-transform duration-300 ease-out z-[9999] lg:hidden flex flex-col ${
           isOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
         role="dialog"
