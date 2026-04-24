@@ -10,6 +10,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Radar, Rocket, FileSearch, History as HistoryIcon, CheckCircle2, XCircle, AlertTriangle } from 'lucide-react';
 import SiteAuditCard from '@/components/launch/SiteAuditCard';
 import IndexNowCard from '@/components/launch/IndexNowCard';
+import PerformanceHeader from '@/components/launch/PerformanceHeader';
+import BulkUrlInspector from '@/components/launch/BulkUrlInspector';
 
 const SITES = [
   { url: 'https://peyuchile.cl/', label: 'peyuchile.cl (principal · Base44)' },
@@ -67,10 +69,20 @@ export default function Indexacion() {
         </CardContent>
       </Card>
 
-      {/* Auditorías por dominio */}
+      {/* 🔥 Performance real GSC — KPIs 28d + top queries + top pages */}
+      <PerformanceHeader sites={SITES.map(s => ({ url: s.url, label: s.label }))} />
+
+      {/* Auditorías detalladas + submit sitemap por dominio */}
       <div className="grid lg:grid-cols-2 gap-4">
         {SITES.map(s => (
           <SiteAuditCard key={s.url} site_url={s.url} defaultSitemap={`${s.url}sitemap.xml`} />
+        ))}
+      </div>
+
+      {/* 🔎 Inspección masiva de URLs prioritarias */}
+      <div className="grid lg:grid-cols-2 gap-4">
+        {SITES.map(s => (
+          <BulkUrlInspector key={s.url} site_url={s.url} />
         ))}
       </div>
 
