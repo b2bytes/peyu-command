@@ -19,11 +19,16 @@ import CelebrationBanner from '@/components/landing/CelebrationBanner';
 import SEO from '@/components/SEO';
 import { buildOrganizationSchema, buildWebSiteSchema, combineSchemas } from '@/lib/schemas-peyu';
 
-// Limpia el bloque [CONTEXTO] que se inyecta al agente — no debe verse en la UI.
+// Limpia los bloques [CONTEXTO] y [BRAIN] que se inyectan al agente —
+// no deben verse en la UI. El mensaje real del usuario queda al final.
 const stripContext = (m) => {
   if (!m || m.role !== 'user' || !m.content) return m;
-  const cleaned = m.content.replace(/^\[CONTEXTO\][^\n]*\n+/, '').trim();
-  return { ...m, content: cleaned };
+  let cleaned = m.content;
+  // Quita [CONTEXTO] ... hasta doble salto de línea o fin de string
+  cleaned = cleaned.replace(/\[CONTEXTO\][\s\S]*?(?:\n\n|$)/, '');
+  // Quita [BRAIN] ... hasta doble salto de línea o fin de string
+  cleaned = cleaned.replace(/\[BRAIN\][\s\S]*?(?:\n\n|$)/, '');
+  return { ...m, content: cleaned.trim() };
 };
 
 const OCASIONES = [
