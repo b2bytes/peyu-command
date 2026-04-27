@@ -21,6 +21,16 @@ Deno.serve(async (req) => {
       }, { status: 200 });
     }
 
+    // 🛑 KILL-SWITCH: bloqueo manual de llamadas a Woo durante incidencia de hosting (SiteGround).
+    // Para reactivar: cambiar WOO_INTEGRATION_PAUSED a 'false' o eliminar la variable.
+    if (Deno.env.get('WOO_INTEGRATION_PAUSED') === 'true') {
+      return Response.json({
+        ok: false,
+        paused: true,
+        error: '⏸️ Integración WooCommerce pausada manualmente (incidencia hosting SiteGround). No se enviará ninguna request a peyuchile.cl hasta que se resuelva. Reactivar quitando el secret WOO_INTEGRATION_PAUSED.'
+      }, { status: 200 });
+    }
+
     // Sanitizar URL
     const cleanUrl = url.replace(/\/$/, '').replace(/\/wp-json.*$/, '').replace(/\/wc-api.*$/, '');
     const auth = 'Basic ' + btoa(`${key}:${secret}`);

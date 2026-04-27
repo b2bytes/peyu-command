@@ -221,6 +221,15 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Faltan credenciales WooCommerce en Secrets' }, { status: 200 });
     }
 
+    // 🛑 KILL-SWITCH: bloqueo manual durante incidencia de hosting (SiteGround).
+    if (Deno.env.get('WOO_INTEGRATION_PAUSED') === 'true') {
+      return Response.json({
+        paused: true,
+        error: '⏸️ Integración WooCommerce pausada manualmente. No se importará nada hasta que se resuelva la incidencia del hosting.',
+        retryable: false,
+      }, { status: 200 });
+    }
+
     const auth = 'Basic ' + btoa(`${key}:${secret}`);
     const base = `${url.replace(/\/$/, '').replace(/\/wp-json.*$/, '')}/wp-json/wc/v3`;
     const svc = base44.asServiceRole;
