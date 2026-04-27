@@ -108,8 +108,8 @@ export default function ShopLanding() {
     let alive = true;
     (async () => {
       try {
-        const conv = await base44.agents.getConversation(conversationId);
-        const msgs = (conv?.messages || []).filter(m => m.content).map(stripContext);
+        const res = await base44.functions.invoke('publicChatProxy', { action: 'get', conversation_id: conversationId });
+        const msgs = (res.data?.messages || []).filter(m => m.content).map(stripContext);
         if (alive && msgs.length > 0) setMessages(msgs);
       } catch {
         localStorage.removeItem(STORAGE_KEY);
@@ -124,8 +124,8 @@ export default function ShopLanding() {
     localStorage.setItem(STORAGE_KEY, id);
     setConversationId(id);
     try {
-      const conv = await base44.agents.getConversation(id);
-      const msgs = (conv?.messages || []).filter(m => m.content).map(stripContext);
+      const res = await base44.functions.invoke('publicChatProxy', { action: 'get', conversation_id: id });
+      const msgs = (res.data?.messages || []).filter(m => m.content).map(stripContext);
       setMessages(msgs.length > 0 ? msgs : [WELCOME_MSG]);
     } catch {
       localStorage.removeItem(STORAGE_KEY);
@@ -176,24 +176,24 @@ export default function ShopLanding() {
     }
 
     try {
-      // Crear o recuperar conversación (persistida para continuar en otras páginas)
-      let conv;
-      if (!conversationId) {
-        conv = await base44.agents.createConversation({
-          agent_name: 'asistente_compras',
-          metadata: { context: 'landing' }
-        });
-        setConversationId(conv.id);
-        localStorage.setItem(STORAGE_KEY, conv.id);
+      // Crear o recuperar conversación vía proxy público (no requiere auth)
+      let convId = conversationId;
+      let msgCountBefore = 0;
+
+      if (!convId) {
+        const createRes = await base44.functions.invoke('publicChatProxy', { action: 'create', context: 'landing' });
+        convId = createRes.data?.conversation_id;
+        if (!convId) throw new Error('No se pudo crear la conversación');
+        setConversationId(convId);
+        localStorage.setItem(STORAGE_KEY, convId);
       } else {
-        conv = await base44.agents.getConversation(conversationId);
+        const getRes = await base44.functions.invoke('publicChatProxy', { action: 'get', conversation_id: convId });
+        msgCountBefore = (getRes.data?.messages || []).length;
       }
 
       // Registrar/actualizar esta conversación en el historial con el texto del usuario
-      addToHistory(conv.id, text);
+      addToHistory(convId, text);
       setHistoryCount(readHistory().length);
-
-      const msgCountBefore = (conv.messages || []).length;
 
       // Enviar mensaje al agente con contexto de página inyectado (invisible en UI).
       // Si withContext falla (RAG, productos, etc.), enviamos el texto puro para no bloquear.
@@ -203,7 +203,9 @@ export default function ShopLanding() {
       } catch (ctxErr) {
         console.warn('withContext falló, uso texto puro:', ctxErr);
       }
-      await base44.agents.addMessage(conv, { role: 'user', content: contextualized });
+      await base44.functions.invoke('publicChatProxy', {
+        action: 'send', conversation_id: convId, content: contextualized,
+      });
 
       // Polling: verificar cada 1.5s si llegó respuesta del agente
       let attempts = 0;
@@ -211,8 +213,8 @@ export default function ShopLanding() {
 
       const poll = async () => {
         attempts++;
-        const updated = await base44.agents.getConversation(conv.id);
-        const msgs = (updated.messages || []).filter(m => m.content).map(stripContext);
+        const updated = await base44.functions.invoke('publicChatProxy', { action: 'get', conversation_id: convId });
+        const msgs = (updated.data?.messages || []).filter(m => m.content).map(stripContext);
         const last = msgs[msgs.length - 1];
 
         // Actualizar mensajes siempre (para mostrar streaming parcial si aplica)
