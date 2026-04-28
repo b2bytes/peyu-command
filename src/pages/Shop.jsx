@@ -4,17 +4,6 @@ import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { getProductImage } from '@/utils/productImages';
 import { Search, ShoppingCart, Star, SlidersHorizontal, X, Check, Recycle, Truck, Shield, Building2 } from 'lucide-react';
-import MobileMenu from '@/components/MobileMenu';
-import { Home, Grid3x3, HelpCircle, Heart } from 'lucide-react';
-
-const MENU_ITEMS = [
-  { href: '/', label: 'Inicio', icon: Home },
-  { href: '/shop', label: 'Tienda', icon: ShoppingCart },
-  { href: '/catalogo-visual', label: 'Catálogo', icon: Grid3x3 },
-  { href: '/b2b/contacto', label: 'B2B', icon: Building2 },
-  { href: '/nosotros', label: 'Nosotros', icon: Heart },
-  { href: '/soporte', label: 'Soporte', icon: HelpCircle },
-];
 
 const CATEGORIAS = ['Todos', 'Escritorio', 'Hogar', 'Entretenimiento', 'Corporativo', 'Carcasas B2C'];
 
@@ -99,59 +88,8 @@ export default function Shop() {
 
   return (
     <div className="flex-1 overflow-auto font-inter">
-      {/* HEADER sticky */}
-      <nav className="sticky top-0 z-40 bg-gradient-to-r from-teal-500/30 to-cyan-500/30 border-b border-white/20 backdrop-blur-md">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center gap-3">
-          <MobileMenu items={MENU_ITEMS} />
-          <Link to="/" className="flex items-center gap-2.5 group flex-shrink-0">
-            <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-teal-400 to-cyan-500 flex items-center justify-center shadow-lg shadow-teal-500/30 group-hover:scale-105 transition-transform">
-              <span className="text-white font-bold">P</span>
-            </div>
-            <div className="hidden sm:block">
-              <p className="text-sm font-poppins font-bold leading-none text-white">PEYU</p>
-              <p className="text-[10px] text-white/60 leading-none mt-0.5">Tienda</p>
-            </div>
-          </Link>
-
-          {/* Search */}
-          <div className="flex-1 max-w-xl mx-auto">
-            <div className="flex items-center gap-2 bg-white/10 border border-white/25 rounded-xl px-3.5 py-2.5 backdrop-blur-sm focus-within:border-teal-400/60 focus-within:bg-white/15 transition-all">
-              <Search className="w-4 h-4 text-white/50 flex-shrink-0" />
-              <input
-                type="text"
-                placeholder="Buscar productos, SKU..."
-                value={search}
-                onChange={e => setSearch(e.target.value)}
-                className="bg-transparent border-0 text-white placeholder:text-white/40 focus:ring-0 focus:outline-none text-sm w-full"
-              />
-              {search && (
-                <button onClick={() => setSearch('')} className="text-white/50 hover:text-white">
-                  <X className="w-4 h-4" />
-                </button>
-              )}
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2 flex-shrink-0">
-            <Link to="/b2b/contacto" className="hidden sm:block">
-              <Button variant="ghost" size="sm" className="rounded-xl text-white/70 hover:text-white hover:bg-white/10 font-medium">B2B</Button>
-            </Link>
-            <Link to="/cart" className="relative">
-              <button className="w-10 h-10 rounded-xl bg-gradient-to-r from-teal-500 to-cyan-500 hover:from-teal-600 hover:to-cyan-600 flex items-center justify-center text-white transition-all active:scale-95 shadow-lg shadow-teal-500/30">
-                <ShoppingCart className="w-4 h-4" />
-                {carrito.length > 0 && (
-                  <span className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center shadow-md border-2 border-slate-900">
-                    {carrito.length}
-                  </span>
-                )}
-              </button>
-            </Link>
-          </div>
-        </div>
-      </nav>
-
       {/* HERO */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 pt-10 pb-6">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 pt-6 sm:pt-10 pb-6">
         <div className="flex items-end justify-between gap-6 flex-wrap">
           <div className="space-y-3 max-w-2xl">
             <div className="inline-flex items-center gap-1.5 text-xs font-semibold text-teal-300 bg-teal-500/20 border border-teal-400/30 px-3 py-1 rounded-full backdrop-blur-sm">
@@ -186,6 +124,25 @@ export default function Shop() {
       </section>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 pb-16 pt-4">
+        {/* Search bar inline */}
+        <div className="mb-4">
+          <div className="flex items-center gap-2 bg-white/10 border border-white/25 rounded-xl px-3.5 py-2.5 backdrop-blur-sm focus-within:border-teal-400/60 focus-within:bg-white/15 transition-all max-w-xl">
+            <Search className="w-4 h-4 text-white/50 flex-shrink-0" />
+            <input
+              type="text"
+              placeholder="Buscar productos, SKU..."
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              className="bg-transparent border-0 text-white placeholder:text-white/40 focus:ring-0 focus:outline-none text-sm w-full"
+            />
+            {search && (
+              <button onClick={() => setSearch('')} className="text-white/50 hover:text-white">
+                <X className="w-4 h-4" />
+              </button>
+            )}
+          </div>
+        </div>
+
         {/* Controls bar */}
         <div className="flex items-center justify-between gap-3 mb-5 flex-wrap">
           <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide -mx-1 px-1 flex-1 min-w-0">
