@@ -11,39 +11,15 @@ import {
 } from 'lucide-react';
 import MockupGenerator from '@/components/MockupGenerator';
 import { saveMockupDraft } from '@/lib/mockup-draft';
+import { getColoresProducto } from '@/lib/color-parser';
 import SEO from '@/components/SEO';
 import { buildOrganizationSchema, buildProductSchema, buildBreadcrumbSchema, combineSchemas } from '@/lib/schemas-peyu';
 import { trackAddToCart } from '@/lib/analytics-peyu';
 
 
-const COLORES_MARMOLADO = [
-  { id: 'negro', label: 'Negro Ónix', hex: '#1a1a1a' },
-  { id: 'azul', label: 'Azul Celeste', hex: '#4a90d9' },
-  { id: 'verde', label: 'Verde Turquesa', hex: '#2d9d8f' },
-  { id: 'rojo', label: 'Rojo Coral', hex: '#c94040' },
-];
-const COLORES_CARCASAS = [
-  { id: 'negro', label: 'Negro', hex: '#1a1a1a' },
-  { id: 'azul', label: 'Azul', hex: '#4a90d9' },
-  { id: 'verde', label: 'Turquesa', hex: '#2d9d8f' },
-  { id: 'rosado', label: 'Rosado', hex: '#e8799c' },
-  { id: 'amarillo', label: 'Amarillo', hex: '#f0c040' },
-];
-const COLORES_BIODEG = [
-  { id: 'negro', label: 'Negro', hex: '#1a1a1a' },
-  { id: 'amarillo', label: 'Amarillo', hex: '#f0c040' },
-  { id: 'turquesa', label: 'Turquesa', hex: '#2d9d8f' },
-  { id: 'rosado', label: 'Rosado', hex: '#e8799c' },
-  { id: 'violeta', label: 'Violeta', hex: '#8b5cf6' },
-];
-
-function getColores(producto) {
-  if (!producto) return [];
-  if (producto.categoria === 'Carcasas B2C') {
-    return producto.material?.includes('Trigo') ? COLORES_BIODEG : COLORES_CARCASAS;
-  }
-  return COLORES_MARMOLADO;
-}
+// Los colores ahora se extraen dinámicamente desde la descripción del producto
+// vía `getColoresProducto` (lib/color-parser).
+const getColores = getColoresProducto;
 
 const REVIEWS_MOCK = [
   { autor: 'Martina G.', ciudad: 'Providencia', rating: 5, txt: 'Calidad increíble. El marmolado es único, exactamente como en la foto.', fecha: 'Hace 3 días', verificado: true },
