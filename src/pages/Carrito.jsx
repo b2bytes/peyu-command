@@ -3,8 +3,9 @@ import { useNavigate, Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Trash2, ArrowLeft, ShoppingBag, CheckCircle2, Truck, Shield, ChevronRight, Lock, Package, Recycle } from 'lucide-react';
+import { Trash2, ArrowLeft, ShoppingBag, CheckCircle2, Truck, Shield, ChevronRight, Lock, Package, Recycle, Gift } from 'lucide-react';
 import { trackBeginCheckout, trackPurchase } from '@/lib/analytics-peyu';
+import GiftCardRedeemBox from '@/components/cart/GiftCardRedeemBox';
 
 export default function Carrito() {
   const navigate = useNavigate();
@@ -13,6 +14,7 @@ export default function Carrito() {
   const [creando, setCreando] = useState(false);
   const [pedidoOk, setPedidoOk] = useState(null);
   const [step, setStep] = useState(1); // 1=Carrito, 2=Datos
+  const [giftCard, setGiftCard] = useState(null); // { codigo, saldo_clp }
 
   const eliminar = (id) => {
     const nuevo = carrito.filter(i => i.id !== id);
@@ -29,7 +31,11 @@ export default function Carrito() {
 
   const subtotal = carrito.reduce((sum, i) => sum + i.precio * i.cantidad, 0);
   const envio = subtotal >= 40000 ? 0 : 5990;
-  const total = subtotal + envio;
+  const totalAntesGC = subtotal + envio;
+  // Gift Card no se aplica sobre la compra de otra Gift Card (anti-loop)
+  const carritoTieneGC = carrito.some(i => String(i.sku || '').startsWith('GC-PEYU') || String(i.nombre || '').toLowerCase().includes('gift card'));
+  const gcDescuento = giftCard && !carritoTieneGC ? Math.min(giftCard.saldo_clp, totalAntesGC) : 0;
+  const total = Math.max(0, totalAntesGC - gcDescuento);
 
   const validarDatos = () => {
     if (!cliente.nombre || !cliente.email || !cliente.telefono) {
@@ -48,7 +54,8 @@ export default function Carrito() {
     setCreando(true);
     const numero = `WEB-${Date.now()}`;
     const items = carrito.map(i => `${i.nombre} x${i.cantidad}${i.personalizacion ? ` [${i.personalizacion}]` : ''}`).join(' | ');
-    await base44.entities.PedidoWeb.create({
+    const notasGC = gcDescuento > 0 ? ` | GiftCard ${giftCard.codigo} -$${gcDescuento.toLocaleString('es-CL')}` : '';
+    const pedido = await base44.entities.PedidoWeb.create({
       numero_pedido: numero,
       fecha: new Date().toISOString().split('T')[0],
       canal: 'Web Propia',
@@ -61,15 +68,29 @@ export default function Carrito() {
       subtotal,
       costo_envio: envio,
       total,
-      medio_pago: 'WebPay',
+      medio_pago: gcDescuento >= totalAntesGC ? 'GiftCard' : 'WebPay',
       estado: 'Nuevo',
       ciudad: cliente.ciudad,
       direccion_envio: cliente.direccion,
       requiere_personalizacion: carrito.some(i => i.personalizacion),
       texto_personalizacion: carrito.filter(i => i.personalizacion).map(i => i.personalizacion).join(', '),
       courier: 'Pendiente',
-      notas: `Carrito: ${carrito.length} items`,
+      notas: `Carrito: ${carrito.length} items${notasGC}`,
     });
+
+    // Si hay Gift Card aplicada, descontar saldo en el backend
+    if (gcDescuento > 0 && giftCard) {
+      try {
+        await base44.functions.invoke('canjearGiftCard', {
+          action: 'redeem',
+          codigo: giftCard.codigo,
+          monto: gcDescuento,
+          pedido_id: pedido?.id,
+        });
+      } catch (e) { console.warn('Error descontando GC:', e); }
+      localStorage.removeItem('peyu_giftcard_active');
+    }
+
     localStorage.removeItem('carrito');
     // 📊 Funnel event: purchase
     trackPurchase({ transactionId: numero, total, shipping: envio, cart: carrito });
@@ -288,6 +309,12 @@ export default function Carrito() {
                     : <span className="font-semibold text-gray-900">${envio.toLocaleString('es-CL')}</span>
                   }
                 </div>
+                {gcDescuento > 0 && (
+                  <div className="flex justify-between text-emerald-700">
+                    <span className="flex items-center gap-1"><Gift className="w-3.5 h-3.5" /> Gift Card</span>
+                    <span className="font-bold">−${gcDescuento.toLocaleString('es-CL')}</span>
+                  </div>
+                )}
                 {subtotal < 40000 && (
                   <div className="bg-amber-50 border border-amber-100 rounded-xl p-3 mt-3">
                     <p className="text-xs text-amber-800 font-medium">
@@ -304,6 +331,11 @@ export default function Carrito() {
                 <span className="font-poppins font-bold text-2xl text-gray-900">${total.toLocaleString('es-CL')}</span>
               </div>
             </div>
+
+            {/* Gift Card redemption */}
+            {!carritoTieneGC && (
+              <GiftCardRedeemBox onChange={setGiftCard} />
+            )}
 
             {/* CTA */}
             {step === 1 ? (
@@ -325,6 +357,8 @@ export default function Carrito() {
                 className="w-full font-semibold gap-2 rounded-2xl bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 text-white shadow-lg h-13 py-4">
                 {creando ? (
                   <><div className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" /> Procesando...</>
+                ) : total === 0 ? (
+                  <><Gift className="w-4 h-4" /> Confirmar pedido (cubierto por Gift Card)</>
                 ) : (
                   <><Lock className="w-4 h-4" /> Pagar ${total.toLocaleString('es-CL')}</>
                 )}
