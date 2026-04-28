@@ -223,6 +223,18 @@ export default function ProductoDetalle() {
       image={productImageForSeo}
       type="product"
       jsonLd={productJsonLd}
+      product={{
+        price: precioFinal,
+        currency: 'CLP',
+        availability: producto.stock_actual === 0 ? 'out of stock'
+          : producto.stock_actual <= 5 ? 'limited availability'
+          : 'in stock',
+        condition: 'new',
+        brand: 'PEYU',
+        sku: producto.sku,
+        category: producto.categoria,
+        retailerItemId: producto.sku,
+      }}
     />
     <div className="flex-1 overflow-auto font-inter">
 

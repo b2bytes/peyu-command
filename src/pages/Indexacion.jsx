@@ -12,6 +12,7 @@ import SiteAuditCard from '@/components/launch/SiteAuditCard';
 import IndexNowCard from '@/components/launch/IndexNowCard';
 import PerformanceHeader from '@/components/launch/PerformanceHeader';
 import BulkUrlInspector from '@/components/launch/BulkUrlInspector';
+import SitemapLiveCard from '@/components/launch/SitemapLiveCard';
 
 const SITES = [
   { url: 'https://peyuchile.cl/', label: 'peyuchile.cl (principal · Base44)' },
@@ -86,8 +87,11 @@ export default function Indexacion() {
         ))}
       </div>
 
-      {/* IndexNow */}
-      <IndexNowCard />
+      {/* Sitemap live + IndexNow */}
+      <div className="grid lg:grid-cols-2 gap-4">
+        <SitemapLiveCard />
+        <IndexNowCard />
+      </div>
 
       {/* Log histórico */}
       <Card>
