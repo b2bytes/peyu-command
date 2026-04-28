@@ -118,6 +118,13 @@ export default function ProductoDetalle() {
   const [mockupGenerado, setMockupGenerado] = useState('');
 
   useEffect(() => {
+    // Scroll al tope cuando cambiamos de producto (al hacer clic en relacionados).
+    // El layout usa un wrapper con `overflow-auto`, así que scrollean ambos.
+    window.scrollTo({ top: 0, behavior: 'auto' });
+    document.querySelectorAll('.overflow-auto, .overflow-y-auto').forEach(el => {
+      if (el.scrollTop > 0) el.scrollTop = 0;
+    });
+
     base44.entities.Producto.list().then(data => {
       const prod = data.find(p => p.id === id);
       setProducto(prod);
