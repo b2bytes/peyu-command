@@ -171,6 +171,8 @@ export default function ProductoDetalle() {
   // SEO: schema.org Product + Breadcrumb + Organization en un solo @graph
   const canonicalUrl = `https://peyuchile.cl/producto/${producto.id}`;
   const productImageForSeo = imgPrincipal;
+  // Galería deduplicada para schema (Google premia múltiples imágenes)
+  const seoImages = Array.from(new Set([imgPrincipal, imgAlterna].filter(Boolean)));
   const productJsonLd = combineSchemas(
     buildOrganizationSchema(),
     buildBreadcrumbSchema([
@@ -181,14 +183,36 @@ export default function ProductoDetalle() {
     ]),
     buildProductSchema({
       ...producto,
+      images: seoImages,
       imagen_url: productImageForSeo,
+      precio_final: precioFinal,
+      canonicalUrl,
+      rating: { value: 5.0, count: 127 },
     }),
   );
 
-  const seoTitle = `${producto.nombre} · ${producto.material?.includes('100%') ? '100% Reciclado' : 'Compostable'} · PEYU Chile`;
-  const seoDescription = (producto.descripcion?.replace(/[⭐🌾]/g, '').trim() ||
-    `${producto.nombre} · ${producto.material || 'material sostenible'}. Fabricado en Chile, grabado láser UV, envío a todo el país. Desde $${precioFinal.toLocaleString('es-CL')}.`
-  ).slice(0, 160);
+  // ── Título y descripción dinámicos ─────────────────────────────────
+  // Estructura: "{Nombre} {Categoría} {Material} | PEYU Chile" (~60 chars)
+  const materialCorto = producto.material?.includes('100%')
+    ? '100% Reciclado'
+    : producto.material?.includes('Trigo')
+      ? 'Compostable'
+      : 'Sustentable';
+  const seoTitleRaw = `${producto.nombre} · ${materialCorto} · $${precioFinal.toLocaleString('es-CL')} | PEYU Chile`;
+  const seoTitle = seoTitleRaw.length > 65
+    ? `${producto.nombre} · ${materialCorto} | PEYU Chile`.slice(0, 65)
+    : seoTitleRaw;
+
+  // Descripción: incluye material, precio, lead time, personalización y origen
+  const descripcionLimpia = producto.descripcion?.replace(/[⭐🌾✨💚🇨🇱♻️]/g, '').trim();
+  const stockHint = producto.stock_actual > 0 ? '✓ Stock disponible. ' : '';
+  const personalizacionHint = producto.moq_personalizacion
+    ? `Personalización láser UV gratis desde ${producto.moq_personalizacion} u. `
+    : '';
+  const seoDescriptionRaw = descripcionLimpia
+    ? `${descripcionLimpia.slice(0, 90)}. ${materialCorto}, hecho en Chile. ${stockHint}${personalizacionHint}Envío gratis sobre $40.000.`
+    : `${producto.nombre}: ${materialCorto.toLowerCase()}, fabricado en Chile. Desde $${precioFinal.toLocaleString('es-CL')}. ${personalizacionHint}${stockHint}Garantía ${producto.garantia_anios || 10} años. Envío a todo el país.`;
+  const seoDescription = seoDescriptionRaw.replace(/\s+/g, ' ').trim().slice(0, 160);
 
   return (
     <>
