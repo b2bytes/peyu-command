@@ -75,6 +75,8 @@ import AdsCommand from './pages/AdsCommand';
 import LaunchMap from './pages/LaunchMap';
 import GA4Realtime from './pages/GA4Realtime';
 import Lanzamiento from './pages/Lanzamiento';
+import Canjear from './pages/Canjear';
+import RegalarGiftCard from './pages/RegalarGiftCard';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -184,6 +186,8 @@ function App() {
                 <Route path="/terminos" element={<Terminos />} />
                 <Route path="/privacidad" element={<Privacidad />} />
                 <Route path="/cookies" element={<Cookies />} />
+                <Route path="/canjear" element={<Canjear />} />
+                <Route path="/regalar-giftcard" element={<RegalarGiftCard />} />
               </Route>
 
               {/* Admin Routes - Protected */}
