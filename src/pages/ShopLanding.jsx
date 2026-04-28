@@ -20,15 +20,17 @@ import SEO from '@/components/SEO';
 import { buildOrganizationSchema, buildWebSiteSchema, combineSchemas } from '@/lib/schemas-peyu';
 
 // Limpia los bloques [CONTEXTO] y [BRAIN] que se inyectan al agente —
-// no deben verse en la UI. El mensaje real del usuario queda al final.
+// no deben verse en la UI. En withContext() el mensaje real del usuario
+// SIEMPRE queda al final, separado por '\n\n' del último bloque inyectado.
+// Estrategia: si detectamos marcadores, devolvemos solo lo que viene
+// después del último '\n\n' (= el mensaje real del usuario).
 const stripContext = (m) => {
   if (!m || m.role !== 'user' || !m.content) return m;
-  let cleaned = m.content;
-  // Quita [CONTEXTO] ... hasta doble salto de línea o fin de string
-  cleaned = cleaned.replace(/\[CONTEXTO\][\s\S]*?(?:\n\n|$)/, '');
-  // Quita [BRAIN] ... hasta doble salto de línea o fin de string
-  cleaned = cleaned.replace(/\[BRAIN\][\s\S]*?(?:\n\n|$)/, '');
-  return { ...m, content: cleaned.trim() };
+  const hasMarkers = /\[CONTEXTO\]|\[BRAIN\]/.test(m.content);
+  if (!hasMarkers) return m;
+  const idx = m.content.lastIndexOf('\n\n');
+  const cleaned = idx >= 0 ? m.content.slice(idx + 2).trim() : m.content;
+  return { ...m, content: cleaned };
 };
 
 const OCASIONES = [
