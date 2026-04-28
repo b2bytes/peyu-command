@@ -229,8 +229,8 @@ export default function AsistenteChat() {
         <div
           className="fixed right-2 sm:right-6 left-2 sm:left-auto z-50 w-auto sm:w-96 max-w-[calc(100vw-1rem)] sm:max-w-[calc(100vw-2rem)] bg-white rounded-2xl shadow-2xl border border-gray-100 flex flex-col overflow-hidden"
           style={{
-            bottom: 'calc(env(safe-area-inset-bottom) + 5rem)',
-            maxHeight: 'calc(100vh - env(safe-area-inset-bottom) - 6rem)',
+            bottom: 'calc(env(safe-area-inset-bottom) + 5.5rem)',
+            maxHeight: 'calc(100vh - env(safe-area-inset-bottom) - 7rem)',
           }}
         >
           {/* Header */}

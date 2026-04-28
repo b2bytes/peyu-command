@@ -9,7 +9,6 @@ import {
   Star, Recycle, Sparkles, ChevronRight, Heart, Share2,
   RotateCcw, BadgeCheck, Copy, X
 } from 'lucide-react';
-import WhatsAppWidget from '@/components/WhatsAppWidget';
 import MockupGenerator from '@/components/MockupGenerator';
 import { saveMockupDraft } from '@/lib/mockup-draft';
 import SEO from '@/components/SEO';
@@ -832,8 +831,6 @@ export default function ProductoDetalle() {
             </div>
           )}
         </div>
-
-        <WhatsAppWidget context="producto" productName={producto.nombre} sku={producto.sku} />
 
         <MockupGenerator
           open={mockupOpen}
