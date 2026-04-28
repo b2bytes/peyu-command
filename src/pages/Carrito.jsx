@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
@@ -15,6 +15,32 @@ export default function Carrito() {
   const [pedidoOk, setPedidoOk] = useState(null);
   const [step, setStep] = useState(1); // 1=Carrito, 2=Datos
   const [giftCard, setGiftCard] = useState(null); // { codigo, saldo_clp }
+  const captureTimerRef = useRef(null);
+
+  // 📩 Captura el carrito abandonado en cuanto tenemos un email válido.
+  // Se llama on blur del campo email (debounce 500ms para evitar spam).
+  // Si en 1h no concreta el pedido, una automatización envía recordatorio.
+  const capturarCarrito = (clienteData) => {
+    if (!clienteData.email || !/\S+@\S+\.\S+/.test(clienteData.email)) return;
+    if (carrito.length === 0) return;
+    clearTimeout(captureTimerRef.current);
+    captureTimerRef.current = setTimeout(() => {
+      base44.functions.invoke('capturarCarritoAbandonado', {
+        email: clienteData.email,
+        nombre: clienteData.nombre,
+        telefono: clienteData.telefono,
+        carrito_items: carrito.map(i => ({
+          nombre: i.nombre,
+          cantidad: i.cantidad,
+          precio: i.precio,
+          imagen: i.imagen,
+          personalizacion: i.personalizacion,
+        })),
+        subtotal,
+        total,
+      }).catch(() => {}); // no bloquea checkout
+    }, 500);
+  };
 
   const eliminar = (id) => {
     const nuevo = carrito.filter(i => i.id !== id);
@@ -279,6 +305,7 @@ export default function Carrito() {
                         type={f.type || 'text'}
                         value={cliente[f.key]}
                         onChange={e => setCliente({ ...cliente, [f.key]: e.target.value })}
+                        onBlur={() => { if (f.key === 'email') capturarCarrito(cliente); }}
                         placeholder={f.placeholder}
                         className="h-11 text-sm rounded-xl border-gray-200 bg-gray-50 focus:bg-white focus:border-gray-400"
                       />
