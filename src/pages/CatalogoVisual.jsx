@@ -1,16 +1,6 @@
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, ShoppingCart, Building2, Grid3x3, Recycle, Star, Zap, Home, HelpCircle, Heart } from 'lucide-react';
-import MobileMenu from '@/components/MobileMenu';
-
-const MENU_ITEMS = [
-  { href: '/', label: 'Inicio', icon: Home },
-  { href: '/shop', label: 'Tienda', icon: ShoppingCart },
-  { href: '/catalogo-visual', label: 'Catálogo', icon: Grid3x3 },
-  { href: '/b2b/contacto', label: 'B2B', icon: Building2 },
-  { href: '/nosotros', label: 'Nosotros', icon: Heart },
-  { href: '/soporte', label: 'Soporte', icon: HelpCircle },
-];
+import { ArrowRight, ShoppingCart, Building2, Grid3x3, Recycle, Star, Zap } from 'lucide-react';
 import SocialProductFeed from '@/components/SocialProductFeed';
 
 
@@ -31,25 +21,6 @@ const STATS = [
 export default function CatalogoVisual() {
   return (
     <div className="flex-1 overflow-auto font-inter">
-
-        {/* Header */}
-        <div className="bg-gradient-to-r from-teal-500/30 to-cyan-500/30 border-b border-white/20 px-4 sm:px-6 py-3 flex items-center justify-between sticky top-0 z-40 backdrop-blur-md">
-          <div className="flex items-center gap-3">
-            <MobileMenu items={MENU_ITEMS} />
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-teal-400 to-cyan-500 flex items-center justify-center shadow-lg text-lg">🐢</div>
-              <div>
-                <p className="text-sm font-poppins font-bold text-white leading-none">PEYU Chile</p>
-                <p className="text-[10px] text-white/60 leading-none mt-0.5">Catálogo Visual</p>
-              </div>
-            </div>
-          </div>
-          <Link to="/shop">
-            <Button size="sm" className="bg-gradient-to-r from-teal-500 to-cyan-500 hover:from-teal-600 hover:to-cyan-600 text-white rounded-full gap-1.5 text-xs font-bold px-4 shadow-lg border-0">
-              <ShoppingCart className="w-3.5 h-3.5" /> Ir a Tienda
-            </Button>
-          </Link>
-        </div>
 
         {/* Hero */}
         <section className="px-4 sm:px-8 py-14 max-w-5xl mx-auto text-center space-y-6">
