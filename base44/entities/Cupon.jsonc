@@ -1,0 +1,73 @@
+{
+  "name": "Cupon",
+  "type": "object",
+  "description": "Cupones de descuento aplicables en checkout B2C. Pueden ser % o monto fijo, con m\u00ednimo de compra y fecha de expiraci\u00f3n.",
+  "properties": {
+    "codigo": {
+      "type": "string",
+      "title": "C\u00f3digo (ej: BIENVENIDA10)"
+    },
+    "descripcion": {
+      "type": "string",
+      "title": "Descripci\u00f3n interna"
+    },
+    "tipo": {
+      "type": "string",
+      "title": "Tipo de descuento",
+      "enum": [
+        "porcentaje",
+        "monto_fijo",
+        "envio_gratis"
+      ],
+      "default": "porcentaje"
+    },
+    "valor": {
+      "type": "number",
+      "title": "Valor (% o CLP seg\u00fan tipo)"
+    },
+    "minimo_compra_clp": {
+      "type": "number",
+      "title": "M\u00ednimo de compra (CLP)",
+      "default": 0
+    },
+    "max_descuento_clp": {
+      "type": "number",
+      "title": "Tope m\u00e1ximo descuento (CLP, solo %)"
+    },
+    "usos_max": {
+      "type": "number",
+      "title": "Usos m\u00e1ximos totales (0 = ilimitado)",
+      "default": 0
+    },
+    "usos_actuales": {
+      "type": "number",
+      "title": "Usos actuales",
+      "default": 0
+    },
+    "uso_unico_por_email": {
+      "type": "boolean",
+      "title": "Un uso por email",
+      "default": false
+    },
+    "fecha_inicio": {
+      "type": "string",
+      "format": "date",
+      "title": "Vigente desde"
+    },
+    "fecha_expiracion": {
+      "type": "string",
+      "format": "date",
+      "title": "Vigente hasta"
+    },
+    "activo": {
+      "type": "boolean",
+      "title": "Activo",
+      "default": true
+    }
+  },
+  "required": [
+    "codigo",
+    "tipo",
+    "valor"
+  ]
+}

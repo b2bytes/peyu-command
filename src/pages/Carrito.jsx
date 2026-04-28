@@ -2,24 +2,32 @@ import { useState, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Trash2, ArrowLeft, ShoppingBag, CheckCircle2, Truck, Shield, ChevronRight, Lock, Package, Recycle, Gift } from 'lucide-react';
+import { Trash2, ArrowLeft, ShoppingBag, CheckCircle2, Truck, Shield, ChevronRight, Lock, Recycle, Gift, AlertCircle } from 'lucide-react';
 import { trackBeginCheckout, trackPurchase } from '@/lib/analytics-peyu';
 import GiftCardRedeemBox from '@/components/cart/GiftCardRedeemBox';
+import CuponBox from '@/components/cart/CuponBox';
+import PaymentMethodSelector from '@/components/cart/PaymentMethodSelector';
+import ShippingAddressForm, { validarShippingForm } from '@/components/cart/ShippingAddressForm';
+
+const DESCUENTO_TRANSFERENCIA_PCT = 5;
 
 export default function Carrito() {
   const navigate = useNavigate();
   const [carrito, setCarrito] = useState(JSON.parse(localStorage.getItem('carrito') || '[]'));
-  const [cliente, setCliente] = useState({ nombre: '', email: '', telefono: '', ciudad: '', direccion: '' });
+  const [cliente, setCliente] = useState({
+    nombre: '', email: '', telefono: '',
+    region: '', ciudad: '', direccion: '', codigo_postal: '',
+  });
+  const [errors, setErrors] = useState({});
   const [creando, setCreando] = useState(false);
   const [pedidoOk, setPedidoOk] = useState(null);
-  const [step, setStep] = useState(1); // 1=Carrito, 2=Datos
-  const [giftCard, setGiftCard] = useState(null); // { codigo, saldo_clp }
+  const [step, setStep] = useState(1); // 1=Carrito, 2=Datos+Pago
+  const [giftCard, setGiftCard] = useState(null);
+  const [cupon, setCupon] = useState(null); // { codigo, descuento_clp, libera_envio, ... }
+  const [medioPago, setMedioPago] = useState('WebPay');
   const captureTimerRef = useRef(null);
 
   // 📩 Captura el carrito abandonado en cuanto tenemos un email válido.
-  // Se llama on blur del campo email (debounce 500ms para evitar spam).
-  // Si en 1h no concreta el pedido, una automatización envía recordatorio.
   const capturarCarrito = (clienteData) => {
     if (!clienteData.email || !/\S+@\S+\.\S+/.test(clienteData.email)) return;
     if (carrito.length === 0) return;
@@ -30,15 +38,12 @@ export default function Carrito() {
         nombre: clienteData.nombre,
         telefono: clienteData.telefono,
         carrito_items: carrito.map(i => ({
-          nombre: i.nombre,
-          cantidad: i.cantidad,
-          precio: i.precio,
-          imagen: i.imagen,
-          personalizacion: i.personalizacion,
+          nombre: i.nombre, cantidad: i.cantidad, precio: i.precio,
+          imagen: i.imagen, personalizacion: i.personalizacion,
         })),
         subtotal,
         total,
-      }).catch(() => {}); // no bloquea checkout
+      }).catch(() => {});
     }, 500);
   };
 
@@ -55,32 +60,56 @@ export default function Carrito() {
     localStorage.setItem('carrito', JSON.stringify(nuevo));
   };
 
+  // ── CÁLCULOS ───────────────────────────────────────────────────────
   const subtotal = carrito.reduce((sum, i) => sum + i.precio * i.cantidad, 0);
-  const envio = subtotal >= 40000 ? 0 : 5990;
-  const totalAntesGC = subtotal + envio;
-  // Gift Card no se aplica sobre la compra de otra Gift Card (anti-loop)
-  const carritoTieneGC = carrito.some(i => String(i.sku || '').startsWith('GC-PEYU') || String(i.nombre || '').toLowerCase().includes('gift card'));
+  const envioBase = subtotal >= 40000 ? 0 : 5990;
+  // Cupón "envio_gratis" libera el envío
+  const envio = cupon?.libera_envio ? 0 : envioBase;
+  // Descuento por cupón (solo si NO es envio_gratis, ese ya redujo el envío)
+  const descuentoCupon = cupon && !cupon.libera_envio ? (cupon.descuento_clp || 0) : 0;
+  // Descuento por método de pago (transferencia 5% sobre subtotal)
+  const descuentoTransferencia = medioPago === 'Transferencia'
+    ? Math.floor(subtotal * (DESCUENTO_TRANSFERENCIA_PCT / 100))
+    : 0;
+
+  const totalAntesGC = Math.max(0, subtotal + envio - descuentoCupon - descuentoTransferencia);
+  const carritoTieneGC = carrito.some(i =>
+    String(i.sku || '').startsWith('GC-PEYU') ||
+    String(i.nombre || '').toLowerCase().includes('gift card')
+  );
   const gcDescuento = giftCard && !carritoTieneGC ? Math.min(giftCard.saldo_clp, totalAntesGC) : 0;
   const total = Math.max(0, totalAntesGC - gcDescuento);
+  const totalCubiertoConGC = gcDescuento >= totalAntesGC && totalAntesGC > 0;
 
-  const validarDatos = () => {
-    if (!cliente.nombre || !cliente.email || !cliente.telefono) {
-      alert('Por favor completa nombre, email y teléfono');
-      return false;
-    }
-    if (!/\S+@\S+\.\S+/.test(cliente.email)) {
-      alert('Email inválido');
-      return false;
-    }
-    return true;
+  // ── PEDIDO ─────────────────────────────────────────────────────────
+  const validarYContinuar = () => {
+    const errs = validarShippingForm(cliente);
+    setErrors(errs);
+    return Object.keys(errs).length === 0;
   };
 
   const crearPedido = async () => {
-    if (!validarDatos()) return;
+    if (!validarYContinuar()) {
+      // Scroll al primer error
+      setTimeout(() => {
+        document.querySelector('[class*="border-red-300"]')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 100);
+      return;
+    }
     setCreando(true);
     const numero = `WEB-${Date.now()}`;
     const items = carrito.map(i => `${i.nombre} x${i.cantidad}${i.personalizacion ? ` [${i.personalizacion}]` : ''}`).join(' | ');
-    const notasGC = gcDescuento > 0 ? ` | GiftCard ${giftCard.codigo} -$${gcDescuento.toLocaleString('es-CL')}` : '';
+    const notasExtras = [
+      gcDescuento > 0 ? `GiftCard ${giftCard.codigo} -$${gcDescuento.toLocaleString('es-CL')}` : null,
+      cupon ? `Cupón ${cupon.codigo} -$${(cupon.descuento_clp || 0).toLocaleString('es-CL')}` : null,
+      descuentoTransferencia > 0 ? `Dscto transferencia -$${descuentoTransferencia.toLocaleString('es-CL')}` : null,
+      cliente.codigo_postal ? `CP ${cliente.codigo_postal}` : null,
+      cliente.region ? `Región ${cliente.region}` : null,
+    ].filter(Boolean).join(' | ');
+
+    const descuentoTotal = descuentoCupon + descuentoTransferencia + gcDescuento;
+    const medioPagoFinal = totalCubiertoConGC ? 'GiftCard' : medioPago;
+
     const pedido = await base44.entities.PedidoWeb.create({
       numero_pedido: numero,
       fecha: new Date().toISOString().split('T')[0],
@@ -93,18 +122,19 @@ export default function Carrito() {
       cantidad: carrito.reduce((s, i) => s + i.cantidad, 0),
       subtotal,
       costo_envio: envio,
+      descuento: descuentoTotal,
       total,
-      medio_pago: gcDescuento >= totalAntesGC ? 'GiftCard' : 'WebPay',
-      estado: 'Nuevo',
+      medio_pago: medioPagoFinal,
+      estado: medioPagoFinal === 'Transferencia' ? 'Nuevo' : 'Nuevo',
       ciudad: cliente.ciudad,
       direccion_envio: cliente.direccion,
       requiere_personalizacion: carrito.some(i => i.personalizacion),
       texto_personalizacion: carrito.filter(i => i.personalizacion).map(i => i.personalizacion).join(', '),
       courier: 'Pendiente',
-      notas: `Carrito: ${carrito.length} items${notasGC}`,
+      notas: `Carrito: ${carrito.length} items${notasExtras ? ' | ' + notasExtras : ''}`,
     });
 
-    // Si hay Gift Card aplicada, descontar saldo en el backend
+    // Gift Card: descontar saldo
     if (gcDescuento > 0 && giftCard) {
       try {
         await base44.functions.invoke('canjearGiftCard', {
@@ -117,10 +147,19 @@ export default function Carrito() {
       localStorage.removeItem('peyu_giftcard_active');
     }
 
+    // Cupón: incrementar usos
+    if (cupon?.id) {
+      try {
+        await base44.entities.Cupon.update(cupon.id, {
+          usos_actuales: (cupon.usos_actuales || 0) + 1,
+        });
+      } catch (e) { console.warn('Error registrando uso de cupón:', e); }
+      localStorage.removeItem('peyu_cupon_active');
+    }
+
     localStorage.removeItem('carrito');
-    // 📊 Funnel event: purchase
     trackPurchase({ transactionId: numero, total, shipping: envio, cart: carrito });
-    setPedidoOk({ numero, total, email: cliente.email });
+    setPedidoOk({ numero, total, email: cliente.email, medioPago: medioPagoFinal });
     setCreando(false);
   };
 
@@ -138,8 +177,9 @@ export default function Carrito() {
           </div>
           <div className="bg-white border border-gray-100 rounded-3xl p-6 text-left space-y-3 shadow-sm">
             {[
-              { label: 'Total pagado', value: `$${pedidoOk.total.toLocaleString('es-CL')}`, accent: true },
-              { label: 'Confirmación enviada a', value: pedidoOk.email },
+              { label: 'Total', value: `$${pedidoOk.total.toLocaleString('es-CL')}`, accent: true },
+              { label: 'Método de pago', value: pedidoOk.medioPago },
+              { label: 'Confirmación a', value: pedidoOk.email },
               { label: 'Entrega estimada', value: '3–7 días hábiles' },
             ].map((r, i) => (
               <div key={i} className="flex justify-between items-center text-sm">
@@ -148,9 +188,15 @@ export default function Carrito() {
               </div>
             ))}
           </div>
-          <div className="bg-teal-50 border border-teal-100 rounded-2xl p-4 text-sm text-teal-700">
-            📧 Revisa tu correo. ¿Dudas? WhatsApp <strong>+56 9 3504 0242</strong>
-          </div>
+          {pedidoOk.medioPago === 'Transferencia' ? (
+            <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-4 text-sm text-emerald-800 text-left">
+              📋 Te enviamos los datos de transferencia por email. Despachamos al recibir el comprobante en <strong>pagos@peyuchile.cl</strong>
+            </div>
+          ) : (
+            <div className="bg-teal-50 border border-teal-100 rounded-2xl p-4 text-sm text-teal-700">
+              📧 Revisa tu correo. ¿Dudas? WhatsApp <strong>+56 9 3504 0242</strong>
+            </div>
+          )}
           <div className="flex gap-3">
             <Button variant="outline" className="flex-1 rounded-2xl h-12" onClick={() => navigate('/shop')}>Seguir comprando</Button>
             <Link to="/seguimiento" className="flex-1">
@@ -186,7 +232,6 @@ export default function Carrito() {
   return (
     <div className="min-h-full bg-[#FAFAF8] font-inter">
 
-      {/* Navbar */}
       <nav className="sticky top-0 z-40 bg-white/85 backdrop-blur-xl border-b border-black/5">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between gap-4">
           <button onClick={() => navigate('/shop')} className="flex items-center gap-3 text-gray-600 hover:text-gray-900 transition-colors group">
@@ -199,7 +244,6 @@ export default function Carrito() {
             </div>
           </button>
 
-          {/* Step indicator */}
           <div className="hidden sm:flex items-center gap-2 text-xs">
             <div className={`flex items-center gap-1.5 ${step >= 1 ? 'text-gray-900' : 'text-gray-400'}`}>
               <div className={`w-6 h-6 rounded-full flex items-center justify-center font-bold ${step >= 1 ? 'bg-gray-900 text-white' : 'bg-gray-100'}`}>1</div>
@@ -208,12 +252,7 @@ export default function Carrito() {
             <div className="w-6 h-px bg-gray-200" />
             <div className={`flex items-center gap-1.5 ${step >= 2 ? 'text-gray-900' : 'text-gray-400'}`}>
               <div className={`w-6 h-6 rounded-full flex items-center justify-center font-bold ${step >= 2 ? 'bg-gray-900 text-white' : 'bg-gray-100'}`}>2</div>
-              <span className="font-semibold">Datos</span>
-            </div>
-            <div className="w-6 h-px bg-gray-200" />
-            <div className="flex items-center gap-1.5 text-gray-400">
-              <div className="w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center font-bold">3</div>
-              <span className="font-semibold">Pago</span>
+              <span className="font-semibold">Envío y pago</span>
             </div>
           </div>
         </div>
@@ -222,7 +261,7 @@ export default function Carrito() {
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
         <div className="grid lg:grid-cols-3 gap-5 lg:gap-6">
 
-          {/* ── LEFT: ITEMS / DATOS ───────── */}
+          {/* ── LEFT ──────────────────────── */}
           <div className="lg:col-span-2 space-y-4">
             {step === 1 && (
               <>
@@ -262,7 +301,6 @@ export default function Carrito() {
                   </div>
                 ))}
 
-                {/* Trust */}
                 <div className="grid grid-cols-3 gap-2 sm:gap-3 pt-2">
                   {[
                     { icon: Shield, text: 'Garantía 10 años', sub: 'Plástico reciclado', color: 'text-teal-600' },
@@ -284,43 +322,58 @@ export default function Carrito() {
             )}
 
             {step === 2 && (
-              <div className="bg-white border border-gray-100 rounded-3xl p-5 sm:p-6 shadow-sm space-y-5">
-                <div>
-                  <h3 className="font-poppins font-bold text-gray-900 text-lg">Datos de envío</h3>
-                  <p className="text-xs text-gray-400 mt-1">Completa tus datos para recibir tu pedido</p>
-                </div>
-                <div className="space-y-4">
-                  {[
-                    { label: 'Nombre completo', key: 'nombre', placeholder: 'Tu nombre', req: true },
-                    { label: 'Email', key: 'email', placeholder: 'tu@email.com', type: 'email', req: true },
-                    { label: 'Teléfono / WhatsApp', key: 'telefono', placeholder: '+56 9 xxxx xxxx', req: true },
-                    { label: 'Ciudad', key: 'ciudad', placeholder: 'Santiago' },
-                    { label: 'Dirección de despacho', key: 'direccion', placeholder: 'Calle, número, depto' },
-                  ].map(f => (
-                    <div key={f.key}>
-                      <label className="text-xs font-semibold text-gray-700 block mb-1.5">
-                        {f.label} {f.req && <span className="text-red-500">*</span>}
-                      </label>
-                      <Input
-                        type={f.type || 'text'}
-                        value={cliente[f.key]}
-                        onChange={e => setCliente({ ...cliente, [f.key]: e.target.value })}
-                        onBlur={() => { if (f.key === 'email') capturarCarrito(cliente); }}
-                        placeholder={f.placeholder}
-                        className="h-11 text-sm rounded-xl border-gray-200 bg-gray-50 focus:bg-white focus:border-gray-400"
-                      />
+              <>
+                {/* Datos de envío */}
+                <div className="bg-white border border-gray-100 rounded-3xl p-5 sm:p-6 shadow-sm space-y-5">
+                  <div>
+                    <h3 className="font-poppins font-bold text-gray-900 text-lg">Datos de envío</h3>
+                    <p className="text-xs text-gray-400 mt-1">Validamos tu dirección para asegurar la entrega</p>
+                  </div>
+                  <ShippingAddressForm
+                    cliente={cliente}
+                    setCliente={(c) => { setCliente(c); setErrors({}); }}
+                    errors={errors}
+                    onEmailBlur={() => capturarCarrito(cliente)}
+                  />
+                  {Object.keys(errors).length > 0 && (
+                    <div className="bg-red-50 border border-red-200 rounded-xl p-3 flex items-start gap-2 text-xs text-red-800">
+                      <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                      <span>Revisa los campos marcados antes de continuar.</span>
                     </div>
-                  ))}
+                  )}
                 </div>
+
+                {/* Método de pago */}
+                <div className="bg-white border border-gray-100 rounded-3xl p-5 sm:p-6 shadow-sm space-y-4">
+                  <div>
+                    <h3 className="font-poppins font-bold text-gray-900 text-lg">Método de pago</h3>
+                    <p className="text-xs text-gray-400 mt-1">Elige cómo prefieres pagar</p>
+                  </div>
+                  <PaymentMethodSelector
+                    value={medioPago}
+                    onChange={setMedioPago}
+                    totalCubiertoConGC={totalCubiertoConGC}
+                  />
+                </div>
+
                 <button onClick={() => setStep(1)} className="text-sm text-gray-500 hover:text-gray-900 font-medium inline-flex items-center gap-1.5">
                   <ArrowLeft className="w-3.5 h-3.5" /> Volver al carrito
                 </button>
-              </div>
+              </>
             )}
           </div>
 
           {/* ── RIGHT SIDEBAR ─────────────── */}
           <div className="space-y-4 lg:sticky lg:top-20 lg:self-start">
+
+            {/* Cupón (siempre visible, antes del resumen) */}
+            <CuponBox
+              subtotal={subtotal}
+              envio={envioBase}
+              email={cliente.email}
+              onChange={setCupon}
+            />
+
             {/* Resumen */}
             <div className="bg-white border border-gray-100 rounded-3xl p-5 shadow-sm">
               <h3 className="font-poppins font-bold text-gray-900 mb-4">Resumen</h3>
@@ -336,13 +389,29 @@ export default function Carrito() {
                     : <span className="font-semibold text-gray-900">${envio.toLocaleString('es-CL')}</span>
                   }
                 </div>
+
+                {descuentoCupon > 0 && (
+                  <div className="flex justify-between text-emerald-700">
+                    <span className="flex items-center gap-1">🎟️ Cupón {cupon.codigo}</span>
+                    <span className="font-bold">−${descuentoCupon.toLocaleString('es-CL')}</span>
+                  </div>
+                )}
+
+                {descuentoTransferencia > 0 && (
+                  <div className="flex justify-between text-emerald-700">
+                    <span className="flex items-center gap-1">🏦 Dscto transferencia (5%)</span>
+                    <span className="font-bold">−${descuentoTransferencia.toLocaleString('es-CL')}</span>
+                  </div>
+                )}
+
                 {gcDescuento > 0 && (
                   <div className="flex justify-between text-emerald-700">
                     <span className="flex items-center gap-1"><Gift className="w-3.5 h-3.5" /> Gift Card</span>
                     <span className="font-bold">−${gcDescuento.toLocaleString('es-CL')}</span>
                   </div>
                 )}
-                {subtotal < 40000 && (
+
+                {subtotal < 40000 && !cupon?.libera_envio && (
                   <div className="bg-amber-50 border border-amber-100 rounded-xl p-3 mt-3">
                     <p className="text-xs text-amber-800 font-medium">
                       🎯 Agrega <strong>${(40000 - subtotal).toLocaleString('es-CL')}</strong> más y el envío es gratis
@@ -359,7 +428,7 @@ export default function Carrito() {
               </div>
             </div>
 
-            {/* Gift Card redemption */}
+            {/* Gift Card */}
             {!carritoTieneGC && (
               <GiftCardRedeemBox onChange={setGiftCard} />
             )}
@@ -368,7 +437,6 @@ export default function Carrito() {
             {step === 1 ? (
               <Button
                 onClick={() => {
-                  // 📊 Funnel event: begin_checkout
                   trackBeginCheckout(carrito, subtotal);
                   setStep(2);
                 }}
@@ -386,6 +454,8 @@ export default function Carrito() {
                   <><div className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" /> Procesando...</>
                 ) : total === 0 ? (
                   <><Gift className="w-4 h-4" /> Confirmar pedido (cubierto por Gift Card)</>
+                ) : medioPago === 'Transferencia' ? (
+                  <><Lock className="w-4 h-4" /> Confirmar pedido · ${total.toLocaleString('es-CL')}</>
                 ) : (
                   <><Lock className="w-4 h-4" /> Pagar ${total.toLocaleString('es-CL')}</>
                 )}
@@ -394,10 +464,9 @@ export default function Carrito() {
 
             <div className="flex items-center justify-center gap-1.5 text-xs text-gray-400">
               <Lock className="w-3 h-3" />
-              Pago 100% seguro · WebPay
+              Pago 100% seguro · {medioPago === 'Transferencia' ? 'Banco de Chile' : medioPago === 'MercadoPago' ? 'Mercado Pago' : 'Webpay'}
             </div>
 
-            {/* Footer links */}
             <div className="flex justify-center gap-5 text-xs text-gray-400 pt-1">
               <Link to="/seguimiento" className="hover:text-gray-900">🔍 Seguimiento</Link>
               <Link to="/soporte" className="hover:text-gray-900">❓ Ayuda</Link>
