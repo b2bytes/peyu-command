@@ -1,13 +1,15 @@
 import { Link } from 'react-router-dom';
-import { Clock, ArrowRight } from 'lucide-react';
+import { Clock, ArrowRight, ExternalLink } from 'lucide-react';
 
+// Coincide con `entities/BlogPost.json` enum
 const CATEGORY_COLORS = {
-  Sostenibilidad: 'bg-emerald-500/20 text-emerald-200 border-emerald-400/30',
-  Producto: 'bg-blue-500/20 text-blue-200 border-blue-400/30',
-  Corporativo: 'bg-purple-500/20 text-purple-200 border-purple-400/30',
-  Historias: 'bg-amber-500/20 text-amber-200 border-amber-400/30',
-  Tips: 'bg-pink-500/20 text-pink-200 border-pink-400/30',
-  Novedades: 'bg-teal-500/20 text-teal-200 border-teal-400/30',
+  'Historia PEYU':                'bg-amber-500/20 text-amber-200 border-amber-400/30',
+  'Reciclaje y Medio Ambiente':   'bg-emerald-500/20 text-emerald-200 border-emerald-400/30',
+  'Guías y Tips':                 'bg-pink-500/20 text-pink-200 border-pink-400/30',
+  'Casos de Éxito':               'bg-purple-500/20 text-purple-200 border-purple-400/30',
+  'Noticias y Prensa':            'bg-blue-500/20 text-blue-200 border-blue-400/30',
+  'Regalos Corporativos':         'bg-indigo-500/20 text-indigo-200 border-indigo-400/30',
+  'Educación Ambiental':          'bg-teal-500/20 text-teal-200 border-teal-400/30',
 };
 
 function formatDate(d) {
@@ -38,13 +40,18 @@ export default function BlogCard({ post, featured = false }) {
           loading="lazy"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-        <div className="absolute top-3 left-3 flex gap-1.5">
+        <div className="absolute top-3 left-3 flex gap-1.5 flex-wrap max-w-[calc(100%-1.5rem)]">
           <span className={`text-[10px] font-bold px-2 py-1 rounded-full border backdrop-blur ${cat}`}>
             {post.categoria || 'Artículo'}
           </span>
           {featured && (
             <span className="text-[10px] font-bold px-2 py-1 rounded-full bg-yellow-400/90 text-yellow-950 backdrop-blur">
               Destacado
+            </span>
+          )}
+          {post.fuente_original && (
+            <span className="text-[10px] font-bold px-2 py-1 rounded-full bg-black/50 text-white/90 backdrop-blur border border-white/15 flex items-center gap-1">
+              <ExternalLink className="w-2.5 h-2.5" /> {post.fuente_original}
             </span>
           )}
         </div>
@@ -64,9 +71,9 @@ export default function BlogCard({ post, featured = false }) {
         <div className="flex items-center justify-between text-[11px] text-white/50">
           <div className="flex items-center gap-3">
             <span>{formatDate(post.fecha_publicacion)}</span>
-            {post.tiempo_lectura && (
+            {post.tiempo_lectura_min && (
               <span className="flex items-center gap-1">
-                <Clock className="w-3 h-3" /> {post.tiempo_lectura} min
+                <Clock className="w-3 h-3" /> {post.tiempo_lectura_min} min
               </span>
             )}
           </div>

@@ -2,9 +2,11 @@ import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import ReactMarkdown from 'react-markdown';
-import { ArrowLeft, Clock, Calendar, User } from 'lucide-react';
+import { ArrowLeft, Clock, Calendar, User, ExternalLink, Tag } from 'lucide-react';
 import BlogShareButtons from '../components/blog/BlogShareButtons';
 import BlogCard from '../components/blog/BlogCard';
+import SEO from '@/components/SEO';
+import { combineSchemas, buildOrganizationSchema, buildBreadcrumbSchema, buildArticleSchema } from '@/lib/schemas-peyu';
 
 export default function BlogPostPage() {
   const { slug } = useParams();
@@ -16,7 +18,6 @@ export default function BlogPostPage() {
   useEffect(() => {
     async function load() {
       setLoading(true);
-      // Buscar por slug o por id
       let data = await base44.entities.BlogPost.filter({ slug, publicado: true });
       if (!data?.length) {
         try { data = [await base44.entities.BlogPost.get(slug)]; } catch { data = []; }
@@ -31,6 +32,11 @@ export default function BlogPostPage() {
           4,
         );
         setRelated((rel || []).filter(p => p.id !== found.id).slice(0, 3));
+
+        // Incrementar contador de vistas (best-effort)
+        try {
+          await base44.entities.BlogPost.update(found.id, { vistas: (found.vistas || 0) + 1 });
+        } catch {}
       }
       setLoading(false);
     }
@@ -38,7 +44,7 @@ export default function BlogPostPage() {
     window.scrollTo({ top: 0 });
   }, [slug]);
 
-  // Barra de progreso de lectura
+  // Barra progreso lectura
   useEffect(() => {
     const onScroll = () => {
       const h = document.documentElement;
@@ -82,82 +88,149 @@ export default function BlogPostPage() {
   }
 
   const img = post.imagen_portada || 'https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?w=1600&auto=format&fit=crop';
+  const canonicalUrl = `https://peyuchile.cl/blog/${post.slug || post.id}`;
+
+  // SEO
+  const seoTitle = `${post.titulo} | Blog PEYU Chile`;
+  const seoDescription = (post.seo_description || post.excerpt || '').replace(/\s+/g, ' ').trim().slice(0, 160);
+  const articleJsonLd = combineSchemas(
+    buildOrganizationSchema(),
+    buildBreadcrumbSchema([
+      { name: 'Inicio', url: 'https://peyuchile.cl/' },
+      { name: 'Blog', url: 'https://peyuchile.cl/blog' },
+      { name: post.categoria, url: `https://peyuchile.cl/blog?cat=${encodeURIComponent(post.categoria || '')}` },
+      { name: post.titulo, url: canonicalUrl },
+    ]),
+    buildArticleSchema(post, canonicalUrl),
+  );
 
   return (
-    <div className="min-h-screen">
-      {/* Reading progress bar */}
-      <div className="fixed top-0 left-0 right-0 h-1 z-50 bg-transparent">
-        <div
-          className="h-full bg-gradient-to-r from-teal-400 to-emerald-400 transition-all duration-100"
-          style={{ width: `${progress}%` }}
-        />
-      </div>
+    <>
+      <SEO
+        title={seoTitle.slice(0, 65)}
+        description={seoDescription}
+        canonical={canonicalUrl}
+        image={post.imagen_portada}
+        type="article"
+        jsonLd={articleJsonLd}
+      />
 
-      <article className="max-w-3xl mx-auto px-4 sm:px-6 py-10 sm:py-14">
-        <Link
-          to="/blog"
-          className="inline-flex items-center gap-1.5 text-xs text-white/60 hover:text-teal-300 mb-6 transition-colors"
-        >
-          <ArrowLeft className="w-3.5 h-3.5" /> Volver al blog
-        </Link>
-
-        <header className="mb-8">
-          {post.categoria && (
-            <span className="inline-block text-[11px] font-bold px-2.5 py-1 rounded-full bg-teal-500/20 border border-teal-400/30 text-teal-200 mb-4">
-              {post.categoria}
-            </span>
-          )}
-          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white leading-tight mb-4 tracking-tight">
-            {post.titulo}
-          </h1>
-          {post.excerpt && (
-            <p className="text-base sm:text-lg text-white/70 leading-relaxed mb-6">
-              {post.excerpt}
-            </p>
-          )}
-          <div className="flex flex-wrap items-center gap-4 text-xs text-white/50 border-y border-white/10 py-3">
-            {post.autor && (
-              <span className="flex items-center gap-1.5"><User className="w-3.5 h-3.5" /> {post.autor}</span>
-            )}
-            <span className="flex items-center gap-1.5"><Calendar className="w-3.5 h-3.5" /> {formatDate(post.fecha_publicacion)}</span>
-            {post.tiempo_lectura && (
-              <span className="flex items-center gap-1.5"><Clock className="w-3.5 h-3.5" /> {post.tiempo_lectura} min lectura</span>
-            )}
-          </div>
-        </header>
-
-        <div className="aspect-[16/9] rounded-2xl overflow-hidden mb-10 bg-white/5 border border-white/10">
-          <img src={img} alt={post.titulo} className="w-full h-full object-cover" />
+      <div className="min-h-screen">
+        {/* Reading progress bar */}
+        <div className="fixed top-0 left-0 right-0 h-1 z-50 bg-transparent">
+          <div
+            className="h-full bg-gradient-to-r from-teal-400 to-emerald-400 transition-all duration-100"
+            style={{ width: `${progress}%` }}
+          />
         </div>
 
-        <div className="prose prose-invert prose-teal max-w-none prose-headings:font-poppins prose-headings:text-white prose-p:text-white/75 prose-p:leading-relaxed prose-a:text-teal-300 prose-strong:text-white prose-img:rounded-xl prose-blockquote:border-l-teal-400 prose-blockquote:text-white/80">
-          <ReactMarkdown>{post.contenido || ''}</ReactMarkdown>
-        </div>
+        <article className="max-w-3xl mx-auto px-4 sm:px-6 py-10 sm:py-14">
+          <Link
+            to="/blog"
+            className="inline-flex items-center gap-1.5 text-xs text-white/60 hover:text-teal-300 mb-6 transition-colors"
+          >
+            <ArrowLeft className="w-3.5 h-3.5" /> Volver al blog
+          </Link>
 
-        {post.tags?.length > 0 && (
-          <div className="mt-10 pt-6 border-t border-white/10 flex flex-wrap gap-2">
-            {post.tags.map(t => (
-              <span key={t} className="text-[11px] px-2.5 py-1 rounded-full bg-white/5 border border-white/15 text-white/60">
-                #{t}
-              </span>
-            ))}
+          <header className="mb-8">
+            <div className="flex flex-wrap gap-2 mb-4">
+              {post.categoria && (
+                <span className="inline-block text-[11px] font-bold px-2.5 py-1 rounded-full bg-teal-500/20 border border-teal-400/30 text-teal-200">
+                  {post.categoria}
+                </span>
+              )}
+              {post.fuente_original && (
+                <a
+                  href={post.fuente_url || '#'}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-full bg-white/10 border border-white/20 text-white/80 hover:bg-white/15 hover:text-white transition"
+                >
+                  <ExternalLink className="w-2.5 h-2.5" /> Fuente: {post.fuente_original}
+                </a>
+              )}
+            </div>
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white leading-tight mb-4 tracking-tight">
+              {post.titulo}
+            </h1>
+            {post.excerpt && (
+              <p className="text-base sm:text-lg text-white/70 leading-relaxed mb-6">
+                {post.excerpt}
+              </p>
+            )}
+            <div className="flex flex-wrap items-center gap-4 text-xs text-white/50 border-y border-white/10 py-3">
+              {post.autor && (
+                <span className="flex items-center gap-1.5"><User className="w-3.5 h-3.5" /> {post.autor}</span>
+              )}
+              <span className="flex items-center gap-1.5"><Calendar className="w-3.5 h-3.5" /> {formatDate(post.fecha_publicacion)}</span>
+              {post.tiempo_lectura_min && (
+                <span className="flex items-center gap-1.5"><Clock className="w-3.5 h-3.5" /> {post.tiempo_lectura_min} min lectura</span>
+              )}
+              {typeof post.vistas === 'number' && post.vistas > 10 && (
+                <span className="text-white/40">· {post.vistas.toLocaleString('es-CL')} lecturas</span>
+              )}
+            </div>
+          </header>
+
+          <div className="aspect-[16/9] rounded-2xl overflow-hidden mb-10 bg-white/5 border border-white/10">
+            <img src={img} alt={post.titulo} className="w-full h-full object-cover" />
           </div>
+
+          <div className="prose prose-invert prose-teal max-w-none prose-headings:font-poppins prose-headings:text-white prose-p:text-white/75 prose-p:leading-relaxed prose-a:text-teal-300 prose-strong:text-white prose-img:rounded-xl prose-blockquote:border-l-teal-400 prose-blockquote:text-white/80">
+            <ReactMarkdown>{post.contenido_md || ''}</ReactMarkdown>
+          </div>
+
+          {/* Fuente original al final del artículo */}
+          {post.fuente_url && (
+            <div className="mt-10 bg-white/5 border border-white/15 rounded-2xl p-5">
+              <p className="text-[11px] uppercase tracking-widest text-teal-300 font-bold mb-2">Fuente original</p>
+              <a
+                href={post.fuente_url}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-2 text-white hover:text-teal-300 font-semibold text-sm transition-colors"
+              >
+                {post.fuente_original || 'Leer artículo original'}
+                <ExternalLink className="w-3.5 h-3.5" />
+              </a>
+              <p className="text-xs text-white/50 mt-2">
+                Citamos siempre nuestras fuentes para que puedas verificar la información.
+              </p>
+            </div>
+          )}
+
+          {/* Tags */}
+          {post.tags?.length > 0 && (
+            <div className="mt-10 pt-6 border-t border-white/10">
+              <p className="text-[11px] uppercase tracking-widest text-white/50 font-bold mb-3 flex items-center gap-1.5">
+                <Tag className="w-3 h-3" /> Etiquetas
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {post.tags.map(t => (
+                  <span key={t} className="text-[11px] px-2.5 py-1 rounded-full bg-white/5 border border-white/15 text-white/70 hover:bg-white/10 transition">
+                    #{t}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Compartir */}
+          <div className="mt-8 pt-6 border-t border-white/10">
+            <p className="text-xs text-white/50 mb-3">¿Te gustó? Compártelo</p>
+            <BlogShareButtons title={post.titulo} />
+          </div>
+        </article>
+
+        {related.length > 0 && (
+          <section className="max-w-6xl mx-auto px-4 sm:px-6 pb-16">
+            <h2 className="text-xl sm:text-2xl font-bold text-white mb-6">También te puede interesar</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+              {related.map(p => <BlogCard key={p.id} post={p} />)}
+            </div>
+          </section>
         )}
-
-        <div className="mt-8 pt-6 border-t border-white/10">
-          <p className="text-xs text-white/50 mb-3">¿Te gustó? Compártelo</p>
-          <BlogShareButtons title={post.titulo} />
-        </div>
-      </article>
-
-      {related.length > 0 && (
-        <section className="max-w-6xl mx-auto px-4 sm:px-6 pb-16">
-          <h2 className="text-xl sm:text-2xl font-bold text-white mb-6">También te puede interesar</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            {related.map(p => <BlogCard key={p.id} post={p} />)}
-          </div>
-        </section>
-      )}
-    </div>
+      </div>
+    </>
   );
 }

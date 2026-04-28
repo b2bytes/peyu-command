@@ -203,6 +203,57 @@ export const buildProductSchema = (p = {}) => {
   };
 };
 
+/**
+ * Article / BlogPosting schema (Google Rich Results para blog).
+ * Acepta:
+ *   p.titulo, p.slug, p.excerpt, p.contenido_md, p.imagen_portada
+ *   p.fecha_publicacion, p.autor, p.categoria, p.tags
+ *   p.fuente_original, p.fuente_url, p.tiempo_lectura_min
+ *   canonicalUrl (opcional)
+ */
+export const buildArticleSchema = (p = {}, canonicalUrl) => {
+  const url = canonicalUrl || `${SITE_URL}/blog/${p.slug || p.id}`;
+  const wordCount = (p.contenido_md || '').trim().split(/\s+/).filter(Boolean).length;
+  const datePublished = p.fecha_publicacion || p.created_date;
+  const dateModified = p.updated_date || datePublished;
+
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'BlogPosting',
+    '@id': `${url}#article`,
+    mainEntityOfPage: { '@type': 'WebPage', '@id': url },
+    headline: (p.titulo || '').slice(0, 110),
+    description: p.seo_description || p.excerpt,
+    image: p.imagen_portada || undefined,
+    datePublished,
+    dateModified,
+    author: {
+      '@type': 'Person',
+      name: p.autor || 'Equipo PEYU',
+      url: `${SITE_URL}/nosotros`,
+    },
+    publisher: {
+      '@type': 'Organization',
+      name: 'PEYU Chile',
+      logo: { '@type': 'ImageObject', url: LOGO_URL },
+    },
+    articleSection: p.categoria,
+    keywords: Array.isArray(p.tags) ? p.tags.join(', ') : undefined,
+    inLanguage: 'es-CL',
+    wordCount: wordCount || undefined,
+    timeRequired: p.tiempo_lectura_min ? `PT${p.tiempo_lectura_min}M` : undefined,
+    isAccessibleForFree: true,
+    ...(p.fuente_url ? {
+      citation: {
+        '@type': 'CreativeWork',
+        name: p.fuente_original || 'Fuente externa',
+        url: p.fuente_url,
+      },
+    } : {}),
+    url,
+  };
+};
+
 export const buildFaqSchema = (faqs = []) => ({
   '@context': 'https://schema.org',
   '@type': 'FAQPage',
