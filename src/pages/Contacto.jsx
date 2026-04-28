@@ -1,5 +1,4 @@
 import SEO from '@/components/SEO';
-import PublicFooter from '@/components/PublicFooter';
 import { MessageCircle, Mail, MapPin, Phone, Clock } from 'lucide-react';
 
 export default function Contacto() {
@@ -19,7 +18,7 @@ export default function Contacto() {
   };
 
   return (
-    <div className="min-h-screen bg-white text-slate-800">
+    <div className="bg-white text-slate-800">
       <SEO
         title="Contacto | PEYU Chile - Regalos Corporativos Sostenibles"
         description="Contáctanos por WhatsApp, email o visítanos en Providencia y Macul. Respuesta en menos de 24 horas."
@@ -67,7 +66,6 @@ export default function Contacto() {
           <span>¿Prefieres que te llamemos? Déjanos tu número por WhatsApp o email y agendamos.</span>
         </div>
       </div>
-      <PublicFooter />
     </div>
   );
 }
