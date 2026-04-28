@@ -12,6 +12,7 @@ import ChatHistoryPanel from '@/components/chat/ChatHistoryPanel';
 import { ensureFreshSession, addToHistory, readHistory } from '@/lib/chat-history';
 import { withContext } from '@/lib/chat-context';
 import { closeConversation } from '@/lib/chat-brain';
+import { syncShownSkusFromMessages, buildOccasionPrompt, clearShownSkus } from '@/lib/chat-recommendations';
 import { History } from 'lucide-react';
 import { useAppBackground, getBackgroundById, buildBackgroundImageCSS, BG_OVERLAY, THEME_OVERLAY } from '@/lib/background';
 import BackgroundSwitcher from '@/components/BackgroundSwitcher';
@@ -58,7 +59,12 @@ const WELCOME_MSG = { role: 'assistant', content: '¡Hola! Soy Peyu 🐢. Ayudo 
 
 export default function ShopLanding() {
   // Si la pestaña es nueva (usuario cerró y volvió), archivar la conv anterior al historial.
-  const [freshSession] = useState(() => ensureFreshSession());
+  const [freshSession] = useState(() => {
+    const fresh = ensureFreshSession();
+    // Sesión nueva → resetear memoria de SKUs ya mostrados
+    if (fresh) clearShownSkus();
+    return fresh;
+  });
   const [conversationId, setConversationId] = useState(() => localStorage.getItem(STORAGE_KEY) || null);
   const [messages, setMessages] = useState([WELCOME_MSG]);
   const [showHistory, setShowHistory] = useState(false);
@@ -101,6 +107,8 @@ export default function ShopLanding() {
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    // 🧠 Sincroniza SKUs ya mostrados para que el agente rote en próximos clicks
+    syncShownSkusFromMessages(messages);
   }, [messages]);
 
   // Recuperar conversación existente al montar SOLO si la sesión sigue viva
@@ -246,7 +254,9 @@ export default function ShopLanding() {
   };
 
   const handleOccasionClick = async (ocasion) => {
-    const mensaje = `Me gustaría un regalo corporativo para ${ocasion.label}. ¿Cuáles son las opciones disponibles y qué me recomiendas?`;
+    // Genera un prompt inteligente: pide productos DISTINTOS si ya hubo
+    // recomendaciones previas, o cambia el set si cambió la ocasión.
+    const mensaje = buildOccasionPrompt(ocasion.label);
     await sendMessage(mensaje);
   };
 

@@ -104,6 +104,18 @@ export async function buildChatContext() {
     if (q) ctx.detected_qty = parseInt(q, 10);
   } catch { /* no-op */ }
 
+  // 🧠 SKUs ya mostrados en esta sesión — el agente DEBE rotar a otros
+  // distintos cuando el usuario pide más opciones u otra ocasión.
+  try {
+    const shown = localStorage.getItem('peyu_chat_shown_skus');
+    if (shown) {
+      const arr = JSON.parse(shown);
+      if (Array.isArray(arr) && arr.length > 0) {
+        ctx.already_shown_skus = arr.slice(-15).join(',');
+      }
+    }
+  } catch { /* no-op */ }
+
   // Usuario si está autenticado
   try {
     const user = await base44.auth.me();
