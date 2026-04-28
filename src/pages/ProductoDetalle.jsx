@@ -9,7 +9,7 @@ import {
   Star, Recycle, Sparkles, ChevronRight, Heart, Share2,
   RotateCcw, BadgeCheck, Copy, X
 } from 'lucide-react';
-import MockupGenerator from '@/components/MockupGenerator';
+import MockupGenerator from '@/components/MockupGenerator.jsx';
 import { saveMockupDraft } from '@/lib/mockup-draft';
 import { getColoresProducto } from '@/lib/color-parser';
 import SEO from '@/components/SEO';
