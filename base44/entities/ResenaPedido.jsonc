@@ -1,0 +1,74 @@
+{
+  "name": "ResenaPedido",
+  "type": "object",
+  "description": "Rese\u00f1a post-entrega del cliente sobre un PedidoWeb. Califica el producto, el servicio y permite recomendaci\u00f3n NPS.",
+  "properties": {
+    "pedido_id": {
+      "type": "string",
+      "title": "ID del PedidoWeb"
+    },
+    "numero_pedido": {
+      "type": "string",
+      "title": "N\u00b0 pedido (denormalizado)"
+    },
+    "cliente_email": {
+      "type": "string",
+      "title": "Email cliente"
+    },
+    "cliente_nombre": {
+      "type": "string",
+      "title": "Nombre cliente"
+    },
+    "rating_producto": {
+      "type": "number",
+      "title": "Calificaci\u00f3n producto (1-5)",
+      "minimum": 1,
+      "maximum": 5
+    },
+    "rating_servicio": {
+      "type": "number",
+      "title": "Calificaci\u00f3n servicio (1-5)",
+      "minimum": 1,
+      "maximum": 5
+    },
+    "rating_envio": {
+      "type": "number",
+      "title": "Calificaci\u00f3n env\u00edo (1-5)",
+      "minimum": 1,
+      "maximum": 5
+    },
+    "nps": {
+      "type": "number",
+      "title": "NPS (0-10)",
+      "minimum": 0,
+      "maximum": 10
+    },
+    "comentario": {
+      "type": "string",
+      "title": "Comentario del cliente"
+    },
+    "recomendaria": {
+      "type": "boolean",
+      "title": "\u00bfRecomendar\u00eda PEYU?"
+    },
+    "publicar_review": {
+      "type": "boolean",
+      "title": "Permite publicar review",
+      "default": true
+    },
+    "respuesta_equipo": {
+      "type": "string",
+      "title": "Respuesta del equipo"
+    },
+    "fecha_respuesta": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Fecha de respuesta"
+    }
+  },
+  "required": [
+    "pedido_id",
+    "rating_producto",
+    "rating_servicio"
+  ]
+}
