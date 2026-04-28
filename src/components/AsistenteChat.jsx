@@ -9,7 +9,9 @@ import ChatHistoryPanel from '@/components/chat/ChatHistoryPanel';
 import { ensureFreshSession, addToHistory } from '@/lib/chat-history';
 import { withContext } from '@/lib/chat-context';
 
-const STORAGE_KEY = 'peyu_chat_conversation_id';
+// Clave PROPIA del chat flotante autenticado (NO compartir con la landing pública,
+// que usa publicChatProxy y puede crear conversaciones bajo otro user → "Access denied").
+const STORAGE_KEY = 'peyu_chat_conversation_id_auth';
 const OPEN_KEY = 'peyu_chat_open';
 const AGENT_NAV_KEY = 'peyu_chat_agent_navigated_at';
 // Cuando el AGENTE navega (vía tool_call o por instrucción en chat), seteamos este
@@ -97,8 +99,12 @@ export default function AsistenteChat() {
         const conv = await base44.agents.getConversation(conversationId);
         if (alive && conv?.messages) setMessages(conv.messages.filter(m => m.content).map(stripContext));
       } catch (e) {
+        // Conversación inválida o pertenece a otro usuario → limpiar silenciosamente.
         localStorage.removeItem(STORAGE_KEY);
-        setConversationId(null);
+        if (alive) {
+          setConversationId(null);
+          setMessages([]);
+        }
       }
     })();
     return () => { alive = false; };
@@ -108,12 +114,23 @@ export default function AsistenteChat() {
   useEffect(() => {
     if (!conversationId) return;
     try {
-      unsubRef.current = base44.agents.subscribeToConversation(conversationId, (data) => {
-        const msgs = (data.messages || []).filter(m => m.content).map(stripContext);
-        setMessages(msgs);
-        const last = msgs[msgs.length - 1];
-        if (last?.role === 'assistant') setLoading(false);
-      });
+      unsubRef.current = base44.agents.subscribeToConversation(
+        conversationId,
+        (data) => {
+          const msgs = (data.messages || []).filter(m => m.content).map(stripContext);
+          setMessages(msgs);
+          const last = msgs[msgs.length - 1];
+          if (last?.role === 'assistant') setLoading(false);
+        },
+        (err) => {
+          // Si la suscripción falla por permiso, limpiamos la conv inválida.
+          if (err?.message?.includes('Access denied')) {
+            localStorage.removeItem(STORAGE_KEY);
+            setConversationId(null);
+            setMessages([]);
+          }
+        }
+      );
     } catch (e) { /* no-op */ }
     return () => { unsubRef.current?.(); };
   }, [conversationId]);
@@ -161,13 +178,14 @@ export default function AsistenteChat() {
   // Reabrir una conversación del historial
   const handleResume = useCallback(async (id) => {
     setShowHistory(false);
-    localStorage.setItem(STORAGE_KEY, id);
-    setConversationId(id);
     try {
+      // Validamos PRIMERO que la conv sea accesible para este user antes de persistirla.
       const conv = await base44.agents.getConversation(id);
+      localStorage.setItem(STORAGE_KEY, id);
+      setConversationId(id);
       if (conv?.messages) setMessages(conv.messages.filter(m => m.content).map(stripContext));
     } catch {
-      // si falla, limpiamos
+      // Conv inaccesible (otro user o eliminada) → no la guardamos.
       localStorage.removeItem(STORAGE_KEY);
       setConversationId(null);
       setMessages([]);
