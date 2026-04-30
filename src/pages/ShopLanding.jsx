@@ -548,41 +548,38 @@ export default function ShopLanding() {
                   <div ref={messagesEndRef} />
                 </div>
 
-                {/* Quick Replies — ocasiones como chips dentro del chat (patrón Intercom/WhatsApp Business) */}
-                <div className="flex-shrink-0 mb-2">
-                  <div className="flex items-center gap-1.5 mb-1.5 px-1">
-                    <span className="text-white/50 text-[9px] font-bold uppercase tracking-wider">💡 Sugerencias rápidas</span>
-                  </div>
-                  <div className="overflow-x-auto scrollbar-hide flex gap-1.5 pb-1">
-                    {OCASIONES.map(occ => (
-                      <button
-                        key={occ.id}
-                        onClick={() => handleOccasionClick(occ)}
-                        className="flex items-center gap-1.5 flex-shrink-0 bg-white/10 hover:bg-teal-500/30 border border-white/20 hover:border-teal-400/50 active:bg-teal-600/40 transition-all rounded-full px-3 py-1.5 shadow-sm"
-                      >
-                        <span className="text-sm leading-none">{occ.icon}</span>
-                        <span className="text-white text-[11px] font-semibold whitespace-nowrap">{occ.label}</span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Input — protagonista, fondo claro contrastante para destacar sobre el glass */}
-                <div className="flex gap-2 flex-shrink-0 min-w-0 bg-white/95 rounded-full p-1.5 border-2 border-teal-400/60 shadow-2xl shadow-teal-500/30 ring-2 ring-teal-300/20">
+                {/* Input — tono slate translúcido que armoniza con el glass purple/teal del chat */}
+                <div className="flex gap-2 flex-shrink-0 min-w-0 bg-slate-900/55 rounded-full p-1.5 border border-teal-300/30 shadow-lg shadow-black/20 backdrop-blur-md">
                   <Input
                     value={input}
                     onChange={e => setInput(e.target.value)}
                     onKeyDown={e => e.key === 'Enter' && !loading && sendMessage(input)}
                     placeholder="Escribe tu mensaje a Peyu…"
-                    className="bg-transparent border-0 text-slate-900 placeholder:text-slate-500 text-sm font-medium rounded-full focus:ring-0 focus-visible:ring-0 flex-1 h-10 px-4 disabled:opacity-60 shadow-none"
+                    className="bg-transparent border-0 text-white placeholder:text-white/55 text-sm rounded-full focus:ring-0 focus-visible:ring-0 flex-1 h-10 px-4 disabled:opacity-60 shadow-none"
                     disabled={loading}
                   />
                   <Button
                     onClick={() => sendMessage(input)}
                     disabled={loading || !input.trim()}
-                    className="bg-gradient-to-r from-teal-500 to-cyan-500 hover:from-teal-600 hover:to-cyan-600 active:from-teal-700 active:to-cyan-700 text-white rounded-full w-10 h-10 p-0 flex items-center justify-center flex-shrink-0 shadow-lg transition-all disabled:opacity-60">
+                    className="bg-gradient-to-r from-teal-500 to-cyan-500 hover:from-teal-600 hover:to-cyan-600 active:from-teal-700 active:to-cyan-700 text-white rounded-full w-10 h-10 p-0 flex items-center justify-center flex-shrink-0 shadow-md transition-all disabled:opacity-60">
                     <Send className="w-4 h-4" />
                   </Button>
+                </div>
+
+                {/* Quick Replies — debajo del input (patrón ChatGPT / Claude) */}
+                <div className="flex-shrink-0 mt-2">
+                  <div className="overflow-x-auto scrollbar-hide flex gap-1.5 pb-1">
+                    {OCASIONES.map(occ => (
+                      <button
+                        key={occ.id}
+                        onClick={() => handleOccasionClick(occ)}
+                        className="flex items-center gap-1.5 flex-shrink-0 bg-white/8 hover:bg-teal-500/25 border border-white/15 hover:border-teal-400/40 active:bg-teal-600/35 transition-all rounded-full px-2.5 py-1"
+                      >
+                        <span className="text-xs leading-none">{occ.icon}</span>
+                        <span className="text-white/90 text-[10px] font-medium whitespace-nowrap">{occ.label}</span>
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>
