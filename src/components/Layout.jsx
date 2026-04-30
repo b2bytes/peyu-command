@@ -175,8 +175,8 @@ export default function Layout() {
         )}
       </aside>
 
-      {/* Main content — full scroll */}
-      <main className="flex-1 min-w-0 overflow-y-auto overflow-x-hidden bg-gradient-to-br from-slate-900 via-slate-900 to-slate-800">
+      {/* Main content — full scroll. Fondo claro para que los títulos text-slate-900 sean legibles. */}
+      <main className="flex-1 min-w-0 overflow-y-auto overflow-x-hidden bg-gradient-to-br from-slate-50 via-white to-slate-100">
         <Outlet />
       </main>
     </div>
