@@ -31,6 +31,7 @@ const navGroups = [
       { path: "/admin/tiendas", label: "Tiendas Físicas", icon: Store },
       { path: "/admin/clientes", label: "Clientes / LTV", icon: UserCheck },
       { path: "/admin/catalogo", label: "Catálogo SKUs", icon: Package },
+      { path: "/admin/admin-products", label: "Mejora Productos IA", icon: Sparkles },
     ]
   },
   {

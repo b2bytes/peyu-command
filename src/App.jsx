@@ -87,6 +87,7 @@ const Indexacion = lazy(() => import('./pages/Indexacion'));
 const AdsCommand = lazy(() => import('./pages/AdsCommand'));
 const LaunchMap = lazy(() => import('./pages/LaunchMap'));
 const GA4Realtime = lazy(() => import('./pages/GA4Realtime'));
+const AdminProducts = lazy(() => import('./pages/AdminProducts'));
 
 const AdminLoader = () => (
   <div className="fixed inset-0 flex items-center justify-center bg-background">
@@ -156,6 +157,7 @@ const AuthenticatedApp = () => {
           <Route path="ads-command" element={<AdsCommand />} />
           <Route path="launch-map" element={<LaunchMap />} />
           <Route path="ga-realtime" element={<GA4Realtime />} />
+          <Route path="admin-products" element={<AdminProducts />} />
         </Route>
         <Route path="*" element={<PageNotFound />} />
       </Routes>
