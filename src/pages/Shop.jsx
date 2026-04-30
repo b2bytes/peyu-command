@@ -1,11 +1,20 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
+import { Search, SlidersHorizontal, X, Recycle, Truck, Shield, Check, Building2, Loader2 } from 'lucide-react';
+import CategoryTabs from '@/components/shop/CategoryTabs';
+import ProductCard from '@/components/shop/ProductCard';
 import { getProductImage } from '@/utils/productImages';
-import { Search, ShoppingCart, Star, SlidersHorizontal, X, Check, Recycle, Truck, Shield, Building2 } from 'lucide-react';
 
-const CATEGORIAS = ['Todos', 'Escritorio', 'Hogar', 'Entretenimiento', 'Corporativo', 'Carcasas B2C'];
+const CATEGORIAS_META = [
+  { id: 'Todos',           label: 'Todos',           icon: '🌍' },
+  { id: 'Escritorio',      label: 'Escritorio',      icon: '💼' },
+  { id: 'Hogar',           label: 'Hogar',           icon: '🏠' },
+  { id: 'Entretenimiento', label: 'Entretenimiento', icon: '🎲' },
+  { id: 'Corporativo',     label: 'Corporativo',     icon: '🏢' },
+  { id: 'Carcasas B2C',    label: 'Carcasas',        icon: '📱' },
+];
 
 const PRICE_RANGES = [
   { id: 'all', label: 'Todos', min: 0, max: Infinity },
@@ -22,6 +31,8 @@ const SORT_OPTIONS = [
   { id: 'name', label: 'Nombre A–Z' },
 ];
 
+const PAGE_SIZE = 12;
+
 export default function Shop() {
   const [productos, setProductos] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -33,12 +44,18 @@ export default function Shop() {
   const [carrito, setCarrito] = useState(JSON.parse(localStorage.getItem('carrito') || '[]'));
   const [agregandoId, setAgregandoId] = useState(null);
 
+  // Paginación progresiva
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+  const sentinelRef = useRef(null);
+  const gridTopRef = useRef(null);
+
   useEffect(() => {
     base44.entities.Producto.filter({ activo: true })
       .then(data => setProductos(data.filter(p => p.canal !== 'B2B Exclusivo')))
       .finally(() => setLoading(false));
   }, []);
 
+  // Productos filtrados (sin paginar)
   const filtered = useMemo(() => {
     let result = [...productos];
     if (selectedCategory !== 'Todos') result = result.filter(p => p.categoria === selectedCategory);
@@ -62,7 +79,59 @@ export default function Shop() {
     return result;
   }, [productos, search, selectedCategory, selectedPrice, sortBy]);
 
-  const agregarAlCarrito = (e, producto) => {
+  // Conteos por categoría (en base al search + price activos, NO a la categoría)
+  const categoriasConConteo = useMemo(() => {
+    let baseList = [...productos];
+    if (search) {
+      const q = search.toLowerCase();
+      baseList = baseList.filter(p => p.nombre?.toLowerCase().includes(q) || p.sku?.toLowerCase().includes(q));
+    }
+    const priceRange = PRICE_RANGES.find(r => r.id === selectedPrice);
+    if (priceRange && priceRange.id !== 'all') {
+      baseList = baseList.filter(p => {
+        const price = p.precio_b2c || 0;
+        return price >= priceRange.min && price < priceRange.max;
+      });
+    }
+    return CATEGORIAS_META.map(meta => ({
+      ...meta,
+      count: meta.id === 'Todos'
+        ? baseList.length
+        : baseList.filter(p => p.categoria === meta.id).length,
+    }));
+  }, [productos, search, selectedPrice]);
+
+  // Productos visibles (paginados)
+  const visibleProductos = useMemo(
+    () => filtered.slice(0, visibleCount),
+    [filtered, visibleCount]
+  );
+
+  const hasMore = visibleCount < filtered.length;
+
+  // Reset paginación + scroll cuando cambian filtros
+  useEffect(() => {
+    setVisibleCount(PAGE_SIZE);
+  }, [search, selectedCategory, selectedPrice, sortBy]);
+
+  // IntersectionObserver para infinite scroll
+  useEffect(() => {
+    if (!hasMore || loading) return;
+    const sentinel = sentinelRef.current;
+    if (!sentinel) return;
+    const observer = new IntersectionObserver(
+      entries => {
+        if (entries[0].isIntersecting) {
+          setVisibleCount(prev => Math.min(prev + PAGE_SIZE, filtered.length));
+        }
+      },
+      { rootMargin: '400px 0px' } // pre-carga antes de llegar
+    );
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [hasMore, loading, filtered.length]);
+
+  const agregarAlCarrito = useCallback((e, producto) => {
     e.preventDefault();
     e.stopPropagation();
     setAgregandoId(producto.id);
@@ -75,6 +144,14 @@ export default function Shop() {
     setCarrito(nuevo);
     localStorage.setItem('carrito', JSON.stringify(nuevo));
     setTimeout(() => setAgregandoId(null), 1200);
+  }, [carrito]);
+
+  const handleSelectCategory = (catId) => {
+    setSelectedCategory(catId);
+    // Scroll suave al inicio de la grilla cuando se cambia categoría
+    setTimeout(() => {
+      gridTopRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 80);
   };
 
   const clearFilters = () => {
@@ -104,7 +181,6 @@ export default function Shop() {
               Productos fabricados en Santiago con plástico recuperado. Personalización láser UV y garantía 10 años.
             </p>
           </div>
-          {/* Trust badges */}
           <div className="flex gap-2 flex-wrap">
             {[
               { icon: Shield, label: '10 años', sub: 'garantía' },
@@ -123,9 +199,9 @@ export default function Shop() {
         </div>
       </section>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 pb-16 pt-4">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 pb-16">
         {/* Search bar inline */}
-        <div className="mb-4">
+        <div className="mb-3">
           <div className="flex items-center gap-2 bg-white/10 border border-white/25 rounded-xl px-3.5 py-2.5 backdrop-blur-sm focus-within:border-teal-400/60 focus-within:bg-white/15 transition-all max-w-xl">
             <Search className="w-4 h-4 text-white/50 flex-shrink-0" />
             <input
@@ -143,22 +219,26 @@ export default function Shop() {
           </div>
         </div>
 
-        {/* Controls bar */}
-        <div className="flex items-center justify-between gap-3 mb-5 flex-wrap">
-          <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide -mx-1 px-1 flex-1 min-w-0">
-            {CATEGORIAS.map(cat => (
-              <button
-                key={cat}
-                onClick={() => setSelectedCategory(cat)}
-                className={`px-4 py-2 rounded-full text-sm font-medium transition-all whitespace-nowrap flex-shrink-0 backdrop-blur-sm ${
-                  selectedCategory === cat
-                    ? 'bg-teal-500/30 text-white border border-teal-400/50 shadow-lg'
-                    : 'bg-white/5 text-white/70 border border-white/15 hover:bg-white/10 hover:text-white'
-                }`}>
-                {cat}
-              </button>
-            ))}
-          </div>
+        {/* CATEGORY TABS — sticky con conteos en vivo */}
+        <CategoryTabs
+          categorias={categoriasConConteo}
+          selected={selectedCategory}
+          onSelect={handleSelectCategory}
+        />
+
+        {/* Sub-controls bar (sort + filtros) */}
+        <div className="flex items-center justify-between gap-3 mt-4 mb-4 flex-wrap">
+          <p className="text-sm text-white/65" ref={gridTopRef}>
+            {loading ? (
+              'Cargando...'
+            ) : (
+              <>
+                Mostrando <span className="font-bold text-white">{visibleProductos.length}</span> de{' '}
+                <span className="font-bold text-white">{filtered.length}</span>
+                {selectedCategory !== 'Todos' && <> en <span className="text-teal-300 font-semibold">{selectedCategory}</span></>}
+              </>
+            )}
+          </p>
           <div className="flex items-center gap-2 flex-shrink-0">
             <select
               value={sortBy}
@@ -168,9 +248,14 @@ export default function Shop() {
             </select>
             <button
               onClick={() => setFiltersOpen(!filtersOpen)}
-              className={`px-3 py-2 rounded-xl text-sm font-medium border transition-all flex items-center gap-1.5 backdrop-blur-sm ${filtersOpen || selectedPrice !== 'all' ? 'bg-teal-500/30 text-white border-teal-400/50' : 'bg-white/5 text-white/70 border-white/20 hover:bg-white/10'}`}>
+              className={`px-3 py-2 rounded-xl text-sm font-medium border transition-all flex items-center gap-1.5 backdrop-blur-sm ${
+                filtersOpen || selectedPrice !== 'all'
+                  ? 'bg-teal-500/30 text-white border-teal-400/50'
+                  : 'bg-white/5 text-white/70 border-white/20 hover:bg-white/10'
+              }`}>
               <SlidersHorizontal className="w-3.5 h-3.5" />
               Filtros
+              {selectedPrice !== 'all' && <span className="w-1.5 h-1.5 rounded-full bg-teal-300" />}
             </button>
           </div>
         </div>
@@ -203,13 +288,6 @@ export default function Shop() {
           </div>
         )}
 
-        {/* Results count */}
-        <div className="flex items-center justify-between mb-4">
-          <p className="text-sm text-white/60">
-            {loading ? 'Cargando...' : <><span className="font-semibold text-white">{filtered.length}</span> producto{filtered.length !== 1 ? 's' : ''}</>}
-          </p>
-        </div>
-
         {/* Products Grid */}
         {loading ? (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5">
@@ -234,82 +312,44 @@ export default function Shop() {
             <Button onClick={clearFilters} variant="outline" className="mt-4 rounded-xl bg-white/10 border-white/25 text-white hover:bg-white/20">Limpiar filtros</Button>
           </div>
         ) : (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5">
-            {filtered.map(p => {
-              const precioOnline = Math.floor((p.precio_b2c || 9990) * 0.85);
-              return (
-                <Link
+          <>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5">
+              {visibleProductos.map(p => (
+                <ProductCard
                   key={p.id}
-                  to={`/producto/${p.id}`}
-                  className="group bg-white/5 backdrop-blur-sm border border-white/15 rounded-2xl overflow-hidden hover:border-teal-400/40 hover:bg-white/10 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300"
-                >
-                  {/* Image */}
-                  <div className="relative aspect-square bg-gradient-to-br from-slate-800 to-slate-900 overflow-hidden">
-                    <img 
-                      src={getProductImage(p)}
-                      alt={p.nombre}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                      loading="lazy"
-                      onError={(e) => e.target.src = 'https://images.unsplash.com/photo-1578432291840-8d3a3a016e4d?w=600&h=600&fit=crop'}
-                    />
-                    {/* Floating badges */}
-                    <div className="absolute top-3 left-3 flex flex-col gap-1.5">
-                      <span className="bg-slate-900/80 backdrop-blur text-white text-[10px] font-bold px-2.5 py-1 rounded-full shadow-sm border border-white/20">
-                        {p.categoria}
-                      </span>
-                      {p.material?.includes('Trigo') && (
-                        <span className="bg-green-600/90 backdrop-blur text-white text-[10px] font-bold px-2.5 py-1 rounded-full shadow-sm">
-                          🌾 Compostable
-                        </span>
-                      )}
-                    </div>
-                    {/* Discount pill */}
-                    <div className="absolute top-3 right-3">
-                      <span className="bg-gradient-to-r from-teal-500 to-cyan-500 text-white text-[10px] font-bold px-2.5 py-1 rounded-full shadow-md">
-                        −15%
-                      </span>
-                    </div>
-                    {/* Quick add */}
-                    <button
-                      onClick={(e) => agregarAlCarrito(e, p)}
-                      className={`absolute bottom-3 right-3 w-11 h-11 rounded-xl flex items-center justify-center text-white transition-all shadow-lg ${
-                        agregandoId === p.id
-                          ? 'bg-green-500 scale-110'
-                          : 'bg-gradient-to-r from-teal-500 to-cyan-500 opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 hover:from-teal-600 hover:to-cyan-600 active:scale-95'
-                      }`}>
-                      {agregandoId === p.id ? <Check className="w-5 h-5" /> : <ShoppingCart className="w-4 h-4" />}
-                    </button>
-                  </div>
+                  producto={p}
+                  onAddToCart={agregarAlCarrito}
+                  agregandoId={agregandoId}
+                />
+              ))}
+            </div>
 
-                  {/* Info */}
-                  <div className="p-4">
-                    <div className="flex items-center gap-1 mb-1.5">
-                      <div className="flex gap-0.5">
-                        {[...Array(5)].map((_, i) => (
-                          <Star key={i} className="w-3 h-3 fill-yellow-400 text-yellow-400" />
-                        ))}
-                      </div>
-                      <span className="text-[10px] text-white/50 font-medium">(4.9)</span>
-                    </div>
-                    <h3 className="font-semibold text-sm text-white line-clamp-2 leading-snug group-hover:text-teal-300 transition-colors min-h-[40px]">
-                      {p.nombre}
-                    </h3>
-                    <div className="flex items-baseline justify-between mt-3">
-                      <div>
-                        <p className="text-[10px] text-white/40 line-through font-medium">
-                          ${(p.precio_b2c || 9990).toLocaleString('es-CL')}
-                        </p>
-                        <p className="font-poppins font-bold text-lg text-white leading-none">
-                          ${precioOnline.toLocaleString('es-CL')}
-                        </p>
-                      </div>
-                      <span className="text-[10px] text-white/40 font-medium">Envío 7 días</span>
-                    </div>
-                  </div>
-                </Link>
-              );
-            })}
-          </div>
+            {/* Sentinel + indicador "load more" */}
+            {hasMore && (
+              <div ref={sentinelRef} className="mt-8 flex flex-col items-center justify-center gap-3 py-6">
+                <div className="flex items-center gap-2 text-white/60 text-sm">
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Cargando más productos...
+                </div>
+                <button
+                  onClick={() => setVisibleCount(prev => Math.min(prev + PAGE_SIZE, filtered.length))}
+                  className="px-5 py-2 rounded-full text-xs font-semibold bg-white/10 hover:bg-white/20 border border-white/20 text-white transition-all"
+                >
+                  Cargar {Math.min(PAGE_SIZE, filtered.length - visibleCount)} más
+                </button>
+              </div>
+            )}
+
+            {/* Fin del catálogo */}
+            {!hasMore && filtered.length > PAGE_SIZE && (
+              <div className="mt-8 text-center py-6">
+                <div className="inline-flex items-center gap-2 text-xs font-semibold text-white/50 px-4 py-2 rounded-full bg-white/5 border border-white/10 backdrop-blur-sm">
+                  <Check className="w-3.5 h-3.5 text-teal-400" />
+                  Has visto los {filtered.length} productos
+                </div>
+              </div>
+            )}
+          </>
         )}
 
         {/* B2B Banner */}
