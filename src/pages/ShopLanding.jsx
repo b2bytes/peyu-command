@@ -247,8 +247,12 @@ export default function ShopLanding() {
 
     } catch (e) {
       console.error('Error chat:', e);
-      const detail = e?.message || e?.response?.data?.error || 'sin detalle';
-      setMessages(prev => [...prev, { role: 'assistant', content: `⚠️ Error de conexión: ${detail}. Intenta de nuevo.` }]);
+      // Fallback amigable: en lugar de leak técnico, ofrecemos WhatsApp directo.
+      const waUrl = `https://wa.me/56935040242?text=${encodeURIComponent(`Hola Peyu, intenté escribirte pero falló: "${text}"`)}`;
+      setMessages(prev => [...prev, {
+        role: 'assistant',
+        content: `Ups, tuve un problema para responderte 🐢. Mientras lo arreglo, [escríbenos directo por WhatsApp](${waUrl}) y un humano te ayuda al toque.`
+      }]);
       setLoading(false);
     }
   };
@@ -427,12 +431,6 @@ export default function ShopLanding() {
                 <PEYULogo size="sm" showText={true} />
               </div>
               <div className="flex items-center gap-2 flex-shrink-0">
-                <Link to="/admin" className="hidden sm:block">
-                  <button className="h-10 px-4 inline-flex items-center gap-1.5 text-xs sm:text-sm font-semibold rounded-full bg-white/15 hover:bg-white/25 border border-white/25 text-white transition-all active:bg-white/35">
-                    <span>👤</span>
-                    <span>Admin</span>
-                  </button>
-                </Link>
                 <button className="hidden sm:inline-flex w-10 h-10 items-center justify-center rounded-full bg-white/15 hover:bg-white/25 border border-white/20 text-white transition-all active:bg-white/35">
                   <Bell className="w-[18px] h-[18px]" />
                 </button>

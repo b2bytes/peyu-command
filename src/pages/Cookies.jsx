@@ -1,9 +1,8 @@
 import SEO from '@/components/SEO';
-import PublicFooter from '@/components/PublicFooter';
 
 export default function Cookies() {
   return (
-    <div className="min-h-screen bg-white text-slate-800">
+    <div className="bg-white text-slate-800 pb-20 lg:pb-0">
       <SEO
         title="Política de Cookies | PEYU Chile"
         description="Uso de cookies en peyuchile.cl: cookies técnicas, analíticas y de marketing."
@@ -33,7 +32,6 @@ export default function Cookies() {
           <p>Las cookies de sesión se eliminan al cerrar el navegador. Las cookies persistentes duran entre 30 días y 2 años según su finalidad.</p>
         </article>
       </div>
-      <PublicFooter />
     </div>
   );
 }

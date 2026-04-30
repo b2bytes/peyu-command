@@ -1,9 +1,8 @@
 import SEO from '@/components/SEO';
-import PublicFooter from '@/components/PublicFooter';
 
 export default function Envios() {
   return (
-    <div className="min-h-screen bg-white text-slate-800">
+    <div className="bg-white text-slate-800 pb-20 lg:pb-0">
       <SEO
         title="Envíos y Despachos | PEYU Chile"
         description="Tarifas, plazos y couriers para envíos PEYU Chile: Starken, Chilexpress, Blue Express y Correos Chile."
@@ -36,7 +35,6 @@ export default function Envios() {
           <p>Sin costo. Horario: lunes a viernes 10:00–19:00, sábado 11:00–14:00.</p>
         </article>
       </div>
-      <PublicFooter />
     </div>
   );
 }

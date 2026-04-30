@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { ChevronDown } from 'lucide-react';
 import SEO from '@/components/SEO';
-import PublicFooter from '@/components/PublicFooter';
 
 const FAQS = [
   { q: '¿Los productos son realmente 100% reciclados?', a: 'Sí. Todos nuestros productos se fabrican con plástico 100% post-consumo reciclado en Chile. Puedes traer tu propio plástico a nuestras tiendas y te lo transformamos.' },
@@ -30,7 +29,7 @@ export default function FAQ() {
   };
 
   return (
-    <div className="min-h-screen bg-white text-slate-800">
+    <div className="bg-white text-slate-800 pb-20 lg:pb-0">
       <SEO
         title="Preguntas Frecuentes | PEYU Chile"
         description="Respuestas sobre productos reciclados, personalización láser UV, envíos, pagos, garantías y más."
@@ -61,7 +60,6 @@ export default function FAQ() {
           })}
         </div>
       </div>
-      <PublicFooter />
     </div>
   );
 }

@@ -1,17 +1,6 @@
-import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Leaf, Recycle, Zap, Globe, Heart, Award, Users, Factory, Home, ShoppingCart, Grid3x3, Building2, HelpCircle } from 'lucide-react';
-import MobileMenu from '@/components/MobileMenu';
-
-const MENU_ITEMS = [
-  { href: '/', label: 'Inicio', icon: Home },
-  { href: '/shop', label: 'Tienda', icon: ShoppingCart },
-  { href: '/catalogo-visual', label: 'Catálogo', icon: Grid3x3 },
-  { href: '/b2b/contacto', label: 'B2B', icon: Building2 },
-  { href: '/nosotros', label: 'Nosotros', icon: Heart },
-  { href: '/soporte', label: 'Soporte', icon: HelpCircle },
-];
+import { Leaf, Recycle, Zap, Globe, Heart, Award, Users, Factory } from 'lucide-react';
 
 const VALORES = [
   { icon: Recycle, color: '#2dd4bf', title: 'Economía Circular', desc: 'Transformamos residuos plásticos post-consumo en productos de alta calidad. Cada producto equivale a sacar plástico del vertedero.' },
@@ -47,22 +36,7 @@ const IMPACTO = [
 
 export default function Nosotros() {
   return (
-    <div className="flex-1 overflow-auto font-inter">
-
-        {/* Header */}
-        <div className="bg-gradient-to-r from-teal-500/30 to-cyan-500/30 border-b border-white/20 px-4 sm:px-6 py-3 flex items-center gap-3 sticky top-0 z-40 backdrop-blur-md">
-          <MobileMenu items={MENU_ITEMS} />
-          <Link to="/" className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center hover:bg-white/30 transition-colors">
-            <ArrowLeft className="w-4 h-4 text-white" />
-          </Link>
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-teal-400 to-cyan-500 flex items-center justify-center text-lg shadow-lg">🐢</div>
-            <div>
-              <p className="text-sm font-poppins font-bold text-white leading-none">PEYU Chile</p>
-              <p className="text-[10px] text-white/60 leading-none mt-0.5">Nuestra historia</p>
-            </div>
-          </div>
-        </div>
+    <div className="flex-1 overflow-auto font-inter pb-20 lg:pb-0">
 
         {/* HERO */}
         <section className="px-4 sm:px-8 py-16 max-w-5xl mx-auto text-center space-y-6">

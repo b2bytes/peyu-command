@@ -1,9 +1,8 @@
 import SEO from '@/components/SEO';
-import PublicFooter from '@/components/PublicFooter';
 
 export default function Privacidad() {
   return (
-    <div className="min-h-screen bg-white text-slate-800">
+    <div className="bg-white text-slate-800 pb-20 lg:pb-0">
       <SEO
         title="Política de Privacidad | PEYU Chile"
         description="Cómo PEYU Chile trata sus datos personales conforme a la Ley 19.628 sobre Protección de la Vida Privada."
@@ -48,7 +47,6 @@ export default function Privacidad() {
           <p>El sitio no está dirigido a menores de 14 años. Si se detecta un registro de un menor, será eliminado.</p>
         </article>
       </div>
-      <PublicFooter />
     </div>
   );
 }

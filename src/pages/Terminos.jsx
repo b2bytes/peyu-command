@@ -1,9 +1,8 @@
 import SEO from '@/components/SEO';
-import PublicFooter from '@/components/PublicFooter';
 
 export default function Terminos() {
   return (
-    <div className="min-h-screen bg-white text-slate-800">
+    <div className="bg-white text-slate-800 pb-20 lg:pb-0">
       <SEO
         title="Términos y Condiciones | PEYU Chile"
         description="Términos y condiciones de uso de PEYU Chile SpA. Ley del Consumidor 19.496, condiciones de compra, personalización y garantía."
@@ -45,7 +44,6 @@ export default function Terminos() {
           <p>PEYU podrá actualizar estos términos publicando la nueva versión en esta página. Cualquier controversia se somete a los tribunales de Santiago, sin perjuicio de los derechos del consumidor ante SERNAC.</p>
         </article>
       </div>
-      <PublicFooter />
     </div>
   );
 }

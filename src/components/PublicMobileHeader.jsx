@@ -12,21 +12,25 @@ export default function PublicMobileHeader() {
   const [open, setOpen] = useState(false);
   const [cartCount, setCartCount] = useState(0);
 
-  // Sincronizar contador del carrito desde localStorage
+  // Sincronizar contador del carrito desde localStorage.
+  // Usamos la key 'carrito' (la misma que usa el resto del sitio: ShopLanding,
+  // Carrito.js, ProductoDetalle, etc.) y escuchamos los eventos que emiten.
   useEffect(() => {
     const update = () => {
       try {
-        const raw = localStorage.getItem('peyu_cart');
+        const raw = localStorage.getItem('carrito');
         const cart = raw ? JSON.parse(raw) : [];
         setCartCount(Array.isArray(cart) ? cart.length : 0);
       } catch { setCartCount(0); }
     };
     update();
     window.addEventListener('storage', update);
-    window.addEventListener('peyu_cart_updated', update);
+    window.addEventListener('peyu:cart-added', update);
+    window.addEventListener('peyu:cart-cleared', update);
     return () => {
       window.removeEventListener('storage', update);
-      window.removeEventListener('peyu_cart_updated', update);
+      window.removeEventListener('peyu:cart-added', update);
+      window.removeEventListener('peyu:cart-cleared', update);
     };
   }, []);
 

@@ -1,19 +1,8 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { ChevronDown, ChevronRight, MessageCircle, Search, CheckCircle2, ArrowLeft, HelpCircle, Send, Home, ShoppingCart, Grid3x3, Building2, Heart } from 'lucide-react';
-import MobileMenu from '@/components/MobileMenu';
-
-const MENU_ITEMS = [
-  { href: '/', label: 'Inicio', icon: Home },
-  { href: '/shop', label: 'Tienda', icon: ShoppingCart },
-  { href: '/catalogo-visual', label: 'Catálogo', icon: Grid3x3 },
-  { href: '/b2b/contacto', label: 'B2B', icon: Building2 },
-  { href: '/nosotros', label: 'Nosotros', icon: Heart },
-  { href: '/soporte', label: 'Soporte', icon: HelpCircle },
-];
+import { ChevronDown, ChevronRight, MessageCircle, Search, CheckCircle2, HelpCircle, Send } from 'lucide-react';
 
 const FAQS = [
   {
@@ -104,20 +93,7 @@ export default function SoportePublico() {
   };
 
   return (
-    <div className="flex-1 overflow-auto font-inter">
-
-        {/* Header */}
-        <div className="bg-gradient-to-r from-teal-500/30 to-cyan-500/30 border-b border-white/20 px-4 sm:px-6 py-3 flex items-center gap-3 sticky top-0 z-40 backdrop-blur-md">
-          <MobileMenu items={MENU_ITEMS} />
-          <Link to="/" className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center hover:bg-white/30 transition-colors">
-            <ArrowLeft className="w-4 h-4 text-white" />
-          </Link>
-          <div>
-            <p className="font-poppins font-bold text-white text-sm leading-none">Centro de Ayuda</p>
-            <p className="text-[10px] text-white/60 leading-none mt-0.5">Peyu Chile · Soporte</p>
-          </div>
-        </div>
-
+    <div className="flex-1 overflow-auto font-inter pb-20 lg:pb-0">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 py-10 space-y-8">
 
           {/* Hero + Search */}

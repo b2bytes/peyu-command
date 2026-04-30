@@ -1,9 +1,8 @@
 import SEO from '@/components/SEO';
-import PublicFooter from '@/components/PublicFooter';
 
 export default function Cambios() {
   return (
-    <div className="min-h-screen bg-white text-slate-800">
+    <div className="bg-white text-slate-800 pb-20 lg:pb-0">
       <SEO
         title="Cambios y Devoluciones | PEYU Chile"
         description="Política de cambios, devoluciones y garantía PEYU Chile conforme a la Ley del Consumidor."
@@ -34,7 +33,6 @@ export default function Cambios() {
           <p>Puedes acercarte a F. Bilbao 3775 (Providencia) o P. de Valdivia 6603 (Macul) con tu boleta o factura.</p>
         </article>
       </div>
-      <PublicFooter />
     </div>
   );
 }
