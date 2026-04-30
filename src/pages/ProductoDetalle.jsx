@@ -12,7 +12,6 @@ import {
 import MockupGenerator from '@/components/MockupGenerator';
 import { saveMockupDraft } from '@/lib/mockup-draft';
 import { getColoresProducto } from '@/lib/color-parser';
-import { buildColorFilter } from '@/lib/color-transform';
 import { getPackSize } from '@/lib/pack-parser';
 import PackColorPicker from '@/components/producto/PackColorPicker';
 import GiftCardVisual from '@/components/giftcard/GiftCardVisual';
@@ -235,14 +234,6 @@ export default function ProductoDetalle() {
       ].filter(Boolean)))
     : [];
 
-  // Filtro CSS calculado para transformar el color real de la imagen del
-  // producto. No es overlay: aplica una matriz GPU que repinta los píxeles.
-  // Carcasas B2C ya tienen imagen por color → no aplicamos filtro.
-  const colorObj = producto ? (getColores(producto).find(c => c.id === colorSeleccionado)) : null;
-  const colorFilterStyle = (producto && producto.categoria !== 'Carcasas B2C' && colorObj && colorObj.id !== 'natural')
-    ? buildColorFilter(colorObj.hex)
-    : '';
-
   if (!producto) return (
     <div className="flex-1 flex items-center justify-center py-20">
       <div className="text-center space-y-4">
@@ -435,8 +426,7 @@ export default function ProductoDetalle() {
                   loading="eager"
                   fetchpriority="high"
                   decoding="async"
-                  className="w-full h-full object-cover transition-all duration-500"
-                  style={{ filter: colorFilterStyle, transition: 'filter 350ms ease, transform 500ms ease' }}
+                  className="w-full h-full object-cover transition-transform duration-500"
                   onError={e => {
                     if (e.target.src !== imgPrincipal && imgPrincipal) {
                       e.target.src = imgPrincipal;
@@ -491,7 +481,6 @@ export default function ProductoDetalle() {
                       loading="lazy"
                       decoding="async"
                       className="w-full h-full object-cover"
-                      style={{ filter: colorFilterStyle, transition: 'filter 350ms ease' }}
                       onError={e => { if (e.target.src !== imgPrincipal && imgPrincipal) e.target.src = imgPrincipal; }}
                     />
                   </button>
