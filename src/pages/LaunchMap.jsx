@@ -14,6 +14,8 @@ import {
   Users, Mail, Rocket, FileSearch,
 } from 'lucide-react';
 import LaunchFlowDiagram from '@/components/launch/LaunchFlowDiagram';
+import LaunchSmokeTestCard from '@/components/launch/LaunchSmokeTestCard';
+import IndexNowBlastCard from '@/components/launch/IndexNowBlastCard';
 
 const SHORTCUTS = [
   { to: '/admin/ads-command', title: 'Ads Command', desc: 'Generar campañas y exportar a Google Ads Editor', icon: Target, color: 'from-orange-500 to-red-500' },
@@ -121,6 +123,12 @@ export default function LaunchMap() {
             );
           })}
         </div>
+      </div>
+
+      {/* Day-of-launch tools: smoke test + IndexNow blast */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <LaunchSmokeTestCard />
+        <IndexNowBlastCard />
       </div>
 
       {/* Checklist táctico de lanzamiento */}
