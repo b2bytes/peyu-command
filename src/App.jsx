@@ -77,6 +77,8 @@ import GA4Realtime from './pages/GA4Realtime';
 import Lanzamiento from './pages/Lanzamiento';
 import Canjear from './pages/Canjear';
 import RegalarGiftCard from './pages/RegalarGiftCard';
+import Gracias from './pages/Gracias';
+import CookieBanner from './components/CookieBanner';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -188,6 +190,7 @@ function App() {
                 <Route path="/cookies" element={<Cookies />} />
                 <Route path="/canjear" element={<Canjear />} />
                 <Route path="/regalar-giftcard" element={<RegalarGiftCard />} />
+                <Route path="/gracias" element={<Gracias />} />
               </Route>
 
               {/* Admin Routes - Protected */}
@@ -195,6 +198,7 @@ function App() {
             </Routes>
             <Toaster />
             <PWAInstallBanner />
+            <CookieBanner />
           </Router>
         </QueryClientProvider>
       </AuthProvider>

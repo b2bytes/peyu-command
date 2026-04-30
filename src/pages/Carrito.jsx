@@ -2,7 +2,7 @@ import { useState, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
-import { Trash2, ArrowLeft, ShoppingBag, CheckCircle2, Truck, Shield, ChevronRight, Lock, Recycle, Gift, AlertCircle } from 'lucide-react';
+import { Trash2, ArrowLeft, ShoppingBag, Truck, Shield, ChevronRight, Lock, Recycle, Gift, AlertCircle } from 'lucide-react';
 import { trackBeginCheckout, trackPurchase } from '@/lib/analytics-peyu';
 import GiftCardRedeemBox from '@/components/cart/GiftCardRedeemBox';
 import CuponBox from '@/components/cart/CuponBox';
@@ -20,7 +20,6 @@ export default function Carrito() {
   });
   const [errors, setErrors] = useState({});
   const [creando, setCreando] = useState(false);
-  const [pedidoOk, setPedidoOk] = useState(null);
   const [step, setStep] = useState(1); // 1=Carrito, 2=Datos+Pago
   const [giftCard, setGiftCard] = useState(null);
   const [cupon, setCupon] = useState(null); // { codigo, descuento_clp, libera_envio, ... }
@@ -157,56 +156,19 @@ export default function Carrito() {
       localStorage.removeItem('peyu_cupon_active');
     }
 
+    // Guardamos snapshot del carrito antes de borrarlo, para que la página
+    // /gracias pueda emitir el evento purchase de GA4 con los items reales.
+    try { localStorage.setItem('peyu_last_purchase', JSON.stringify(carrito)); } catch {}
+
     localStorage.removeItem('carrito');
     trackPurchase({ transactionId: numero, total, shipping: envio, cart: carrito });
-    setPedidoOk({ numero, total, email: cliente.email, medioPago: medioPagoFinal });
     setCreando(false);
-  };
 
-  // ── ÉXITO ──────────────────────────────────────────────────────────
-  if (pedidoOk) {
-    return (
-      <div className="min-h-full bg-[#FAFAF8] font-inter flex items-center justify-center p-4 py-16">
-        <div className="max-w-md w-full text-center space-y-6">
-          <div className="w-24 h-24 rounded-3xl bg-gradient-to-br from-teal-500 to-emerald-600 flex items-center justify-center mx-auto shadow-xl shadow-teal-500/20">
-            <CheckCircle2 className="w-12 h-12 text-white" />
-          </div>
-          <div>
-            <h2 className="text-3xl font-poppins font-bold text-gray-900">¡Pedido confirmado!</h2>
-            <p className="text-gray-500 mt-2">Pedido <strong className="font-mono text-gray-900">{pedidoOk.numero}</strong></p>
-          </div>
-          <div className="bg-white border border-gray-100 rounded-3xl p-6 text-left space-y-3 shadow-sm">
-            {[
-              { label: 'Total', value: `$${pedidoOk.total.toLocaleString('es-CL')}`, accent: true },
-              { label: 'Método de pago', value: pedidoOk.medioPago },
-              { label: 'Confirmación a', value: pedidoOk.email },
-              { label: 'Entrega estimada', value: '3–7 días hábiles' },
-            ].map((r, i) => (
-              <div key={i} className="flex justify-between items-center text-sm">
-                <span className="text-gray-400">{r.label}</span>
-                <span className={`font-semibold ${r.accent ? 'text-teal-600 text-lg' : 'text-gray-900'}`}>{r.value}</span>
-              </div>
-            ))}
-          </div>
-          {pedidoOk.medioPago === 'Transferencia' ? (
-            <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-4 text-sm text-emerald-800 text-left">
-              📋 Te enviamos los datos de transferencia por email. Despachamos al recibir el comprobante en <strong>pagos@peyuchile.cl</strong>
-            </div>
-          ) : (
-            <div className="bg-teal-50 border border-teal-100 rounded-2xl p-4 text-sm text-teal-700">
-              📧 Revisa tu correo. ¿Dudas? WhatsApp <strong>+56 9 3504 0242</strong>
-            </div>
-          )}
-          <div className="flex gap-3">
-            <Button variant="outline" className="flex-1 rounded-2xl h-12" onClick={() => navigate('/shop')}>Seguir comprando</Button>
-            <Link to="/seguimiento" className="flex-1">
-              <Button className="w-full rounded-2xl bg-gray-900 hover:bg-gray-800 h-12">Seguir pedido</Button>
-            </Link>
-          </div>
-        </div>
-      </div>
-    );
-  }
+    // Redirigimos a /gracias — es la "thank you page" estándar para conversión.
+    // Mejor que mostrar un estado inline porque permite indexación del funnel
+    // y deja la URL única para retargeting / atribución.
+    navigate(`/gracias?numero=${encodeURIComponent(numero)}&email=${encodeURIComponent(cliente.email)}&total=${total}`);
+  };
 
   // ── VACÍO ──────────────────────────────────────────────────────────
   if (carrito.length === 0) {
