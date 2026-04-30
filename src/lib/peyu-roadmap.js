@@ -32,7 +32,8 @@ export const ROADMAP = [
       { name: 'Self-service B2B (cotización inmediata)',                  status: 'done',       page: '/b2b/self-service' },
       { name: 'Panel Mi Cuenta B2B (acceso por email)',                   status: 'done',       page: '/b2b/mi-cuenta' },
       { name: 'CPQ Calculator (cotizador interno)',                       status: 'done',       page: '/admin/cpq' },
-      { name: 'Generación automática de propuesta con IA',                status: 'optimizing', fn: 'createCorporateProposal' },
+      { name: 'Generación automática de propuesta con IA',                status: 'done',       fn: 'createCorporateProposal' },
+      { name: 'Pipeline auto-orquestado (score → mockup → propuesta)',    status: 'done',       fn: 'onNewB2BLead' },
       { name: 'Lead scoring con IA (0-100)',                              status: 'done',       fn: 'scoreLead' },
       { name: 'Generación PDF de propuesta',                              status: 'done',       fn: 'generateProposalPDF' },
       { name: 'Email automático de propuesta',                            status: 'done',       fn: 'sendProposalEmail' },
@@ -84,7 +85,7 @@ export const ROADMAP = [
       { name: 'Flujo de personalización B2C en tienda',                   status: 'done',       page: '/personalizar' },
       { name: 'Generación de mockup con IA',                              status: 'done',       fn: 'generateMockup' },
       { name: 'Tracking de PersonalizationJob en admin',                  status: 'done' },
-      { name: 'Mockup automático al subir logo en lead B2B',              status: 'optimizing' },
+      { name: 'Mockup automático al subir logo en lead B2B',              status: 'done',       fn: 'onNewB2BLead' },
     ],
   },
   {
