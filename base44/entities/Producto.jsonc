@@ -104,7 +104,16 @@
     },
     "imagen_url": {
       "type": "string",
-      "title": "URL Imagen Producto"
+      "title": "URL Imagen Principal"
+    },
+    "galeria_urls": {
+      "type": "array",
+      "title": "Galer\u00eda de im\u00e1genes alternativas",
+      "description": "Im\u00e1genes secundarias generadas con IA o subidas manualmente. No reemplazan la imagen principal.",
+      "items": {
+        "type": "string"
+      },
+      "default": []
     }
   },
   "required": [

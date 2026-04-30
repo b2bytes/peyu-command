@@ -271,7 +271,7 @@ export default function AdminProducts() {
                 {tab === 'imagen' && (
                   <AIImageEnhancer
                     producto={selected}
-                    onSaved={(url) => updateLocalProduct({ imagen_url: url })}
+                    onSaved={(patch) => updateLocalProduct(patch)}
                   />
                 )}
                 {tab === 'descripcion' && (
