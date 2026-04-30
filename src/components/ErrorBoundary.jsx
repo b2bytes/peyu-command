@@ -21,6 +21,24 @@ class ErrorBoundary extends React.Component {
 
   componentDidCatch(error, errorInfo) {
     console.error('[ErrorBoundary] Caught error:', error, errorInfo);
+
+    // 🔄 Auto-recovery: cuando Vite hace rebuild, los chunks lazy con hash
+    // viejo dejan de existir y la navegación falla con "Failed to fetch
+    // dynamically imported module". La solución oficial es recargar UNA vez
+    // (con flag en sessionStorage para evitar loops infinitos).
+    const msg = String(error?.message || '');
+    const isStaleChunk = msg.includes('Failed to fetch dynamically imported module')
+      || msg.includes('Importing a module script failed')
+      || msg.includes("error loading dynamically imported module");
+    if (isStaleChunk && typeof window !== 'undefined') {
+      const key = 'peyu_chunk_reload_attempted';
+      if (!sessionStorage.getItem(key)) {
+        sessionStorage.setItem(key, String(Date.now()));
+        window.location.reload();
+        return;
+      }
+    }
+
     // Reporte async al backend (no bloqueante, no rompe nada si falla)
     import('@/lib/error-reporter.js').then(({ reportError }) => {
       reportError({
