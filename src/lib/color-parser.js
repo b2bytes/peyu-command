@@ -72,17 +72,29 @@ export function getColoresProducto(producto) {
   const sku = String(producto.sku || '').toUpperCase();
   if (sku.startsWith('GC-PEYU')) return [];
 
+  // Productos de fibra de trigo: vienen con color natural único, no se eligen
+  if (producto.material === 'Fibra de Trigo (Compostable)') {
+    return [{ id: 'natural', label: 'Natural compostable', hex: '#d4b896' }];
+  }
+
   // 1) Intentar parsear desde la descripción
   const parsed = parseColoresFromDescripcion(producto.descripcion);
   if (parsed.length > 0) return parsed;
 
-  // 2) Fallback por categoría — muestra paleta genérica solo si tiene sentido
+  // 2) Fallback por categoría — paleta clásica PEYU
   if (producto.categoria === 'Carcasas B2C') {
     return PEYU_COLOR_CATALOG.filter(c =>
       ['negro', 'turquesa', 'rosa', 'amarillo', 'azul'].includes(c.id)
     );
   }
 
-  // 3) Sin colores detectados → no mostrar selector
-  return [];
+  // 3) Plástico reciclado sin colores específicos → paleta marmolada PEYU default
+  if (producto.material === 'Plástico 100% Reciclado') {
+    return PEYU_COLOR_CATALOG.filter(c =>
+      ['negro', 'blanco', 'turquesa', 'verde', 'beige', 'gris'].includes(c.id)
+    );
+  }
+
+  // 4) Último fallback: ofrecer al menos negro y blanco (siempre disponibles)
+  return PEYU_COLOR_CATALOG.filter(c => ['negro', 'blanco'].includes(c.id));
 }

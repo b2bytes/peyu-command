@@ -116,11 +116,16 @@ export default function PersonalizacionFlow() {
   // ── Carga del catálogo (productos personalizables) ───────────────────
   useEffect(() => {
     base44.entities.Producto.list().then(data => {
-      const personalizables = data.filter(p =>
-        p.activo !== false &&
-        p.canal !== 'B2B Exclusivo' &&
-        p.moq_personalizacion // tiene flujo de personalización láser
-      );
+      const personalizables = data.filter(p => {
+        if (p.activo === false) return false;
+        if (p.canal === 'B2B Exclusivo') return false;
+        if (!p.moq_personalizacion) return false;
+        // Excluir Gift Cards (no son grabables)
+        const sku = String(p.sku || '').toUpperCase();
+        if (sku.startsWith('GC-PEYU')) return false;
+        if (p.categoria === 'Gift Card') return false;
+        return true;
+      });
       setProductos(personalizables);
       // Preseleccionar por query param ?productoId=
       const params = new URLSearchParams(location.search);
@@ -392,10 +397,10 @@ export default function PersonalizacionFlow() {
       </div>
 
       {colores.length === 0 ? (
-        <div className="bg-white/5 border border-white/15 rounded-2xl p-6 text-center">
-          <Palette className="w-7 h-7 text-white/40 mx-auto mb-3" />
-          <p className="text-sm text-white/70 font-semibold">Color predeterminado</p>
-          <p className="text-xs text-white/45 mt-1">Este producto no tiene variantes de color seleccionables. El color se asignará en producción según disponibilidad.</p>
+        <div className="bg-teal-500/10 border border-teal-400/25 rounded-2xl p-6 text-center">
+          <CheckCircle className="w-7 h-7 text-teal-400 mx-auto mb-3" />
+          <p className="text-sm text-white font-semibold">Color natural único</p>
+          <p className="text-xs text-white/55 mt-1">Este producto solo viene en su color original. Continúa al paso siguiente para personalizar tu diseño.</p>
         </div>
       ) : (
         <div className="space-y-2.5">
