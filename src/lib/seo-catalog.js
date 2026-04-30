@@ -1,18 +1,20 @@
 // ============================================================
-// PEYU — Catálogo central de SEO
+// PEYU — Catálogo central de SEO (rev. abr-2026)
 // Fuente única de verdad para títulos, descripciones, keywords
 // y metadatos de TODAS las páginas públicas y landings B2B.
 //
-// Beneficios:
-// 1. Evita duplicar strings SEO en cada página.
-// 2. Permite auditorías: "muéstrame todas las landings con keyword X".
-// 3. Alimenta sitemap.xml y el agente seo_sentinel (F5).
-// 4. Garantiza consistencia de marca en SERPs.
+// Investigación competitiva (abr-2026): qactus.cl, merchi.cl,
+// boxi.cl, tiendarevivir.cl, ecofamy.cl, regalatumarca.cl,
+// imprentados.cl, escorpiongroup.cl, daoro.cl, gopromocionales.cl.
+//
+// Reglas SEO aplicadas:
+// • Title 50-60 car. con keyword primaria al inicio + marca al final.
+// • Description 140-158 car. con diferenciadores duros y CTA implícito.
+// • Keywords long-tail chilenas reales (intención comercial alta).
+// • Localización: "Chile", "Santiago", "Providencia", "Macul".
 // ============================================================
 
 // Re-exporta narrativa central (fuente única de verdad para descripciones).
-// Cualquier página/landing/agente que necesite "describir PEYU" debe importar
-// desde lib/peyu-narrative.js — no hardcodear strings.
 export {
   PEYU_TAGLINE,
   PEYU_PITCH_ONE_LINER,
@@ -37,70 +39,139 @@ export const absUrl = (path = '/') => {
 };
 
 // ============================================================
-// KEYWORDS PRIORITARIAS (investigación competitiva abr-2026)
-// Se agrupan por intención de búsqueda.
+// KEYWORDS PRIORITARIAS (mercado chileno · abr-2026)
+// Validadas contra SERPs de Google.cl. Ordenadas por intención
+// comercial (más alta arriba). Cada cluster se mapea a uno o
+// varios buyer personas y a una landing específica.
 // ============================================================
 export const KEYWORD_CLUSTERS = {
-  // Core B2B — intención comercial alta
+  // ── Core B2B — intención comercial ALTA (gerentes/decisores)
   coreB2B: [
     'regalos corporativos Chile',
+    'regalos corporativos personalizados con logo',
     'regalos corporativos sustentables',
-    'regalos corporativos plástico reciclado',
-    'regalos corporativos personalizados empresas',
-    'merchandising corporativo sostenible',
-    'gifting empresarial Chile',
+    'regalos corporativos sostenibles Chile',
+    'regalos corporativos ecológicos',
+    'merchandising corporativo personalizado',
+    'merchandising sustentable empresa',
+    'gifting corporativo Chile',
+    'productos promocionales empresa Chile',
+    'artículos promocionales personalizados',
+    'regalos empresariales premium',
+    'proveedor regalos corporativos Santiago',
   ],
-  // RRHH / People — buyer persona específico
+
+  // ── RRHH / People — onboarding y reconocimiento
   rrhh: [
     'welcome kit colaboradores',
-    'regalos bienvenida nuevos empleados',
-    'kit onboarding empresa',
-    'regalos reconocimiento equipo',
-    'detalles empleados fin de año',
+    'welcome pack empresa',
+    'kit bienvenida nuevos empleados',
+    'kit onboarding colaboradores',
+    'kit de bienvenida personalizado',
+    'regalos para nuevos colaboradores',
+    'regalos reconocimiento equipo trabajo',
+    'gifting que retiene talento',
+    'aniversario laboral regalo',
+    'detalles para colaboradores',
+    'kit corporativo personalizado RRHH',
   ],
-  // Estacional — picos de búsqueda
+
+  // ── Estacional — picos de búsqueda recurrentes
   estacional: [
     'regalos día del trabajador empresa',
     'regalos 1 de mayo corporativos',
+    'regalos día del trabajo personalizados',
     'regalos navidad empresa Chile',
     'regalos fin de año colaboradores',
     'aguinaldo empresa personalizado',
+    'regalos fiestas patrias empresa',
+    'regalo 18 de septiembre corporativo',
+    'regalos día de la mujer empresa',
+    'regalos día del padre corporativo',
+    'regalos día de la madre empresa',
   ],
-  // ESG / Sostenibilidad — decisor CEO/Compliance
+
+  // ── ESG / Sostenibilidad — decisor sustainability/CEO
   esg: [
-    'regalos ESG empresa',
-    'merchandising huella carbono',
+    'merchandising sustentable Chile',
+    'regalos ecológicos plástico reciclado',
+    'productos plástico 100% reciclado',
+    'merchandising RPET Chile',
     'regalos economía circular',
+    'merchandising huella de carbono',
+    'gifting carbono neutral Chile',
+    'regalos ESG empresa',
     'sustentabilidad corporativa Chile',
-    'gifting carbono neutral',
+    'productos post-consumo reciclado',
+    'empresa B Corp Chile regalos',
+    'merchandising con propósito',
   ],
-  // Eventos / Marketing
+
+  // ── Eventos / Marketing — activaciones, ferias
   eventos: [
     'merchandising eventos corporativos',
-    'regalos activaciones marca',
+    'regalos activaciones de marca',
     'swag conferencia Chile',
     'gift box evento corporativo',
+    'regalos ferias y congresos',
+    'kit evento corporativo personalizado',
+    'merchandising lanzamiento producto',
+    'goodie bag empresa',
   ],
-  // PYMEs — volúmenes bajos
+
+  // ── PYMEs — volúmenes bajos, MOQ accesible
   pymes: [
-    'regalos pyme personalizado',
+    'regalos personalizados pyme',
     'regalos empresa desde 10 unidades',
-    'merchandising emprendedores',
+    'merchandising sin pedido mínimo alto',
+    'regalos corporativos emprendedores',
     'productos personalizados MOQ bajo',
+    'regalos empresa pequeña Chile',
+    'merchandising para startups Chile',
   ],
-  // Gobierno / Licitaciones
+
+  // ── Gobierno / Licitaciones — compras públicas
   gobierno: [
     'regalos corporativos gobierno',
-    'merchandising licitación',
+    'merchandising licitación pública',
     'proveedor regalos institucionales',
-    'compras públicas sustentables',
+    'compras públicas sustentables Chile',
+    'merchandising mercado público',
+    'regalos institucionales personalizados',
+    'proveedor estado Chile sostenible',
   ],
-  // Técnicas — producto
+
+  // ── Técnicas — producto y manufactura
   tecnica: [
-    'grabado láser UV personalizado',
+    'grabado láser personalizado Chile',
+    'grabado láser UV en plástico',
     'plástico 100% reciclado Chile',
     'fibra de trigo compostable',
     'inyección plástico reciclado',
+    'logo grabado láser productos',
+    'personalización láser logo empresa',
+    'mockup personalización online',
+  ],
+
+  // ── B2C / Tienda — intención de compra individual
+  b2c: [
+    'productos sostenibles Chile',
+    'regalos ecológicos personalizados',
+    'productos diseño chileno',
+    'regalos sustentables Santiago',
+    'productos plástico reciclado tienda',
+    'regalos originales Chile',
+    'tienda online productos sustentables',
+    'kit escritorio sostenible',
+  ],
+
+  // ── Local / Tiendas físicas
+  local: [
+    'tienda regalos Providencia',
+    'tienda sostenible Santiago',
+    'regalos corporativos Macul',
+    'tienda productos reciclados Santiago',
+    'PEYU tienda física',
   ],
 };
 
@@ -108,120 +179,184 @@ export const KEYWORD_CLUSTERS = {
 export const ALL_KEYWORDS_FLAT = Object.values(KEYWORD_CLUSTERS).flat();
 
 // ============================================================
-// PÁGINAS PÚBLICAS ACTUALES (registry)
-// Cada entrada se consume desde <SEO /> en su página respectiva.
+// PÁGINAS PÚBLICAS — meta-tags optimizadas (rev. abr-2026)
 // ============================================================
 export const PUBLIC_PAGES = {
   home: {
     path: '/',
-    title: 'PEYU Chile — Regalos Corporativos Sostenibles de Plástico 100% Reciclado',
+    title: 'Regalos Corporativos Sustentables Chile · Plástico 100% Reciclado | PEYU',
     description: PEYU_PITCH_ONE_LINER,
-    keywords: KEYWORD_CLUSTERS.coreB2B,
+    keywords: [
+      'regalos corporativos Chile',
+      'regalos corporativos sustentables',
+      'regalos personalizados con logo',
+      'merchandising sustentable Chile',
+      'plástico 100% reciclado',
+    ],
     priority: 1.0,
     changefreq: 'weekly',
   },
+
   shop: {
     path: '/shop',
-    title: 'Tienda PEYU — Productos Sostenibles con Envío a Todo Chile',
-    description: PEYU_PITCH_B2C,
-    keywords: ['tienda sostenible Chile', 'productos plástico reciclado', 'comprar regalos ecológicos'],
+    title: 'Tienda PEYU · Productos Sostenibles con Despacho a Todo Chile',
+    description: 'Compra online productos sostenibles de plástico 100% reciclado: escritorio, hogar, regalos. Personalización láser, garantía 10 años, envío 24-72h.',
+    keywords: [
+      'tienda productos sostenibles Chile',
+      'comprar productos plástico reciclado',
+      'regalos ecológicos online Chile',
+      'tienda sustentable Santiago',
+      'productos diseño chileno',
+    ],
     priority: 0.9,
     changefreq: 'daily',
   },
+
   catalogoVisual: {
     path: '/catalogo-visual',
-    title: 'Catálogo Visual PEYU — Todos los Productos Sostenibles',
-    description: 'Explora el catálogo completo de PEYU: regalos corporativos, productos de escritorio, entretenimiento y hogar. Todo fabricado con plástico 100% reciclado en Chile.',
-    keywords: ['catálogo productos sostenibles', 'regalos corporativos catálogo'],
+    title: 'Catálogo Completo PEYU · Regalos y Productos Plástico Reciclado',
+    description: 'Catálogo visual de regalos corporativos, escritorio, hogar y entretenimiento. Plástico 100% reciclado, fibra de trigo compostable. Hecho en Chile.',
+    keywords: [
+      'catálogo regalos corporativos Chile',
+      'catálogo merchandising sustentable',
+      'productos plástico reciclado catálogo',
+      'PEYU catálogo completo',
+    ],
     priority: 0.9,
     changefreq: 'weekly',
   },
+
   b2bContacto: {
     path: '/b2b/contacto',
-    title: 'Cotización B2B Corporativa — Respuesta en 24h | PEYU Chile',
-    description: PEYU_PITCH_B2B,
-    keywords: ['cotización regalos corporativos', 'presupuesto empresa merchandising'],
+    title: 'Cotización Regalos Corporativos · Respuesta en 24h | PEYU Chile',
+    description: 'Cotiza regalos corporativos personalizados con logo. Pricing por volumen, factura empresa, despacho nacional. Propuesta detallada en menos de 24h.',
+    keywords: [
+      'cotización regalos corporativos Chile',
+      'presupuesto merchandising empresa',
+      'cotizar regalos personalizados con logo',
+      'proveedor regalos corporativos Santiago',
+      'pedir cotización merchandising',
+    ],
     priority: 0.95,
     changefreq: 'monthly',
   },
+
   b2bSelfService: {
     path: '/b2b/self-service',
-    title: 'Cotiza Online en 2 minutos — Propuesta B2B Automática | PEYU',
-    description: 'Arma tu cotización corporativa sin esperar. Sube tu logo, elige productos, descarga propuesta PDF al instante. Pricing transparente por volumen.',
-    keywords: ['cotización online regalos corporativos', 'quote builder B2B Chile'],
+    title: 'Cotizador Online B2B · Propuesta Automática en 2 Min | PEYU',
+    description: 'Arma tu cotización corporativa sin esperar: sube tu logo, elige productos y descarga propuesta PDF al instante. Pricing transparente, sin fees ocultos.',
+    keywords: [
+      'cotizador online regalos corporativos',
+      'quote builder B2B Chile',
+      'cotización automática merchandising',
+      'configurador regalos empresa',
+    ],
     priority: 0.95,
     changefreq: 'monthly',
   },
+
   personalizar: {
     path: '/personalizar',
-    title: 'Personaliza tu Regalo con Grabado Láser UV | PEYU Chile',
-    description: 'Sube tu logo y previsualiza tu producto personalizado con grabado láser UV. Gratis desde 10 unidades. Mockup al instante con IA.',
-    keywords: KEYWORD_CLUSTERS.tecnica,
+    title: 'Grabado Láser UV en Plástico Reciclado · Mockup Gratis | PEYU',
+    description: 'Personaliza productos con grabado láser UV de alta precisión. Sube tu logo y previsualiza el mockup al instante. Gratis desde 10 unidades.',
+    keywords: [
+      'grabado láser personalizado Chile',
+      'grabado láser UV plástico',
+      'logo grabado láser productos',
+      'personalización con logo empresa',
+      'mockup personalización online',
+    ],
     priority: 0.85,
     changefreq: 'monthly',
   },
+
   nosotros: {
     path: '/nosotros',
-    title: 'Nosotros — Fabricantes Chilenos de Plástico Reciclado | PEYU',
-    description: 'PEYU nace para combatir la crisis del plástico. Fabricamos en Chile con plástico 100% reciclado y energía renovable. Conoce nuestra historia y certificaciones ESG.',
-    keywords: ['fabricante plástico reciclado Chile', 'empresa B Corp Chile', 'economía circular'],
+    title: 'Fabricante Chileno de Plástico Reciclado · Nuestra Historia | PEYU',
+    description: 'PEYU transforma plástico post-consumo chileno en productos con 10 años de garantía. Producción local con energía renovable y certificación ESG.',
+    keywords: [
+      'fabricante plástico reciclado Chile',
+      'empresa plástico post-consumo',
+      'economía circular Chile',
+      'productor sostenible chileno',
+      'empresa B Corp Chile plásticos',
+    ],
     priority: 0.7,
     changefreq: 'monthly',
   },
+
   blog: {
     path: '/blog',
-    title: 'Blog PEYU — Sostenibilidad, ESG y Regalos Corporativos',
-    description: 'Aprende sobre gifting corporativo sustentable, tendencias ESG, casos de éxito y tips para RRHH. Blog de PEYU Chile.',
-    keywords: ['blog sostenibilidad empresa', 'tendencias ESG Chile'],
+    title: 'Blog PEYU · Sostenibilidad, ESG, RRHH y Regalos Corporativos',
+    description: 'Tendencias 2026 en regalos corporativos sustentables, casos de éxito, tips de RRHH y guías ESG. Aprende a hacer gifting con propósito en Chile.',
+    keywords: [
+      'blog regalos corporativos Chile',
+      'blog sostenibilidad empresa',
+      'tendencias merchandising 2026',
+      'tips RRHH gifting',
+      'blog ESG Chile',
+    ],
     priority: 0.7,
     changefreq: 'weekly',
   },
+
   seguimiento: {
     path: '/seguimiento',
-    title: 'Seguimiento de Pedido | PEYU Chile',
-    description: 'Consulta el estado de tu pedido PEYU en tiempo real.',
-    keywords: [],
+    title: 'Seguimiento de Pedido · Tracking en Tiempo Real | PEYU Chile',
+    description: 'Consulta el estado y tracking de tu pedido PEYU en tiempo real. Transportistas BlueExpress, Chilexpress y Starken integrados.',
+    keywords: ['seguimiento pedido PEYU', 'tracking pedido Chile'],
     priority: 0.4,
     changefreq: 'never',
   },
+
   contacto: {
     path: '/contacto',
-    title: 'Contacto — Tiendas en Providencia y Macul | PEYU Chile',
-    description: 'Visítanos en F. Bilbao 3775 (Providencia) o P. de Valdivia 6603 (Macul). WhatsApp +56 9 3504 0242. Atención lunes a sábado.',
-    keywords: ['PEYU tienda Santiago', 'tienda regalos sostenibles Providencia'],
+    title: 'Contacto · Tiendas en Providencia y Macul | PEYU Chile',
+    description: 'Visítanos en F. Bilbao 3775 (Providencia) o P. de Valdivia 6603 (Macul). WhatsApp +56 9 3504 0242. Lunes a sábado 10-19h.',
+    keywords: [
+      'PEYU contacto Chile',
+      'tienda regalos Providencia',
+      'tienda sostenible Macul',
+      'PEYU WhatsApp Santiago',
+    ],
     priority: 0.8,
     changefreq: 'monthly',
   },
+
   faq: {
     path: '/faq',
-    title: 'Preguntas Frecuentes | PEYU Chile',
-    description: 'Resuelve tus dudas sobre personalización, pedidos B2B, plazos, envíos y devoluciones.',
-    keywords: [],
+    title: 'Preguntas Frecuentes · Personalización, Pedidos y Envíos | PEYU',
+    description: 'Resuelve tus dudas: personalización láser, pedidos B2B, plazos de producción, envíos a regiones, devoluciones y facturación empresa.',
+    keywords: [
+      'preguntas frecuentes regalos corporativos',
+      'FAQ merchandising Chile',
+      'plazos producción personalización',
+    ],
     priority: 0.6,
     changefreq: 'monthly',
   },
 };
 
 // ============================================================
-// LANDINGS B2B (8) — pendientes de crear en F2-F4
-// Se precargan aquí para alimentar sitemap.xml desde ya.
+// LANDINGS B2B (8) — meta-tags optimizadas para SEO + GEO
 // ============================================================
 export const B2B_LANDINGS = {
   corporativos: {
     path: '/empresas/regalos-corporativos-sustentables',
-    title: 'Regalos Corporativos Sustentables para Empresas | PEYU Chile',
-    description: 'Regalos corporativos con impacto ESG para empresas chilenas. Plástico 100% reciclado, personalización láser, facturación y despacho nacional. Cotización en 24h.',
+    title: 'Regalos Corporativos Sustentables · Plástico Reciclado | PEYU',
+    description: 'Regalos corporativos con impacto ESG real. Plástico 100% reciclado chileno, personalización láser, factura empresa y propuesta en 24h.',
     keywords: KEYWORD_CLUSTERS.coreB2B,
     cluster: 'coreB2B',
     priority: 0.95,
     changefreq: 'monthly',
     buyerPersona: 'Gerente RRHH / Marketing',
-    status: 'pending', // pending | active
+    status: 'pending',
   },
+
   welcomeKit: {
     path: '/empresas/welcome-kit-colaboradores',
-    title: 'Welcome Kit Personalizado para Onboarding | PEYU Chile',
-    description: 'Welcome kits corporativos para recibir a nuevos colaboradores con identidad de marca. Desde 10 unidades, personalización láser UV, entrega en 10 días hábiles.',
+    title: 'Welcome Kit Personalizado · Onboarding Memorable | PEYU Chile',
+    description: 'Welcome packs sostenibles para nuevos colaboradores: tu logo grabado en productos hechos en Chile. Desde 10 unidades, entrega en 10 días hábiles.',
     keywords: KEYWORD_CLUSTERS.rrhh,
     cluster: 'rrhh',
     priority: 0.9,
@@ -229,33 +364,48 @@ export const B2B_LANDINGS = {
     buyerPersona: 'RRHH / People',
     status: 'pending',
   },
+
   diaTrabajador: {
     path: '/empresas/dia-del-trabajador',
-    title: 'Regalos Día del Trabajador para Empresas — 1° de Mayo | PEYU',
-    description: 'Reconoce a tu equipo el 1° de mayo con regalos sostenibles hechos en Chile. Pedido mínimo 10 unidades, entrega antes del feriado garantizada.',
-    keywords: ['regalos día del trabajador empresa', 'regalos 1 de mayo corporativos', 'reconocimiento colaboradores'],
+    title: 'Regalos Día del Trabajador · 1° de Mayo para Empresas | PEYU',
+    description: 'Reconoce a tu equipo este 1° de mayo con regalos sostenibles personalizados. Hechos en Chile, producción rápida, entrega antes del feriado.',
+    keywords: [
+      'regalos día del trabajador empresa',
+      'regalos 1 de mayo corporativos',
+      'regalos día del trabajo personalizados',
+      'reconocimiento colaboradores 1 de mayo',
+      'regalos día del trabajador con logo',
+    ],
     cluster: 'estacional',
     priority: 0.95,
     changefreq: 'yearly',
     buyerPersona: 'RRHH / Gerencia',
     status: 'pending',
-    seasonal: { start: '03-01', end: '05-02' }, // MM-DD: visible ene-may
+    seasonal: { start: '03-01', end: '05-02' },
   },
+
   finAno: {
     path: '/empresas/fin-de-ano',
-    title: 'Regalos de Fin de Año y Navidad Corporativa | PEYU Chile',
-    description: 'Regalos corporativos de fin de año con impacto positivo. Planifica con anticipación, recibe propuesta en 24h y asegura entrega antes de diciembre.',
-    keywords: ['regalos navidad empresa Chile', 'aguinaldo empresa personalizado', 'regalos fin de año colaboradores'],
+    title: 'Regalos de Navidad y Fin de Año Corporativos | PEYU Chile',
+    description: 'Planifica los regalos de Navidad de tu empresa con anticipación. Productos sostenibles, personalización láser y entrega garantizada antes de diciembre.',
+    keywords: [
+      'regalos navidad empresa Chile',
+      'regalos fin de año colaboradores',
+      'aguinaldo empresa personalizado',
+      'regalos corporativos navidad sustentable',
+      'regalos navideños empresa con logo',
+    ],
     cluster: 'estacional',
     priority: 0.9,
     changefreq: 'yearly',
     buyerPersona: 'Marketing / RRHH',
     status: 'pending',
   },
+
   esg: {
     path: '/empresas/esg-sustentabilidad',
-    title: 'Regalos ESG: Merchandising con Impacto Ambiental | PEYU',
-    description: PEYU_PITCH_ESG,
+    title: 'Merchandising ESG · Regalos con Impacto Ambiental | PEYU',
+    description: 'Alinea tu gifting corporativo con tu reporte ESG. Trazabilidad de material reciclado, huella de carbono evitada y certificación en factura.',
     keywords: KEYWORD_CLUSTERS.esg,
     cluster: 'esg',
     priority: 0.85,
@@ -263,10 +413,11 @@ export const B2B_LANDINGS = {
     buyerPersona: 'Sostenibilidad / CEO',
     status: 'pending',
   },
+
   eventos: {
     path: '/empresas/eventos-activaciones',
-    title: 'Merchandising para Eventos Corporativos y Activaciones | PEYU',
-    description: 'Merchandising memorable para ferias, congresos, lanzamientos y activaciones de marca. Producción en 2 semanas, entrega en punto de evento.',
+    title: 'Merchandising para Eventos y Activaciones de Marca | PEYU',
+    description: 'Swag memorable para ferias, congresos, lanzamientos y activaciones. Producción rápida en 2 semanas, entrega coordinada en punto de evento.',
     keywords: KEYWORD_CLUSTERS.eventos,
     cluster: 'eventos',
     priority: 0.8,
@@ -274,10 +425,11 @@ export const B2B_LANDINGS = {
     buyerPersona: 'Marketing / Eventos',
     status: 'pending',
   },
+
   pymes: {
     path: '/empresas/pymes-emprendedores',
-    title: 'Regalos Personalizados para PYMEs — Desde 10 Unidades | PEYU',
-    description: 'Regalos corporativos para PYMEs y emprendedores: pedido mínimo 10 unidades, sin fees ocultos, personalización gratis. Factura electrónica.',
+    title: 'Regalos Corporativos para PYMEs · Desde 10 Unidades | PEYU',
+    description: 'Merchandising para PYMEs y emprendedores chilenos: pedido mínimo 10 unidades, sin fees ocultos, personalización gratis y factura electrónica.',
     keywords: KEYWORD_CLUSTERS.pymes,
     cluster: 'pymes',
     priority: 0.8,
@@ -285,10 +437,11 @@ export const B2B_LANDINGS = {
     buyerPersona: 'PYME / Dueño',
     status: 'pending',
   },
+
   gobierno: {
     path: '/empresas/gobierno-licitaciones',
-    title: 'Proveedor de Regalos Institucionales y Licitaciones | PEYU Chile',
-    description: 'PEYU es proveedor de regalos corporativos para instituciones públicas y licitaciones. Productos con certificado de material reciclado, facturación con OC.',
+    title: 'Regalos Institucionales y Licitaciones · Mercado Público | PEYU',
+    description: 'Proveedor de regalos corporativos para instituciones públicas y licitaciones. Certificado de material reciclado, facturación con OC y plazos cumplidos.',
     keywords: KEYWORD_CLUSTERS.gobierno,
     cluster: 'gobierno',
     priority: 0.75,
