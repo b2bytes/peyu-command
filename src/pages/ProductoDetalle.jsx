@@ -65,6 +65,45 @@ const SKU_IMAGES_ALT = {
   'HOG-CUADRO1':   'https://i0.wp.com/peyuchile.cl/wp-content/uploads/2022/08/frontrettor-Photoroom.jpg?fit=600%2C600&ssl=1',
 };
 
+// Decodifica entidades HTML comunes (&#8220; &#8221; &amp; &nbsp; etc.) y limpia
+// caracteres invisibles que algunos productos importados desde WooCommerce traen.
+function cleanDescripcion(raw) {
+  if (!raw) return '';
+  return raw
+    .replace(/&#8220;|&#8221;|&ldquo;|&rdquo;/g, '"')
+    .replace(/&#8216;|&#8217;|&lsquo;|&rsquo;/g, "'")
+    .replace(/&amp;/g, '&')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/\u00a0/g, ' ')
+    .replace(/[⭐🌾]/g, '')
+    .replace(/[ \t]+/g, ' ')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
+}
+
+// Parsea descripción tipo "✓ ítem 1\n✓ ítem 2" en { intro, bullets[] }
+function parseGiftCardDescription(raw) {
+  const clean = cleanDescripcion(raw);
+  const lines = clean.split('\n').map(l => l.trim()).filter(Boolean);
+  const intro = [];
+  const bullets = [];
+  const outro = [];
+  let foundBullets = false;
+  let bulletsDone = false;
+  for (const line of lines) {
+    if (/^[✓✔•·\-]/.test(line)) {
+      foundBullets = true;
+      bullets.push(line.replace(/^[✓✔•·\-]\s*/, ''));
+    } else if (!foundBullets) {
+      intro.push(line);
+    } else {
+      bulletsDone = true;
+      outro.push(line);
+    }
+  }
+  return { intro: intro.join(' '), bullets, outro: outro.join(' ') };
+}
+
 function getPrecioVolumen(producto, cantidad) {
   if (!producto) return null;
   if (cantidad >= 500 && producto.precio_500_mas) return { precio: producto.precio_500_mas, label: '500+ u.' };
@@ -468,7 +507,29 @@ export default function ProductoDetalle() {
                 </div>
                 <h1 className="text-2xl lg:text-3xl font-poppins font-bold text-white leading-tight mb-2">{producto.nombre}</h1>
                 {producto.descripcion && (
-                  <p className="text-sm text-white/55 leading-relaxed">{producto.descripcion.replace(/[⭐🌾]/g, '').trim()}</p>
+                  isGiftCard ? (
+                    (() => {
+                      const { intro, bullets, outro } = parseGiftCardDescription(producto.descripcion);
+                      return (
+                        <div className="space-y-2.5 mt-2">
+                          {intro && <p className="text-sm text-white/65 leading-relaxed">{intro}</p>}
+                          {bullets.length > 0 && (
+                            <ul className="space-y-1.5">
+                              {bullets.map((b, i) => (
+                                <li key={i} className="flex items-start gap-2 text-sm text-white/65">
+                                  <Check className="w-4 h-4 text-emerald-400 flex-shrink-0 mt-0.5" />
+                                  <span>{b}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          )}
+                          {outro && <p className="text-xs text-white/45 leading-relaxed pt-1">{outro}</p>}
+                        </div>
+                      );
+                    })()
+                  ) : (
+                    <p className="text-sm text-white/55 leading-relaxed whitespace-pre-line">{cleanDescripcion(producto.descripcion)}</p>
+                  )
                 )}
                 <div className="flex items-center gap-2 mt-3">
                   <div className="flex gap-0.5">
@@ -770,8 +831,8 @@ export default function ProductoDetalle() {
               <div className="grid md:grid-cols-2 gap-6">
                 <div className="space-y-4">
                   <h3 className="font-poppins font-bold text-lg text-white">Sobre este producto</h3>
-                  <p className="text-sm text-white/55 leading-relaxed">
-                    {producto.descripcion || `${producto.nombre} es un producto diseñado y fabricado en Chile con materiales ${producto.material?.includes('100%') ? '100% reciclados post-consumo' : 'compostables de fibra de trigo'}. Cada unidad es única gracias al proceso de inyección artesanal.`}
+                  <p className="text-sm text-white/55 leading-relaxed whitespace-pre-line">
+                    {cleanDescripcion(producto.descripcion) || `${producto.nombre} es un producto diseñado y fabricado en Chile con materiales ${producto.material?.includes('100%') ? '100% reciclados post-consumo' : 'compostables de fibra de trigo'}. Cada unidad es única gracias al proceso de inyección artesanal.`}
                   </p>
                   <ul className="space-y-2">
                     {[
