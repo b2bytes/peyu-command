@@ -41,6 +41,7 @@ const navGroups = [
       { path: "/admin/trazabilidad", label: "Trazabilidad", icon: HardHat },
       { path: "/admin/inventario", label: "Inventario", icon: Archive },
       { path: "/admin/proveedores", label: "Proveedores", icon: Truck },
+      { path: "/admin/tarifas-envio", label: "Tarifas Envío Bluex", icon: Truck },
       { path: "/admin/compras", label: "Compras & Supply", icon: ShoppingCart },
       { path: "/admin/esg", label: "Sostenibilidad ESG", icon: Leaf },
     ]

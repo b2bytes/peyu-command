@@ -1,0 +1,103 @@
+{
+  "name": "TarifaBluex",
+  "type": "object",
+  "description": "Tarifario oficial BlueExpress por comuna y servicio. Importado desde los Excel de tarifas personalizadas. Usado para calcular costo de env\u00edo en checkout B2C/B2B.",
+  "properties": {
+    "servicio": {
+      "type": "string",
+      "title": "Servicio",
+      "enum": [
+        "EXPRESS",
+        "PRIORITY"
+      ],
+      "description": "EXPRESS = 24-72h est\u00e1ndar \u00b7 PRIORITY = entrega r\u00e1pida"
+    },
+    "region": {
+      "type": "string",
+      "title": "Regi\u00f3n"
+    },
+    "region_codigo": {
+      "type": "string",
+      "title": "C\u00f3digo regi\u00f3n (RM, V, VIII...)"
+    },
+    "comuna": {
+      "type": "string",
+      "title": "Comuna destino"
+    },
+    "comuna_normalizada": {
+      "type": "string",
+      "title": "Comuna sin tildes / min\u00fasculas (para matching)"
+    },
+    "zona": {
+      "type": "string",
+      "title": "Zona Bluex (si aplica)"
+    },
+    "tipo_destino": {
+      "type": "string",
+      "title": "Tipo destino",
+      "enum": [
+        "Urbano",
+        "Extendido",
+        "Extremo",
+        "Rural"
+      ],
+      "default": "Urbano"
+    },
+    "lead_time_dias": {
+      "type": "number",
+      "title": "Lead time (d\u00edas h\u00e1biles)"
+    },
+    "tarifa_base": {
+      "type": "number",
+      "title": "Tarifa base (CLP, hasta 1kg)"
+    },
+    "tarifa_kg_adicional": {
+      "type": "number",
+      "title": "Tarifa por kg adicional (CLP)"
+    },
+    "tarifa_2kg": {
+      "type": "number",
+      "title": "Tarifa 1-2 kg (CLP)"
+    },
+    "tarifa_3kg": {
+      "type": "number",
+      "title": "Tarifa 2-3 kg (CLP)"
+    },
+    "tarifa_5kg": {
+      "type": "number",
+      "title": "Tarifa 3-5 kg (CLP)"
+    },
+    "tarifa_10kg": {
+      "type": "number",
+      "title": "Tarifa 5-10 kg (CLP)"
+    },
+    "tarifa_15kg": {
+      "type": "number",
+      "title": "Tarifa 10-15 kg (CLP)"
+    },
+    "tarifa_25kg": {
+      "type": "number",
+      "title": "Tarifa 15-25 kg (CLP)"
+    },
+    "raw_columnas": {
+      "type": "object",
+      "title": "Columnas adicionales del Excel (raw)",
+      "additionalProperties": true
+    },
+    "fecha_actualizacion": {
+      "type": "string",
+      "format": "date",
+      "title": "\u00daltima actualizaci\u00f3n"
+    },
+    "vigente": {
+      "type": "boolean",
+      "title": "Vigente",
+      "default": true
+    }
+  },
+  "required": [
+    "servicio",
+    "comuna",
+    "tarifa_base"
+  ]
+}
