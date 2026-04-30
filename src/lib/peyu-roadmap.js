@@ -57,6 +57,7 @@ export const ROADMAP = [
       { name: 'Recuperación IA de propuestas rechazadas (contraoferta)',  status: 'done',       fn: 'recuperarPropuestaRechazada' },
       { name: 'Predicción semanal de demanda + plan producción IA',       status: 'done',       fn: 'prediccionDemandaCRON' },
       { name: 'NPS trimestral automático a clientes B2B activos',         status: 'done',       fn: 'npsTrimestralB2B' },
+      { name: 'Reactivación semanal de leads B2B inactivos +14d',         status: 'done',       fn: 'leadReactivationCRON' },
     ],
   },
   {
@@ -71,6 +72,7 @@ export const ROADMAP = [
       { name: 'Catálogo Visual alternativo',                              status: 'done',       page: '/catalogo-visual' },
       { name: 'Página Nosotros con storytelling',                         status: 'done',       page: '/nosotros' },
       { name: 'Soporte público + FAQ',                                    status: 'done',       page: '/soporte' },
+      { name: 'Generador IA mensual de FAQs desde consultas reales',      status: 'done',       fn: 'generarFAQsDesdeConsultas' },
       { name: 'Seguimiento de pedidos público',                           status: 'done',       page: '/seguimiento' },
       { name: 'Trigger onNewPedidoWeb (notificación + email)',            status: 'done',       fn: 'onNewPedidoWeb' },
       { name: 'Trigger cambios de estado de pedido',                      status: 'done',       fn: 'onPedidoWebStatusChange' },
@@ -151,6 +153,7 @@ export const ROADMAP = [
     items: [
       { name: 'War Room Indexación',                                      status: 'done',       page: '/admin/indexacion' },
       { name: 'Launch Map',                                               status: 'done',       page: '/admin/launch-map' },
+      { name: 'Oportunidades SEO semanales con IA (quick wins)',          status: 'done',       fn: 'oportunidadesSEOCRON' },
       { name: 'Auditoría Search Console',                                 status: 'done',       fn: 'gscAuditSite' },
       { name: 'Inspección de URL (GSC)',                                  status: 'done',       fn: 'gscInspectUrl' },
       { name: 'Submit sitemap a GSC',                                     status: 'done',       fn: 'gscSubmitSitemap' },
