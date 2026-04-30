@@ -61,11 +61,11 @@ export const SKU_IMAGES = {
   'HOG-SOPC':       'https://i0.wp.com/peyuchile.cl/wp-content/uploads/2022/09/greencel-1.jpg?fit=600%2C600&ssl=1',
   'HOG-SONB':       'https://i0.wp.com/peyuchile.cl/wp-content/uploads/2025/09/dce80c23-7441-4922-a656-8627018c1e5d-1.jpeg?fit=600%2C600&ssl=1',
 
-  // ── GIFT CARDS (imagen oficial peyuchile.cl) ──────────────
-  'GC-PEYU-10K':    'https://i0.wp.com/peyuchile.cl/wp-content/uploads/2025/06/pw-gift-card.png?fit=600%2C600&ssl=1',
-  'GC-PEYU-50K':    'https://i0.wp.com/peyuchile.cl/wp-content/uploads/2025/06/pw-gift-card.png?fit=600%2C600&ssl=1',
-  'GC-PEYU-100K':   'https://i0.wp.com/peyuchile.cl/wp-content/uploads/2025/06/pw-gift-card.png?fit=600%2C600&ssl=1',
-  'ae6e334f62fb':   'https://i0.wp.com/peyuchile.cl/wp-content/uploads/2025/06/pw-gift-card.png?fit=600%2C600&ssl=1',
+  // ── GIFT CARDS (diseño oficial PEYU naranja con monto) ────
+  'GC-PEYU-10K':    'https://media.base44.com/images/public/69d99b9d61f699701129c103/59610122d_generated_image.png',
+  'GC-PEYU-50K':    'https://media.base44.com/images/public/69d99b9d61f699701129c103/19448ad58_generated_image.png',
+  'GC-PEYU-100K':   'https://media.base44.com/images/public/69d99b9d61f699701129c103/4a2230d61_generated_image.png',
+  'ae6e334f62fb':   'https://media.base44.com/images/public/69d99b9d61f699701129c103/7b59fad60_generated_image.png',
 
   // ── CORPORATIVO ────────────────────────────────────────────
   'CORP-CACH4':     'https://i0.wp.com/peyuchile.cl/wp-content/uploads/2025/07/44.jpg?fit=600%2C600&ssl=1',
@@ -99,7 +99,7 @@ export const CATEGORY_IMAGES = {
 // ORDEN IMPORTA: de más específico a más genérico.
 export const NAME_KEYWORD_IMAGES = [
   // Gift Card (debe ir primero — match más específico)
-  { keywords: ['gift card', 'giftcard', 'tarjeta regalo'], img: 'https://i0.wp.com/peyuchile.cl/wp-content/uploads/2025/06/pw-gift-card.png?fit=600%2C600&ssl=1' },
+  { keywords: ['gift card', 'giftcard', 'tarjeta regalo'], img: 'https://media.base44.com/images/public/69d99b9d61f699701129c103/7b59fad60_generated_image.png' },
 
   // Carcasas (muy específicas)
   { keywords: ['airpods', 'airpod'], img: SKU_IMAGES['CARC-AIRP-12'] },
