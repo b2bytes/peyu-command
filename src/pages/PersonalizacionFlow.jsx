@@ -1,32 +1,17 @@
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useState, useEffect, useMemo } from 'react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
   ArrowLeft, ArrowRight, Sparkles, CheckCircle, Upload, Zap, Loader2,
-  RefreshCw, Recycle, Package, Palette, Pencil, User, Check, ShieldCheck, Truck
+  RefreshCw, Recycle, Package, Palette, Pencil, User, Check, ShieldCheck, Truck,
+  ShoppingCart
 } from 'lucide-react';
 import MarbleSwatch from '@/components/personalizacion/MarbleSwatch';
-
-const PRODUCTOS = [
-  { id: 'soporte-cel', nombre: 'Soporte Celular', emoji: '📱', precio: 6990, area: '40×20mm',
-    imageUrl: 'https://i0.wp.com/peyuchile.cl/wp-content/uploads/2022/08/IMG_2468-scaled.jpg?fit=600%2C600&ssl=1' },
-  { id: 'posavaso', nombre: 'Posavaso Circular', emoji: '🟢', precio: 3990, area: '35×35mm',
-    imageUrl: 'https://i0.wp.com/peyuchile.cl/wp-content/uploads/2022/08/IMG_2453-scaled.jpg?fit=600%2C600&ssl=1' },
-  { id: 'macetero', nombre: 'Macetero Escritorio', emoji: '🌱', precio: 5990, area: '30×15mm',
-    imageUrl: 'https://i0.wp.com/peyuchile.cl/wp-content/uploads/2022/11/bowlcoverst-Photoroom.jpg?fit=600%2C600&ssl=1' },
-  { id: 'llavero', nombre: 'Llavero Soporte', emoji: '🔑', precio: 2990, area: '20×10mm',
-    imageUrl: 'https://i0.wp.com/peyuchile.cl/wp-content/uploads/2022/08/IMG_2468-scaled.jpg?fit=600%2C600&ssl=1' },
-];
-
-const COLORES = [
-  { id: 'negro', label: 'Negro Carbón', hex: '#1a1a1a' },
-  { id: 'arena', label: 'Arena Natural', hex: '#E7D8C6' },
-  { id: 'verde', label: 'Verde Reciclado', hex: '#0F8B6C' },
-  { id: 'gris', label: 'Gris Marmolado', hex: '#8B8B8B' },
-  { id: 'coral', label: 'Coral Terracota', hex: '#D96B4D' },
-];
+import { getProductImage } from '@/utils/productImages';
+import { getColoresProducto } from '@/lib/color-parser';
+import { trackAddToCart } from '@/lib/analytics-peyu';
 
 const STEP_LABELS = [
   { label: 'Producto', Icon: Package },
@@ -56,9 +41,6 @@ function StepIndicator({ step, total }) {
             <span className={`text-[10px] font-bold tracking-wide uppercase ${
               active ? 'text-white' : done ? 'text-teal-300' : 'text-white/30'
             }`}>{label}</span>
-            {i < total - 1 && (
-              <div className="absolute hidden" />
-            )}
           </div>
         );
       })}
@@ -66,42 +48,59 @@ function StepIndicator({ step, total }) {
   );
 }
 
-function LaserPreview({ texto, productoId, colorId }) {
-  const prod = PRODUCTOS.find(p => p.id === productoId);
-  const color = COLORES.find(c => c.id === colorId);
-  const isDark = ['negro', 'verde', 'gris', 'coral'].includes(colorId);
+function LaserPreview({ texto, producto, color }) {
+  const isDark = color?.hex && parseInt(color.hex.replace('#', '').slice(0, 2), 16) < 130;
+  const productImg = producto ? getProductImage(producto) : null;
   return (
-    <div className="relative mx-auto w-56 h-56 rounded-3xl flex items-center justify-center shadow-2xl border border-white/20 overflow-hidden"
+    <div className="relative mx-auto w-56 h-56 rounded-3xl overflow-hidden shadow-2xl border border-white/20"
       style={{ backgroundColor: color?.hex || '#1a1a1a' }}>
-      <div className="absolute inset-0 opacity-25" style={{ backgroundImage: 'radial-gradient(circle at 30% 30%, rgba(255,255,255,0.18) 0%, transparent 60%)' }} />
-      <div className="relative text-center">
-        <div className="text-5xl mb-3 drop-shadow-lg">{prod?.emoji}</div>
-        {texto && (
+      {productImg && (
+        <img
+          src={productImg}
+          alt={producto?.nombre}
+          className="absolute inset-0 w-full h-full object-cover opacity-90 mix-blend-luminosity"
+          onError={e => { e.target.style.display = 'none'; }}
+        />
+      )}
+      <div
+        className="absolute inset-0 opacity-30"
+        style={{ backgroundImage: 'radial-gradient(circle at 30% 30%, rgba(255,255,255,0.18) 0%, transparent 60%)' }}
+      />
+      {texto && (
+        <div className="absolute inset-0 flex items-end justify-center pb-8">
           <div className="font-bold text-xs px-3 py-1.5 rounded-lg border tracking-widest"
             style={{
               color: isDark ? '#D4AF37' : '#2a1a00',
               borderColor: isDark ? '#D4AF3780' : '#2a1a0040',
-              backgroundColor: 'transparent',
+              backgroundColor: isDark ? 'rgba(0,0,0,0.55)' : 'rgba(255,255,255,0.6)',
               textShadow: isDark ? '0 0 12px #D4AF37' : 'none',
               fontFamily: 'monospace'
             }}>
             {texto.toUpperCase()}
           </div>
-        )}
-        {prod?.area && (
-          <div className={`text-[10px] mt-2 font-medium ${isDark ? 'text-white/40' : 'text-black/40'}`}>
-            Área láser: {prod.area}
-          </div>
-        )}
-      </div>
+        </div>
+      )}
+      {producto?.area_laser_mm && (
+        <div className="absolute top-3 left-3 text-[9px] font-bold px-2 py-1 rounded-full bg-black/45 text-white/85 backdrop-blur-sm">
+          Área láser: {producto.area_laser_mm}
+        </div>
+      )}
     </div>
   );
 }
 
 export default function PersonalizacionFlow() {
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  // Catálogo
+  const [productos, setProductos] = useState([]);
+  const [productosLoading, setProductosLoading] = useState(true);
+
+  // Estado del flujo
   const [step, setStep] = useState(0);
-  const [productoId, setProductoId] = useState('soporte-cel');
-  const [colorId, setColorId] = useState('negro');
+  const [productoId, setProductoId] = useState(null);
+  const [colorId, setColorId] = useState(null);
   const [texto, setTexto] = useState('');
   const [archivo, setArchivo] = useState(null);
   const [logoUrlSubido, setLogoUrlSubido] = useState('');
@@ -114,8 +113,41 @@ export default function PersonalizacionFlow() {
   const [mockupLoading, setMockupLoading] = useState(false);
   const [mockupError, setMockupError] = useState('');
 
-  const producto = PRODUCTOS.find(p => p.id === productoId);
-  const color = COLORES.find(c => c.id === colorId);
+  // ── Carga del catálogo (productos personalizables) ───────────────────
+  useEffect(() => {
+    base44.entities.Producto.list().then(data => {
+      const personalizables = data.filter(p =>
+        p.activo !== false &&
+        p.canal !== 'B2B Exclusivo' &&
+        p.moq_personalizacion // tiene flujo de personalización láser
+      );
+      setProductos(personalizables);
+      // Preseleccionar por query param ?productoId=
+      const params = new URLSearchParams(location.search);
+      const preId = params.get('productoId');
+      const initial = personalizables.find(p => p.id === preId) || personalizables[0];
+      if (initial) setProductoId(initial.id);
+    }).finally(() => setProductosLoading(false));
+  }, [location.search]);
+
+  const producto = useMemo(
+    () => productos.find(p => p.id === productoId),
+    [productos, productoId]
+  );
+
+  const colores = useMemo(() => producto ? getColoresProducto(producto) : [], [producto]);
+  const color = useMemo(() => colores.find(c => c.id === colorId), [colores, colorId]);
+
+  // Cuando cambia el producto, resetear color al primero disponible
+  useEffect(() => {
+    if (colores.length > 0 && !colores.find(c => c.id === colorId)) {
+      setColorId(colores[0].id);
+    } else if (colores.length === 0) {
+      setColorId(null);
+    }
+  }, [colores]); // eslint-disable-line
+
+  const precioFinal = producto ? Math.floor((producto.precio_b2c || 9990) * 0.85) : 0;
 
   const resetMockupIfNeeded = () => { if (mockupUrl) setMockupUrl(''); };
 
@@ -135,9 +167,9 @@ export default function PersonalizacionFlow() {
       }
       const res = await base44.functions.invoke('generateMockup', {
         productName: producto?.nombre,
-        productCategory: 'Personalización',
-        productImageUrl: producto?.imageUrl,
-        sku: productoId,
+        productCategory: producto?.categoria || 'Personalización',
+        productImageUrl: getProductImage(producto),
+        sku: producto?.sku,
         logoUrl,
         text: texto,
         color: color?.label,
@@ -152,39 +184,109 @@ export default function PersonalizacionFlow() {
     }
   };
 
+  // ── Confirmar: agregar al carrito + crear PersonalizationJob ─────────
   const handleSubmit = async () => {
+    if (!producto) return;
     setLoading(true);
+
+    // 1. Subir logo si corresponde
     let logoUrl = logoUrlSubido;
     if (archivo && !logoUrlSubido) {
       const { file_url } = await base44.integrations.Core.UploadFile({ file: archivo });
       logoUrl = file_url;
     }
+
+    // 2. Agregar al carrito (storage local — mismo formato que ProductoDetalle)
+    const item = {
+      id: Math.random(),
+      productoId: producto.id,
+      nombre: producto.nombre,
+      precio: precioFinal,
+      cantidad: 1,
+      color: colorId || null,
+      personalizacion: texto || (logoUrl ? '[Logo personalizado]' : null),
+      imagen: getProductImage(producto),
+      logoUrl: logoUrl || null,
+      mockupUrl: mockupUrl || null,
+    };
+    const carritoActual = JSON.parse(localStorage.getItem('carrito') || '[]');
+    const nuevo = [...carritoActual, item];
+    localStorage.setItem('carrito', JSON.stringify(nuevo));
+    trackAddToCart({ ...item, sku: producto.sku, categoria: producto.categoria });
+
+    // 3. Crear PersonalizationJob para tracking de producción
     const job = await base44.entities.PersonalizationJob.create({
-      source_type: 'Pedido B2C', product_name: producto?.nombre || '', sku: productoId,
-      quantity: 1, laser_required: true, laser_text: texto, logo_url: logoUrl,
-      color_producto: color?.label || '', status: mockupUrl ? 'Preview generado' : 'Pendiente',
+      source_type: 'Pedido B2C',
+      product_name: producto.nombre,
+      sku: producto.sku,
+      quantity: 1,
+      laser_required: true,
+      laser_text: texto,
+      logo_url: logoUrl,
+      color_producto: color?.label || '',
+      status: mockupUrl ? 'Preview generado' : 'Pendiente',
       mockup_urls: mockupUrl ? [mockupUrl] : [],
-      customer_name: nombre, customer_email: email, estimated_minutes: 5,
+      customer_name: nombre,
+      customer_email: email,
+      estimated_minutes: 5,
     });
+
+    // 4. Si no hay mockup pero hay diseño, dispararlo en background
     if (job?.id && !mockupUrl && (logoUrl || texto)) {
       base44.functions.invoke('generateMockup', {
-        productName: producto?.nombre, productCategory: 'Personalización',
-        productImageUrl: producto?.imageUrl,
-        sku: productoId, logoUrl, text: texto, color: color?.label,
+        productName: producto.nombre,
+        productCategory: producto.categoria || 'Personalización',
+        productImageUrl: getProductImage(producto),
+        sku: producto.sku,
+        logoUrl,
+        text: texto,
+        color: color?.label,
         jobId: job.id,
       }).catch(() => {});
     }
+
+    // 5. Email de confirmación al cliente (no-bloqueante)
     if (email) {
-      await base44.integrations.Core.SendEmail({
+      base44.integrations.Core.SendEmail({
         to: email,
         subject: '✨ ¡Tu personalización Peyu está en cola!',
-        body: `<div style="font-family:Inter,Arial,sans-serif;padding:20px;max-width:500px"><h2 style="color:#0F8B6C">Tu grabado láser está en proceso 🌿</h2><p>Hola <strong>${nombre}</strong>, recibimos tu pedido de personalización:</p><ul><li><strong>Producto:</strong> ${producto?.nombre}</li><li><strong>Color:</strong> ${color?.label}</li>${texto ? `<li><strong>Texto a grabar:</strong> ${texto}</li>` : ''}${logoUrl ? '<li><strong>Logo:</strong> Recibido ✓</li>' : ''}</ul><p>Nuestro equipo se contactará pronto para coordinar el pago y entrega.</p><p style="color:#9ca3af;font-size:12px">Peyu Chile · +56 9 3504 0242</p></div>`,
+        body: `<div style="font-family:Inter,Arial,sans-serif;padding:20px;max-width:500px"><h2 style="color:#0F8B6C">Tu grabado láser está en proceso 🌿</h2><p>Hola <strong>${nombre}</strong>, recibimos tu pedido de personalización:</p><ul><li><strong>Producto:</strong> ${producto.nombre}</li><li><strong>Color:</strong> ${color?.label || '—'}</li>${texto ? `<li><strong>Texto a grabar:</strong> ${texto}</li>` : ''}${logoUrl ? '<li><strong>Logo:</strong> Recibido ✓</li>' : ''}</ul><p>Está agregado a tu carrito. Continúa al checkout para completar la compra.</p><p style="color:#9ca3af;font-size:12px">Peyu Chile · +56 9 3504 0242</p></div>`,
         from_name: 'Peyu Chile Personalización',
-      });
+      }).catch(() => {});
     }
+
     setLoading(false);
     setDone(true);
   };
+
+  // ── PANTALLA DE CARGA DEL CATÁLOGO ──────────────────────────────────
+  if (productosLoading) {
+    return (
+      <div className="flex-1 flex items-center justify-center py-20">
+        <div className="text-center space-y-3">
+          <div className="w-12 h-12 border-4 border-teal-400/30 border-t-teal-400 rounded-full animate-spin mx-auto" />
+          <p className="text-white/60 text-sm font-medium">Cargando productos personalizables...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (productos.length === 0) {
+    return (
+      <div className="flex-1 flex items-center justify-center px-4 py-12">
+        <div className="text-center space-y-4 max-w-sm">
+          <div className="w-16 h-16 rounded-2xl bg-white/10 mx-auto flex items-center justify-center">
+            <Package className="w-7 h-7 text-white/50" />
+          </div>
+          <h2 className="text-xl font-poppins font-bold text-white">Sin productos personalizables</h2>
+          <p className="text-sm text-white/60">No hay productos disponibles para personalización en este momento.</p>
+          <Link to="/shop">
+            <Button className="rounded-2xl bg-teal-500 hover:bg-teal-600 text-white">Ir a la tienda</Button>
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   // ── PANTALLA DE ÉXITO ────────────────────────────────────────────────
   if (done) {
@@ -195,36 +297,31 @@ export default function PersonalizacionFlow() {
             <CheckCircle className="w-12 h-12 text-white" />
           </div>
           <div>
-            <h2 className="text-3xl font-poppins font-bold text-white mb-2">¡Personalización creada!</h2>
-            <p className="text-sm text-white/55">Recibirás un email con los próximos pasos</p>
+            <h2 className="text-3xl font-poppins font-bold text-white mb-2">¡Agregado al carrito!</h2>
+            <p className="text-sm text-white/55">Tu personalización está lista. Continúa al checkout.</p>
           </div>
 
           <div className="bg-white/5 backdrop-blur-sm border border-white/15 rounded-3xl p-5 text-left space-y-4 shadow-xl">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl border border-white/15"
-                style={{ backgroundColor: color?.hex + '30' }}>{producto?.emoji}</div>
-              <div className="flex-1">
-                <div className="font-semibold text-white text-sm">{producto?.nombre}</div>
-                <div className="text-xs text-white/50">{color?.label}{texto ? ` · "${texto}"` : ''}</div>
+              <img
+                src={getProductImage(producto)}
+                alt={producto?.nombre}
+                className="w-14 h-14 rounded-xl object-cover border border-white/15 flex-shrink-0"
+              />
+              <div className="flex-1 min-w-0">
+                <div className="font-semibold text-white text-sm truncate">{producto?.nombre}</div>
+                <div className="text-xs text-white/50 truncate">{color?.label || ''}{texto ? ` · "${texto}"` : ''}</div>
               </div>
-              <div className="font-poppins font-bold text-white">${producto?.precio.toLocaleString('es-CL')}</div>
-            </div>
-            <div className="bg-teal-500/15 border border-teal-400/25 rounded-2xl p-3">
-              <p className="text-teal-200 text-xs leading-relaxed">
-                <strong className="text-teal-100">¿Qué sigue?</strong><br />
-                Nuestro equipo te contactará pronto para coordinar el pago y entrega.
-              </p>
+              <div className="font-poppins font-bold text-white">${precioFinal.toLocaleString('es-CL')}</div>
             </div>
           </div>
 
           <div className="space-y-2">
-            <a
-              href={`https://wa.me/56935040242?text=${encodeURIComponent(`Hola, hice un pedido de personalización de ${producto?.nombre} con texto "${texto}". Soy ${nombre}.`)}`}
-              target="_blank" rel="noopener noreferrer">
-              <Button className="w-full h-12 gap-2 rounded-2xl font-bold bg-green-500 hover:bg-green-600 text-white border-0 shadow-lg shadow-green-500/30">
-                💬 Coordinar por WhatsApp
+            <Link to="/cart">
+              <Button size="lg" className="w-full h-12 gap-2 rounded-2xl font-bold bg-gradient-to-r from-teal-500 to-cyan-500 hover:from-teal-600 hover:to-cyan-600 text-white border-0 shadow-lg shadow-teal-500/30">
+                <ShoppingCart className="w-4 h-4" /> Ir al carrito
               </Button>
-            </a>
+            </Link>
             <Link to="/shop">
               <Button className="w-full h-12 rounded-2xl bg-white/10 hover:bg-white/20 border border-white/20 text-white font-semibold">
                 Seguir comprando
@@ -238,37 +335,48 @@ export default function PersonalizacionFlow() {
 
   // ── STEPS DEL FLUJO ───────────────────────────────────────────────────
   const steps = [
-    // ── Step 0 — Producto ───────────────────────────────────────────
+    // ── Step 0 — Producto (CATÁLOGO REAL) ─────────────────────────────
     <div key="prod" className="space-y-5">
       <div className="text-center">
         <p className="text-xs font-bold text-teal-400 uppercase tracking-widest mb-2">Paso 1 · Elige tu base</p>
         <h2 className="text-2xl sm:text-3xl font-poppins font-bold text-white mb-2">¿Qué quieres personalizar?</h2>
         <p className="text-white/50 text-sm flex items-center justify-center gap-1.5">
           <Recycle className="w-3.5 h-3.5 text-teal-400" />
-          100% plástico reciclado · Grabado láser UV
+          {productos.length} productos · Grabado láser UV
         </p>
       </div>
-      <div className="grid grid-cols-2 gap-3">
-        {PRODUCTOS.map(p => {
+
+      <div className="grid grid-cols-2 gap-3 max-h-[480px] overflow-y-auto peyu-scrollbar-light pr-1">
+        {productos.map(p => {
           const sel = productoId === p.id;
+          const precio = Math.floor((p.precio_b2c || 9990) * 0.85);
           return (
             <button key={p.id} onClick={() => { setProductoId(p.id); setMockupUrl(''); }}
-              className={`relative p-4 rounded-2xl border-2 transition-all text-left hover:-translate-y-0.5 hover:scale-[1.02] backdrop-blur-sm ${
+              className={`relative p-3 rounded-2xl border-2 transition-all text-left hover:-translate-y-0.5 hover:scale-[1.02] backdrop-blur-sm ${
                 sel
                   ? 'border-teal-400 bg-gradient-to-br from-teal-500/25 to-cyan-500/20 shadow-xl shadow-teal-500/20'
                   : 'border-white/15 bg-white/5 hover:border-white/30 hover:bg-white/10'
               }`}>
               {sel && (
-                <div className="absolute top-2 right-2 w-5 h-5 rounded-full bg-teal-400 flex items-center justify-center shadow-lg">
+                <div className="absolute top-2 right-2 w-5 h-5 rounded-full bg-teal-400 flex items-center justify-center shadow-lg z-10">
                   <Check className="w-3 h-3 text-slate-900" strokeWidth={3} />
                 </div>
               )}
-              <div className="text-3xl mb-2 drop-shadow">{p.emoji}</div>
-              <div className={`font-semibold text-sm leading-tight ${sel ? 'text-white' : 'text-white/85'}`}>{p.nombre}</div>
-              <div className={`font-poppins font-bold text-base mt-1 ${sel ? 'text-teal-300' : 'text-white'}`}>
-                ${p.precio.toLocaleString('es-CL')}
+              <div className="aspect-square rounded-xl overflow-hidden bg-white/5 mb-2 border border-white/10">
+                <img
+                  src={getProductImage(p)}
+                  alt={p.nombre}
+                  className="w-full h-full object-cover"
+                  onError={e => { e.target.src = 'https://i0.wp.com/peyuchile.cl/wp-content/uploads/2025/04/carcasas-500x500-1.webp?fit=600%2C600&ssl=1'; }}
+                />
               </div>
-              <div className="text-[10px] text-white/40 mt-1">Área: {p.area}</div>
+              <div className={`font-semibold text-xs leading-tight line-clamp-2 ${sel ? 'text-white' : 'text-white/85'}`}>{p.nombre}</div>
+              <div className={`font-poppins font-bold text-sm mt-1 ${sel ? 'text-teal-300' : 'text-white'}`}>
+                ${precio.toLocaleString('es-CL')}
+              </div>
+              {p.area_laser_mm && (
+                <div className="text-[10px] text-white/40 mt-0.5 truncate">Área: {p.area_laser_mm}</div>
+              )}
             </button>
           );
         })}
@@ -282,34 +390,42 @@ export default function PersonalizacionFlow() {
         <h2 className="text-2xl sm:text-3xl font-poppins font-bold text-white mb-2">Elige el color</h2>
         <p className="text-white/50 text-sm">Cada marmolado es único e irrepetible</p>
       </div>
-      <div className="space-y-2.5">
-        {COLORES.map((c, idx) => {
-          const sel = colorId === c.id;
-          return (
-            <button key={c.id} onClick={() => { setColorId(c.id); setMockupUrl(''); }}
-              className={`w-full flex items-center gap-4 p-4 rounded-2xl border-2 transition-all backdrop-blur-sm ${
-                sel
-                  ? 'border-teal-400 bg-gradient-to-r from-teal-500/20 to-cyan-500/15 shadow-lg shadow-teal-500/15'
-                  : 'border-white/15 bg-white/5 hover:border-white/30 hover:bg-white/10'
-              }`}>
-              <div className="w-14 h-14 rounded-xl border-2 border-white/40 shadow-md flex-shrink-0 overflow-hidden bg-slate-800">
-                <MarbleSwatch hex={c.hex} seed={idx + 1} className="w-full h-full" />
-              </div>
-              <div className="flex-1 text-left min-w-0">
-                <div className="font-semibold text-sm text-white truncate">{c.label}</div>
-                <div className="text-[10px] text-white/45 truncate">Patrón único · Plástico reciclado</div>
-              </div>
-              {sel && (
-                <div className="w-6 h-6 rounded-full bg-teal-400 flex items-center justify-center shadow flex-shrink-0">
-                  <Check className="w-3.5 h-3.5 text-slate-900" strokeWidth={3} />
-                </div>
-              )}
-            </button>
-          );
-        })}
-      </div>
 
-      {/* Aviso "cada pieza es única" */}
+      {colores.length === 0 ? (
+        <div className="bg-white/5 border border-white/15 rounded-2xl p-6 text-center">
+          <Palette className="w-7 h-7 text-white/40 mx-auto mb-3" />
+          <p className="text-sm text-white/70 font-semibold">Color predeterminado</p>
+          <p className="text-xs text-white/45 mt-1">Este producto no tiene variantes de color seleccionables. El color se asignará en producción según disponibilidad.</p>
+        </div>
+      ) : (
+        <div className="space-y-2.5">
+          {colores.map((c, idx) => {
+            const sel = colorId === c.id;
+            return (
+              <button key={c.id} onClick={() => { setColorId(c.id); setMockupUrl(''); }}
+                className={`w-full flex items-center gap-4 p-4 rounded-2xl border-2 transition-all backdrop-blur-sm ${
+                  sel
+                    ? 'border-teal-400 bg-gradient-to-r from-teal-500/20 to-cyan-500/15 shadow-lg shadow-teal-500/15'
+                    : 'border-white/15 bg-white/5 hover:border-white/30 hover:bg-white/10'
+                }`}>
+                <div className="w-14 h-14 rounded-xl border-2 border-white/40 shadow-md flex-shrink-0 overflow-hidden bg-slate-800">
+                  <MarbleSwatch hex={c.hex} seed={idx + 1} className="w-full h-full" />
+                </div>
+                <div className="flex-1 text-left min-w-0">
+                  <div className="font-semibold text-sm text-white truncate">{c.label}</div>
+                  <div className="text-[10px] text-white/45 truncate">Patrón único · Plástico reciclado</div>
+                </div>
+                {sel && (
+                  <div className="w-6 h-6 rounded-full bg-teal-400 flex items-center justify-center shadow flex-shrink-0">
+                    <Check className="w-3.5 h-3.5 text-slate-900" strokeWidth={3} />
+                  </div>
+                )}
+              </button>
+            );
+          })}
+        </div>
+      )}
+
       <div className="bg-teal-500/10 border border-teal-400/25 rounded-2xl p-3 flex items-start gap-2.5">
         <Sparkles className="w-4 h-4 text-teal-300 flex-shrink-0 mt-0.5" />
         <p className="text-xs text-teal-100/80 leading-relaxed">
@@ -326,7 +442,6 @@ export default function PersonalizacionFlow() {
         <p className="text-white/50 text-sm">Grabado láser UV permanente</p>
       </div>
 
-      {/* Preview */}
       {mockupUrl ? (
         <div className="relative rounded-3xl overflow-hidden border border-white/20 bg-white/5 shadow-2xl">
           <img src={mockupUrl} alt="Mockup generado con IA" className="w-full h-auto" />
@@ -336,13 +451,12 @@ export default function PersonalizacionFlow() {
         </div>
       ) : (
         <div className="bg-white/5 backdrop-blur-sm border border-white/15 rounded-3xl p-6 shadow-xl">
-          <LaserPreview texto={texto} productoId={productoId} colorId={colorId} />
+          <LaserPreview texto={texto} producto={producto} color={color} />
           <p className="text-center text-[10px] text-white/40 mt-3">Vista previa simplificada</p>
         </div>
       )}
 
       <div className="space-y-3">
-        {/* Texto */}
         <div>
           <label className="text-xs font-bold text-white/70 uppercase tracking-wider block mb-2">
             Texto a grabar (máx. 20)
@@ -357,14 +471,12 @@ export default function PersonalizacionFlow() {
           </p>
         </div>
 
-        {/* Separador */}
         <div className="flex items-center gap-3">
           <div className="flex-1 h-px bg-white/15" />
           <span className="text-[10px] text-white/40 font-bold uppercase tracking-widest">o sube tu logo</span>
           <div className="flex-1 h-px bg-white/15" />
         </div>
 
-        {/* Upload */}
         <div
           className={`border-2 border-dashed rounded-2xl p-6 text-center cursor-pointer transition-all backdrop-blur-sm ${
             archivo
@@ -382,7 +494,6 @@ export default function PersonalizacionFlow() {
             onChange={e => { setArchivo(e.target.files[0]); setLogoUrlSubido(''); resetMockupIfNeeded(); }} />
         </div>
 
-        {/* Botón mockup IA */}
         <Button
           type="button"
           onClick={handleGenerateMockup}
@@ -415,25 +526,26 @@ export default function PersonalizacionFlow() {
       <div className="text-center">
         <p className="text-xs font-bold text-teal-400 uppercase tracking-widest mb-2">Paso 4 · Casi listo</p>
         <h2 className="text-2xl sm:text-3xl font-poppins font-bold text-white mb-2">Tus datos</h2>
-        <p className="text-white/50 text-sm">Para coordinar el pago y entrega</p>
+        <p className="text-white/50 text-sm">Para coordinar tu pedido</p>
       </div>
 
-      {/* Resumen del pedido */}
       <div className="bg-gradient-to-br from-teal-500/15 to-cyan-500/10 backdrop-blur-sm border border-teal-400/25 rounded-2xl p-4 shadow-lg">
         <p className="text-[10px] font-bold text-teal-300 uppercase tracking-widest mb-3">Resumen de tu pedido</p>
         <div className="flex items-center gap-3">
-          <div className="w-14 h-14 rounded-xl flex items-center justify-center text-2xl border border-white/20"
-            style={{ backgroundColor: color?.hex + '35' }}>{producto?.emoji}</div>
+          <img
+            src={getProductImage(producto)}
+            alt={producto?.nombre}
+            className="w-14 h-14 rounded-xl object-cover border border-white/20 flex-shrink-0"
+          />
           <div className="flex-1 min-w-0">
             <div className="font-semibold text-sm text-white truncate">{producto?.nombre}</div>
-            <div className="text-xs text-white/55 truncate">{color?.label}{texto ? ` · "${texto}"` : ''}</div>
+            <div className="text-xs text-white/55 truncate">{color?.label || 'Color por definir'}{texto ? ` · "${texto}"` : ''}</div>
             {archivo && <div className="text-[10px] text-teal-300 mt-0.5">+ Logo adjunto</div>}
           </div>
-          <div className="font-poppins font-bold text-lg text-white">${producto?.precio.toLocaleString('es-CL')}</div>
+          <div className="font-poppins font-bold text-lg text-white">${precioFinal.toLocaleString('es-CL')}</div>
         </div>
       </div>
 
-      {/* Form */}
       <div className="space-y-3">
         {[
           { label: 'Tu nombre *', value: nombre, onChange: setNombre, placeholder: 'Nombre completo' },
@@ -452,7 +564,6 @@ export default function PersonalizacionFlow() {
         ))}
       </div>
 
-      {/* Garantías */}
       <div className="grid grid-cols-2 gap-2 pt-2">
         <div className="flex items-center gap-2 bg-white/5 border border-white/10 rounded-xl p-2.5 backdrop-blur-sm">
           <ShieldCheck className="w-4 h-4 text-teal-400 flex-shrink-0" />
@@ -469,7 +580,6 @@ export default function PersonalizacionFlow() {
   // ── LAYOUT ───────────────────────────────────────────────────────────
   return (
     <div className="flex-1 font-inter">
-      {/* Navbar sticky con glassmorphism */}
       <nav className="sticky top-0 z-50 bg-slate-900/60 backdrop-blur-xl border-b border-white/10">
         <div className="max-w-lg mx-auto px-5 py-3.5 flex items-center gap-3">
           {step > 0 ? (
@@ -496,7 +606,6 @@ export default function PersonalizacionFlow() {
         </div>
       </nav>
 
-      {/* Contenido principal */}
       <div className="max-w-lg mx-auto px-5 py-8">
         <StepIndicator step={step} total={4} />
 
@@ -504,12 +613,11 @@ export default function PersonalizacionFlow() {
           {steps[step]}
         </div>
 
-        {/* CTA */}
         <div className="mt-6 sticky bottom-4 z-10">
           {step < 3 ? (
             <Button onClick={() => setStep(s => s + 1)} size="lg"
               className="w-full gap-2 font-bold rounded-2xl h-14 text-base bg-gradient-to-r from-teal-500 to-cyan-500 hover:from-teal-600 hover:to-cyan-600 text-white shadow-2xl shadow-teal-500/30 border-0 hover:scale-[1.01] transition-all"
-              disabled={step === 2 && !texto && !archivo}>
+              disabled={(step === 0 && !producto) || (step === 2 && !texto && !archivo)}>
               Continuar <ArrowRight className="w-4 h-4" />
             </Button>
           ) : (
@@ -517,15 +625,14 @@ export default function PersonalizacionFlow() {
               className="w-full gap-2 font-bold rounded-2xl h-14 text-base bg-gradient-to-r from-teal-500 to-cyan-500 hover:from-teal-600 hover:to-cyan-600 text-white shadow-2xl shadow-teal-500/30 border-0 hover:scale-[1.01] transition-all"
               disabled={loading || !nombre || !email}>
               {loading ? (
-                <><Loader2 className="w-4 h-4 animate-spin" /> Enviando...</>
+                <><Loader2 className="w-4 h-4 animate-spin" /> Agregando al carrito...</>
               ) : (
-                <><Zap className="w-4 h-4" /> Confirmar personalización</>
+                <><ShoppingCart className="w-4 h-4" /> Agregar al carrito · ${precioFinal.toLocaleString('es-CL')}</>
               )}
             </Button>
           )}
         </div>
 
-        {/* Trust footer */}
         <div className="mt-6 flex items-center justify-center gap-4 text-[10px] text-white/40 font-medium">
           <span className="flex items-center gap-1"><Recycle className="w-3 h-3 text-teal-400" /> Reciclado</span>
           <span>·</span>
