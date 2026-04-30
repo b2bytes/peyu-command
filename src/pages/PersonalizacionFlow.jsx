@@ -7,6 +7,7 @@ import {
   ArrowLeft, ArrowRight, Sparkles, CheckCircle, Upload, Zap, Loader2,
   RefreshCw, Recycle, Package, Palette, Pencil, User, Check, ShieldCheck, Truck
 } from 'lucide-react';
+import MarbleSwatch from '@/components/personalizacion/MarbleSwatch';
 
 const PRODUCTOS = [
   { id: 'soporte-cel', nombre: 'Soporte Celular', emoji: '📱', precio: 6990, area: '40×20mm',
@@ -282,7 +283,7 @@ export default function PersonalizacionFlow() {
         <p className="text-white/50 text-sm">Cada marmolado es único e irrepetible</p>
       </div>
       <div className="space-y-2.5">
-        {COLORES.map(c => {
+        {COLORES.map((c, idx) => {
           const sel = colorId === c.id;
           return (
             <button key={c.id} onClick={() => { setColorId(c.id); setMockupUrl(''); }}
@@ -291,16 +292,29 @@ export default function PersonalizacionFlow() {
                   ? 'border-teal-400 bg-gradient-to-r from-teal-500/20 to-cyan-500/15 shadow-lg shadow-teal-500/15'
                   : 'border-white/15 bg-white/5 hover:border-white/30 hover:bg-white/10'
               }`}>
-              <div className="w-11 h-11 rounded-xl border-2 border-white/40 shadow-md flex-shrink-0" style={{ backgroundColor: c.hex }} />
-              <span className="font-semibold text-sm text-white flex-1 text-left">{c.label}</span>
+              <div className="w-14 h-14 rounded-xl border-2 border-white/40 shadow-md flex-shrink-0 overflow-hidden bg-slate-800">
+                <MarbleSwatch hex={c.hex} seed={idx + 1} className="w-full h-full" />
+              </div>
+              <div className="flex-1 text-left min-w-0">
+                <div className="font-semibold text-sm text-white truncate">{c.label}</div>
+                <div className="text-[10px] text-white/45 truncate">Patrón único · Plástico reciclado</div>
+              </div>
               {sel && (
-                <div className="w-6 h-6 rounded-full bg-teal-400 flex items-center justify-center shadow">
+                <div className="w-6 h-6 rounded-full bg-teal-400 flex items-center justify-center shadow flex-shrink-0">
                   <Check className="w-3.5 h-3.5 text-slate-900" strokeWidth={3} />
                 </div>
               )}
             </button>
           );
         })}
+      </div>
+
+      {/* Aviso "cada pieza es única" */}
+      <div className="bg-teal-500/10 border border-teal-400/25 rounded-2xl p-3 flex items-start gap-2.5">
+        <Sparkles className="w-4 h-4 text-teal-300 flex-shrink-0 mt-0.5" />
+        <p className="text-xs text-teal-100/80 leading-relaxed">
+          <strong className="text-white">El marmolado nace del proceso artesanal.</strong> Tu producto tendrá un patrón único — nunca habrá dos iguales.
+        </p>
       </div>
     </div>,
 
