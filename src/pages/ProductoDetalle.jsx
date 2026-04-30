@@ -76,6 +76,8 @@ function cleanDescripcion(raw) {
     .replace(/&nbsp;/g, ' ')
     .replace(/\u00a0/g, ' ')
     .replace(/[⭐🌾]/g, '')
+    .replace(/\uFFFD/g, '')        // replacement char � (encoding roto)
+    .replace(/[\u0000-\u001F\u007F]/g, ' ') // caracteres de control invisibles
     .replace(/[ \t]+/g, ' ')
     .replace(/\n{3,}/g, '\n\n')
     .trim();
