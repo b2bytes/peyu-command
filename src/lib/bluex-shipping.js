@@ -87,3 +87,72 @@ export async function cotizarEnvioAmbos({ comuna, pesoKg = 0.5 }) {
   ]);
   return { express, priority };
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Cálculo de peso de carrito · usa peso real + volumétrico de cada producto
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** Peso facturable Bluex: max(peso real, peso volumétrico). Mínimo 0.5 kg. */
+export function calcularPesoFacturable(producto, cantidad = 1) {
+  if (!producto) return 0.5 * cantidad;
+  const pesoReal = producto.peso_kg || 0;
+  const pesoVol = producto.peso_volumetrico_kg
+    || (producto.largo_cm && producto.ancho_cm && producto.alto_cm
+        ? (producto.largo_cm * producto.ancho_cm * producto.alto_cm) / 5000
+        : 0);
+  // El courier factura por el mayor de los dos
+  const facturable = Math.max(pesoReal, pesoVol);
+  // Si no hay datos, asumimos 0.3 kg/unidad (carcasa promedio)
+  const efectivo = facturable > 0 ? facturable : 0.3;
+  return efectivo * cantidad;
+}
+
+/**
+ * Suma el peso facturable de todos los items del carrito.
+ * Cada item: { productoId, cantidad } → consulta a Producto para peso real.
+ * @returns {Promise<{pesoTotalKg, detalle}>}
+ */
+export async function calcularPesoCarrito(items = []) {
+  if (!items.length) return { pesoTotalKg: 0.5, detalle: [] };
+
+  // Cargar productos del carrito en una sola query
+  const ids = [...new Set(items.map(i => i.productoId).filter(Boolean))];
+  const productos = await Promise.all(
+    ids.map(id => base44.entities.Producto.filter({ id }).then(r => r[0]).catch(() => null))
+  );
+  const byId = new Map(productos.filter(Boolean).map(p => [p.id, p]));
+
+  const detalle = items.map(item => {
+    const p = byId.get(item.productoId);
+    const peso = calcularPesoFacturable(p, item.cantidad || 1);
+    return {
+      nombre: item.nombre || p?.nombre,
+      cantidad: item.cantidad || 1,
+      peso_unidad_kg: p ? Math.max(p.peso_kg || 0, p.peso_volumetrico_kg || 0) || 0.3 : 0.3,
+      peso_total_kg: Math.round(peso * 1000) / 1000,
+      sin_datos: !p?.peso_kg && !p?.peso_volumetrico_kg,
+    };
+  });
+
+  const pesoTotalKg = Math.max(0.5, detalle.reduce((s, d) => s + d.peso_total_kg, 0));
+  return {
+    pesoTotalKg: Math.round(pesoTotalKg * 1000) / 1000,
+    detalle,
+  };
+}
+
+/**
+ * Cotiza envío para un carrito completo. Calcula peso real, consulta tarifa
+ * Bluex EXPRESS y PRIORITY, y devuelve ambas opciones listas para mostrar.
+ */
+export async function cotizarEnvioCarrito({ comuna, items = [] }) {
+  if (!comuna) return null;
+  const { pesoTotalKg, detalle } = await calcularPesoCarrito(items);
+  const tarifas = await cotizarEnvioAmbos({ comuna, pesoKg: pesoTotalKg });
+  return {
+    peso_total_kg: pesoTotalKg,
+    detalle_peso: detalle,
+    express: tarifas.express,
+    priority: tarifas.priority,
+  };
+}

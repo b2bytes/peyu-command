@@ -139,6 +139,25 @@ Deno.serve(async (req) => {
       return first.src;
     };
 
+    // Woo expone peso en la unidad configurada en la tienda (peyuchile.cl usa kg).
+    // Dimensiones: length / width / height en cm. Si vienen como string "0.05",
+    // los parseamos a número. Si están vacíos, devuelve null (no escribimos 0).
+    const parseNum = (v) => {
+      const n = parseFloat(v);
+      return Number.isFinite(n) && n > 0 ? n : null;
+    };
+    const pickDimensiones = (wp) => {
+      const peso = parseNum(wp.weight);
+      const largo = parseNum(wp.dimensions?.length);
+      const ancho = parseNum(wp.dimensions?.width);
+      const alto = parseNum(wp.dimensions?.height);
+      // Peso volumétrico Bluex/courier estándar: (L×A×H cm) / 5000 = kg
+      const volumetrico = (largo && ancho && alto)
+        ? Math.round(((largo * ancho * alto) / 5000) * 1000) / 1000
+        : null;
+      return { peso_kg: peso, largo_cm: largo, ancho_cm: ancho, alto_cm: alto, peso_volumetrico_kg: volumetrico };
+    };
+
     // ── 3) Cargar productos existentes para upsert ───────────────────
     const existentes = await base44.asServiceRole.entities.Producto.list('-updated_date', 500);
     const bySku = new Map(existentes.filter(p => p.sku).map(p => [p.sku, p]));
@@ -162,6 +181,7 @@ Deno.serve(async (req) => {
         const precio = pickPrecio(wp);
         if (precio <= 0) continue; // saltar productos sin precio
 
+        const dims = pickDimensiones(wp);
         const data = {
           sku,
           nombre: wp.name?.trim() || `Producto ${wp.id}`,
@@ -176,6 +196,11 @@ Deno.serve(async (req) => {
           moq_personalizacion: 10,
           personalizacion_gratis_desde: 10,
           inyecciones_requeridas: 1,
+          ...(dims.peso_kg && { peso_kg: dims.peso_kg }),
+          ...(dims.largo_cm && { largo_cm: dims.largo_cm }),
+          ...(dims.ancho_cm && { ancho_cm: dims.ancho_cm }),
+          ...(dims.alto_cm && { alto_cm: dims.alto_cm }),
+          ...(dims.peso_volumetrico_kg && { peso_volumetrico_kg: dims.peso_volumetrico_kg }),
         };
 
         const existente = bySku.get(sku);
@@ -189,7 +214,11 @@ Deno.serve(async (req) => {
             existente.stock_actual === data.stock_actual &&
             existente.activo === data.activo &&
             (existente.imagen_url || '') === (data.imagen_url || existente.imagen_url || '') &&
-            (existente.descripcion || '') === (data.descripcion || '')
+            (existente.descripcion || '') === (data.descripcion || '') &&
+            (existente.peso_kg || 0) === (data.peso_kg || existente.peso_kg || 0) &&
+            (existente.largo_cm || 0) === (data.largo_cm || existente.largo_cm || 0) &&
+            (existente.ancho_cm || 0) === (data.ancho_cm || existente.ancho_cm || 0) &&
+            (existente.alto_cm || 0) === (data.alto_cm || existente.alto_cm || 0)
           );
           if (sinCambios) {
             saltados++;
@@ -201,6 +230,11 @@ Deno.serve(async (req) => {
               imagen_url: data.imagen_url || existente.imagen_url,
               stock_actual: data.stock_actual,
               activo: data.activo,
+              ...(data.peso_kg && { peso_kg: data.peso_kg }),
+              ...(data.largo_cm && { largo_cm: data.largo_cm }),
+              ...(data.ancho_cm && { ancho_cm: data.ancho_cm }),
+              ...(data.alto_cm && { alto_cm: data.alto_cm }),
+              ...(data.peso_volumetrico_kg && { peso_volumetrico_kg: data.peso_volumetrico_kg }),
             });
             actualizados++;
             await sleep(80); // throttle ≈12 ops/s

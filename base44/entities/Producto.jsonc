@@ -114,6 +114,28 @@
         "type": "string"
       },
       "default": []
+    },
+    "peso_kg": {
+      "type": "number",
+      "title": "Peso (kg)",
+      "description": "Peso unitario del producto sincronizado desde WooCommerce. Se usa para calcular costo de env\u00edo Bluex."
+    },
+    "largo_cm": {
+      "type": "number",
+      "title": "Largo (cm)"
+    },
+    "ancho_cm": {
+      "type": "number",
+      "title": "Ancho (cm)"
+    },
+    "alto_cm": {
+      "type": "number",
+      "title": "Alto (cm)"
+    },
+    "peso_volumetrico_kg": {
+      "type": "number",
+      "title": "Peso volum\u00e9trico (kg)",
+      "description": "Calculado: (largo \u00d7 ancho \u00d7 alto) / 5000. Bluex factura por el mayor entre peso real y volum\u00e9trico."
     }
   },
   "required": [

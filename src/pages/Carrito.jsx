@@ -8,6 +8,7 @@ import GiftCardRedeemBox from '@/components/cart/GiftCardRedeemBox';
 import CuponBox from '@/components/cart/CuponBox';
 import PaymentMethodSelector from '@/components/cart/PaymentMethodSelector';
 import ShippingAddressForm, { validarShippingForm } from '@/components/cart/ShippingAddressForm';
+import ShippingSelector from '@/components/cart/ShippingSelector';
 
 const DESCUENTO_TRANSFERENCIA_PCT = 5;
 
@@ -25,6 +26,8 @@ export default function Carrito() {
   const [giftCard, setGiftCard] = useState(null);
   const [cupon, setCupon] = useState(null); // { codigo, descuento_clp, libera_envio, ... }
   const [medioPago, setMedioPago] = useState('WebPay');
+  // Envío Bluex: { servicio, costo, costo_real, lead_time_dias, comuna, peso_kg, envio_gratis_aplicado }
+  const [envioBluex, setEnvioBluex] = useState(null);
   const captureTimerRef = useRef(null);
 
   // 📩 Captura el carrito abandonado en cuanto tenemos un email válido.
@@ -62,7 +65,10 @@ export default function Carrito() {
 
   // ── CÁLCULOS ───────────────────────────────────────────────────────
   const subtotal = carrito.reduce((sum, i) => sum + i.precio * i.cantidad, 0);
-  const envioBase = subtotal >= 40000 ? 0 : 5990;
+  // Envío: usa cotización Bluex real si está disponible, sino fallback a $5990 / gratis sobre $40k
+  const envioBase = envioBluex
+    ? envioBluex.costo
+    : (subtotal >= 40000 ? 0 : 5990);
   // Cupón "envio_gratis" libera el envío
   const envio = cupon?.libera_envio ? 0 : envioBase;
   // Descuento por cupón (solo si NO es envio_gratis, ese ya redujo el envío)
@@ -105,6 +111,7 @@ export default function Carrito() {
       descuentoTransferencia > 0 ? `Dscto transferencia -$${descuentoTransferencia.toLocaleString('es-CL')}` : null,
       cliente.codigo_postal ? `CP ${cliente.codigo_postal}` : null,
       cliente.region ? `Región ${cliente.region}` : null,
+      envioBluex ? `Bluex ${envioBluex.servicio} (${envioBluex.peso_kg}kg) → $${envioBluex.costo_real.toLocaleString('es-CL')}` : null,
     ].filter(Boolean).join(' | ');
 
     const descuentoTotal = descuentoCupon + descuentoTransferencia + gcDescuento;
@@ -130,7 +137,7 @@ export default function Carrito() {
       direccion_envio: cliente.direccion,
       requiere_personalizacion: carrito.some(i => i.personalizacion),
       texto_personalizacion: carrito.filter(i => i.personalizacion).map(i => i.personalizacion).join(', '),
-      courier: 'Pendiente',
+      courier: envioBluex ? `BlueExpress ${envioBluex.servicio}` : 'Pendiente',
       notas: `Carrito: ${carrito.length} items${notasExtras ? ' | ' + notasExtras : ''}`,
     });
 
@@ -341,6 +348,16 @@ export default function Carrito() {
                     </div>
                   )}
                 </div>
+
+                {/* Cotización envío Bluex en tiempo real */}
+                <ShippingSelector
+                  variant="light"
+                  items={carrito.map(i => ({ productoId: i.productoId, cantidad: i.cantidad, nombre: i.nombre }))}
+                  comunaInicial={cliente.ciudad}
+                  subtotal={subtotal}
+                  umbralEnvioGratis={40000}
+                  onSelect={setEnvioBluex}
+                />
 
                 {/* Método de pago */}
                 <div className="bg-white border border-gray-100 rounded-3xl p-5 sm:p-6 shadow-sm space-y-4">
