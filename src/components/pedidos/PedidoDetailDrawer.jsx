@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { X, Mail, Phone, MapPin, Package, CreditCard, Sparkles, Loader2, ExternalLink } from 'lucide-react';
 import { toast } from 'sonner';
+import BluexShipmentButton from './BluexShipmentButton';
 
 const ESTADOS = ['Nuevo', 'Confirmado', 'En Producción', 'Listo para Despacho', 'Despachado', 'Entregado', 'Cancelado'];
 const COURIERS = ['Starken', 'Chilexpress', 'BlueExpress', 'Correos Chile', 'Retiro en Tienda'];
@@ -161,6 +162,20 @@ export default function PedidoDetailDrawer({ pedido, onClose, onUpdate }) {
             >
               {saving ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Guardando...</> : 'Actualizar y notificar'}
             </Button>
+
+            {/* BlueExpress: generar etiqueta / ver tracking */}
+            {(courier === 'BlueExpress' || pedido.courier === 'BlueExpress' || estado === 'Listo para Despacho' || estado === 'Despachado') && (
+              <div className="pt-2 border-t border-teal-200">
+                <BluexShipmentButton
+                  pedido={pedido}
+                  onShipmentCreated={(d) => {
+                    if (d.tracking) setTracking(d.tracking);
+                    setCourier('BlueExpress');
+                    onUpdate?.();
+                  }}
+                />
+              </div>
+            )}
           </section>
 
           {pedido.cliente_email && (
