@@ -16,9 +16,10 @@ export const PAYMENT_METHODS = [
   {
     id: 'MercadoPago',
     label: 'Mercado Pago',
-    sub: 'Tarjetas y cuotas sin interés',
+    sub: 'Tarjetas, débito y hasta 12 cuotas',
     icon: Wallet,
     color: 'from-cyan-400 to-sky-500',
+    badge: '12 cuotas',
   },
   {
     id: 'Transferencia',
@@ -96,8 +97,13 @@ export default function PaymentMethodSelector({ value, onChange, totalCubiertoCo
       )}
 
       {value === 'MercadoPago' && (
-        <div className="mt-3 bg-sky-50 border border-sky-200 rounded-2xl p-3 text-xs text-sky-900">
-          💳 Serás redirigido a Mercado Pago para completar el pago de forma segura. Cuotas sin interés disponibles.
+        <div className="mt-3 bg-sky-50 border border-sky-200 rounded-2xl p-3.5 text-xs text-sky-900 space-y-1.5">
+          <p className="font-bold flex items-center gap-1.5">💳 Pago seguro con Mercado Pago</p>
+          <ul className="space-y-0.5 text-sky-800/90 pl-1">
+            <li>• Tarjeta de crédito, débito o efectivo en sucursales</li>
+            <li>• Hasta <strong>12 cuotas sin interés</strong> con bancos seleccionados</li>
+            <li>• Te redirigimos al checkout oficial de Mercado Pago</li>
+          </ul>
         </div>
       )}
     </div>

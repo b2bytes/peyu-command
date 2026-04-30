@@ -13,6 +13,7 @@ const DESCUENTO_TRANSFERENCIA_PCT = 5;
 
 export default function Carrito() {
   const navigate = useNavigate();
+  const mpFailure = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('mp') === 'failure';
   const [carrito, setCarrito] = useState(JSON.parse(localStorage.getItem('carrito') || '[]'));
   const [cliente, setCliente] = useState({
     nombre: '', email: '', telefono: '',
@@ -245,6 +246,15 @@ export default function Carrito() {
       </nav>
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
+        {mpFailure && (
+          <div className="mb-5 bg-red-50 border border-red-200 rounded-2xl p-4 flex items-start gap-3">
+            <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+            <div className="text-sm text-red-900">
+              <p className="font-bold">El pago con Mercado Pago no se completó.</p>
+              <p className="text-xs text-red-700 mt-1">Tu pedido sigue creado. Puedes reintentar el pago eligiendo nuevamente "Mercado Pago" o cambiar a otro medio.</p>
+            </div>
+          </div>
+        )}
         <div className="grid lg:grid-cols-3 gap-5 lg:gap-6">
 
           {/* ── LEFT ──────────────────────── */}

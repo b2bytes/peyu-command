@@ -89,11 +89,64 @@ Deno.serve(async (req) => {
     const nuevoEstado = mapStatus(mpStatus);
     const notaMP = `MP[${dataId}] ${mpStatus}/${mpStatusDetail} $${transactionAmount}`;
 
+    // Idempotencia: si la nota ya tiene este payment_id, no reprocesamos
+    // (MP reintenta la notificación varias veces)
+    if ((pedido.notas || '').includes(`MP[${dataId}]`)) {
+      return Response.json({ ok: true, duplicate: true });
+    }
+
+    const estadoAnterior = pedido.estado;
+
     await base44.asServiceRole.entities.PedidoWeb.update(pedido.id, {
       estado: nuevoEstado,
       medio_pago: 'MercadoPago',
       notas: `${pedido.notas || ''} | ${notaMP}`.slice(0, 1000),
     });
+
+    // Si pasó a "Confirmado" por primera vez, enviamos email al cliente.
+    // Usamos Resend (no requiere usuario autenticado) si está configurado.
+    const resendKey = Deno.env.get('RESEND_API_KEY');
+    if (
+      nuevoEstado === 'Confirmado' &&
+      estadoAnterior !== 'Confirmado' &&
+      pedido.cliente_email &&
+      resendKey
+    ) {
+      try {
+        const html = `
+          <div style="font-family:system-ui,sans-serif;max-width:560px;margin:0 auto;padding:24px;color:#1f2937">
+            <h1 style="color:#0F8B6C;margin:0 0 8px">¡Pago confirmado! 🐢</h1>
+            <p>Hola ${pedido.cliente_nombre || ''},</p>
+            <p>Recibimos tu pago de <strong>$${Number(transactionAmount).toLocaleString('es-CL')}</strong> vía Mercado Pago.</p>
+            <div style="background:#F0FDF4;border:1px solid #BBF7D0;border-radius:12px;padding:16px;margin:20px 0">
+              <p style="margin:0"><strong>N° Pedido:</strong> ${pedido.numero_pedido}</p>
+              <p style="margin:6px 0 0"><strong>Total:</strong> $${Number(pedido.total).toLocaleString('es-CL')}</p>
+              <p style="margin:6px 0 0"><strong>Estado:</strong> Confirmado · En preparación</p>
+            </div>
+            <p>Te avisaremos por email cuando tu pedido salga despachado con el código de tracking.</p>
+            <p style="margin-top:24px">
+              <a href="https://peyuchile.cl/seguimiento" style="background:#0F8B6C;color:white;padding:10px 18px;border-radius:8px;text-decoration:none;font-weight:bold">Seguir mi pedido →</a>
+            </p>
+            <p style="color:#6B7280;font-size:12px;margin-top:32px">Gracias por elegir productos sostenibles. Cada PEYU saca plástico del vertedero. 🌎</p>
+          </div>
+        `;
+        await fetch('https://api.resend.com/emails', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${resendKey}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            from: 'PEYU Chile <ti@peyuchile.cl>',
+            to: [pedido.cliente_email],
+            subject: `✅ Pago confirmado · Pedido ${pedido.numero_pedido}`,
+            html,
+          }),
+        });
+      } catch (e) {
+        console.warn('Email confirmación MP falló (no bloqueante):', e.message);
+      }
+    }
 
     return Response.json({ ok: true, pedido_id: pedido.id, estado: nuevoEstado });
   } catch (error) {

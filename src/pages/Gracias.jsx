@@ -17,6 +17,7 @@ export default function Gracias() {
   const numero = params.get('numero') || '';
   const email = params.get('email') || '';
   const total = parseInt(params.get('total') || '0', 10);
+  const mpStatus = params.get('mp') || ''; // success | pending | (vacío = otros medios)
   const [tracked, setTracked] = useState(false);
 
   useEffect(() => {
@@ -44,6 +45,18 @@ export default function Gracias() {
       />
       <div className="flex-1 overflow-auto bg-gradient-to-br from-slate-900 via-slate-800 to-teal-900 pb-20 lg:pb-0">
         <div className="max-w-2xl mx-auto px-5 py-14 sm:py-20">
+          {/* Banner Mercado Pago (solo si vuelve de MP) */}
+          {mpStatus === 'pending' && (
+            <div className="mb-4 bg-amber-500/15 border border-amber-400/40 rounded-2xl p-4 text-center text-amber-100 text-sm">
+              ⏳ <strong>Pago en proceso.</strong> Mercado Pago está procesando tu transacción. Te notificaremos por email apenas se confirme (puede tardar unos minutos).
+            </div>
+          )}
+          {mpStatus === 'success' && (
+            <div className="mb-4 bg-emerald-500/15 border border-emerald-400/40 rounded-2xl p-4 text-center text-emerald-100 text-sm">
+              ✅ <strong>Pago aprobado por Mercado Pago.</strong> Tu pedido entró en preparación.
+            </div>
+          )}
+
           {/* Hero confirmación */}
           <div className="bg-white/5 backdrop-blur-md border border-teal-400/30 rounded-3xl p-8 sm:p-10 text-center space-y-5 shadow-2xl">
             <div className="w-20 h-20 mx-auto rounded-3xl bg-gradient-to-br from-teal-500 to-emerald-600 flex items-center justify-center shadow-2xl shadow-teal-500/40">
