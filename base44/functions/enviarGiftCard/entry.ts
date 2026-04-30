@@ -17,8 +17,18 @@ function generarCodigo() {
   return `PEYU-${seg(4)}-${seg(4)}`;
 }
 
-function buildEmailHTML({ codigo, monto, destinatario_nombre, comprador_nombre, mensaje, diseno_url }) {
+function buildEmailHTML({ codigo, monto, destinatario_nombre, comprador_nombre, mensaje }) {
   const montoFmt = new Intl.NumberFormat('es-CL').format(monto);
+  // Variantes de color según monto (mismas que GiftCardVisual)
+  const variantes = {
+    10000:  { from: '#92400e', to: '#7c2d12', accent: '#FCD34D', tag: 'DETALLE' },
+    20000:  { from: '#0f766e', to: '#155e75', accent: '#5EEAD4', tag: 'POPULAR' },
+    50000:  { from: '#1e293b', to: '#000000', accent: '#D4AF37', tag: 'PREMIUM' },
+    100000: { from: '#065f46', to: '#0f172a', accent: '#A7F3D0', tag: 'CORPORATIVO' },
+  };
+  const v = variantes[monto] || variantes[20000];
+  const logoUrl = 'https://media.base44.com/images/public/69d99b9d61f699701129c103/b67ed29f9_image.png';
+
   return `
 <!DOCTYPE html>
 <html lang="es">
@@ -31,8 +41,40 @@ function buildEmailHTML({ codigo, monto, destinatario_nombre, comprador_nombre, 
       <p style="font-size:15px;color:#5a5a5a;margin:0;">${comprador_nombre || 'Alguien especial'} te regaló una Gift Card PEYU</p>
     </div>
 
-    <div style="background:#fff;border-radius:16px;padding:8px;box-shadow:0 4px 24px rgba(0,0,0,.08);margin-bottom:24px;">
-      <img src="${diseno_url}" alt="Gift Card PEYU $${montoFmt}" style="width:100%;border-radius:12px;display:block;" />
+    <!-- Gift Card Visual (HTML/CSS — sin imagen externa) -->
+    <div style="background:linear-gradient(135deg, ${v.from} 0%, ${v.to} 100%);border-radius:20px;padding:32px 28px;margin-bottom:24px;position:relative;overflow:hidden;box-shadow:0 12px 40px rgba(0,0,0,.25);">
+      <div style="position:absolute;top:-30px;right:-30px;width:140px;height:140px;border-radius:50%;background:${v.accent};opacity:.18;filter:blur(40px);"></div>
+      <div style="border:1px solid rgba(255,255,255,.15);border-radius:14px;padding:22px;position:relative;">
+        <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:24px;">
+          <tr>
+            <td align="left" valign="top">
+              <img src="${logoUrl}" alt="PEYU" style="height:32px;width:auto;display:block;filter:invert(1) brightness(1.15);" />
+            </td>
+            <td align="right" valign="top">
+              <span style="font-size:9px;font-weight:bold;letter-spacing:3px;color:#fff;background:${v.accent}30;border:1px solid rgba(255,255,255,.3);padding:5px 10px;border-radius:999px;">${v.tag}</span><br/>
+              <span style="font-size:9px;letter-spacing:1px;color:rgba(255,255,255,.55);text-transform:uppercase;margin-top:4px;display:inline-block;">🎁 Gift Card</span>
+            </td>
+          </tr>
+        </table>
+        <div style="text-align:center;margin:12px 0 16px;">
+          <p style="margin:0 0 6px;font-size:10px;letter-spacing:4px;text-transform:uppercase;color:rgba(255,255,255,.5);">Valor</p>
+          <p style="margin:0;font-size:48px;font-weight:bold;color:#fff;letter-spacing:-1px;line-height:1;">$${montoFmt}</p>
+          <p style="margin:6px 0 0;font-size:11px;color:rgba(255,255,255,.6);letter-spacing:1px;">CLP · Saldo disponible</p>
+        </div>
+        <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:20px;">
+          <tr>
+            <td align="left" valign="bottom">
+              <p style="margin:0;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.45);">Para</p>
+              <p style="margin:2px 0 0;font-size:14px;font-weight:600;color:#fff;">${destinatario_nombre || ''}</p>
+              <p style="margin:0;font-size:11px;color:rgba(255,255,255,.6);">De: ${comprador_nombre || 'Alguien especial'}</p>
+            </td>
+            <td align="right" valign="bottom">
+              <p style="margin:0;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.45);">Código</p>
+              <p style="margin:2px 0 0;font-family:'Courier New',monospace;font-size:13px;font-weight:bold;letter-spacing:2px;color:${v.accent};">${codigo}</p>
+            </td>
+          </tr>
+        </table>
+      </div>
     </div>
 
     ${mensaje ? `

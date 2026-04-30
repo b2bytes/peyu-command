@@ -4,14 +4,15 @@ import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Gift, Check, Loader2, Mail, ArrowLeft, Heart } from 'lucide-react';
+import { Gift, Check, Loader2, Mail, ArrowLeft, Heart, Recycle, Sparkles } from 'lucide-react';
 import SEO from '@/components/SEO';
+import GiftCardVisual from '@/components/giftcard/GiftCardVisual';
 
 const MONTOS = [
-  { v: 10000, label: '$10.000', img: 'https://media.base44.com/images/public/69d99b9d61f699701129c103/d57a0df30_generated_image.png', tag: 'Detalle' },
-  { v: 20000, label: '$20.000', img: 'https://media.base44.com/images/public/69d99b9d61f699701129c103/d152305ed_generated_image.png', tag: 'Más popular' },
-  { v: 50000, label: '$50.000', img: 'https://media.base44.com/images/public/69d99b9d61f699701129c103/3a7e689e5_generated_image.png', tag: 'Premium' },
-  { v: 100000, label: '$100.000', img: 'https://media.base44.com/images/public/69d99b9d61f699701129c103/2a886bd2f_generated_image.png', tag: 'Corporativo' },
+  { v: 10000, label: '$10.000', tag: 'Detalle' },
+  { v: 20000, label: '$20.000', tag: 'Más popular' },
+  { v: 50000, label: '$50.000', tag: 'Premium' },
+  { v: 100000, label: '$100.000', tag: 'Corporativo' },
 ];
 
 export default function RegalarGiftCard() {
@@ -32,7 +33,6 @@ export default function RegalarGiftCard() {
     try {
       const res = await base44.functions.invoke('enviarGiftCard', {
         monto: monto.v,
-        diseno_url: monto.img,
         ...form,
       });
       if (res.data?.ok) {
@@ -86,27 +86,23 @@ export default function RegalarGiftCard() {
             <div className="bg-white/8 backdrop-blur-md border border-white/15 rounded-3xl p-6 sm:p-8 shadow-2xl">
               <h2 className="text-xl font-poppins font-bold text-white mb-1">1. Elige el monto</h2>
               <p className="text-sm text-white/50 mb-6">Selecciona el valor de tu Gift Card</p>
-              <div className="grid sm:grid-cols-2 gap-3">
+              <div className="grid sm:grid-cols-2 gap-4">
                 {MONTOS.map(m => (
                   <button
                     key={m.v}
                     onClick={() => setMonto(m)}
-                    className={`relative text-left rounded-2xl border-2 transition-all overflow-hidden ${
+                    className={`group relative text-left rounded-2xl transition-all overflow-hidden ${
                       monto.v === m.v
-                        ? 'border-emerald-400 ring-2 ring-emerald-400/30 scale-[1.02]'
-                        : 'border-white/15 hover:border-white/30'
+                        ? 'ring-2 ring-emerald-400 ring-offset-4 ring-offset-slate-900 scale-[1.02]'
+                        : 'opacity-75 hover:opacity-100 hover:scale-[1.01]'
                     }`}
                   >
-                    <div className="aspect-[4/3] bg-white/5">
-                      <img src={m.img} alt={m.label} className="w-full h-full object-cover" />
-                    </div>
-                    <div className="p-3 bg-white/5 flex items-center justify-between">
-                      <div>
-                        <p className="font-bold text-white">{m.label}</p>
-                        <p className="text-[10px] text-white/50">{m.tag}</p>
+                    <GiftCardVisual monto={m.v} />
+                    {monto.v === m.v && (
+                      <div className="absolute top-3 right-3 w-7 h-7 rounded-full bg-emerald-400 flex items-center justify-center shadow-lg">
+                        <Check className="w-4 h-4 text-slate-900" strokeWidth={3} />
                       </div>
-                      {monto.v === m.v && <Check className="w-5 h-5 text-emerald-400" />}
-                    </div>
+                    )}
                   </button>
                 ))}
               </div>
@@ -175,8 +171,12 @@ export default function RegalarGiftCard() {
             <div className="bg-white/8 backdrop-blur-md border border-white/15 rounded-3xl p-6 sm:p-8 shadow-2xl space-y-5">
               <h2 className="text-xl font-poppins font-bold text-white">3. Confirmar regalo</h2>
 
-              <div className="bg-white p-2 rounded-2xl">
-                <img src={monto.img} alt={monto.label} className="w-full rounded-xl" />
+              <div className="rounded-2xl overflow-hidden">
+                <GiftCardVisual
+                  monto={monto.v}
+                  destinatario={form.destinatario_nombre}
+                  remitente={form.comprador_nombre}
+                />
               </div>
 
               <div className="space-y-2 text-sm bg-black/20 rounded-2xl p-4">
@@ -220,10 +220,19 @@ export default function RegalarGiftCard() {
                   ? <>Le enviamos un email a <strong className="text-white">{form.destinatario_email}</strong> con el código y el diseño de la tarjeta.</>
                   : <>Tu Gift Card fue creada. Hubo un retraso en el email — pero el código abajo es válido.</>}
               </p>
-              <div className="bg-[#E7D8C6] rounded-2xl p-5">
-                <p className="text-xs uppercase tracking-widest text-[#5a4a3a] font-bold mb-1">Código emitido</p>
-                <p className="font-mono text-2xl font-bold text-[#0F8B6C] tracking-widest">{resultado.codigo}</p>
-                <p className="text-xs text-[#7a6a5a] mt-2">Saldo: <strong>${new Intl.NumberFormat('es-CL').format(resultado.monto_clp)} CLP</strong></p>
+              <div className="rounded-2xl overflow-hidden">
+                <GiftCardVisual
+                  monto={monto.v}
+                  destinatario={form.destinatario_nombre}
+                  remitente={form.comprador_nombre}
+                  codigo={resultado.codigo}
+                  showCode
+                />
+              </div>
+              <div className="bg-emerald-500/10 border border-emerald-400/30 rounded-2xl p-4 text-center">
+                <p className="text-xs uppercase tracking-widest text-emerald-300 font-bold mb-1">Código emitido</p>
+                <p className="font-mono text-2xl font-bold text-white tracking-widest">{resultado.codigo}</p>
+                <p className="text-xs text-white/60 mt-2">Saldo: <strong className="text-white">${new Intl.NumberFormat('es-CL').format(resultado.monto_clp)} CLP</strong></p>
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <Button onClick={() => navigate('/')} variant="outline" className="h-12 bg-white/5 border-white/20 text-white hover:bg-white/10 rounded-xl">Volver al inicio</Button>

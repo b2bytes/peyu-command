@@ -7,11 +7,12 @@ import { getProductImage } from '@/utils/productImages';
 import {
   ArrowLeft, Check, Building2, ShoppingCart, Shield, Truck, Zap,
   Star, Recycle, Sparkles, ChevronRight, Heart, Share2,
-  RotateCcw, BadgeCheck, Copy, X
+  RotateCcw, BadgeCheck, Copy, X, Gift
 } from 'lucide-react';
 import MockupGenerator from '@/components/MockupGenerator';
 import { saveMockupDraft } from '@/lib/mockup-draft';
 import { getColoresProducto } from '@/lib/color-parser';
+import GiftCardVisual from '@/components/giftcard/GiftCardVisual';
 import SEO from '@/components/SEO';
 import { buildOrganizationSchema, buildProductSchema, buildBreadcrumbSchema, combineSchemas } from '@/lib/schemas-peyu';
 import { trackAddToCart } from '@/lib/analytics-peyu';
@@ -168,6 +169,20 @@ export default function ProductoDetalle() {
 
   const colores = getColores(producto);
 
+  // ── Detección de Gift Card ────────────────────────────────────────
+  // Si el producto es una giftcard (por categoría, sku o nombre), mostramos
+  // el visual oficial PEYU en lugar de imagen genérica + UI específica.
+  const isGiftCard = (
+    producto.categoria === 'Gift Card' ||
+    /gift\s*card/i.test(producto.nombre || '') ||
+    /^GC-/i.test(producto.sku || '')
+  );
+  // Para giftcards, mapeamos el precio al monto más cercano de la línea oficial
+  const giftCardMonto = isGiftCard
+    ? [10000, 20000, 50000, 100000].reduce((prev, curr) =>
+        Math.abs(curr - precioFinal) < Math.abs(prev - precioFinal) ? curr : prev, 20000)
+    : null;
+
   // SEO: schema.org Product + Breadcrumb + Organization en un solo @graph
   const canonicalUrl = `https://peyuchile.cl/producto/${producto.id}`;
   const productImageForSeo = imgPrincipal;
@@ -306,7 +321,27 @@ export default function ProductoDetalle() {
 
             {/* LEFT: GALERÍA */}
             <div className="space-y-3">
-              {/* Main image */}
+              {/* Main visual: GiftCard oficial o imagen del producto */}
+              {isGiftCard ? (
+                <div className="space-y-4">
+                  <div className="bg-gradient-to-br from-slate-800/40 to-slate-900/60 backdrop-blur-sm border border-white/15 rounded-3xl p-4 sm:p-6 shadow-2xl">
+                    <GiftCardVisual monto={giftCardMonto} />
+                  </div>
+                  <div className="grid grid-cols-3 gap-2">
+                    {[
+                      { e: '⚡', t: 'Entrega instantánea', s: 'Email en segundos' },
+                      { e: '♻️', t: 'Sin impresión', s: 'Digital, cero residuos' },
+                      { e: '📅', t: 'Vigencia 12 meses', s: 'Sin apuros' },
+                    ].map((b, i) => (
+                      <div key={i} className="bg-white/5 backdrop-blur-sm border border-white/15 rounded-2xl p-3 text-center">
+                        <div className="text-2xl mb-1">{b.e}</div>
+                        <div className="text-[11px] font-bold text-white leading-tight">{b.t}</div>
+                        <div className="text-[10px] text-white/50 mt-0.5">{b.s}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : (
               <div className="relative bg-white/5 backdrop-blur-sm border border-white/20 rounded-3xl overflow-hidden shadow-2xl" style={{ aspectRatio: '1' }}>
                 <img
                   src={galeria[vistaActiva] || imgPrincipal}
@@ -346,8 +381,10 @@ export default function ProductoDetalle() {
                   </div>
                 )}
               </div>
+              )}
 
               {/* Thumbnails */}
+              {!isGiftCard && (
               <div className="grid grid-cols-4 gap-2">
                 {[
                   { img: galeria[0], label: 'Principal' },
@@ -364,8 +401,38 @@ export default function ProductoDetalle() {
                   </button>
                 ))}
               </div>
+              )}
 
-              {/* Sustainability story */}
+              {/* Sustainability story / Cómo funciona la GiftCard */}
+              {isGiftCard ? (
+                <div className="bg-gradient-to-br from-emerald-900/40 to-teal-900/30 backdrop-blur-sm border border-emerald-400/25 rounded-3xl p-6 text-white space-y-4 shadow-xl mt-6">
+                  <div className="flex items-center gap-2">
+                    <Gift className="w-5 h-5 text-emerald-300" />
+                    <h3 className="font-poppins font-bold text-sm text-white">¿Cómo funciona?</h3>
+                  </div>
+                  <ol className="space-y-2.5 text-sm text-white/70">
+                    <li className="flex gap-3">
+                      <span className="flex-shrink-0 w-6 h-6 rounded-full bg-emerald-500/30 border border-emerald-400/40 flex items-center justify-center text-xs font-bold text-emerald-200">1</span>
+                      <span><strong className="text-white">Compras la Gift Card</strong> con el monto que quieras</span>
+                    </li>
+                    <li className="flex gap-3">
+                      <span className="flex-shrink-0 w-6 h-6 rounded-full bg-emerald-500/30 border border-emerald-400/40 flex items-center justify-center text-xs font-bold text-emerald-200">2</span>
+                      <span>Le <strong className="text-white">enviamos un email</strong> al destinatario con el código y tu mensaje</span>
+                    </li>
+                    <li className="flex gap-3">
+                      <span className="flex-shrink-0 w-6 h-6 rounded-full bg-emerald-500/30 border border-emerald-400/40 flex items-center justify-center text-xs font-bold text-emerald-200">3</span>
+                      <span>Canjea el código en <strong className="text-white">peyuchile.cl/canjear</strong> o en el checkout</span>
+                    </li>
+                  </ol>
+                  <div className="flex gap-4 pt-2 flex-wrap border-t border-white/10">
+                    {[['⚡', 'Entrega instantánea'], ['📅', 'Válida 12 meses'], ['♻️', 'Sin plástico ni papel']].map(([e, l]) => (
+                      <div key={l} className="flex items-center gap-1.5 text-xs text-emerald-300/80">
+                        <span>{e}</span><span>{l}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : (
               <div className="bg-gradient-to-br from-teal-900/40 to-cyan-900/30 backdrop-blur-sm border border-teal-400/25 rounded-3xl p-6 text-white space-y-3 shadow-xl mt-6">
                 <div className="flex items-center gap-2">
                   <Recycle className="w-5 h-5 text-teal-400" />
@@ -384,6 +451,7 @@ export default function ProductoDetalle() {
                   ))}
                 </div>
               </div>
+              )}
             </div>
 
             {/* RIGHT: INFO + CTA */}
@@ -482,8 +550,8 @@ export default function ProductoDetalle() {
                 )}
               </div>
 
-              {/* Color selector */}
-              {colores.length > 0 && (
+              {/* Color selector — no aplicable a giftcards */}
+              {!isGiftCard && colores.length > 0 && (
                 <div>
                   <label className="text-sm font-bold text-white/80 mb-2.5 block">
                     Color: <span className="font-normal text-white/50">{colores.find(c => c.id === colorSeleccionado)?.label || ''}</span>
@@ -535,8 +603,8 @@ export default function ProductoDetalle() {
                 <p className="text-xs text-white/40 mt-1.5">Total: <span className="font-bold text-white/70">${(precioActual * cantidad).toLocaleString('es-CL')}</span></p>
               </div>
 
-              {/* Personalización */}
-              {producto.moq_personalizacion && (
+              {/* Personalización — no aplicable a giftcards */}
+              {!isGiftCard && producto.moq_personalizacion && (
                 <div className="p-4 bg-purple-500/10 border border-purple-400/25 rounded-2xl space-y-3 backdrop-blur-sm">
                   <div className="flex items-center justify-between">
                     <label className="text-sm font-bold text-purple-200 flex items-center gap-2">
@@ -613,7 +681,8 @@ export default function ProductoDetalle() {
                   </Button>
                 )}
 
-                {/* B2B funnel — destacado */}
+                {/* B2B funnel — destacado · oculto para giftcards (ellos van a /regalar-giftcard) */}
+                {!isGiftCard && (
                 <div className="bg-gradient-to-r from-blue-600/20 to-indigo-600/15 border border-blue-400/30 rounded-2xl p-4 space-y-3 backdrop-blur-sm">
                   <div className="flex items-center gap-2">
                     <Building2 className="w-4 h-4 text-blue-300" />
@@ -653,6 +722,16 @@ export default function ProductoDetalle() {
                     </a>
                   </div>
                 </div>
+                )}
+
+                {/* Atajo a flujo de regalo personalizado para gift cards */}
+                {isGiftCard && (
+                  <Link to="/regalar-giftcard" className="block">
+                    <Button size="lg" className="w-full h-12 gap-2 rounded-2xl bg-gradient-to-r from-pink-500/30 to-rose-500/30 hover:from-pink-500/50 hover:to-rose-500/50 border border-pink-400/40 text-white font-bold backdrop-blur-sm">
+                      <Gift className="w-4 h-4" /> Regalar con mensaje personalizado
+                    </Button>
+                  </Link>
+                )}
               </div>
 
               {/* Garantías */}
