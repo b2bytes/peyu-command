@@ -160,6 +160,30 @@ export default function Carrito() {
     // /gracias pueda emitir el evento purchase de GA4 con los items reales.
     try { localStorage.setItem('peyu_last_purchase', JSON.stringify(carrito)); } catch {}
 
+    // ── MERCADO PAGO: crear preferencia y redirigir al checkout MP ──
+    if (medioPagoFinal === 'MercadoPago' && total > 0) {
+      try {
+        const mp = await base44.functions.invoke('mpCreatePreference', { pedido_id: pedido.id });
+        const initUrl = mp?.data?.init_point || mp?.data?.sandbox_init_point;
+        if (initUrl) {
+          // Vaciamos el carrito local antes de salir (ya está persistido como pedido)
+          localStorage.removeItem('carrito');
+          trackPurchase({ transactionId: numero, total, shipping: envio, cart: carrito });
+          window.location.href = initUrl;
+          return;
+        }
+        console.error('MP no devolvió init_point', mp);
+        alert('No se pudo iniciar el pago con Mercado Pago. Inténtalo nuevamente o elige otro medio.');
+        setCreando(false);
+        return;
+      } catch (e) {
+        console.error('Error MP:', e);
+        alert('Error iniciando Mercado Pago. Inténtalo nuevamente.');
+        setCreando(false);
+        return;
+      }
+    }
+
     localStorage.removeItem('carrito');
     trackPurchase({ transactionId: numero, total, shipping: envio, cart: carrito });
     setCreando(false);
