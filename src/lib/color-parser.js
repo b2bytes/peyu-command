@@ -77,24 +77,17 @@ export function getColoresProducto(producto) {
     return [{ id: 'natural', label: 'Natural compostable', hex: '#d4b896' }];
   }
 
-  // 1) Intentar parsear desde la descripción
-  const parsed = parseColoresFromDescripcion(producto.descripcion);
-  if (parsed.length > 0) return parsed;
-
-  // 2) Fallback por categoría — paleta clásica PEYU
+  // ── REGLA OFICIAL PEYU ───────────────────────────────────────────────
+  // Carcasas B2C: paleta clásica con sus colores reales.
   if (producto.categoria === 'Carcasas B2C') {
     return PEYU_COLOR_CATALOG.filter(c =>
       ['negro', 'turquesa', 'rosa', 'amarillo', 'azul'].includes(c.id)
     );
   }
 
-  // 3) Plástico reciclado sin colores específicos → paleta marmolada PEYU default
-  if (producto.material === 'Plástico 100% Reciclado') {
-    return PEYU_COLOR_CATALOG.filter(c =>
-      ['negro', 'blanco', 'turquesa', 'verde', 'beige', 'gris'].includes(c.id)
-    );
-  }
-
-  // 4) Último fallback: ofrecer al menos negro y blanco (siempre disponibles)
-  return PEYU_COLOR_CATALOG.filter(c => ['negro', 'blanco'].includes(c.id));
+  // Resto del catálogo (Escritorio, Hogar, Entretenimiento, Corporativo):
+  // Solo 4 colores oficiales → Turquesa, Negro, Azul, Rosado.
+  return PEYU_COLOR_CATALOG.filter(c =>
+    ['turquesa', 'negro', 'azul', 'rosa'].includes(c.id)
+  );
 }

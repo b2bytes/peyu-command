@@ -12,6 +12,7 @@ import {
 import MockupGenerator from '@/components/MockupGenerator';
 import { saveMockupDraft } from '@/lib/mockup-draft';
 import { getColoresProducto } from '@/lib/color-parser';
+import { buildColorFilter } from '@/lib/color-transform';
 import GiftCardVisual from '@/components/giftcard/GiftCardVisual';
 import SEO from '@/components/SEO';
 import { buildOrganizationSchema, buildProductSchema, buildBreadcrumbSchema, combineSchemas } from '@/lib/schemas-peyu';
@@ -198,6 +199,14 @@ export default function ProductoDetalle() {
   const imgPrincipal = producto ? getProductImage(producto) : '';
   const imgAlterna = producto ? (SKU_IMAGES_ALT[producto.sku] || imgPrincipal) : '';
   const galeria = [imgPrincipal, imgAlterna, imgPrincipal, imgAlterna];
+
+  // Filtro CSS calculado para transformar el color real de la imagen del
+  // producto. No es overlay: aplica una matriz GPU que repinta los píxeles.
+  // Carcasas B2C ya tienen imagen por color → no aplicamos filtro.
+  const colorObj = producto ? (getColores(producto).find(c => c.id === colorSeleccionado)) : null;
+  const colorFilterStyle = (producto && producto.categoria !== 'Carcasas B2C' && colorObj && colorObj.id !== 'natural')
+    ? buildColorFilter(colorObj.hex)
+    : '';
 
   if (!producto) return (
     <div className="flex-1 flex items-center justify-center py-20">
@@ -388,6 +397,7 @@ export default function ProductoDetalle() {
                   src={galeria[vistaActiva] || imgPrincipal}
                   alt={producto.nombre}
                   className="w-full h-full object-cover transition-all duration-500"
+                  style={{ filter: colorFilterStyle, transition: 'filter 350ms ease, transform 500ms ease' }}
                   onError={e => { e.target.src = imgPrincipal; }}
                 />
                 {vistaActiva === 3 && personalizacion && (
@@ -436,7 +446,13 @@ export default function ProductoDetalle() {
                   <button key={i} onClick={() => setVistaActiva(i)}
                     className={`aspect-square rounded-2xl overflow-hidden border-2 transition-all ${vistaActiva === i ? 'border-teal-400 shadow-lg shadow-teal-400/20 scale-[1.03]' : 'border-white/20 hover:border-white/40'}`}>
                     <div className="relative w-full h-full">
-                      <img src={v.img} alt={v.label} className="w-full h-full object-cover" onError={e => { e.target.src = imgPrincipal; }} />
+                      <img
+                        src={v.img}
+                        alt={v.label}
+                        className="w-full h-full object-cover"
+                        style={{ filter: colorFilterStyle, transition: 'filter 350ms ease' }}
+                        onError={e => { e.target.src = imgPrincipal; }}
+                      />
                       {i === 3 && <div className="absolute inset-0 bg-purple-500/25 flex items-center justify-center"><span className="text-lg">✨</span></div>}
                     </div>
                   </button>
