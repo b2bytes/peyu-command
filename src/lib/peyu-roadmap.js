@@ -43,6 +43,8 @@ export const ROADMAP = [
       { name: 'Reporte semanal automático B2B',                           status: 'done',       fn: 'reporteSemanalB2B' },
       { name: 'CRON re-engagement clientes inactivos (>180d)',            status: 'done',       fn: 'recordatorioRecompraCRON' },
       { name: 'Análisis IA de reseñas + alerta clientes en riesgo',       status: 'done',       fn: 'analizarResenaIA' },
+      { name: 'Auto-sync Cliente 360 desde PedidoWeb',                    status: 'done',       fn: 'syncClienteFromPedido' },
+      { name: 'Detección semanal de upsell B2B con tareas auto',          status: 'done',       fn: 'detectarUpsellB2B' },
     ],
   },
   {
@@ -218,6 +220,7 @@ export const ROADMAP = [
     items: [
       { name: 'Health check global',                                      status: 'done',       fn: 'healthCheck' },
       { name: 'Smoke test pre-launch',                                    status: 'done',       fn: 'launchSmokeTest' },
+      { name: 'Daily Briefing automático al equipo (CRON 08:00)',         status: 'done',       fn: 'dailyBriefingCRON' },
       { name: 'UX smoke test',                                            status: 'done',       fn: 'uxSmokeTest' },
       { name: 'Logging de errores cliente',                               status: 'done',       fn: 'logClientError' },
       { name: 'Estado & Roadmap (esta página)',                           status: 'done',       page: '/admin/estado-actual' },
