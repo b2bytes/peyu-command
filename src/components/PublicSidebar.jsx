@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Menu, X, Home, ShoppingBag, Building2, BookOpen, HelpCircle } from 'lucide-react';
+import { Menu, X, Home, ShoppingBag, Building2, BookOpen, HelpCircle, Gift } from 'lucide-react';
 
 export default function PublicSidebar() {
   const [open, setOpen] = useState(false);
@@ -8,6 +8,7 @@ export default function PublicSidebar() {
   const links = [
     { href: '/', label: 'Inicio', icon: Home },
     { href: '/shop', label: 'Tienda', icon: ShoppingBag },
+    { href: '/regalar-giftcard', label: 'Gift Cards', icon: Gift },
     { href: '/b2b/catalogo', label: 'Catálogo Corporativo', icon: BookOpen },
     { href: '/b2b/contacto', label: 'Cotización B2B', icon: Building2 },
     { href: '/soporte', label: 'Soporte', icon: HelpCircle },
