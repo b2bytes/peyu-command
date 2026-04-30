@@ -6,6 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { X, Mail, Phone, MapPin, Package, CreditCard, Sparkles, Loader2, ExternalLink } from 'lucide-react';
 import { toast } from 'sonner';
 import BluexShipmentButton from './BluexShipmentButton';
+import BluexManualDispatchCard from './BluexManualDispatchCard';
 
 const ESTADOS = ['Nuevo', 'Confirmado', 'En Producción', 'Listo para Despacho', 'Despachado', 'Entregado', 'Cancelado'];
 const COURIERS = ['Starken', 'Chilexpress', 'BlueExpress', 'Correos Chile', 'Retiro en Tienda'];
@@ -113,6 +114,9 @@ export default function PedidoDetailDrawer({ pedido, onClose, onUpdate }) {
             <div className="flex justify-between font-bold border-t pt-1.5 mt-1.5"><span>Total</span><span>${(pedido.total || 0).toLocaleString('es-CL')}</span></div>
             <p className="text-xs text-gray-500 flex items-center gap-1.5 mt-2"><CreditCard className="w-3.5 h-3.5" /> {pedido.medio_pago || 'WebPay'}</p>
           </section>
+
+          {/* Despacho Bluex (info para portal manual + futura API) */}
+          <BluexManualDispatchCard pedido={pedido} />
 
           {/* Acciones */}
           <section className="border border-teal-200 bg-teal-50/30 rounded-xl p-4 space-y-3">
