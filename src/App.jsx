@@ -1,3 +1,4 @@
+import { lazy, Suspense } from 'react';
 import { Toaster } from "@/components/ui/toaster"
 import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClientInstance } from '@/lib/query-client'
@@ -7,42 +8,17 @@ import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import PWAInstallBanner from '@/components/PWAInstallBanner';
-import Layout from './components/Layout';
+import CookieBanner from '@/components/CookieBanner';
+
+// ── PUBLIC PAGES (eager) ─────────────────────────────────────────────
+// Cargadas inmediatamente porque son la cara pública del sitio:
+// crawlers, primer LCP, conversión. NO van a ser lazy.
 import PublicLayout from './components/PublicLayout';
-import Dashboard from './pages/Dashboard';
 import ShopLanding from './pages/ShopLanding';
-import PipelineB2B from './pages/PipelineB2B';
-import Operaciones from './pages/Operaciones';
-import Marketing from './pages/Marketing';
-import MarketingHub from './pages/MarketingHub';
-import Analitica from './pages/Analitica';
-import Catalogo from './pages/Catalogo';
-import CPQCalculator from './pages/CPQCalculator';
-import Soporte from './pages/Soporte';
-import Financiero from './pages/Financiero';
-import Clientes from './pages/Clientes';
-import Tiendas from './pages/Tiendas';
-import Proveedores from './pages/Proveedores';
-import Equipo from './pages/Equipo';
-import OKRs from './pages/OKRs';
-import Inventario from './pages/Inventario';
-import Ecommerce from './pages/Ecommerce';
-import FlujoCaja from './pages/FlujoCaja';
-import Trazabilidad from './pages/Trazabilidad';
-import Compras from './pages/Compras';
-import ESG from './pages/ESG';
-import PlanAccion from './pages/PlanAccion';
-import AsistenteIA from './pages/AsistenteIA';
-import Cotizaciones from './pages/Cotizaciones';
-import Calendario from './pages/Calendario';
-import Reportes from './pages/Reportes';
-import Configuracion from './pages/Configuracion';
-import Alertas from './pages/Alertas';
 import Shop from './pages/Shop';
 import ProductoDetalle from './pages/ProductoDetalle';
 import Carrito from './pages/Carrito';
 import B2BContacto from './pages/B2BContacto';
-import AdminPropuestas from './pages/AdminPropuestas';
 import B2BPropuesta from './pages/B2BPropuesta';
 import B2BSelfService from './pages/B2BSelfService';
 import B2BMiCuenta from './pages/B2BMiCuenta';
@@ -61,34 +37,68 @@ import Cambios from './pages/Cambios';
 import Envios from './pages/Envios';
 import FAQ from './pages/FAQ';
 import Contacto from './pages/Contacto';
-import EstadoActual from './pages/EstadoActual';
-import EmbudoVentas from './pages/EmbudoVentas';
-import ImportarClientes from './pages/ImportarClientes';
-import Backlinks from './pages/Backlinks';
-import IntegracionWoo from './pages/IntegracionWoo';
-import ProcesarPedidos from './pages/ProcesarPedidos';
-import Cliente360 from './pages/Cliente360';
-import PineconeBrain from './pages/PineconeBrain';
-import GoogleWorkspace from './pages/GoogleWorkspace';
-import Indexacion from './pages/Indexacion';
-import AdsCommand from './pages/AdsCommand';
-import LaunchMap from './pages/LaunchMap';
-import GA4Realtime from './pages/GA4Realtime';
 import Lanzamiento from './pages/Lanzamiento';
 import Canjear from './pages/Canjear';
 import RegalarGiftCard from './pages/RegalarGiftCard';
 import Gracias from './pages/Gracias';
-import CookieBanner from './components/CookieBanner';
+
+// ── ADMIN PAGES (lazy) ───────────────────────────────────────────────
+// Cargadas on-demand. Reduce ~70% del bundle inicial (público nunca las ve).
+const Layout = lazy(() => import('./components/Layout'));
+const Dashboard = lazy(() => import('./pages/Dashboard'));
+const PipelineB2B = lazy(() => import('./pages/PipelineB2B'));
+const Operaciones = lazy(() => import('./pages/Operaciones'));
+const Marketing = lazy(() => import('./pages/Marketing'));
+const MarketingHub = lazy(() => import('./pages/MarketingHub'));
+const Analitica = lazy(() => import('./pages/Analitica'));
+const Catalogo = lazy(() => import('./pages/Catalogo'));
+const CPQCalculator = lazy(() => import('./pages/CPQCalculator'));
+const Soporte = lazy(() => import('./pages/Soporte'));
+const Financiero = lazy(() => import('./pages/Financiero'));
+const Clientes = lazy(() => import('./pages/Clientes'));
+const Tiendas = lazy(() => import('./pages/Tiendas'));
+const Proveedores = lazy(() => import('./pages/Proveedores'));
+const Equipo = lazy(() => import('./pages/Equipo'));
+const OKRs = lazy(() => import('./pages/OKRs'));
+const Inventario = lazy(() => import('./pages/Inventario'));
+const Ecommerce = lazy(() => import('./pages/Ecommerce'));
+const FlujoCaja = lazy(() => import('./pages/FlujoCaja'));
+const Trazabilidad = lazy(() => import('./pages/Trazabilidad'));
+const Compras = lazy(() => import('./pages/Compras'));
+const ESG = lazy(() => import('./pages/ESG'));
+const PlanAccion = lazy(() => import('./pages/PlanAccion'));
+const AsistenteIA = lazy(() => import('./pages/AsistenteIA'));
+const Cotizaciones = lazy(() => import('./pages/Cotizaciones'));
+const Calendario = lazy(() => import('./pages/Calendario'));
+const Reportes = lazy(() => import('./pages/Reportes'));
+const Configuracion = lazy(() => import('./pages/Configuracion'));
+const Alertas = lazy(() => import('./pages/Alertas'));
+const AdminPropuestas = lazy(() => import('./pages/AdminPropuestas'));
+const EstadoActual = lazy(() => import('./pages/EstadoActual'));
+const EmbudoVentas = lazy(() => import('./pages/EmbudoVentas'));
+const ImportarClientes = lazy(() => import('./pages/ImportarClientes'));
+const Backlinks = lazy(() => import('./pages/Backlinks'));
+const IntegracionWoo = lazy(() => import('./pages/IntegracionWoo'));
+const ProcesarPedidos = lazy(() => import('./pages/ProcesarPedidos'));
+const Cliente360 = lazy(() => import('./pages/Cliente360'));
+const PineconeBrain = lazy(() => import('./pages/PineconeBrain'));
+const GoogleWorkspace = lazy(() => import('./pages/GoogleWorkspace'));
+const Indexacion = lazy(() => import('./pages/Indexacion'));
+const AdsCommand = lazy(() => import('./pages/AdsCommand'));
+const LaunchMap = lazy(() => import('./pages/LaunchMap'));
+const GA4Realtime = lazy(() => import('./pages/GA4Realtime'));
+
+const AdminLoader = () => (
+  <div className="fixed inset-0 flex items-center justify-center bg-background">
+    <div className="w-8 h-8 border-4 border-slate-200 border-t-slate-800 rounded-full animate-spin"></div>
+  </div>
+);
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
 
   if (isLoadingPublicSettings || isLoadingAuth) {
-    return (
-      <div className="fixed inset-0 flex items-center justify-center">
-        <div className="w-8 h-8 border-4 border-slate-200 border-t-slate-800 rounded-full animate-spin"></div>
-      </div>
-    );
+    return <AdminLoader />;
   }
 
   if (authError) {
@@ -101,53 +111,55 @@ const AuthenticatedApp = () => {
   }
 
   return (
-    <Routes>
-      <Route element={<Layout />}>
-        <Route index element={<Dashboard />} />
-        <Route path="pipeline" element={<PipelineB2B />} />
-        <Route path="cpq" element={<CPQCalculator />} />
-        <Route path="soporte" element={<Soporte />} />
-        <Route path="financiero" element={<Financiero />} />
-        <Route path="clientes" element={<Clientes />} />
-        <Route path="tiendas" element={<Tiendas />} />
-        <Route path="proveedores" element={<Proveedores />} />
-        <Route path="equipo" element={<Equipo />} />
-        <Route path="catalogo" element={<Catalogo />} />
-        <Route path="okrs" element={<OKRs />} />
-        <Route path="inventario" element={<Inventario />} />
-        <Route path="ecommerce" element={<Ecommerce />} />
-        <Route path="flujo-caja" element={<FlujoCaja />} />
-        <Route path="trazabilidad" element={<Trazabilidad />} />
-        <Route path="compras" element={<Compras />} />
-        <Route path="esg" element={<ESG />} />
-        <Route path="plan" element={<PlanAccion />} />
-        <Route path="ia" element={<AsistenteIA />} />
-        <Route path="cotizaciones" element={<Cotizaciones />} />
-        <Route path="calendario" element={<Calendario />} />
-        <Route path="reportes" element={<Reportes />} />
-        <Route path="configuracion" element={<Configuracion />} />
-        <Route path="alertas" element={<Alertas />} />
-        <Route path="operaciones" element={<Operaciones />} />
-        <Route path="marketing" element={<Marketing />} />
-        <Route path="marketing-hub" element={<MarketingHub />} />
-        <Route path="analitica" element={<Analitica />} />
-        <Route path="propuestas" element={<AdminPropuestas />} />
-        <Route path="estado-actual" element={<EstadoActual />} />
-        <Route path="embudo" element={<EmbudoVentas />} />
-        <Route path="importar-clientes" element={<ImportarClientes />} />
-        <Route path="backlinks" element={<Backlinks />} />
-        <Route path="woocommerce" element={<IntegracionWoo />} />
-        <Route path="procesar-pedidos" element={<ProcesarPedidos />} />
-        <Route path="cliente-360" element={<Cliente360 />} />
-        <Route path="brain" element={<PineconeBrain />} />
-        <Route path="google" element={<GoogleWorkspace />} />
-        <Route path="indexacion" element={<Indexacion />} />
-        <Route path="ads-command" element={<AdsCommand />} />
-        <Route path="launch-map" element={<LaunchMap />} />
-        <Route path="ga-realtime" element={<GA4Realtime />} />
-      </Route>
-      <Route path="*" element={<PageNotFound />} />
-    </Routes>
+    <Suspense fallback={<AdminLoader />}>
+      <Routes>
+        <Route element={<Layout />}>
+          <Route index element={<Dashboard />} />
+          <Route path="pipeline" element={<PipelineB2B />} />
+          <Route path="cpq" element={<CPQCalculator />} />
+          <Route path="soporte" element={<Soporte />} />
+          <Route path="financiero" element={<Financiero />} />
+          <Route path="clientes" element={<Clientes />} />
+          <Route path="tiendas" element={<Tiendas />} />
+          <Route path="proveedores" element={<Proveedores />} />
+          <Route path="equipo" element={<Equipo />} />
+          <Route path="catalogo" element={<Catalogo />} />
+          <Route path="okrs" element={<OKRs />} />
+          <Route path="inventario" element={<Inventario />} />
+          <Route path="ecommerce" element={<Ecommerce />} />
+          <Route path="flujo-caja" element={<FlujoCaja />} />
+          <Route path="trazabilidad" element={<Trazabilidad />} />
+          <Route path="compras" element={<Compras />} />
+          <Route path="esg" element={<ESG />} />
+          <Route path="plan" element={<PlanAccion />} />
+          <Route path="ia" element={<AsistenteIA />} />
+          <Route path="cotizaciones" element={<Cotizaciones />} />
+          <Route path="calendario" element={<Calendario />} />
+          <Route path="reportes" element={<Reportes />} />
+          <Route path="configuracion" element={<Configuracion />} />
+          <Route path="alertas" element={<Alertas />} />
+          <Route path="operaciones" element={<Operaciones />} />
+          <Route path="marketing" element={<Marketing />} />
+          <Route path="marketing-hub" element={<MarketingHub />} />
+          <Route path="analitica" element={<Analitica />} />
+          <Route path="propuestas" element={<AdminPropuestas />} />
+          <Route path="estado-actual" element={<EstadoActual />} />
+          <Route path="embudo" element={<EmbudoVentas />} />
+          <Route path="importar-clientes" element={<ImportarClientes />} />
+          <Route path="backlinks" element={<Backlinks />} />
+          <Route path="woocommerce" element={<IntegracionWoo />} />
+          <Route path="procesar-pedidos" element={<ProcesarPedidos />} />
+          <Route path="cliente-360" element={<Cliente360 />} />
+          <Route path="brain" element={<PineconeBrain />} />
+          <Route path="google" element={<GoogleWorkspace />} />
+          <Route path="indexacion" element={<Indexacion />} />
+          <Route path="ads-command" element={<AdsCommand />} />
+          <Route path="launch-map" element={<LaunchMap />} />
+          <Route path="ga-realtime" element={<GA4Realtime />} />
+        </Route>
+        <Route path="*" element={<PageNotFound />} />
+      </Routes>
+    </Suspense>
   )
 };
 
@@ -193,7 +205,7 @@ function App() {
                 <Route path="/gracias" element={<Gracias />} />
               </Route>
 
-              {/* Admin Routes - Protected */}
+              {/* Admin Routes - Protected (lazy-loaded) */}
               <Route path="/admin/*" element={<AuthenticatedApp />} />
             </Routes>
             <Toaster />
