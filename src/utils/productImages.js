@@ -61,6 +61,12 @@ export const SKU_IMAGES = {
   'HOG-SOPC':       'https://i0.wp.com/peyuchile.cl/wp-content/uploads/2022/09/greencel-1.jpg?fit=600%2C600&ssl=1',
   'HOG-SONB':       'https://i0.wp.com/peyuchile.cl/wp-content/uploads/2025/09/dce80c23-7441-4922-a656-8627018c1e5d-1.jpeg?fit=600%2C600&ssl=1',
 
+  // ── GIFT CARDS (imagen oficial peyuchile.cl) ──────────────
+  'GC-PEYU-10K':    'https://i0.wp.com/peyuchile.cl/wp-content/uploads/2025/06/pw-gift-card.png?fit=600%2C600&ssl=1',
+  'GC-PEYU-50K':    'https://i0.wp.com/peyuchile.cl/wp-content/uploads/2025/06/pw-gift-card.png?fit=600%2C600&ssl=1',
+  'GC-PEYU-100K':   'https://i0.wp.com/peyuchile.cl/wp-content/uploads/2025/06/pw-gift-card.png?fit=600%2C600&ssl=1',
+  'ae6e334f62fb':   'https://i0.wp.com/peyuchile.cl/wp-content/uploads/2025/06/pw-gift-card.png?fit=600%2C600&ssl=1',
+
   // ── CORPORATIVO ────────────────────────────────────────────
   'CORP-CACH4':     'https://i0.wp.com/peyuchile.cl/wp-content/uploads/2025/07/44.jpg?fit=600%2C600&ssl=1',
   'CORP-CACH4TT':   'https://i0.wp.com/peyuchile.cl/wp-content/uploads/2025/07/44-4.jpg?fit=600%2C600&ssl=1',
@@ -92,6 +98,9 @@ export const CATEGORY_IMAGES = {
 // Si el SKU no está mapeado, intenta inferir la imagen por palabras clave.
 // ORDEN IMPORTA: de más específico a más genérico.
 export const NAME_KEYWORD_IMAGES = [
+  // Gift Card (debe ir primero — match más específico)
+  { keywords: ['gift card', 'giftcard', 'tarjeta regalo'], img: 'https://i0.wp.com/peyuchile.cl/wp-content/uploads/2025/06/pw-gift-card.png?fit=600%2C600&ssl=1' },
+
   // Carcasas (muy específicas)
   { keywords: ['airpods', 'airpod'], img: SKU_IMAGES['CARC-AIRP-12'] },
   { keywords: ['carcasa iphone', 'funda iphone', 'carcasa ip'], img: SKU_IMAGES['CARC-IP14'] },
