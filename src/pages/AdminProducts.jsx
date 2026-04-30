@@ -16,7 +16,7 @@ export default function AdminProducts() {
   const [productos, setProductos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
-  const [filter, setFilter] = useState('todos');
+  const [filter, setFilter] = useState('publicados');
   const [selectedId, setSelectedId] = useState(null);
   const [tab, setTab] = useState('datos'); // datos | imagen | descripcion
   const [syncing, setSyncing] = useState(false);
@@ -33,9 +33,10 @@ export default function AdminProducts() {
 
   const filtered = useMemo(() => {
     return productos.filter(p => {
+      if (filter === 'publicados' && p.activo === false) return false;
+      if (filter === 'inactivos' && p.activo !== false) return false;
       if (filter === 'sin_descripcion' && p.descripcion) return false;
       if (filter === 'sin_imagen' && p.imagen_url) return false;
-      if (filter === 'inactivos' && p.activo !== false) return false;
       const q = search.toLowerCase();
       return !q || p.nombre?.toLowerCase().includes(q) || p.sku?.toLowerCase().includes(q);
     });
@@ -43,10 +44,11 @@ export default function AdminProducts() {
 
   const stats = useMemo(() => ({
     total: productos.length,
+    publicados: productos.filter(p => p.activo !== false).length,
+    inactivos: productos.filter(p => p.activo === false).length,
     sinDescripcion: productos.filter(p => !p.descripcion).length,
     sinImagen: productos.filter(p => !p.imagen_url).length,
     completos: productos.filter(p => p.descripcion && p.imagen_url).length,
-    inactivos: productos.filter(p => p.activo === false).length,
   }), [productos]);
 
   const selected = productos.find(p => p.id === selectedId);
@@ -116,13 +118,14 @@ export default function AdminProducts() {
         </div>
       )}
 
-      {/* KPIs */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-2 flex-shrink-0">
-        <KPI label="Total" value={stats.total} color="text-white" />
-        <KPI label="Sin descripción" value={stats.sinDescripcion} color="text-amber-300" highlight />
-        <KPI label="Sin imagen" value={stats.sinImagen} color="text-rose-300" highlight />
-        <KPI label="Completos" value={stats.completos} color="text-emerald-300" />
-        <KPI label="Inactivos" value={stats.inactivos} color="text-white/60" />
+      {/* KPIs — clickeables como filtros rápidos */}
+      <div className="grid grid-cols-2 md:grid-cols-6 gap-2 flex-shrink-0">
+        <KPI label="Publicados" value={stats.publicados} color="text-emerald-300" active={filter === 'publicados'} onClick={() => setFilter('publicados')} />
+        <KPI label="Inactivos" value={stats.inactivos} color="text-white/70" active={filter === 'inactivos'} onClick={() => setFilter('inactivos')} />
+        <KPI label="Todos" value={stats.total} color="text-white" active={filter === 'todos'} onClick={() => setFilter('todos')} />
+        <KPI label="Sin descripción" value={stats.sinDescripcion} color="text-amber-300" highlight active={filter === 'sin_descripcion'} onClick={() => setFilter('sin_descripcion')} />
+        <KPI label="Sin imagen" value={stats.sinImagen} color="text-rose-300" highlight active={filter === 'sin_imagen'} onClick={() => setFilter('sin_imagen')} />
+        <KPI label="Completos" value={stats.completos} color="text-cyan-300" />
       </div>
 
       {/* Layout: lista + detalle (estable, sin desbordes) */}
@@ -141,16 +144,17 @@ export default function AdminProducts() {
             </div>
             <div className="flex gap-1 flex-wrap">
               {[
-                { id: 'todos', label: `Todos · ${stats.total}` },
-                { id: 'sin_descripcion', label: `Sin desc · ${stats.sinDescripcion}` },
-                { id: 'sin_imagen', label: `Sin img · ${stats.sinImagen}` },
-                { id: 'inactivos', label: `Inactivos · ${stats.inactivos}` },
+                { id: 'publicados', label: `Publicados · ${stats.publicados}`, color: 'emerald' },
+                { id: 'inactivos', label: `Inactivos · ${stats.inactivos}`, color: 'slate' },
+                { id: 'todos', label: `Todos · ${stats.total}`, color: 'violet' },
+                { id: 'sin_descripcion', label: `Sin desc · ${stats.sinDescripcion}`, color: 'amber' },
+                { id: 'sin_imagen', label: `Sin img · ${stats.sinImagen}`, color: 'rose' },
               ].map(f => (
                 <button
                   key={f.id}
                   onClick={() => setFilter(f.id)}
                   className={`px-2 py-1 rounded-md text-[11px] font-medium transition-all ${
-                    filter === f.id ? 'bg-violet-500 text-white' : 'bg-white/5 text-white/60 hover:bg-white/10'
+                    filter === f.id ? 'bg-violet-500 text-white shadow-sm' : 'bg-white/5 text-white/60 hover:bg-white/10'
                   }`}
                 >
                   {f.label}
@@ -285,12 +289,23 @@ export default function AdminProducts() {
   );
 }
 
-function KPI({ label, value, color, highlight }) {
+function KPI({ label, value, color, highlight, active, onClick }) {
+  const interactive = !!onClick;
+  const Cmp = interactive ? 'button' : 'div';
   return (
-    <div className={`bg-white/5 border ${highlight && value > 0 ? 'border-amber-400/30' : 'border-white/10'} rounded-xl px-3 py-2`}>
+    <Cmp
+      onClick={onClick}
+      className={`text-left bg-white/5 border rounded-xl px-3 py-2 transition-all ${
+        active
+          ? 'border-violet-400/60 bg-violet-500/10 ring-1 ring-violet-400/40'
+          : highlight && value > 0
+            ? 'border-amber-400/30'
+            : 'border-white/10'
+      } ${interactive ? 'hover:bg-white/10 hover:border-white/20 cursor-pointer' : ''}`}
+    >
       <div className="text-[11px] text-white/50 mb-0.5 truncate">{label}</div>
       <div className={`text-xl font-poppins font-bold ${color}`}>{value}</div>
-    </div>
+    </Cmp>
   );
 }
 
