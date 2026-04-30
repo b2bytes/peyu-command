@@ -51,6 +51,9 @@ export const ROADMAP = [
       { name: 'Triage IA de consultas entrantes + alerta lead caliente',  status: 'done',       fn: 'triageConsultaIA' },
       { name: 'Solicitud automática de reseña 7d post-entrega',           status: 'done',       fn: 'solicitarResenaCRON' },
       { name: 'Cross-sell post-compra B2C con cupón 48h',                 status: 'done',       fn: 'crossSellPostCompra' },
+      { name: 'Auditoría diaria salud catálogo (score 0-100)',            status: 'done',       fn: 'auditoriaCatalogoCRON' },
+      { name: 'Insights ejecutivos semanales con IA (lunes 07:00)',       status: 'done',       fn: 'insightsSemanalesIA' },
+      { name: 'Recordatorio anticipo B2B + alerta morosidad >7d',         status: 'done',       fn: 'recordatorioAnticipoB2B' },
     ],
   },
   {
