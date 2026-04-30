@@ -77,7 +77,8 @@ export default function CategoryTabs({ categorias, selected, onSelect }) {
 
         <div
           ref={scrollRef}
-          className="flex items-center gap-2 overflow-x-auto scrollbar-hide scroll-smooth py-1"
+          className="flex items-center gap-2 overflow-x-auto scrollbar-hide scroll-smooth py-1 snap-x snap-mandatory sm:snap-none"
+          style={{ WebkitOverflowScrolling: 'touch', overscrollBehaviorX: 'contain' }}
         >
           {categorias.map(cat => {
             const isActive = cat.id === selected;
@@ -86,7 +87,7 @@ export default function CategoryTabs({ categorias, selected, onSelect }) {
                 key={cat.id}
                 data-active={isActive}
                 onClick={() => onSelect(cat.id)}
-                className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold transition-all whitespace-nowrap flex-shrink-0 backdrop-blur-sm border ${
+                className={`flex items-center gap-2 px-3.5 sm:px-4 py-2 rounded-full text-xs sm:text-sm font-semibold transition-all duration-200 whitespace-nowrap flex-shrink-0 backdrop-blur-sm border snap-start active:scale-95 ${
                   isActive
                     ? 'bg-gradient-to-r from-teal-500 to-cyan-500 text-white border-teal-400/60 shadow-lg shadow-teal-500/30 scale-105'
                     : 'bg-white/5 text-white/75 border-white/15 hover:bg-white/10 hover:text-white hover:border-white/30'

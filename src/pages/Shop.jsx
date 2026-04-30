@@ -165,19 +165,19 @@ export default function Shop() {
 
   return (
     <div className="flex-1 overflow-auto font-inter">
-      {/* HERO */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 pt-6 sm:pt-10 pb-6">
+      {/* HERO — más compacto en mobile para que la grilla aparezca antes */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 pt-4 sm:pt-10 pb-4 sm:pb-6">
         <div className="flex items-end justify-between gap-6 flex-wrap">
           <div className="space-y-3 max-w-2xl">
             <div className="inline-flex items-center gap-1.5 text-xs font-semibold text-teal-300 bg-teal-500/20 border border-teal-400/30 px-3 py-1 rounded-full backdrop-blur-sm">
               <Recycle className="w-3 h-3" /> 100% plástico reciclado · Hecho en Chile
             </div>
-            <h1 className="text-3xl sm:text-4xl md:text-5xl font-poppins font-bold leading-[1.1] text-white drop-shadow-lg">
+            <h1 className="text-2xl sm:text-4xl md:text-5xl font-poppins font-bold leading-[1.1] text-white drop-shadow-lg">
               Regalos con propósito,
               <br />
               <span className="text-cyan-400">diseñados para durar.</span>
             </h1>
-            <p className="text-white/70 text-sm sm:text-base leading-relaxed max-w-lg">
+            <p className="hidden sm:block text-white/70 text-sm sm:text-base leading-relaxed max-w-lg">
               Productos fabricados en Santiago con plástico recuperado. Personalización láser UV y garantía 10 años.
             </p>
           </div>
@@ -313,11 +313,15 @@ export default function Shop() {
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5">
-              {visibleProductos.map(p => (
+            <div
+              key={`${selectedCategory}-${selectedPrice}-${sortBy}`}
+              className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4 lg:gap-5"
+            >
+              {visibleProductos.map((p, i) => (
                 <ProductCard
                   key={p.id}
                   producto={p}
+                  index={i}
                   onAddToCart={agregarAlCarrito}
                   agregandoId={agregandoId}
                 />

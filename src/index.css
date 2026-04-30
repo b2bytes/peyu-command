@@ -88,6 +88,37 @@
     background: linear-gradient(180deg, rgba(15, 139, 108, 0.9), rgba(8, 145, 178, 0.9));
   }
 
+  /* ─── Shop · Animación de entrada de cards (stagger) ─── */
+  @keyframes peyuCardIn {
+    from { opacity: 0; transform: translateY(12px) scale(0.98); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  .peyu-card-enter {
+    animation: peyuCardIn 0.45s cubic-bezier(0.22, 1, 0.36, 1) backwards;
+  }
+
+  /* ─── Shop · Skeleton shimmer mientras cargan imágenes ─── */
+  @keyframes peyuShimmer {
+    0%   { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+  }
+  .peyu-shimmer {
+    background: linear-gradient(
+      90deg,
+      rgba(255,255,255,0.03) 0%,
+      rgba(255,255,255,0.08) 50%,
+      rgba(255,255,255,0.03) 100%
+    );
+    background-size: 200% 100%;
+    animation: peyuShimmer 1.4s ease-in-out infinite;
+  }
+
+  /* ─── Reduced motion: respeta preferencias del usuario ─── */
+  @media (prefers-reduced-motion: reduce) {
+    .peyu-card-enter { animation: none !important; }
+    .peyu-shimmer { animation: none !important; }
+  }
+
   /* Variante para fondos oscuros/glass (landing chat) */
   .peyu-scrollbar-light {
     scrollbar-width: thin;
