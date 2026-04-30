@@ -2,9 +2,9 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { ArrowLeft, Gift, Recycle, Mail, Clock, Shield } from 'lucide-react';
 import SEO from '@/components/SEO';
-import FlowSelector from '@/components/giftcard/FlowSelector.jsx';
-import GiftCardB2CFlow from '@/components/giftcard/GiftCardB2CFlow.jsx';
-import GiftCardB2BForm from '@/components/giftcard/GiftCardB2BForm.jsx';
+import FlowSelector from '@/components/giftcard/FlowSelector';
+import GiftCardB2CFlow from '@/components/giftcard/GiftCardB2CFlow';
+import GiftCardB2BForm from '@/components/giftcard/GiftCardB2BForm';
 
 export default function RegalarGiftCard() {
   const navigate = useNavigate();
