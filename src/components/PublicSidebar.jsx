@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { Menu, X, Home, ShoppingBag, Building2, BookOpen, HelpCircle, Gift } from 'lucide-react';
 
 export default function PublicSidebar() {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(true);
 
   const links = [
     { href: '/', label: 'Inicio', icon: Home },

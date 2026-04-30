@@ -567,14 +567,14 @@ export default function ShopLanding() {
                   </div>
                 </div>
 
-                {/* Input — protagonista, con sombra clara para destacar */}
-                <div className="flex gap-2 flex-shrink-0 min-w-0 bg-white/15 rounded-full p-1.5 border border-white/25 backdrop-blur-md shadow-lg">
+                {/* Input — protagonista, fondo claro contrastante para destacar sobre el glass */}
+                <div className="flex gap-2 flex-shrink-0 min-w-0 bg-white/95 rounded-full p-1.5 border-2 border-teal-400/60 shadow-2xl shadow-teal-500/30 ring-2 ring-teal-300/20">
                   <Input
                     value={input}
                     onChange={e => setInput(e.target.value)}
                     onKeyDown={e => e.key === 'Enter' && !loading && sendMessage(input)}
                     placeholder="Escribe tu mensaje a Peyu…"
-                    className="bg-transparent border-0 text-white placeholder:text-white/50 text-sm rounded-full focus:ring-0 focus-visible:ring-0 flex-1 h-10 px-4 disabled:opacity-60 shadow-none"
+                    className="bg-transparent border-0 text-slate-900 placeholder:text-slate-500 text-sm font-medium rounded-full focus:ring-0 focus-visible:ring-0 flex-1 h-10 px-4 disabled:opacity-60 shadow-none"
                     disabled={loading}
                   />
                   <Button

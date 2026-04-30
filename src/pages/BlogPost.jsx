@@ -87,7 +87,18 @@ export default function BlogPostPage() {
     );
   }
 
-  const img = post.imagen_portada || 'https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?w=1600&auto=format&fit=crop';
+  const CATEGORY_FALLBACK_IMG = {
+    'Historia PEYU':              'https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?w=1600&auto=format&fit=crop&q=80',
+    'Reciclaje y Medio Ambiente': 'https://images.unsplash.com/photo-1532996122724-e3c354a0b15b?w=1600&auto=format&fit=crop&q=80',
+    'Guías y Tips':               'https://images.unsplash.com/photo-1499209974431-9dddcece7f88?w=1600&auto=format&fit=crop&q=80',
+    'Casos de Éxito':             'https://images.unsplash.com/photo-1556761175-5973dc0f32e7?w=1600&auto=format&fit=crop&q=80',
+    'Noticias y Prensa':          'https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=1600&auto=format&fit=crop&q=80',
+    'Regalos Corporativos':       'https://images.unsplash.com/photo-1513885535751-8b9238bd345a?w=1600&auto=format&fit=crop&q=80',
+    'Educación Ambiental':        'https://images.unsplash.com/photo-1500673922987-e212871fec22?w=1600&auto=format&fit=crop&q=80',
+  };
+  const img = post.imagen_portada
+    || CATEGORY_FALLBACK_IMG[post.categoria]
+    || 'https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?w=1600&auto=format&fit=crop&q=80';
   const canonicalUrl = `https://peyuchile.cl/blog/${post.slug || post.id}`;
 
   // SEO
@@ -154,7 +165,7 @@ export default function BlogPostPage() {
               {post.titulo}
             </h1>
             {post.excerpt && (
-              <p className="text-base sm:text-lg text-white/70 leading-relaxed mb-6">
+              <p className="text-base sm:text-lg text-white/90 leading-relaxed mb-6 font-medium">
                 {post.excerpt}
               </p>
             )}
@@ -176,8 +187,21 @@ export default function BlogPostPage() {
             <img src={img} alt={post.titulo} className="w-full h-full object-cover" />
           </div>
 
-          <div className="prose prose-invert prose-teal max-w-none prose-headings:font-poppins prose-headings:text-white prose-p:text-white/75 prose-p:leading-relaxed prose-a:text-teal-300 prose-strong:text-white prose-img:rounded-xl prose-blockquote:border-l-teal-400 prose-blockquote:text-white/80">
-            <ReactMarkdown>{post.contenido_md || ''}</ReactMarkdown>
+          {/* Lectura sobre lienzo sólido — máximo contraste */}
+          <div className="bg-slate-900/85 backdrop-blur-md border border-white/10 rounded-2xl p-6 sm:p-8 lg:p-10 shadow-2xl">
+            <div className="prose prose-invert prose-lg max-w-none
+              prose-headings:font-poppins prose-headings:text-white prose-headings:font-bold
+              prose-p:text-slate-100 prose-p:leading-[1.8]
+              prose-a:text-teal-300 prose-a:font-semibold hover:prose-a:text-teal-200
+              prose-strong:text-white prose-strong:font-bold
+              prose-em:text-slate-200
+              prose-img:rounded-xl prose-img:shadow-xl
+              prose-blockquote:border-l-4 prose-blockquote:border-teal-400 prose-blockquote:text-slate-200 prose-blockquote:bg-white/5 prose-blockquote:py-2 prose-blockquote:px-4 prose-blockquote:rounded-r-lg prose-blockquote:not-italic
+              prose-code:text-teal-200 prose-code:bg-white/10 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:before:content-[''] prose-code:after:content-['']
+              prose-li:text-slate-100 prose-li:marker:text-teal-400
+              prose-hr:border-white/20">
+              <ReactMarkdown>{post.contenido_md || ''}</ReactMarkdown>
+            </div>
           </div>
 
           {/* Fuente original al final del artículo */}

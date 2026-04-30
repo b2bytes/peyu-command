@@ -12,6 +12,17 @@ const CATEGORY_COLORS = {
   'Educación Ambiental':          'bg-teal-500/20 text-teal-200 border-teal-400/30',
 };
 
+// Imagen temática coherente cuando el post no trae imagen propia
+const CATEGORY_FALLBACK_IMG = {
+  'Historia PEYU':              'https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?w=1200&auto=format&fit=crop&q=80', // tortuga
+  'Reciclaje y Medio Ambiente': 'https://images.unsplash.com/photo-1532996122724-e3c354a0b15b?w=1200&auto=format&fit=crop&q=80', // plástico reciclado
+  'Guías y Tips':               'https://images.unsplash.com/photo-1499209974431-9dddcece7f88?w=1200&auto=format&fit=crop&q=80', // escritorio sustentable
+  'Casos de Éxito':             'https://images.unsplash.com/photo-1556761175-5973dc0f32e7?w=1200&auto=format&fit=crop&q=80', // empresa
+  'Noticias y Prensa':          'https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=1200&auto=format&fit=crop&q=80', // periódicos
+  'Regalos Corporativos':       'https://images.unsplash.com/photo-1513885535751-8b9238bd345a?w=1200&auto=format&fit=crop&q=80', // regalos
+  'Educación Ambiental':        'https://images.unsplash.com/photo-1500673922987-e212871fec22?w=1200&auto=format&fit=crop&q=80', // naturaleza
+};
+
 function formatDate(d) {
   if (!d) return '';
   try {
@@ -23,7 +34,9 @@ function formatDate(d) {
 
 export default function BlogCard({ post, featured = false }) {
   const cat = CATEGORY_COLORS[post.categoria] || 'bg-white/10 text-white/80 border-white/20';
-  const img = post.imagen_portada || 'https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?w=800&auto=format&fit=crop';
+  const img = post.imagen_portada
+    || CATEGORY_FALLBACK_IMG[post.categoria]
+    || 'https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?w=1200&auto=format&fit=crop&q=80';
 
   return (
     <Link
