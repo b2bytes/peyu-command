@@ -146,8 +146,12 @@ Deno.serve(async (req) => {
     let creados = 0;
     let actualizados = 0;
     let errores = 0;
+    let saltados = 0; // sin cambios reales
     const detalleErrores = [];
     const skusVistos = new Set();
+
+    // Throttle helper para evitar rate limits del SDK (≈100 req/s seguro)
+    const sleep = (ms) => new Promise(r => setTimeout(r, ms));
 
     for (const wp of allWooProducts) {
       try {
@@ -178,19 +182,33 @@ Deno.serve(async (req) => {
         if (dryRun) continue;
 
         if (existente) {
-          // Solo actualizar campos provenientes de Woo (no sobrescribir lead_time, precios B2B definidos manualmente)
-          await base44.asServiceRole.entities.Producto.update(existente.id, {
-            nombre: data.nombre,
-            descripcion: data.descripcion,
-            precio_b2c: data.precio_b2c,
-            imagen_url: data.imagen_url || existente.imagen_url,
-            stock_actual: data.stock_actual,
-            activo: data.activo,
-          });
-          actualizados++;
+          // Skip si no cambió nada relevante (evita writes innecesarios + rate limit)
+          const sinCambios = (
+            existente.nombre === data.nombre &&
+            existente.precio_b2c === data.precio_b2c &&
+            existente.stock_actual === data.stock_actual &&
+            existente.activo === data.activo &&
+            (existente.imagen_url || '') === (data.imagen_url || existente.imagen_url || '') &&
+            (existente.descripcion || '') === (data.descripcion || '')
+          );
+          if (sinCambios) {
+            saltados++;
+          } else {
+            await base44.asServiceRole.entities.Producto.update(existente.id, {
+              nombre: data.nombre,
+              descripcion: data.descripcion,
+              precio_b2c: data.precio_b2c,
+              imagen_url: data.imagen_url || existente.imagen_url,
+              stock_actual: data.stock_actual,
+              activo: data.activo,
+            });
+            actualizados++;
+            await sleep(80); // throttle ≈12 ops/s
+          }
         } else {
           await base44.asServiceRole.entities.Producto.create(data);
           creados++;
+          await sleep(80);
         }
       } catch (err) {
         errores++;
@@ -198,14 +216,23 @@ Deno.serve(async (req) => {
       }
     }
 
-    // ── 4) Si fullSync → desactivar productos que ya no están en Woo ─
+    // ── 4) fullSync → desactivar TODO producto que no esté en peyuchile.cl ─
+    // Excepción: Gift Cards (SKU GC-PEYU*) y productos manuales explícitamente
+    // marcados con `canal === 'B2B Exclusivo'` (que no están en la web pública).
     let desactivados = 0;
+    const desactivadosDetalle = [];
     if (fullSync && !dryRun) {
       for (const p of existentes) {
-        if (!p.sku || !p.sku.startsWith('WOO-')) continue; // solo los importados
+        const skuUpper = String(p.sku || '').toUpperCase();
+        // Preservar Gift Cards y productos B2B exclusivos
+        if (skuUpper.startsWith('GC-PEYU')) continue;
+        if (p.canal === 'B2B Exclusivo') continue;
+        // Si el SKU del producto no aparece en la respuesta de Woo → no está en la web
         if (!skusVistos.has(p.sku) && p.activo !== false) {
           await base44.asServiceRole.entities.Producto.update(p.id, { activo: false });
           desactivados++;
+          desactivadosDetalle.push({ sku: p.sku, nombre: p.nombre });
+          await sleep(80);
         }
       }
     }
@@ -217,7 +244,9 @@ Deno.serve(async (req) => {
       total_woo: allWooProducts.length,
       creados,
       actualizados,
+      saltados,
       desactivados,
+      desactivados_detalle: desactivadosDetalle.slice(0, 20),
       errores,
       detalle_errores: detalleErrores.slice(0, 5),
     });

@@ -75,7 +75,7 @@ export default function AdminProducts() {
             setSyncing(true);
             setSyncResult(null);
             try {
-              const res = await base44.functions.invoke('syncWooCatalogo', {});
+              const res = await base44.functions.invoke('syncWooCatalogo', { fullSync: true });
               setSyncResult(res.data);
               await loadData();
             } catch (e) {
@@ -107,6 +107,7 @@ export default function AdminProducts() {
                 ✓ Sincronizados <strong>{syncResult.total_woo}</strong> productos desde peyuchile.cl ·
                 {' '}<strong>{syncResult.creados}</strong> nuevos ·
                 {' '}<strong>{syncResult.actualizados}</strong> actualizados
+                {syncResult.desactivados > 0 && <> · <strong className="text-rose-300">{syncResult.desactivados}</strong> desactivados (no en web)</>}
                 {syncResult.errores > 0 && <> · <strong className="text-amber-300">{syncResult.errores}</strong> errores</>}
               </span>
             )}
