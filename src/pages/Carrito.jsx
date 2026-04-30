@@ -349,11 +349,12 @@ export default function Carrito() {
                   )}
                 </div>
 
-                {/* Cotización envío Bluex en tiempo real */}
+                {/* Cotización envío Bluex en tiempo real (auto-cotiza con la comuna del form) */}
                 <ShippingSelector
                   variant="light"
                   items={carrito.map(i => ({ productoId: i.productoId, cantidad: i.cantidad, nombre: i.nombre }))}
-                  comunaInicial={cliente.ciudad}
+                  comuna={cliente.ciudad}
+                  region={cliente.region}
                   subtotal={subtotal}
                   umbralEnvioGratis={40000}
                   onSelect={setEnvioBluex}
