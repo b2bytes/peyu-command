@@ -41,6 +41,8 @@ export const ROADMAP = [
       { name: 'Trigger onProposalAccepted → orden producción',            status: 'done',       fn: 'onProposalAccepted' },
       { name: 'Recordatorio propuestas próximas a expirar',               status: 'done',       fn: 'checkExpiringProposals' },
       { name: 'Reporte semanal automático B2B',                           status: 'done',       fn: 'reporteSemanalB2B' },
+      { name: 'CRON re-engagement clientes inactivos (>180d)',            status: 'done',       fn: 'recordatorioRecompraCRON' },
+      { name: 'Análisis IA de reseñas + alerta clientes en riesgo',       status: 'done',       fn: 'analizarResenaIA' },
     ],
   },
   {
@@ -151,6 +153,7 @@ export const ROADMAP = [
     items: [
       { name: 'Dashboard Operaciones',                                    status: 'done',       page: '/admin/operaciones' },
       { name: 'Procesamiento de pedidos (kanban)',                        status: 'done',       page: '/admin/procesar-pedidos' },
+      { name: 'Auto-agenda Calendar al iniciar producción',               status: 'done',       fn: 'agendarProduccionCalendar' },
       { name: 'Inventario',                                               status: 'done',       page: '/admin/inventario' },
       { name: 'Trazabilidad',                                             status: 'done',       page: '/admin/trazabilidad' },
       { name: 'Proveedores 360 (scorecard, riesgo, ESG)',                 status: 'optimizing', page: '/admin/proveedores' },
