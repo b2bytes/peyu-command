@@ -13,6 +13,8 @@ import MockupGenerator from '@/components/MockupGenerator';
 import { saveMockupDraft } from '@/lib/mockup-draft';
 import { getColoresProducto } from '@/lib/color-parser';
 import { buildColorFilter } from '@/lib/color-transform';
+import { getPackSize } from '@/lib/pack-parser';
+import PackColorPicker from '@/components/producto/PackColorPicker';
 import GiftCardVisual from '@/components/giftcard/GiftCardVisual';
 import SEO from '@/components/SEO';
 import { buildOrganizationSchema, buildProductSchema, buildBreadcrumbSchema, combineSchemas } from '@/lib/schemas-peyu';
@@ -124,6 +126,7 @@ export default function ProductoDetalle() {
   const [relacionados, setRelacionados] = useState([]);
   const [cantidad, setCantidad] = useState(1);
   const [colorSeleccionado, setColorSeleccionado] = useState(null);
+  const [coloresPack, setColoresPack] = useState([]); // multi-color para packs
   const [personalizacion, setPersonalizacion] = useState('');
   const [carrito, setCarrito] = useState(JSON.parse(localStorage.getItem('carrito') || '[]'));
   const [agregado, setAgregado] = useState(false);
@@ -149,7 +152,15 @@ export default function ProductoDetalle() {
       setProducto(prod);
       if (prod) {
         const colores = getColores(prod);
-        setColorSeleccionado(colores[0]?.id || null);
+        const firstId = colores[0]?.id || null;
+        setColorSeleccionado(firstId);
+        // Si es pack, inicializamos array con N copias del primer color
+        const packN = getPackSize(prod);
+        if (packN && firstId) {
+          setColoresPack(Array.from({ length: packN }, () => firstId));
+        } else {
+          setColoresPack([]);
+        }
         setRelacionados(data.filter(p => p.id !== id && p.canal !== 'B2B Exclusivo' && p.categoria === prod.categoria).slice(0, 4));
       }
     });
@@ -169,10 +180,26 @@ export default function ProductoDetalle() {
   const precioActual = precioVolumen ? precioVolumen.precio : precioFinal;
 
   const agregarAlCarrito = () => {
+    // Resumen legible del pack para mostrar en carrito (ej. "2× Negro · 1× Verde")
+    const packSummary = (packSize && coloresPack.length === packSize)
+      ? (() => {
+          const counts = {};
+          coloresPack.forEach(id => { counts[id] = (counts[id] || 0) + 1; });
+          return Object.entries(counts)
+            .map(([id, n]) => {
+              const c = colores.find(x => x.id === id);
+              return `${n}× ${c?.label || id}`;
+            })
+            .join(' · ');
+        })()
+      : null;
+
     const item = {
       id: Math.random(), productoId: producto.id, nombre: producto.nombre,
       precio: precioActual, cantidad,
-      color: colorSeleccionado || null,
+      color: packSize ? null : (colorSeleccionado || null),
+      colores_pack: packSize ? coloresPack : null,
+      pack_resumen: packSummary,
       personalizacion: personalizacion || null,
       imagen: getProductImage(producto),
     };
@@ -226,6 +253,7 @@ export default function ProductoDetalle() {
   );
 
   const colores = getColores(producto);
+  const packSize = getPackSize(producto); // null si no es pack
 
   // ── Detección de Gift Card ────────────────────────────────────────
   // Si el producto es una giftcard (por categoría, sku o nombre), mostramos
@@ -640,23 +668,32 @@ export default function ProductoDetalle() {
                 )}
               </div>
 
-              {/* Color selector — no aplicable a giftcards */}
+              {/* Color selector — Pack: por unidad / Normal: color global */}
               {!isGiftCard && colores.length > 0 && (
-                <div>
-                  <label className="text-sm font-bold text-white/80 mb-2.5 block">
-                    Color: <span className="font-normal text-white/50">{colores.find(c => c.id === colorSeleccionado)?.label || ''}</span>
-                  </label>
-                  <div className="flex gap-2 flex-wrap">
-                    {colores.map(c => (
-                      <button key={c.id} onClick={() => setColorSeleccionado(c.id)}
-                        title={c.label}
-                        className={`w-10 h-10 rounded-xl border-2 transition-all hover:scale-110 ${colorSeleccionado === c.id ? 'border-white scale-110 shadow-lg' : 'border-white/20 shadow-sm'}`}
-                        style={{ backgroundColor: c.hex }}>
-                        {colorSeleccionado === c.id && <Check className="w-4 h-4 text-white mx-auto drop-shadow" />}
-                      </button>
-                    ))}
+                packSize ? (
+                  <PackColorPicker
+                    packSize={packSize}
+                    colores={colores}
+                    value={coloresPack}
+                    onChange={setColoresPack}
+                  />
+                ) : (
+                  <div>
+                    <label className="text-sm font-bold text-white/80 mb-2.5 block">
+                      Color: <span className="font-normal text-white/50">{colores.find(c => c.id === colorSeleccionado)?.label || ''}</span>
+                    </label>
+                    <div className="flex gap-2 flex-wrap">
+                      {colores.map(c => (
+                        <button key={c.id} onClick={() => setColorSeleccionado(c.id)}
+                          title={c.label}
+                          className={`w-10 h-10 rounded-xl border-2 transition-all hover:scale-110 ${colorSeleccionado === c.id ? 'border-white scale-110 shadow-lg' : 'border-white/20 shadow-sm'}`}
+                          style={{ backgroundColor: c.hex }}>
+                          {colorSeleccionado === c.id && <Check className="w-4 h-4 text-white mx-auto drop-shadow" />}
+                        </button>
+                      ))}
+                    </div>
                   </div>
-                </div>
+                )
               )}
 
               {/* Cantidad */}

@@ -276,7 +276,10 @@ export default function Carrito() {
                         {item.personalizacion && (
                           <p className="text-xs text-purple-600 mt-1 font-medium flex items-center gap-1">✨ Grabado: "{item.personalizacion}"</p>
                         )}
-                        {item.color && (
+                        {item.pack_resumen && (
+                          <p className="text-xs text-teal-700 mt-1 font-medium">🎨 Pack: {item.pack_resumen}</p>
+                        )}
+                        {item.color && !item.pack_resumen && (
                           <p className="text-xs text-gray-400 mt-0.5 capitalize">Color: {item.color}</p>
                         )}
                       </div>
