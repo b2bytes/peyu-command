@@ -17,6 +17,7 @@ import LaunchFlowDiagram from '@/components/launch/LaunchFlowDiagram';
 import LaunchSmokeTestCard from '@/components/launch/LaunchSmokeTestCard';
 import IndexNowBlastCard from '@/components/launch/IndexNowBlastCard';
 import HealthCheckWidget from '@/components/launch/HealthCheckWidget';
+import UxSmokeTestCard from '@/components/launch/UxSmokeTestCard';
 
 const SHORTCUTS = [
   { to: '/admin/ads-command', title: 'Ads Command', desc: 'Generar campañas y exportar a Google Ads Editor', icon: Target, color: 'from-orange-500 to-red-500' },
@@ -132,9 +133,12 @@ export default function LaunchMap() {
         <IndexNowBlastCard />
       </div>
 
-      {/* Live monitoring */}
+      {/* Live monitoring + UX testing */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <HealthCheckWidget />
+        <div className="lg:col-span-2">
+          <UxSmokeTestCard />
+        </div>
       </div>
 
       {/* Checklist táctico de lanzamiento */}

@@ -21,6 +21,16 @@ class ErrorBoundary extends React.Component {
 
   componentDidCatch(error, errorInfo) {
     console.error('[ErrorBoundary] Caught error:', error, errorInfo);
+    // Reporte async al backend (no bloqueante, no rompe nada si falla)
+    import('@/lib/error-reporter.js').then(({ reportError }) => {
+      reportError({
+        source: 'frontend_boundary',
+        severity: 'critical',
+        message: error?.message || String(error),
+        stack: error?.stack || '',
+        extra: { componentStack: errorInfo?.componentStack?.slice(0, 2000) },
+      });
+    }).catch(() => {});
   }
 
   handleReload = () => {
