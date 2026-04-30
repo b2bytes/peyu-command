@@ -45,6 +45,9 @@ export const ROADMAP = [
       { name: 'Análisis IA de reseñas + alerta clientes en riesgo',       status: 'done',       fn: 'analizarResenaIA' },
       { name: 'Auto-sync Cliente 360 desde PedidoWeb',                    status: 'done',       fn: 'syncClienteFromPedido' },
       { name: 'Detección semanal de upsell B2B con tareas auto',          status: 'done',       fn: 'detectarUpsellB2B' },
+      { name: 'Nurturing automático leads B2B tibios (score 30-59)',      status: 'done',       fn: 'nurtureLeadB2B' },
+      { name: 'Auto-sync propuestas aceptadas a Pinecone (memoria IA)',   status: 'done',       fn: 'pineconeSyncProposal' },
+      { name: 'Alerta diaria de stock bajo + sugerencia de reorden',      status: 'done',       fn: 'alertaStockBajoCRON' },
     ],
   },
   {
