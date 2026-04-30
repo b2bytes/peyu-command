@@ -17,7 +17,7 @@ function generarCodigo() {
   return `PEYU-${seg(4)}-${seg(4)}`;
 }
 
-function buildEmailHTML({ codigo, monto, destinatario_nombre, comprador_nombre, mensaje }) {
+function buildEmailHTML({ codigo, monto, destinatario_nombre, comprador_nombre, mensaje, esCopiaComprador = false }) {
   const montoFmt = new Intl.NumberFormat('es-CL').format(monto);
   // Variantes de color según monto (mismas que GiftCardVisual)
   const variantes = {
@@ -29,16 +29,37 @@ function buildEmailHTML({ codigo, monto, destinatario_nombre, comprador_nombre, 
   const v = variantes[monto] || variantes[20000];
   const logoUrl = 'https://media.base44.com/images/public/69d99b9d61f699701129c103/b67ed29f9_image.png';
 
+  // Preheader (texto que aparece en el preview de Gmail/Outlook antes de abrir)
+  const preheader = esCopiaComprador
+    ? `Copia de tu regalo: Gift Card PEYU $${montoFmt} para ${destinatario_nombre || ''}.`
+    : `${comprador_nombre || 'Alguien'} te regaló una Gift Card PEYU de $${montoFmt}. Código: ${codigo}`;
+
+  const expira = new Date();
+  expira.setFullYear(expira.getFullYear() + 1);
+  const expiraFmt = expira.toLocaleDateString('es-CL', { day: 'numeric', month: 'long', year: 'numeric' });
+
+  const headerTexto = esCopiaComprador
+    ? { eyebrow: 'Copia de tu regalo', title: '¡Tu Gift Card está enviada!', subtitle: `Le acabamos de enviar el regalo a ${destinatario_nombre || 'tu destinatario'}. Aquí tienes una copia para ti.` }
+    : { eyebrow: 'Has recibido un regalo', title: `¡Hola ${destinatario_nombre || ''}!`, subtitle: `${comprador_nombre || 'Alguien especial'} te regaló una Gift Card PEYU` };
+
   return `
 <!DOCTYPE html>
 <html lang="es">
-<head><meta charset="UTF-8"><title>Tu Gift Card PEYU</title></head>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="x-apple-disable-message-reformatting">
+  <title>Tu Gift Card PEYU</title>
+</head>
 <body style="margin:0;padding:0;background:#f6f3ee;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Inter,sans-serif;color:#3a3a3a;">
+  <!-- Preheader oculto para preview de Gmail / Outlook -->
+  <div style="display:none;font-size:1px;color:#f6f3ee;line-height:1px;max-height:0;max-width:0;opacity:0;overflow:hidden;">${preheader}</div>
+
   <div style="max-width:600px;margin:0 auto;padding:32px 20px;">
     <div style="text-align:center;margin-bottom:24px;">
-      <p style="font-size:13px;color:#7a7a7a;letter-spacing:2px;text-transform:uppercase;margin:0;">Has recibido un regalo</p>
-      <h1 style="font-family:Georgia,serif;font-size:28px;color:#0F8B6C;margin:8px 0 4px;">¡Hola ${destinatario_nombre || ''}!</h1>
-      <p style="font-size:15px;color:#5a5a5a;margin:0;">${comprador_nombre || 'Alguien especial'} te regaló una Gift Card PEYU</p>
+      <p style="font-size:13px;color:#7a7a7a;letter-spacing:2px;text-transform:uppercase;margin:0;">${headerTexto.eyebrow}</p>
+      <h1 style="font-family:Georgia,serif;font-size:28px;color:#0F8B6C;margin:8px 0 4px;">${headerTexto.title}</h1>
+      <p style="font-size:15px;color:#5a5a5a;margin:0;">${headerTexto.subtitle}</p>
     </div>
 
     <!-- Gift Card Visual (HTML/CSS — sin imagen externa) -->
@@ -104,7 +125,7 @@ function buildEmailHTML({ codigo, monto, destinatario_nombre, comprador_nombre, 
         <li>El monto se descuenta automáticamente del total</li>
       </ol>
       <p style="margin:16px 0 0;font-size:12px;color:#a0a0a0;">
-        Vigencia: 12 meses · Válida en toda la tienda PEYU · Acumulable con descuentos.
+        Vigente hasta <strong style="color:#5a5a5a;">${expiraFmt}</strong> · Válida en toda la tienda PEYU · Acumulable con descuentos.
       </p>
     </div>
 
@@ -170,28 +191,23 @@ Deno.serve(async (req) => {
     });
 
     // 3. Enviar email vía Gmail API (service role: no necesita user logueado)
+    //    a) Email AL DESTINATARIO  → con el regalo
+    //    b) Email COPIA AL COMPRADOR → confirmación + copia del diseño
     let emailOk = false;
+    let emailCopiaOk = false;
     let emailError = null;
-    try {
-      const { accessToken } = await base44.asServiceRole.connectors.getConnection('gmail');
-      const html = buildEmailHTML({
-        codigo,
-        monto,
-        destinatario_nombre,
-        comprador_nombre,
-        mensaje,
-        diseno_url,
-      });
 
-      const subject = `🎁 ${comprador_nombre || 'Alguien'} te regaló una Gift Card PEYU de $${new Intl.NumberFormat('es-CL').format(monto)}`;
-      const boundary = `peyu-${Date.now()}`;
+    // Helper: construye un MIME multipart/alternative y lo envía vía Gmail.
+    const sendGmail = async ({ accessToken, to, subject, html, replyTo }) => {
+      const boundary = `peyu-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
       const subjectB64 = btoa(unescape(encodeURIComponent(subject)));
       const fromEncoded = `=?UTF-8?B?${btoa(unescape(encodeURIComponent('PEYU Chile')))}?= <ti@peyuchile.cl>`;
+      const plain = `Gift Card PEYU - Código: ${codigo} (saldo $${new Intl.NumberFormat('es-CL').format(monto)} CLP). Canjéalo en https://peyuchile.cl/canjear?code=${codigo}`;
 
       const mime = [
         `From: ${fromEncoded}`,
-        `To: ${destinatario_email}`,
-        comprador_email ? `Reply-To: ${comprador_email}` : null,
+        `To: ${to}`,
+        replyTo ? `Reply-To: ${replyTo}` : null,
         `Subject: =?UTF-8?B?${subjectB64}?=`,
         'MIME-Version: 1.0',
         `Content-Type: multipart/alternative; boundary="${boundary}"`,
@@ -199,7 +215,7 @@ Deno.serve(async (req) => {
         `--${boundary}`,
         'Content-Type: text/plain; charset="UTF-8"',
         '',
-        `Tu código Gift Card PEYU: ${codigo} (saldo $${monto} CLP). Canjéalo en https://peyuchile.cl/canjear?code=${codigo}`,
+        plain,
         '',
         `--${boundary}`,
         'Content-Type: text/html; charset="UTF-8"',
@@ -220,12 +236,48 @@ Deno.serve(async (req) => {
           body: JSON.stringify({ raw }),
         }
       );
+      return { ok: sendRes.ok, error: sendRes.ok ? null : await sendRes.text() };
+    };
 
-      if (sendRes.ok) {
+    try {
+      const { accessToken } = await base44.asServiceRole.connectors.getConnection('gmail');
+
+      // — Email principal al destinatario —
+      const htmlDestinatario = buildEmailHTML({
+        codigo, monto, destinatario_nombre, comprador_nombre, mensaje,
+        esCopiaComprador: false,
+      });
+      const montoFmt = new Intl.NumberFormat('es-CL').format(monto);
+      const subjectDest = `🎁 ${comprador_nombre || 'Alguien'} te regaló una Gift Card PEYU de $${montoFmt}`;
+
+      const r1 = await sendGmail({
+        accessToken,
+        to: destinatario_email,
+        subject: subjectDest,
+        html: htmlDestinatario,
+        replyTo: comprador_email,
+      });
+      if (r1.ok) {
         emailOk = true;
         await base44.asServiceRole.entities.GiftCard.update(gc.id, { email_enviado: true });
       } else {
-        emailError = await sendRes.text();
+        emailError = r1.error;
+      }
+
+      // — Copia al comprador (no bloqueante: si el principal funcionó, la copia es bonus) —
+      if (comprador_email && comprador_email !== destinatario_email) {
+        const htmlCopia = buildEmailHTML({
+          codigo, monto, destinatario_nombre, comprador_nombre, mensaje,
+          esCopiaComprador: true,
+        });
+        const subjectCopia = `✅ Copia de tu regalo · Gift Card PEYU $${montoFmt} enviada a ${destinatario_nombre || destinatario_email}`;
+        const r2 = await sendGmail({
+          accessToken,
+          to: comprador_email,
+          subject: subjectCopia,
+          html: htmlCopia,
+        });
+        if (r2.ok) emailCopiaOk = true;
       }
     } catch (e) {
       emailError = e.message;
@@ -237,6 +289,7 @@ Deno.serve(async (req) => {
       codigo,
       monto_clp: Number(monto),
       email_enviado: emailOk,
+      email_copia_comprador: emailCopiaOk,
       email_error: emailError,
     });
   } catch (error) {
