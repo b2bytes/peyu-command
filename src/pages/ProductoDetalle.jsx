@@ -198,7 +198,15 @@ export default function ProductoDetalle() {
 
   const imgPrincipal = producto ? getProductImage(producto) : '';
   const imgAlterna = producto ? (SKU_IMAGES_ALT[producto.sku] || imgPrincipal) : '';
-  const galeria = [imgPrincipal, imgAlterna, imgPrincipal, imgAlterna];
+  // Galería: imagen principal + alterna (si difiere) + imágenes de la galería
+  // del producto (de WooCommerce) sin duplicados.
+  const galeria = producto
+    ? Array.from(new Set([
+        imgPrincipal,
+        imgAlterna !== imgPrincipal ? imgAlterna : null,
+        ...(Array.isArray(producto.galeria_urls) ? producto.galeria_urls : []),
+      ].filter(Boolean)))
+    : [];
 
   // Filtro CSS calculado para transformar el color real de la imagen del
   // producto. No es overlay: aplica una matriz GPU que repinta los píxeles.
@@ -392,13 +400,22 @@ export default function ProductoDetalle() {
                   </div>
                 </div>
               ) : (
-              <div className="relative bg-white/5 backdrop-blur-sm border border-white/20 rounded-3xl overflow-hidden shadow-2xl" style={{ aspectRatio: '1' }}>
+              <div className="relative bg-gradient-to-br from-white via-teal-50 to-emerald-50 border border-white/20 rounded-3xl overflow-hidden shadow-2xl" style={{ aspectRatio: '1' }}>
                 <img
                   src={galeria[vistaActiva] || imgPrincipal}
                   alt={producto.nombre}
+                  loading="eager"
+                  fetchpriority="high"
+                  decoding="async"
                   className="w-full h-full object-cover transition-all duration-500"
                   style={{ filter: colorFilterStyle, transition: 'filter 350ms ease, transform 500ms ease' }}
-                  onError={e => { e.target.src = imgPrincipal; }}
+                  onError={e => {
+                    if (e.target.src !== imgPrincipal && imgPrincipal) {
+                      e.target.src = imgPrincipal;
+                    } else {
+                      e.target.src = 'https://i0.wp.com/peyuchile.cl/wp-content/uploads/2025/04/carcasas-500x500-1.webp?fit=600%2C600&ssl=1';
+                    }
+                  }}
                 />
                 {vistaActiva === 3 && personalizacion && (
                   <div className="absolute inset-0 flex items-end justify-center pb-10 pointer-events-none">
@@ -434,27 +451,21 @@ export default function ProductoDetalle() {
               </div>
               )}
 
-              {/* Thumbnails */}
-              {!isGiftCard && (
+              {/* Thumbnails — solo si hay más de 1 imagen real */}
+              {!isGiftCard && galeria.length > 1 && (
               <div className="grid grid-cols-4 gap-2">
-                {[
-                  { img: galeria[0], label: 'Principal' },
-                  { img: galeria[1], label: 'Color alt.' },
-                  { img: galeria[2], label: 'Detalle' },
-                  { img: galeria[3], label: 'Con grabado' },
-                ].map((v, i) => (
-                  <button key={i} onClick={() => setVistaActiva(i)}
-                    className={`aspect-square rounded-2xl overflow-hidden border-2 transition-all ${vistaActiva === i ? 'border-teal-400 shadow-lg shadow-teal-400/20 scale-[1.03]' : 'border-white/20 hover:border-white/40'}`}>
-                    <div className="relative w-full h-full">
-                      <img
-                        src={v.img}
-                        alt={v.label}
-                        className="w-full h-full object-cover"
-                        style={{ filter: colorFilterStyle, transition: 'filter 350ms ease' }}
-                        onError={e => { e.target.src = imgPrincipal; }}
-                      />
-                      {i === 3 && <div className="absolute inset-0 bg-purple-500/25 flex items-center justify-center"><span className="text-lg">✨</span></div>}
-                    </div>
+                {galeria.slice(0, 4).map((img, i) => (
+                  <button key={`${img}-${i}`} onClick={() => setVistaActiva(i)}
+                    className={`aspect-square rounded-2xl overflow-hidden border-2 transition-all bg-gradient-to-br from-white via-teal-50 to-emerald-50 ${vistaActiva === i ? 'border-teal-400 shadow-lg shadow-teal-400/20 scale-[1.03]' : 'border-white/20 hover:border-white/40'}`}>
+                    <img
+                      src={img}
+                      alt={`${producto.nombre} - vista ${i + 1}`}
+                      loading="lazy"
+                      decoding="async"
+                      className="w-full h-full object-cover"
+                      style={{ filter: colorFilterStyle, transition: 'filter 350ms ease' }}
+                      onError={e => { if (e.target.src !== imgPrincipal && imgPrincipal) e.target.src = imgPrincipal; }}
+                    />
                   </button>
                 ))}
               </div>
