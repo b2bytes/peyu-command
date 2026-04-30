@@ -4,7 +4,7 @@ import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import PEYULogo from '@/components/PEYULogo';
-import { Send, ShoppingCart, Bell, Star, ChevronLeft, ChevronRight, Home, Grid3x3, Building2, HelpCircle, Heart, BookOpen, Sparkles, Package } from 'lucide-react';
+import { Send, ShoppingCart, Bell, Home, Grid3x3, Building2, HelpCircle, Heart, BookOpen, Sparkles, Package } from 'lucide-react';
 import MobileMenu from '@/components/MobileMenu';
 import WhatsAppFloat from '@/components/WhatsAppFloat';
 import ChatMessageContent from '@/components/chat/ChatMessageContent';
@@ -17,6 +17,7 @@ import { History } from 'lucide-react';
 import { useAppBackground, getBackgroundById, buildBackgroundImageCSS, BG_OVERLAY, THEME_OVERLAY } from '@/lib/background';
 import BackgroundSwitcher from '@/components/BackgroundSwitcher';
 import CelebrationBanner from '@/components/landing/CelebrationBanner';
+import FeaturedCarousel from '@/components/landing/FeaturedCarousel';
 import SEO from '@/components/SEO';
 import { buildOrganizationSchema, buildWebSiteSchema, combineSchemas } from '@/lib/schemas-peyu';
 
@@ -47,13 +48,6 @@ const OCASIONES = [
   { id: 'logros', label: 'Logros', icon: '🏆' },
 ];
 
-const FEATURED_PRODUCTS = [
-  { id: 1, nombre: 'Kit Escritorio Pro', precio: 30099, imagen: 'https://media.base44.com/images/public/69d99b9d61f699701129c103/b5b3cf211_kitclassssprro2.jpg', rating: 5.0, reviews: 2400, description: 'Plástico 100% reciclado • Personalización UV • Garantía 10 años' },
-  { id: 2, nombre: 'Soporte Celular Aguas', precio: 6990, imagen: 'https://media.base44.com/images/public/69d99b9d61f699701129c103/5085b8b77_WhatsAppImage2026-03-23at51806PM2.jpg', rating: 5.0, reviews: 1840, description: 'Plástico 100% reciclado • Múltiples colores • Garantía 10 años' },
-  { id: 3, nombre: 'Soporte Notebook', precio: 18500, imagen: 'https://media.base44.com/images/public/69d99b9d61f699701129c103/f9a08d799_kitclasico.jpg', rating: 5.0, reviews: 1620, description: 'Plástico 100% reciclado • Entretenimiento • Garantía 10 años' },
-  { id: 4, nombre: 'Soporte Aguas Andinas', precio: 12999, imagen: 'https://media.base44.com/images/public/69d99b9d61f699701129c103/407f18312_WhatsAppImage2026-03-23at51544PM.jpg', rating: 5.0, reviews: 980, description: 'Plástico 100% reciclado • Diseño moderno • Garantía 10 años' },
-];
-
 const STORAGE_KEY = 'peyu_chat_conversation_id';
 const WELCOME_MSG = { role: 'assistant', content: '¡Hola! Soy Peyu 🐢. Ayudo a empresas y personas a encontrar el regalo perfecto hecho con plástico 100% reciclado.\n\n¿Buscas regalo para empresa o uso personal?' };
 
@@ -72,7 +66,6 @@ export default function ShopLanding() {
 
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
-  const [currentProductIndex, setCurrentProductIndex] = useState(0);
   const [sidebarExpanded, setSidebarExpanded] = useState(false);
   const [bgId] = useAppBackground();
   const bg = getBackgroundById(bgId);
@@ -143,13 +136,6 @@ export default function ShopLanding() {
       setMessages([WELCOME_MSG]);
     }
   };
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentProductIndex((prev) => (prev + 1) % FEATURED_PRODUCTS.length);
-    }, 3000);
-    return () => clearInterval(interval);
-  }, []);
 
   // 🧠 Al cerrar la pestaña: destilar resumen de la conversación y guardarlo
   // como memoria vectorial de largo plazo (Fase 5).
@@ -585,81 +571,10 @@ export default function ShopLanding() {
             </div>
           </div>
 
-          {/* RIGHT CONTAINER - Product Carousel (Liquid Glass) */}
-          <Link to={`/producto/${FEATURED_PRODUCTS[currentProductIndex].id}`} className="hidden lg:block flex-shrink-0 lg:w-72 xl:w-80 2xl:w-96">
-            <div className="peyu-liquid-glass w-full rounded-2xl p-4 flex flex-col gap-3 hover:-translate-y-1 transition-all cursor-pointer group h-full">
-              {(() => {
-                const product = FEATURED_PRODUCTS[currentProductIndex];
-                return (
-                  <>
-                    {/* Product Image */}
-                    <div className="w-full aspect-square bg-gradient-to-br from-yellow-300/50 via-orange-400/40 to-red-500/30 rounded-xl flex items-center justify-center shadow-xl overflow-hidden group-hover:shadow-2xl transition-all flex-shrink-0">
-                      <img src={product.imagen} alt={product.nombre} className="w-full h-full object-cover object-center group-hover:scale-110 transition-transform duration-500" loading="lazy" />
-                    </div>
-
-                    {/* Rating + Name + Price — all together */}
-                    <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl p-2.5 space-y-1.5 flex-shrink-0">
-                      {/* Stars + count */}
-                      <div className="flex items-center gap-1.5">
-                        <div className="flex gap-0.5">
-                          {[...Array(5)].map((_, i) => (
-                            <Star key={i} className="w-3 h-3 fill-yellow-400 text-yellow-400" />
-                          ))}
-                        </div>
-                        <span className="text-yellow-300 font-bold text-xs">{product.rating.toFixed(1)}</span>
-                        <span className="text-white/50 text-[10px]">({product.reviews.toLocaleString()})</span>
-                      </div>
-                      {/* Name */}
-                      <p className="text-white font-poppins font-bold text-sm leading-tight line-clamp-1 group-hover:text-cyan-300 transition-colors">{product.nombre}</p>
-                      {/* Description */}
-                      <p className="text-white/60 text-[10px] leading-relaxed line-clamp-2">{product.description}</p>
-                      {/* Price */}
-                      <div className="flex items-baseline gap-1.5 pt-0.5 border-t border-white/15">
-                        <span className="text-white/60 text-[10px]">Desde</span>
-                        <span className="text-white font-black text-xl group-hover:text-teal-300 transition-colors">${product.precio.toLocaleString()}</span>
-                      </div>
-                    </div>
-
-                    {/* Carousel Controls */}
-                    <div className="flex gap-2 justify-between items-center flex-shrink-0">
-                      <button
-                        onClick={(e) => {
-                          e.preventDefault();
-                          setCurrentProductIndex((prev) => (prev - 1 + FEATURED_PRODUCTS.length) % FEATURED_PRODUCTS.length);
-                        }}
-                        className="bg-white/20 hover:bg-teal-500/40 active:bg-teal-600/50 text-white p-1.5 rounded-lg transition-all hover:scale-110"
-                      >
-                        <ChevronLeft className="w-4 h-4" />
-                      </button>
-                      <div className="flex gap-1 items-center">
-                        {FEATURED_PRODUCTS.map((_, idx) => (
-                          <button
-                            key={idx}
-                            onClick={(e) => {
-                              e.preventDefault();
-                              setCurrentProductIndex(idx);
-                            }}
-                            className={`rounded-full transition-all ${
-                              idx === currentProductIndex ? 'w-2.5 h-2.5 bg-teal-400 shadow-lg' : 'w-1.5 h-1.5 bg-white/40 hover:bg-white/60'
-                            }`}
-                          />
-                        ))}
-                      </div>
-                      <button
-                        onClick={(e) => {
-                          e.preventDefault();
-                          setCurrentProductIndex((prev) => (prev + 1) % FEATURED_PRODUCTS.length);
-                        }}
-                        className="bg-white/20 hover:bg-teal-500/40 active:bg-teal-600/50 text-white p-1.5 rounded-lg transition-all hover:scale-110"
-                      >
-                        <ChevronRight className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </>
-                );
-              })()}
-            </div>
-          </Link>
+          {/* RIGHT CONTAINER - Product Carousel (productos REALES desde la BD) */}
+          <div className="hidden lg:block flex-shrink-0 lg:w-72 xl:w-80 2xl:w-96">
+            <FeaturedCarousel />
+          </div>
         </div>
       </div>
     </div>

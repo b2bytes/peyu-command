@@ -1,10 +1,11 @@
 import { useState, useEffect, useMemo } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Input } from '@/components/ui/input';
-import { Search, Sparkles, Image as ImageIcon, FileText, Package, Loader2, AlertCircle, X } from 'lucide-react';
+import { Search, Sparkles, Image as ImageIcon, FileText, Package, Loader2, AlertCircle, X, RefreshCw, Check } from 'lucide-react';
 import AIContentGenerator from '@/components/admin-products/AIContentGenerator';
 import AIImageEnhancer from '@/components/admin-products/AIImageEnhancer';
 import ProductQuickEdit from '@/components/admin-products/ProductQuickEdit';
+import { Button } from '@/components/ui/button';
 
 /**
  * AdminProducts — Centro de mejora y administración de productos.
@@ -18,6 +19,8 @@ export default function AdminProducts() {
   const [filter, setFilter] = useState('todos');
   const [selectedId, setSelectedId] = useState(null);
   const [tab, setTab] = useState('datos'); // datos | imagen | descripcion
+  const [syncing, setSyncing] = useState(false);
+  const [syncResult, setSyncResult] = useState(null);
 
   const loadData = async () => {
     setLoading(true);
@@ -65,9 +68,52 @@ export default function AdminProducts() {
             <Sparkles className="w-5 h-5 lg:w-6 lg:h-6 text-violet-400 flex-shrink-0" />
             <span className="truncate">Administración de Productos</span>
           </h1>
-          <p className="text-white/60 text-xs lg:text-sm mt-1">Edita precios, stock e imágenes · Genera descripciones SEO con IA</p>
+          <p className="text-white/60 text-xs lg:text-sm mt-1">Edita precios, stock e imágenes · Genera descripciones SEO con IA · Sincroniza con peyuchile.cl</p>
         </div>
+        <Button
+          onClick={async () => {
+            setSyncing(true);
+            setSyncResult(null);
+            try {
+              const res = await base44.functions.invoke('syncWooCatalogo', {});
+              setSyncResult(res.data);
+              await loadData();
+            } catch (e) {
+              setSyncResult({ error: e.message });
+            } finally {
+              setSyncing(false);
+            }
+          }}
+          disabled={syncing}
+          className="gap-2 bg-emerald-600 hover:bg-emerald-700 text-white"
+        >
+          {syncing ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
+          {syncing ? 'Sincronizando…' : 'Sync con peyuchile.cl'}
+        </Button>
       </div>
+
+      {syncResult && (
+        <div className={`px-4 py-2.5 rounded-xl border flex items-start gap-2 text-xs flex-shrink-0 ${
+          syncResult.error
+            ? 'bg-rose-500/10 border-rose-400/30 text-rose-300'
+            : 'bg-emerald-500/10 border-emerald-400/30 text-emerald-300'
+        }`}>
+          {syncResult.error ? <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" /> : <Check className="w-4 h-4 mt-0.5 flex-shrink-0" />}
+          <div className="flex-1">
+            {syncResult.error ? (
+              <span>Error: {syncResult.error}</span>
+            ) : (
+              <span>
+                ✓ Sincronizados <strong>{syncResult.total_woo}</strong> productos desde peyuchile.cl ·
+                {' '}<strong>{syncResult.creados}</strong> nuevos ·
+                {' '}<strong>{syncResult.actualizados}</strong> actualizados
+                {syncResult.errores > 0 && <> · <strong className="text-amber-300">{syncResult.errores}</strong> errores</>}
+              </span>
+            )}
+          </div>
+          <button onClick={() => setSyncResult(null)} className="text-white/50 hover:text-white"><X className="w-3 h-3" /></button>
+        </div>
+      )}
 
       {/* KPIs */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-2 flex-shrink-0">
