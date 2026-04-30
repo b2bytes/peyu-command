@@ -2,6 +2,11 @@
   "name": "PersonalizationJob",
   "type": "object",
   "properties": {
+    "description": {
+      "type": "string",
+      "title": "Descripci\u00f3n",
+      "maxLength": 1000
+    },
     "source_type": {
       "type": "string",
       "title": "Fuente",

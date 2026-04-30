@@ -3,6 +3,11 @@
   "type": "object",
   "description": "Perfil 360\u00b0 de proveedor \u2014 nivel enterprise (SAP Ariba / Coupa / Ivalua). Incluye scorecard ponderado, riesgo, ESG, internacionalizaci\u00f3n y dropshipping.",
   "properties": {
+    "description": {
+      "type": "string",
+      "title": "Descripci\u00f3n del proveedor",
+      "maxLength": 1000
+    },
     "nombre": {
       "type": "string",
       "title": "Nombre Proveedor"

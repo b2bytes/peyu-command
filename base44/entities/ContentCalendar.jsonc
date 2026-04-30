@@ -2,6 +2,11 @@
   "name": "ContentCalendar",
   "type": "object",
   "properties": {
+    "description": {
+      "type": "string",
+      "title": "Descripci\u00f3n",
+      "maxLength": 1000
+    },
     "nombre": {
       "type": "string",
       "title": "Nombre del calendario"

@@ -2,6 +2,11 @@
   "name": "Lead",
   "type": "object",
   "properties": {
+    "description": {
+      "type": "string",
+      "title": "Descripci\u00f3n",
+      "maxLength": 1000
+    },
     "empresa": {
       "type": "string",
       "title": "Empresa"

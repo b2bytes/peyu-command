@@ -3,6 +3,11 @@
   "type": "object",
   "description": "Borrador de campa\u00f1a Google Ads generado por IA, listo para exportar a Google Ads Editor v\u00eda CSV. Dise\u00f1ado para military-grade launch blitz.",
   "properties": {
+    "description": {
+      "type": "string",
+      "title": "Descripci\u00f3n del draft",
+      "maxLength": 1000
+    },
     "codename": {
       "type": "string",
       "title": "Codename (ej: OPERATION_LAUNCH_01)"

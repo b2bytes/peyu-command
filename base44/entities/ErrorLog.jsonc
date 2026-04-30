@@ -3,6 +3,11 @@
   "type": "object",
   "description": "Registro de errores capturados en el frontend (ErrorBoundary, window.onerror, unhandledrejection) y backend. Permite detectar crashes recurrentes en producci\u00f3n.",
   "properties": {
+    "description": {
+      "type": "string",
+      "title": "Descripci\u00f3n del error",
+      "maxLength": 1000
+    },
     "source": {
       "type": "string",
       "title": "Origen",

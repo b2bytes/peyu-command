@@ -2,6 +2,11 @@
   "name": "Cotizacion",
   "type": "object",
   "properties": {
+    "description": {
+      "type": "string",
+      "title": "Descripci\u00f3n",
+      "maxLength": 1000
+    },
     "numero": {
       "type": "string",
       "title": "N\u00b0 Cotizaci\u00f3n"

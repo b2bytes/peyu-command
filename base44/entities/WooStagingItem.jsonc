@@ -3,6 +3,11 @@
   "type": "object",
   "description": "Almac\u00e9n temporal de datos importados desde WooCommerce. Queda aislado del sistema principal hasta que el usuario decide promoverlo a las entidades reales (Producto, Cliente, PedidoWeb).",
   "properties": {
+    "description": {
+      "type": "string",
+      "title": "Descripci\u00f3n del item",
+      "maxLength": 1000
+    },
     "woo_id": {
       "type": "number",
       "title": "ID en WooCommerce (0 si es guest)"

@@ -3,6 +3,11 @@
   "type": "object",
   "description": "Gift Cards PEYU emitidas. Cada GC tiene un c\u00f3digo \u00fanico canjeable. Se generan al pagar un producto Gift Card y se env\u00edan por email al destinatario.",
   "properties": {
+    "description": {
+      "type": "string",
+      "title": "Descripci\u00f3n de la gift card",
+      "maxLength": 1000
+    },
     "codigo": {
       "type": "string",
       "title": "C\u00f3digo canjeable (ej: PEYU-7K2X-9M4P)"

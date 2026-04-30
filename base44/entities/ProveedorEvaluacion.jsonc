@@ -3,6 +3,11 @@
   "type": "object",
   "description": "Evaluaci\u00f3n peri\u00f3dica (trimestral/anual) de un proveedor con scorecard 360\u00b0 de 6 dimensiones.",
   "properties": {
+    "description": {
+      "type": "string",
+      "title": "Descripci\u00f3n de la evaluaci\u00f3n",
+      "maxLength": 1000
+    },
     "proveedor_id": {
       "type": "string",
       "title": "ID Proveedor"

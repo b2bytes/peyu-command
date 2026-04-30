@@ -2,6 +2,11 @@
   "name": "PedidoWeb",
   "type": "object",
   "properties": {
+    "description": {
+      "type": "string",
+      "title": "Descripci\u00f3n",
+      "maxLength": 1000
+    },
     "numero_pedido": {
       "type": "string",
       "title": "N\u00b0 Pedido"

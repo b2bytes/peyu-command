@@ -3,6 +3,11 @@
   "type": "object",
   "description": "Captura de carritos en proceso de checkout. Si en 1 hora no se concreta el pedido, se env\u00eda un recordatorio por email autom\u00e1ticamente.",
   "properties": {
+    "description": {
+      "type": "string",
+      "title": "Descripci\u00f3n del carrito",
+      "maxLength": 1000
+    },
     "email": {
       "type": "string",
       "title": "Email del cliente"

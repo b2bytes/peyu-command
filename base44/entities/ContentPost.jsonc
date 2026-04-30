@@ -2,6 +2,11 @@
   "name": "ContentPost",
   "type": "object",
   "properties": {
+    "description": {
+      "type": "string",
+      "title": "Descripci\u00f3n",
+      "maxLength": 1000
+    },
     "titulo": {
       "type": "string",
       "title": "T\u00edtulo interno"
