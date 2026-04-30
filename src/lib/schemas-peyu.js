@@ -5,6 +5,8 @@
 // Uso: import { buildOrganizationSchema, buildProductSchema } from '@/lib/schemas-peyu'
 // ============================================================================
 
+import { PEYU_PITCH_LONG, PEYU_PITCH_ONE_LINER } from './peyu-narrative';
+
 const SITE_URL = 'https://peyuchile.cl';
 const LOGO_URL = 'https://media.base44.com/images/public/69d99b9d61f699701129c103/logo-peyu.png';
 
@@ -16,7 +18,8 @@ export const buildOrganizationSchema = () => ({
   url: SITE_URL,
   logo: LOGO_URL,
   foundingDate: '2024',
-  description: 'Fabricante chileno de productos 100% reciclados y compostables para regalo corporativo y hogar. Personalización láser, producción local.',
+  description: PEYU_PITCH_LONG,
+  slogan: PEYU_PITCH_ONE_LINER,
   address: {
     '@type': 'PostalAddress',
     addressCountry: 'CL',

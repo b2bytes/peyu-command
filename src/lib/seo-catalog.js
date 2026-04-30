@@ -10,6 +10,22 @@
 // 4. Garantiza consistencia de marca en SERPs.
 // ============================================================
 
+// Re-exporta narrativa central (fuente única de verdad para descripciones).
+// Cualquier página/landing/agente que necesite "describir PEYU" debe importar
+// desde lib/peyu-narrative.js — no hardcodear strings.
+export {
+  PEYU_TAGLINE,
+  PEYU_PITCH_ONE_LINER,
+  PEYU_PITCH_B2B,
+  PEYU_PITCH_B2C,
+  PEYU_PITCH_ESG,
+  PEYU_PITCH_LONG,
+  PEYU_VALUE_PROPS,
+  getPeyuDescription,
+} from './peyu-narrative';
+
+import { PEYU_PITCH_ONE_LINER, PEYU_PITCH_B2B, PEYU_PITCH_B2C, PEYU_PITCH_ESG } from './peyu-narrative';
+
 export const SITE_URL = 'https://peyuchile.cl';
 export const SITE_NAME = 'PEYU Chile';
 export const DEFAULT_OG_IMAGE = 'https://media.base44.com/images/public/69d99b9d61f699701129c103/b5b3cf211_kitclassssprro2.jpg';
@@ -98,8 +114,8 @@ export const ALL_KEYWORDS_FLAT = Object.values(KEYWORD_CLUSTERS).flat();
 export const PUBLIC_PAGES = {
   home: {
     path: '/',
-    title: 'PEYU Chile — Regalos Corporativos 100% Sostenibles con Plástico Reciclado',
-    description: 'Regalos corporativos fabricados en Chile con plástico 100% reciclado. Personalización láser UV gratis desde 10 unidades. Garantía 10 años.',
+    title: 'PEYU Chile — Regalos Corporativos Sostenibles de Plástico 100% Reciclado',
+    description: PEYU_PITCH_ONE_LINER,
     keywords: KEYWORD_CLUSTERS.coreB2B,
     priority: 1.0,
     changefreq: 'weekly',
@@ -107,7 +123,7 @@ export const PUBLIC_PAGES = {
   shop: {
     path: '/shop',
     title: 'Tienda PEYU — Productos Sostenibles con Envío a Todo Chile',
-    description: 'Explora nuestra tienda de productos sostenibles: soportes, kits de escritorio, carcasas, maceteros. Plástico 100% reciclado. Compra online con envío a todo Chile.',
+    description: PEYU_PITCH_B2C,
     keywords: ['tienda sostenible Chile', 'productos plástico reciclado', 'comprar regalos ecológicos'],
     priority: 0.9,
     changefreq: 'daily',
@@ -123,7 +139,7 @@ export const PUBLIC_PAGES = {
   b2bContacto: {
     path: '/b2b/contacto',
     title: 'Cotización B2B Corporativa — Respuesta en 24h | PEYU Chile',
-    description: 'Solicita cotización para regalos corporativos personalizados. Pricing por volumen, personalización láser, factura empresa. Respuesta garantizada en 24h.',
+    description: PEYU_PITCH_B2B,
     keywords: ['cotización regalos corporativos', 'presupuesto empresa merchandising'],
     priority: 0.95,
     changefreq: 'monthly',
@@ -239,7 +255,7 @@ export const B2B_LANDINGS = {
   esg: {
     path: '/empresas/esg-sustentabilidad',
     title: 'Regalos ESG: Merchandising con Impacto Ambiental | PEYU',
-    description: 'Alinea tu gifting corporativo con tus objetivos ESG. Reporte de huella de carbono evitada por cada pedido, certificación material 100% reciclado.',
+    description: PEYU_PITCH_ESG,
     keywords: KEYWORD_CLUSTERS.esg,
     cluster: 'esg',
     priority: 0.85,
