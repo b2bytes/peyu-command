@@ -78,11 +78,10 @@ export function getColoresProducto(producto) {
   }
 
   // ── REGLA OFICIAL PEYU ───────────────────────────────────────────────
-  // Carcasas B2C: paleta clásica con sus colores reales.
+  // Carcasas B2C: cada SKU es un único color (el que muestra la foto).
+  // No se ofrece selector — el cliente compra el modelo/color que ve.
   if (producto.categoria === 'Carcasas B2C') {
-    return PEYU_COLOR_CATALOG.filter(c =>
-      ['negro', 'turquesa', 'rosa', 'amarillo', 'azul'].includes(c.id)
-    );
+    return [];
   }
 
   // Resto del catálogo (Escritorio, Hogar, Entretenimiento, Corporativo):
