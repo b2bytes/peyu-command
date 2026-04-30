@@ -48,6 +48,9 @@ export const ROADMAP = [
       { name: 'Nurturing automático leads B2B tibios (score 30-59)',      status: 'done',       fn: 'nurtureLeadB2B' },
       { name: 'Auto-sync propuestas aceptadas a Pinecone (memoria IA)',   status: 'done',       fn: 'pineconeSyncProposal' },
       { name: 'Alerta diaria de stock bajo + sugerencia de reorden',      status: 'done',       fn: 'alertaStockBajoCRON' },
+      { name: 'Triage IA de consultas entrantes + alerta lead caliente',  status: 'done',       fn: 'triageConsultaIA' },
+      { name: 'Solicitud automática de reseña 7d post-entrega',           status: 'done',       fn: 'solicitarResenaCRON' },
+      { name: 'Cross-sell post-compra B2C con cupón 48h',                 status: 'done',       fn: 'crossSellPostCompra' },
     ],
   },
   {
