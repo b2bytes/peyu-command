@@ -54,6 +54,9 @@ export const ROADMAP = [
       { name: 'Auditoría diaria salud catálogo (score 0-100)',            status: 'done',       fn: 'auditoriaCatalogoCRON' },
       { name: 'Insights ejecutivos semanales con IA (lunes 07:00)',       status: 'done',       fn: 'insightsSemanalesIA' },
       { name: 'Recordatorio anticipo B2B + alerta morosidad >7d',         status: 'done',       fn: 'recordatorioAnticipoB2B' },
+      { name: 'Recuperación IA de propuestas rechazadas (contraoferta)',  status: 'done',       fn: 'recuperarPropuestaRechazada' },
+      { name: 'Predicción semanal de demanda + plan producción IA',       status: 'done',       fn: 'prediccionDemandaCRON' },
+      { name: 'NPS trimestral automático a clientes B2B activos',         status: 'done',       fn: 'npsTrimestralB2B' },
     ],
   },
   {
