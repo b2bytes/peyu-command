@@ -59,8 +59,8 @@ export default function GA4Realtime() {
             <BarChart3 className="w-6 h-6" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-slate-900">GA4 Realtime</h1>
-            <p className="text-sm text-slate-500">Tráfico en vivo · peyuchile.cl · Refresh automático 30s</p>
+            <h1 className="text-2xl font-bold text-white">GA4 Realtime</h1>
+            <p className="text-sm text-slate-300">Tráfico en vivo · peyuchile.cl · Refresh automático 30s</p>
           </div>
         </div>
         {!editing && propertyId && (

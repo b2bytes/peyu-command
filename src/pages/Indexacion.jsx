@@ -45,8 +45,8 @@ export default function Indexacion() {
           <Radar className="w-6 h-6" />
         </div>
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">War Room · Indexación</h1>
-          <p className="text-sm text-slate-500">Lanzamiento PEYU · 7-day blitz · Multi-canal (Google + Bing + Yandex)</p>
+          <h1 className="text-2xl font-bold text-white">War Room · Indexación</h1>
+          <p className="text-sm text-slate-300">Lanzamiento PEYU · 7-day blitz · Multi-canal (Google + Bing + Yandex)</p>
         </div>
       </div>
 

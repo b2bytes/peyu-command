@@ -35,8 +35,8 @@ export default function AdsCommand() {
           <Crosshair className="w-6 h-6" />
         </div>
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Ads Command Center</h1>
-          <p className="text-sm text-slate-500">Commander táctico · Scientist analítico · Export a Google Ads Editor</p>
+          <h1 className="text-2xl font-bold text-white">Ads Command Center</h1>
+          <p className="text-sm text-slate-300">Commander táctico · Scientist analítico · Export a Google Ads Editor</p>
         </div>
       </div>
 

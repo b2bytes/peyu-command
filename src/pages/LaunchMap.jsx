@@ -55,8 +55,8 @@ export default function LaunchMap() {
           <MapIcon className="w-6 h-6" />
         </div>
         <div className="flex-1">
-          <h1 className="text-2xl font-bold text-slate-900">War Room · Launch Map</h1>
-          <p className="text-sm text-slate-500">Diagrama táctico del blitz · Atribución end-to-end · Feedback loop Scientist</p>
+          <h1 className="text-2xl font-bold text-white">War Room · Launch Map</h1>
+          <p className="text-sm text-slate-300">Diagrama táctico del blitz · Atribución end-to-end · Feedback loop Scientist</p>
         </div>
       </div>
 
@@ -99,7 +99,7 @@ export default function LaunchMap() {
 
       {/* Shortcuts */}
       <div>
-        <h2 className="text-sm font-bold text-slate-700 uppercase tracking-widest mb-3">Centros de comando</h2>
+        <h2 className="text-sm font-bold text-slate-200 uppercase tracking-widest mb-3">Centros de comando</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {SHORTCUTS.map((s) => {
             const Inner = (
