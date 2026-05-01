@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import TrackingTimeline from '@/components/seguimiento/TrackingTimeline';
 import PedidoRatingForm from '@/components/seguimiento/PedidoRatingForm';
+import PublicSEO from '@/components/PublicSEO';
 
 const TRACKING_URLS = {
   'Starken':       (t) => `https://www.starken.cl/seguimiento?codigo=${t}`,
@@ -77,7 +78,7 @@ export default function SeguimientoPedido() {
 
   return (
     <div className="min-h-screen bg-[#FAFAF8] font-inter">
-
+      <PublicSEO pageKey="seguimiento" noindex />
       {/* NAVBAR */}
       <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-xl border-b border-black/5 shadow-sm">
         <div className="max-w-3xl mx-auto px-5 py-3 flex items-center gap-4">

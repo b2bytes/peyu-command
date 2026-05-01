@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { CheckCircle, XCircle, FileText, Clock, Package, MessageCircle, Recycle, Download, Sparkles, Shield, Truck, Building2, Calendar, Hash } from 'lucide-react';
+import SEO from '@/components/SEO';
 
 export default function B2BPropuesta() {
   const urlParams = new URLSearchParams(window.location.search);
@@ -121,6 +122,12 @@ export default function B2BPropuesta() {
 
   return (
     <div className="min-h-screen bg-[#FAFAF8] font-inter">
+      <SEO
+        title={`Propuesta Comercial${propuesta?.numero ? ' ' + propuesta.numero : ''} · ${propuesta?.empresa || 'PEYU Chile'}`}
+        description="Propuesta comercial PEYU con detalle de productos, mockups, condiciones y términos."
+        canonical={`https://peyuchile.cl/b2b/propuesta?id=${proposalId || ''}`}
+        noindex
+      />
       {/* NAVBAR */}
       <nav className="bg-white/95 backdrop-blur-xl border-b border-black/5 shadow-sm sticky top-0 z-40">
         <div className="max-w-5xl mx-auto px-5 py-3 flex items-center justify-between">

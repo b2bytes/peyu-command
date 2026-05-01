@@ -9,6 +9,7 @@ import WhatsAppFloat from '@/components/WhatsAppFloat';
 import LogoMockupPreview from '@/components/b2b/LogoMockupPreview';
 import { getProductImage } from '@/utils/productImages';
 import { readMockupDraft, clearMockupDraft } from '@/lib/mockup-draft';
+import PublicSEO from '@/components/PublicSEO';
 
 const MENU_ITEMS = [
   { href: '/', label: 'Inicio', icon: Home },
@@ -264,6 +265,13 @@ export default function B2BContacto() {
 
   return (
     <div className="flex-1 overflow-auto font-inter">
+      <PublicSEO
+        pageKey="b2bContacto"
+        breadcrumbs={[
+          { name: 'Inicio', url: 'https://peyuchile.cl/' },
+          { name: 'B2B', url: 'https://peyuchile.cl/b2b/contacto' },
+        ]}
+      />
       <div className="min-h-full flex flex-col">
 
           {/* Header */}

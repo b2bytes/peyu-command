@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ArrowRight, ShoppingCart, Building2, Grid3x3, Recycle, Star, Zap } from 'lucide-react';
 import SocialProductFeed from '@/components/SocialProductFeed';
+import PublicSEO from '@/components/PublicSEO';
 
 
 const BADGES = [
@@ -21,7 +22,13 @@ const STATS = [
 export default function CatalogoVisual() {
   return (
     <div className="flex-1 overflow-auto font-inter">
-
+        <PublicSEO
+          pageKey="catalogoVisual"
+          breadcrumbs={[
+            { name: 'Inicio', url: 'https://peyuchile.cl/' },
+            { name: 'Catálogo Visual', url: 'https://peyuchile.cl/catalogo-visual' },
+          ]}
+        />
         {/* Hero */}
         <section className="px-4 sm:px-8 py-14 max-w-5xl mx-auto text-center space-y-6">
           <div className="inline-flex items-center gap-2 bg-teal-500/20 border border-teal-400/40 text-teal-300 px-4 py-1.5 rounded-full text-sm font-semibold backdrop-blur-sm">

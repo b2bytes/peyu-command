@@ -8,6 +8,7 @@ import {
   Sparkles, Download, CheckCircle, FileText, Loader2, Zap, Package, Wand2, ShoppingBag, X
 } from 'lucide-react';
 import CartPanel from '@/components/b2b/selfservice/CartPanel';
+import PublicSEO from '@/components/PublicSEO';
 
 const STEPS = ['Productos', 'Empresa', 'Personalización', 'Propuesta'];
 
@@ -189,6 +190,13 @@ export default function B2BSelfService() {
 
   return (
     <div className="flex-1 overflow-auto font-inter pb-[calc(env(safe-area-inset-bottom)+6rem)] lg:pb-8">
+      <PublicSEO
+        pageKey="b2bSelfService"
+        breadcrumbs={[
+          { name: 'Inicio', url: 'https://peyuchile.cl/' },
+          { name: 'B2B Self-Service', url: 'https://peyuchile.cl/b2b/self-service' },
+        ]}
+      />
       {/* Header sticky */}
       <div className="bg-gradient-to-r from-teal-500/30 to-cyan-500/30 border-b border-white/20 px-3 sm:px-6 py-2.5 sm:py-3 flex items-center justify-between sticky top-0 z-40 backdrop-blur-md">
         <div className="flex items-center gap-2 sm:gap-3 min-w-0">

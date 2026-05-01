@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Leaf, Recycle, Zap, Globe, Heart, Award, Users, Factory } from 'lucide-react';
+import PublicSEO from '@/components/PublicSEO';
 
 const VALORES = [
   { icon: Recycle, color: '#2dd4bf', title: 'Economía Circular', desc: 'Transformamos residuos plásticos post-consumo en productos de alta calidad. Cada producto equivale a sacar plástico del vertedero.' },
@@ -37,7 +38,13 @@ const IMPACTO = [
 export default function Nosotros() {
   return (
     <div className="flex-1 overflow-auto font-inter pb-20 lg:pb-0">
-
+      <PublicSEO
+        pageKey="nosotros"
+        breadcrumbs={[
+          { name: 'Inicio', url: 'https://peyuchile.cl/' },
+          { name: 'Nosotros', url: 'https://peyuchile.cl/nosotros' },
+        ]}
+      />
         {/* HERO */}
         <section className="px-4 sm:px-8 py-16 max-w-5xl mx-auto text-center space-y-6">
           <div className="inline-flex items-center gap-2 bg-teal-500/20 border border-teal-400/40 text-teal-300 px-4 py-1.5 rounded-full text-sm font-semibold backdrop-blur-sm">

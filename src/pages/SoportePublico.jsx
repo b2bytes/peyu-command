@@ -3,6 +3,8 @@ import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ChevronDown, ChevronRight, MessageCircle, Search, CheckCircle2, HelpCircle, Send } from 'lucide-react';
+import SEO from '@/components/SEO';
+import { combineSchemas, buildOrganizationSchema, buildBreadcrumbSchema } from '@/lib/schemas-peyu';
 
 const FAQS = [
   {
@@ -92,8 +94,33 @@ export default function SoportePublico() {
     setEnviando(false);
   };
 
+  // FAQPage schema con todas las preguntas para rich snippets
+  const faqJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: FAQS.flatMap(c => c.items).map(it => ({
+      '@type': 'Question',
+      name: it.q,
+      acceptedAnswer: { '@type': 'Answer', text: it.a },
+    })),
+  };
+  const soporteJsonLd = combineSchemas(
+    buildOrganizationSchema(),
+    buildBreadcrumbSchema([
+      { name: 'Inicio', url: 'https://peyuchile.cl/' },
+      { name: 'Soporte', url: 'https://peyuchile.cl/soporte' },
+    ]),
+    faqJsonLd,
+  );
+
   return (
     <div className="flex-1 overflow-auto font-inter pb-20 lg:pb-0">
+        <SEO
+          title="Centro de Ayuda PEYU · Soporte, FAQ y Contacto Directo"
+          description="Resuelve dudas sobre pedidos, personalización láser, materiales y devoluciones. Atención por WhatsApp, email y tiendas físicas en Providencia y Macul."
+          canonical="https://peyuchile.cl/soporte"
+          jsonLd={soporteJsonLd}
+        />
         <div className="max-w-5xl mx-auto px-4 sm:px-6 py-10 space-y-8">
 
           {/* Hero + Search */}

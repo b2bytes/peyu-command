@@ -6,6 +6,7 @@ import { Search, SlidersHorizontal, X, Recycle, Truck, Shield, Check, Building2,
 import CategoryTabs from '@/components/shop/CategoryTabs';
 import ProductCard from '@/components/shop/ProductCard';
 import { getProductImage } from '@/utils/productImages';
+import PublicSEO from '@/components/PublicSEO';
 
 const CATEGORIAS_META = [
   { id: 'Todos',           label: 'Todos',           icon: '🌍' },
@@ -165,6 +166,13 @@ export default function Shop() {
 
   return (
     <div className="flex-1 overflow-auto font-inter">
+      <PublicSEO
+        pageKey="shop"
+        breadcrumbs={[
+          { name: 'Inicio', url: 'https://peyuchile.cl/' },
+          { name: 'Tienda', url: 'https://peyuchile.cl/shop' },
+        ]}
+      />
       {/* HERO — más compacto en mobile para que la grilla aparezca antes */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 pt-4 sm:pt-10 pb-4 sm:pb-6">
         <div className="flex items-end justify-between gap-6 flex-wrap">

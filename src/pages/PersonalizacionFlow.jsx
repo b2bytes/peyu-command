@@ -12,6 +12,7 @@ import MarbleSwatch from '@/components/personalizacion/MarbleSwatch';
 import { getProductImage } from '@/utils/productImages';
 import { getColoresProducto } from '@/lib/color-parser';
 import { trackAddToCart } from '@/lib/analytics-peyu';
+import PublicSEO from '@/components/PublicSEO';
 
 const STEP_LABELS = [
   { label: 'Producto', Icon: Package },
@@ -585,6 +586,13 @@ export default function PersonalizacionFlow() {
   // ── LAYOUT ───────────────────────────────────────────────────────────
   return (
     <div className="flex-1 font-inter">
+      <PublicSEO
+        pageKey="personalizar"
+        breadcrumbs={[
+          { name: 'Inicio', url: 'https://peyuchile.cl/' },
+          { name: 'Personalizar', url: 'https://peyuchile.cl/personalizar' },
+        ]}
+      />
       <nav className="sticky top-0 z-50 bg-slate-900/60 backdrop-blur-xl border-b border-white/10">
         <div className="max-w-lg mx-auto px-5 py-3.5 flex items-center gap-3">
           {step > 0 ? (

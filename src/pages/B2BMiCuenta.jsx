@@ -7,6 +7,7 @@ import { ArrowLeft, LogOut, Building2, FileText, Sparkles, Wand2, Loader2 } from
 import PanelAuthForm from '@/components/b2b/panel/PanelAuthForm';
 import ProposalHistoryCard from '@/components/b2b/panel/ProposalHistoryCard';
 import MockupGallery from '@/components/b2b/panel/MockupGallery';
+import SEO from '@/components/SEO';
 
 const SESSION_KEY = 'peyu_b2b_panel_session';
 
@@ -110,6 +111,12 @@ export default function B2BMiCuenta() {
   if (!session) {
     return (
       <div className="flex-1 overflow-auto font-inter min-h-screen">
+        <SEO
+          title="Mi Cuenta Corporativa · Acceso B2B | PEYU Chile"
+          description="Accede a tu panel B2B PEYU para ver cotizaciones, mockups y repetir pedidos."
+          canonical="https://peyuchile.cl/b2b/mi-cuenta"
+          noindex
+        />
         <div className="px-4 sm:px-6 py-4 flex items-center gap-3">
           <button onClick={() => navigate(-1)}
             className="w-9 h-9 bg-white/20 rounded-lg flex items-center justify-center hover:bg-white/30">
@@ -131,6 +138,12 @@ export default function B2BMiCuenta() {
 
   return (
     <div className="flex-1 overflow-auto font-inter min-h-screen">
+      <SEO
+        title="Mi Cuenta Corporativa · Panel B2B | PEYU Chile"
+        description="Panel privado de gestión de cotizaciones y mockups B2B."
+        canonical="https://peyuchile.cl/b2b/mi-cuenta"
+        noindex
+      />
       {/* Header */}
       <div className="bg-gradient-to-r from-teal-500/30 to-cyan-500/30 border-b border-white/20 px-4 sm:px-6 py-3 sticky top-0 z-40 backdrop-blur-md">
         <div className="max-w-6xl mx-auto flex items-center justify-between gap-3">

@@ -7,6 +7,8 @@ import WhatsAppWidget from '@/components/WhatsAppWidget';
 import B2BCatalogFilters from '@/components/B2BCatalogFilters';
 import B2BQuoteModal from '@/components/B2BQuoteModal';
 import { toast } from 'sonner';
+import SEO from '@/components/SEO';
+import { combineSchemas, buildOrganizationSchema, buildBreadcrumbSchema } from '@/lib/schemas-peyu';
 
 const PRICE_TIERS = [
   { label: '10–49 u.', discount: 0, badge: 'Laser gratis' },
@@ -67,8 +69,22 @@ export default function CatalogoCorporativo() {
   const activeFilters = Object.entries(filters).flatMap(([key, vals]) => vals);
   const filteredKits = applyFilters(KITS);
 
+  const catalogoJsonLd = combineSchemas(
+    buildOrganizationSchema(),
+    buildBreadcrumbSchema([
+      { name: 'Inicio', url: 'https://peyuchile.cl/' },
+      { name: 'Catálogo B2B', url: 'https://peyuchile.cl/b2b/catalogo' },
+    ]),
+  );
+
   return (
     <div className="min-h-screen bg-[#FAFAF8] font-inter">
+      <SEO
+        title="Catálogo Corporativo B2B · Kits Personalizados con Logo | PEYU Chile"
+        description="Catálogo completo de regalos corporativos personalizables: kits escritorio, posavasos, maceteros y lámparas. Plástico 100% reciclado, descuentos hasta 25% por volumen."
+        canonical="https://peyuchile.cl/b2b/catalogo"
+        jsonLd={catalogoJsonLd}
+      />
       {/* NAVBAR */}
       <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-xl border-b border-black/5 shadow-sm">
         <div className="max-w-6xl mx-auto px-5 py-3 flex items-center justify-between">

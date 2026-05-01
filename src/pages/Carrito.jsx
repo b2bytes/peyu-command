@@ -4,6 +4,7 @@ import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Trash2, ArrowLeft, ShoppingBag, Truck, Shield, ChevronRight, Lock, Recycle, Gift, AlertCircle } from 'lucide-react';
 import { trackBeginCheckout, trackPurchase } from '@/lib/analytics-peyu';
+import SEO from '@/components/SEO';
 import GiftCardRedeemBox from '@/components/cart/GiftCardRedeemBox';
 import CuponBox from '@/components/cart/CuponBox';
 import PaymentMethodSelector from '@/components/cart/PaymentMethodSelector';
@@ -225,7 +226,12 @@ export default function Carrito() {
   // ── PRINCIPAL ──────────────────────────────────────────────────────
   return (
     <div className="min-h-full bg-[#FAFAF8] font-inter">
-
+      <SEO
+        title="Tu Carrito · Checkout Seguro | PEYU Chile"
+        description="Revisa tu pedido y completa tu compra de forma segura con WebPay, Mercado Pago o transferencia. Envío a todo Chile."
+        canonical="https://peyuchile.cl/cart"
+        noindex
+      />
       <nav className="sticky top-0 z-40 bg-white/85 backdrop-blur-xl border-b border-black/5">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between gap-4">
           <button onClick={() => navigate('/shop')} className="flex items-center gap-3 text-gray-600 hover:text-gray-900 transition-colors group">
