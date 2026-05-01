@@ -5,6 +5,7 @@ import {
   Calculator, MessageSquare, TrendingUp, Store, UserCheck, Truck,
   HardHat, Flag, Archive, ShoppingCart, Settings as SettingsIcon, ChevronLeft, ChevronRight, Leaf, ListChecks, Sparkles, FileText, CalendarDays, PieChart, AlertTriangle, Building2, ClipboardList, Zap, Radar, Crosshair, Map as MapIcon
 } from "lucide-react";
+import SEO from "@/components/SEO";
 
 const navGroups = [
   {
@@ -89,6 +90,13 @@ export default function Layout() {
 
   return (
     <div className="flex h-screen bg-background overflow-hidden">
+      {/* SEO global admin: bloquea TODAS las páginas /admin/* en Google.
+          Evita que el panel de Base44 las indexe con títulos genéricos. */}
+      <SEO
+        title="Panel Admin · PEYU Chile"
+        description="Panel interno de gestión PEYU. Acceso restringido."
+        noindex
+      />
       {/* Sidebar */}
       <aside
         className="flex-shrink-0 flex flex-col transition-all duration-300 relative border-r border-white/10"
