@@ -245,7 +245,7 @@ export default function Carrito() {
 
   // ── PRINCIPAL ──────────────────────────────────────────────────────
   return (
-    <div className="min-h-full bg-[#FAFAF8] font-inter">
+    <div className="min-h-screen bg-[#FAFAF8] font-inter pb-20">
       <SEO
         title="Tu Carrito · Checkout Seguro | PEYU Chile"
         description="Revisa tu pedido y completa tu compra de forma segura con WebPay, Mercado Pago o transferencia. Envío a todo Chile."
