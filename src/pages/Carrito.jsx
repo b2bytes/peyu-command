@@ -220,7 +220,7 @@ export default function Carrito() {
     // Redirigimos a /gracias — es la "thank you page" estándar para conversión.
     // Mejor que mostrar un estado inline porque permite indexación del funnel
     // y deja la URL única para retargeting / atribución.
-    navigate(`/gracias?numero=${encodeURIComponent(numero)}&email=${encodeURIComponent(cliente.email)}&total=${total}`);
+    navigate(`/gracias?numero=${encodeURIComponent(numero)}&email=${encodeURIComponent(cliente.email)}&total=${total}&pago=${encodeURIComponent(medioPagoFinal)}`);
   };
 
   // ── VACÍO ──────────────────────────────────────────────────────────

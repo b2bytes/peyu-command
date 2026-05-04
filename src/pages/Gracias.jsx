@@ -5,6 +5,7 @@ import { CheckCircle2, Mail, MessageCircle, Package, Sparkles, Heart } from 'luc
 import SEO from '@/components/SEO';
 import { trackPurchase } from '@/lib/analytics-peyu';
 import NewsletterCTA from '@/components/newsletter/NewsletterCTA';
+import TransferenciaInstrucciones from '@/components/gracias/TransferenciaInstrucciones';
 
 /**
  * Página post-checkout: punto crítico para tracking de conversión y reviews.
@@ -19,6 +20,8 @@ export default function Gracias() {
   const email = params.get('email') || '';
   const total = parseInt(params.get('total') || '0', 10);
   const mpStatus = params.get('mp') || ''; // success | pending | (vacío = otros medios)
+  const pago = params.get('pago') || ''; // Transferencia | MercadoPago | WebPay | GiftCard
+  const isTransferencia = pago === 'Transferencia';
   const [tracked, setTracked] = useState(false);
 
   useEffect(() => {
@@ -64,10 +67,15 @@ export default function Gracias() {
               <CheckCircle2 className="w-10 h-10 text-white" />
             </div>
             <div>
-              <h1 className="text-3xl sm:text-4xl font-poppins font-black text-white">¡Gracias por tu compra! 🐢</h1>
+              <h1 className="text-3xl sm:text-4xl font-poppins font-black text-white">
+                {isTransferencia ? '¡Falta solo un paso! 🐢' : '¡Gracias por tu compra! 🐢'}
+              </h1>
               <p className="text-white/60 mt-2 text-sm sm:text-base leading-relaxed">
-                Tu pedido fue recibido con éxito.<br />
-                Te enviamos la confirmación a <span className="text-teal-300 font-semibold">{email || 'tu email'}</span>.
+                {isTransferencia ? (
+                  <>Tu pedido está reservado. Completa la transferencia para iniciar la producción.<br />Te enviamos los datos a <span className="text-teal-300 font-semibold">{email || 'tu email'}</span>.</>
+                ) : (
+                  <>Tu pedido fue recibido con éxito.<br />Te enviamos la confirmación a <span className="text-teal-300 font-semibold">{email || 'tu email'}</span>.</>
+                )}
               </p>
             </div>
             {numero && (
@@ -78,10 +86,18 @@ export default function Gracias() {
             )}
             {total > 0 && (
               <p className="text-white/70 text-sm">
-                Total pagado: <span className="font-poppins font-bold text-white text-lg">${total.toLocaleString('es-CL')}</span>
+                {isTransferencia ? 'Total a transferir' : 'Total pagado'}:{' '}
+                <span className="font-poppins font-bold text-white text-lg">${total.toLocaleString('es-CL')}</span>
               </p>
             )}
           </div>
+
+          {/* Instrucciones de transferencia (solo si pago=Transferencia) */}
+          {isTransferencia && (
+            <div className="mt-6">
+              <TransferenciaInstrucciones numero={numero} total={total} />
+            </div>
+          )}
 
           {/* Próximos pasos */}
           <div className="mt-6 bg-white/5 backdrop-blur-md border border-white/15 rounded-3xl p-6 sm:p-8 shadow-xl">
