@@ -62,7 +62,7 @@ export default function WhatsAppWidget({ context = 'general', productName = '', 
       {/* FAB Button — Tortuga PEYU flotando, fondo transparente */}
       <button
         onClick={() => setOpen(!open)}
-        className="relative w-16 h-16 flex items-center justify-center transition-all duration-300 hover:scale-110 active:scale-95 group"
+        className="relative w-20 h-20 flex items-center justify-center transition-all duration-300 hover:scale-110 active:scale-95 group"
         aria-label="Hablar con Peyu"
       >
         {open ? (
@@ -73,11 +73,11 @@ export default function WhatsAppWidget({ context = 'general', productName = '', 
           <>
             {/* Halo sutil pulsante para llamar la atención sin ser invasivo */}
             <span className="absolute inset-0 rounded-full bg-teal-400/30 blur-xl group-hover:bg-teal-400/50 animate-pulse" />
-            {/* Tortuga PEYU flotando */}
+            {/* Tortuga PEYU oficial flotando */}
             <img
-              src="https://media.base44.com/images/public/69d99b9d61f699701129c103/1ae6f744d_generated_image.png"
+              src="https://media.base44.com/images/public/69d99b9d61f699701129c103/b67ed29f9_image.png"
               alt="Peyu"
-              className="relative w-16 h-16 object-contain select-none drop-shadow-[0_8px_16px_rgba(15,139,108,0.45)] group-hover:drop-shadow-[0_12px_24px_rgba(15,139,108,0.6)] transition-all"
+              className="relative w-20 h-20 object-contain select-none drop-shadow-[0_8px_16px_rgba(15,139,108,0.5)] group-hover:drop-shadow-[0_12px_24px_rgba(15,139,108,0.65)] transition-all"
               draggable={false}
             />
             {/* Indicador "en línea" */}
