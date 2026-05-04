@@ -16,7 +16,7 @@ import { Tag, X, Check, Loader2 } from 'lucide-react';
  */
 const STORAGE_KEY = 'peyu_cupon_active';
 
-export default function CuponBox({ subtotal, envio, email, onChange }) {
+export default function CuponBox({ subtotal, envio, email, onChange, bare = false }) {
   const [codigo, setCodigo] = useState('');
   const [cupon, setCupon] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -126,28 +126,36 @@ export default function CuponBox({ subtotal, envio, email, onChange }) {
     );
   }
 
-  return (
-    <div className="bg-white border border-gray-100 rounded-2xl p-4 shadow-sm">
-      <label className="flex items-center gap-1.5 text-xs font-bold text-gray-700 mb-2">
-        <Tag className="w-3.5 h-3.5 text-gray-400" /> Cupón de descuento
-      </label>
+  const inputForm = (
+    <>
       <div className="flex gap-2">
         <Input
           value={codigo}
           onChange={(e) => { setCodigo(e.target.value.toUpperCase()); setError(''); }}
           placeholder="BIENVENIDA10"
-          className="h-10 text-sm rounded-xl uppercase tracking-wide font-mono"
+          className="h-10 text-sm rounded-xl uppercase tracking-wide font-mono w-full box-border"
           onKeyDown={(e) => e.key === 'Enter' && aplicar()}
         />
         <Button
           onClick={() => aplicar()}
           disabled={loading || !codigo.trim()}
-          className="rounded-xl h-10 px-4 bg-gray-900 hover:bg-gray-800 text-white"
+          className="rounded-xl h-10 px-4 bg-gray-900 hover:bg-gray-800 text-white flex-shrink-0"
         >
           {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Aplicar'}
         </Button>
       </div>
       {error && <p className="text-xs text-red-600 mt-2 font-medium">{error}</p>}
+    </>
+  );
+
+  if (bare) return inputForm;
+
+  return (
+    <div className="bg-white border border-gray-100 rounded-2xl p-4 shadow-sm">
+      <label className="flex items-center gap-1.5 text-xs font-bold text-gray-700 mb-2">
+        <Tag className="w-3.5 h-3.5 text-gray-400" /> Cupón de descuento
+      </label>
+      {inputForm}
     </div>
   );
 }

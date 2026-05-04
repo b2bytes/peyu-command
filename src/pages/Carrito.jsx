@@ -6,8 +6,7 @@ import { Trash2, ArrowLeft, ShoppingBag, Truck, Shield, ChevronRight, Lock, Recy
 import { trackBeginCheckout, trackPurchase } from '@/lib/analytics-peyu';
 import { track } from '@/lib/activity-tracker';
 import SEO from '@/components/SEO';
-import GiftCardRedeemBox from '@/components/cart/GiftCardRedeemBox';
-import CuponBox from '@/components/cart/CuponBox';
+import PromoBox from '@/components/cart/PromoBox';
 import PaymentMethodSelector from '@/components/cart/PaymentMethodSelector';
 import ShippingAddressForm, { validarShippingForm } from '@/components/cart/ShippingAddressForm';
 import ShippingSelector from '@/components/cart/ShippingSelector';
@@ -417,17 +416,9 @@ export default function Carrito() {
           </div>
 
           {/* ── RIGHT SIDEBAR ─────────────── */}
-          <div className="space-y-4 lg:sticky lg:top-20 lg:self-start">
+          <div className="space-y-3 lg:sticky lg:top-20 lg:self-start">
 
-            {/* Cupón (siempre visible, antes del resumen) */}
-            <CuponBox
-              subtotal={subtotal}
-              envio={envioBase}
-              email={cliente.email}
-              onChange={setCupon}
-            />
-
-            {/* Resumen */}
+            {/* Resumen — protagonista */}
             <div className="bg-white border border-gray-100 rounded-3xl p-5 shadow-sm">
               <h3 className="font-poppins font-bold text-gray-900 mb-4">Resumen</h3>
               <div className="space-y-2.5 text-sm">
@@ -484,10 +475,15 @@ export default function Carrito() {
               <ImpactoAmbiental carrito={carrito} variant="inline" />
             </div>
 
-            {/* Gift Card — colapsable, no protagonista */}
-            {!carritoTieneGC && (
-              <GiftCardRedeemBox onChange={setGiftCard} />
-            )}
+            {/* Promociones — un solo bloque colapsable (Cupón + Gift Card) */}
+            <PromoBox
+              subtotal={subtotal}
+              envio={envioBase}
+              email={cliente.email}
+              onCuponChange={setCupon}
+              onGiftCardChange={setGiftCard}
+              showGiftCard={!carritoTieneGC}
+            />
 
             {/* CTA */}
             {step === 1 ? (

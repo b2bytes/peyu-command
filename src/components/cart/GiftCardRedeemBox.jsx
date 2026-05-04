@@ -15,7 +15,7 @@ const STORAGE_KEY = 'peyu_giftcard_active';
  *   onChange(applied) → notifica al padre cuando hay/no hay GC aplicada.
  *      applied = { codigo, saldo_clp } | null
  */
-export default function GiftCardRedeemBox({ onChange }) {
+export default function GiftCardRedeemBox({ onChange, bare = false }) {
   const [codigo, setCodigo] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -73,19 +73,15 @@ export default function GiftCardRedeemBox({ onChange }) {
     );
   }
 
-  return (
-    <div className="bg-amber-50/50 border border-amber-100 rounded-2xl p-3">
-      <div className="flex items-center gap-2 mb-2">
-        <Gift className="w-4 h-4 text-amber-700" />
-        <p className="text-xs font-bold text-gray-900">¿Tienes una Gift Card?</p>
-      </div>
+  const inputForm = (
+    <>
       <div className="flex gap-2">
         <Input
           value={codigo}
           onChange={e => setCodigo(e.target.value.toUpperCase())}
           onKeyDown={e => e.key === 'Enter' && apply()}
           placeholder="PEYU-XXXX-XXXX"
-          className="h-10 text-xs font-mono tracking-wider bg-white border-amber-200"
+          className={`h-10 text-xs font-mono tracking-wider w-full box-border ${bare ? 'bg-gray-50 border-gray-200' : 'bg-white border-amber-200'}`}
           disabled={loading}
         />
         <Button
@@ -98,6 +94,18 @@ export default function GiftCardRedeemBox({ onChange }) {
         </Button>
       </div>
       {error && <p className="text-[11px] text-red-600 mt-1.5 font-medium">{error}</p>}
+    </>
+  );
+
+  if (bare) return inputForm;
+
+  return (
+    <div className="bg-amber-50/50 border border-amber-100 rounded-2xl p-3">
+      <div className="flex items-center gap-2 mb-2">
+        <Gift className="w-4 h-4 text-amber-700" />
+        <p className="text-xs font-bold text-gray-900">¿Tienes una Gift Card?</p>
+      </div>
+      {inputForm}
     </div>
   );
 }
