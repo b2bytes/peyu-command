@@ -3,7 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
-  Truck, Loader2, RefreshCw, Sparkles, ExternalLink, Bell, Zap, BarChart3,
+  Truck, Loader2, RefreshCw, Sparkles, ExternalLink, Bell, Zap, BarChart3, Mail,
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -12,6 +12,7 @@ import BluexFilters from '@/components/bluex/BluexFilters';
 import BluexShipmentRow from '@/components/bluex/BluexShipmentRow';
 import BluexShipmentDrawer from '@/components/bluex/BluexShipmentDrawer';
 import BluexAnalysisPanel from '@/components/bluex/BluexAnalysisPanel';
+import BluexSecuenciasPanel from '@/components/bluex/BluexSecuenciasPanel';
 
 /**
  * Centro Logístico BlueExpress · Comando central de toda la operación de envíos.
@@ -173,6 +174,9 @@ export default function CentroLogistico() {
           <TabsTrigger value="listado" className="gap-1.5">
             <Truck className="w-3.5 h-3.5" /> Listado
           </TabsTrigger>
+          <TabsTrigger value="secuencias" className="gap-1.5">
+            <Mail className="w-3.5 h-3.5" /> Secuencias IA
+          </TabsTrigger>
           <TabsTrigger value="analisis" className="gap-1.5">
             <BarChart3 className="w-3.5 h-3.5" /> Análisis IA
           </TabsTrigger>
@@ -225,6 +229,10 @@ export default function CentroLogistico() {
               </table>
             </div>
           </div>
+        </TabsContent>
+
+        <TabsContent value="secuencias" className="mt-4">
+          <BluexSecuenciasPanel envios={envios} />
         </TabsContent>
 
         <TabsContent value="analisis" className="mt-4">
