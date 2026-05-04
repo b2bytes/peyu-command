@@ -126,11 +126,40 @@ ${query}
 
 Responde ahora como Peyu, usando los tags especiales cuando corresponda. Si recomiendas un producto, USA EXACTAMENTE el SKU que aparece en el contexto.`;
 
+    const t0 = Date.now();
     const llmRes = await base44.integrations.Core.InvokeLLM({
       prompt: fullPrompt,
     });
+    const latencyMs = Date.now() - t0;
 
     const reply = typeof llmRes === 'string' ? llmRes : (llmRes?.response || llmRes?.text || '');
+
+    // ── Auto-log en AILog (no bloquea la respuesta si falla) ──
+    try {
+      const promptTokens = Math.ceil(fullPrompt.length / 4);     // estimación 1 tk ≈ 4 chars
+      const replyTokens = Math.ceil((reply || '').length / 4);
+      // gpt-4o-mini default: $0.15/1M input + $0.60/1M output
+      const costUsd = (promptTokens / 1_000_000) * 0.15 + (replyTokens / 1_000_000) * 0.60;
+
+      await base44.asServiceRole.entities.AILog.create({
+        agent_name: 'peyuAssist',
+        model: 'gpt-4o-mini',
+        task_type: 'chat',
+        user_message: query,
+        system_context: `Brain hits: ${brainHits.length} · Memory: ${userMemory.length > 0} · Profile: ${!!customerProfile}`,
+        ai_response: reply,
+        user_email: user_email || undefined,
+        tokens_input: promptTokens,
+        tokens_output: replyTokens,
+        tokens_total: promptTokens + replyTokens,
+        cost_usd: Number(costUsd.toFixed(6)),
+        latency_ms: latencyMs,
+        status: 'success',
+        auditor_review: 'pending',
+      });
+    } catch (logErr) {
+      console.warn('[peyuAssist] AILog falló:', logErr?.message);
+    }
 
     return Response.json({
       ok: true,
@@ -143,9 +172,20 @@ Responde ahora como Peyu, usando los tags especiales cuando corresponda. Si reco
       })),
       has_memory: userMemory.length > 0,
       has_profile: !!customerProfile,
+      latency_ms: latencyMs,
     });
   } catch (error) {
     console.error('[peyuAssist]', error);
+    // Log también los errores
+    try {
+      const base44 = createClientFromRequest(req);
+      await base44.asServiceRole.entities.AILog.create({
+        agent_name: 'peyuAssist',
+        task_type: 'chat',
+        status: 'error',
+        error_message: error.message,
+      });
+    } catch {}
     return Response.json({ error: error.message }, { status: 500 });
   }
 });
