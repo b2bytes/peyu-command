@@ -86,13 +86,22 @@ export default function PaymentMethodSelector({ value, onChange, totalCubiertoCo
       })}
 
       {value === 'Transferencia' && (
-        <div className="mt-3 bg-emerald-50 border border-emerald-200 rounded-2xl p-4 text-xs text-emerald-900 space-y-1.5">
-          <p className="font-bold mb-1">📋 Datos para transferencia:</p>
-          <p><strong>PEYU SpA</strong> · RUT 77.777.777-7</p>
-          <p>Banco de Chile · Cuenta Corriente</p>
-          <p>N° 000-0000-0000</p>
-          <p>Email: <strong>pagos@peyuchile.cl</strong></p>
-          <p className="pt-1 text-emerald-700">Recibirás los datos por email tras confirmar. Despachamos al recibir comprobante.</p>
+        <div className="mt-3 bg-emerald-50 border border-emerald-200 rounded-2xl p-4 text-xs text-emerald-900 space-y-2">
+          <div className="flex items-center justify-between">
+            <p className="font-bold">📋 Datos para transferencia</p>
+            <span className="text-[10px] font-bold text-emerald-700 bg-white border border-emerald-200 px-2 py-0.5 rounded-full">5% dscto incluido</span>
+          </div>
+          <div className="bg-white/70 rounded-xl p-3 space-y-1 border border-emerald-100">
+            <p><span className="text-emerald-700">Titular:</span> <strong>PEYU SpA</strong></p>
+            <p><span className="text-emerald-700">RUT:</span> <strong>77.777.777-7</strong></p>
+            <p><span className="text-emerald-700">Banco:</span> <strong>Banco de Chile</strong></p>
+            <p><span className="text-emerald-700">Tipo:</span> <strong>Cuenta Corriente</strong></p>
+            <p><span className="text-emerald-700">N° cuenta:</span> <strong>000-0000-0000</strong></p>
+            <p><span className="text-emerald-700">Email:</span> <strong>pagos@peyuchile.cl</strong></p>
+          </div>
+          <p className="text-emerald-700 leading-relaxed">
+            Te enviaremos los datos por email al confirmar. Despachamos apenas recibimos el comprobante.
+          </p>
         </div>
       )}
 

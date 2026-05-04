@@ -3,6 +3,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { REGIONES_CHILE, getComunasByRegion, validarCodigoPostal, validarTelefonoChile, validarDireccion } from '@/lib/chile-regiones';
 import { AlertCircle, User, MapPin, Mail } from 'lucide-react';
 import FormField from './FormField';
+import PhoneInput from './PhoneInput';
 
 /**
  * Formulario de checkout robusto, agrupado en 3 secciones visuales:
@@ -75,17 +76,12 @@ export default function ShippingAddressForm({ cliente, setCliente, errors = {}, 
             isValid={fieldValid('email')}
             hint="No spam · solo confirmación y tracking"
           />
-          <FormField
+          <PhoneInput
             label="Teléfono · WhatsApp"
             name="telefono"
-            type="tel"
-            autoComplete="tel"
-            inputMode="tel"
             value={cliente.telefono}
             onChange={update('telefono')}
             onBlur={validateField('telefono')}
-            placeholder="9 1234 5678"
-            prefix="+56"
             required
             error={fieldError('telefono')}
             isValid={fieldValid('telefono')}
