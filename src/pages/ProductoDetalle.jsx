@@ -15,6 +15,8 @@ import { getColoresProducto } from '@/lib/color-parser';
 import { getPackSize } from '@/lib/pack-parser';
 import PackColorPicker from '@/components/producto/PackColorPicker';
 import GiftCardVisual from '@/components/giftcard/GiftCardVisual';
+import ImpactoAmbientalProducto from '@/components/producto/ImpactoAmbientalProducto';
+import { getTipoMaterial } from '@/lib/impacto-ambiental';
 import SEO from '@/components/SEO';
 import { buildOrganizationSchema, buildProductSchema, buildBreadcrumbSchema, combineSchemas } from '@/lib/schemas-peyu';
 import { trackAddToCart } from '@/lib/analytics-peyu';
@@ -523,24 +525,35 @@ export default function ProductoDetalle() {
                   </div>
                 </div>
               ) : (
-              <div className="bg-gradient-to-br from-teal-900/40 to-cyan-900/30 backdrop-blur-sm border border-teal-400/25 rounded-3xl p-6 text-white space-y-3 shadow-xl mt-6">
-                <div className="flex items-center gap-2">
-                  <Recycle className="w-5 h-5 text-teal-400" />
-                  <h3 className="font-poppins font-bold text-sm text-white">La historia de este producto</h3>
-                </div>
-                <p className="text-white/55 text-sm leading-relaxed">
-                  {producto.material?.includes('Trigo')
-                    ? 'Esta carcasa está fabricada con fibra de trigo, un subproducto agrícola 100% compostable. Al final de su vida útil puedes compostarla en casa. Fabricada sin plástico petroquímico.'
-                    : 'Este producto fue fabricado con plástico post-consumo recolectado en Santiago. Cada pieza es única — el marmolado irrepetible nace del proceso de inyección con materiales reciclados mezclados artesanalmente.'}
-                </p>
-                <div className="flex gap-4 pt-1 flex-wrap">
-                  {[['♻️', 'Reciclado'], ['🏭', 'Hecho en Chile'], ['💚', 'ESG Certificado']].map(([e, l]) => (
-                    <div key={l} className="flex items-center gap-1.5 text-xs text-teal-300/80">
-                      <span>{e}</span><span>{l}</span>
+                (() => {
+                  const tipo = getTipoMaterial(producto);
+                  const isFibra = tipo === 'fibra_trigo';
+                  return (
+                  <div className={`backdrop-blur-sm border rounded-3xl p-6 text-white space-y-3 shadow-xl mt-6 ${isFibra ? 'bg-gradient-to-br from-amber-900/40 to-orange-900/25 border-amber-400/25' : 'bg-gradient-to-br from-teal-900/40 to-cyan-900/30 border-teal-400/25'}`}>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xl">{isFibra ? '🌾' : '♻️'}</span>
+                      <h3 className="font-poppins font-bold text-sm text-white">
+                        {isFibra ? 'Nacida del trigo, devuelta a la tierra' : 'Plástico chileno con segunda vida'}
+                      </h3>
                     </div>
-                  ))}
-                </div>
-              </div>
+                    <p className="text-white/65 text-sm leading-relaxed">
+                      {isFibra
+                        ? 'Esta carcasa está hecha con paja de trigo: el residuo agrícola que tradicionalmente se quema en el campo y contamina el aire. La valorizamos en un biocomposite duradero que protege tu equipo igual que una carcasa convencional, pero al final de su vida útil se composta en 90-180 días sin dejar microplásticos. Cada unidad evita ~2.4 kg de CO₂ frente a una carcasa de policarbonato virgen.'
+                        : 'Este producto se fabrica con plástico post-consumo recolectado en Santiago — botellas, tapas y envases que iban al vertedero o al mar. Cada pieza es única: el marmolado nace del proceso de inyección artesanal con materiales reciclados mezclados a mano. Cada unidad rescata ~30 g de plástico y evita ~2.1 kg de CO₂.'}
+                    </p>
+                    <div className="flex gap-4 pt-1 flex-wrap">
+                      {(isFibra
+                        ? [['🌾', 'Paja valorizada'], ['🌱', 'Compostable'], ['🇨🇱', 'Hecho en Chile']]
+                        : [['♻️', '100% Reciclado'], ['🛡️', '10 años garantía'], ['🇨🇱', 'Hecho en Chile']]
+                      ).map(([e, l]) => (
+                        <div key={l} className={`flex items-center gap-1.5 text-xs ${isFibra ? 'text-amber-200/85' : 'text-teal-300/85'}`}>
+                          <span>{e}</span><span>{l}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  );
+                })()
               )}
             </div>
 
@@ -906,19 +919,7 @@ export default function ProductoDetalle() {
                     ))}
                   </ul>
                 </div>
-                <div className="bg-white/5 backdrop-blur-sm border border-white/15 rounded-2xl p-5 space-y-3">
-                  <h4 className="font-bold text-sm text-white flex items-center gap-2"><Zap className="w-4 h-4 text-yellow-400" /> Impacto ambiental</h4>
-                  {[
-                    ['♻️', 'Plástico rescatado', `~${Math.round(Math.random() * 50 + 100)}g evitados del mar`],
-                    ['💧', 'Agua ahorrada', `~${Math.round(Math.random() * 50 + 20)}L vs producción nueva`],
-                    ['🌳', 'CO₂ reducido', `~${(Math.random() * 0.3 + 0.1).toFixed(2)} kg CO₂eq`],
-                  ].map(([e, l, v]) => (
-                    <div key={l} className="flex items-center justify-between py-2 border-b border-white/5 last:border-0">
-                      <div className="flex items-center gap-2 text-sm text-white/55"><span>{e}</span>{l}</div>
-                      <span className="text-xs font-bold text-teal-400">{v}</span>
-                    </div>
-                  ))}
-                </div>
+                <ImpactoAmbientalProducto producto={producto} />
               </div>
             )}
 
