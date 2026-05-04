@@ -97,15 +97,22 @@ export default function ShippingSelector({
     });
   }, [cotizacion, selectedKey, envioGratisAplica, onSelect]);
 
+  // Cuando se usa con variant="light" dentro de un card padre con su propio
+  // título numerado, NO repetimos el header — solo mostramos las opciones.
+  // Para el resto de variantes (dark/standalone) mantenemos el header.
+  const showHeader = isDark;
+
   return (
-    <div className={`border rounded-2xl p-5 space-y-4 ${styles.container}`}>
-      <div className="flex items-center gap-2">
-        <Truck className={`w-4 h-4 ${styles.accent}`} />
-        <h3 className={`font-bold text-sm ${styles.title}`}>Costo de envío</h3>
-        <span className={`text-[10px] font-bold ml-auto px-2 py-0.5 rounded-full border ${isDark ? 'text-blue-300 bg-blue-500/20 border-blue-400/25' : 'text-blue-700 bg-blue-50 border-blue-200'}`}>
-          BlueExpress
-        </span>
-      </div>
+    <div className={isDark ? `border rounded-2xl p-5 space-y-4 ${styles.container}` : 'space-y-4'}>
+      {showHeader && (
+        <div className="flex items-center gap-2">
+          <Truck className={`w-4 h-4 ${styles.accent}`} />
+          <h3 className={`font-bold text-sm ${styles.title}`}>Costo de envío</h3>
+          <span className={`text-[10px] font-bold ml-auto px-2 py-0.5 rounded-full border ${isDark ? 'text-blue-300 bg-blue-500/20 border-blue-400/25' : 'text-blue-700 bg-blue-50 border-blue-200'}`}>
+            BlueExpress
+          </span>
+        </div>
+      )}
 
       {/* Sin comuna seleccionada */}
       {!comuna && (

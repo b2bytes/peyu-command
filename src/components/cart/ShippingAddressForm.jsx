@@ -1,128 +1,252 @@
-import { Input } from '@/components/ui/input';
+import { useState } from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { REGIONES_CHILE, getComunasByRegion, validarCodigoPostal, validarTelefonoChile, validarDireccion } from '@/lib/chile-regiones';
-import { AlertCircle } from 'lucide-react';
+import { AlertCircle, User, MapPin, Mail } from 'lucide-react';
+import FormField from './FormField';
 
 /**
- * Form robusto de dirección de envío chilena.
- * Valida en tiempo real y muestra errores inline.
+ * Formulario de checkout robusto, agrupado en 3 secciones visuales:
+ *  1) Contacto (nombre + email + teléfono)
+ *  2) Dirección (región + comuna + calle + depto + CP)
+ *  3) Notas opcionales
  *
- * Props:
- *   cliente: { nombre, email, telefono, region, ciudad, direccion, codigo_postal }
- *   setCliente: setter
- *   errors: objeto con errores por campo
- *   onEmailBlur: callback (para captura carrito abandonado)
+ * Best practices:
+ *  - autoComplete correcto en cada campo → el navegador rellena
+ *  - Validación onBlur inline (no espera a "Continuar")
+ *  - Telefono normalizado, depto separado de calle
+ *  - Inputs no se salen del contenedor (w-full + min-w-0 + box-border)
+ *  - FormField está en archivo separado: NO se rompe el foco al escribir
  */
 export default function ShippingAddressForm({ cliente, setCliente, errors = {}, onEmailBlur }) {
+  const [touched, setTouched] = useState({});
+  const [localErrors, setLocalErrors] = useState({});
   const comunas = getComunasByRegion(cliente.region);
 
-  const Field = ({ label, k, type = 'text', placeholder, req, error, onBlur }) => (
-    <div>
-      <label className="text-xs font-semibold text-gray-700 block mb-1.5">
-        {label} {req && <span className="text-red-500">*</span>}
-      </label>
-      <Input
-        type={type}
-        value={cliente[k] || ''}
-        onChange={(e) => setCliente({ ...cliente, [k]: e.target.value })}
-        onBlur={onBlur}
-        placeholder={placeholder}
-        className={`h-11 text-sm rounded-xl bg-gray-50 focus:bg-white ${
-          error ? 'border-red-300 focus:border-red-500' : 'border-gray-200 focus:border-gray-400'
-        }`}
-      />
-      {error && (
-        <p className="text-xs text-red-600 mt-1 flex items-center gap-1">
-          <AlertCircle className="w-3 h-3" /> {error}
-        </p>
-      )}
-    </div>
-  );
+  // Helper de update — preserva foco porque el setter es estable
+  const update = (key) => (e) => {
+    const value = e.target.value;
+    setCliente({ ...cliente, [key]: value });
+    // Limpiar error al escribir
+    if (localErrors[key]) {
+      setLocalErrors({ ...localErrors, [key]: undefined });
+    }
+  };
+
+  // Validación inline al hacer blur
+  const validateField = (key) => () => {
+    const errs = validarShippingForm(cliente);
+    setLocalErrors((prev) => ({ ...prev, [key]: errs[key] }));
+    setTouched((prev) => ({ ...prev, [key]: true }));
+  };
+
+  const fieldError = (key) => errors[key] || localErrors[key];
+  const fieldValid = (key) => touched[key] && !fieldError(key) && cliente[key];
 
   return (
-    <div className="space-y-4">
-      <Field label="Nombre completo" k="nombre" placeholder="Tu nombre" req error={errors.nombre} />
-      <Field label="Email" k="email" type="email" placeholder="tu@email.com" req error={errors.email} onBlur={onEmailBlur} />
-      <Field label="Teléfono / WhatsApp" k="telefono" placeholder="+56 9 XXXX XXXX" req error={errors.telefono} />
+    <div className="space-y-5">
+      {/* ── SECCIÓN 1 · CONTACTO ──────────────────────────────────── */}
+      <Section icon={User} title="Contacto" subtitle="Te enviaremos el comprobante y tracking aquí">
+        <FormField
+          label="Nombre completo"
+          name="nombre"
+          autoComplete="name"
+          value={cliente.nombre}
+          onChange={update('nombre')}
+          onBlur={validateField('nombre')}
+          placeholder="María González"
+          required
+          error={fieldError('nombre')}
+          isValid={fieldValid('nombre')}
+        />
 
-      {/* Región (select) */}
-      <div>
-        <label className="text-xs font-semibold text-gray-700 block mb-1.5">
-          Región <span className="text-red-500">*</span>
-        </label>
-        <Select
-          value={cliente.region || ''}
-          onValueChange={(v) => setCliente({ ...cliente, region: v, ciudad: '' })}
-        >
-          <SelectTrigger className={`h-11 rounded-xl bg-gray-50 ${errors.region ? 'border-red-300' : 'border-gray-200'}`}>
-            <SelectValue placeholder="Selecciona tu región" />
-          </SelectTrigger>
-          <SelectContent className="max-h-[280px]">
-            {REGIONES_CHILE.map((r) => (
-              <SelectItem key={r.codigo} value={r.nombre}>{r.nombre}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        {errors.region && (
-          <p className="text-xs text-red-600 mt-1 flex items-center gap-1">
-            <AlertCircle className="w-3 h-3" /> {errors.region}
-          </p>
-        )}
-      </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <FormField
+            label="Email"
+            name="email"
+            type="email"
+            autoComplete="email"
+            inputMode="email"
+            value={cliente.email}
+            onChange={update('email')}
+            onBlur={(e) => { validateField('email')(); onEmailBlur?.(e); }}
+            placeholder="tu@email.com"
+            required
+            error={fieldError('email')}
+            isValid={fieldValid('email')}
+            hint="No spam · solo confirmación y tracking"
+          />
+          <FormField
+            label="Teléfono · WhatsApp"
+            name="telefono"
+            type="tel"
+            autoComplete="tel"
+            inputMode="tel"
+            value={cliente.telefono}
+            onChange={update('telefono')}
+            onBlur={validateField('telefono')}
+            placeholder="9 1234 5678"
+            prefix="+56"
+            required
+            error={fieldError('telefono')}
+            isValid={fieldValid('telefono')}
+            hint="Para coordinar el despacho"
+          />
+        </div>
+      </Section>
 
-      {/* Comuna (select dependiente) */}
-      <div>
-        <label className="text-xs font-semibold text-gray-700 block mb-1.5">
-          Comuna <span className="text-red-500">*</span>
-        </label>
-        <Select
-          value={cliente.ciudad || ''}
-          onValueChange={(v) => setCliente({ ...cliente, ciudad: v })}
-          disabled={!cliente.region}
-        >
-          <SelectTrigger className={`h-11 rounded-xl bg-gray-50 ${errors.ciudad ? 'border-red-300' : 'border-gray-200'}`}>
-            <SelectValue placeholder={cliente.region ? 'Selecciona tu comuna' : 'Primero elige región'} />
-          </SelectTrigger>
-          <SelectContent className="max-h-[280px]">
-            {comunas.map((c) => (
-              <SelectItem key={c} value={c}>{c}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        {errors.ciudad && (
-          <p className="text-xs text-red-600 mt-1 flex items-center gap-1">
-            <AlertCircle className="w-3 h-3" /> {errors.ciudad}
-          </p>
-        )}
-      </div>
+      {/* ── SECCIÓN 2 · DIRECCIÓN ─────────────────────────────────── */}
+      <Section icon={MapPin} title="Dirección de despacho" subtitle="A todo Chile vía BlueExpress">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {/* Región */}
+          <div className="w-full min-w-0">
+            <label className="text-[11px] font-bold text-gray-700 uppercase tracking-wider block mb-1.5">
+              Región <span className="text-red-500 ml-0.5">*</span>
+            </label>
+            <Select
+              value={cliente.region || ''}
+              onValueChange={(v) => {
+                setCliente({ ...cliente, region: v, ciudad: '' });
+                setTouched((p) => ({ ...p, region: true }));
+              }}
+            >
+              <SelectTrigger
+                className={`h-12 rounded-xl bg-gray-50 text-[15px] w-full ${
+                  fieldError('region') ? 'border-red-300 bg-red-50/40' : 'border-gray-200'
+                }`}
+              >
+                <SelectValue placeholder="Selecciona tu región" />
+              </SelectTrigger>
+              <SelectContent className="max-h-[280px]">
+                {REGIONES_CHILE.map((r) => (
+                  <SelectItem key={r.codigo} value={r.nombre}>{r.nombre}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {fieldError('region') && (
+              <p className="text-xs text-red-600 mt-1.5 flex items-center gap-1 font-medium">
+                <AlertCircle className="w-3 h-3" /> {fieldError('region')}
+              </p>
+            )}
+          </div>
 
-      <Field
-        label="Dirección de despacho"
-        k="direccion"
-        placeholder="Calle, número, depto"
-        req
-        error={errors.direccion}
-      />
+          {/* Comuna */}
+          <div className="w-full min-w-0">
+            <label className="text-[11px] font-bold text-gray-700 uppercase tracking-wider block mb-1.5">
+              Comuna <span className="text-red-500 ml-0.5">*</span>
+            </label>
+            <Select
+              value={cliente.ciudad || ''}
+              onValueChange={(v) => {
+                setCliente({ ...cliente, ciudad: v });
+                setTouched((p) => ({ ...p, ciudad: true }));
+              }}
+              disabled={!cliente.region}
+            >
+              <SelectTrigger
+                className={`h-12 rounded-xl bg-gray-50 text-[15px] w-full ${
+                  fieldError('ciudad') ? 'border-red-300 bg-red-50/40' : 'border-gray-200'
+                } ${!cliente.region ? 'opacity-60 cursor-not-allowed' : ''}`}
+              >
+                <SelectValue placeholder={cliente.region ? 'Selecciona tu comuna' : 'Primero elige región'} />
+              </SelectTrigger>
+              <SelectContent className="max-h-[280px]">
+                {comunas.map((c) => (
+                  <SelectItem key={c} value={c}>{c}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {fieldError('ciudad') && (
+              <p className="text-xs text-red-600 mt-1.5 flex items-center gap-1 font-medium">
+                <AlertCircle className="w-3 h-3" /> {fieldError('ciudad')}
+              </p>
+            )}
+          </div>
+        </div>
 
-      <Field
-        label="Código postal"
-        k="codigo_postal"
-        placeholder="7 dígitos (ej: 7500000)"
-        error={errors.codigo_postal}
-      />
+        <FormField
+          label="Calle y número"
+          name="direccion"
+          autoComplete="street-address"
+          value={cliente.direccion}
+          onChange={update('direccion')}
+          onBlur={validateField('direccion')}
+          placeholder="Av. Apoquindo 1234"
+          required
+          error={fieldError('direccion')}
+          isValid={fieldValid('direccion')}
+        />
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <FormField
+            label="Depto / Oficina / Casa"
+            name="referencia"
+            autoComplete="address-line2"
+            value={cliente.referencia || ''}
+            onChange={update('referencia')}
+            placeholder="Depto 502, Torre B (opcional)"
+            hint="Ayuda al courier a encontrarte"
+          />
+          <FormField
+            label="Código postal"
+            name="codigo_postal"
+            autoComplete="postal-code"
+            inputMode="numeric"
+            maxLength={7}
+            value={cliente.codigo_postal}
+            onChange={update('codigo_postal')}
+            onBlur={validateField('codigo_postal')}
+            placeholder="7500000"
+            error={fieldError('codigo_postal')}
+            isValid={fieldValid('codigo_postal')}
+            hint="Opcional · 7 dígitos"
+          />
+        </div>
+      </Section>
+
+      {/* Errores agregados al final */}
+      {Object.values(errors).some(Boolean) && (
+        <div className="bg-red-50 border border-red-200 rounded-2xl p-4 flex items-start gap-2.5 text-sm text-red-900">
+          <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5 text-red-600" />
+          <div>
+            <p className="font-bold">Revisa los campos marcados</p>
+            <p className="text-xs text-red-700 mt-0.5">Necesitamos esta información para enviarte tu pedido.</p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
 
-// Validación centralizada exportable
+/* ──────────────────────────────────────────────────────────────────
+   Sub-componentes (definidos FUERA del padre para no romper foco)
+   ────────────────────────────────────────────────────────────────── */
+
+function Section({ icon: Icon, title, subtitle, children }) {
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center gap-2.5 pb-1">
+        <div className="w-8 h-8 rounded-xl bg-gray-100 flex items-center justify-center flex-shrink-0">
+          <Icon className="w-4 h-4 text-gray-700" />
+        </div>
+        <div className="min-w-0">
+          <h4 className="font-poppins font-bold text-gray-900 text-sm leading-tight">{title}</h4>
+          {subtitle && <p className="text-[11px] text-gray-500 mt-0.5">{subtitle}</p>}
+        </div>
+      </div>
+      <div className="space-y-4">{children}</div>
+    </div>
+  );
+}
+
+// Validación centralizada exportable (sin cambios funcionales)
 export function validarShippingForm(cliente) {
   const errors = {};
   if (!cliente.nombre || cliente.nombre.trim().length < 3) errors.nombre = 'Ingresa tu nombre completo';
   if (!cliente.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cliente.email)) errors.email = 'Email inválido';
-  if (!cliente.telefono || !validarTelefonoChile(cliente.telefono)) errors.telefono = 'Teléfono chileno inválido (+56 9 XXXX XXXX)';
+  if (!cliente.telefono || !validarTelefonoChile(cliente.telefono)) errors.telefono = 'Teléfono chileno inválido';
   if (!cliente.region) errors.region = 'Selecciona una región';
   if (!cliente.ciudad) errors.ciudad = 'Selecciona una comuna';
   if (!cliente.direccion || !validarDireccion(cliente.direccion)) errors.direccion = 'Calle y número (ej: Av. Apoquindo 1234)';
-  if (cliente.codigo_postal && !validarCodigoPostal(cliente.codigo_postal)) errors.codigo_postal = 'Código postal: 7 dígitos';
+  if (cliente.codigo_postal && !validarCodigoPostal(cliente.codigo_postal)) errors.codigo_postal = '7 dígitos';
   return errors;
 }

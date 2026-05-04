@@ -356,11 +356,14 @@ export default function Carrito() {
 
             {step === 2 && (
               <>
-                {/* Datos de envío */}
-                <div className="bg-white border border-gray-100 rounded-3xl p-5 sm:p-6 shadow-sm space-y-5">
-                  <div>
-                    <h3 className="font-poppins font-bold text-gray-900 text-lg">Datos de envío</h3>
-                    <p className="text-xs text-gray-400 mt-1">Validamos tu dirección para asegurar la entrega</p>
+                {/* 1 · Datos de envío */}
+                <div className="bg-white border border-gray-100 rounded-3xl p-5 sm:p-7 shadow-sm">
+                  <div className="flex items-center gap-3 mb-5 pb-4 border-b border-gray-100">
+                    <div className="w-9 h-9 rounded-xl bg-gray-900 text-white flex items-center justify-center font-poppins font-bold text-sm">1</div>
+                    <div>
+                      <h3 className="font-poppins font-bold text-gray-900 text-base">Información de envío</h3>
+                      <p className="text-xs text-gray-500 mt-0.5">Validamos tu dirección para asegurar la entrega</p>
+                    </div>
                   </div>
                   <ShippingAddressForm
                     cliente={cliente}
@@ -368,30 +371,36 @@ export default function Carrito() {
                     errors={errors}
                     onEmailBlur={() => capturarCarrito(cliente)}
                   />
-                  {Object.keys(errors).length > 0 && (
-                    <div className="bg-red-50 border border-red-200 rounded-xl p-3 flex items-start gap-2 text-xs text-red-800">
-                      <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
-                      <span>Revisa los campos marcados antes de continuar.</span>
-                    </div>
-                  )}
                 </div>
 
-                {/* Cotización envío Bluex en tiempo real (auto-cotiza con la comuna del form) */}
-                <ShippingSelector
-                  variant="light"
-                  items={carrito.map(i => ({ productoId: i.productoId, cantidad: i.cantidad, nombre: i.nombre }))}
-                  comuna={cliente.ciudad}
-                  region={cliente.region}
-                  subtotal={subtotal}
-                  umbralEnvioGratis={40000}
-                  onSelect={setEnvioBluex}
-                />
+                {/* 2 · Cotización envío Bluex en tiempo real (auto-cotiza con la comuna del form) */}
+                <div className="bg-white border border-gray-100 rounded-3xl p-5 sm:p-7 shadow-sm">
+                  <div className="flex items-center gap-3 mb-5 pb-4 border-b border-gray-100">
+                    <div className="w-9 h-9 rounded-xl bg-gray-900 text-white flex items-center justify-center font-poppins font-bold text-sm">2</div>
+                    <div>
+                      <h3 className="font-poppins font-bold text-gray-900 text-base">Forma de envío</h3>
+                      <p className="text-xs text-gray-500 mt-0.5">Tarifa real BlueExpress según tu comuna</p>
+                    </div>
+                  </div>
+                  <ShippingSelector
+                    variant="light"
+                    items={carrito.map(i => ({ productoId: i.productoId, cantidad: i.cantidad, nombre: i.nombre }))}
+                    comuna={cliente.ciudad}
+                    region={cliente.region}
+                    subtotal={subtotal}
+                    umbralEnvioGratis={40000}
+                    onSelect={setEnvioBluex}
+                  />
+                </div>
 
-                {/* Método de pago */}
-                <div className="bg-white border border-gray-100 rounded-3xl p-5 sm:p-6 shadow-sm space-y-4">
-                  <div>
-                    <h3 className="font-poppins font-bold text-gray-900 text-lg">Método de pago</h3>
-                    <p className="text-xs text-gray-400 mt-1">Elige cómo prefieres pagar</p>
+                {/* 3 · Método de pago */}
+                <div className="bg-white border border-gray-100 rounded-3xl p-5 sm:p-7 shadow-sm">
+                  <div className="flex items-center gap-3 mb-5 pb-4 border-b border-gray-100">
+                    <div className="w-9 h-9 rounded-xl bg-gray-900 text-white flex items-center justify-center font-poppins font-bold text-sm">3</div>
+                    <div>
+                      <h3 className="font-poppins font-bold text-gray-900 text-base">Método de pago</h3>
+                      <p className="text-xs text-gray-500 mt-0.5">Pago seguro · cifrado SSL</p>
+                    </div>
                   </div>
                   <PaymentMethodSelector
                     value={medioPago}
@@ -400,7 +409,7 @@ export default function Carrito() {
                   />
                 </div>
 
-                <button onClick={() => setStep(1)} className="text-sm text-gray-500 hover:text-gray-900 font-medium inline-flex items-center gap-1.5">
+                <button onClick={() => setStep(1)} className="text-sm text-gray-500 hover:text-gray-900 font-medium inline-flex items-center gap-1.5 px-1">
                   <ArrowLeft className="w-3.5 h-3.5" /> Volver al carrito
                 </button>
               </>
