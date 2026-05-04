@@ -433,19 +433,19 @@ export default function ShopLanding() {
               </div>
             </div>
 
-            {/* Barra superior unificada: celebration pill + CTAs — una sola línea ultra-compacta */}
-            <div className="px-3 sm:px-4 pt-2 flex items-center gap-2 flex-wrap">
-              <div className="flex-1 min-w-[240px]">
+            {/* Barra superior unificada: celebration pill + CTAs — más aire, mejor jerarquía */}
+            <div className="px-3 sm:px-4 pt-3 pb-1 flex items-center gap-2.5 flex-wrap">
+              <div className="flex-1 min-w-[220px]">
                 <CelebrationBanner onChatPrompt={sendMessage} compact />
               </div>
               <div className="flex gap-1.5 flex-shrink-0">
                 <Link to="/shop">
-                  <Button className="bg-red-600 hover:bg-red-700 active:bg-red-800 text-white font-bold rounded-full px-3 py-1.5 h-auto shadow-lg text-[11px] transition-all">
+                  <Button className="bg-red-600 hover:bg-red-700 active:bg-red-800 text-white font-bold rounded-full px-3.5 py-1.5 h-8 shadow-lg text-[11px] transition-all">
                     📮 Explorar
                   </Button>
                 </Link>
                 <Link to="/b2b/contacto">
-                  <Button className="bg-yellow-400 hover:bg-yellow-500 active:bg-yellow-600 text-gray-900 font-bold rounded-full px-3 py-1.5 h-auto shadow-lg text-[11px] transition-all">
+                  <Button className="bg-yellow-400 hover:bg-yellow-500 active:bg-yellow-600 text-gray-900 font-bold rounded-full px-3.5 py-1.5 h-8 shadow-lg text-[11px] transition-all">
                     ✨ B2B
                   </Button>
                 </Link>
@@ -470,21 +470,24 @@ export default function ShopLanding() {
                   />
                 )}
                 
-                {/* Agent Header */}
-                <div className="mb-2 pb-2 border-b border-white/20 flex items-center gap-2 flex-shrink-0 min-w-0">
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-teal-400 to-cyan-500 flex items-center justify-center text-white font-bold flex-shrink-0 text-sm shadow-lg">🐢</div>
+                {/* Agent Header — avatar más visible + status "en línea" */}
+                <div className="mb-2.5 pb-2.5 border-b border-white/15 flex items-center gap-2.5 flex-shrink-0 min-w-0">
+                  <div className="relative flex-shrink-0">
+                    <div className="w-9 h-9 rounded-full bg-gradient-to-br from-teal-400 to-cyan-500 flex items-center justify-center text-white text-base shadow-lg ring-2 ring-white/20">🐢</div>
+                    <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-green-400 ring-2 ring-slate-900/80" title="En línea" />
+                  </div>
                   <div className="min-w-0 flex-1">
-                    <p className="text-white font-bold text-xs">Peyu</p>
-                    <p className="text-white/50 text-[10px] line-clamp-1">Asistente de Gifting</p>
+                    <p className="text-white font-bold text-sm leading-tight">Peyu</p>
+                    <p className="text-white/55 text-[10px] line-clamp-1">Asistente de Gifting · responde al instante</p>
                   </div>
                   {historyCount > 0 && (
                     <button
                       onClick={() => setShowHistory(true)}
-                      className="flex items-center gap-1 px-2 py-1 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 text-white/90 text-[10px] font-semibold transition flex-shrink-0"
+                      className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 text-white/90 text-[10px] font-semibold transition flex-shrink-0"
                       title="Conversaciones anteriores"
                     >
                       <History className="w-3 h-3" />
-                      <span className="hidden sm:inline">Anteriores ({historyCount})</span>
+                      <span className="hidden sm:inline">Anteriores · {historyCount}</span>
                       <span className="sm:hidden">{historyCount}</span>
                     </button>
                   )}
@@ -534,35 +537,42 @@ export default function ShopLanding() {
                   <div ref={messagesEndRef} />
                 </div>
 
-                {/* Input — tono slate translúcido que armoniza con el glass purple/teal del chat */}
-                <div className="flex gap-2 flex-shrink-0 min-w-0 bg-slate-900/55 rounded-full p-1.5 border border-teal-300/30 shadow-lg shadow-black/20 backdrop-blur-md">
+                {/* Input — protagonista del chat: alto, sólido, glow teal en focus */}
+                <div className="peyu-chat-input flex gap-2 flex-shrink-0 min-w-0 items-center bg-slate-950/65 rounded-full pl-1.5 pr-1.5 py-1.5 border border-white/15 shadow-[0_8px_24px_-8px_rgba(0,0,0,0.5)] backdrop-blur-xl transition-all">
                   <Input
                     value={input}
                     onChange={e => setInput(e.target.value)}
                     onKeyDown={e => e.key === 'Enter' && !loading && sendMessage(input)}
                     placeholder="Escribe tu mensaje a Peyu…"
-                    className="bg-transparent border-0 text-white placeholder:text-white/55 text-sm rounded-full focus:ring-0 focus-visible:ring-0 flex-1 h-10 px-4 disabled:opacity-60 shadow-none"
+                    className="bg-transparent border-0 text-white placeholder:text-white/50 text-sm rounded-full focus:ring-0 focus-visible:ring-0 flex-1 h-11 px-4 disabled:opacity-60 shadow-none font-medium"
                     disabled={loading}
                   />
                   <Button
                     onClick={() => sendMessage(input)}
                     disabled={loading || !input.trim()}
-                    className="bg-gradient-to-r from-teal-500 to-cyan-500 hover:from-teal-600 hover:to-cyan-600 active:from-teal-700 active:to-cyan-700 text-white rounded-full w-10 h-10 p-0 flex items-center justify-center flex-shrink-0 shadow-md transition-all disabled:opacity-60">
-                    <Send className="w-4 h-4" />
+                    className="bg-gradient-to-br from-teal-400 to-cyan-500 hover:from-teal-500 hover:to-cyan-600 active:from-teal-600 active:to-cyan-700 text-white rounded-full w-11 h-11 p-0 flex items-center justify-center flex-shrink-0 shadow-lg shadow-teal-500/30 transition-all disabled:opacity-50 disabled:shadow-none">
+                    <Send className="w-[18px] h-[18px]" />
                   </Button>
                 </div>
+                <style>{`
+                  .peyu-chat-input:focus-within {
+                    border-color: rgba(45, 212, 191, 0.55);
+                    box-shadow: 0 0 0 4px rgba(45, 212, 191, 0.12), 0 8px 24px -8px rgba(0,0,0,0.5);
+                  }
+                `}</style>
 
-                {/* Quick Replies — debajo del input (patrón ChatGPT / Claude) */}
-                <div className="flex-shrink-0 mt-2">
+                {/* Quick Replies — sugerencias secundarias, jerarquía visual menor que el input */}
+                <div className="flex-shrink-0 mt-2.5">
+                  <p className="text-white/40 text-[9px] font-semibold uppercase tracking-wider mb-1 px-1">Sugerencias</p>
                   <div className="overflow-x-auto scrollbar-hide flex gap-1.5 pb-1">
                     {OCASIONES.map(occ => (
                       <button
                         key={occ.id}
                         onClick={() => handleOccasionClick(occ)}
-                        className="flex items-center gap-1.5 flex-shrink-0 bg-white/8 hover:bg-teal-500/25 border border-white/15 hover:border-teal-400/40 active:bg-teal-600/35 transition-all rounded-full px-2.5 py-1"
+                        className="flex items-center gap-1.5 flex-shrink-0 bg-white/[0.06] hover:bg-teal-500/20 border border-white/10 hover:border-teal-400/40 active:bg-teal-600/30 transition-all rounded-full px-2.5 py-1"
                       >
-                        <span className="text-xs leading-none">{occ.icon}</span>
-                        <span className="text-white/90 text-[10px] font-medium whitespace-nowrap">{occ.label}</span>
+                        <span className="text-[11px] leading-none">{occ.icon}</span>
+                        <span className="text-white/75 text-[10px] font-medium whitespace-nowrap">{occ.label}</span>
                       </button>
                     ))}
                   </div>
