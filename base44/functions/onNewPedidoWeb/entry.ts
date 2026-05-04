@@ -15,6 +15,34 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
 const fmtCLP = (n) => '$' + (n || 0).toLocaleString('es-CL');
 
+// ── Resend: envía emails a cualquier dirección externa (a diferencia de
+//    Core.SendEmail de Base44 que solo funciona con usuarios del app).
+async function sendViaResend({ to, from, subject, html, replyTo }) {
+  const apiKey = Deno.env.get('RESEND_API_KEY');
+  if (!apiKey) throw new Error('RESEND_API_KEY not set');
+
+  const res = await fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${apiKey}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      from: from || 'PEYU Chile <ventas@peyuchile.cl>',
+      to: Array.isArray(to) ? to : [to],
+      subject,
+      html,
+      ...(replyTo ? { reply_to: replyTo } : {}),
+    }),
+  });
+
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`Resend ${res.status}: ${text}`);
+  }
+  return res.json();
+}
+
 // ── Datos bancarios oficiales PEYU Chile SpA ────────────────────────────────
 const DATOS_BANCARIOS = {
   titular: 'Peyu Chile SpA',
@@ -29,35 +57,91 @@ const DATOS_BANCARIOS = {
 function buildPaymentBlock(pedido) {
   const medio = pedido.medio_pago || '';
 
-  // ── TRANSFERENCIA ── Destacar datos bancarios (bloque azul/verde)
+  // ── TRANSFERENCIA ── Bloque editorial premium con datos bancarios
   if (medio === 'Transferencia') {
+    const waMsg = encodeURIComponent(`Hola PEYU 🐢, adjunto comprobante de transferencia del pedido ${pedido.numero_pedido} por ${fmtCLP(pedido.total)}.`);
     return `
-    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:linear-gradient(135deg,#ECFDF5 0%,#D1FAE5 100%);border:2px solid #0F8B6C;border-radius:16px;margin-bottom:24px;">
-      <tr><td style="padding:24px 26px;">
-        <p style="margin:0 0 4px;font-size:11px;font-weight:700;letter-spacing:1.5px;color:#0F8B6C;text-transform:uppercase;">⚠️ Acción requerida</p>
-        <p style="margin:0 0 14px;font-size:18px;font-weight:800;color:#0F172A;line-height:1.3;">Transfiere ${fmtCLP(pedido.total)} a la siguiente cuenta</p>
-
-        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#fff;border-radius:12px;font-size:14px;">
-          <tr><td style="padding:10px 16px;color:#64748B;border-bottom:1px solid #F1F5F9;">Titular</td><td style="padding:10px 16px;text-align:right;color:#0F172A;font-weight:700;border-bottom:1px solid #F1F5F9;">${DATOS_BANCARIOS.titular}</td></tr>
-          <tr><td style="padding:10px 16px;color:#64748B;border-bottom:1px solid #F1F5F9;">RUT</td><td style="padding:10px 16px;text-align:right;color:#0F172A;font-weight:700;border-bottom:1px solid #F1F5F9;font-variant-numeric:tabular-nums;">${DATOS_BANCARIOS.rut}</td></tr>
-          <tr><td style="padding:10px 16px;color:#64748B;border-bottom:1px solid #F1F5F9;">Banco</td><td style="padding:10px 16px;text-align:right;color:#0F172A;font-weight:700;border-bottom:1px solid #F1F5F9;">${DATOS_BANCARIOS.banco}</td></tr>
-          <tr><td style="padding:10px 16px;color:#64748B;border-bottom:1px solid #F1F5F9;">Tipo de cuenta</td><td style="padding:10px 16px;text-align:right;color:#0F172A;font-weight:700;border-bottom:1px solid #F1F5F9;">${DATOS_BANCARIOS.tipo}</td></tr>
-          <tr><td style="padding:10px 16px;color:#64748B;border-bottom:1px solid #F1F5F9;">N° de cuenta</td><td style="padding:10px 16px;text-align:right;color:#0F8B6C;font-weight:800;font-size:16px;border-bottom:1px solid #F1F5F9;font-variant-numeric:tabular-nums;">${DATOS_BANCARIOS.numero}</td></tr>
-          <tr><td style="padding:10px 16px;color:#64748B;">Email</td><td style="padding:10px 16px;text-align:right;color:#0F172A;font-weight:700;">${DATOS_BANCARIOS.email}</td></tr>
-        </table>
-
-        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:16px;background:#FFF8E6;border-left:4px solid #F59E0B;border-radius:8px;">
-          <tr><td style="padding:14px 18px;font-size:13px;color:#78350F;line-height:1.6;">
-            <strong>📌 Importante:</strong><br>
-            1. En el detalle de la transferencia, indica el N° de pedido <strong>${pedido.numero_pedido}</strong>.<br>
-            2. Envía el comprobante a <a href="mailto:ventas@peyuchile.cl?subject=Comprobante ${pedido.numero_pedido}" style="color:#0F8B6C;font-weight:700;text-decoration:none;">ventas@peyuchile.cl</a> o por WhatsApp.<br>
-            3. Apenas validemos el pago, comenzamos la producción de tu pedido.
+    <!-- Monto destacado (hero del pago) -->
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:18px;">
+      <tr><td align="center" style="padding:0;">
+        <table role="presentation" cellpadding="0" cellspacing="0" style="background:#0F172A;border-radius:20px;overflow:hidden;">
+          <tr><td style="padding:28px 44px;text-align:center;">
+            <p style="margin:0 0 6px;font-size:10px;font-weight:700;letter-spacing:3px;color:#A7D9C9;text-transform:uppercase;">Monto a transferir</p>
+            <p style="margin:0;font-size:38px;font-weight:800;color:#fff;letter-spacing:-1.5px;line-height:1;font-variant-numeric:tabular-nums;">${fmtCLP(pedido.total)}</p>
+            <p style="margin:8px 0 0;font-size:11px;color:#94A3B8;letter-spacing:0.5px;">Pedido ${pedido.numero_pedido}</p>
           </td></tr>
         </table>
+      </td></tr>
+    </table>
 
-        <p style="margin:14px 0 0;text-align:center;font-size:13px;color:#0F8B6C;font-weight:600;">
-          ✅ Tu compra incluye <strong>5% de descuento</strong> por pago con transferencia
-        </p>
+    <!-- Datos bancarios — formato vertical card por dato -->
+    <p style="margin:0 0 12px;font-size:12px;font-weight:700;letter-spacing:2px;color:#0F8B6C;text-transform:uppercase;">Datos para transferir</p>
+
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#FAFAF8;border:1px solid #E5E0D6;border-radius:16px;margin-bottom:18px;overflow:hidden;">
+      <tr><td style="padding:14px 20px;border-bottom:1px solid #EFEAE0;">
+        <p style="margin:0 0 2px;font-size:10px;font-weight:600;letter-spacing:1.5px;color:#94A3B8;text-transform:uppercase;">Titular</p>
+        <p style="margin:0;font-size:15px;font-weight:700;color:#0F172A;">${DATOS_BANCARIOS.titular}</p>
+      </td></tr>
+      <tr><td style="padding:14px 20px;border-bottom:1px solid #EFEAE0;">
+        <p style="margin:0 0 2px;font-size:10px;font-weight:600;letter-spacing:1.5px;color:#94A3B8;text-transform:uppercase;">RUT</p>
+        <p style="margin:0;font-size:15px;font-weight:700;color:#0F172A;font-variant-numeric:tabular-nums;letter-spacing:0.3px;">${DATOS_BANCARIOS.rut}</p>
+      </td></tr>
+      <tr><td style="padding:14px 20px;border-bottom:1px solid #EFEAE0;">
+        <p style="margin:0 0 2px;font-size:10px;font-weight:600;letter-spacing:1.5px;color:#94A3B8;text-transform:uppercase;">Banco · Tipo de cuenta</p>
+        <p style="margin:0;font-size:15px;font-weight:700;color:#0F172A;">${DATOS_BANCARIOS.banco} · ${DATOS_BANCARIOS.tipo}</p>
+      </td></tr>
+      <tr><td style="padding:18px 20px;border-bottom:1px solid #EFEAE0;background:linear-gradient(135deg,#F0FAF7 0%,#E0F2EB 100%);">
+        <p style="margin:0 0 4px;font-size:10px;font-weight:700;letter-spacing:1.5px;color:#0F8B6C;text-transform:uppercase;">N° de cuenta</p>
+        <p style="margin:0;font-size:24px;font-weight:800;color:#0A6B54;font-variant-numeric:tabular-nums;letter-spacing:1px;line-height:1;">${DATOS_BANCARIOS.numero}</p>
+      </td></tr>
+      <tr><td style="padding:14px 20px;">
+        <p style="margin:0 0 2px;font-size:10px;font-weight:600;letter-spacing:1.5px;color:#94A3B8;text-transform:uppercase;">Email destino del comprobante</p>
+        <p style="margin:0;font-size:15px;font-weight:700;color:#0F172A;">${DATOS_BANCARIOS.email}</p>
+      </td></tr>
+    </table>
+
+    <!-- Pasos -->
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:18px;">
+      <tr><td>
+        <p style="margin:0 0 12px;font-size:12px;font-weight:700;letter-spacing:2px;color:#0F8B6C;text-transform:uppercase;">Tres pasos y listo</p>
+
+        <table role="presentation" cellpadding="0" cellspacing="0" style="margin-bottom:8px;">
+          <tr>
+            <td width="36" valign="top"><div style="width:28px;height:28px;background:#0F8B6C;color:#fff;border-radius:50%;text-align:center;line-height:28px;font-size:13px;font-weight:800;">1</div></td>
+            <td style="padding-left:12px;font-size:14px;color:#475569;line-height:1.55;">Transfiere <strong style="color:#0F172A;">${fmtCLP(pedido.total)}</strong> a la cuenta de arriba.</td>
+          </tr>
+        </table>
+        <table role="presentation" cellpadding="0" cellspacing="0" style="margin-bottom:8px;">
+          <tr>
+            <td width="36" valign="top"><div style="width:28px;height:28px;background:#0F8B6C;color:#fff;border-radius:50%;text-align:center;line-height:28px;font-size:13px;font-weight:800;">2</div></td>
+            <td style="padding-left:12px;font-size:14px;color:#475569;line-height:1.55;">En el detalle/comentario, escribe tu N° de pedido: <strong style="color:#0F172A;background:#FFF8E6;padding:2px 8px;border-radius:6px;font-family:monospace;">${pedido.numero_pedido}</strong></td>
+          </tr>
+        </table>
+        <table role="presentation" cellpadding="0" cellspacing="0">
+          <tr>
+            <td width="36" valign="top"><div style="width:28px;height:28px;background:#0F8B6C;color:#fff;border-radius:50%;text-align:center;line-height:28px;font-size:13px;font-weight:800;">3</div></td>
+            <td style="padding-left:12px;font-size:14px;color:#475569;line-height:1.55;">Envía el comprobante por WhatsApp o email. Apenas lo validemos, partimos producción 🐢.</td>
+          </tr>
+        </table>
+      </td></tr>
+    </table>
+
+    <!-- CTAs comprobante -->
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:18px;">
+      <tr>
+        <td width="50%" style="padding-right:6px;">
+          <a href="https://wa.me/56935040242?text=${waMsg}" style="display:block;background:#25D366;color:#fff;padding:14px 16px;border-radius:12px;text-decoration:none;font-weight:700;font-size:14px;text-align:center;">💬 Enviar por WhatsApp</a>
+        </td>
+        <td width="50%" style="padding-left:6px;">
+          <a href="mailto:ventas@peyuchile.cl?subject=Comprobante%20${encodeURIComponent(pedido.numero_pedido)}" style="display:block;background:#0F172A;color:#fff;padding:14px 16px;border-radius:12px;text-decoration:none;font-weight:700;font-size:14px;text-align:center;">✉️ Enviar por email</a>
+        </td>
+      </tr>
+    </table>
+
+    <!-- Beneficio descuento -->
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:linear-gradient(135deg,#F0FAF7 0%,#E0F2EB 100%);border-radius:12px;margin-bottom:24px;">
+      <tr><td style="padding:14px 20px;text-align:center;font-size:13px;color:#0A6B54;line-height:1.4;">
+        <strong>✓ 5% de descuento incluido</strong> · ya aplicado en el total por pago con transferencia
       </td></tr>
     </table>`;
   }
@@ -326,26 +410,27 @@ Deno.serve(async (req) => {
 
     const tareas = [];
 
-    // ── 1. EMAIL CLIENTE (HTML) ──────────────────────────────────
+    // ── 1. EMAIL CLIENTE (vía Resend — soporta destinatarios externos) ───
     if (pedido.cliente_email) {
       tareas.push(
-        base44.asServiceRole.integrations.Core.SendEmail({
+        sendViaResend({
           to: pedido.cliente_email,
-          from_name: 'PEYU Chile',
+          from: 'PEYU Chile <ventas@peyuchile.cl>',
+          replyTo: 'ventas@peyuchile.cl',
           subject: buildSubject(pedido),
-          body: buildClientHtml(pedido),
-        })
+          html: buildClientHtml(pedido),
+        }).catch(e => console.error('Email cliente falló:', e.message))
       );
     }
 
     // ── 2. EMAIL INTERNO ────────────────────────────────────────
     tareas.push(
-      base44.asServiceRole.integrations.Core.SendEmail({
+      sendViaResend({
         to: 'ventas@peyuchile.cl',
-        from_name: 'Sistema PEYU',
+        from: 'Sistema PEYU <ventas@peyuchile.cl>',
         subject: `🛒 Nuevo pedido · ${pedido.numero_pedido} · ${fmtCLP(pedido.total)} · ${pedido.medio_pago || 'WebPay'}`,
-        body: buildInternalHtml(pedido),
-      })
+        html: buildInternalHtml(pedido),
+      }).catch(e => console.error('Email interno falló:', e.message))
     );
 
     // ── 3. STOCK ─────────────────────────────────────────────────
