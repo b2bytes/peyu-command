@@ -71,6 +71,7 @@ export const NAV_GROUPS = [
       { path: '/admin/trazabilidad',  label: 'Trazabilidad',       icon: Boxes },
       { path: '/admin/inventario',    label: 'Inventario',         icon: Boxes },
       { path: '/admin/proveedores',   label: 'Proveedores',        icon: Truck },
+      { path: '/admin/bluex',         label: 'Centro Logístico',   icon: Truck },
       { path: '/admin/tarifas-envio', label: 'Tarifas Bluex',      icon: Truck },
       { path: '/admin/compras',       label: 'Compras & Supply',   icon: ShoppingCart },
       { path: '/admin/esg',           label: 'Sostenibilidad ESG', icon: Leaf },
