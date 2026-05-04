@@ -12,6 +12,8 @@ import PaymentMethodSelector from '@/components/cart/PaymentMethodSelector';
 import ShippingAddressForm, { validarShippingForm } from '@/components/cart/ShippingAddressForm';
 import ShippingSelector from '@/components/cart/ShippingSelector';
 import ImpactoAmbiental from '@/components/cart/ImpactoAmbiental';
+import OneClickBuyButton from '@/components/cart/OneClickBuyButton';
+import { saveOneClickProfile } from '@/lib/one-click-profile';
 
 const DESCUENTO_TRANSFERENCIA_PCT = 5;
 
@@ -201,6 +203,9 @@ export default function Carrito() {
         return;
       }
     }
+
+    // Guarda el perfil para "Compra en 1 Clic" en futuras visitas
+    saveOneClickProfile(cliente, medioPagoFinal);
 
     localStorage.removeItem('carrito');
     trackPurchase({ transactionId: numero, total, shipping: envio, cart: carrito });
@@ -477,17 +482,21 @@ export default function Carrito() {
 
             {/* CTA */}
             {step === 1 ? (
-              <Button
-                onClick={() => {
-                  trackBeginCheckout(carrito, subtotal);
-                  // Trazabilidad 360°: checkout start
-                  track.checkoutStart({ total: subtotal + envio, items: carrito });
-                  setStep(2);
-                }}
-                size="lg"
-                className="w-full font-semibold gap-2 rounded-2xl bg-gray-900 hover:bg-gray-800 text-white shadow-lg h-13 py-4">
-                Continuar <ChevronRight className="w-4 h-4" />
-              </Button>
+              <div className="space-y-2">
+                {/* Compra en 1 Clic — solo aparece si hay perfil guardado válido */}
+                <OneClickBuyButton items={carrito} variant="light" />
+                <Button
+                  onClick={() => {
+                    trackBeginCheckout(carrito, subtotal);
+                    // Trazabilidad 360°: checkout start
+                    track.checkoutStart({ total: subtotal + envio, items: carrito });
+                    setStep(2);
+                  }}
+                  size="lg"
+                  className="w-full font-semibold gap-2 rounded-2xl bg-gray-900 hover:bg-gray-800 text-white shadow-lg h-13 py-4">
+                  Continuar <ChevronRight className="w-4 h-4" />
+                </Button>
+              </div>
             ) : (
               <Button
                 onClick={crearPedido}
