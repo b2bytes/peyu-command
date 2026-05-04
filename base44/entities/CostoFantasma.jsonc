@@ -1,0 +1,161 @@
+{
+  "name": "CostoFantasma",
+  "type": "object",
+  "description": "Costos indirectos / fantasmas que no suelen registrarse: boletas peque\u00f1as, viajes, transportes, comidas con clientes, materiales menores, herramientas, software, etc. Captura r\u00e1pida desde mobile + foto. Se prorratean autom\u00e1ticamente a productos seg\u00fan reglas configurables.",
+  "properties": {
+    "description": {
+      "type": "string",
+      "title": "Descripci\u00f3n del gasto",
+      "maxLength": 1000
+    },
+    "fecha": {
+      "type": "string",
+      "format": "date",
+      "title": "Fecha del gasto"
+    },
+    "monto_clp": {
+      "type": "number",
+      "title": "Monto (CLP)"
+    },
+    "categoria": {
+      "type": "string",
+      "title": "Categor\u00eda",
+      "enum": [
+        "Viaje / Transporte",
+        "Materiales menores",
+        "Herramientas",
+        "Comida cliente / Reuni\u00f3n",
+        "Software / Suscripci\u00f3n",
+        "Bencina / Estacionamiento",
+        "Env\u00edo / Courier",
+        "Imprenta / Impresi\u00f3n",
+        "Limpieza taller",
+        "Repuestos m\u00e1quina",
+        "Empaque / Cinta / Pegamento",
+        "Boleta proveedor peque\u00f1o",
+        "Marketing menor (regalos, muestras)",
+        "Mantenci\u00f3n",
+        "Otro"
+      ]
+    },
+    "metodo_pago": {
+      "type": "string",
+      "title": "M\u00e9todo de pago",
+      "enum": [
+        "Efectivo",
+        "Tarjeta cr\u00e9dito",
+        "Tarjeta d\u00e9bito",
+        "Transferencia",
+        "App pago",
+        "Cr\u00e9dito proveedor"
+      ]
+    },
+    "proveedor": {
+      "type": "string",
+      "title": "Proveedor / lugar"
+    },
+    "boleta_url": {
+      "type": "string",
+      "title": "URL boleta / foto comprobante"
+    },
+    "asignacion_tipo": {
+      "type": "string",
+      "title": "Tipo de asignaci\u00f3n",
+      "enum": [
+        "Producto espec\u00edfico",
+        "Categor\u00eda producto",
+        "L\u00ednea producci\u00f3n",
+        "Indirecto general (todos)",
+        "B2B exclusivo",
+        "B2C exclusivo",
+        "Marketing",
+        "Operaci\u00f3n general"
+      ],
+      "default": "Indirecto general (todos)",
+      "description": "C\u00f3mo se prorratea este costo a los productos"
+    },
+    "producto_sku": {
+      "type": "string",
+      "title": "SKU producto espec\u00edfico (si aplica)"
+    },
+    "categoria_producto": {
+      "type": "string",
+      "title": "Categor\u00eda producto (si aplica)"
+    },
+    "registrado_por": {
+      "type": "string",
+      "title": "Registrado por (email)"
+    },
+    "registrado_canal": {
+      "type": "string",
+      "title": "Canal de registro",
+      "enum": [
+        "manual_web",
+        "mobile_quick",
+        "agente_ia",
+        "whatsapp",
+        "email",
+        "ocr_boleta"
+      ],
+      "default": "manual_web"
+    },
+    "ocr_extracted": {
+      "type": "object",
+      "title": "Datos extra\u00eddos por OCR de la boleta",
+      "additionalProperties": true,
+      "description": "Cuando se sube foto, IA extrae monto, RUT, fecha, RUT, items"
+    },
+    "estado": {
+      "type": "string",
+      "title": "Estado",
+      "enum": [
+        "pendiente_revision",
+        "aprobado",
+        "prorrateado",
+        "rechazado"
+      ],
+      "default": "pendiente_revision"
+    },
+    "mes_imputacion": {
+      "type": "string",
+      "title": "Mes de imputaci\u00f3n (YYYY-MM)",
+      "description": "Mes contable al que se asigna este costo"
+    },
+    "es_recurrente": {
+      "type": "boolean",
+      "title": "\u00bfEs recurrente?",
+      "default": false
+    },
+    "frecuencia_recurrencia": {
+      "type": "string",
+      "title": "Frecuencia (si recurrente)",
+      "enum": [
+        "Mensual",
+        "Trimestral",
+        "Anual",
+        "Semanal"
+      ]
+    },
+    "tags": {
+      "type": "array",
+      "title": "Tags",
+      "items": {
+        "type": "string"
+      }
+    },
+    "notas": {
+      "type": "string",
+      "title": "Notas internas"
+    },
+    "ai_analysis": {
+      "type": "string",
+      "title": "An\u00e1lisis del agente IA",
+      "description": "Insights detectados (anomal\u00eda, patr\u00f3n, recomendaci\u00f3n)"
+    }
+  },
+  "required": [
+    "fecha",
+    "monto_clp",
+    "categoria"
+  ]
+}

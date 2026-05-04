@@ -1,0 +1,156 @@
+{
+  "name": "PriceSuggestion",
+  "type": "object",
+  "description": "Sugerencia de precio din\u00e1mico generada por el agente Finanzas IA. Se calcula del an\u00e1lisis ProductoCostoReal del mes, considerando margen objetivo, competencia, demanda. El humano aprueba o rechaza antes de aplicar.",
+  "properties": {
+    "description": {
+      "type": "string",
+      "title": "Descripci\u00f3n / racional",
+      "maxLength": 1000
+    },
+    "producto_sku": {
+      "type": "string",
+      "title": "SKU"
+    },
+    "producto_nombre": {
+      "type": "string",
+      "title": "Nombre"
+    },
+    "producto_id": {
+      "type": "string",
+      "title": "ID producto"
+    },
+    "mes_base": {
+      "type": "string",
+      "title": "Mes base de an\u00e1lisis (YYYY-MM)"
+    },
+    "tipo_precio": {
+      "type": "string",
+      "title": "Tipo de precio",
+      "enum": [
+        "B2C",
+        "B2B base",
+        "B2B 50-199",
+        "B2B 200-499",
+        "B2B 500+"
+      ],
+      "default": "B2C"
+    },
+    "precio_actual_clp": {
+      "type": "number",
+      "title": "Precio actual (CLP)"
+    },
+    "precio_sugerido_clp": {
+      "type": "number",
+      "title": "Precio sugerido (CLP)"
+    },
+    "delta_clp": {
+      "type": "number",
+      "title": "Diferencia (CLP)"
+    },
+    "delta_pct": {
+      "type": "number",
+      "title": "Diferencia (%)"
+    },
+    "costo_real_unitario_clp": {
+      "type": "number",
+      "title": "Costo real unitario base (CLP)"
+    },
+    "margen_actual_pct": {
+      "type": "number",
+      "title": "Margen actual (%)"
+    },
+    "margen_sugerido_pct": {
+      "type": "number",
+      "title": "Margen sugerido (%)"
+    },
+    "margen_objetivo_pct": {
+      "type": "number",
+      "title": "Margen objetivo configurado (%)",
+      "default": 55
+    },
+    "razonamiento": {
+      "type": "string",
+      "title": "Razonamiento del agente",
+      "description": "Por qu\u00e9 sugiere este precio (impactos identificados)"
+    },
+    "factores": {
+      "type": "array",
+      "title": "Factores considerados",
+      "items": {
+        "type": "object",
+        "properties": {
+          "factor": {
+            "type": "string"
+          },
+          "impacto_clp": {
+            "type": "number"
+          },
+          "tipo": {
+            "type": "string",
+            "enum": [
+              "costo_subio",
+              "costo_bajo",
+              "demanda",
+              "competencia",
+              "margen_objetivo",
+              "estacionalidad",
+              "fantasma_detectado"
+            ]
+          }
+        }
+      }
+    },
+    "urgencia": {
+      "type": "string",
+      "title": "Urgencia",
+      "enum": [
+        "Alta",
+        "Media",
+        "Baja",
+        "Informativa"
+      ],
+      "default": "Media"
+    },
+    "estado": {
+      "type": "string",
+      "title": "Estado",
+      "enum": [
+        "pendiente",
+        "aprobada",
+        "rechazada",
+        "aplicada",
+        "expirada"
+      ],
+      "default": "pendiente"
+    },
+    "aprobada_por": {
+      "type": "string",
+      "title": "Aprobada por (email)"
+    },
+    "aprobada_en": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Aprobada en"
+    },
+    "aplicada_en": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Aplicada en"
+    },
+    "notas_humano": {
+      "type": "string",
+      "title": "Notas del humano al aprobar/rechazar"
+    },
+    "generada_por_agente": {
+      "type": "string",
+      "title": "Agente que la gener\u00f3",
+      "default": "finanzas_ai"
+    }
+  },
+  "required": [
+    "producto_sku",
+    "precio_actual_clp",
+    "precio_sugerido_clp"
+  ]
+}

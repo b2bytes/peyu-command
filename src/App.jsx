@@ -91,6 +91,7 @@ const AdminProducts = lazy(() => import('./pages/AdminProducts'));
 const TarifasEnvio = lazy(() => import('./pages/TarifasEnvio'));
 const MonitoreoIA = lazy(() => import('./pages/MonitoreoIA'));
 const Trazabilidad360 = lazy(() => import('./pages/Trazabilidad360'));
+const CentroCostosReal = lazy(() => import('./pages/CentroCostosReal'));
 
 const AdminLoader = () => (
   <div className="fixed inset-0 flex items-center justify-center bg-background">
@@ -164,6 +165,7 @@ const AuthenticatedApp = () => {
           <Route path="tarifas-envio" element={<TarifasEnvio />} />
           <Route path="monitoreo-ia" element={<MonitoreoIA />} />
           <Route path="trazabilidad-360" element={<Trazabilidad360 />} />
+          <Route path="centro-costos" element={<CentroCostosReal />} />
         </Route>
         <Route path="*" element={<PageNotFound />} />
       </Routes>

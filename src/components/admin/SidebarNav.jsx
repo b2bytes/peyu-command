@@ -82,6 +82,7 @@ export const NAV_GROUPS = [
     icon: Banknote,
     defaultOpen: false,
     items: [
+      { path: '/admin/centro-costos', label: 'Centro Costos IA',   icon: Brain },
       { path: '/admin/financiero',    label: 'Financiero',         icon: Banknote },
       { path: '/admin/flujo-caja',    label: 'Flujo de Caja',      icon: Wallet },
       { path: '/admin/reportes',      label: 'Reportes',           icon: PieChart },
