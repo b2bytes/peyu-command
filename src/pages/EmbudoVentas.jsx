@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Users, FileText, Package, TrendingUp, MessageSquare, Zap, Clock, CheckCircle2, AlertTriangle } from 'lucide-react';
+import { ArrowRight, Users, FileText, Package, TrendingUp, MessageSquare, Zap, Clock, CheckCircle2, AlertTriangle, ShoppingCart, Building2 } from 'lucide-react';
+import B2CFunnel from '@/components/embudo/B2CFunnel';
 
 const ETAPAS = [
   { key: 'leads_total', label: 'Leads Totales', icon: Users, color: 'bg-blue-500', desc: 'Contactos que llegan por web, WhatsApp, formulario B2B o agente IA' },
@@ -54,7 +55,10 @@ export default function EmbudoVentas() {
   const [cotizaciones, setCotizaciones] = useState([]);
   const [ordenes, setOrdenes] = useState([]);
   const [proposals, setProposals] = useState([]);
+  const [pedidos, setPedidos] = useState([]);
+  const [carritos, setCarritos] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [activeFunnel, setActiveFunnel] = useState('b2b'); // 'b2b' | 'b2c'
 
   useEffect(() => {
     Promise.all([
@@ -63,8 +67,11 @@ export default function EmbudoVentas() {
       base44.entities.Cotizacion.list('-created_date', 200),
       base44.entities.OrdenProduccion.list('-created_date', 200),
       base44.entities.CorporateProposal.list('-created_date', 200),
-    ]).then(([l, bl, c, o, p]) => {
+      base44.entities.PedidoWeb.list('-created_date', 200),
+      base44.entities.CarritoAbandonado.list('-captured_at', 200),
+    ]).then(([l, bl, c, o, p, pw, ca]) => {
       setLeads(l); setB2bLeads(bl); setCotizaciones(c); setOrdenes(o); setProposals(p);
+      setPedidos(pw || []); setCarritos(ca || []);
       setLoading(false);
     });
   }, []);
@@ -104,8 +111,51 @@ export default function EmbudoVentas() {
   return (
     <div className="p-6 space-y-6">
       <div>
-        <h1 className="text-3xl font-poppins font-black text-white">Embudo de Conversión</h1>
-        <p className="text-teal-300/70 text-sm mt-1">Visibilidad completa del pipeline B2B — desde lead hasta orden de producción</p>
+        <h1 className="text-3xl font-poppins font-black text-white">Embudos de Conversión</h1>
+        <p className="text-teal-300/70 text-sm mt-1">Visibilidad end-to-end de los dos pipelines de PEYU — B2B (corporativo) y B2C (e-commerce)</p>
+      </div>
+
+      {/* Tabs B2B / B2C */}
+      <div className="inline-flex rounded-xl bg-white/5 border border-white/10 p-1 gap-1">
+        <button
+          onClick={() => setActiveFunnel('b2b')}
+          className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+            activeFunnel === 'b2b'
+              ? 'bg-gradient-to-r from-teal-500/30 to-cyan-500/20 text-white shadow'
+              : 'text-white/60 hover:text-white'
+          }`}
+        >
+          <Building2 className="w-4 h-4" />
+          Embudo B2B
+        </button>
+        <button
+          onClick={() => setActiveFunnel('b2c')}
+          className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+            activeFunnel === 'b2c'
+              ? 'bg-gradient-to-r from-teal-500/30 to-cyan-500/20 text-white shadow'
+              : 'text-white/60 hover:text-white'
+          }`}
+        >
+          <ShoppingCart className="w-4 h-4" />
+          Embudo B2C
+        </button>
+      </div>
+
+      {activeFunnel === 'b2c' && (
+        <div className="bg-white/5 border border-white/10 rounded-2xl p-5">
+          <div className="flex items-center gap-2 mb-4">
+            <ShoppingCart className="w-5 h-5 text-teal-300" />
+            <h2 className="text-lg font-poppins font-bold text-white">Embudo B2C · Tienda online</h2>
+          </div>
+          <B2CFunnel carritos={carritos} pedidos={pedidos} loading={loading} />
+        </div>
+      )}
+
+      {activeFunnel === 'b2b' && (
+      <>
+      <div className="flex items-center gap-2">
+        <Building2 className="w-5 h-5 text-teal-300" />
+        <h2 className="text-lg font-poppins font-bold text-white">Embudo B2B · Pipeline corporativo</h2>
       </div>
 
       {/* Alertas activas */}
@@ -227,6 +277,8 @@ export default function EmbudoVentas() {
           <p className="text-xs text-amber-200 font-medium">⚠ Si el agente no responde: Verifica que el agente "asistente_compras" esté activo en el panel de agentes. El agente necesita productos en la base de datos para hacer recomendaciones correctas.</p>
         </div>
       </div>
+      </>
+      )}
     </div>
   );
 }
