@@ -24,7 +24,7 @@ export const PAYMENT_METHODS = [
   {
     id: 'Transferencia',
     label: 'Transferencia bancaria',
-    sub: 'Banco de Chile · 5% dscto',
+    sub: 'Banco Santander · 5% dscto',
     icon: Building2,
     color: 'from-emerald-500 to-teal-600',
     badge: '−5%',
@@ -92,12 +92,12 @@ export default function PaymentMethodSelector({ value, onChange, totalCubiertoCo
             <span className="text-[10px] font-bold text-emerald-700 bg-white border border-emerald-200 px-2 py-0.5 rounded-full">5% dscto incluido</span>
           </div>
           <div className="bg-white/70 rounded-xl p-3 space-y-1 border border-emerald-100">
-            <p><span className="text-emerald-700">Titular:</span> <strong>PEYU SpA</strong></p>
-            <p><span className="text-emerald-700">RUT:</span> <strong>77.777.777-7</strong></p>
-            <p><span className="text-emerald-700">Banco:</span> <strong>Banco de Chile</strong></p>
+            <p><span className="text-emerald-700">Titular:</span> <strong>Peyu Chile SpA</strong></p>
+            <p><span className="text-emerald-700">RUT:</span> <strong>77.069.974-6</strong></p>
+            <p><span className="text-emerald-700">Banco:</span> <strong>Banco Santander</strong></p>
             <p><span className="text-emerald-700">Tipo:</span> <strong>Cuenta Corriente</strong></p>
-            <p><span className="text-emerald-700">N° cuenta:</span> <strong>000-0000-0000</strong></p>
-            <p><span className="text-emerald-700">Email:</span> <strong>pagos@peyuchile.cl</strong></p>
+            <p><span className="text-emerald-700">N° cuenta:</span> <strong>94151872</strong></p>
+            <p><span className="text-emerald-700">Email:</span> <strong>ventas@peyuchile.cl</strong></p>
           </div>
           <p className="text-emerald-700 leading-relaxed">
             Te enviaremos los datos por email al confirmar. Despachamos apenas recibimos el comprobante.

@@ -522,7 +522,7 @@ export default function Carrito() {
 
             <div className="flex items-center justify-center gap-1.5 text-xs text-gray-400">
               <Lock className="w-3 h-3" />
-              Pago 100% seguro · {medioPago === 'Transferencia' ? 'Banco de Chile' : medioPago === 'MercadoPago' ? 'Mercado Pago' : 'Webpay'}
+              Pago 100% seguro · {medioPago === 'Transferencia' ? 'Banco Santander' : medioPago === 'MercadoPago' ? 'Mercado Pago' : 'Webpay'}
             </div>
 
             <div className="flex justify-center gap-5 text-xs text-gray-400 pt-1">
