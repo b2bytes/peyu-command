@@ -9,6 +9,7 @@ import { track } from '@/lib/activity-tracker';
 export default function B2BPropuesta() {
   const urlParams = new URLSearchParams(window.location.search);
   const proposalId = urlParams.get('id');
+  const actionParam = urlParams.get('action'); // 'accept' | 'adjust' (desde email)
 
   const [propuesta, setPropuesta] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -24,10 +25,23 @@ export default function B2BPropuesta() {
           setPropuesta(list[0]);
           // Trazabilidad 360°: registrar la vista de la propuesta
           track.b2bProposalView({ proposalId, empresa: list[0].empresa });
+
+          // Si viene desde el email con ?action=accept y la propuesta NO está
+          // ya respondida → scroll suave al CTA + highlight sutil
+          if (actionParam === 'accept' && !['Aceptada', 'Rechazada', 'Vencida'].includes(list[0].status)) {
+            setTimeout(() => {
+              const el = document.getElementById('peyu-accept-cta');
+              if (el) {
+                el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                el.classList.add('ring-4', 'ring-teal-400/40');
+                setTimeout(() => el.classList.remove('ring-4', 'ring-teal-400/40'), 2400);
+              }
+            }, 600);
+          }
         }
       })
       .finally(() => setLoading(false));
-  }, [proposalId]);
+  }, [proposalId, actionParam]);
 
   const handleAccion = async (tipo) => {
     setAccion(tipo === 'aceptar' ? 'aceptando' : 'rechazando');
@@ -448,7 +462,7 @@ export default function B2BPropuesta() {
 
         {/* CTAs aceptar / rechazar */}
         {!yaRespondida && (
-          <div className="sticky bottom-4 bg-white border-2 border-gray-100 rounded-2xl p-4 shadow-2xl grid grid-cols-[1fr_2fr] gap-3">
+          <div id="peyu-accept-cta" className="sticky bottom-4 bg-white border-2 border-gray-100 rounded-2xl p-4 shadow-2xl grid grid-cols-[1fr_2fr] gap-3 transition-all">
             <Button onClick={() => handleAccion('rechazar')} variant="outline" disabled={!!accion}
               className="gap-2 rounded-xl border-red-200 text-red-600 hover:bg-red-50 font-semibold h-12">
               <XCircle className="w-4 h-4" />
