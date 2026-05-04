@@ -10,6 +10,7 @@ import {
 import TrackingTimeline from '@/components/seguimiento/TrackingTimeline';
 import PedidoRatingForm from '@/components/seguimiento/PedidoRatingForm';
 import PublicSEO from '@/components/PublicSEO';
+import { track } from '@/lib/activity-tracker';
 
 const TRACKING_URLS = {
   'Starken':       (t) => `https://www.starken.cl/seguimiento?codigo=${t}`,
@@ -58,6 +59,9 @@ export default function SeguimientoPedido() {
         return;
       }
       setPedido(p);
+
+      // Trazabilidad 360°: tracking view con identificación si trae email
+      track.trackingView(p.numero_pedido);
 
       // Verificar si ya calificó
       try {

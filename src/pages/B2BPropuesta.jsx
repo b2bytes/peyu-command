@@ -4,6 +4,7 @@ import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { CheckCircle, XCircle, FileText, Clock, Package, MessageCircle, Recycle, Download, Sparkles, Shield, Truck, Building2, Calendar, Hash } from 'lucide-react';
 import SEO from '@/components/SEO';
+import { track } from '@/lib/activity-tracker';
 
 export default function B2BPropuesta() {
   const urlParams = new URLSearchParams(window.location.search);
@@ -18,7 +19,13 @@ export default function B2BPropuesta() {
   useEffect(() => {
     if (!proposalId) { setLoading(false); return; }
     base44.entities.CorporateProposal.filter({ id: proposalId })
-      .then(list => { if (list?.length > 0) setPropuesta(list[0]); })
+      .then(list => {
+        if (list?.length > 0) {
+          setPropuesta(list[0]);
+          // Trazabilidad 360°: registrar la vista de la propuesta
+          track.b2bProposalView({ proposalId, empresa: list[0].empresa });
+        }
+      })
       .finally(() => setLoading(false));
   }, [proposalId]);
 
@@ -27,6 +34,12 @@ export default function B2BPropuesta() {
     await base44.entities.CorporateProposal.update(proposalId, {
       status: tipo === 'aceptar' ? 'Aceptada' : 'Rechazada',
     });
+    // Trazabilidad 360°: aceptación / rechazo de propuesta
+    if (tipo === 'aceptar') {
+      track.b2bProposalAccept({ proposalId, total: propuesta?.total });
+    } else {
+      track.b2bProposalReject({ proposalId, reason: 'cliente_web' });
+    }
     setDone(tipo === 'aceptar' ? 'aceptada' : 'rechazada');
     setAccion(null);
   };

@@ -90,6 +90,7 @@ const GA4Realtime = lazy(() => import('./pages/GA4Realtime'));
 const AdminProducts = lazy(() => import('./pages/AdminProducts'));
 const TarifasEnvio = lazy(() => import('./pages/TarifasEnvio'));
 const MonitoreoIA = lazy(() => import('./pages/MonitoreoIA'));
+const Trazabilidad360 = lazy(() => import('./pages/Trazabilidad360'));
 
 const AdminLoader = () => (
   <div className="fixed inset-0 flex items-center justify-center bg-background">
@@ -162,6 +163,7 @@ const AuthenticatedApp = () => {
           <Route path="admin-products" element={<AdminProducts />} />
           <Route path="tarifas-envio" element={<TarifasEnvio />} />
           <Route path="monitoreo-ia" element={<MonitoreoIA />} />
+          <Route path="trazabilidad-360" element={<Trazabilidad360 />} />
         </Route>
         <Route path="*" element={<PageNotFound />} />
       </Routes>

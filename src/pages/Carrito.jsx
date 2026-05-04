@@ -4,6 +4,7 @@ import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Trash2, ArrowLeft, ShoppingBag, Truck, Shield, ChevronRight, Lock, Recycle, Gift, AlertCircle } from 'lucide-react';
 import { trackBeginCheckout, trackPurchase } from '@/lib/analytics-peyu';
+import { track } from '@/lib/activity-tracker';
 import SEO from '@/components/SEO';
 import GiftCardRedeemBox from '@/components/cart/GiftCardRedeemBox';
 import CuponBox from '@/components/cart/CuponBox';
@@ -178,6 +179,13 @@ export default function Carrito() {
           // Vaciamos el carrito local antes de salir (ya está persistido como pedido)
           localStorage.removeItem('carrito');
           trackPurchase({ transactionId: numero, total, shipping: envio, cart: carrito });
+          // Trazabilidad 360°: checkout completo vía MercadoPago
+          track.checkoutComplete({
+            pedidoId: pedido?.id,
+            total,
+            email: cliente.email,
+            name: cliente.nombre,
+          });
           window.location.href = initUrl;
           return;
         }
@@ -195,6 +203,13 @@ export default function Carrito() {
 
     localStorage.removeItem('carrito');
     trackPurchase({ transactionId: numero, total, shipping: envio, cart: carrito });
+    // Trazabilidad 360°: checkout completo (vincula sesión anónima → email)
+    track.checkoutComplete({
+      pedidoId: pedido?.id,
+      total,
+      email: cliente.email,
+      name: cliente.nombre,
+    });
     setCreando(false);
 
     // Redirigimos a /gracias — es la "thank you page" estándar para conversión.
@@ -461,6 +476,8 @@ export default function Carrito() {
               <Button
                 onClick={() => {
                   trackBeginCheckout(carrito, subtotal);
+                  // Trazabilidad 360°: checkout start
+                  track.checkoutStart({ total: subtotal + envio, items: carrito });
                   setStep(2);
                 }}
                 size="lg"

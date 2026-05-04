@@ -1,0 +1,117 @@
+{
+  "name": "ActivityLog",
+  "type": "object",
+  "description": "Log central de actividad p\u00fablica (visitas, interacciones, formularios). Permite ver el journey 360\u00b0 de un visitante/cliente cruzando email, sesi\u00f3n y ruta. Complementa los historial[] espec\u00edficos de cada entidad.",
+  "properties": {
+    "description": {
+      "type": "string",
+      "title": "Descripci\u00f3n del evento",
+      "maxLength": 1000
+    },
+    "event_type": {
+      "type": "string",
+      "title": "Tipo de evento",
+      "enum": [
+        "page_view",
+        "product_view",
+        "add_to_cart",
+        "remove_from_cart",
+        "checkout_start",
+        "checkout_complete",
+        "b2b_form_submit",
+        "b2b_proposal_view",
+        "b2b_proposal_accept",
+        "b2b_proposal_reject",
+        "giftcard_purchase",
+        "giftcard_redeem",
+        "tracking_view",
+        "review_submit",
+        "chat_message",
+        "newsletter_signup",
+        "blog_view",
+        "search",
+        "personalization_request",
+        "other"
+      ]
+    },
+    "category": {
+      "type": "string",
+      "title": "Categor\u00eda del embudo",
+      "enum": [
+        "B2C",
+        "B2B",
+        "Soporte",
+        "Contenido",
+        "Sistema"
+      ]
+    },
+    "user_email": {
+      "type": "string",
+      "title": "Email del usuario (si conocido)"
+    },
+    "user_name": {
+      "type": "string",
+      "title": "Nombre del usuario"
+    },
+    "session_id": {
+      "type": "string",
+      "title": "Session ID an\u00f3nimo"
+    },
+    "page_path": {
+      "type": "string",
+      "title": "Ruta donde ocurri\u00f3"
+    },
+    "referrer": {
+      "type": "string",
+      "title": "Referrer / origen del tr\u00e1fico"
+    },
+    "utm_source": {
+      "type": "string",
+      "title": "UTM Source"
+    },
+    "utm_medium": {
+      "type": "string",
+      "title": "UTM Medium"
+    },
+    "utm_campaign": {
+      "type": "string",
+      "title": "UTM Campaign"
+    },
+    "entity_type": {
+      "type": "string",
+      "title": "Entidad referenciada",
+      "description": "Producto, B2BLead, PedidoWeb, CorporateProposal, GiftCard, etc."
+    },
+    "entity_id": {
+      "type": "string",
+      "title": "ID de la entidad referenciada"
+    },
+    "value_clp": {
+      "type": "number",
+      "title": "Valor monetario (si aplica)"
+    },
+    "device": {
+      "type": "string",
+      "title": "Dispositivo",
+      "enum": [
+        "desktop",
+        "mobile",
+        "tablet",
+        "unknown"
+      ],
+      "default": "unknown"
+    },
+    "user_agent": {
+      "type": "string",
+      "title": "User agent (truncado)"
+    },
+    "meta": {
+      "type": "object",
+      "title": "Metadata adicional",
+      "additionalProperties": true
+    }
+  },
+  "required": [
+    "event_type"
+  ]
+}

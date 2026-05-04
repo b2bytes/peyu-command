@@ -18,6 +18,7 @@ import GiftCardVisual from '@/components/giftcard/GiftCardVisual';
 import SEO from '@/components/SEO';
 import { buildOrganizationSchema, buildProductSchema, buildBreadcrumbSchema, combineSchemas } from '@/lib/schemas-peyu';
 import { trackAddToCart } from '@/lib/analytics-peyu';
+import { track } from '@/lib/activity-tracker';
 
 
 // Los colores ahora se extraen dinámicamente desde la descripción del producto
@@ -150,6 +151,8 @@ export default function ProductoDetalle() {
       const prod = data.find(p => p.id === id);
       setProducto(prod);
       if (prod) {
+        // Trazabilidad 360°: registrar product view
+        track.productView(prod);
         const colores = getColores(prod);
         const firstId = colores[0]?.id || null;
         setColorSeleccionado(firstId);
@@ -206,8 +209,10 @@ export default function ProductoDetalle() {
     setCarrito(nuevo);
     localStorage.setItem('carrito', JSON.stringify(nuevo));
     setAgregado(true);
-    // 📊 Funnel event: add_to_cart
+    // 📊 Funnel event: add_to_cart (GA4)
     trackAddToCart({ ...item, sku: producto.sku, categoria: producto.categoria });
+    // Trazabilidad 360°: add_to_cart en ActivityLog
+    track.addToCart({ ...item, sku: producto.sku, id: producto.id });
   };
 
   const handleShare = async () => {

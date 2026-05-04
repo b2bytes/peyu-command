@@ -41,6 +41,7 @@ export const NAV_GROUPS = [
       { path: '/admin/cotizaciones',  label: 'Cotizaciones',       icon: Receipt },
       { path: '/admin/cpq',           label: 'CPQ Cotizador',      icon: Calculator },
       { path: '/admin/embudo',        label: 'Embudo Conversión',  icon: TrendingUp },
+      { path: '/admin/trazabilidad-360', label: 'Trazabilidad 360°', icon: Radar },
       { path: '/admin/soporte',       label: 'Soporte WhatsApp',   icon: MessageSquare },
     ],
   },

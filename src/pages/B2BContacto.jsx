@@ -10,6 +10,7 @@ import LogoMockupPreview from '@/components/b2b/LogoMockupPreview';
 import { getProductImage } from '@/utils/productImages';
 import { readMockupDraft, clearMockupDraft } from '@/lib/mockup-draft';
 import PublicSEO from '@/components/PublicSEO';
+import { track } from '@/lib/activity-tracker';
 
 const MENU_ITEMS = [
   { href: '/', label: 'Inicio', icon: Home },
@@ -192,6 +193,15 @@ export default function B2BContacto() {
     });
 
     if (leadCreado?.id) {
+      // Trazabilidad 360°: registrar form submit con identificación
+      track.b2bFormSubmit({
+        leadId: leadCreado.id,
+        company: form.company_name,
+        email: form.email,
+        name: form.contact_name,
+        qty: Number(form.qty_estimate) || 0,
+      });
+
       base44.functions.invoke('scoreLead', { leadId: leadCreado.id }).catch(() => {});
 
       // Solo generar mockup si NO viene uno del draft y tenemos material base
