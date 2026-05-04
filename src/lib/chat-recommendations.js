@@ -57,18 +57,19 @@ export function buildOccasionPrompt(occasionLabel) {
   // Guardar la ocasión actual para futuras comparaciones
   try { localStorage.setItem(OCCASION_KEY, occasionLabel); } catch { /* no-op */ }
 
-  // Caso 1: primera consulta de la sesión
+  // Caso 1: primera consulta de la sesión — NO asumir B2B ni cantidad,
+  // dejar que el agente pregunte si es regalo personal o para empresa.
   if (shownCount === 0) {
-    return `Me gustaría un regalo corporativo para ${occasionLabel}. ¿Cuáles son las opciones disponibles y qué me recomiendas?`;
+    return `Estoy buscando un regalo para ${occasionLabel}. ¿Qué me recomiendas?`;
   }
 
   // Caso 2: misma ocasión, pide más opciones → rotar
   if (lastOccasion === occasionLabel) {
-    return `Muéstrame OTRAS opciones DIFERENTES para ${occasionLabel}, distintas a las que ya me recomendaste antes. Quiero ver más alternativas.`;
+    return `Muéstrame otra opción distinta para ${occasionLabel}, diferente a la que ya me recomendaste.`;
   }
 
-  // Caso 3: cambio de ocasión → recomendar productos apropiados a la nueva, evitando repetir
-  return `Ahora quiero ver opciones para ${occasionLabel}. Recomiéndame productos DISTINTOS a los anteriores, apropiados específicamente para esta ocasión.`;
+  // Caso 3: cambio de ocasión
+  return `Ahora me interesa una opción para ${occasionLabel}. Recomiéndame algo distinto a lo anterior.`;
 }
 
 export function clearShownSkus() {
