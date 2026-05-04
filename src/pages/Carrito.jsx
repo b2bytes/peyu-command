@@ -470,15 +470,15 @@ export default function Carrito() {
                 <span className="font-bold text-gray-900 text-sm">Total</span>
                 <span className="font-poppins font-bold text-2xl text-gray-900">${total.toLocaleString('es-CL')}</span>
               </div>
+
+              {/* Tu impacto real — integrado como footer del resumen, no flotando */}
+              <ImpactoAmbiental carrito={carrito} variant="inline" />
             </div>
 
-            {/* Gift Card */}
+            {/* Gift Card — colapsable, no protagonista */}
             {!carritoTieneGC && (
               <GiftCardRedeemBox onChange={setGiftCard} />
             )}
-
-            {/* Datos de Impacto Real — gramos de plástico evitados al océano */}
-            <ImpactoAmbiental carrito={carrito} />
 
             {/* CTA */}
             {step === 1 ? (
