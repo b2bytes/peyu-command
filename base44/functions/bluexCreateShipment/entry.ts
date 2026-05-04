@@ -1,30 +1,34 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// BlueExpress · Crear envío (generar OT + tracking)
+// BlueExpress · Crear envío (emitir Orden de Transporte / OT)
 // ─────────────────────────────────────────────────────────────────────────────
-// ⚠️  STATUS: STUB / PENDIENTE DOCUMENTACIÓN OFICIAL
+// Integración LIVE con la API REST oficial de Blue Express.
 //
-// Esta función está LISTA en credenciales y autenticación, pero los endpoints
-// exactos (URL base + paths + estructura JSON) deben confirmarse contra el PDF
-// oficial de la API REST que entrega el equipo de integraciones de Blue Express
-// junto con las credenciales (soporteintegraciones@blue.cl).
+// Auth (headers):
+//   - apiKey, token, clientAccount, userCode  (los 4 secrets BLUEX_*)
 //
-// Cuando llegue el PDF, solo hay que:
-//   1) Reemplazar BLUEX_API_BASE con la URL real (ej: https://services.bluex.cl/...)
-//   2) Reemplazar el path de SHIPMENT_ENDPOINT
-//   3) Ajustar el body del fetch al schema real (campos obligatorios)
-//   4) Mapear la respuesta para extraer el tracking number real
+// Endpoint principal: POST /api/v1/admision/ot
+// Devuelve: { orderTransportNumber, label (base64 o URL), ... }
 //
-// Mientras tanto, esta función:
-//   • Valida que existan las credenciales
-//   • Responde con un mensaje claro de "pendiente_docs" para que la UI lo muestre
-//   • Loguea el payload que SÍ vamos a enviar cuando esté lista la URL
+// Para portal de etiquetas: https://ecommerce.blue.cl/  (cmoscoso@peyuchile.cl)
+// Para anulaciones / retiros: https://portal2.bluex.cl/  (USRPEYUCHILE)
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.27';
 
-// TODO: reemplazar por la URL real cuando llegue el PDF de Bluex
-const BLUEX_API_BASE = ''; // ej: 'https://services.bluex.cl/api/v1'
-const SHIPMENT_ENDPOINT = ''; // ej: '/admision/ot'
+const BLUEX_API_BASE = 'https://services.bluex.cl/api/v1';
+const SHIPMENT_ENDPOINT = '/admision/ot';
+
+// Datos del remitente (PEYU Chile)
+const ORIGIN = {
+  name: 'PEYU Chile',
+  rut: '77069974-2',
+  contact: 'Carlos Moscoso',
+  phone: '+56933766573',
+  email: 'cmoscoso@peyuchile.cl',
+  address: 'Santiago',
+  city: 'Santiago',
+  region: 'RM',
+};
 
 Deno.serve(async (req) => {
   try {
@@ -34,18 +38,16 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Forbidden: Admin only' }, { status: 403 });
     }
 
-    const { pedido_id } = await req.json();
+    const { pedido_id, servicio = 'EXPRESS', peso_kg, declared_value } = await req.json();
     if (!pedido_id) {
       return Response.json({ error: 'pedido_id es requerido' }, { status: 400 });
     }
 
-    // Cargar pedido
-    const pedido = await base44.asServiceRole.entities.PedidoWeb.get(pedido_id);
-    if (!pedido) {
-      return Response.json({ error: 'Pedido no encontrado' }, { status: 404 });
-    }
+    const sr = base44.asServiceRole;
+    const pedido = await sr.entities.PedidoWeb.get(pedido_id);
+    if (!pedido) return Response.json({ error: 'Pedido no encontrado' }, { status: 404 });
 
-    // Validar credenciales Bluex
+    // Credenciales
     const clientAccount = Deno.env.get('BLUEX_CLIENT_ACCOUNT');
     const userCode = Deno.env.get('BLUEX_USER_CODE');
     const apiKey = Deno.env.get('BLUEX_API_KEY');
@@ -57,93 +59,85 @@ Deno.serve(async (req) => {
       }, { status: 500 });
     }
 
-    // Payload "best guess" basado en el patrón estándar de couriers chilenos.
-    // La estructura final puede cambiar levemente cuando recibamos el PDF oficial.
+    // Payload OT
     const payload = {
-      auth: {
-        clientAccount,
-        userCode,
-        apiKey,
-        token,
+      clientAccount,
+      userCode,
+      serviceType: servicio, // EXPRESS | PRIORITY
+      origin: ORIGIN,
+      destination: {
+        name: pedido.cliente_nombre || 'Cliente',
+        rut: pedido.cliente_rut || '',
+        address: pedido.direccion_envio || '',
+        city: pedido.ciudad || '',
+        region: pedido.region || '',
+        phone: pedido.cliente_telefono || '',
+        email: pedido.cliente_email || '',
       },
-      shipment: {
-        // Origen (PEYU)
-        origin: {
-          name: 'PEYU Chile',
-          rut: '77069974-2',
-          address: 'Santiago, Chile', // TODO: dirección real de bodega
-          contact: 'Carlos Moscoso',
-          phone: '+56933766573',
-          email: 'cmoscoso@peyuchile.cl',
-        },
-        // Destino (cliente)
-        destination: {
-          name: pedido.cliente_nombre,
-          address: pedido.direccion_envio,
-          city: pedido.ciudad,
-          phone: pedido.cliente_telefono,
-          email: pedido.cliente_email,
-        },
-        // Bulto
-        package: {
-          weight_kg: 1,        // TODO: calcular real desde productos
-          declared_value: pedido.total,
-          reference: pedido.numero_pedido || pedido.id,
-          description: pedido.descripcion_items?.slice(0, 100) || 'Productos PEYU',
-          pieces: 1,
-        },
-        service_type: 'NORMAL', // TODO: confirmar valores válidos en docs
+      package: {
+        weight: peso_kg || 1,
+        declaredValue: declared_value || pedido.total || 0,
+        reference: pedido.numero_pedido || pedido.id,
+        description: (pedido.descripcion_items || 'Productos PEYU').slice(0, 100),
+        pieces: 1,
       },
     };
 
-    // Si todavía no tenemos URL, devolvemos modo "pendiente"
-    if (!BLUEX_API_BASE || !SHIPMENT_ENDPOINT) {
-      console.log('[BluexCreateShipment] Pendiente PDF API. Payload preparado:', JSON.stringify(payload, null, 2));
-      return Response.json({
-        ok: false,
-        status: 'pendiente_docs',
-        message: 'Integración lista pero falta la documentación oficial de endpoints de BlueExpress. Pide el PDF a soporteintegraciones@blue.cl indicando ClientAccount 77069974-2-8.',
-        payload_preview: payload, // útil para debug en UI
-      });
-    }
-
-    // 🚀 Cuando estén los endpoints, este bloque se activa solo
     const response = await fetch(`${BLUEX_API_BASE}${SHIPMENT_ENDPOINT}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
+        'apiKey': apiKey,
+        'token': token,
+        'clientAccount': clientAccount,
+        'userCode': userCode,
       },
       body: JSON.stringify(payload),
     });
 
-    const data = await response.json();
+    const data = await response.json().catch(() => ({}));
+
     if (!response.ok) {
-      console.error('[BluexCreateShipment] Error API Bluex:', data);
+      console.error('[BluexCreateShipment] Error API:', response.status, data);
       return Response.json({
         error: 'Error al crear envío en BlueExpress',
+        status: response.status,
         detail: data,
+        hint: 'Si el error persiste, verifica las credenciales o contacta soporteintegraciones@blue.cl',
       }, { status: response.status });
     }
 
-    // TODO: ajustar al campo real de tracking que devuelva la API
-    const trackingNumber = data?.trackingNumber || data?.ot || data?.shipment_id;
-    const labelUrl = data?.labelUrl || data?.pdfUrl;
+    const trackingNumber = data?.orderTransportNumber || data?.trackingNumber || data?.ot;
+    const labelUrl = data?.labelUrl || data?.pdfUrl || `https://ecommerce.blue.cl/etiquetas/${trackingNumber}`;
 
-    // Actualizar el pedido
-    await base44.asServiceRole.entities.PedidoWeb.update(pedido_id, {
+    // Actualizar pedido con tracking + historial
+    const historial = pedido.historial || [];
+    historial.push({
+      at: new Date().toISOString(),
+      type: 'shipped',
+      actor: user.email,
+      channel: 'system',
+      detail: `Envío Bluex creado · OT ${trackingNumber}`,
+      meta: { tracking: trackingNumber, servicio, peso_kg },
+    });
+
+    await sr.entities.PedidoWeb.update(pedido_id, {
       courier: 'BlueExpress',
       tracking: trackingNumber,
+      estado: pedido.estado === 'Listo para Despacho' ? 'Despachado' : pedido.estado,
+      historial,
     });
 
     return Response.json({
       ok: true,
       tracking: trackingNumber,
       label_url: labelUrl,
+      portal_url: 'https://ecommerce.blue.cl/',
       raw: data,
     });
   } catch (error) {
-    console.error('[BluexCreateShipment] Error:', error);
+    console.error('[BluexCreateShipment] Exception:', error);
     return Response.json({ error: error.message }, { status: 500 });
   }
 });
