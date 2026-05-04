@@ -107,6 +107,64 @@
       "type": "number",
       "title": "% Anticipo",
       "default": 50
+    },
+    "recordatorios_enviados": {
+      "type": "number",
+      "title": "Recordatorios enviados",
+      "default": 0
+    },
+    "ultimo_recordatorio_at": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Fecha \u00faltimo recordatorio"
+    },
+    "historial": {
+      "type": "array",
+      "title": "Historial de eventos",
+      "description": "Trazabilidad cronol\u00f3gica de la propuesta (env\u00edos, recordatorios, vistas, cambios de estado).",
+      "items": {
+        "type": "object",
+        "properties": {
+          "at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "created",
+              "sent",
+              "viewed",
+              "reminder_sent",
+              "status_changed",
+              "expired",
+              "accepted",
+              "rejected",
+              "note"
+            ]
+          },
+          "actor": {
+            "type": "string"
+          },
+          "channel": {
+            "type": "string",
+            "enum": [
+              "email",
+              "whatsapp",
+              "system",
+              "manual"
+            ]
+          },
+          "detail": {
+            "type": "string"
+          },
+          "meta": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        }
+      },
+      "default": []
     }
   },
   "required": [
