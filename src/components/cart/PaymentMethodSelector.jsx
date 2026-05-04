@@ -6,20 +6,12 @@ import { CreditCard, Building2, Wallet, Gift, Check } from 'lucide-react';
  */
 export const PAYMENT_METHODS = [
   {
-    id: 'WebPay',
-    label: 'Webpay Plus',
-    sub: 'Crédito, Débito, Prepago',
-    icon: CreditCard,
-    color: 'from-blue-500 to-indigo-600',
-    badge: 'Más usado',
-  },
-  {
     id: 'MercadoPago',
     label: 'Mercado Pago',
     sub: 'Tarjetas, débito y hasta 12 cuotas',
     icon: Wallet,
     color: 'from-cyan-400 to-sky-500',
-    badge: '12 cuotas',
+    badge: 'Más usado',
   },
   {
     id: 'Transferencia',
