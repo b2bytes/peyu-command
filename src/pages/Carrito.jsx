@@ -11,6 +11,7 @@ import CuponBox from '@/components/cart/CuponBox';
 import PaymentMethodSelector from '@/components/cart/PaymentMethodSelector';
 import ShippingAddressForm, { validarShippingForm } from '@/components/cart/ShippingAddressForm';
 import ShippingSelector from '@/components/cart/ShippingSelector';
+import ImpactoAmbiental from '@/components/cart/ImpactoAmbiental';
 
 const DESCUENTO_TRANSFERENCIA_PCT = 5;
 
@@ -470,6 +471,9 @@ export default function Carrito() {
             {!carritoTieneGC && (
               <GiftCardRedeemBox onChange={setGiftCard} />
             )}
+
+            {/* Datos de Impacto Real — gramos de plástico evitados al océano */}
+            <ImpactoAmbiental carrito={carrito} />
 
             {/* CTA */}
             {step === 1 ? (
