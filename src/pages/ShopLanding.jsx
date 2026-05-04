@@ -402,13 +402,15 @@ export default function ShopLanding() {
       {/* Selector de fondo — flotante independiente */}
       <BackgroundSwitcher />
 
-      {/* Main content area — reserva espacio dinámico según sidebar (colapsado 56px / expandido 192px) */}
-      <div className={`absolute inset-0 overflow-y-auto overflow-x-hidden peyu-scrollbar-light transition-[padding] duration-200 ease-out ${sidebarExpanded ? 'lg:pl-48' : 'lg:pl-14'}`}>
-        {/* Main container — Liquid Glass (iOS 26 / visionOS style)
-            Centrado y con ancho máx ~70% en desktop para look premium. */}
-        <div className="flex gap-2 sm:gap-3 lg:gap-3 p-2 sm:p-3 lg:p-3 relative z-10 flex-col lg:flex-row items-stretch min-h-full lg:h-full w-full lg:max-w-[1280px] lg:mx-auto">
-          {/* LEFT CONTAINER - Liquid Glass */}
-          <div className="peyu-liquid-glass flex-1 rounded-2xl lg:rounded-3xl overflow-hidden flex flex-col min-w-0">
+      {/* Main content area — reserva espacio dinámico según sidebar (colapsado 56px / expandido 192px).
+          En mobile usamos altura fija (100svh) y SIN scroll vertical: el chat tiene su propio scroll interno
+          para que NO se expanda infinitamente al agregar mensajes. */}
+      <div className={`absolute inset-0 overflow-hidden lg:overflow-y-auto overflow-x-hidden peyu-scrollbar-light transition-[padding] duration-200 ease-out ${sidebarExpanded ? 'lg:pl-48' : 'lg:pl-14'}`}>
+        {/* Main container — Liquid Glass (iOS 26 / visionOS style).
+            Mobile: altura fija al viewport (100% del padre). Desktop: ancho máx 1280px. */}
+        <div className="flex gap-2 sm:gap-3 lg:gap-3 p-2 sm:p-3 lg:p-3 relative z-10 flex-col lg:flex-row items-stretch h-full lg:h-full w-full lg:max-w-[1280px] lg:mx-auto">
+          {/* LEFT CONTAINER - Liquid Glass · ocupa todo el alto disponible en mobile */}
+          <div className="peyu-liquid-glass flex-1 rounded-2xl lg:rounded-3xl overflow-hidden flex flex-col min-w-0 min-h-0">
 
             {/* Header — altura reducida */}
             <div className="bg-gradient-to-r from-teal-500/20 to-cyan-500/20 border-b border-white/15 px-3 sm:px-4 py-2 flex items-center justify-between gap-3 flex-shrink-0 backdrop-blur-md">
@@ -452,12 +454,14 @@ export default function ShopLanding() {
               </div>
             </div>
 
-            {/* Content */}
+            {/* Content — flex-1 + min-h-0 hace que el chat respete la altura disponible y no se expanda */}
             <div className="flex flex-col gap-1 p-2 sm:p-2.5 flex-1 min-h-0 overflow-hidden">
 
-              {/* Chat Agent — Liquid Glass; epicentro del landing, flex-1 se encarga de la altura */}
+              {/* Chat Agent — Liquid Glass; epicentro del landing.
+                  IMPORTANTE: SIN min-h en mobile para que el flex-1 lo limite al alto disponible
+                  y el scroll quede dentro del contenedor de mensajes (no en la página). */}
               <div
-                className={`peyu-liquid-glass-inner rounded-xl lg:rounded-2xl p-2 sm:p-2.5 flex flex-col flex-1 min-h-[400px] lg:min-h-0 overflow-hidden relative transition-all duration-500 ${
+                className={`peyu-liquid-glass-inner rounded-xl lg:rounded-2xl p-2 sm:p-2.5 flex flex-col flex-1 min-h-0 overflow-hidden relative transition-all duration-500 ${
                   isTheme ? 'peyu-liquid-glass-warm' : ''
                 }`}
               >

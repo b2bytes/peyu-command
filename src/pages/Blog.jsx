@@ -91,20 +91,20 @@ export default function Blog() {
 
       {/* Fondo creme/papel — separa visualmente al blog del resto del sitio */}
       <div className="bg-[#FAF7F2] min-h-screen text-slate-900">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-10 sm:py-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-16">
 
-          {/* HERO editorial */}
-          <header className="text-center mb-14 sm:mb-16">
-            <div className="inline-flex items-center gap-2 bg-teal-50 border border-teal-200 text-teal-800 px-3.5 py-1.5 rounded-full text-[11px] font-bold uppercase tracking-[0.12em] mb-5">
-              <BookOpen className="w-3.5 h-3.5" /> Blog Peyu
+          {/* HERO editorial — más compacto en mobile */}
+          <header className="text-center mb-10 sm:mb-16">
+            <div className="inline-flex items-center gap-2 bg-teal-50 border border-teal-200 text-teal-800 px-3 py-1 sm:px-3.5 sm:py-1.5 rounded-full text-[10px] sm:text-[11px] font-bold uppercase tracking-[0.12em] mb-4 sm:mb-5">
+              <BookOpen className="w-3 h-3 sm:w-3.5 sm:h-3.5" /> Blog Peyu
             </div>
-            <h1 className="font-poppins font-extrabold text-slate-900 mb-4 tracking-tight leading-[1.05] text-4xl sm:text-6xl lg:text-7xl">
+            <h1 className="font-poppins font-extrabold text-slate-900 mb-3 sm:mb-4 tracking-tight leading-[1.05] text-[2rem] sm:text-6xl lg:text-7xl">
               Educación que{' '}
               <span className="bg-gradient-to-r from-teal-600 to-emerald-600 bg-clip-text text-transparent italic">
                 recicla
               </span>
             </h1>
-            <p className="text-slate-600 text-base sm:text-lg max-w-2xl mx-auto leading-relaxed">
+            <p className="text-slate-600 text-[14px] sm:text-lg max-w-2xl mx-auto leading-relaxed px-2">
               Sostenibilidad, materiales reciclados y consejos prácticos. Todo lo que aprendemos fabricando en Santiago con plástico recuperado.
             </p>
           </header>

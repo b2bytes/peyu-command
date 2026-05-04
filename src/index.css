@@ -123,6 +123,47 @@
     .peyu-shimmer { animation: none !important; }
   }
 
+  /* ─── Mejoras globales móvil ─── */
+  /* Ocultar scrollbars en filas horizontales (chips, categorías) */
+  .scrollbar-hide {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar { display: none; }
+
+  /* Safe areas iOS para bottom navs flotantes */
+  .pb-safe { padding-bottom: env(safe-area-inset-bottom, 0); }
+  .pt-safe { padding-top: env(safe-area-inset-top, 0); }
+
+  /* Evita que iOS Safari haga zoom en inputs con font-size < 16px (UX típico) */
+  @media (max-width: 640px) {
+    input[type="text"],
+    input[type="email"],
+    input[type="tel"],
+    input[type="number"],
+    input[type="search"],
+    input[type="password"],
+    textarea,
+    select {
+      font-size: 16px !important;
+    }
+  }
+
+  /* Tap targets más cómodos en mobile (mín 44x44 = HIG Apple) */
+  @media (max-width: 640px) {
+    button, a[role="button"], .peyu-tap {
+      min-height: 36px;
+    }
+  }
+
+  /* Mejor anti-aliasing y line-height en mobile para mayor legibilidad */
+  @media (max-width: 640px) {
+    body {
+      text-rendering: optimizeLegibility;
+      -webkit-text-size-adjust: 100%;
+    }
+  }
+
   /* Variante para fondos oscuros/glass (landing chat) */
   .peyu-scrollbar-light {
     scrollbar-width: thin;
