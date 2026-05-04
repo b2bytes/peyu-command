@@ -17,9 +17,24 @@ const fmtCLP = (n) => '$' + (n || 0).toLocaleString('es-CL');
 
 // ── Resend: envía emails a cualquier dirección externa (a diferencia de
 //    Core.SendEmail de Base44 que solo funciona con usuarios del app).
+//
+// IMPORTANTE: mientras peyuchile.cl no esté verificado en resend.com/domains,
+// Resend rechaza con 403 cualquier `from` con ese dominio. Usamos el dominio
+// sandbox `onboarding@resend.dev` (permite enviar a cualquier destinatario
+// sin verificación de dominio) con display name "PEYU Chile" para que el
+// remitente visible siga siendo coherente. Las respuestas se redirigen
+// vía `reply_to` al buzón real ventas@peyuchile.cl.
+//
+// Cuando se verifique el dominio, basta con setear el secret RESEND_FROM
+// (ej: "PEYU Chile <ventas@peyuchile.cl>") y se usará automáticamente.
+const RESEND_DEFAULT_FROM = 'PEYU Chile <onboarding@resend.dev>';
+
 async function sendViaResend({ to, from, subject, html, replyTo }) {
   const apiKey = Deno.env.get('RESEND_API_KEY');
   if (!apiKey) throw new Error('RESEND_API_KEY not set');
+
+  const fromAddress = from || RESEND_DEFAULT_FROM;
+  const replyToAddress = replyTo || 'ventas@peyuchile.cl';
 
   const res = await fetch('https://api.resend.com/emails', {
     method: 'POST',
@@ -28,11 +43,11 @@ async function sendViaResend({ to, from, subject, html, replyTo }) {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      from: from || 'PEYU Chile <ventas@peyuchile.cl>',
+      from: fromAddress,
       to: Array.isArray(to) ? to : [to],
       subject,
       html,
-      ...(replyTo ? { reply_to: replyTo } : {}),
+      reply_to: replyToAddress,
     }),
   });
 
@@ -415,8 +430,6 @@ Deno.serve(async (req) => {
       tareas.push(
         sendViaResend({
           to: pedido.cliente_email,
-          from: 'PEYU Chile <ventas@peyuchile.cl>',
-          replyTo: 'ventas@peyuchile.cl',
           subject: buildSubject(pedido),
           html: buildClientHtml(pedido),
         }).catch(e => console.error('Email cliente falló:', e.message))
@@ -424,10 +437,14 @@ Deno.serve(async (req) => {
     }
 
     // ── 2. EMAIL INTERNO ────────────────────────────────────────
+    // NOTA: mientras el dominio peyuchile.cl no esté verificado en Resend, el
+    // sandbox solo permite enviar al owner de la cuenta. Por eso enviamos a
+    // alfonsovambe@gmail.com (founder, owner de Resend) que reenvía/avisa al
+    // equipo. Una vez verificado el dominio se puede cambiar a ventas@peyuchile.cl.
+    const INTERNAL_EMAIL = 'alfonsovambe@gmail.com';
     tareas.push(
       sendViaResend({
-        to: 'ventas@peyuchile.cl',
-        from: 'Sistema PEYU <ventas@peyuchile.cl>',
+        to: INTERNAL_EMAIL,
         subject: `🛒 Nuevo pedido · ${pedido.numero_pedido} · ${fmtCLP(pedido.total)} · ${pedido.medio_pago || 'WebPay'}`,
         html: buildInternalHtml(pedido),
       }).catch(e => console.error('Email interno falló:', e.message))
