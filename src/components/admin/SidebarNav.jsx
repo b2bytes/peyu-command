@@ -12,7 +12,7 @@ import {
   UserCheck, Truck, Boxes, Flag, ListChecks, FileText, Calculator, MessageSquare,
   CalendarDays, PieChart, Settings, AlertTriangle, Building2, ClipboardList, Zap,
   Radar, Crosshair, Map as MapIcon, Sparkles, Leaf, Banknote, TrendingUp,
-  ChevronDown, Cpu, Wand2, Globe, Wallet, Factory, Receipt, BookOpen, Brain,
+  ChevronDown, Cpu, Wand2, Globe, Wallet, Factory, Receipt, BookOpen, Brain, Activity,
 } from 'lucide-react';
 
 // ─── Estructura de navegación reorganizada por frecuencia de uso ─────────────
@@ -119,6 +119,7 @@ export const NAV_GROUPS = [
     icon: Brain,
     defaultOpen: false,
     items: [
+      { path: '/admin/monitoreo-ia',  label: 'Monitoreo IA',       icon: Activity },
       { path: '/admin/ia',            label: 'Asistente IA',       icon: Sparkles },
       { path: '/admin/brain',         label: 'Pinecone Brain',     icon: Brain },
     ],
