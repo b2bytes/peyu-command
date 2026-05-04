@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { CheckCircle2, Mail, MessageCircle, Package, Sparkles, Heart } from 'lucide-react';
 import SEO from '@/components/SEO';
 import { trackPurchase } from '@/lib/analytics-peyu';
+import NewsletterCTA from '@/components/newsletter/NewsletterCTA';
 
 /**
  * Página post-checkout: punto crítico para tracking de conversión y reviews.
@@ -121,6 +122,11 @@ export default function Gracias() {
                 <MessageCircle className="w-4 h-4" /> Consultar por WhatsApp
               </Button>
             </a>
+          </div>
+
+          {/* Newsletter — momento pico de afinidad post-compra (B2C) */}
+          <div className="mt-6">
+            <NewsletterCTA variant="gracias" defaultEmail={email} />
           </div>
 
           {/* Compartir / referido suave */}

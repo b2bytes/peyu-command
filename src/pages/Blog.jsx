@@ -6,6 +6,7 @@ import BlogTopicChips, { BLOG_TOPICS, postMatchesTopic } from '../components/blo
 import EducationSection from '../components/blog/EducationSection';
 import SEO from '@/components/SEO';
 import { combineSchemas, buildOrganizationSchema, buildBreadcrumbSchema } from '@/lib/schemas-peyu';
+import NewsletterCTA from '@/components/newsletter/NewsletterCTA';
 
 // Categorías del schema BlogPost
 const CATEGORIAS = [
@@ -208,9 +209,16 @@ export default function Blog() {
             </div>
           )}
 
+          {/* Newsletter — captura email para envíos educativos quincenales */}
+          {!loading && filtered.length > 0 && (
+            <div className="max-w-2xl mx-auto mt-14">
+              <NewsletterCTA variant="blog" />
+            </div>
+          )}
+
           {/* Footer */}
           {!loading && filtered.length > 0 && (
-            <div className="text-center mt-14 text-white/50 text-xs flex items-center justify-center gap-2">
+            <div className="text-center mt-10 text-white/50 text-xs flex items-center justify-center gap-2">
               <Clock className="w-3 h-3" />
               <span>Publicamos contenido nuevo cada semana</span>
             </div>

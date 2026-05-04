@@ -1,0 +1,88 @@
+{
+  "name": "Suscriptor",
+  "type": "object",
+  "description": "Suscriptores al newsletter PEYU. Captura email con segmentaci\u00f3n (B2C/B2B/Blog) y origen para env\u00edos contextualizados.",
+  "properties": {
+    "email": {
+      "type": "string",
+      "title": "Email"
+    },
+    "nombre": {
+      "type": "string",
+      "title": "Nombre"
+    },
+    "segmento": {
+      "type": "string",
+      "title": "Segmento",
+      "enum": [
+        "B2C",
+        "B2B",
+        "Blog",
+        "General"
+      ],
+      "default": "General"
+    },
+    "origen": {
+      "type": "string",
+      "title": "Origen captura",
+      "enum": [
+        "post_compra",
+        "blog",
+        "b2b_landing",
+        "exit_intent",
+        "chat_agente",
+        "footer",
+        "soporte",
+        "manual"
+      ]
+    },
+    "page_path": {
+      "type": "string",
+      "title": "Ruta donde se suscribi\u00f3"
+    },
+    "intereses": {
+      "type": "array",
+      "title": "Intereses declarados",
+      "items": {
+        "type": "string"
+      }
+    },
+    "estado": {
+      "type": "string",
+      "title": "Estado",
+      "enum": [
+        "Activo",
+        "Pausado",
+        "Baja"
+      ],
+      "default": "Activo"
+    },
+    "double_opt_in": {
+      "type": "boolean",
+      "title": "Confirm\u00f3 doble opt-in",
+      "default": false
+    },
+    "ultima_apertura": {
+      "type": "string",
+      "format": "date-time",
+      "title": "\u00daltima apertura email"
+    },
+    "tags": {
+      "type": "array",
+      "title": "Tags",
+      "items": {
+        "type": "string"
+      }
+    },
+    "utm_source": {
+      "type": "string"
+    },
+    "utm_campaign": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "email",
+    "origen"
+  ]
+}

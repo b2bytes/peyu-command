@@ -11,6 +11,7 @@ import { getProductImage } from '@/utils/productImages';
 import { readMockupDraft, clearMockupDraft } from '@/lib/mockup-draft';
 import PublicSEO from '@/components/PublicSEO';
 import { track } from '@/lib/activity-tracker';
+import NewsletterCTA from '@/components/newsletter/NewsletterCTA';
 
 const MENU_ITEMS = [
   { href: '/', label: 'Inicio', icon: Home },
@@ -268,6 +269,13 @@ export default function B2BContacto() {
           <Link to="/shop">
             <Button variant="outline" className="w-full rounded-xl border-white/30 text-white hover:bg-white/10">Ver catálogo completo</Button>
           </Link>
+
+          {/* Newsletter B2B — calendario corporativo + tips ESG */}
+          <NewsletterCTA
+            variant="b2b"
+            defaultEmail={form.email}
+            defaultName={form.contact_name}
+          />
         </div>
       </div>
     );
