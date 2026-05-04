@@ -406,25 +406,25 @@ export default function ShopLanding() {
       <div className={`absolute inset-0 overflow-y-auto overflow-x-hidden peyu-scrollbar-light transition-[padding] duration-200 ease-out ${sidebarExpanded ? 'lg:pl-48' : 'lg:pl-14'}`}>
         {/* Main container — Liquid Glass (iOS 26 / visionOS style)
             Centrado y con ancho máx ~70% en desktop para look premium. */}
-        <div className="flex gap-2 sm:gap-3 lg:gap-4 p-2 sm:p-3 lg:p-5 relative z-10 flex-col lg:flex-row items-stretch min-h-full lg:h-full w-full lg:max-w-[1400px] lg:mx-auto">
+        <div className="flex gap-2 sm:gap-3 lg:gap-3 p-2 sm:p-3 lg:p-3 relative z-10 flex-col lg:flex-row items-stretch min-h-full lg:h-full w-full lg:max-w-[1280px] lg:mx-auto">
           {/* LEFT CONTAINER - Liquid Glass */}
           <div className="peyu-liquid-glass flex-1 rounded-2xl lg:rounded-3xl overflow-hidden flex flex-col min-w-0">
 
-            {/* Header */}
-            <div className="bg-gradient-to-r from-teal-500/20 to-cyan-500/20 border-b border-white/15 px-3 sm:px-4 py-2.5 sm:py-3 flex items-center justify-between gap-3 flex-shrink-0 backdrop-blur-md">
+            {/* Header — altura reducida */}
+            <div className="bg-gradient-to-r from-teal-500/20 to-cyan-500/20 border-b border-white/15 px-3 sm:px-4 py-2 flex items-center justify-between gap-3 flex-shrink-0 backdrop-blur-md">
               <div className="flex items-center gap-2 flex-1 min-w-0">
                 <MobileMenu items={MENU_ITEMS} />
                 <PEYULogo size="sm" showText={true} />
               </div>
-              <div className="flex items-center gap-2 flex-shrink-0">
-                <button className="hidden sm:inline-flex w-10 h-10 items-center justify-center rounded-full bg-white/15 hover:bg-white/25 border border-white/20 text-white transition-all active:bg-white/35">
-                  <Bell className="w-[18px] h-[18px]" />
+              <div className="flex items-center gap-1.5 flex-shrink-0">
+                <button className="hidden sm:inline-flex w-9 h-9 items-center justify-center rounded-full bg-white/15 hover:bg-white/25 border border-white/20 text-white transition-all active:bg-white/35">
+                  <Bell className="w-4 h-4" />
                 </button>
                 <Link to="/cart">
-                  <button className="relative w-10 h-10 inline-flex items-center justify-center rounded-full bg-teal-500 hover:bg-teal-600 border border-teal-400/50 text-white transition-all active:bg-teal-700 shadow-md">
-                    <ShoppingCart className="w-[18px] h-[18px]" />
+                  <button className="relative w-9 h-9 inline-flex items-center justify-center rounded-full bg-teal-500 hover:bg-teal-600 border border-teal-400/50 text-white transition-all active:bg-teal-700 shadow-md">
+                    <ShoppingCart className="w-4 h-4" />
                     {carrito.length > 0 && (
-                      <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center ring-2 ring-[#0f172a]/60">
+                      <span className="absolute -top-1 -right-1 min-w-[16px] h-[16px] px-1 bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center ring-2 ring-[#0f172a]/60">
                         {carrito.length}
                       </span>
                     )}
@@ -433,19 +433,19 @@ export default function ShopLanding() {
               </div>
             </div>
 
-            {/* Barra superior unificada: celebration pill + CTAs — más aire, mejor jerarquía */}
-            <div className="px-3 sm:px-4 pt-3 pb-1 flex items-center gap-2.5 flex-wrap">
+            {/* Barra superior unificada: celebration pill + CTAs — compacta */}
+            <div className="px-3 sm:px-4 pt-2 pb-0.5 flex items-center gap-2 flex-wrap">
               <div className="flex-1 min-w-[220px]">
                 <CelebrationBanner onChatPrompt={sendMessage} compact />
               </div>
               <div className="flex gap-1.5 flex-shrink-0">
                 <Link to="/shop">
-                  <Button className="bg-red-600 hover:bg-red-700 active:bg-red-800 text-white font-bold rounded-full px-3.5 py-1.5 h-8 shadow-lg text-[11px] transition-all">
+                  <Button className="bg-red-600 hover:bg-red-700 active:bg-red-800 text-white font-bold rounded-full px-3 py-1 h-7 shadow-lg text-[10px] transition-all">
                     📮 Explorar
                   </Button>
                 </Link>
                 <Link to="/b2b/contacto">
-                  <Button className="bg-yellow-400 hover:bg-yellow-500 active:bg-yellow-600 text-gray-900 font-bold rounded-full px-3.5 py-1.5 h-8 shadow-lg text-[11px] transition-all">
+                  <Button className="bg-yellow-400 hover:bg-yellow-500 active:bg-yellow-600 text-gray-900 font-bold rounded-full px-3 py-1 h-7 shadow-lg text-[10px] transition-all">
                     ✨ B2B
                   </Button>
                 </Link>
@@ -453,11 +453,11 @@ export default function ShopLanding() {
             </div>
 
             {/* Content */}
-            <div className="flex flex-col gap-1.5 p-2.5 sm:p-3 flex-1 min-h-0 overflow-hidden">
+            <div className="flex flex-col gap-1 p-2 sm:p-2.5 flex-1 min-h-0 overflow-hidden">
 
               {/* Chat Agent — Liquid Glass; epicentro del landing, flex-1 se encarga de la altura */}
               <div
-                className={`peyu-liquid-glass-inner rounded-xl lg:rounded-2xl p-2.5 sm:p-3 flex flex-col flex-1 min-h-[400px] lg:min-h-0 overflow-hidden relative transition-all duration-500 ${
+                className={`peyu-liquid-glass-inner rounded-xl lg:rounded-2xl p-2 sm:p-2.5 flex flex-col flex-1 min-h-[400px] lg:min-h-0 overflow-hidden relative transition-all duration-500 ${
                   isTheme ? 'peyu-liquid-glass-warm' : ''
                 }`}
               >
@@ -470,23 +470,23 @@ export default function ShopLanding() {
                   />
                 )}
                 
-                {/* Agent Header — avatar más visible + status "en línea" */}
-                <div className="mb-2.5 pb-2.5 border-b border-white/15 flex items-center gap-2.5 flex-shrink-0 min-w-0">
+                {/* Agent Header — compacto, deja más espacio al chat */}
+                <div className="mb-1.5 pb-1.5 border-b border-white/15 flex items-center gap-2 flex-shrink-0 min-w-0">
                   <div className="relative flex-shrink-0">
-                    <div className="w-9 h-9 rounded-full bg-gradient-to-br from-teal-400 to-cyan-500 flex items-center justify-center text-white text-base shadow-lg ring-2 ring-white/20">🐢</div>
-                    <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-green-400 ring-2 ring-slate-900/80" title="En línea" />
+                    <div className="w-7 h-7 rounded-full bg-gradient-to-br from-teal-400 to-cyan-500 flex items-center justify-center text-white text-sm shadow-md ring-2 ring-white/20">🐢</div>
+                    <span className="absolute -bottom-0.5 -right-0.5 w-2 h-2 rounded-full bg-green-400 ring-2 ring-slate-900/80" title="En línea" />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="text-white font-bold text-sm leading-tight">Peyu</p>
-                    <p className="text-white/55 text-[10px] line-clamp-1">Asistente de Gifting · responde al instante</p>
+                    <p className="text-white font-bold text-xs leading-tight">Peyu</p>
+                    <p className="text-white/55 text-[9px] line-clamp-1">Asistente de Gifting · en línea</p>
                   </div>
                   {historyCount > 0 && (
                     <button
                       onClick={() => setShowHistory(true)}
-                      className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 text-white/90 text-[10px] font-semibold transition flex-shrink-0"
+                      className="flex items-center gap-1 px-2 py-1 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 text-white/90 text-[9px] font-semibold transition flex-shrink-0"
                       title="Conversaciones anteriores"
                     >
-                      <History className="w-3 h-3" />
+                      <History className="w-2.5 h-2.5" />
                       <span className="hidden sm:inline">Anteriores · {historyCount}</span>
                       <span className="sm:hidden">{historyCount}</span>
                     </button>
@@ -502,7 +502,7 @@ export default function ShopLanding() {
                 )}
 
                 {/* Messages Container — scroll natural; los nuevos mensajes quedan abajo vía scrollIntoView */}
-                <div className="peyu-scrollbar-light flex-1 overflow-y-auto overflow-x-hidden mb-3 pr-1 flex flex-col gap-2.5 min-h-0">
+                <div className="peyu-scrollbar-light flex-1 overflow-y-auto overflow-x-hidden mb-2 pr-1 flex flex-col gap-2 min-h-0">
                   {messages.length === 0 && (
                     <div className="text-center text-white/60 text-xs py-6 space-y-2">
                       <p className="text-sm font-medium">👋 Hola, soy Peyu</p>
@@ -561,21 +561,18 @@ export default function ShopLanding() {
                   }
                 `}</style>
 
-                {/* Quick Replies — sugerencias secundarias, jerarquía visual menor que el input */}
-                <div className="flex-shrink-0 mt-2.5">
-                  <p className="text-white/40 text-[9px] font-semibold uppercase tracking-wider mb-1 px-1">Sugerencias</p>
-                  <div className="overflow-x-auto scrollbar-hide flex gap-1.5 pb-1">
-                    {OCASIONES.map(occ => (
-                      <button
-                        key={occ.id}
-                        onClick={() => handleOccasionClick(occ)}
-                        className="flex items-center gap-1.5 flex-shrink-0 bg-white/[0.06] hover:bg-teal-500/20 border border-white/10 hover:border-teal-400/40 active:bg-teal-600/30 transition-all rounded-full px-2.5 py-1"
-                      >
-                        <span className="text-[11px] leading-none">{occ.icon}</span>
-                        <span className="text-white/75 text-[10px] font-medium whitespace-nowrap">{occ.label}</span>
-                      </button>
-                    ))}
-                  </div>
+                {/* Quick Replies — sin label, en una sola fila ultra-compacta */}
+                <div className="flex-shrink-0 mt-1.5 overflow-x-auto scrollbar-hide flex gap-1 pb-0.5">
+                  {OCASIONES.map(occ => (
+                    <button
+                      key={occ.id}
+                      onClick={() => handleOccasionClick(occ)}
+                      className="flex items-center gap-1 flex-shrink-0 bg-white/[0.06] hover:bg-teal-500/20 border border-white/10 hover:border-teal-400/40 active:bg-teal-600/30 transition-all rounded-full px-2 py-0.5"
+                    >
+                      <span className="text-[10px] leading-none">{occ.icon}</span>
+                      <span className="text-white/75 text-[9.5px] font-medium whitespace-nowrap">{occ.label}</span>
+                    </button>
+                  ))}
                 </div>
               </div>
             </div>

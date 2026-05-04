@@ -163,9 +163,9 @@ function ChatProductCard({ sku, variant = 'dark' }) {
         </div>
       )}
 
-      {/* Cabecera con imagen + info */}
-      <div className="p-3 flex gap-3">
-        <div className={`w-24 h-24 rounded-xl overflow-hidden flex-shrink-0 border ${dark ? 'border-white/10 bg-slate-800' : 'border-gray-100 bg-gray-50'}`}>
+      {/* Cabecera con imagen + info — compacta, todo visible de una vez */}
+      <div className="p-2 flex gap-2">
+        <div className={`w-16 h-16 rounded-lg overflow-hidden flex-shrink-0 border ${dark ? 'border-white/10 bg-slate-800' : 'border-gray-100 bg-gray-50'}`}>
           <img
             src={img}
             alt={producto.nombre}
@@ -174,7 +174,7 @@ function ChatProductCard({ sku, variant = 'dark' }) {
           />
         </div>
 
-        <div className="flex-1 min-w-0 space-y-1.5">
+        <div className="flex-1 min-w-0 space-y-0.5">
           {/* Badge + rating */}
           <div className="flex items-center gap-1.5">
             <span className={`text-[9px] font-semibold px-1.5 py-0.5 rounded-full border ${catBadgeCls}`}>
@@ -186,104 +186,71 @@ function ChatProductCard({ sku, variant = 'dark' }) {
           </div>
 
           {/* Nombre */}
-          <p className={`font-semibold text-[13px] leading-tight line-clamp-2 ${titleColor}`}>
+          <p className={`font-semibold text-[12px] leading-tight line-clamp-2 ${titleColor}`}>
             {producto.nombre}
           </p>
 
-          {/* Precio — vuelve a renderizarse según tier */}
-          <div className="flex items-baseline gap-2 flex-wrap">
-            <span className={`font-poppins font-bold text-base ${titleColor}`}>
+          {/* Precio + total B2B en una línea */}
+          <div className="flex items-baseline gap-1.5 flex-wrap">
+            <span className={`font-poppins font-bold text-sm ${titleColor}`}>
               ${precio.toLocaleString('es-CL')}
             </span>
-            <span className={`text-[10px] ${mutedColor}`}>por u · {priceLabel}</span>
+            <span className={`text-[9.5px] ${mutedColor}`}>· {priceLabel}</span>
             {isB2B && qtyHint && (
-              <span className={`text-[10px] font-bold ${accentColor} flex items-center gap-0.5`}>
-                <TrendingDown className="w-2.5 h-2.5" /> Total ${(precio * qtyHint).toLocaleString('es-CL')}
+              <span className={`text-[9.5px] font-bold ${accentColor} flex items-center gap-0.5 ml-auto`}>
+                <TrendingDown className="w-2.5 h-2.5" /> ${(precio * qtyHint).toLocaleString('es-CL')}
               </span>
             )}
           </div>
-
-          {/* B2C: precio tachado */}
-          {!isB2B && producto.precio_b2c && (
-            <p className={`text-[10px] ${mutedColor} line-through`}>
-              Normal ${producto.precio_b2c.toLocaleString('es-CL')}
-            </p>
-          )}
         </div>
       </div>
 
-      {/* Historia / Story strip */}
-      <div className={`mx-3 mb-2 px-2.5 py-1.5 rounded-lg border ${storyBgCls} flex items-center gap-1.5`}>
+      {/* Story + chips beneficios FUSIONADOS en una sola línea */}
+      <div className="px-2 pb-1.5 flex items-center gap-1 flex-wrap">
         <Recycle className={`w-3 h-3 flex-shrink-0 ${accentColor}`} />
-        <p className={`text-[10.5px] leading-snug ${mutedColor}`}>
+        <span className={`text-[9.5px] leading-tight ${mutedColor} flex-1 min-w-0 truncate`}>
           {story}
-        </p>
-      </div>
-
-      {/* Beneficios (chips) */}
-      <div className="px-3 pb-2 flex flex-wrap gap-1">
+        </span>
         {producto.moq_personalizacion && (
-          <span className={`text-[9.5px] font-semibold px-1.5 py-0.5 rounded-full flex items-center gap-0.5 ${dark ? 'bg-purple-500/20 text-purple-200 border border-purple-400/30' : 'bg-purple-50 text-purple-700 border border-purple-200'}`}>
+          <span className={`text-[9px] font-semibold px-1.5 py-0.5 rounded-full flex items-center gap-0.5 ${dark ? 'bg-purple-500/20 text-purple-200' : 'bg-purple-50 text-purple-700'}`}>
             <Sparkles className="w-2.5 h-2.5" /> Láser gratis ≥{producto.moq_personalizacion}u
           </span>
         )}
-        {producto.lead_time_con_personal && (
-          <span className={`text-[9.5px] font-semibold px-1.5 py-0.5 rounded-full flex items-center gap-0.5 ${dark ? 'bg-white/10 text-white/70 border border-white/15' : 'bg-gray-50 text-gray-600 border border-gray-200'}`}>
-            <Truck className="w-2.5 h-2.5" /> {producto.lead_time_con_personal}d lead time
-          </span>
-        )}
-        <span className={`text-[9.5px] font-semibold px-1.5 py-0.5 rounded-full flex items-center gap-0.5 ${dark ? 'bg-white/10 text-white/70 border border-white/15' : 'bg-gray-50 text-gray-600 border border-gray-200'}`}>
-          <Zap className="w-2.5 h-2.5" /> {producto.garantia_anios || 10}a garantía
+        <span className={`text-[9px] font-semibold px-1.5 py-0.5 rounded-full flex items-center gap-0.5 ${dark ? 'bg-white/10 text-white/70' : 'bg-gray-50 text-gray-600'}`}>
+          <Zap className="w-2.5 h-2.5" /> {producto.garantia_anios || 10}a
         </span>
       </div>
 
-      {/* CTAs — diferenciados B2B vs B2C */}
-      <div className="px-3 pb-3">
+      {/* CTAs — UNA SOLA FILA, sin wrap, todo visible */}
+      <div className="px-2 pb-2 flex gap-1.5">
         {isB2B ? (
-          // FLOW B2B: destacar cotización corporativa
           <>
-            <Link to={b2bUrl} onClick={markAgentNavigation} className="block">
-              <button className={`w-full flex items-center justify-center gap-1.5 text-xs font-bold rounded-lg py-2.5 shadow-md transition-all ${dark ? 'bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white' : 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white'}`}>
-                <Building2 className="w-3.5 h-3.5" /> Cotizar {qtyHint}u con mi logo
+            <Link to={b2bUrl} onClick={markAgentNavigation} className="flex-1">
+              <button className={`w-full flex items-center justify-center gap-1 text-[11px] font-bold rounded-lg py-2 shadow-sm transition-all ${dark ? 'bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white' : 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white'}`}>
+                <Building2 className="w-3 h-3" /> Cotizar {qtyHint}u
               </button>
             </Link>
-            <div className="grid grid-cols-2 gap-1.5 mt-1.5">
-              <Link to={`/producto/${producto.id}`} onClick={markAgentNavigation}>
-                <button className={`w-full flex items-center justify-center gap-1 text-[11px] font-semibold rounded-lg py-1.5 transition-all border ${dark ? 'bg-white/10 hover:bg-white/20 border-white/20 text-white/80' : 'bg-gray-50 hover:bg-gray-100 border-gray-200 text-gray-700'}`}>
-                  <Package className="w-3 h-3" /> Ver ficha
-                </button>
-              </Link>
-              <button
-                onClick={handleAdd}
-                className={`w-full flex items-center justify-center gap-1 text-[11px] font-semibold rounded-lg py-1.5 transition-all border ${added ? (dark ? 'bg-green-500/25 border-green-400/50 text-green-100' : 'bg-green-50 border-green-300 text-green-700') : (dark ? 'bg-white/10 hover:bg-white/20 border-white/20 text-white/80' : 'bg-gray-50 hover:bg-gray-100 border-gray-200 text-gray-700')}`}
-              >
-                {added ? <><Check className="w-3 h-3" /> Listo</> : <><ShoppingCart className="w-3 h-3" /> Probar 1u</>}
+            <Link to={`/producto/${producto.id}`} onClick={markAgentNavigation}>
+              <button className={`flex items-center justify-center gap-1 text-[11px] font-semibold rounded-lg py-2 px-2.5 transition-all border ${dark ? 'bg-white/10 hover:bg-white/20 border-white/20 text-white/80' : 'bg-gray-50 hover:bg-gray-100 border-gray-200 text-gray-700'}`}>
+                <Package className="w-3 h-3" /> Ficha
               </button>
-            </div>
+            </Link>
           </>
         ) : (
-          // FLOW B2C: destacar compra directa
           <>
             <button
               onClick={handleAdd}
-              className={`w-full flex items-center justify-center gap-1.5 text-xs font-bold rounded-lg py-2.5 shadow-md transition-all ${added ? (dark ? 'bg-green-500/30 border border-green-400/50 text-green-100' : 'bg-green-50 border border-green-300 text-green-700') : (dark ? 'bg-gradient-to-r from-teal-500 to-cyan-500 hover:from-teal-600 hover:to-cyan-600 text-white' : 'bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 text-white')}`}
+              className={`flex-1 flex items-center justify-center gap-1 text-[11px] font-bold rounded-lg py-2 shadow-sm transition-all ${added ? (dark ? 'bg-green-500/30 border border-green-400/50 text-green-100' : 'bg-green-50 border border-green-300 text-green-700') : (dark ? 'bg-gradient-to-r from-teal-500 to-cyan-500 hover:from-teal-600 hover:to-cyan-600 text-white' : 'bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 text-white')}`}
             >
               {added
-                ? <><Check className="w-3.5 h-3.5" /> Agregado al carrito</>
-                : <><ShoppingCart className="w-3.5 h-3.5" /> Agregar por ${precioOnlineB2C.toLocaleString('es-CL')}</>}
+                ? <><Check className="w-3 h-3" /> Agregado</>
+                : <><ShoppingCart className="w-3 h-3" /> Agregar ${precioOnlineB2C.toLocaleString('es-CL')}</>}
             </button>
-            <div className="grid grid-cols-2 gap-1.5 mt-1.5">
-              <Link to={`/producto/${producto.id}`} onClick={markAgentNavigation}>
-                <button className={`w-full flex items-center justify-center gap-1 text-[11px] font-semibold rounded-lg py-1.5 transition-all border ${dark ? 'bg-white/10 hover:bg-white/20 border-white/20 text-white/80' : 'bg-gray-50 hover:bg-gray-100 border-gray-200 text-gray-700'}`}>
-                  <Package className="w-3 h-3" /> Ver ficha
-                </button>
-              </Link>
-              <Link to={b2bUrl} onClick={markAgentNavigation}>
-                <button className={`w-full flex items-center justify-center gap-1 text-[11px] font-semibold rounded-lg py-1.5 transition-all border ${dark ? 'bg-blue-500/15 hover:bg-blue-500/25 border-blue-400/30 text-blue-200' : 'bg-blue-50 hover:bg-blue-100 border-blue-200 text-blue-700'}`}>
-                  <Building2 className="w-3 h-3" /> ¿+10u? Cotizar B2B
-                </button>
-              </Link>
-            </div>
+            <Link to={`/producto/${producto.id}`} onClick={markAgentNavigation}>
+              <button className={`flex items-center justify-center gap-1 text-[11px] font-semibold rounded-lg py-2 px-2.5 transition-all border ${dark ? 'bg-white/10 hover:bg-white/20 border-white/20 text-white/80' : 'bg-gray-50 hover:bg-gray-100 border-gray-200 text-gray-700'}`}>
+                <Package className="w-3 h-3" /> Ficha
+              </button>
+            </Link>
           </>
         )}
       </div>
