@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Menu, ShoppingCart } from 'lucide-react';
 import PublicMobileDrawer from './PublicMobileDrawer';
+import PEYULogo from './PEYULogo';
 
 /**
  * Header sticky para móvil (<lg) en las páginas públicas internas.
@@ -48,21 +49,8 @@ export default function PublicMobileHeader() {
           <Menu className="w-5 h-5" />
         </button>
 
-        <Link to="/" className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-gradient-to-br from-teal-500 to-emerald-600 rounded-lg flex items-center justify-center shadow p-0.5">
-            <svg viewBox="0 0 100 100" className="w-full h-full">
-              <ellipse cx="50" cy="55" rx="28" ry="32" fill="white" />
-              <circle cx="50" cy="28" r="16" fill="white" />
-              <ellipse cx="28" cy="72" rx="6" ry="10" fill="white" />
-              <ellipse cx="72" cy="72" rx="6" ry="10" fill="white" />
-              <circle cx="45" cy="24" r="2" fill="#0F8B6C" />
-              <circle cx="55" cy="24" r="2" fill="#0F8B6C" />
-            </svg>
-          </div>
-          <div className="flex flex-col gap-0.5">
-            <span className="text-xs font-poppins font-black text-white leading-none">PEYU</span>
-            <span className="text-[9px] text-white/50 leading-none">Chile</span>
-          </div>
+        <Link to="/" className="flex items-center" aria-label="PEYU Chile - Inicio">
+          <PEYULogo size="sm" />
         </Link>
 
         <Link
