@@ -7,6 +7,7 @@ import CategoryTabs from '@/components/shop/CategoryTabs';
 import ProductCard from '@/components/shop/ProductCard';
 import { getProductImage } from '@/utils/productImages';
 import PublicSEO from '@/components/PublicSEO';
+import { SITE_URL } from '@/lib/seo-catalog';
 
 const CATEGORIAS_META = [
   { id: 'Todos',           label: 'Todos',           icon: '🌍' },
@@ -164,6 +165,21 @@ export default function Shop() {
 
   const hasActiveFilters = search || selectedCategory !== 'Todos' || selectedPrice !== 'all';
 
+  // ItemList schema para Google Shopping/Search — listas de productos enriquecidas.
+  // Se construye con los productos visibles (max 24 para no inflar el HTML).
+  const itemListJsonLd = !loading && filtered.length > 0 ? {
+    '@context': 'https://schema.org',
+    '@type': 'ItemList',
+    name: selectedCategory === 'Todos' ? 'Catálogo PEYU Chile' : `${selectedCategory} · PEYU Chile`,
+    numberOfItems: filtered.length,
+    itemListElement: filtered.slice(0, 24).map((p, i) => ({
+      '@type': 'ListItem',
+      position: i + 1,
+      url: `${SITE_URL}/producto/${p.id}`,
+      name: p.nombre,
+    })),
+  } : null;
+
   return (
     <div className="flex-1 overflow-auto font-inter">
       <PublicSEO
@@ -172,6 +188,7 @@ export default function Shop() {
           { name: 'Inicio', url: 'https://peyuchile.cl/' },
           { name: 'Tienda', url: 'https://peyuchile.cl/shop' },
         ]}
+        jsonLd={itemListJsonLd}
       />
       {/* HERO — ultra compacto en mobile (header + 1 línea de trust badges) */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 pt-3 sm:pt-10 pb-3 sm:pb-6">
@@ -182,10 +199,11 @@ export default function Shop() {
               <span className="hidden sm:inline">100% plástico reciclado · Hecho en Chile</span>
               <span className="sm:hidden">100% reciclado · Chile</span>
             </div>
+            {/* H1 con keyword principal "Tienda" + "regalos sostenibles Chile" */}
             <h1 className="text-[1.5rem] sm:text-4xl md:text-5xl font-poppins font-bold leading-[1.1] text-white drop-shadow-lg tracking-tight">
-              Regalos con propósito,
+              Tienda PEYU · Regalos Sostenibles
               <br className="hidden sm:block" />
-              <span className="text-cyan-400 sm:block"> diseñados para durar.</span>
+              <span className="text-cyan-400 sm:block"> Hechos en Chile.</span>
             </h1>
             <p className="hidden sm:block text-white/70 text-sm sm:text-base leading-relaxed max-w-lg">
               Productos fabricados en Santiago con plástico recuperado. Personalización láser UV y garantía 10 años.

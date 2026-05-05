@@ -387,16 +387,16 @@ export default function ProductoDetalle() {
           </Link>
         </div>
 
-        {/* Breadcrumb */}
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-3 flex items-center gap-1.5 text-xs text-white/40">
+        {/* Breadcrumb — accesible y semántico (aria-label = mejor SEO + lectores de pantalla) */}
+        <nav aria-label="Migas de pan" className="max-w-6xl mx-auto px-4 sm:px-6 py-3 flex items-center gap-1.5 text-xs text-white/40">
           <Link to="/" className="hover:text-white transition-colors">Inicio</Link>
-          <ChevronRight className="w-3 h-3" />
+          <ChevronRight className="w-3 h-3" aria-hidden="true" />
           <Link to="/shop" className="hover:text-white transition-colors">Tienda</Link>
-          <ChevronRight className="w-3 h-3" />
+          <ChevronRight className="w-3 h-3" aria-hidden="true" />
           <span>{producto.categoria}</span>
-          <ChevronRight className="w-3 h-3" />
-          <span className="text-white/70 font-medium truncate max-w-[200px]">{producto.nombre}</span>
-        </div>
+          <ChevronRight className="w-3 h-3" aria-hidden="true" />
+          <span className="text-white/70 font-medium truncate max-w-[200px]" aria-current="page">{producto.nombre}</span>
+        </nav>
 
         <div className="max-w-[1200px] mx-auto px-4 sm:px-6 pb-10">
 
@@ -429,7 +429,9 @@ export default function ProductoDetalle() {
               <div className="relative bg-gradient-to-br from-white via-teal-50 to-emerald-50 border border-white/20 rounded-2xl overflow-hidden shadow-xl mx-auto w-full max-w-[460px] lg:max-w-none" style={{ aspectRatio: '1' }}>
                 <img
                   src={galeria[vistaActiva] || imgPrincipal}
-                  alt={producto.nombre}
+                  alt={`${producto.nombre} · ${producto.material || 'Plástico reciclado'} · ${producto.categoria} · PEYU Chile`}
+                  width="600"
+                  height="600"
                   loading="eager"
                   fetchpriority="high"
                   decoding="async"
@@ -485,6 +487,8 @@ export default function ProductoDetalle() {
                     <img
                       src={img}
                       alt={`${producto.nombre} - vista ${i + 1}`}
+                      width="150"
+                      height="150"
                       loading="lazy"
                       decoding="async"
                       className="w-full h-full object-cover"
@@ -1032,7 +1036,11 @@ export default function ProductoDetalle() {
                       <div className="aspect-square overflow-hidden">
                         <img
                           src={getProductImage(p)}
-                          alt={p.nombre}
+                          alt={`${p.nombre} · ${p.categoria || 'PEYU'}`}
+                          width="300"
+                          height="300"
+                          loading="lazy"
+                          decoding="async"
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                           onError={e => { e.target.src = 'https://i0.wp.com/peyuchile.cl/wp-content/uploads/2025/04/carcasas-500x500-1.webp?fit=600%2C600&ssl=1'; }}
                         />

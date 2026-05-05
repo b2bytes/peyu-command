@@ -12,6 +12,18 @@ import { readMockupDraft, clearMockupDraft } from '@/lib/mockup-draft';
 import PublicSEO from '@/components/PublicSEO';
 import { track } from '@/lib/activity-tracker';
 import NewsletterCTA from '@/components/newsletter/NewsletterCTA';
+import { buildFaqSchema } from '@/lib/schemas-peyu';
+
+// FAQ Schema — Google muestra estas Q&A como rich snippet (acordeón) en SERP.
+// Optimizado para keywords B2B chilenas con intención comercial alta.
+const B2B_FAQS = [
+  { q: '¿Cuál es el mínimo de unidades para regalos corporativos?', a: 'Trabajamos desde 10 unidades en adelante con personalización láser UV gratuita. No exigimos pedidos mínimos altos como otras imprentas: ideal para PYMEs, startups y eventos pequeños.' },
+  { q: '¿Cuánto demora una cotización corporativa?', a: 'Respondemos toda solicitud B2B en menos de 24 horas hábiles con propuesta detallada en PDF, mockup de tu logo grabado en el producto y precios por volumen. Si necesitas algo urgente, escríbenos por WhatsApp al +56 9 3504 0242.' },
+  { q: '¿Hacen factura electrónica a empresa?', a: 'Sí, emitimos factura electrónica con IVA a nombre de tu empresa. Aceptamos pago con transferencia, orden de compra (OC) y crédito 30 días para empresas con historial.' },
+  { q: '¿Despachan a regiones de Chile?', a: 'Sí, despachamos a todo Chile vía BlueExpress, Starken y Chilexpress. Lead time típico: 7 días sin personalización, 9 días con grabado láser UV. Envío gratis B2C sobre $40.000.' },
+  { q: '¿Qué tipo de personalización ofrecen?', a: 'Grabado láser UV permanente en plástico reciclado y fibra de trigo compostable. Incluye mockup gratuito de tu logo antes de producción. Compatible con logos vectoriales (SVG, AI, PDF) o imágenes en alta resolución (PNG con fondo transparente).' },
+  { q: '¿Por qué elegir productos PEYU vs imprentas tradicionales?', a: 'PEYU es fabricante chileno con producción local en Santiago: plástico 100% reciclado post-consumo o fibra de trigo compostable, garantía 10 años, certificación ESG con trazabilidad de material y huella de carbono evitada en factura.' },
+];
 
 const MENU_ITEMS = [
   { href: '/', label: 'Inicio', icon: Home },
@@ -289,6 +301,7 @@ export default function B2BContacto() {
           { name: 'Inicio', url: 'https://peyuchile.cl/' },
           { name: 'B2B', url: 'https://peyuchile.cl/b2b/contacto' },
         ]}
+        jsonLd={buildFaqSchema(B2B_FAQS)}
       />
       <div className="min-h-full flex flex-col">
 

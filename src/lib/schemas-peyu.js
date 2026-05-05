@@ -26,17 +26,29 @@ export const buildOrganizationSchema = () => ({
     addressLocality: 'Santiago',
     addressRegion: 'Región Metropolitana',
   },
-  contactPoint: [{
-    '@type': 'ContactPoint',
-    telephone: '+56-9-0000-0000',
-    contactType: 'sales',
-    email: 'ti@peyuchile.cl',
-    areaServed: 'CL',
-    availableLanguage: ['Spanish'],
-  }],
+  contactPoint: [
+    {
+      '@type': 'ContactPoint',
+      telephone: '+56-9-3504-0242',
+      contactType: 'sales',
+      email: 'ti@peyuchile.cl',
+      areaServed: 'CL',
+      availableLanguage: ['Spanish'],
+    },
+    {
+      '@type': 'ContactPoint',
+      telephone: '+56-9-3376-6573',
+      contactType: 'customer support',
+      email: 'ti@peyuchile.cl',
+      areaServed: 'CL',
+      availableLanguage: ['Spanish'],
+    },
+  ],
   sameAs: [
     'https://www.instagram.com/peyuchile',
     'https://www.linkedin.com/company/peyuchile',
+    'https://www.facebook.com/peyuchile',
+    'https://www.tiktok.com/@peyuchile',
     'https://peyuchile.lat',
   ],
 });

@@ -31,11 +31,14 @@ function ProductCard({ producto, onAddToCart, agregandoId, index = 0 }) {
         )}
         <img
           src={getProductImage(p)}
-          alt={p.nombre}
+          alt={`${p.nombre} · ${p.categoria || 'PEYU'} · ${p.material?.includes('Trigo') ? 'Fibra de trigo compostable' : 'Plástico 100% reciclado'} · Hecho en Chile`}
+          width="600"
+          height="600"
           className={`w-full h-full object-cover group-hover:scale-105 transition-all duration-500 ${
             imgLoaded ? 'opacity-100' : 'opacity-0'
           }`}
-          loading="lazy"
+          loading={index < 4 ? 'eager' : 'lazy'}
+          fetchpriority={index < 2 ? 'high' : 'auto'}
           decoding="async"
           onLoad={() => setImgLoaded(true)}
           onError={(e) => { e.target.src = 'https://images.unsplash.com/photo-1578432291840-8d3a3a016e4d?w=600&h=600&fit=crop'; setImgLoaded(true); }}
@@ -81,6 +84,7 @@ function ProductCard({ producto, onAddToCart, agregandoId, index = 0 }) {
           </div>
           <span className="text-[10px] text-white/50 font-medium hidden sm:inline">(4.9)</span>
         </div>
+        {/* H3 = jerarquía correcta dentro de la página H1 (Shop) → H2 secciones → H3 productos */}
         <h3 className="font-semibold text-sm text-white line-clamp-2 leading-snug group-hover:text-teal-300 transition-colors min-h-[40px]">
           {p.nombre}
         </h3>

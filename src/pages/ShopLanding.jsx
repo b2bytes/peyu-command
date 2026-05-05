@@ -18,8 +18,7 @@ import { useAppBackground, getBackgroundById, buildBackgroundImageCSS, BG_OVERLA
 import BackgroundSwitcher from '@/components/BackgroundSwitcher';
 import CelebrationBanner from '@/components/landing/CelebrationBanner';
 import FeaturedCarousel from '@/components/landing/FeaturedCarousel';
-import SEO from '@/components/SEO';
-import { buildOrganizationSchema, buildWebSiteSchema, combineSchemas } from '@/lib/schemas-peyu';
+import PublicSEO from '@/components/PublicSEO';
 
 // Limpia los bloques [CONTEXTO] y [BRAIN] que se inyectan al agente —
 // no deben verse en la UI. En withContext() el mensaje real del usuario
@@ -259,20 +258,14 @@ export default function ShopLanding() {
     await sendMessage(mensaje);
   };
 
-  const landingJsonLd = combineSchemas(
-    buildOrganizationSchema(),
-    buildWebSiteSchema(),
-  );
-
   return (
     <>
-    <SEO
-      title="PEYU Chile · Regalos Corporativos 100% Reciclados · Hecho en Chile"
-      description="Regalos corporativos sostenibles en plástico 100% reciclado y fibra de trigo compostable. Personalización láser UV, producción local en Santiago. Cotización B2B en 4h."
-      canonical="https://peyuchile.cl/"
-      image="https://media.base44.com/images/public/69d99b9d61f699701129c103/b5b3cf211_kitclassssprro2.jpg"
-      jsonLd={landingJsonLd}
-    />
+    <PublicSEO pageKey="home" />
+    {/* H1 SEO oculto visualmente pero indexable — el chat-only landing no tenía H1 semántico,
+        Google necesita uno para entender el tema principal de la home. */}
+    <h1 className="sr-only">
+      PEYU Chile · Regalos Corporativos Sustentables en Plástico 100% Reciclado
+    </h1>
     <div
       className="landing-viewport transition-colors duration-500"
       data-theme-mode={isTheme ? 'theme' : 'nature'}
