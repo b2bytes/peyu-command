@@ -19,34 +19,55 @@ class ErrorBoundary extends React.Component {
     return { hasError: true, error };
   }
 
+  componentDidMount() {
+    // Si el usuario navega a otra ruta después de un crash, resetear el
+    // estado del boundary para no dejar una pantalla de error "pegada".
+    this._popHandler = () => {
+      if (this.state.hasError) this.setState({ hasError: false, error: null });
+    };
+    window.addEventListener('popstate', this._popHandler);
+  }
+
+  componentWillUnmount() {
+    if (this._popHandler) window.removeEventListener('popstate', this._popHandler);
+  }
+
   componentDidCatch(error, errorInfo) {
     console.error('[ErrorBoundary] Caught error:', error, errorInfo);
 
-    // 🔄 Auto-recovery: cuando Vite hace rebuild, los chunks lazy con hash
-    // viejo dejan de existir y la navegación falla con "Failed to fetch
-    // dynamically imported module". La solución oficial es recargar UNA vez
-    // (con flag en sessionStorage para evitar loops infinitos).
     const msg = String(error?.message || '');
     const isStaleChunk = msg.includes('Failed to fetch dynamically imported module')
       || msg.includes('Importing a module script failed')
-      || msg.includes("error loading dynamically imported module");
+      || msg.includes('error loading dynamically imported module')
+      || msg.includes('ChunkLoadError')
+      || msg.includes('Loading chunk');
+
+    // 🔄 Auto-recovery silenciosa para stale chunks (post-deploy):
+    // recargar la página UNA vez por sesión con cooldown de 60s.
     if (isStaleChunk && typeof window !== 'undefined') {
-      const key = 'peyu_chunk_reload_attempted';
-      if (!sessionStorage.getItem(key)) {
-        sessionStorage.setItem(key, String(Date.now()));
+      const key = 'peyu_chunk_reload_at';
+      const last = Number(sessionStorage.getItem(key) || 0);
+      const now = Date.now();
+      if (now - last > 60000) {
+        sessionStorage.setItem(key, String(now));
         window.location.reload();
         return;
       }
     }
 
-    // Reporte async al backend (no bloqueante, no rompe nada si falla)
+    // Reporte async al backend (no bloqueante).
+    // Stale chunks ya recargan: bajamos su severidad a 'low' para no
+    // saturar el dashboard de errores con eventos esperados.
     import('@/lib/error-reporter.js').then(({ reportError }) => {
       reportError({
         source: 'frontend_boundary',
-        severity: 'critical',
+        severity: isStaleChunk ? 'low' : 'critical',
         message: error?.message || String(error),
         stack: error?.stack || '',
-        extra: { componentStack: errorInfo?.componentStack?.slice(0, 2000) },
+        extra: {
+          componentStack: errorInfo?.componentStack?.slice(0, 2000),
+          stale_chunk: isStaleChunk,
+        },
       });
     }).catch(() => {});
   }

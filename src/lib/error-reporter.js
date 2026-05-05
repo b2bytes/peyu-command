@@ -58,23 +58,47 @@ export function installGlobalErrorHandlers() {
   installed = true;
 
   window.addEventListener('error', (event) => {
-    // Ignorar errores de extensiones del navegador
-    if (event.filename && event.filename.startsWith('chrome-extension://')) return;
+    const filename = event.filename || '';
+    const message = event.message || '';
+
+    // Ignorar errores de extensiones, scripts cross-origin sin info útil,
+    // y errores de carga de imágenes/recursos (no son bugs de la app).
+    if (filename.startsWith('chrome-extension://')) return;
+    if (filename.startsWith('moz-extension://')) return;
+    if (filename.startsWith('safari-extension://')) return;
+    if (message === 'Script error.' || message === 'ResizeObserver loop limit exceeded') return;
+    if (message.includes('ResizeObserver loop completed with undelivered notifications')) return;
+    // Errores de carga de imagen / video / audio: son del recurso, no del JS
+    if (event.target && event.target !== window && (event.target.tagName === 'IMG' || event.target.tagName === 'VIDEO' || event.target.tagName === 'LINK')) return;
+
+    // Stale chunk: lo maneja el ErrorBoundary con auto-reload, no spammear
+    const isStaleChunk = message.includes('Failed to fetch dynamically imported module')
+      || message.includes('Loading chunk')
+      || message.includes('ChunkLoadError');
+
     reportError({
       source: 'frontend_window',
-      severity: 'high',
-      message: event.message,
+      severity: isStaleChunk ? 'low' : 'high',
+      message,
       stack: event.error?.stack || '',
-      extra: { lineno: event.lineno, colno: event.colno, filename: event.filename },
+      extra: { lineno: event.lineno, colno: event.colno, filename, stale_chunk: isStaleChunk },
     });
   });
 
   window.addEventListener('unhandledrejection', (event) => {
     const reason = event.reason;
+    const message = reason?.message || String(reason || '');
+
+    // Ignorar promesas canceladas (AbortController) y networks transitorios
+    if (reason?.name === 'AbortError') return;
+    if (message === 'cancelled' || message === 'canceled') return;
+    // No reportar errores de fetch sin más contexto (ruido, no accionable)
+    if (message === 'Failed to fetch' && !reason?.stack) return;
+
     reportError({
       source: 'frontend_promise',
       severity: 'medium',
-      message: reason?.message || String(reason),
+      message,
       stack: reason?.stack || '',
     });
   });

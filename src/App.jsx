@@ -1,4 +1,5 @@
-import { lazy, Suspense } from 'react';
+import { Suspense } from 'react';
+import { lazyWithRetry } from '@/lib/lazy-with-retry';
 import { Toaster } from "@/components/ui/toaster"
 import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClientInstance } from '@/lib/query-client'
@@ -42,57 +43,58 @@ import Canjear from './pages/Canjear';
 import RegalarGiftCard from './pages/RegalarGiftCard';
 import Gracias from './pages/Gracias';
 
-// ── ADMIN PAGES (lazy) ───────────────────────────────────────────────
-// Cargadas on-demand. Reduce ~70% del bundle inicial (público nunca las ve).
-const Layout = lazy(() => import('./components/Layout'));
-const Dashboard = lazy(() => import('./pages/Dashboard'));
-const PipelineB2B = lazy(() => import('./pages/PipelineB2B'));
-const Operaciones = lazy(() => import('./pages/Operaciones'));
-const Marketing = lazy(() => import('./pages/Marketing'));
-const MarketingHub = lazy(() => import('./pages/MarketingHub'));
-const Analitica = lazy(() => import('./pages/Analitica'));
-const Catalogo = lazy(() => import('./pages/Catalogo'));
-const CPQCalculator = lazy(() => import('./pages/CPQCalculator'));
-const Soporte = lazy(() => import('./pages/Soporte'));
-const Financiero = lazy(() => import('./pages/Financiero'));
-const Clientes = lazy(() => import('./pages/Clientes'));
-const Tiendas = lazy(() => import('./pages/Tiendas'));
-const Proveedores = lazy(() => import('./pages/Proveedores'));
-const Equipo = lazy(() => import('./pages/Equipo'));
-const OKRs = lazy(() => import('./pages/OKRs'));
-const Inventario = lazy(() => import('./pages/Inventario'));
-const Ecommerce = lazy(() => import('./pages/Ecommerce'));
-const FlujoCaja = lazy(() => import('./pages/FlujoCaja'));
-const Trazabilidad = lazy(() => import('./pages/Trazabilidad'));
-const Compras = lazy(() => import('./pages/Compras'));
-const ESG = lazy(() => import('./pages/ESG'));
-const PlanAccion = lazy(() => import('./pages/PlanAccion'));
-const AsistenteIA = lazy(() => import('./pages/AsistenteIA'));
-const Cotizaciones = lazy(() => import('./pages/Cotizaciones'));
-const Calendario = lazy(() => import('./pages/Calendario'));
-const Reportes = lazy(() => import('./pages/Reportes'));
-const Configuracion = lazy(() => import('./pages/Configuracion'));
-const Alertas = lazy(() => import('./pages/Alertas'));
-const AdminPropuestas = lazy(() => import('./pages/AdminPropuestas'));
-const EstadoActual = lazy(() => import('./pages/EstadoActual'));
-const EmbudoVentas = lazy(() => import('./pages/EmbudoVentas'));
-const ImportarClientes = lazy(() => import('./pages/ImportarClientes'));
-const Backlinks = lazy(() => import('./pages/Backlinks'));
-const IntegracionWoo = lazy(() => import('./pages/IntegracionWoo'));
-const ProcesarPedidos = lazy(() => import('./pages/ProcesarPedidos'));
-const Cliente360 = lazy(() => import('./pages/Cliente360'));
-const PineconeBrain = lazy(() => import('./pages/PineconeBrain'));
-const GoogleWorkspace = lazy(() => import('./pages/GoogleWorkspace'));
-const Indexacion = lazy(() => import('./pages/Indexacion'));
-const AdsCommand = lazy(() => import('./pages/AdsCommand'));
-const LaunchMap = lazy(() => import('./pages/LaunchMap'));
-const GA4Realtime = lazy(() => import('./pages/GA4Realtime'));
-const AdminProducts = lazy(() => import('./pages/AdminProducts'));
-const TarifasEnvio = lazy(() => import('./pages/TarifasEnvio'));
-const MonitoreoIA = lazy(() => import('./pages/MonitoreoIA'));
-const Trazabilidad360 = lazy(() => import('./pages/Trazabilidad360'));
-const CentroCostosReal = lazy(() => import('./pages/CentroCostosReal'));
-const CentroLogistico = lazy(() => import('./pages/CentroLogistico'));
+// ── ADMIN PAGES (lazy + retry) ───────────────────────────────────────
+// Cargadas on-demand. Cada lazy() está envuelto en lazyWithRetry para
+// recuperarse automáticamente de stale chunks tras un deploy nuevo.
+const Layout = lazyWithRetry(() => import('./components/Layout'), { name: 'Layout' });
+const Dashboard = lazyWithRetry(() => import('./pages/Dashboard'), { name: 'Dashboard' });
+const PipelineB2B = lazyWithRetry(() => import('./pages/PipelineB2B'), { name: 'PipelineB2B' });
+const Operaciones = lazyWithRetry(() => import('./pages/Operaciones'), { name: 'Operaciones' });
+const Marketing = lazyWithRetry(() => import('./pages/Marketing'), { name: 'Marketing' });
+const MarketingHub = lazyWithRetry(() => import('./pages/MarketingHub'), { name: 'MarketingHub' });
+const Analitica = lazyWithRetry(() => import('./pages/Analitica'), { name: 'Analitica' });
+const Catalogo = lazyWithRetry(() => import('./pages/Catalogo'), { name: 'Catalogo' });
+const CPQCalculator = lazyWithRetry(() => import('./pages/CPQCalculator'), { name: 'CPQCalculator' });
+const Soporte = lazyWithRetry(() => import('./pages/Soporte'), { name: 'Soporte' });
+const Financiero = lazyWithRetry(() => import('./pages/Financiero'), { name: 'Financiero' });
+const Clientes = lazyWithRetry(() => import('./pages/Clientes'), { name: 'Clientes' });
+const Tiendas = lazyWithRetry(() => import('./pages/Tiendas'), { name: 'Tiendas' });
+const Proveedores = lazyWithRetry(() => import('./pages/Proveedores'), { name: 'Proveedores' });
+const Equipo = lazyWithRetry(() => import('./pages/Equipo'), { name: 'Equipo' });
+const OKRs = lazyWithRetry(() => import('./pages/OKRs'), { name: 'OKRs' });
+const Inventario = lazyWithRetry(() => import('./pages/Inventario'), { name: 'Inventario' });
+const Ecommerce = lazyWithRetry(() => import('./pages/Ecommerce'), { name: 'Ecommerce' });
+const FlujoCaja = lazyWithRetry(() => import('./pages/FlujoCaja'), { name: 'FlujoCaja' });
+const Trazabilidad = lazyWithRetry(() => import('./pages/Trazabilidad'), { name: 'Trazabilidad' });
+const Compras = lazyWithRetry(() => import('./pages/Compras'), { name: 'Compras' });
+const ESG = lazyWithRetry(() => import('./pages/ESG'), { name: 'ESG' });
+const PlanAccion = lazyWithRetry(() => import('./pages/PlanAccion'), { name: 'PlanAccion' });
+const AsistenteIA = lazyWithRetry(() => import('./pages/AsistenteIA'), { name: 'AsistenteIA' });
+const Cotizaciones = lazyWithRetry(() => import('./pages/Cotizaciones'), { name: 'Cotizaciones' });
+const Calendario = lazyWithRetry(() => import('./pages/Calendario'), { name: 'Calendario' });
+const Reportes = lazyWithRetry(() => import('./pages/Reportes'), { name: 'Reportes' });
+const Configuracion = lazyWithRetry(() => import('./pages/Configuracion'), { name: 'Configuracion' });
+const Alertas = lazyWithRetry(() => import('./pages/Alertas'), { name: 'Alertas' });
+const AdminPropuestas = lazyWithRetry(() => import('./pages/AdminPropuestas'), { name: 'AdminPropuestas' });
+const EstadoActual = lazyWithRetry(() => import('./pages/EstadoActual'), { name: 'EstadoActual' });
+const EmbudoVentas = lazyWithRetry(() => import('./pages/EmbudoVentas'), { name: 'EmbudoVentas' });
+const ImportarClientes = lazyWithRetry(() => import('./pages/ImportarClientes'), { name: 'ImportarClientes' });
+const Backlinks = lazyWithRetry(() => import('./pages/Backlinks'), { name: 'Backlinks' });
+const IntegracionWoo = lazyWithRetry(() => import('./pages/IntegracionWoo'), { name: 'IntegracionWoo' });
+const ProcesarPedidos = lazyWithRetry(() => import('./pages/ProcesarPedidos'), { name: 'ProcesarPedidos' });
+const Cliente360 = lazyWithRetry(() => import('./pages/Cliente360'), { name: 'Cliente360' });
+const PineconeBrain = lazyWithRetry(() => import('./pages/PineconeBrain'), { name: 'PineconeBrain' });
+const GoogleWorkspace = lazyWithRetry(() => import('./pages/GoogleWorkspace'), { name: 'GoogleWorkspace' });
+const Indexacion = lazyWithRetry(() => import('./pages/Indexacion'), { name: 'Indexacion' });
+const AdsCommand = lazyWithRetry(() => import('./pages/AdsCommand'), { name: 'AdsCommand' });
+const LaunchMap = lazyWithRetry(() => import('./pages/LaunchMap'), { name: 'LaunchMap' });
+const GA4Realtime = lazyWithRetry(() => import('./pages/GA4Realtime'), { name: 'GA4Realtime' });
+const AdminProducts = lazyWithRetry(() => import('./pages/AdminProducts'), { name: 'AdminProducts' });
+const TarifasEnvio = lazyWithRetry(() => import('./pages/TarifasEnvio'), { name: 'TarifasEnvio' });
+const MonitoreoIA = lazyWithRetry(() => import('./pages/MonitoreoIA'), { name: 'MonitoreoIA' });
+const Trazabilidad360 = lazyWithRetry(() => import('./pages/Trazabilidad360'), { name: 'Trazabilidad360' });
+const CentroCostosReal = lazyWithRetry(() => import('./pages/CentroCostosReal'), { name: 'CentroCostosReal' });
+const CentroLogistico = lazyWithRetry(() => import('./pages/CentroLogistico'), { name: 'CentroLogistico' });
 
 const AdminLoader = () => (
   <div className="fixed inset-0 flex items-center justify-center bg-background">
