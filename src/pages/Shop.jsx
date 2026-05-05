@@ -237,9 +237,9 @@ export default function Shop() {
           onSelect={handleSelectCategory}
         />
 
-        {/* Sub-controls bar (sort + filtros) */}
-        <div className="flex items-center justify-between gap-3 mt-4 mb-4 flex-wrap">
-          <p className="text-sm text-white/65" ref={gridTopRef}>
+        {/* Sub-controls bar (sort + filtros) — conteo oculto en mobile para reducir scroll */}
+        <div className="flex items-center justify-between gap-3 mt-3 sm:mt-4 mb-3 sm:mb-4 flex-wrap">
+          <p className="hidden sm:block text-sm text-white/65" ref={gridTopRef}>
             {loading ? (
               'Cargando...'
             ) : (
@@ -250,7 +250,9 @@ export default function Shop() {
               </>
             )}
           </p>
-          <div className="flex items-center gap-2 flex-shrink-0">
+          {/* Anchor invisible para scroll en mobile (el conteo está oculto) */}
+          <span ref={gridTopRef} className="sm:hidden block w-full h-0" />
+          <div className="flex items-center gap-2 flex-shrink-0 ml-auto">
             <select
               value={sortBy}
               onChange={e => setSortBy(e.target.value)}

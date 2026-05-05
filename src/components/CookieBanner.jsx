@@ -42,42 +42,67 @@ export default function CookieBanner() {
     <div
       role="dialog"
       aria-label="Aviso de cookies"
-      className="fixed bottom-0 left-0 right-0 z-[80] p-3 sm:p-4 lg:bottom-4 lg:left-4 lg:right-auto lg:max-w-md"
-      style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 0.75rem)' }}
+      className="fixed bottom-0 left-0 right-0 z-[80] p-2 sm:p-3 lg:bottom-4 lg:left-4 lg:right-auto lg:max-w-md"
+      style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 0.5rem)' }}
     >
-      <div className="bg-slate-900/95 backdrop-blur-xl border border-white/20 rounded-2xl shadow-2xl p-4 sm:p-5 text-white">
-        <div className="flex items-start gap-3">
-          <div className="w-9 h-9 rounded-xl bg-teal-500/25 border border-teal-400/30 flex items-center justify-center flex-shrink-0">
-            <Cookie className="w-4 h-4 text-teal-300" />
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="font-poppins font-bold text-sm">Usamos cookies 🍪</p>
-            <p className="text-xs text-white/65 leading-relaxed mt-1">
-              Para que el carrito, el chat y las analíticas funcionen. Puedes leer la{' '}
-              <Link to="/cookies" className="text-teal-300 hover:text-teal-200 underline">política de cookies</Link>.
-            </p>
-          </div>
+      {/* Mobile: barra ultra compacta de 1 línea · Desktop: card completa */}
+      <div className="bg-slate-900/95 backdrop-blur-xl border border-white/20 rounded-xl lg:rounded-2xl shadow-2xl px-3 py-2 lg:p-5 text-white">
+        {/* MOBILE COMPACT — solo botones + link mini */}
+        <div className="flex items-center gap-2 lg:hidden">
+          <Cookie className="w-4 h-4 text-teal-300 flex-shrink-0" />
+          <p className="text-[11px] text-white/75 leading-tight flex-1 min-w-0">
+            Usamos cookies.{' '}
+            <Link to="/cookies" className="text-teal-300 underline">Más info</Link>
+          </p>
           <button
             onClick={() => persist({ analytics: false, marketing: false })}
-            className="w-7 h-7 rounded-lg hover:bg-white/10 flex items-center justify-center text-white/50 hover:text-white transition"
-            aria-label="Cerrar y rechazar"
-          >
-            <X className="w-4 h-4" />
-          </button>
-        </div>
-        <div className="flex gap-2 mt-3">
-          <button
-            onClick={() => persist({ analytics: false, marketing: false })}
-            className="flex-1 h-9 rounded-lg bg-white/10 hover:bg-white/20 border border-white/20 text-xs font-semibold transition"
+            className="h-7 px-2.5 rounded-md bg-white/10 hover:bg-white/20 border border-white/15 text-[10px] font-semibold whitespace-nowrap"
           >
             Solo necesarias
           </button>
           <button
             onClick={() => persist({ analytics: true, marketing: true })}
-            className="flex-1 h-9 rounded-lg bg-gradient-to-r from-teal-500 to-cyan-500 hover:from-teal-600 hover:to-cyan-600 text-xs font-bold shadow-lg transition"
+            className="h-7 px-3 rounded-md bg-gradient-to-r from-teal-500 to-cyan-500 text-[10px] font-bold shadow-md whitespace-nowrap"
           >
-            Aceptar todas
+            Aceptar
           </button>
+        </div>
+
+        {/* DESKTOP — card completa con explicación */}
+        <div className="hidden lg:block">
+          <div className="flex items-start gap-3">
+            <div className="w-9 h-9 rounded-xl bg-teal-500/25 border border-teal-400/30 flex items-center justify-center flex-shrink-0">
+              <Cookie className="w-4 h-4 text-teal-300" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="font-poppins font-bold text-sm">Usamos cookies 🍪</p>
+              <p className="text-xs text-white/65 leading-relaxed mt-1">
+                Para que el carrito, el chat y las analíticas funcionen. Puedes leer la{' '}
+                <Link to="/cookies" className="text-teal-300 hover:text-teal-200 underline">política de cookies</Link>.
+              </p>
+            </div>
+            <button
+              onClick={() => persist({ analytics: false, marketing: false })}
+              className="w-7 h-7 rounded-lg hover:bg-white/10 flex items-center justify-center text-white/50 hover:text-white transition"
+              aria-label="Cerrar y rechazar"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+          <div className="flex gap-2 mt-3">
+            <button
+              onClick={() => persist({ analytics: false, marketing: false })}
+              className="flex-1 h-9 rounded-lg bg-white/10 hover:bg-white/20 border border-white/20 text-xs font-semibold transition"
+            >
+              Solo necesarias
+            </button>
+            <button
+              onClick={() => persist({ analytics: true, marketing: true })}
+              className="flex-1 h-9 rounded-lg bg-gradient-to-r from-teal-500 to-cyan-500 hover:from-teal-600 hover:to-cyan-600 text-xs font-bold shadow-lg transition"
+            >
+              Aceptar todas
+            </button>
+          </div>
         </div>
       </div>
     </div>

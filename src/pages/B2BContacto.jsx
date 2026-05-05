@@ -292,32 +292,24 @@ export default function B2BContacto() {
       />
       <div className="min-h-full flex flex-col">
 
-          {/* Header */}
-          <div className="bg-gradient-to-r from-teal-500/30 to-cyan-500/30 border-b border-white/20 px-4 sm:px-6 py-3 flex items-center justify-between flex-shrink-0 sticky top-0 z-40 backdrop-blur-md">
-            <div className="flex items-center gap-3">
+          {/* Header — compacto, sin logo duplicado */}
+          <div className="bg-gradient-to-r from-teal-500/30 to-cyan-500/30 border-b border-white/20 px-3 sm:px-6 py-2.5 sm:py-3 flex items-center justify-between flex-shrink-0 sticky top-0 z-40 backdrop-blur-md">
+            <div className="flex items-center gap-2 sm:gap-3 min-w-0">
               <MobileMenu items={MENU_ITEMS} />
-              <Link to={productoId ? `/producto/${productoId}` : '/shop'} className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center hover:bg-white/30 transition-colors">
+              <Link to={productoId ? `/producto/${productoId}` : '/shop'} className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center hover:bg-white/30 transition-colors flex-shrink-0">
                 <ArrowLeft className="w-4 h-4 text-white" />
               </Link>
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-teal-400 to-cyan-500 flex items-center justify-center shadow-lg">
-                  <span className="text-white text-xs font-bold">P</span>
-                </div>
-                <div>
-                  <p className="text-sm font-poppins font-bold text-white leading-none">PEYU</p>
-                  <p className="text-[10px] text-white/60 leading-none mt-0.5">Ventas Corporativas B2B</p>
-                </div>
-              </div>
+              <p className="text-sm font-poppins font-bold text-white leading-none truncate">Cotización B2B</p>
             </div>
-            <a href="https://wa.me/56935040242?text=Hola%2C%20quiero%20una%20cotizaci%C3%B3n%20corporativa" target="_blank" rel="noopener noreferrer">
-              <Button size="sm" className="bg-green-500 hover:bg-green-600 text-white rounded-full gap-1.5 text-xs font-bold px-4 shadow-lg">
+            <a href="https://wa.me/56935040242?text=Hola%2C%20quiero%20una%20cotizaci%C3%B3n%20corporativa" target="_blank" rel="noopener noreferrer" className="flex-shrink-0">
+              <Button size="sm" className="bg-green-500 hover:bg-green-600 text-white rounded-full gap-1.5 text-xs font-bold px-3 sm:px-4 shadow-lg">
                 <MessageCircle className="w-3.5 h-3.5" /> WhatsApp
               </Button>
             </a>
           </div>
 
-          {/* Content */}
-          <div className="flex-1 max-w-4xl mx-auto w-full px-4 sm:px-6 py-8 space-y-8">
+          {/* Content — paddings reducidos en mobile para más densidad */}
+          <div className="flex-1 max-w-4xl mx-auto w-full px-4 sm:px-6 py-4 sm:py-8 space-y-5 sm:space-y-8">
 
             {/* Quick access row: self-service + mi cuenta */}
             <div className="grid md:grid-cols-2 gap-3">
@@ -343,42 +335,33 @@ export default function B2BContacto() {
               </Link>
             </div>
 
-            {/* Hero */}
-            <div className="text-center space-y-4">
-              {fromChat && (
-                <div className="inline-flex items-center gap-2 bg-purple-500/20 border border-purple-400/40 text-purple-200 px-4 py-1.5 rounded-full text-xs font-semibold backdrop-blur-sm">
-                  🐢 Peyu ya precargó tu solicitud — solo completa tus datos
+            {/* Hero — compacto en mobile, los badges de pre-carga consolidados */}
+            <div className="text-center space-y-3 sm:space-y-4">
+              {(fromChat || (draft && (draft.mockupUrl || draft.logoUrl || draft.texto)) || clientePrefilled || userPrefilled) && (
+                <div className="inline-flex items-center gap-2 bg-purple-500/20 border border-purple-400/40 text-purple-200 px-3 py-1 rounded-full text-[11px] sm:text-xs font-semibold backdrop-blur-sm">
+                  {clientePrefilled
+                    ? '👋 Datos de empresa precargados'
+                    : draft && (draft.mockupUrl || draft.logoUrl)
+                    ? '✨ Mockup precargado del producto'
+                    : fromChat
+                    ? '🐢 Peyu precargó tu solicitud'
+                    : '👤 Datos precargados'}
                 </div>
               )}
-              {draft && (draft.mockupUrl || draft.logoUrl || draft.texto) && (
-                <div className="inline-flex items-center gap-2 bg-pink-500/20 border border-pink-400/40 text-pink-200 px-4 py-1.5 rounded-full text-xs font-semibold backdrop-blur-sm">
-                  ✨ Tu mockup y personalización fueron traídos desde <b>&nbsp;{draft.productoNombre || 'el producto'}</b>
-                </div>
-              )}
-              {clientePrefilled && (
-                <div className="inline-flex items-center gap-2 bg-emerald-500/20 border border-emerald-400/40 text-emerald-200 px-4 py-1.5 rounded-full text-xs font-semibold backdrop-blur-sm">
-                  👋 ¡Hola de nuevo! Completamos tus datos de empresa automáticamente
-                </div>
-              )}
-              {userPrefilled && !clientePrefilled && (
-                <div className="inline-flex items-center gap-2 bg-blue-500/20 border border-blue-400/40 text-blue-200 px-4 py-1.5 rounded-full text-xs font-semibold backdrop-blur-sm">
-                  👤 Sesión iniciada — precargamos tu nombre y email
-                </div>
-              )}
-              <div className="inline-flex items-center gap-2 bg-teal-500/20 border border-teal-400/40 text-teal-300 px-4 py-1.5 rounded-full text-sm font-semibold backdrop-blur-sm">
-                <Building2 className="w-4 h-4" /> Cotización Corporativa B2B
+              <div className="inline-flex items-center gap-2 bg-teal-500/20 border border-teal-400/40 text-teal-300 px-3 py-1 rounded-full text-xs sm:text-sm font-semibold backdrop-blur-sm">
+                <Building2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> Cotización B2B
               </div>
-              <h1 className="text-3xl md:text-5xl font-poppins font-black leading-tight text-white drop-shadow-lg">
+              <h1 className="text-[1.6rem] sm:text-3xl md:text-5xl font-poppins font-black leading-[1.1] text-white drop-shadow-lg">
                 Regalos corporativos<br />
                 <span className="text-cyan-400">con impacto real</span>
               </h1>
-              <p className="text-white/70 max-w-xl mx-auto leading-relaxed text-sm md:text-base">
-                Transformamos residuos plásticos en regalos únicos con tu logo. Fabricación local en Chile, personalización láser UV gratuita desde 10 unidades.
+              <p className="text-white/70 max-w-xl mx-auto leading-relaxed text-xs sm:text-sm md:text-base">
+                Transformamos residuos plásticos en regalos únicos con tu logo. Fabricación local · personalización láser UV gratuita desde 10 u.
               </p>
             </div>
 
             {/* Feature Cards */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3">
               {FEATURES.map((f, i) => (
                 <div key={i} className="bg-white/5 backdrop-blur-sm border border-white/15 rounded-2xl p-4 text-center hover:bg-white/10 hover:-translate-y-1 transition-all shadow-lg">
                   <div className="w-10 h-10 rounded-xl mx-auto mb-2.5 flex items-center justify-center" style={{ background: f.color + '25', border: `1px solid ${f.color}40` }}>
@@ -390,15 +373,15 @@ export default function B2BContacto() {
               ))}
             </div>
 
-            {/* Form Card */}
-            <div className="bg-white/5 backdrop-blur-md border border-white/15 rounded-3xl p-6 md:p-8 shadow-2xl">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-teal-500/30 to-cyan-500/30 border border-teal-400/40 flex items-center justify-center">
+            {/* Form Card — paddings reducidos en mobile */}
+            <div className="bg-white/5 backdrop-blur-md border border-white/15 rounded-2xl sm:rounded-3xl p-4 sm:p-6 md:p-8 shadow-2xl">
+              <div className="flex items-center gap-3 mb-4 sm:mb-6">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-teal-500/30 to-cyan-500/30 border border-teal-400/40 flex items-center justify-center flex-shrink-0">
                   <Send className="w-5 h-5 text-teal-300" />
                 </div>
-                <div>
-                  <h2 className="font-poppins font-bold text-lg text-white">Solicitar cotización</h2>
-                  <p className="text-white/50 text-xs">Respondemos en menos de 24 horas con propuesta + mockup</p>
+                <div className="min-w-0">
+                  <h2 className="font-poppins font-bold text-base sm:text-lg text-white">Solicitar cotización</h2>
+                  <p className="text-white/50 text-[11px] sm:text-xs">Respondemos en &lt;24h con propuesta + mockup</p>
                 </div>
               </div>
 
