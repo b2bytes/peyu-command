@@ -162,7 +162,9 @@ export const BACKGROUNDS = [
   },
 ];
 
-export const DEFAULT_BG_ID = BACKGROUNDS[0].id;
+// Default = "Helecho esmeralda" — sin letras, naturaleza pura, verde botánico
+// elegante que conecta con el ADN sostenible de PEYU.
+export const DEFAULT_BG_ID = 'fern-emerald';
 
 export function getBackgroundById(id) {
   return BACKGROUNDS.find(b => b.id === id) || BACKGROUNDS[0];
