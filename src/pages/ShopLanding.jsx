@@ -49,7 +49,16 @@ const OCASIONES = [
 ];
 
 const STORAGE_KEY = 'peyu_chat_conversation_id';
-const WELCOME_MSG = { role: 'assistant', content: '¡Hola! Soy Peyu 🐢\n\nVendo regalos 100% plástico reciclado, hechos en Chile, con grabado láser y garantía 10 años.\n\n¿Es regalo **personal** (1-9u) o para tu **empresa** (10+ unidades)?' };
+const WELCOME_MSG = {
+  role: 'assistant',
+  content: [
+    'Hola, soy Peyu.',
+    '',
+    'Diseño regalos en plástico 100% reciclado, hechos en Chile, con grabado láser y garantía de 10 años.',
+    '',
+    '¿Buscas un regalo personal o para tu empresa?',
+  ].join('\n'),
+};
 
 export default function ShopLanding() {
   // Si la pestaña es nueva (usuario cerró y volvió), archivar la conv anterior al historial.
