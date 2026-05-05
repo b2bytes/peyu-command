@@ -15,6 +15,7 @@ import BulkUrlInspector from '@/components/launch/BulkUrlInspector';
 import SitemapLiveCard from '@/components/launch/SitemapLiveCard';
 import LaunchBlastCard from '@/components/launch/LaunchBlastCard';
 import SeoGeoBlastCard from '@/components/launch/SeoGeoBlastCard';
+import BacklinksDiscoveryCard from '@/components/launch/BacklinksDiscoveryCard';
 
 const SITES = [
   { url: 'https://peyuchile.cl/', label: 'peyuchile.cl (principal · Base44)' },
@@ -100,6 +101,9 @@ export default function Indexacion() {
         <SitemapLiveCard />
         <IndexNowCard />
       </div>
+
+      {/* 🔗 Backlinks Discovery — descubre menciones reales en medios CL */}
+      <BacklinksDiscoveryCard />
 
       {/* Log histórico */}
       <Card>
