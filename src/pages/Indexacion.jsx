@@ -13,6 +13,7 @@ import IndexNowCard from '@/components/launch/IndexNowCard';
 import PerformanceHeader from '@/components/launch/PerformanceHeader';
 import BulkUrlInspector from '@/components/launch/BulkUrlInspector';
 import SitemapLiveCard from '@/components/launch/SitemapLiveCard';
+import LaunchBlastCard from '@/components/launch/LaunchBlastCard';
 
 const SITES = [
   { url: 'https://peyuchile.cl/', label: 'peyuchile.cl (principal · Base44)' },
@@ -69,6 +70,9 @@ export default function Indexacion() {
           </ol>
         </CardContent>
       </Card>
+
+      {/* 🚀 LAUNCH BLAST — Botón único de indexación 1-click */}
+      <LaunchBlastCard />
 
       {/* 🔥 Performance real GSC — KPIs 28d + top queries + top pages */}
       <PerformanceHeader sites={SITES.map(s => ({ url: s.url, label: s.label }))} />

@@ -1,17 +1,30 @@
+# PEYU Chile · robots.txt
+# Permitir indexación completa al lanzamiento.
+# Bloquear áreas privadas (/admin) y rutas de pago/cliente.
+
 User-agent: *
 Allow: /
 Disallow: /admin/
+Disallow: /admin
+Disallow: /cart
+Disallow: /gracias
+Disallow: /canjear
 Disallow: /b2b/mi-cuenta
-Disallow: /seguimiento?
+Disallow: /b2b/propuesta
+Disallow: /seguimiento
 
-# Sitemaps (servidos dinámicamente por la función serveSitemap)
+# Crawlers de IA: bienvenidos
+User-agent: GPTBot
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+# Sitemap principal (servido dinámicamente desde la función serveSitemap)
 Sitemap: https://peyuchile.cl/sitemap.xml
-Sitemap: https://peyuchile.cl/sitemap-products.xml
-Sitemap: https://peyuchile.cl/sitemap-blog.xml
-
-# Crawl-delay razonable para bots agresivos
-User-agent: AhrefsBot
-Crawl-delay: 5
-
-User-agent: SemrushBot
-Crawl-delay: 5
