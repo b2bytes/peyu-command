@@ -14,6 +14,7 @@ import PerformanceHeader from '@/components/launch/PerformanceHeader';
 import BulkUrlInspector from '@/components/launch/BulkUrlInspector';
 import SitemapLiveCard from '@/components/launch/SitemapLiveCard';
 import LaunchBlastCard from '@/components/launch/LaunchBlastCard';
+import SeoGeoBlastCard from '@/components/launch/SeoGeoBlastCard';
 
 const SITES = [
   { url: 'https://peyuchile.cl/', label: 'peyuchile.cl (principal · Base44)' },
@@ -71,7 +72,10 @@ export default function Indexacion() {
         </CardContent>
       </Card>
 
-      {/* 🚀 LAUNCH BLAST — Botón único de indexación 1-click */}
+      {/* 🚀 SEO/GEO BLAST COMPLETO — Sitemap + IndexNow + GSC + Audit + Merchant Feed */}
+      <SeoGeoBlastCard />
+
+      {/* 🚀 LAUNCH BLAST — Botón único de indexación 1-click (legacy) */}
       <LaunchBlastCard />
 
       {/* 🔥 Performance real GSC — KPIs 28d + top queries + top pages */}

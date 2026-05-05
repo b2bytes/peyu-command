@@ -1,11 +1,22 @@
 // ============================================================
-// PEYU — Catálogo central de SEO (rev. abr-2026)
+// PEYU — Catálogo central de SEO (rev. may-2026)
 // Fuente única de verdad para títulos, descripciones, keywords
 // y metadatos de TODAS las páginas públicas y landings B2B.
 //
-// Investigación competitiva (abr-2026): qactus.cl, merchi.cl,
-// boxi.cl, tiendarevivir.cl, ecofamy.cl, regalatumarca.cl,
-// imprentados.cl, escorpiongroup.cl, daoro.cl, gopromocionales.cl.
+// Investigación competitiva (may-2026, SERP Chile en vivo):
+//   • qactus.cl       — "plástico reciclado", "impresión 3D"
+//   • boxi.cl         — "5 opciones personalizar", "bambú/RPET"
+//   • tiendarevivir.cl— "economía circular", "impacto real"
+//   • regalatumarca.cl— "desde 2012", "talleres propios"
+//   • imprentados.cl  — "7 ideas eco", "bolsas/cuadernos/botellas"
+//   • merchi.cl       — "RPET + bambú certificados", "sin setup"
+//   • gfgroup.cl      — "serigrafía/DTF/láser/cuño/bordado"
+//   • beepromo.cl     — "marcaje integral", "5 técnicas"
+//   • instantpromo.cl — "in-house", "EPP + ropa corporativa"
+//   • cambiastudio    — "100% chile, plástico reciclado"
+//
+// Diferenciadores duros PEYU vs estos: 10 años garantía, fibra
+// trigo compostable, MOQ 10u, factura empresa, propuesta 24h.
 //
 // Reglas SEO aplicadas:
 // • Title 50-60 car. con keyword primaria al inicio + marca al final.
@@ -46,19 +57,32 @@ export const absUrl = (path = '/') => {
 // ============================================================
 export const KEYWORD_CLUSTERS = {
   // ── Core B2B — intención comercial ALTA (gerentes/decisores)
+  // (sept-2026: keywords confirmadas en SERP Chile de Qactus/Boxi/Merchi)
   coreB2B: [
     'regalos corporativos Chile',
     'regalos corporativos personalizados con logo',
     'regalos corporativos sustentables',
     'regalos corporativos sostenibles Chile',
     'regalos corporativos ecológicos',
+    'regalos corporativos ecológicos plástico reciclado', // tiendarevivir.cl, peyu
     'merchandising corporativo personalizado',
     'merchandising sustentable empresa',
+    'merchandising empresarial Chile',                    // merchi.cl
     'gifting corporativo Chile',
+    'gifting empresarial sustentable',
     'productos promocionales empresa Chile',
+    'productos promocionales personalizados',             // gopromocionales
     'artículos promocionales personalizados',
     'regalos empresariales premium',
+    'regalos publicitarios empresa',                      // regalatumarca.cl
     'proveedor regalos corporativos Santiago',
+    'proveedor merchandising Chile',
+    'fabricante regalos corporativos Chile',
+    'mejor empresa regalos corporativos Chile',           // qactus.cl long-tail
+    'top regalos corporativos ecológicos Chile',
+    'regalos corporativos hechos en Chile',
+    'EPP corporativo personalizado',                      // instantpromo.cl
+    'ropa corporativa personalizada Chile',
   ],
 
   // ── RRHH / People — onboarding y reconocimiento
@@ -92,12 +116,16 @@ export const KEYWORD_CLUSTERS = {
   ],
 
   // ── ESG / Sostenibilidad — decisor sustainability/CEO
+  // (sept-2026: combatimos directo a Qactus, Tiendarevivir, Cambia Studio)
   esg: [
     'merchandising sustentable Chile',
     'regalos ecológicos plástico reciclado',
     'productos plástico 100% reciclado',
+    'productos plástico reciclado Chile',                 // qactus.cl
     'merchandising RPET Chile',
+    'regalos RPET certificado',                           // merchi.cl
     'regalos economía circular',
+    'economía circular regalos empresa',                  // tiendarevivir.cl
     'merchandising huella de carbono',
     'gifting carbono neutral Chile',
     'regalos ESG empresa',
@@ -105,6 +133,18 @@ export const KEYWORD_CLUSTERS = {
     'productos post-consumo reciclado',
     'empresa B Corp Chile regalos',
     'merchandising con propósito',
+    'regalos de bambú personalizados',                    // boxi.cl, obsequiarte.cl
+    'regalos de corcho corporativos',                     // boxi.cl
+    'productos algodón orgánico empresa',                 // boxi.cl, peyu
+    'fibra de trigo compostable productos',               // diferencial PEYU
+    'productos compostables empresa Chile',
+    'regalos sustentables impacto ambiental',             // tiendarevivir.cl
+    'regalos ecológicos con tu logo',                     // boxi.cl
+    'cuadernos reciclados personalizados',                // imprentados.cl
+    'botellas reutilizables corporativas',                // imprentados.cl
+    'bolsas ecológicas personalizadas',                   // imprentados.cl
+    'lápices ecológicos empresa',                         // obsequiarte.cl
+    'mug bambú personalizado',                            // obsequiarte.cl
   ],
 
   // ── Eventos / Marketing — activaciones, ferias
@@ -142,15 +182,28 @@ export const KEYWORD_CLUSTERS = {
   ],
 
   // ── Técnicas — producto y manufactura
+  // (sept-2026: cubrimos las 5 técnicas que ofrece la competencia)
   tecnica: [
     'grabado láser personalizado Chile',
+    'grabado láser CO2 fibra',                            // mischapitas.cl
     'grabado láser UV en plástico',
+    'serigrafía corporativa Chile',                       // gfgroup.cl
+    'sublimación productos personalizados',               // beepromo.cl
+    'tampografía empresa Chile',                          // beepromo.cl
+    'DTF transfer empresa',                               // gfgroup.cl
+    'cuño seco personalización',                          // gfgroup.cl
+    'bordado corporativo Chile',                          // gfgroup.cl
     'plástico 100% reciclado Chile',
     'fibra de trigo compostable',
     'inyección plástico reciclado',
+    'inyección plástico reciclado Chile',
+    'impresión 3D plástico reciclado',                    // qactus.cl
     'logo grabado láser productos',
     'personalización láser logo empresa',
+    'personalización con logo empresa',
     'mockup personalización online',
+    'marcaje productos corporativos',                     // beepromo.cl
+    'técnicas personalización merchandising',
   ],
 
   // ── B2C / Tienda — intención de compra individual
@@ -163,6 +216,33 @@ export const KEYWORD_CLUSTERS = {
     'regalos originales Chile',
     'tienda online productos sustentables',
     'kit escritorio sostenible',
+    'cachos plástico reciclado Chile',                    // peyu (long-tail dominante)
+    'cachos peyu',                                        // brand
+    'pack cachos sustentables',
+    'juegos de mesa reciclados Chile',
+    'juegos sustentables niños Chile',
+    'set escritorio plástico reciclado',
+    'lapiceros reciclados Chile',
+    'organizador escritorio sustentable',
+    'porta lápices ecológico personalizado',
+    'carcasas celular plástico reciclado',
+    'regalos originales hechos en Chile',
+    'comprar productos eco online Chile',
+  ],
+
+  // ── Categorías de producto (long-tail informacional → comercial)
+  categorias: [
+    'mejores regalos corporativos sustentables 2026',
+    'top 10 regalos corporativos ecológicos Chile',
+    'ideas regalos navidad empresa sustentables',
+    'qué regalar a colaboradores sustentable',
+    'regalos día de la mujer empresa ecológicos',
+    'aguinaldo sustentable empresa',
+    'kit bienvenida sustentable startup',
+    'regalo cumpleaños colaborador eco',
+    'regalo ascenso empresa personalizado',
+    'detalle día del padre corporativo Chile',
+    'detalle día de la madre empresa Chile',
   ],
 
   // ── Local / Tiendas físicas
