@@ -3,7 +3,7 @@ import { base44 } from "@/api/base44Client";
 import {
   TrendingUp, TrendingDown, Users, Package, DollarSign,
   MessageSquare, Factory, AlertTriangle, CheckCircle2,
-  Clock, Target, Zap, ArrowRight, Database, Loader2,
+  Clock, Target, Zap, ArrowRight,
   Store, UserCheck, Flag
 } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -37,28 +37,58 @@ function StatCard({ title, value, subtitle, icon: Icon, trend, trendLabel, color
   );
 }
 
-const ingresosMensuales = [
-  { mes: 'Oct', b2b: 6400, b2c: 6000 },
-  { mes: 'Nov', b2b: 6400, b2c: 5800 },
-  { mes: 'Dic', b2b: 8000, b2c: 12000 },
-  { mes: 'Ene', b2b: 6400, b2c: 4500 },
-  { mes: 'Feb', b2b: 6400, b2c: 4200 },
-  { mes: 'Mar', b2b: 6400, b2c: 4000 },
-];
+// Helpers para construir series temporales reales a partir de las entidades
+function buildIngresosMensuales(pedidosWeb, proposals) {
+  const meses = [];
+  const now = new Date();
+  for (let i = 5; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const key = d.toISOString().slice(0, 7);
+    const label = d.toLocaleDateString('es-CL', { month: 'short' });
+    const b2c = pedidosWeb
+      .filter(p => p.fecha?.startsWith(key))
+      .reduce((s, p) => s + (p.total || 0), 0);
+    const b2b = proposals
+      .filter(p => p.status === 'Aceptada' && (p.fecha_envio || '').startsWith(key))
+      .reduce((s, p) => s + (p.total || 0), 0);
+    meses.push({ mes: label.charAt(0).toUpperCase() + label.slice(1, 3), b2b: Math.round(b2b / 1000), b2c: Math.round(b2c / 1000) });
+  }
+  return meses;
+}
 
-const canalMix = [
-  { name: 'Meta Ads', value: 2000 },
-  { name: 'B2B Directo', value: 6400 },
-  { name: 'Tiendas Físicas', value: 500 },
-  { name: 'Orgánico', value: 300 },
-];
+function buildCanalMix(pedidosWeb, ventasTienda, proposals) {
+  const web = pedidosWeb.reduce((s, p) => s + (p.total || 0), 0);
+  const tiendas = ventasTienda.reduce((s, v) => s + (v.total || 0), 0);
+  const b2b = proposals.filter(p => p.status === 'Aceptada').reduce((s, p) => s + (p.total || 0), 0);
+  return [
+    { name: 'Web B2C', value: Math.round(web / 1000) },
+    { name: 'B2B Directo', value: Math.round(b2b / 1000) },
+    { name: 'Tiendas Físicas', value: Math.round(tiendas / 1000) },
+  ].filter(x => x.value > 0);
+}
 
-const kpiSemanal = [
-  { sem: 'S1', leads: 3, cotizaciones: 2, pedidos: 1 },
-  { sem: 'S2', leads: 4, cotizaciones: 3, pedidos: 2 },
-  { sem: 'S3', leads: 3, cotizaciones: 2, pedidos: 1 },
-  { sem: 'S4', leads: 5, cotizaciones: 4, pedidos: 2 },
-];
+function buildKpiSemanal(b2bLeads, proposals, pedidosWeb) {
+  const semanas = [];
+  const now = new Date();
+  for (let i = 3; i >= 0; i--) {
+    const start = new Date(now);
+    start.setDate(start.getDate() - (i + 1) * 7);
+    const end = new Date(now);
+    end.setDate(end.getDate() - i * 7);
+    const inRange = (d) => {
+      if (!d) return false;
+      const t = new Date(d).getTime();
+      return t >= start.getTime() && t < end.getTime();
+    };
+    semanas.push({
+      sem: `S${4 - i}`,
+      leads: b2bLeads.filter(l => inRange(l.created_date)).length,
+      cotizaciones: proposals.filter(p => inRange(p.created_date)).length,
+      pedidos: pedidosWeb.filter(p => inRange(p.created_date)).length,
+    });
+  }
+  return semanas;
+}
 
 export default function Dashboard() {
   const [leads, setLeads] = useState([]);
@@ -72,8 +102,6 @@ export default function Dashboard() {
   const [b2bLeads, setB2bLeads] = useState([]);
   const [proposals, setProposals] = useState([]);
   const [pedidosWeb, setPedidosWeb] = useState([]);
-  const [seeding, setSeeding] = useState(false);
-  const [seedDone, setSeedDone] = useState(false);
   const [loading, setLoading] = useState(true);
 
   const loadData = () => {
@@ -109,17 +137,6 @@ export default function Dashboard() {
   useEffect(() => {
     loadData();
   }, []);
-
-  const handleSeed = async () => {
-    setSeeding(true);
-    try {
-      await base44.functions.invoke('seedData', {});
-      setSeedDone(true);
-      setTimeout(() => { setSeedDone(false); loadData(); }, 2000);
-    } finally {
-      setSeeding(false);
-    }
-  };
 
   const leadsActivos = leads.filter(l => !['Ganado','Perdido'].includes(l.estado)).length;
   const leadsCalientes = leads.filter(l => l.calidad_lead === 'Caliente').length;
@@ -175,10 +192,26 @@ export default function Dashboard() {
   const pedidosWebPendientes = pedidosWeb.filter(p => p.estado === 'Nuevo').length;
   const pedidosWebEnProduccion = pedidosWeb.filter(p => p.estado === 'En Producción').length;
 
-  // Blueprint funnel metrics
-  const totalLeads = leads.length;
-  const tasaConversionReal = totalLeads > 0 ? ((cotAceptadas / totalLeads) * 100).toFixed(1) : 3.3;
-  const pedidosB2BActuales = cotizaciones.filter(c => c.estado === 'Aceptada').length || 8;
+  // Blueprint funnel metrics — solo data real
+  const totalLeadsB2B = b2bLeads.length;
+  const propuestasAceptadasCount = proposals.filter(p => p.status === 'Aceptada').length;
+  const tasaConversionReal = totalLeadsB2B > 0
+    ? ((propuestasAceptadasCount / totalLeadsB2B) * 100).toFixed(1)
+    : '0.0';
+  // Pedidos B2B del mes actual = propuestas aceptadas en el mes
+  const mesNow = new Date().toISOString().slice(0, 7);
+  const pedidosB2BActuales = proposals.filter(
+    p => p.status === 'Aceptada' && (p.fecha_envio || '').startsWith(mesNow)
+  ).length;
+  // Ingresos B2B del mes (real, basado en propuestas aceptadas)
+  const ingresosB2BMes = proposals
+    .filter(p => p.status === 'Aceptada' && (p.fecha_envio || '').startsWith(mesNow))
+    .reduce((s, p) => s + (p.total || 0), 0);
+
+  // Series temporales calculadas en base a la data
+  const ingresosMensuales = buildIngresosMensuales(pedidosWeb, proposals);
+  const canalMix = buildCanalMix(pedidosWeb, ventas, proposals);
+  const kpiSemanal = buildKpiSemanal(b2bLeads, proposals, pedidosWeb);
 
   const alerts = [
     b2bLeadsNuevos > 0 && { type: 'warning', msg: `${b2bLeadsNuevos} leads B2B web nuevos sin gestionar → Pipeline B2B` },
@@ -199,14 +232,7 @@ export default function Dashboard() {
           <h1 className="text-3xl font-poppins font-black text-white">Centro de Comando</h1>
           <p className="text-teal-300/70 text-sm mt-1">Blueprint empresarial PEYU • Actualizado hoy</p>
         </div>
-        <button
-          onClick={handleSeed}
-          disabled={seeding || seedDone}
-          className="flex items-center gap-2 text-xs font-medium px-4 py-2.5 rounded-lg border border-teal-400/40 bg-teal-500/10 hover:bg-teal-500/20 transition-all disabled:opacity-60 text-teal-300 touch-target active:bg-teal-500/30"
-          title="Carga datos de ejemplo: productos, leads, cotizaciones, campañas">
-          {seeding ? <Loader2 className="w-4 h-4 animate-spin" /> : <Database className="w-4 h-4" />}
-          {seedDone ? '✓ Datos cargados' : seeding ? 'Cargando...' : 'Cargar datos demo'}
-        </button>
+        {/* Botón "Cargar datos demo" eliminado: el sistema usa solo datos reales */}
       </div>
 
       {/* Alerts */}
@@ -264,19 +290,19 @@ export default function Dashboard() {
           bg="rgba(249,115,22,0.1)"
         />
         <StatCard
-          title="Ingresos B2B"
-          value="$6.4M"
-          subtitle="8 pedidos × $800K ticket"
+          title="Ingresos B2B (mes)"
+          value={loading ? '...' : ingresosB2BMes > 0 ? `$${(ingresosB2BMes/1000000).toFixed(1)}M` : '$0'}
+          subtitle={`${pedidosB2BActuales} propuestas aceptadas`}
           icon={Target}
-          trend={0}
-          trendLabel="Estable • Meta: 16/mes"
+          trend={pedidosB2BActuales >= 12 ? 1 : -1}
+          trendLabel={pedidosB2BActuales >= 12 ? '✓ Sobre meta 12/mes' : 'Meta: 12+/mes'}
           color="#14b8a6"
           bg="rgba(20,184,166,0.1)"
         />
         <StatCard
-          title="Leads Activos"
-          value={loading ? '...' : leadsActivos}
-          subtitle={`${leadsCalientes} calientes`}
+          title="Leads B2B Activos"
+          value={loading ? '...' : b2bLeads.filter(l => !['Aceptado','Perdido'].includes(l.status)).length}
+          subtitle={`${b2bLeadsCalientes} con score ≥70`}
           icon={Users}
           color="#14b8a6"
           bg="rgba(20,184,166,0.1)"
