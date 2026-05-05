@@ -115,6 +115,16 @@
       },
       "default": []
     },
+    "imagen_promo_url": {
+      "type": "string",
+      "title": "URL Imagen Promocional Social",
+      "description": "Imagen 1:1 con branding PEYU pensada para Instagram/LinkedIn. Generada por IA al publicar el producto."
+    },
+    "imagen_promo_generada_at": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Imagen promo generada en"
+    },
     "peso_kg": {
       "type": "number",
       "title": "Peso (kg)",

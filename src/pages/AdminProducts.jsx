@@ -1,10 +1,11 @@
 import { useState, useEffect, useMemo } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Input } from '@/components/ui/input';
-import { Search, Sparkles, Image as ImageIcon, FileText, Package, Loader2, AlertCircle, X, RefreshCw, Check } from 'lucide-react';
+import { Search, Sparkles, Image as ImageIcon, FileText, Package, Loader2, AlertCircle, X, RefreshCw, Check, Share2 } from 'lucide-react';
 import AIContentGenerator from '@/components/admin-products/AIContentGenerator';
 import AIImageEnhancer from '@/components/admin-products/AIImageEnhancer';
 import ProductQuickEdit from '@/components/admin-products/ProductQuickEdit';
+import PromoImageGenerator from '@/components/admin-products/PromoImageGenerator';
 import { Button } from '@/components/ui/button';
 
 /**
@@ -242,6 +243,7 @@ export default function AdminProducts() {
                     { id: 'datos', label: 'Datos', icon: Package },
                     { id: 'imagen', label: 'Imagen IA', icon: ImageIcon },
                     { id: 'descripcion', label: 'Descripción IA', icon: FileText },
+                    { id: 'promo', label: 'Promo Social', icon: Share2 },
                   ].map(t => (
                     <button
                       key={t.id}
@@ -278,6 +280,12 @@ export default function AdminProducts() {
                   <AIContentGenerator
                     producto={selected}
                     onSaved={(desc) => updateLocalProduct({ descripcion: desc })}
+                  />
+                )}
+                {tab === 'promo' && (
+                  <PromoImageGenerator
+                    producto={selected}
+                    onSaved={(patch) => updateLocalProduct(patch)}
                   />
                 )}
               </div>
