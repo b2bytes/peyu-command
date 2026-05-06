@@ -107,6 +107,59 @@
       "items": {
         "type": "string"
       }
+    },
+    "historial": {
+      "type": "array",
+      "title": "Historial del lead",
+      "description": "Trazabilidad cronol\u00f3gica de eventos del lead B2B (creaci\u00f3n, contacto, scoring, mockup, propuesta, conversi\u00f3n).",
+      "items": {
+        "type": "object",
+        "properties": {
+          "at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "created",
+              "contacted",
+              "scored",
+              "mockup_generated",
+              "proposal_created",
+              "proposal_sent",
+              "proposal_viewed",
+              "accepted",
+              "rejected",
+              "lost",
+              "status_changed",
+              "note"
+            ]
+          },
+          "actor": {
+            "type": "string"
+          },
+          "channel": {
+            "type": "string",
+            "enum": [
+              "email",
+              "whatsapp",
+              "web",
+              "system",
+              "manual",
+              "instagram"
+            ]
+          },
+          "detail": {
+            "type": "string"
+          },
+          "meta": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        }
+      },
+      "default": []
     }
   },
   "required": [
@@ -114,5 +167,51 @@
     "company_name",
     "source",
     "status"
-  ]
+  ],
+  "rls": {
+    "create": {
+      "$or": [
+        {
+          "created_by": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "read": {
+      "$or": [
+        {
+          "data.assigned_to": "{{user.email}}"
+        },
+        {
+          "data.email": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "data.assigned_to": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
 }
