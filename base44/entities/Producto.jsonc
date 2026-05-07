@@ -146,6 +146,105 @@
       "type": "number",
       "title": "Peso volum\u00e9trico (kg)",
       "description": "Calculado: (largo \u00d7 ancho \u00d7 alto) / 5000. Bluex factura por el mayor entre peso real y volum\u00e9trico."
+    },
+    "seo_meta_title": {
+      "type": "string",
+      "title": "SEO \u00b7 Meta Title",
+      "description": "T\u00edtulo optimizado para Google (50-60 chars). Generado por optimizeProductSEOCRON cruzando GSC + GA4."
+    },
+    "seo_meta_description": {
+      "type": "string",
+      "title": "SEO \u00b7 Meta Description",
+      "description": "Meta description optimizada (150-160 chars). Generado por optimizeProductSEOCRON."
+    },
+    "seo_focus_keyword": {
+      "type": "string",
+      "title": "SEO \u00b7 Keyword principal",
+      "description": "Query con m\u00e1s impresiones en GSC para esta p\u00e1gina."
+    },
+    "seo_top_queries": {
+      "type": "array",
+      "title": "SEO \u00b7 Top queries (GSC)",
+      "description": "Queries reales por las que aparece la p\u00e1gina. Se actualiza diariamente.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string"
+          },
+          "clicks": {
+            "type": "number"
+          },
+          "impressions": {
+            "type": "number"
+          },
+          "ctr_pct": {
+            "type": "number"
+          },
+          "position": {
+            "type": "number"
+          }
+        }
+      },
+      "default": []
+    },
+    "seo_metrics": {
+      "type": "object",
+      "title": "SEO \u00b7 M\u00e9tricas \u00faltimos 28d",
+      "additionalProperties": true,
+      "description": "Snapshot de clicks, impresiones, CTR, posici\u00f3n y sessions GA4."
+    },
+    "seo_score": {
+      "type": "number",
+      "title": "SEO Score (0-100)",
+      "description": "Score compuesto: posici\u00f3n + CTR + sessions GA4. M\u00e1s alto = mejor."
+    },
+    "seo_health": {
+      "type": "string",
+      "title": "SEO \u00b7 Estado",
+      "enum": [
+        "excellent",
+        "good",
+        "needs_work",
+        "underperforming",
+        "no_data"
+      ],
+      "default": "no_data"
+    },
+    "seo_optimized_at": {
+      "type": "string",
+      "format": "date-time",
+      "title": "SEO \u00b7 \u00daltima optimizaci\u00f3n"
+    },
+    "seo_history": {
+      "type": "array",
+      "title": "SEO \u00b7 Historial de optimizaciones",
+      "description": "Cada vez que el CRON re-genera meta tags, se guarda un snapshot.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "meta_title": {
+            "type": "string"
+          },
+          "meta_description": {
+            "type": "string"
+          },
+          "focus_keyword": {
+            "type": "string"
+          },
+          "score": {
+            "type": "number"
+          },
+          "reason": {
+            "type": "string"
+          }
+        }
+      },
+      "default": []
     }
   },
   "required": [
