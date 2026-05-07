@@ -23,18 +23,43 @@ Deno.serve(async (req) => {
     if (action === 'create') {
       const conv = await base44.asServiceRole.agents.createConversation({
         agent_name: AGENT_NAME,
-        metadata: { context: body.context || 'landing', anonymous: true },
+        metadata: {
+          context: body.context || 'landing',
+          anonymous: true,
+          session_id: body.session_id || null,
+          page_path: body.page_path || null,
+          referrer: body.referrer || null,
+        },
       });
       return Response.json({ conversation_id: conv.id });
     }
 
     if (action === 'send') {
-      const { conversation_id, content } = body;
+      const { conversation_id, content, session_id, page_path } = body;
       if (!conversation_id || !content) {
         return Response.json({ error: 'conversation_id and content required' }, { status: 400 });
       }
       const conv = await base44.asServiceRole.agents.getConversation(conversation_id);
       await base44.asServiceRole.agents.addMessage(conv, { role: 'user', content });
+
+      // Trazabilidad 360°: registramos cada mensaje del usuario en ActivityLog
+      // para cruzar la sesión anónima con el journey completo (vista → chat → carrito).
+      if (session_id) {
+        try {
+          await base44.asServiceRole.entities.ActivityLog.create({
+            event_type: 'chat_message',
+            category: 'Soporte',
+            session_id,
+            page_path: page_path || null,
+            entity_type: 'Conversation',
+            entity_id: conversation_id,
+            meta: {
+              agent: AGENT_NAME,
+              text_preview: String(content).slice(0, 140),
+            },
+          });
+        } catch {}
+      }
       return Response.json({ ok: true });
     }
 

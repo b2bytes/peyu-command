@@ -184,8 +184,21 @@ export default function ShopLanding() {
       let convId = conversationId;
       let msgCountBefore = 0;
 
+      // Trazabilidad 360°: enviamos session_id + page_path al proxy para
+      // cruzar la conversación con el journey del visitante.
+      const sessionId = (() => {
+        try { return localStorage.getItem('peyu_session_id') || null; } catch { return null; }
+      })();
+      const pagePath = window.location.pathname;
+
       if (!convId) {
-        const createRes = await base44.functions.invoke('publicChatProxy', { action: 'create', context: 'landing' });
+        const createRes = await base44.functions.invoke('publicChatProxy', {
+          action: 'create',
+          context: 'landing',
+          session_id: sessionId,
+          page_path: pagePath,
+          referrer: document.referrer || null,
+        });
         convId = createRes.data?.conversation_id;
         if (!convId) throw new Error('No se pudo crear la conversación');
         setConversationId(convId);
@@ -208,7 +221,11 @@ export default function ShopLanding() {
         console.warn('withContext falló, uso texto puro:', ctxErr);
       }
       await base44.functions.invoke('publicChatProxy', {
-        action: 'send', conversation_id: convId, content: contextualized,
+        action: 'send',
+        conversation_id: convId,
+        content: contextualized,
+        session_id: sessionId,
+        page_path: pagePath,
       });
 
       // Polling: verificar cada 1.5s si llegó respuesta del agente
