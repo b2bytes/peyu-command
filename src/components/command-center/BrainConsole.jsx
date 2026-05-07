@@ -14,11 +14,29 @@ import ReactMarkdown from 'react-markdown';
  * con sus fuentes. NO usa LLM completo — es búsqueda semántica + síntesis ligera.
  */
 const SUGGESTIONS = [
-  '¿Qué políticas de envío tenemos?',
+  '¿Cuántos leads llegaron hoy?',
+  '¿Cuántas consultas hoy?',
+  'Resumen del día',
+  '¿Cuántos pedidos entregados hoy?',
+  '¿Conversaciones con Peyu?',
   '¿Cuál es nuestro top SKU?',
-  '¿Qué dice la FAQ sobre garantías?',
-  '¿Qué impacto ESG comunicamos?',
 ];
+
+// Palabras clave que indican consulta operacional (data viva, no RAG)
+const OPS_KEYWORDS = [
+  'lead', 'leads', 'consulta', 'consultas', 'pedido', 'pedidos',
+  'conversaci', 'agente', 'peyu chat', 'venta', 'ventas',
+  'entreg', 'entregad', 'envío', 'envio', 'despach', 'tracking',
+  'propuesta', 'propuestas', 'cotizaci',
+  'stock', 'inventario',
+  'hoy', 'cuántos', 'cuantos', 'resumen', 'estado', 'kpi',
+  'b2b', 'b2c', 'compra'
+];
+
+const isOpsQuery = (q) => {
+  const lower = q.toLowerCase();
+  return OPS_KEYWORDS.some(k => lower.includes(k));
+};
 
 export default function BrainConsole() {
   const [input, setInput] = useState('');
@@ -38,33 +56,47 @@ export default function BrainConsole() {
     setLoading(true);
 
     try {
-      const res = await base44.functions.invoke('askPeyuBrain', {
-        query: q,
-        top_k: 5,
-        format: 'json',
-      });
-      const hits = res?.data?.hits || [];
-      if (hits.length === 0) {
+      // Router: si es consulta operacional → peyuBrainOps (data viva)
+      // sino → askPeyuBrain (RAG vectorial sobre knowledge base)
+      if (isOpsQuery(q)) {
+        const res = await base44.functions.invoke('peyuBrainOps', { query: q });
+        const data = res?.data || {};
         setMessages(prev => [...prev, {
           role: 'assistant',
-          content: '_Sin resultados relevantes en la base de conocimiento. Intenta otra consulta._',
-          sources: [],
+          content: data.answer || '_Sin respuesta._',
+          sources: (data.sources || []).map(s => ({ ns: 'ops', id: s, preview: `Data viva · ${s}` })),
+          mode: 'ops',
         }]);
       } else {
-        // Síntesis simple: top hit + lista de fuentes
-        const topHit = hits[0];
-        const synthesis = topHit.chunk_text || '_(sin contenido)_';
-        setMessages(prev => [...prev, {
-          role: 'assistant',
-          content: synthesis,
-          sources: hits.slice(0, 4).map(h => ({
-            ns: h.namespace,
-            id: h.id,
-            sku: h.sku,
-            score: h.score,
-            preview: (h.chunk_text || '').slice(0, 120),
-          })),
-        }]);
+        const res = await base44.functions.invoke('askPeyuBrain', {
+          query: q,
+          top_k: 5,
+          format: 'json',
+        });
+        const hits = res?.data?.hits || [];
+        if (hits.length === 0) {
+          setMessages(prev => [...prev, {
+            role: 'assistant',
+            content: '_Sin resultados en la base de conocimiento. Intenta preguntar sobre data operacional ("leads hoy", "pedidos entregados", "conversaciones") o reformular._',
+            sources: [],
+            mode: 'rag',
+          }]);
+        } else {
+          const topHit = hits[0];
+          const synthesis = topHit.chunk_text || '_(sin contenido)_';
+          setMessages(prev => [...prev, {
+            role: 'assistant',
+            content: synthesis,
+            sources: hits.slice(0, 4).map(h => ({
+              ns: h.namespace,
+              id: h.id,
+              sku: h.sku,
+              score: h.score,
+              preview: (h.chunk_text || '').slice(0, 120),
+            })),
+            mode: 'rag',
+          }]);
+        }
       }
     } catch (err) {
       setMessages(prev => [...prev, {
@@ -85,7 +117,7 @@ export default function BrainConsole() {
         </div>
         <div>
           <h3 className="font-poppins font-semibold text-white text-sm">Peyu Brain · Consola</h3>
-          <p className="text-[10px] text-violet-200/70">Pregunta sobre productos, políticas, ESG, FAQs</p>
+          <p className="text-[10px] text-violet-200/70">Data viva (leads, pedidos, chats) + knowledge (FAQs, ESG)</p>
         </div>
       </div>
 

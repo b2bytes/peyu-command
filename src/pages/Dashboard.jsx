@@ -14,6 +14,7 @@ import {
 import RealtimeKPIs from "@/components/command-center/RealtimeKPIs";
 import QuickActions from "@/components/command-center/QuickActions";
 import BrainConsole from "@/components/command-center/BrainConsole";
+import LiveConversations from "@/components/command-center/LiveConversations";
 
 const COLORS = ['#14b8a6', '#06b6d4', '#0F8B6C', '#D96B4D', '#A7D9C9'];
 
@@ -241,12 +242,15 @@ export default function Dashboard() {
           1) KPIs en tiempo real del día (auto-refresh 30s)
           2) Acciones rápidas (funciones backend 1-click) + Peyu Brain console */}
       <RealtimeKPIs />
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
-        <div className="lg:col-span-3">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <div>
           <QuickActions />
         </div>
-        <div className="lg:col-span-2">
+        <div>
           <BrainConsole />
+        </div>
+        <div>
+          <LiveConversations />
         </div>
       </div>
 
