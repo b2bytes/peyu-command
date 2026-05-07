@@ -13,6 +13,7 @@ import {
 import SEO from '@/components/SEO';
 import SidebarNav from '@/components/admin/SidebarNav';
 import CommandCenterFAB from '@/components/admin/CommandCenterFAB';
+import PeyuCompanion from '@/components/admin/PeyuCompanion';
 
 const COLLAPSED_KEY = 'peyu_sidebar_collapsed';
 
@@ -121,6 +122,9 @@ export default function Layout() {
         <Outlet />
         {/* FAB flotante: vuelve al Centro de Comando desde cualquier vista admin */}
         <CommandCenterFAB />
+        {/* Peyu Companion: asistente omnipresente en TODO el admin.
+            Responde data viva, knowledge RAG y ejecuta comandos backend. */}
+        <PeyuCompanion />
       </main>
     </div>
   );

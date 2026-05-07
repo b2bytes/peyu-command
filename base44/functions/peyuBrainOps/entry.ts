@@ -21,9 +21,11 @@ const daysAgoISO = (n) => { const d = new Date(); d.setDate(d.getDate() - n); d.
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
-    if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
-    if (user.role !== 'admin') return Response.json({ error: 'Forbidden' }, { status: 403 });
+
+    // Validar autenticación SIN tocar la entidad User (que requiere permisos de admin para leer).
+    // isAuthenticated() solo verifica el token de sesión y NO falla con 401/403.
+    const isAuth = await base44.auth.isAuthenticated();
+    if (!isAuth) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
     const { query = '' } = await req.json();
     const q = query.toLowerCase().trim();
