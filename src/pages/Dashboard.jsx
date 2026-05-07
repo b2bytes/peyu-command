@@ -17,31 +17,12 @@ import BrainConsole from "@/components/command-center/BrainConsole";
 import LiveConversations from "@/components/command-center/LiveConversations";
 import MiniPipelineB2C from "@/components/command-center/MiniPipelineB2C";
 import MiniPipelineB2B from "@/components/command-center/MiniPipelineB2B";
+import ActionInbox from "@/components/command-center/ActionInbox";
+import ClickableKPI from "@/components/command-center/ClickableKPI";
 
 const COLORS = ['#14b8a6', '#06b6d4', '#0F8B6C', '#D96B4D', '#A7D9C9'];
 
-function StatCard({ title, value, subtitle, icon: Icon, trend, trendLabel, color = "#14b8a6", bg = "rgba(20,184,166,0.1)" }) {
-  return (
-    <div className="bg-white/10 backdrop-blur-md rounded-2xl p-5 shadow-xl border border-white/20 hover:border-white/40 transition-all hover:bg-white/15">
-      <div className="flex items-start justify-between">
-        <div className="flex-1">
-          <p className="text-xs font-medium text-teal-300/80 uppercase tracking-wide">{title}</p>
-          <p className="text-2xl font-poppins font-bold mt-1 text-white" style={{ color: 'white' }}>{value}</p>
-          {subtitle && <p className="text-xs text-gray-300/70 mt-1">{subtitle}</p>}
-          {trendLabel && (
-            <div className={`flex items-center gap-1 mt-2 text-xs font-medium ${trend >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-              {trend >= 0 ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
-              {trendLabel}
-            </div>
-          )}
-        </div>
-        <div className="w-11 h-11 rounded-xl flex items-center justify-center ml-3 flex-shrink-0 bg-gradient-to-br" style={{ background: bg }}>
-          <Icon className="w-5 h-5" style={{ color }} />
-        </div>
-      </div>
-    </div>
-  );
-}
+// StatCard reemplazado por <ClickableKPI /> — ahora cada KPI lleva a su lista filtrada
 
 // Helpers para construir series temporales reales a partir de las entidades
 function buildIngresosMensuales(pedidosWeb, proposals) {
@@ -242,8 +223,16 @@ export default function Dashboard() {
 
       {/* ── CENTRO DE COMANDOS — Bloque superior ──
           1) KPIs en tiempo real del día (auto-refresh 30s)
-          2) Acciones rápidas (funciones backend 1-click) + Peyu Brain console */}
+          2) Bandeja de acciones priorizadas + Peyu Brain console
+          3) Mini-pipelines y conversaciones en vivo */}
       <RealtimeKPIs />
+
+      {/* Bandeja de acciones del día (todo lo que requiere intervención humana,
+          ordenado por urgencia) + consola de Peyu Brain */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <ActionInbox />
+        <BrainConsole />
+      </div>
 
       {/* Mini-pipelines en vivo · permite revisar al toque qué entró por cada canal */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -251,16 +240,9 @@ export default function Dashboard() {
         <MiniPipelineB2B />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <div>
-          <QuickActions />
-        </div>
-        <div>
-          <BrainConsole />
-        </div>
-        <div>
-          <LiveConversations />
-        </div>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <QuickActions />
+        <LiveConversations />
       </div>
 
       {/* Alerts */}
@@ -305,9 +287,9 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* KPI Cards */}
+      {/* KPI Cards · todos clickeables, llevan a la lista filtrada correspondiente */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 touch-target">
-        <StatCard
+        <ClickableKPI
           title="Ventas Web B2C (mes)"
           value={loading ? '...' : ventasWebMes > 0 ? `$${(ventasWebMes/1000000).toFixed(1)}M` : '$0'}
           subtitle={`${pedidosWebMes.length} pedidos · ${pedidosWebPendientes} nuevos`}
@@ -316,8 +298,9 @@ export default function Dashboard() {
           trendLabel={ventasWebMes >= 6000000 ? '✓ Sobre meta $6M' : `Meta: $6M+ CLP/mes`}
           color="#f97316"
           bg="rgba(249,115,22,0.1)"
+          to="/admin/procesar-pedidos"
         />
-        <StatCard
+        <ClickableKPI
           title="Ingresos B2B (mes)"
           value={loading ? '...' : ingresosB2BMes > 0 ? `$${(ingresosB2BMes/1000000).toFixed(1)}M` : '$0'}
           subtitle={`${pedidosB2BActuales} propuestas aceptadas`}
@@ -326,22 +309,25 @@ export default function Dashboard() {
           trendLabel={pedidosB2BActuales >= 12 ? '✓ Sobre meta 12/mes' : 'Meta: 12+/mes'}
           color="#14b8a6"
           bg="rgba(20,184,166,0.1)"
+          to="/admin/propuestas"
         />
-        <StatCard
+        <ClickableKPI
           title="Leads B2B Activos"
           value={loading ? '...' : b2bLeads.filter(l => !['Aceptado','Perdido'].includes(l.status)).length}
           subtitle={`${b2bLeadsCalientes} con score ≥70`}
           icon={Users}
           color="#14b8a6"
           bg="rgba(20,184,166,0.1)"
+          to="/admin/pipeline"
         />
-        <StatCard
+        <ClickableKPI
           title="Órdenes Producción"
           value={loading ? '...' : ordenesActivas}
           subtitle={`${ordenesUrgentes} urgentes`}
           icon={Factory}
           color={ordenesUrgentes > 0 ? "#f97316" : "#14b8a6"}
           bg={ordenesUrgentes > 0 ? "rgba(249,115,22,0.1)" : "rgba(20,184,166,0.1)"}
+          to="/admin/operaciones"
         />
       </div>
 
@@ -394,39 +380,43 @@ export default function Dashboard() {
         )}
       </div>
 
-      {/* Second row KPIs */}
+      {/* Second row KPIs · clickeables */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard
+        <ClickableKPI
           title="Ventas Tiendas Hoy"
           value={loading ? '...' : totalVentasHoy > 0 ? `$${(totalVentasHoy/1000).toFixed(0)}K` : '$0'}
           subtitle={`Mes: $${(totalVentasMes/1000).toFixed(0)}K · ${ventas.length} transacciones`}
           icon={Store}
           color="#14b8a6"
           bg="rgba(20,184,166,0.1)"
+          to="/admin/tiendas"
         />
-        <StatCard
+        <ClickableKPI
           title="Clientes LTV Total"
           value={loading ? '...' : `$${(totalLTV/1000000).toFixed(1)}M`}
           subtitle={`${clientesVIP} VIP · ${clientesEnRiesgo > 0 ? clientesEnRiesgo+' en riesgo' : 'Sin alertas'}`}
           icon={UserCheck}
           color={clientesEnRiesgo > 0 ? '#f97316' : '#14b8a6'}
           bg={clientesEnRiesgo > 0 ? 'rgba(249,115,22,0.1)' : 'rgba(20,184,166,0.1)'}
+          to="/admin/clientes"
         />
-        <StatCard
+        <ClickableKPI
           title="Equipo Activo"
           value={loading ? '...' : equipoActivo}
           subtitle={`${colaboradores.length} colaboradores total`}
           icon={Users}
           color="#9ca3af"
           bg="rgba(156,163,175,0.1)"
+          to="/admin/equipo"
         />
-        <StatCard
+        <ClickableKPI
           title="OKRs Avance Global"
           value={loading ? '...' : `${avgOKR}%`}
           subtitle={`${okrs.length} KRs · ${okrsEnRiesgo > 0 ? okrsEnRiesgo+' en riesgo' : 'Sin alertas'}`}
           icon={Flag}
           color={avgOKR >= 70 ? '#14b8a6' : avgOKR >= 40 ? '#f59e0b' : '#f97316'}
           bg={avgOKR >= 70 ? 'rgba(20,184,166,0.1)' : avgOKR >= 40 ? 'rgba(245,158,11,0.1)' : 'rgba(249,115,22,0.1)'}
+          to="/admin/okrs"
         />
       </div>
 
