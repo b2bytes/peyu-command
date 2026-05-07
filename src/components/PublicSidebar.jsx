@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Menu, X, Home, ShoppingBag, Building2, BookOpen, HelpCircle, Gift } from 'lucide-react';
+import { Menu, X, Home, ShoppingBag, Building2, BookOpen, HelpCircle, Gift, Lock } from 'lucide-react';
 
 export default function PublicSidebar() {
   const [open, setOpen] = useState(true);
@@ -69,6 +69,16 @@ export default function PublicSidebar() {
               <a href="mailto:ventas@peyuchile.cl" className="flex items-center gap-2 hover:text-[#0F8B6C]">
                 📧 ventas@peyuchile.cl
               </a>
+
+              {/* Acceso interno fundadores PEYU */}
+              <Link
+                to="/admin/"
+                onClick={() => setOpen(false)}
+                className="mt-3 flex items-center justify-center gap-2 w-full px-3 py-2 rounded-lg bg-gray-900 hover:bg-gray-800 text-white text-xs font-medium transition-all"
+              >
+                <Lock className="w-3.5 h-3.5" />
+                Acceso Admin
+              </Link>
             </div>
           </div>
         </>
