@@ -4,7 +4,7 @@ import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import PEYULogo from '@/components/PEYULogo';
-import { Send, ShoppingCart, Bell, Home, Grid3x3, Building2, HelpCircle, Heart, BookOpen, Sparkles, Package } from 'lucide-react';
+import { Send, ShoppingCart, Bell, Home, Grid3x3, Building2, HelpCircle, Heart, BookOpen, Sparkles, Package, Lock } from 'lucide-react';
 import MobileMenu from '@/components/MobileMenu';
 import WhatsAppFloat from '@/components/WhatsAppFloat';
 import ChatMessageContent from '@/components/chat/ChatMessageContent';
@@ -415,6 +415,21 @@ export default function ShopLanding() {
             );
           })}
         </nav>
+
+        {/* Acceso admin discreto — solo para fundadores (Joaquín, Nilo, Carlos, Richard).
+            El sistema validará el login y rol al entrar a /admin. */}
+        <div className="px-1.5 pb-3 pt-2 border-t border-white/10 mt-auto">
+          <Link
+            to="/admin"
+            title="Acceso administrador"
+            className={`flex items-center rounded-lg transition-colors h-10 text-white/40 hover:text-teal-300 hover:bg-white/5 ${
+              sidebarExpanded ? 'px-3 gap-3 justify-start' : 'justify-center'
+            }`}
+          >
+            <Lock className="w-[15px] h-[15px] flex-shrink-0" />
+            {sidebarExpanded && <span className="text-[11px] font-medium whitespace-nowrap overflow-hidden">Admin</span>}
+          </Link>
+        </div>
 
       </aside>
 
