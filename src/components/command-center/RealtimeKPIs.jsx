@@ -99,8 +99,8 @@ export default function RealtimeKPIs() {
   };
 
   useEffect(() => {
-    load();
-    const id = setInterval(load, 30_000);
+    load(); // este es el principal: carga inmediato
+    const id = setInterval(load, 60_000);
     return () => clearInterval(id);
   }, []);
 

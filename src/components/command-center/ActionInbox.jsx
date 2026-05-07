@@ -172,9 +172,9 @@ export default function ActionInbox() {
   };
 
   useEffect(() => {
-    load();
-    const id = setInterval(load, 60_000);
-    return () => clearInterval(id);
+    const t = setTimeout(load, 1600); // stagger: evita pico de requests al montar
+    const id = setInterval(load, 90_000);
+    return () => { clearTimeout(t); clearInterval(id); };
   }, []);
 
   const filtered = filter === 'all' ? items : items.filter(i => i.priority === filter);

@@ -43,9 +43,9 @@ export default function LiveConversations() {
   };
 
   useEffect(() => {
-    load();
-    const id = setInterval(load, 30_000);
-    return () => clearInterval(id);
+    const t = setTimeout(load, 1200); // stagger
+    const id = setInterval(load, 60_000);
+    return () => { clearTimeout(t); clearInterval(id); };
   }, []);
 
   const truncate = (s, n = 80) => !s ? '' : (s.length > n ? s.slice(0, n) + '…' : s);

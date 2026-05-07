@@ -50,9 +50,9 @@ export default function MiniPipelineB2B() {
   };
 
   useEffect(() => {
-    load();
-    const id = setInterval(load, 30_000);
-    return () => clearInterval(id);
+    const t = setTimeout(load, 800); // stagger
+    const id = setInterval(load, 60_000);
+    return () => { clearTimeout(t); clearInterval(id); };
   }, []);
 
   // Conteo por estado

@@ -46,9 +46,9 @@ export default function MiniPipelineB2C() {
   };
 
   useEffect(() => {
-    load();
-    const id = setInterval(load, 30_000);
-    return () => clearInterval(id);
+    const t = setTimeout(load, 400); // stagger: evita hacer 5 cargas simultáneas
+    const id = setInterval(load, 60_000);
+    return () => { clearTimeout(t); clearInterval(id); };
   }, []);
 
   // Conteo por estado
