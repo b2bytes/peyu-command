@@ -192,6 +192,11 @@ export default function PeyuCompanion() {
   const ctx = detectContext(location.pathname);
   const Icon = ctx.icon || Brain;
 
+  // Si estamos fuera del dashboard raíz, el FAB "Centro de Comando" está visible
+  // abajo a la derecha → subimos a Peyu para que no se sobreponga.
+  const isDashboardRoot = location.pathname === '/admin' || location.pathname === '/admin/';
+  const bottomOffset = isDashboardRoot ? 'bottom-6' : 'bottom-24';
+
   // Auto-scroll al último mensaje
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -279,7 +284,7 @@ export default function PeyuCompanion() {
     return (
       <button
         onClick={() => { setOpen(true); setMinimized(false); }}
-        className="fixed bottom-6 right-6 z-[100] group flex items-center gap-2 px-3 py-3 rounded-full bg-gradient-to-br from-violet-600 via-indigo-600 to-cyan-600 hover:from-violet-500 hover:via-indigo-500 hover:to-cyan-500 text-white shadow-2xl shadow-indigo-500/40 border border-white/20 transition-all hover:scale-110"
+        className={`fixed ${bottomOffset} right-6 z-[100] group flex items-center gap-2 px-3 py-3 rounded-full bg-gradient-to-br from-violet-600 via-indigo-600 to-cyan-600 hover:from-violet-500 hover:via-indigo-500 hover:to-cyan-500 text-white shadow-2xl shadow-indigo-500/40 border border-white/20 transition-all hover:scale-110`}
         title="Peyu Brain — pregúntame lo que sea"
       >
         <div className="relative">
@@ -294,7 +299,7 @@ export default function PeyuCompanion() {
   // ── Panel minimizado (pill) ─────────────────────────────────────────────
   if (minimized) {
     return (
-      <div className="fixed bottom-6 right-6 z-[100] flex items-center gap-2 bg-gradient-to-br from-violet-700 to-indigo-800 text-white rounded-full px-3 py-2 shadow-2xl border border-white/20">
+      <div className={`fixed ${bottomOffset} right-6 z-[100] flex items-center gap-2 bg-gradient-to-br from-violet-700 to-indigo-800 text-white rounded-full px-3 py-2 shadow-2xl border border-white/20`}>
         <Brain className="w-4 h-4" />
         <span className="text-xs font-medium">Peyu · {ctx.title}</span>
         <button onClick={() => setMinimized(false)} className="ml-1 opacity-80 hover:opacity-100">
@@ -309,7 +314,7 @@ export default function PeyuCompanion() {
 
   // ── Panel abierto ──────────────────────────────────────────────────────
   return (
-    <div className="fixed bottom-6 right-6 z-[100] w-[400px] max-w-[calc(100vw-2rem)] h-[600px] max-h-[calc(100vh-3rem)] flex flex-col rounded-2xl bg-gradient-to-br from-slate-900 via-violet-950/80 to-indigo-950/80 backdrop-blur-xl border border-violet-400/30 shadow-2xl shadow-indigo-500/30 overflow-hidden">
+    <div className={`fixed ${bottomOffset} right-6 z-[100] w-[400px] max-w-[calc(100vw-2rem)] h-[600px] max-h-[calc(100vh-${isDashboardRoot ? '3rem' : '7rem'})] flex flex-col rounded-2xl bg-gradient-to-br from-slate-900 via-violet-950/80 to-indigo-950/80 backdrop-blur-xl border border-violet-400/30 shadow-2xl shadow-indigo-500/30 overflow-hidden`}>
       {/* Header */}
       <div className="flex items-center gap-2.5 px-4 py-3 bg-gradient-to-r from-violet-600/40 to-indigo-600/40 border-b border-white/10">
         <div className="w-8 h-8 rounded-full bg-gradient-to-br from-violet-400 to-indigo-500 flex items-center justify-center">
