@@ -157,13 +157,45 @@ export default function PipelineB2B() {
   const [editing, setEditing] = useState(null);
   const [form, setForm] = useState(LEAD_DEFAULTS);
 
+  // Mapea B2BLead (fuente real, viene del formulario web) al shape legacy
+  // que usa esta página, para no reescribir todas las cards y kanban.
+  const mapB2BLead = (l) => ({
+    id: l.id,
+    empresa: l.company_name,
+    contacto: l.contact_name,
+    email: l.email,
+    telefono: l.phone,
+    canal: l.source,
+    estado: ({
+      'Nuevo': 'Nuevo',
+      'Contactado': 'Contactado',
+      'En revisión': 'Cotizado',
+      'Propuesta enviada': 'Negociación',
+      'Aceptado': 'Ganado',
+      'Perdido': 'Perdido',
+    })[l.status] || 'Nuevo',
+    tipo: 'B2B Corporativo',
+    calidad_lead: (l.lead_score || 0) >= 70 ? 'Caliente' : (l.lead_score || 0) >= 40 ? 'Tibio' : 'Frío',
+    cantidad_estimada: l.qty_estimate,
+    presupuesto_estimado: null,
+    producto_interes: l.product_interest,
+    next_action: (l.notes || '').split('📋 Acción IA:')[1]?.trim()?.slice(0, 80) || null,
+    next_action_date: l.delivery_date,
+    notas: l.notes,
+    logo_recibido: !!l.logo_url,
+    personalizacion: l.personalization_needs,
+    created_date: l.created_date,
+    updated_date: l.updated_date,
+    lead_score: l.lead_score,
+  });
+
   const loadData = async () => {
     setLoading(true);
-    const [l, c] = await Promise.all([
-      base44.entities.Lead.list('-created_date', 100),
+    const [b2b, c] = await Promise.all([
+      base44.entities.B2BLead.list('-created_date', 100),
       base44.entities.Cotizacion.list('-created_date', 100),
     ]);
-    setLeads(l);
+    setLeads(b2b.map(mapB2BLead));
     setCotizaciones(c);
     setLoading(false);
   };
@@ -184,8 +216,21 @@ export default function PipelineB2B() {
 
   const handleSave = async () => {
     if (activeTab === 'leads') {
-      if (editing) await base44.entities.Lead.update(editing.id, form);
-      else await base44.entities.Lead.create(form);
+      // Mapear shape legacy → B2BLead real
+      const b2bData = {
+        company_name: form.empresa,
+        contact_name: form.contacto,
+        email: form.email,
+        phone: form.telefono,
+        source: form.canal === 'WhatsApp' ? 'WhatsApp' : form.canal === 'Email' ? 'Email' : form.canal === 'LinkedIn' ? 'LinkedIn' : form.canal === 'Instagram' ? 'Instagram' : 'Formulario Web',
+        status: ({ 'Nuevo':'Nuevo','Contactado':'Contactado','Cotizado':'En revisión','Muestra Enviada':'En revisión','Negociación':'Propuesta enviada','Ganado':'Aceptado','Perdido':'Perdido' })[form.estado] || 'Nuevo',
+        product_interest: form.producto_interes,
+        qty_estimate: form.cantidad_estimada,
+        personalization_needs: form.personalizacion,
+        notes: form.notas,
+      };
+      if (editing) await base44.entities.B2BLead.update(editing.id, b2bData);
+      else await base44.entities.B2BLead.create(b2bData);
     } else {
       const total = (form.cantidad || 0) * (form.precio_unitario || 0) * (1 - (form.descuento_pct || 0) / 100) + (form.fee_personalizacion || 0) + (form.fee_packaging || 0);
       const data = { ...form, total };
@@ -198,7 +243,7 @@ export default function PipelineB2B() {
 
   const handleDelete = async (id) => {
     if (!confirm('¿Eliminar este registro?')) return;
-    if (activeTab === 'leads') await base44.entities.Lead.delete(id);
+    if (activeTab === 'leads') await base44.entities.B2BLead.delete(id);
     else await base44.entities.Cotizacion.delete(id);
     loadData();
   };
