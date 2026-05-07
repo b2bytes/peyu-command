@@ -11,6 +11,9 @@ import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, BarChart, Bar, Legend
 } from "recharts";
+import RealtimeKPIs from "@/components/command-center/RealtimeKPIs";
+import QuickActions from "@/components/command-center/QuickActions";
+import BrainConsole from "@/components/command-center/BrainConsole";
 
 const COLORS = ['#14b8a6', '#06b6d4', '#0F8B6C', '#D96B4D', '#A7D9C9'];
 
@@ -229,10 +232,22 @@ export default function Dashboard() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-poppins font-black text-white">Centro de Comando</h1>
-          <p className="text-teal-300/70 text-sm mt-1">Blueprint empresarial PEYU • Actualizado hoy</p>
+          <h1 className="text-3xl font-poppins font-black text-white">Centro de Comandos</h1>
+          <p className="text-teal-300/70 text-sm mt-1">KPIs en vivo · Acciones 1-click · Peyu Brain</p>
         </div>
-        {/* Botón "Cargar datos demo" eliminado: el sistema usa solo datos reales */}
+      </div>
+
+      {/* ── CENTRO DE COMANDOS — Bloque superior ──
+          1) KPIs en tiempo real del día (auto-refresh 30s)
+          2) Acciones rápidas (funciones backend 1-click) + Peyu Brain console */}
+      <RealtimeKPIs />
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
+        <div className="lg:col-span-3">
+          <QuickActions />
+        </div>
+        <div className="lg:col-span-2">
+          <BrainConsole />
+        </div>
       </div>
 
       {/* Alerts */}
