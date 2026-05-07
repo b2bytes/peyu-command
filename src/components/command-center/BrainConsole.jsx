@@ -110,7 +110,7 @@ export default function BrainConsole() {
   };
 
   return (
-    <div className="bg-gradient-to-br from-violet-900/40 to-indigo-900/40 backdrop-blur-md rounded-2xl border border-violet-400/30 p-5 shadow-xl flex flex-col h-[420px]">
+    <div className="bg-gradient-to-br from-violet-900/40 to-indigo-900/40 backdrop-blur-md rounded-2xl border border-violet-400/30 p-5 shadow-xl flex flex-col h-[420px] max-h-[420px] min-h-0 overflow-hidden">
       <div className="flex items-center gap-2 mb-3 pb-3 border-b border-white/10">
         <div className="w-8 h-8 rounded-full bg-gradient-to-br from-violet-400 to-indigo-500 flex items-center justify-center">
           <Brain className="w-4 h-4 text-white" />
@@ -121,7 +121,7 @@ export default function BrainConsole() {
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto space-y-2.5 pr-1 peyu-scrollbar-light">
+      <div className="flex-1 min-h-0 overflow-y-auto space-y-2.5 pr-1 peyu-scrollbar-light">
         {messages.length === 0 && (
           <div className="space-y-2">
             <p className="text-xs text-violet-200/70 font-medium flex items-center gap-1">
