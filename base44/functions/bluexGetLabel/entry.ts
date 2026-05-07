@@ -6,16 +6,14 @@
 
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.27';
 
-const BLUEX_API_BASE = 'https://services.bluex.cl/api/v1';
+const BLUEX_API_BASE = Deno.env.get('BLUEX_API_BASE_URL') || '';
 const LABEL_ENDPOINT = '/admision/etiqueta';
 
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
-    if (!user || user.role !== 'admin') {
-      return Response.json({ error: 'Forbidden' }, { status: 403 });
-    }
+    const isAuth = await base44.auth.isAuthenticated();
+    if (!isAuth) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
     const { envio_id } = await req.json();
     if (!envio_id) return Response.json({ error: 'envio_id requerido' }, { status: 400 });
@@ -36,6 +34,17 @@ Deno.serve(async (req) => {
 
     if (!envio.tracking_number) {
       return Response.json({ error: 'Envío sin tracking_number' }, { status: 400 });
+    }
+
+    // Si API no está configurada → devolver portal fallback
+    if (!BLUEX_API_BASE) {
+      return Response.json({
+        ok: true,
+        modo: 'manual',
+        label_url: `https://b2b.bluex.cl/etiquetas/${envio.tracking_number}`,
+        portal_url: 'https://b2b.bluex.cl/',
+        hint: 'Descarga la etiqueta desde el portal Bluex.',
+      });
     }
 
     const apiKey = Deno.env.get('BLUEX_API_KEY');

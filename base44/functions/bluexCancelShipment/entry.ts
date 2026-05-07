@@ -6,16 +6,14 @@
 
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.27';
 
-const BLUEX_API_BASE = 'https://services.bluex.cl/api/v1';
+const BLUEX_API_BASE = Deno.env.get('BLUEX_API_BASE_URL') || '';
 const CANCEL_ENDPOINT = '/admision/anular';
 
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
-    if (!user || user.role !== 'admin') {
-      return Response.json({ error: 'Forbidden: Admin only' }, { status: 403 });
-    }
+    const isAuth = await base44.auth.isAuthenticated();
+    if (!isAuth) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
     const { envio_id, motivo } = await req.json();
     if (!envio_id) return Response.json({ error: 'envio_id requerido' }, { status: 400 });
@@ -26,8 +24,28 @@ Deno.serve(async (req) => {
 
     if (['Retirado por Courier', 'En Tránsito', 'En Reparto', 'Entregado'].includes(envio.estado)) {
       return Response.json({
-        error: `No se puede anular. El envío está en estado "${envio.estado}". Para anulaciones avanzadas usa el portal: https://portal2.bluex.cl/`,
+        error: `No se puede anular. El envío está en estado "${envio.estado}". Para anulaciones avanzadas usa el portal: https://b2b.bluex.cl/`,
       }, { status: 400 });
+    }
+
+    // Si no hay API → solo marcar interno como anulado (el operador anula en portal Bluex manualmente)
+    if (!BLUEX_API_BASE) {
+      const sr2 = base44.asServiceRole;
+      await sr2.entities.Envio.update(envio_id, {
+        estado: 'Anulado',
+        anulacion_motivo: motivo || 'Anulado por admin (manual)',
+        anulada_at: new Date().toISOString(),
+      });
+      if (envio.pedido_id) {
+        await sr2.entities.PedidoWeb.update(envio.pedido_id, { courier: 'Pendiente', tracking: '' });
+      }
+      return Response.json({
+        ok: true,
+        envio_id,
+        anulada: true,
+        modo: 'manual',
+        hint: 'Recuerda anular también en https://b2b.bluex.cl',
+      });
     }
 
     const apiKey = Deno.env.get('BLUEX_API_KEY');

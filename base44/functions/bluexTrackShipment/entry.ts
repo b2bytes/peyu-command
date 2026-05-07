@@ -7,7 +7,7 @@
 
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.27';
 
-const BLUEX_API_BASE = 'https://services.bluex.cl/api/v1';
+const BLUEX_API_BASE = Deno.env.get('BLUEX_API_BASE_URL') || '';
 const TRACKING_ENDPOINT = '/admision/tracking';
 
 // Mapping de códigos Bluex → estados internos
@@ -27,8 +27,8 @@ const EXCEPCION_KEYWORDS = ['no encontrado', 'rechazado', 'siniestro', 'extraví
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
-    if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    const isAuth = await base44.auth.isAuthenticated();
+    if (!isAuth) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
     const { envio_id, tracking_number } = await req.json();
     if (!envio_id && !tracking_number) {
@@ -48,22 +48,49 @@ Deno.serve(async (req) => {
     const ot = envio.tracking_number || tracking_number;
     if (!ot) return Response.json({ error: 'Sin tracking number' }, { status: 400 });
 
+    // Si la API no está configurada → devolver el estado actual sin error.
+    // El operador puede actualizar manualmente desde el drawer.
+    if (!BLUEX_API_BASE) {
+      return Response.json({
+        ok: true,
+        envio_id: envio.id,
+        tracking: ot,
+        estado: envio.estado,
+        modo: 'manual',
+        hint: 'API Bluex no configurada (BLUEX_API_BASE_URL). Actualiza el estado manualmente desde el drawer.',
+        tracking_url: `https://www.bluex.cl/seguimiento?n=${ot}`,
+      });
+    }
+
     const apiKey = Deno.env.get('BLUEX_API_KEY');
     const token = Deno.env.get('BLUEX_TOKEN');
     const clientAccount = Deno.env.get('BLUEX_CLIENT_ACCOUNT');
     const userCode = Deno.env.get('BLUEX_USER_CODE');
 
-    const response = await fetch(`${BLUEX_API_BASE}${TRACKING_ENDPOINT}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'apiKey': apiKey,
-        'token': token,
-        'clientAccount': clientAccount,
-        'userCode': userCode,
-      },
-      body: JSON.stringify({ orderTransportNumber: ot, clientAccount, userCode }),
-    });
+    let response;
+    try {
+      response = await fetch(`${BLUEX_API_BASE}${TRACKING_ENDPOINT}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'apiKey': apiKey,
+          'token': token,
+          'clientAccount': clientAccount,
+          'userCode': userCode,
+        },
+        body: JSON.stringify({ orderTransportNumber: ot, clientAccount, userCode }),
+      });
+    } catch (netErr) {
+      // DNS / red caída → no rompemos, devolvemos estado actual
+      return Response.json({
+        ok: true,
+        envio_id: envio.id,
+        tracking: ot,
+        estado: envio.estado,
+        modo: 'manual_fallback',
+        warning: `API Bluex no responde: ${netErr.message}. Tracking público: https://www.bluex.cl/seguimiento?n=${ot}`,
+      });
+    }
 
     const data = await response.json().catch(() => ({}));
     if (!response.ok) {
