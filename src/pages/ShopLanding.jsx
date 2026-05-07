@@ -393,8 +393,8 @@ export default function ShopLanding() {
           {sidebarExpanded && <span className="text-[10px] text-white/50 ml-auto font-semibold tracking-wide">PEYU</span>}
         </div>
 
-        {/* Menu Items */}
-        <nav className="flex flex-col items-stretch gap-0.5 px-1.5 py-3 flex-1">
+        {/* Menu Items — scroll interno si crece (no empuja el footer fuera de pantalla) */}
+        <nav className="flex flex-col items-stretch gap-0.5 px-1.5 py-3 flex-1 overflow-y-auto peyu-scrollbar-light min-h-0">
           {MENU_ITEMS.map((item) => {
             const Icon = item.icon;
             const isActive = item.href === '/';
@@ -403,7 +403,7 @@ export default function ShopLanding() {
                 key={item.href}
                 to={item.href}
                 title={item.label}
-                className={`flex items-center rounded-lg transition-colors h-11 ${
+                className={`flex items-center rounded-lg transition-colors h-11 flex-shrink-0 ${
                   sidebarExpanded ? 'px-3 gap-3 justify-start' : 'justify-center'
                 } ${
                   isActive ? 'bg-teal-500/25 text-white ring-1 ring-teal-400/40' : 'text-white/80 hover:bg-white/10 hover:text-white'
@@ -416,18 +416,19 @@ export default function ShopLanding() {
           })}
         </nav>
 
-        {/* Acceso admin discreto — solo para fundadores (Joaquín, Nilo, Carlos, Richard).
-            El sistema validará el login y rol al entrar a /admin. */}
-        <div className="px-1.5 pb-3 pt-2 border-t border-white/10 mt-auto">
+        {/* Acceso admin discreto — fundadores PEYU.
+            Se posiciona ANTES del espacio del BackgroundSwitcher (bottom-4 + 44px botón = ~64px reservado)
+            para que el botón Admin quede SIEMPRE visible y no se tape con el selector de imagen. */}
+        <div className="px-1.5 pt-2 border-t border-white/10 flex-shrink-0" style={{ paddingBottom: '72px' }}>
           <Link
             to="/admin"
             title="Acceso administrador"
-            className={`flex items-center rounded-lg transition-colors h-10 text-white/40 hover:text-teal-300 hover:bg-white/5 ${
+            className={`flex items-center rounded-lg transition-colors h-10 text-white/55 hover:text-teal-300 hover:bg-teal-500/10 border border-white/5 hover:border-teal-400/30 ${
               sidebarExpanded ? 'px-3 gap-3 justify-start' : 'justify-center'
             }`}
           >
             <Lock className="w-[15px] h-[15px] flex-shrink-0" />
-            {sidebarExpanded && <span className="text-[11px] font-medium whitespace-nowrap overflow-hidden">Admin</span>}
+            {sidebarExpanded && <span className="text-[11px] font-semibold whitespace-nowrap overflow-hidden">Admin</span>}
           </Link>
         </div>
 
