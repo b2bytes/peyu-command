@@ -143,12 +143,21 @@ Deno.serve(async (req) => {
   </div>
 </div></body></html>`;
 
-    await base44.integrations.Core.SendEmail({
-      from_name: 'PEYU Daily Briefing',
-      to: 'ti@peyuchile.cl',
-      subject: `☀️ Daily PEYU · ${fmt(totalHoy)} cerrado · ${leadsHoy.length} leads · ${fechaAyer}`,
-      body: html,
-    });
+    const briefingSubject = `☀️ Daily PEYU · ${fmt(totalHoy)} cerrado · ${leadsHoy.length} leads · ${fechaAyer}`;
+    await Promise.all([
+      base44.integrations.Core.SendEmail({
+        from_name: 'PEYU Daily Briefing',
+        to: 'ti@peyuchile.cl',
+        subject: briefingSubject,
+        body: html,
+      }),
+      base44.integrations.Core.SendEmail({
+        from_name: 'PEYU Daily Briefing',
+        to: 'ventas@peyuchile.cl',
+        subject: briefingSubject,
+        body: html,
+      }),
+    ]);
 
     return Response.json({
       ok: true,
