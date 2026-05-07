@@ -20,9 +20,14 @@ export default function LiveConversations() {
 
   const load = async () => {
     try {
-      const all = await base44.entities.AILog.list('-created_date', 30);
-      // Solo chat público (Peyu landing) + agrupar por conversation_id
-      const chats = all.filter(a => a.task_type === 'chat');
+      const all = await base44.entities.AILog.list('-created_date', 50);
+      // Solo chat público REAL (landing) — descarta seed/demo data:
+      //   - chats sin conversation_id (data antigua sin trazabilidad)
+      //   - chats con tag 'chat_publico' (los nuevos del proxy)
+      const chats = all.filter(a =>
+        a.task_type === 'chat' &&
+        (a.conversation_id || (a.tags || []).includes('chat_publico'))
+      );
       const byConv = {};
       for (const c of chats) {
         const key = c.conversation_id || c.session_id || c.id;

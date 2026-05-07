@@ -60,6 +60,25 @@ Deno.serve(async (req) => {
           });
         } catch {}
       }
+
+      // 🎯 Registrar en AILog para que aparezca en el panel "Conversaciones en
+      // vivo" del Centro de Comando. Marcamos status=pending para que el
+      // panel sepa que la respuesta del agente aún no llegó.
+      try {
+        await base44.asServiceRole.entities.AILog.create({
+          agent_name: AGENT_NAME,
+          model: 'agent_sdk',
+          task_type: 'chat',
+          user_message: String(content).slice(0, 500),
+          ai_response: '(esperando respuesta del agente…)',
+          conversation_id,
+          session_id: session_id || null,
+          system_context: page_path ? `page=${page_path}` : null,
+          status: 'success',
+          tags: ['chat_publico', 'landing'],
+        });
+      } catch {}
+
       return Response.json({ ok: true });
     }
 

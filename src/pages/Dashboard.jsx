@@ -15,6 +15,8 @@ import RealtimeKPIs from "@/components/command-center/RealtimeKPIs";
 import QuickActions from "@/components/command-center/QuickActions";
 import BrainConsole from "@/components/command-center/BrainConsole";
 import LiveConversations from "@/components/command-center/LiveConversations";
+import MiniPipelineB2C from "@/components/command-center/MiniPipelineB2C";
+import MiniPipelineB2B from "@/components/command-center/MiniPipelineB2B";
 
 const COLORS = ['#14b8a6', '#06b6d4', '#0F8B6C', '#D96B4D', '#A7D9C9'];
 
@@ -242,6 +244,13 @@ export default function Dashboard() {
           1) KPIs en tiempo real del día (auto-refresh 30s)
           2) Acciones rápidas (funciones backend 1-click) + Peyu Brain console */}
       <RealtimeKPIs />
+
+      {/* Mini-pipelines en vivo · permite revisar al toque qué entró por cada canal */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <MiniPipelineB2C />
+        <MiniPipelineB2B />
+      </div>
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <div>
           <QuickActions />
