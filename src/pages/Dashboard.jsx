@@ -4,7 +4,7 @@ import {
   TrendingUp, TrendingDown, Users, Package, DollarSign,
   MessageSquare, Factory, AlertTriangle, CheckCircle2,
   Clock, Target, Zap, ArrowRight,
-  Store, UserCheck, Flag
+  Store, UserCheck, Flag, Truck
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import {
@@ -214,11 +214,25 @@ export default function Dashboard() {
   return (
     <div className="p-6 space-y-6 min-h-screen">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-4 flex-wrap">
         <div>
           <h1 className="text-3xl font-poppins font-black text-white">Centro de Comandos</h1>
           <p className="text-teal-300/70 text-sm mt-1">KPIs en vivo · Acciones 1-click · Peyu Brain</p>
         </div>
+        <Link
+          to="/admin/bluex"
+          className="group flex items-center gap-3 px-4 py-3 rounded-2xl bg-gradient-to-br from-blue-600 via-cyan-600 to-teal-600 hover:from-blue-500 hover:via-cyan-500 hover:to-teal-500 text-white shadow-lg shadow-cyan-500/30 border border-white/20 transition-all hover:scale-[1.02]"
+        >
+          <div className="w-10 h-10 rounded-xl bg-white/15 flex items-center justify-center backdrop-blur-md">
+            <Truck className="w-5 h-5" />
+          </div>
+          <div className="text-left">
+            <p className="text-[10px] uppercase tracking-wider font-bold text-cyan-100/90">BlueExpress</p>
+            <p className="text-sm font-poppins font-bold leading-tight">Centro Logístico</p>
+            <p className="text-[10px] text-white/70">Tracking · Etiquetas · Secuencias IA</p>
+          </div>
+          <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+        </Link>
       </div>
 
       {/* ── CENTRO DE COMANDOS — Bloque superior ──
@@ -502,13 +516,15 @@ export default function Dashboard() {
           <h3 className="font-poppins font-semibold text-foreground mb-4">Acceso Rápido</h3>
           <div className="space-y-2">
             {[
-              { label: 'Nuevo Lead B2B', to: '/pipeline', color: '#0F8B6C' },
-              { label: 'Nueva Cotización', to: '/pipeline', color: '#0F8B6C' },
-              { label: 'Nueva Orden Producción', to: '/operaciones', color: '#4B4F54' },
-              { label: 'Nueva Campaña', to: '/marketing', color: '#D96B4D' },
-              { label: 'Ver Tiendas Físicas', to: '/tiendas', color: '#0F8B6C' },
-              { label: 'Ver OKRs & Metas', to: '/okrs', color: '#0F8B6C' },
-              { label: 'Ver Analítica', to: '/analitica', color: '#4B4F54' },
+              { label: 'Centro Logístico Bluex', to: '/admin/bluex', color: '#06b6d4' },
+              { label: 'Procesar Pedidos', to: '/admin/procesar-pedidos', color: '#0F8B6C' },
+              { label: 'Nuevo Lead B2B', to: '/admin/pipeline', color: '#0F8B6C' },
+              { label: 'Nueva Cotización', to: '/admin/pipeline', color: '#0F8B6C' },
+              { label: 'Nueva Orden Producción', to: '/admin/operaciones', color: '#4B4F54' },
+              { label: 'Nueva Campaña', to: '/admin/marketing', color: '#D96B4D' },
+              { label: 'Ver Tiendas Físicas', to: '/admin/tiendas', color: '#0F8B6C' },
+              { label: 'Ver OKRs & Metas', to: '/admin/okrs', color: '#0F8B6C' },
+              { label: 'Ver Analítica', to: '/admin/analitica', color: '#4B4F54' },
             ].map((item, i) => (
               <Link key={i} to={item.to} className="flex items-center justify-between p-3 rounded-xl hover:bg-muted/50 transition-colors group">
                 <span className="text-sm font-medium text-foreground">{item.label}</span>

@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import SEO from '@/components/SEO';
 import SidebarNav from '@/components/admin/SidebarNav';
+import CommandCenterFAB from '@/components/admin/CommandCenterFAB';
 
 const COLLAPSED_KEY = 'peyu_sidebar_collapsed';
 
@@ -116,8 +117,10 @@ export default function Layout() {
       </aside>
 
       {/* Main */}
-      <main className="flex-1 min-w-0 overflow-y-auto overflow-x-hidden bg-gradient-to-br from-slate-900 via-slate-900 to-slate-800">
+      <main className="flex-1 min-w-0 overflow-y-auto overflow-x-hidden bg-gradient-to-br from-slate-900 via-slate-900 to-slate-800 relative">
         <Outlet />
+        {/* FAB flotante: vuelve al Centro de Comando desde cualquier vista admin */}
+        <CommandCenterFAB />
       </main>
     </div>
   );
