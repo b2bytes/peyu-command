@@ -217,7 +217,7 @@ Deno.serve(async (req) => {
     historial.push({
       at: new Date().toISOString(),
       type: 'shipped',
-      actor: user.email,
+      actor: 'system',
       channel: 'system',
       detail: `Envío Bluex creado · OT ${trackingNumber}`,
       meta: { tracking: trackingNumber, servicio, peso_kg: pesoFinal, envio_id: envio.id },

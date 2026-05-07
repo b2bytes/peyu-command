@@ -42,11 +42,13 @@ export default function BrainConsole() {
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(false);
-  const endRef = useRef(null);
+  const scrollRef = useRef(null);
 
+  // Scroll SOLO dentro del contenedor del chat (no afecta a la página)
   useEffect(() => {
-    endRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+    const el = scrollRef.current;
+    if (el) el.scrollTop = el.scrollHeight;
+  }, [messages, loading]);
 
   const ask = async (text) => {
     const q = (text || input).trim();
@@ -121,7 +123,7 @@ export default function BrainConsole() {
         </div>
       </div>
 
-      <div className="flex-1 min-h-0 overflow-y-auto space-y-2.5 pr-1 peyu-scrollbar-light">
+      <div ref={scrollRef} className="flex-1 min-h-0 overflow-y-auto space-y-2.5 pr-1 peyu-scrollbar-light overscroll-contain">
         {messages.length === 0 && (
           <div className="space-y-2">
             <p className="text-xs text-violet-200/70 font-medium flex items-center gap-1">
@@ -175,7 +177,6 @@ export default function BrainConsole() {
             </div>
           </div>
         )}
-        <div ref={endRef} />
       </div>
 
       <div className="flex gap-2 mt-3 pt-3 border-t border-white/10">
