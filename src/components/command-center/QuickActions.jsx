@@ -3,97 +3,61 @@ import { base44 } from '@/api/base44Client';
 import { useToast } from '@/components/ui/use-toast';
 import {
   RefreshCw, Search, Send, Megaphone, FileText, Mail,
-  Sparkles, Zap, Loader2, CheckCircle2, XCircle,
+  Sparkles, Zap, Loader2, CheckCircle2, XCircle, ChevronRight,
+  ShoppingBag, Globe, Activity,
 } from 'lucide-react';
 
 /**
- * Botones 1-click para invocar funciones backend desde el Centro de Comandos.
- * Cada acción muestra estado loading/success/error y un toast con el resultado.
- *
- * IMPORTANTE: solo invoca funciones backend que YA existen — no inventa endpoints.
+ * Acciones rápidas · rediseño limpio agrupado por categoría.
+ * - Lista densa en 2 columnas con icono coloreado a la izquierda
+ * - Estado loading/success/error sin distorsionar el layout
+ * - Tooltip con descripción al hover (no satura)
+ * - Solo invoca funciones backend que YA existen
  */
-const ACTIONS = [
+const GROUPS = [
   {
-    id: 'sync-woo',
-    label: 'Sincronizar WooCommerce',
-    desc: 'Importa catálogo desde Woo',
-    icon: RefreshCw,
-    color: 'from-violet-500/30 to-purple-600/30',
-    border: 'border-violet-400/40',
-    fn: 'syncWooCatalogo',
-    payload: {},
+    label: 'Catálogo',
+    icon: ShoppingBag,
+    accent: 'text-violet-300',
+    actions: [
+      { id: 'sync-woo',    label: 'Sync WooCommerce',  desc: 'Importar productos',     icon: RefreshCw,  fn: 'syncWooCatalogo',      payload: {} },
+      { id: 'audit-cat',   label: 'Auditar catálogo',  desc: 'IA revisa productos',    icon: Megaphone,  fn: 'auditoriaCatalogoCRON', payload: {} },
+    ],
   },
   {
-    id: 'optimize-seo',
-    label: 'Optimizar SEO productos',
-    desc: 'IA · GSC + GA4 → meta tags',
-    icon: Search,
-    color: 'from-emerald-500/30 to-teal-600/30',
-    border: 'border-emerald-400/40',
-    fn: 'optimizeProductSEOCRON',
-    payload: { limit: 5 },
+    label: 'SEO & Indexación',
+    icon: Globe,
+    accent: 'text-emerald-300',
+    actions: [
+      { id: 'optimize-seo', label: 'Optimizar SEO',     desc: 'Meta tags vía IA',       icon: Search,     fn: 'optimizeProductSEOCRON', payload: { limit: 5 } },
+      { id: 'gen-sitemap',  label: 'Sitemap',           desc: 'Regenerar XML',          icon: FileText,   fn: 'generateSitemap',        payload: {} },
+      { id: 'index-blast',  label: 'IndexNow',          desc: 'Pingear Google/Bing',    icon: Zap,        fn: 'autoIndexNowBlast',      payload: {} },
+    ],
   },
   {
-    id: 'gen-sitemap',
-    label: 'Regenerar Sitemap',
-    desc: 'Refrescar XML público',
-    icon: FileText,
-    color: 'from-cyan-500/30 to-blue-600/30',
-    border: 'border-cyan-400/40',
-    fn: 'generateSitemap',
-    payload: {},
-  },
-  {
-    id: 'index-blast',
-    label: 'IndexNow Blast',
-    desc: 'Pingear Google/Bing',
-    icon: Zap,
-    color: 'from-yellow-500/30 to-orange-600/30',
-    border: 'border-yellow-400/40',
-    fn: 'autoIndexNowBlast',
-    payload: {},
-  },
-  {
-    id: 'briefing',
-    label: 'Briefing diario',
-    desc: 'Email ejecutivo del día',
-    icon: Mail,
-    color: 'from-pink-500/30 to-rose-600/30',
-    border: 'border-pink-400/40',
-    fn: 'dailyBriefingCRON',
-    payload: {},
-  },
-  {
-    id: 'check-proposals',
-    label: 'Recordar propuestas',
-    desc: 'Recordatorios B2B',
+    label: 'Comercial',
     icon: Send,
-    color: 'from-teal-500/30 to-emerald-600/30',
-    border: 'border-teal-400/40',
-    fn: 'recordarPropuestasPendientesCRON',
-    payload: {},
+    accent: 'text-cyan-300',
+    actions: [
+      { id: 'check-proposals', label: 'Recordar propuestas', desc: 'Email a clientes B2B', icon: Send, fn: 'recordarPropuestasPendientesCRON', payload: {} },
+      { id: 'briefing',        label: 'Briefing diario',     desc: 'Email ejecutivo',      icon: Mail, fn: 'dailyBriefingCRON',                payload: {} },
+    ],
   },
   {
-    id: 'health',
-    label: 'Health Check',
-    desc: 'Diagnóstico del sistema',
-    icon: Sparkles,
-    color: 'from-blue-500/30 to-indigo-600/30',
-    border: 'border-blue-400/40',
-    fn: 'healthCheck',
-    payload: {},
-  },
-  {
-    id: 'audit-cat',
-    label: 'Auditar catálogo',
-    desc: 'IA · revisa productos',
-    icon: Megaphone,
-    color: 'from-orange-500/30 to-red-600/30',
-    border: 'border-orange-400/40',
-    fn: 'auditoriaCatalogoCRON',
-    payload: {},
+    label: 'Sistema',
+    icon: Activity,
+    accent: 'text-blue-300',
+    actions: [
+      { id: 'health',  label: 'Health Check', desc: 'Diagnóstico general', icon: Sparkles, fn: 'healthCheck', payload: {} },
+    ],
   },
 ];
+
+const STATE_STYLE = {
+  loading: { icon: Loader2,       cls: 'text-white/80 animate-spin' },
+  success: { icon: CheckCircle2,  cls: 'text-emerald-400' },
+  error:   { icon: XCircle,       cls: 'text-red-400' },
+};
 
 export default function QuickActions() {
   const { toast } = useToast();
@@ -128,31 +92,64 @@ export default function QuickActions() {
 
   return (
     <div className="bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 p-5 shadow-xl">
-      <div className="flex items-center gap-2 mb-4">
-        <Zap className="w-4 h-4 text-yellow-300" />
-        <h3 className="font-poppins font-semibold text-white text-sm">Acciones rápidas · 1-click</h3>
-        <span className="text-[10px] text-teal-300/60 ml-auto">Funciones backend ejecutables</span>
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center">
+            <Zap className="w-4 h-4 text-white" />
+          </div>
+          <div>
+            <h3 className="font-poppins font-semibold text-white text-sm">Acciones rápidas</h3>
+            <p className="text-[10px] text-yellow-200/70">Funciones backend · 1-click</p>
+          </div>
+        </div>
       </div>
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-        {ACTIONS.map((a) => {
-          const Icon = a.icon;
-          const state = running[a.id];
+
+      <div className="space-y-3">
+        {GROUPS.map(group => {
+          const GroupIcon = group.icon;
           return (
-            <button
-              key={a.id}
-              onClick={() => run(a)}
-              disabled={state === 'loading'}
-              className={`text-left bg-gradient-to-br ${a.color} border ${a.border} rounded-xl p-3 hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-60 disabled:cursor-not-allowed group`}
-            >
-              <div className="flex items-start justify-between mb-1.5">
-                <Icon className="w-4 h-4 text-white" />
-                {state === 'loading' && <Loader2 className="w-3.5 h-3.5 text-white animate-spin" />}
-                {state === 'success' && <CheckCircle2 className="w-3.5 h-3.5 text-emerald-300" />}
-                {state === 'error' && <XCircle className="w-3.5 h-3.5 text-red-300" />}
+            <div key={group.label}>
+              <div className="flex items-center gap-1.5 mb-1.5 px-1">
+                <GroupIcon className={`w-3 h-3 ${group.accent}`} />
+                <span className={`text-[10px] font-bold uppercase tracking-wider ${group.accent}/80`}>
+                  {group.label}
+                </span>
+                <div className="flex-1 h-px bg-white/5 ml-1" />
               </div>
-              <div className="text-xs font-bold text-white leading-tight">{a.label}</div>
-              <div className="text-[10px] text-white/70 leading-tight mt-0.5">{a.desc}</div>
-            </button>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+                {group.actions.map(a => {
+                  const Icon = a.icon;
+                  const state = running[a.id];
+                  const StateCfg = state && STATE_STYLE[state];
+                  const StateIcon = StateCfg?.icon;
+                  return (
+                    <button
+                      key={a.id}
+                      onClick={() => run(a)}
+                      disabled={state === 'loading'}
+                      title={a.desc}
+                      className="flex items-center gap-2.5 p-2.5 rounded-xl bg-white/[0.03] hover:bg-white/[0.08] border border-white/[0.06] hover:border-white/15 transition-all disabled:opacity-50 disabled:cursor-not-allowed group text-left"
+                    >
+                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 transition ${
+                        state === 'success' ? 'bg-emerald-500/20'
+                        : state === 'error' ? 'bg-red-500/20'
+                        : 'bg-white/[0.06] group-hover:bg-white/[0.12]'
+                      }`}>
+                        {StateIcon
+                          ? <StateIcon className={`w-3.5 h-3.5 ${StateCfg.cls}`} />
+                          : <Icon className="w-3.5 h-3.5 text-white/80" />
+                        }
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="text-xs font-semibold text-white truncate">{a.label}</div>
+                        <div className="text-[10px] text-white/45 truncate">{a.desc}</div>
+                      </div>
+                      <ChevronRight className="w-3 h-3 text-white/20 group-hover:text-white/60 group-hover:translate-x-0.5 transition shrink-0" />
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
           );
         })}
       </div>
