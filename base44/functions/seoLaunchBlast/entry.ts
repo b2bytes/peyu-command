@@ -113,13 +113,15 @@ ${xmlEntries}
     // ── 3. GSC submit + pings (paralelo) ────────────────────────────
     const { accessToken } = await base44.asServiceRole.connectors.getConnection('google_search_console');
 
+    // Usamos Domain Property (sc-domain:peyuchile.cl) que es la verificación
+    // moderna en GSC (cubre www, http, https, subdominios automáticamente).
     const tasks = [
-      gscSubmitSitemap(accessToken, `${SITE_URL}/`, sitemapUrl).then(r => ({ task: 'gsc_cl', ...r })),
+      gscSubmitSitemap(accessToken, `sc-domain:peyuchile.cl`, sitemapUrl).then(r => ({ task: 'gsc_cl', ...r })),
     ];
 
     if (also_lat) {
       tasks.push(
-        gscSubmitSitemap(accessToken, `${SITE_LAT}/`, `${SITE_LAT}/sitemap.xml`).then(r => ({ task: 'gsc_lat', ...r }))
+        gscSubmitSitemap(accessToken, `sc-domain:peyuchile.lat`, `${SITE_LAT}/sitemap.xml`).then(r => ({ task: 'gsc_lat', ...r }))
       );
     }
 
