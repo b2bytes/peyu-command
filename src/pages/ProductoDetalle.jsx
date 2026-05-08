@@ -150,25 +150,30 @@ export default function ProductoDetalle() {
       if (el.scrollTop > 0) el.scrollTop = 0;
     });
 
-    base44.entities.Producto.list().then(data => {
-      const prod = data.find(p => p.id === id);
-      setProducto(prod);
-      if (prod) {
-        // Trazabilidad 360°: registrar product view
-        track.productView(prod);
-        const colores = getColores(prod);
-        const firstId = colores[0]?.id || null;
-        setColorSeleccionado(firstId);
-        // Si es pack, inicializamos array con N copias del primer color
-        const packN = getPackSize(prod);
-        if (packN && firstId) {
-          setColoresPack(Array.from({ length: packN }, () => firstId));
-        } else {
-          setColoresPack([]);
-        }
-        setRelacionados(data.filter(p => p.id !== id && p.canal !== 'B2B Exclusivo' && p.categoria === prod.categoria).slice(0, 4));
+    // Carga directa por ID (rápido) — sin descargar el catálogo entero
+    base44.entities.Producto.get(id).then(prod => {
+      if (!prod) {
+        setProducto(null);
+        return;
       }
-    });
+      setProducto(prod);
+      // Trazabilidad 360°: registrar product view
+      track.productView(prod);
+      const colores = getColores(prod);
+      const firstId = colores[0]?.id || null;
+      setColorSeleccionado(firstId);
+      // Si es pack, inicializamos array con N copias del primer color
+      const packN = getPackSize(prod);
+      if (packN && firstId) {
+        setColoresPack(Array.from({ length: packN }, () => firstId));
+      } else {
+        setColoresPack([]);
+      }
+      // Relacionados: filtramos sólo por categoría (server-side), trae 5 y excluimos el actual
+      base44.entities.Producto.filter({ categoria: prod.categoria }, '-updated_date', 8).then(rel => {
+        setRelacionados(rel.filter(p => p.id !== id && p.canal !== 'B2B Exclusivo').slice(0, 4));
+      }).catch(() => setRelacionados([]));
+    }).catch(() => setProducto(null));
   }, [id]);
 
   useEffect(() => {
