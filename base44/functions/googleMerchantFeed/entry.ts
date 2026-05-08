@@ -46,15 +46,50 @@ const escapeXml = (s) => String(s ?? '').replace(/[<>&'"]/g, (c) => ({
 // Limpia HTML para descripción (Google rechaza tags).
 const cleanText = (s = '') => String(s).replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
 
+// Limpia URLs de imagen para GMC:
+// - Quita parámetros Jetpack (?fit, ?ssl, ?w, ?h, ?quality) que GMC rechaza como inestables.
+// - Quita el wrapper i0.wp.com (CDN Jetpack proxy → puede bloquear Googlebot-Image).
+// - Convierte URL relativas a absolutas.
+const cleanImageUrl = (url) => {
+  if (!url || typeof url !== 'string') return null;
+  let u = url.trim();
+  // Quita el prefijo i0.wp.com / i1.wp.com / i2.wp.com → URL canónica directa
+  u = u.replace(/^https?:\/\/i[0-9]\.wp\.com\//, 'https://');
+  // Quita query params inestables que GMC marca como "URL no canónica"
+  u = u.split('?')[0];
+  // Si quedó sin protocolo, agregarlo
+  if (u.startsWith('//')) u = 'https:' + u;
+  return u;
+};
+
+// Selecciona la mejor imagen disponible para el feed:
+// 1. galeria_urls[0] del CDN Base44 (más estable, sin Jetpack)
+// 2. imagen_promo_url del CDN Base44
+// 3. imagen_url (legacy WordPress, limpiada)
+const pickBestImage = (p) => {
+  const galeria = Array.isArray(p.galeria_urls) ? p.galeria_urls : [];
+  const base44Imgs = galeria.filter(u => u && u.includes('media.base44.com'));
+  if (base44Imgs.length > 0) return base44Imgs[0];
+  if (p.imagen_promo_url && p.imagen_promo_url.includes('media.base44.com')) return p.imagen_promo_url;
+  if (galeria[0]) return cleanImageUrl(galeria[0]);
+  return cleanImageUrl(p.imagen_url);
+};
+
 function buildItem(p) {
   const id = p.sku || p.id;
   const title = p.nombre;
   const description = cleanText(p.descripcion) ||
     `${p.nombre} · Hecho en Chile con ${p.material}. Personalización láser disponible.`;
   const link = `${SITE_URL}/producto/${p.id}`;
-  const image = p.imagen_url;
-  const promoImage = p.imagen_promo_url;
-  const galeria = Array.isArray(p.galeria_urls) ? p.galeria_urls.slice(0, 9) : [];
+  // Imagen principal: prefiere CDN Base44 (estable) > Jetpack limpio (legacy)
+  const image = pickBestImage(p);
+  // Imagen promo: solo si difiere de la principal y es Base44 CDN
+  const promoImage = p.imagen_promo_url && p.imagen_promo_url !== image ? p.imagen_promo_url : null;
+  // Galería adicional limpia (solo Base44 CDN o WordPress sin params)
+  const galeria = (Array.isArray(p.galeria_urls) ? p.galeria_urls : [])
+    .map(cleanImageUrl)
+    .filter(Boolean)
+    .slice(0, 9);
   const price = Math.round(p.precio_b2c || 0);
   const stock = Number(p.stock_actual || 0);
   const availability = stock > 0 ? 'in_stock' : 'out_of_stock';
@@ -103,12 +138,18 @@ Deno.serve(async (req) => {
     const base44 = createClientFromRequest(req);
 
     const productos = await base44.asServiceRole.entities.Producto.list('-updated_date', 1000);
-    const elegibles = (productos || []).filter(p =>
-      p.activo !== false &&
-      p.canal !== 'B2B Exclusivo' &&
-      p.imagen_url &&
-      p.precio_b2c > 0
-    );
+    const elegibles = (productos || []).filter(p => {
+      // Reglas GMC para incluir un producto en el feed:
+      if (p.activo === false) return false;                    // 1. Activo
+      if (p.canal === 'B2B Exclusivo') return false;           // 2. Disponible al público (no solo B2B)
+      if (!p.precio_b2c || p.precio_b2c <= 0) return false;    // 3. Precio válido
+      if (!p.nombre || p.nombre.length < 3) return false;      // 4. Título mínimo
+      if (!p.id) return false;                                 // 5. ID válido para link
+      // 6. Tiene al menos UNA imagen válida (Base44 CDN o WordPress)
+      const hasImage = pickBestImage(p);
+      if (!hasImage) return false;
+      return true;
+    });
 
     const items = elegibles.map(buildItem).join('\n');
     const today = new Date().toUTCString();
