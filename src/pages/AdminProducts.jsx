@@ -7,6 +7,7 @@ import AIImageEnhancer from '@/components/admin-products/AIImageEnhancer';
 import ProductQuickEdit from '@/components/admin-products/ProductQuickEdit';
 import PromoImageGenerator from '@/components/admin-products/PromoImageGenerator';
 import WordPressMigrationPanel from '@/components/admin-products/WordPressMigrationPanel';
+import DriveMatchMigrationPanel from '@/components/admin-products/DriveMatchMigrationPanel';
 import { Button } from '@/components/ui/button';
 
 /**
@@ -119,6 +120,9 @@ export default function AdminProducts() {
           <button onClick={() => setSyncResult(null)} className="text-white/50 hover:text-white"><X className="w-3 h-3" /></button>
         </div>
       )}
+
+      {/* Panel restauración 121 imágenes desde Google Drive */}
+      <DriveMatchMigrationPanel onComplete={loadData} />
 
       {/* Panel migración WordPress → Base44 CDN */}
       <WordPressMigrationPanel onComplete={loadData} />
