@@ -190,40 +190,105 @@ export default function Shop() {
         ]}
         jsonLd={itemListJsonLd}
       />
-      {/* HERO Liquid Dual */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 pt-6 sm:pt-12 pb-4 sm:pb-8">
-        <div className="flex items-end justify-between gap-6 flex-wrap">
-          <div className="space-y-3 max-w-2xl">
-            <div className="inline-flex items-center gap-1.5 text-[11px] font-bold tracking-[0.18em] uppercase" style={{ color: 'var(--ld-action)' }}>
+      {/* HERO Liquid Dual — split editorial con imagen */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 pt-6 sm:pt-10 pb-6 sm:pb-10">
+        <div className="grid lg:grid-cols-[1.1fr_1fr] gap-6 lg:gap-10 items-stretch">
+          {/* IZQUIERDA — Texto + trust */}
+          <div className="flex flex-col justify-center space-y-5 lg:py-6">
+            <div className="inline-flex items-center gap-1.5 text-[11px] font-bold tracking-[0.22em] uppercase self-start" style={{ color: 'var(--ld-action)' }}>
               <Recycle className="w-3 h-3" />
-              <span className="hidden sm:inline">100% Plástico Reciclado · Chile</span>
-              <span className="sm:hidden">100% Reciclado · Chile</span>
+              <span>100% Plástico Reciclado · Chile</span>
             </div>
-            <h1 className="ld-display text-3xl sm:text-5xl md:text-6xl text-ld-fg leading-[0.95]">
+            <h1 className="ld-display text-4xl sm:text-5xl md:text-6xl lg:text-7xl text-ld-fg leading-[0.95]">
               Tienda PEYU.{' '}
               <span className="ld-display-italic" style={{ color: 'var(--ld-highlight)' }}>
                 Regalos sostenibles.
               </span>
             </h1>
-            <p className="hidden sm:block text-ld-fg-muted text-base leading-relaxed max-w-lg">
+            <p className="text-ld-fg-muted text-base sm:text-lg leading-relaxed max-w-lg">
               Fabricados en Santiago con plástico recuperado. Personalización láser UV y garantía 10 años.
             </p>
+            {/* Trust badges Liquid Dual */}
+            <div className="flex gap-2 flex-wrap pt-2">
+              {[
+                { icon: Shield, label: '10 años', sub: 'garantía' },
+                { icon: Truck, label: 'Envío gratis', sub: 'sobre $40K' },
+                { icon: Check, label: '500+', sub: 'reseñas 5★' },
+              ].map((b, i) => (
+                <div key={i} className="ld-glass flex-shrink-0 rounded-2xl px-3.5 py-2.5 flex items-center gap-2">
+                  <b.icon className="w-4 h-4 flex-shrink-0" style={{ color: 'var(--ld-action)' }} />
+                  <div>
+                    <p className="text-xs font-bold text-ld-fg leading-tight whitespace-nowrap">{b.label}</p>
+                    <p className="text-[10px] text-ld-fg-muted leading-tight whitespace-nowrap">{b.sub}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
-          {/* Trust badges Liquid Dual */}
-          <div className="flex gap-2 overflow-x-auto sm:flex-wrap scrollbar-hide -mx-4 px-4 sm:mx-0 sm:px-0 w-[calc(100%+2rem)] sm:w-auto">
-            {[
-              { icon: Shield, label: '10 años', sub: 'garantía' },
-              { icon: Truck, label: 'Envío gratis', sub: 'sobre $40K' },
-              { icon: Check, label: '500+', sub: 'reseñas 5★' },
-            ].map((b, i) => (
-              <div key={i} className="ld-glass flex-shrink-0 rounded-xl sm:rounded-2xl px-3 sm:px-3.5 py-2 sm:py-2.5 flex items-center gap-2">
-                <b.icon className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" style={{ color: 'var(--ld-action)' }} />
+
+          {/* DERECHA — Imagen editorial collage */}
+          <div className="relative h-[320px] sm:h-[420px] lg:h-[520px]">
+            {/* Glow ambient */}
+            <div
+              aria-hidden
+              className="absolute -top-10 -right-10 w-72 h-72 rounded-full blur-3xl pointer-events-none"
+              style={{ background: 'var(--ld-action-soft)', opacity: 0.6 }}
+            />
+            <div
+              aria-hidden
+              className="absolute -bottom-10 -left-10 w-72 h-72 rounded-full blur-3xl pointer-events-none"
+              style={{ background: 'var(--ld-highlight-soft)', opacity: 0.5 }}
+            />
+
+            {/* Imagen principal — producto hero */}
+            <div className="absolute inset-y-0 right-0 w-[78%] rounded-3xl overflow-hidden ld-card shadow-2xl">
+              <img
+                src="https://images.unsplash.com/photo-1606760227091-3dd870d97f1d?auto=format&fit=crop&w=1200&q=80"
+                alt="Productos PEYU hechos en plástico reciclado"
+                className="w-full h-full object-cover"
+                loading="eager"
+                fetchpriority="high"
+              />
+              {/* Overlay editorial */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
+              {/* Etiqueta flotante de procedencia */}
+              <div className="absolute top-4 right-4 ld-glass-strong rounded-full px-3 py-1.5 flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: 'var(--ld-action)' }} />
+                <span className="text-[10px] font-bold text-ld-fg tracking-wider uppercase">Hecho en Santiago</span>
+              </div>
+              {/* Pieza editorial inferior */}
+              <div className="absolute bottom-4 left-4 right-4 flex items-end justify-between text-white drop-shadow-lg">
                 <div>
-                  <p className="text-[11px] sm:text-xs font-bold text-ld-fg leading-tight whitespace-nowrap">{b.label}</p>
-                  <p className="text-[9px] sm:text-[10px] text-ld-fg-muted leading-tight whitespace-nowrap">{b.sub}</p>
+                  <p className="text-[10px] font-bold tracking-[0.18em] uppercase opacity-90">Nueva colección</p>
+                  <p className="ld-display text-xl sm:text-2xl mt-1 leading-tight">Otoño · Invierno 2026</p>
                 </div>
               </div>
-            ))}
+            </div>
+
+            {/* Card secundaria flotante — número de productos */}
+            <div className="absolute bottom-6 left-0 lg:-left-4 ld-glass-strong rounded-2xl p-4 w-44 hidden sm:block">
+              <p className="text-[10px] font-bold uppercase tracking-[0.18em]" style={{ color: 'var(--ld-action)' }}>
+                Catálogo
+              </p>
+              <p className="ld-display text-3xl text-ld-fg leading-none mt-1">
+                {productos.length || '50+'}
+              </p>
+              <p className="text-xs text-ld-fg-muted mt-1">productos sostenibles activos</p>
+            </div>
+
+            {/* Card terciaria — material */}
+            <div className="absolute top-6 left-0 lg:-left-2 ld-glass-strong rounded-2xl p-3 hidden md:flex items-center gap-2.5 max-w-[200px]">
+              <div
+                className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
+                style={{ background: 'var(--ld-grad-action)' }}
+              >
+                <Recycle className="w-4 h-4 text-white" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-xs font-bold text-ld-fg leading-tight">Plástico recuperado</p>
+                <p className="text-[10px] text-ld-fg-muted leading-tight">de océanos y rellenos</p>
+              </div>
+            </div>
           </div>
         </div>
       </section>

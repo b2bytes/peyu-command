@@ -280,6 +280,40 @@
     letter-spacing: -0.02em;
   }
 
+  /* Prose Liquid Dual para páginas legales / FAQ / textos largos */
+  .ld-prose h2 {
+    font-family: 'Fraunces', serif;
+    font-weight: 500;
+    font-size: 1.5rem;
+    letter-spacing: -0.02em;
+    color: var(--ld-fg);
+    margin-top: 1.75rem;
+    margin-bottom: 0.5rem;
+    line-height: 1.2;
+  }
+  .ld-prose h3 {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-weight: 700;
+    font-size: 1.05rem;
+    color: var(--ld-fg);
+    margin-top: 1.25rem;
+    margin-bottom: 0.5rem;
+  }
+  .ld-prose p { color: var(--ld-fg-soft); margin-bottom: 0.85rem; }
+  .ld-prose strong { color: var(--ld-fg); font-weight: 600; }
+  .ld-prose a {
+    color: var(--ld-action);
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 3px;
+    transition: color 200ms;
+  }
+  .ld-prose a:hover { color: var(--ld-action-hover); }
+  .ld-prose ul { list-style: disc; padding-left: 1.25rem; margin: 0.5rem 0 1rem; }
+  .ld-prose ol { list-style: decimal; padding-left: 1.25rem; margin: 0.5rem 0 1rem; }
+  .ld-prose li { color: var(--ld-fg-soft); margin-bottom: 0.35rem; }
+  .ld-prose hr { border: 0; height: 1px; background: var(--ld-border); margin: 1.5rem 0; }
+
   /* Divider sutil */
   .ld-divider { background: var(--ld-border); height: 1px; width: 100%; }
 }

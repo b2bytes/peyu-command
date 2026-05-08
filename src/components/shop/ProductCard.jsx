@@ -21,11 +21,10 @@ function ProductCard({ producto, onAddToCart, agregandoId, index = 0 }) {
     <Link
       to={`/producto/${p.id}`}
       style={{ animationDelay: animDelay }}
-      className="peyu-card-enter group bg-white/5 backdrop-blur-sm border border-white/15 rounded-2xl overflow-hidden hover:border-teal-400/40 hover:bg-white/10 hover:shadow-2xl hover:-translate-y-1 active:scale-[0.98] transition-all duration-300 will-change-transform"
+      className="peyu-card-enter ld-card group overflow-hidden hover:-translate-y-1 active:scale-[0.98] transition-all duration-300 will-change-transform"
     >
       {/* Image */}
-      <div className="relative aspect-square bg-gradient-to-br from-slate-800 to-slate-900 overflow-hidden">
-        {/* Skeleton shimmer mientras carga la imagen */}
+      <div className="relative aspect-square overflow-hidden" style={{ background: 'var(--ld-bg-soft)' }}>
         {!imgLoaded && (
           <div className="absolute inset-0 peyu-shimmer" aria-hidden="true" />
         )}
@@ -43,31 +42,32 @@ function ProductCard({ producto, onAddToCart, agregandoId, index = 0 }) {
           onLoad={() => setImgLoaded(true)}
           onError={(e) => { e.target.src = 'https://images.unsplash.com/photo-1578432291840-8d3a3a016e4d?w=600&h=600&fit=crop'; setImgLoaded(true); }}
         />
-        {/* Floating badges */}
+        {/* Floating badges glass */}
         <div className="absolute top-3 left-3 flex flex-col gap-1.5">
-          <span className="bg-slate-900/80 backdrop-blur text-white text-[10px] font-bold px-2.5 py-1 rounded-full shadow-sm border border-white/20">
+          <span className="ld-glass text-ld-fg text-[10px] font-bold px-2.5 py-1 rounded-full">
             {p.categoria}
           </span>
           {p.material?.includes('Trigo') && (
-            <span className="bg-green-600/90 backdrop-blur text-white text-[10px] font-bold px-2.5 py-1 rounded-full shadow-sm">
+            <span className="text-white text-[10px] font-bold px-2.5 py-1 rounded-full" style={{ background: 'var(--ld-action)' }}>
               🌾 Compostable
             </span>
           )}
         </div>
-        {/* Discount pill */}
+        {/* Discount pill terracota */}
         <div className="absolute top-3 right-3">
-          <span className="bg-gradient-to-r from-teal-500 to-cyan-500 text-white text-[10px] font-bold px-2.5 py-1 rounded-full shadow-md">
+          <span className="text-white text-[10px] font-bold px-2.5 py-1 rounded-full" style={{ background: 'var(--ld-highlight)' }}>
             −15%
           </span>
         </div>
-        {/* Quick add — siempre visible en mobile (touch), hover en desktop */}
+        {/* Quick add */}
         <button
           onClick={(e) => onAddToCart(e, p)}
-          className={`absolute bottom-3 right-3 w-10 h-10 sm:w-11 sm:h-11 rounded-xl flex items-center justify-center text-white transition-all duration-300 shadow-lg ${
+          className={`absolute bottom-3 right-3 w-10 h-10 sm:w-11 sm:h-11 rounded-full flex items-center justify-center text-white transition-all duration-300 shadow-lg ${
             isAdding
-              ? 'bg-green-500 scale-110'
-              : 'bg-gradient-to-r from-teal-500 to-cyan-500 opacity-90 sm:opacity-0 sm:group-hover:opacity-100 sm:translate-y-2 sm:group-hover:translate-y-0 hover:from-teal-600 hover:to-cyan-600 active:scale-90'
+              ? 'scale-110'
+              : 'ld-btn-primary opacity-95 sm:opacity-0 sm:group-hover:opacity-100 sm:translate-y-2 sm:group-hover:translate-y-0 active:scale-90'
           }`}
+          style={isAdding ? { background: 'var(--ld-action)' } : undefined}
           aria-label="Agregar al carrito"
         >
           {isAdding ? <Check className="w-5 h-5" /> : <ShoppingCart className="w-4 h-4" />}
@@ -82,22 +82,21 @@ function ProductCard({ producto, onAddToCart, agregandoId, index = 0 }) {
               <Star key={i} className="w-3 h-3 fill-yellow-400 text-yellow-400" />
             ))}
           </div>
-          <span className="text-[10px] text-white/50 font-medium hidden sm:inline">(4.9)</span>
+          <span className="text-[10px] text-ld-fg-muted font-medium hidden sm:inline">(4.9)</span>
         </div>
-        {/* H3 = jerarquía correcta dentro de la página H1 (Shop) → H2 secciones → H3 productos */}
-        <h3 className="font-semibold text-sm text-white line-clamp-2 leading-snug group-hover:text-teal-300 transition-colors min-h-[40px]">
+        <h3 className="font-semibold text-sm text-ld-fg line-clamp-2 leading-snug group-hover:opacity-80 transition-colors min-h-[40px]">
           {p.nombre}
         </h3>
         <div className="flex items-baseline justify-between mt-3">
           <div>
-            <p className="text-[10px] text-white/40 line-through font-medium">
+            <p className="text-[10px] text-ld-fg-muted line-through font-medium">
               ${(p.precio_b2c || 9990).toLocaleString('es-CL')}
             </p>
-            <p className="font-poppins font-bold text-lg text-white leading-none">
+            <p className="font-jakarta font-bold text-lg text-ld-fg leading-none">
               ${precioOnline.toLocaleString('es-CL')}
             </p>
           </div>
-          <span className="text-[10px] text-white/40 font-medium">Envío 7 días</span>
+          <span className="text-[10px] text-ld-fg-muted font-medium">Envío 7 días</span>
         </div>
       </div>
     </Link>
