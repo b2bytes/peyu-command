@@ -20,7 +20,7 @@ export default function DesktopHeroSplit({ onOpenChat }) {
   const ctaPrimaryHref = celebration?.copy?.ctaPrimary?.href || '/shop';
 
   return (
-    <div className="ld-glass rounded-[28px] overflow-hidden flex flex-col h-full p-9 xl:p-12 relative">
+    <div className="ld-glass rounded-[28px] overflow-hidden flex flex-col h-full p-7 xl:p-10 relative">
       {/* Glow ambient sutil — verde acción + terracota highlight */}
       <div
         className="absolute -top-24 -left-20 w-72 h-72 rounded-full pointer-events-none opacity-50 blur-3xl"
@@ -31,7 +31,7 @@ export default function DesktopHeroSplit({ onOpenChat }) {
         style={{ background: 'var(--ld-highlight)' }}
       />
 
-      <div className="relative flex-1 flex flex-col justify-center">
+      <div className={`relative flex-1 flex flex-col min-h-0 ${celebration ? 'justify-start pt-2' : 'justify-center'}`}>
         {/* Eyebrow — strip editorial si hay celebración activa, eyebrow estándar si no */}
         {celebration ? (
           <HeroCelebrationStrip />
@@ -53,7 +53,7 @@ export default function DesktopHeroSplit({ onOpenChat }) {
             contenido => tamaño moderado para que respire. */}
         <h2
           className={`ld-display leading-[0.98] mb-5 text-ld-fg max-w-[640px] ${
-            celebration ? 'text-[40px] xl:text-[56px]' : 'text-[52px] xl:text-[76px]'
+            celebration ? 'text-[34px] xl:text-[44px]' : 'text-[52px] xl:text-[72px]'
           }`}
         >
           {headline}
@@ -63,7 +63,9 @@ export default function DesktopHeroSplit({ onOpenChat }) {
           </span>
         </h2>
 
-        <p className="text-base xl:text-[17px] leading-[1.65] mb-9 max-w-[520px] text-ld-fg-soft font-light">
+        <p className={`leading-[1.6] mb-7 max-w-[520px] text-ld-fg-soft font-light ${
+          celebration ? 'text-[14px] xl:text-[15px]' : 'text-base xl:text-[17px]'
+        }`}>
           {paragraph}
         </p>
 
