@@ -1029,21 +1029,21 @@ export default function ProductoDetalle() {
 
           {/* RELACIONADOS */}
           {relacionados.length > 0 && (
-            <div className="mt-9 space-y-4">
-              <div className="flex items-end justify-between">
+            <div className="mt-12 space-y-4">
+              <div className="flex items-end justify-between flex-wrap gap-3">
                 <div>
-                  <p className="text-[10px] font-semibold text-teal-400 uppercase tracking-widest mb-0.5">También te podría gustar</p>
-                  <h2 className="text-lg font-poppins font-bold text-white">Productos relacionados</h2>
+                  <p className="text-[10px] font-bold uppercase tracking-[0.22em] mb-1" style={{ color: 'var(--ld-action)' }}>También te podría gustar</p>
+                  <h2 className="ld-display text-3xl text-ld-fg">Productos relacionados</h2>
                 </div>
-                <Link to="/shop" className="flex items-center gap-1.5 text-sm font-semibold text-white/50 hover:text-white transition-colors">
+                <Link to="/shop" className="flex items-center gap-1.5 text-sm font-bold transition-colors hover:opacity-80" style={{ color: 'var(--ld-action)' }}>
                   Ver todos <ChevronRight className="w-4 h-4" />
                 </Link>
               </div>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 {relacionados.map(p => (
                   <Link key={p.id} to={`/producto/${p.id}`}>
-                    <div className="group bg-white/5 backdrop-blur-sm border border-white/15 rounded-2xl overflow-hidden hover:bg-white/10 hover:border-teal-400/40 hover:-translate-y-1 transition-all duration-300 shadow-lg">
-                      <div className="aspect-square overflow-hidden">
+                    <div className="group ld-card overflow-hidden hover:-translate-y-1 transition-all duration-300 shadow-lg">
+                      <div className="aspect-square overflow-hidden bg-white">
                         <img
                           src={getProductImage(p)}
                           alt={`${p.nombre} · ${p.categoria || 'PEYU'}`}
@@ -1056,8 +1056,8 @@ export default function ProductoDetalle() {
                         />
                       </div>
                       <div className="p-3">
-                        <h3 className="font-semibold text-xs text-white/80 line-clamp-2 group-hover:text-teal-300 transition-colors leading-snug">{p.nombre}</h3>
-                        <p className="font-poppins font-bold text-sm text-white mt-1">${Math.floor((p.precio_b2c || 9990) * 0.85).toLocaleString('es-CL')}</p>
+                        <h3 className="font-semibold text-xs text-ld-fg line-clamp-2 transition-colors leading-snug" style={{ transitionProperty: 'color' }}>{p.nombre}</h3>
+                        <p className="font-poppins font-bold text-sm mt-1" style={{ color: 'var(--ld-action)' }}>${Math.floor((p.precio_b2c || 9990) * 0.85).toLocaleString('es-CL')}</p>
                       </div>
                     </div>
                   </Link>
