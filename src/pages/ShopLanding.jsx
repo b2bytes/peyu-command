@@ -125,7 +125,15 @@ export default function ShopLanding() {
   ];
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    // Scroll SOLO dentro del contenedor de mensajes del chat (no la página entera).
+    // Usar scrollIntoView sin scope hace que el navegador busque el ancestro
+    // scrollable más cercano y termine scrolleando el main layout al recargar
+    // con conversación restaurada → el chat parecía "haber crecido".
+    const end = messagesEndRef.current;
+    const scroller = end?.parentElement;
+    if (scroller) {
+      scroller.scrollTop = scroller.scrollHeight;
+    }
     // 🧠 Sincroniza SKUs ya mostrados para que el agente rote en próximos clicks
     syncShownSkusFromMessages(messages);
   }, [messages]);
