@@ -7,7 +7,11 @@ module.exports = {
       fontFamily: {
         jakarta: ['"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
         poppins: ['Poppins', 'sans-serif'],
-        inter: ['Inter', 'system-ui', 'sans-serif'],
+        // Body por defecto: Hanken Grotesk (cálido, moderno, ideal con Fraunces)
+        // font-inter ahora apunta a Hanken para que toda la app use la nueva tipografía
+        // sin tener que migrar 200+ archivos manualmente.
+        inter: ['"Hanken Grotesk"', 'Inter', 'system-ui', 'sans-serif'],
+        hanken: ['"Hanken Grotesk"', 'system-ui', 'sans-serif'],
         fraunces: ['Fraunces', 'Georgia', 'serif'],
         display: ['Fraunces', '"Plus Jakarta Sans"', 'serif'],
       },
