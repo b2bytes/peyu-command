@@ -12,6 +12,7 @@ import ShippingAddressForm, { validarShippingForm } from '@/components/cart/Ship
 import ShippingSelector from '@/components/cart/ShippingSelector';
 import ImpactoAmbiental from '@/components/cart/ImpactoAmbiental';
 import OneClickBuyButton from '@/components/cart/OneClickBuyButton';
+import CartBundleToggle from '@/components/cart/CartBundleToggle';
 import { saveOneClickProfile } from '@/lib/one-click-profile';
 
 const DESCUENTO_TRANSFERENCIA_PCT = 5;
@@ -346,6 +347,9 @@ export default function Carrito() {
                     </div>
                   ))}
                 </div>
+
+                {/* Bundle IA: detecta combos en el carrito y permite alternar precio individual ↔ bundle con descuento */}
+                <CartBundleToggle carrito={carrito} setCarrito={setCarrito} />
 
                 <Link to="/shop" className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-900 font-medium pt-2">
                   <ArrowLeft className="w-3.5 h-3.5" /> Seguir comprando

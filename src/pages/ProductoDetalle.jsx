@@ -16,6 +16,7 @@ import { getPackSize } from '@/lib/pack-parser';
 import PackColorPicker from '@/components/producto/PackColorPicker';
 import GiftCardVisual from '@/components/giftcard/GiftCardVisual';
 import ImpactoAmbientalProducto from '@/components/producto/ImpactoAmbientalProducto';
+import FrequentlyBoughtTogether from '@/components/bundles/FrequentlyBoughtTogether';
 import { getTipoMaterial } from '@/lib/impacto-ambiental';
 import SEO from '@/components/SEO';
 import { buildOrganizationSchema, buildProductSchema, buildBreadcrumbSchema, combineSchemas } from '@/lib/schemas-peyu';
@@ -199,7 +200,7 @@ export default function ProductoDetalle() {
       : null;
 
     const item = {
-      id: Math.random(), productoId: producto.id, nombre: producto.nombre,
+      id: Math.random(), productoId: producto.id, sku: producto.sku, nombre: producto.nombre,
       precio: precioActual, cantidad,
       color: packSize ? null : (colorSeleccionado || null),
       colores_pack: packSize ? coloresPack : null,
@@ -1015,6 +1016,11 @@ export default function ProductoDetalle() {
                 </div>
               ))}
             </div>
+          </div>
+
+          {/* FREQUENTLY BOUGHT TOGETHER — bundle IA */}
+          <div className="mt-9">
+            <FrequentlyBoughtTogether productSku={producto.sku} />
           </div>
 
           {/* RELACIONADOS */}
