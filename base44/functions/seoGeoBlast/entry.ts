@@ -94,7 +94,41 @@ async function indexNowBlast(base44, key) {
   const batches = [];
   for (let i = 0; i < allUrls.length; i += BATCH) batches.push(allUrls.slice(i, i + BATCH));
 
+  // Verificar primero que el archivo {key}.txt existe en el dominio
+  // (IndexNow rechaza TODAS las URLs si no puede validar la key).
+  let keyValid = false;
+  let keyError = null;
+  try {
+    const verify = await fetch(`https://${HOST}/${key}.txt`, { redirect: 'follow' });
+    if (verify.ok) {
+      const txt = (await verify.text()).trim();
+      keyValid = txt === key;
+      if (!keyValid) keyError = `Archivo existe pero contenido no coincide (esperado "${key}", got "${txt.slice(0,40)}")`;
+    } else {
+      keyError = `Archivo de validación no existe en https://${HOST}/${key}.txt (HTTP ${verify.status})`;
+    }
+  } catch (e) {
+    keyError = `No se pudo verificar key: ${e.message}`;
+  }
+
+  if (!keyValid) {
+    return {
+      ok: false,
+      total_urls: allUrls.length,
+      sent: 0,
+      failed: allUrls.length,
+      error: keyError,
+      hint: `Crear archivo público en https://${HOST}/${key}.txt con el contenido exacto: ${key}`,
+      breakdown: {
+        static: STATIC_PATHS.length,
+        products: productActivos.length,
+        blog: (posts || []).length,
+      },
+    };
+  }
+
   let sent = 0, failed = 0;
+  const errors = [];
   for (const batch of batches) {
     try {
       const res = await fetch('https://api.indexnow.org/indexnow', {
@@ -106,14 +140,16 @@ async function indexNowBlast(base44, key) {
           urlList: batch,
         }),
       });
-      if (res.ok) sent += batch.length; else failed += batch.length;
-    } catch { failed += batch.length; }
+      if (res.ok) sent += batch.length;
+      else { failed += batch.length; errors.push(`HTTP ${res.status}`); }
+    } catch (e) { failed += batch.length; errors.push(e.message); }
   }
 
   return {
     ok: failed === 0,
     total_urls: allUrls.length,
     sent, failed,
+    error: errors.length ? errors[0] : null,
     breakdown: {
       static: STATIC_PATHS.length,
       products: productActivos.length,
@@ -130,7 +166,12 @@ async function gscSubmitSitemap(base44, sitemapUrl) {
       method: 'PUT',
       headers: { Authorization: `Bearer ${accessToken}` },
     });
-    return { ok: res.ok, status: res.status, message: res.ok ? 'Sitemap enviado a GSC' : `GSC ${res.status}` };
+    if (res.ok) return { ok: true, status: 200, message: 'Sitemap enviado a GSC' };
+    const body = await res.text().catch(() => '');
+    const hint = res.status === 403
+      ? `La cuenta Google conectada NO es propietaria verificada de ${SITE_URL} en Search Console. Verificar dominio o reconectar con cuenta dueña.`
+      : `GSC ${res.status}: ${body.slice(0, 120)}`;
+    return { ok: false, status: res.status, error: hint };
   } catch (e) {
     return { ok: false, error: e.message };
   }
@@ -155,7 +196,12 @@ async function gscAudit(base44) {
         rowLimit: 25,
       }),
     });
-    if (!res.ok) return { ok: false, error: `GSC ${res.status}` };
+    if (!res.ok) {
+      const hint = res.status === 403
+        ? `Cuenta Google conectada no tiene acceso a ${SITE_URL} en Search Console (403)`
+        : `GSC ${res.status}`;
+      return { ok: false, error: hint };
+    }
     const data = await res.json();
     const rows = data.rows || [];
     const totals = rows.reduce((acc, r) => ({
