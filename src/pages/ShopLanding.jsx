@@ -17,6 +17,7 @@ import { History } from 'lucide-react';
 import { useAppBackground, getBackgroundById, buildBackgroundImageCSS, BG_OVERLAY, THEME_OVERLAY } from '@/lib/background';
 import BackgroundSwitcher from '@/components/BackgroundSwitcher';
 import LiquidDualToggle from '@/components/LiquidDualToggle';
+import { setLiquidPreference } from '@/lib/liquid-dual';
 import CelebrationBanner from '@/components/landing/CelebrationBanner';
 import FeaturedCarousel from '@/components/landing/FeaturedCarousel';
 import PublicSEO from '@/components/PublicSEO';
@@ -86,6 +87,17 @@ export default function ShopLanding() {
   const isTheme = bg.category === 'Temas';
   const messagesEndRef = useRef(null);
   const [carrito, setCarrito] = useState(() => JSON.parse(localStorage.getItem('carrito') || '[]'));
+
+  // Forzar modo "día" por defecto en la home pública. Si el usuario ya eligió
+  // un modo (day/night) lo respetamos; solo aplicamos el default si no hay preferencia.
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem('peyu_liquid_mode');
+      if (stored !== 'day' && stored !== 'night') {
+        setLiquidPreference('day');
+      }
+    } catch { /* noop */ }
+  }, []);
 
   // Mantener el badge del carrito sincronizado cuando el chat agrega items
   useEffect(() => {

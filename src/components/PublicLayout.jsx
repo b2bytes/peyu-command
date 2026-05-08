@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { Home, ShoppingCart, Grid3x3, Building2, HelpCircle, Heart, BookOpen, Sparkles, Package, Gift } from 'lucide-react';
 import WhatsAppFloat from './WhatsAppFloat';
@@ -8,6 +8,7 @@ import PublicMobileNav from './PublicMobileNav';
 import PublicMobileHeader from './PublicMobileHeader';
 import PublicFooter from './PublicFooter';
 import LiquidDualToggle from './LiquidDualToggle';
+import { setLiquidPreference } from '@/lib/liquid-dual';
 
 const MENU_ITEMS = [
   { href: '/', label: 'Inicio', icon: Home },
@@ -25,6 +26,17 @@ const MENU_ITEMS = [
 export default function PublicLayout() {
   const [sidebarExpanded, setSidebarExpanded] = useState(false);
   const location = useLocation();
+
+  // Forzar modo "día" por defecto en TODAS las páginas públicas, sin importar la hora.
+  // El usuario puede cambiar a noche manualmente con el toggle (queda persistido).
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem('peyu_liquid_mode');
+      if (stored !== 'day' && stored !== 'night') {
+        setLiquidPreference('day');
+      }
+    } catch { /* noop */ }
+  }, []);
 
   return (
     // Liquid Dual canvas — auto día/noche, sin imágenes de fondo dinámicas.
