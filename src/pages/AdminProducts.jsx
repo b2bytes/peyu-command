@@ -8,6 +8,7 @@ import ProductQuickEdit from '@/components/admin-products/ProductQuickEdit';
 import PromoImageGenerator from '@/components/admin-products/PromoImageGenerator';
 import WordPressMigrationPanel from '@/components/admin-products/WordPressMigrationPanel';
 import DriveMatchMigrationPanel from '@/components/admin-products/DriveMatchMigrationPanel';
+import WaybackRecoveryPanel from '@/components/admin-products/WaybackRecoveryPanel';
 import { Button } from '@/components/ui/button';
 
 /**
@@ -123,6 +124,9 @@ export default function AdminProducts() {
 
       {/* Panel restauración 121 imágenes desde Google Drive */}
       <DriveMatchMigrationPanel onComplete={loadData} />
+
+      {/* Panel recuperación de imágenes históricas desde Wayback Machine */}
+      <WaybackRecoveryPanel onComplete={loadData} />
 
       {/* Panel migración WordPress → Base44 CDN */}
       <WordPressMigrationPanel onComplete={loadData} />
