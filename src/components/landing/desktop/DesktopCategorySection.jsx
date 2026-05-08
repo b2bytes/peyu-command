@@ -1,52 +1,84 @@
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowUpRight, Home, Briefcase, Building2, Gift } from 'lucide-react';
+import { base44 } from '@/api/base44Client';
 
 /**
- * Categorías Liquid Dual — tiles editoriales con imagen + icon chip.
- * Imágenes reales de Unsplash (regalos, oficinas, casas, gift cards).
- * Card más alta (aspect 4:5) para dar protagonismo a la imagen, con
- * overlay degradado para legibilidad del título sobre la foto.
+ * Categorías Liquid Dual — tiles editoriales con productos REALES PEYU.
+ * Carga dinámicamente la imagen de un producto representativo de cada
+ * categoría desde la BD. Si no encuentra, usa fallback Unsplash.
  */
-const CATEGORIES = [
+const CATEGORY_CONFIG = [
   {
     label: 'Hogar',
     tagline: 'Calidez para tu casa',
-    items: '12+ productos',
     to: '/shop?categoria=Hogar',
     icon: Home,
-    image:
+    queryCategoria: 'Hogar',
+    fallbackImage:
       'https://images.unsplash.com/photo-1554995207-c18c203602cb?auto=format&fit=crop&w=900&q=80',
   },
   {
     label: 'Oficina',
     tagline: 'Escritorio · Trabajo',
-    items: '15+ productos',
     to: '/shop?categoria=Escritorio',
     icon: Briefcase,
-    image:
+    queryCategoria: 'Escritorio',
+    fallbackImage:
       'https://images.unsplash.com/photo-1497032628192-86f99bcd76bc?auto=format&fit=crop&w=900&q=80',
   },
   {
     label: 'Empresas',
     tagline: 'Regalos B2B personalizados',
-    items: 'Catálogo corporativo',
     to: '/b2b/catalogo',
     icon: Building2,
-    image:
+    queryCategoria: 'Corporativo',
+    fallbackImage:
       'https://images.unsplash.com/photo-1556761175-5973dc0f32e7?auto=format&fit=crop&w=900&q=80',
   },
   {
     label: 'Gift Card',
     tagline: 'El regalo perfecto',
-    items: 'Desde $10.000',
     to: '/regalar-giftcard',
     icon: Gift,
-    image:
+    queryCategoria: null, // Gift card no tiene categoría de producto
+    fallbackImage:
       'https://images.unsplash.com/photo-1607344645866-009c320b63e0?auto=format&fit=crop&w=900&q=80',
   },
 ];
 
 export default function DesktopCategorySection() {
+  const [categories, setCategories] = useState(
+    CATEGORY_CONFIG.map((c) => ({ ...c, image: c.fallbackImage, count: null }))
+  );
+
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      const all = await base44.entities.Producto.filter({ activo: true }, '-stock_actual', 200);
+      if (!alive) return;
+      const enriched = CATEGORY_CONFIG.map((cfg) => {
+        if (!cfg.queryCategoria) {
+          return { ...cfg, image: cfg.fallbackImage, count: null };
+        }
+        const matches = all.filter((p) => p.categoria === cfg.queryCategoria);
+        const withImg = matches.find(
+          (p) => p.imagen_promo_url || (p.galeria_urls && p.galeria_urls[0]) || p.imagen_url
+        );
+        const image =
+          withImg?.imagen_promo_url ||
+          withImg?.galeria_urls?.[0] ||
+          withImg?.imagen_url ||
+          cfg.fallbackImage;
+        return { ...cfg, image, count: matches.length };
+      });
+      setCategories(enriched);
+    })();
+    return () => {
+      alive = false;
+    };
+  }, []);
+
   return (
     <section className="px-6 py-14">
       <div className="flex items-end justify-between mb-8 gap-4 flex-wrap">
@@ -74,15 +106,21 @@ export default function DesktopCategorySection() {
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-5">
-        {CATEGORIES.map((cat) => {
+        {categories.map((cat) => {
           const Icon = cat.icon;
+          const itemsLabel =
+            cat.queryCategoria
+              ? cat.count != null
+                ? `${cat.count}+ productos`
+                : 'Ver catálogo'
+              : 'Desde $10.000';
           return (
             <Link
               key={cat.label}
               to={cat.to}
               className="ld-card group relative overflow-hidden aspect-[4/5] flex flex-col justify-end transition-all duration-500 hover:-translate-y-1.5"
             >
-              {/* Imagen de fondo */}
+              {/* Imagen de fondo (producto real PEYU) */}
               <div
                 className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105"
                 style={{ backgroundImage: `url("${cat.image}")` }}
@@ -113,7 +151,7 @@ export default function DesktopCategorySection() {
                 </p>
                 <p className="text-sm font-medium text-white/90 drop-shadow">{cat.tagline}</p>
                 <p className="text-[11px] font-semibold mt-2 text-white/70 uppercase tracking-wider">
-                  {cat.items}
+                  {itemsLabel}
                 </p>
               </div>
             </Link>

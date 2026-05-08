@@ -396,7 +396,7 @@ export default function ShopLanding() {
       <div className={`overflow-y-auto overflow-x-hidden peyu-scrollbar-light transition-[padding] duration-200 ease-out ${sidebarExpanded ? 'lg:pl-48' : 'lg:pl-14'}`}>
 
         {/* ─── ABOVE THE FOLD: Hero split + chat sticky ─── */}
-        <div className="flex gap-4 p-4 relative z-10 w-full max-w-[1440px] mx-auto items-stretch" style={{ minHeight: 'min(720px, calc(100vh - 32px))' }}>
+        <div className="flex gap-4 p-4 relative z-10 w-full max-w-[1440px] mx-auto items-stretch" style={{ minHeight: 'min(640px, calc(100vh - 32px))' }}>
           {/* IZQUIERDA: Hero gigante (60%) */}
           <div className="flex-1 min-w-0 flex flex-col gap-4">
             {/* Header bar Liquid Dual — limpio: logo + CTAs + toggle + carrito */}

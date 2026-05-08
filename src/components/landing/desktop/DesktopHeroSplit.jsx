@@ -52,8 +52,8 @@ export default function DesktopHeroSplit({ onOpenChat }) {
             Tamaños adaptables: sin celebración = display gigante; con celebración = más
             contenido => tamaño moderado para que respire. */}
         <h2
-          className={`ld-display leading-[0.98] mb-5 text-ld-fg max-w-[640px] ${
-            celebration ? 'text-[34px] xl:text-[44px]' : 'text-[52px] xl:text-[72px]'
+          className={`ld-display leading-[0.98] mb-4 text-ld-fg max-w-[640px] ${
+            celebration ? 'text-[26px] xl:text-[34px]' : 'text-[48px] xl:text-[64px]'
           }`}
         >
           {headline}
@@ -63,14 +63,14 @@ export default function DesktopHeroSplit({ onOpenChat }) {
           </span>
         </h2>
 
-        <p className={`leading-[1.6] mb-7 max-w-[520px] text-ld-fg-soft font-light ${
-          celebration ? 'text-[14px] xl:text-[15px]' : 'text-base xl:text-[17px]'
+        <p className={`leading-[1.55] mb-6 max-w-[520px] text-ld-fg-soft font-light ${
+          celebration ? 'text-[13px] xl:text-[14px]' : 'text-base xl:text-[17px]'
         }`}>
           {paragraph}
         </p>
 
         {/* CTAs duales */}
-        <div className="flex flex-wrap gap-3 mb-9">
+        <div className="flex flex-wrap gap-3 mb-7">
           <Link to={ctaPrimaryHref}>
             <button className="ld-btn-primary rounded-2xl px-7 py-4 flex items-center gap-2 font-semibold text-[15px]">
               <span>{ctaPrimaryLabel}</span>
@@ -87,7 +87,7 @@ export default function DesktopHeroSplit({ onOpenChat }) {
         </div>
 
         {/* Trust row */}
-        <div className="flex flex-wrap items-center gap-x-7 gap-y-2 pt-6 border-t border-ld-border">
+        <div className="flex flex-wrap items-center gap-x-7 gap-y-2 pt-5 border-t border-ld-border">
           <TrustItem icon={Recycle} label="100% reciclado" />
           <TrustItem icon={ShieldCheck} label="10 años garantía" />
           <TrustItem icon={Award} label="Empresa B Chile" />
