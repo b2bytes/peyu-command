@@ -17,8 +17,17 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
 const SITE_URL = 'https://peyuchile.cl';
+
+// ── Sync con lib/delivery-promise.js (single source of truth) ────────
+// Si cambias estos valores, actualiza también lib/delivery-promise.js
+// para mantener consistencia entre Google Shopping ads y el sitio público.
 const SHIPPING_DEFAULT_CLP = 5990;
 const FREE_SHIPPING_THRESHOLD = 40000;
+// Lead time conservador "Todos los destinos" usado en el atributo g:shipping
+// (Merchant Center también usa la config global de Configuración → Envíos).
+// Valores: handling 0–1 días + tránsito 2–5 días = 2–6 días hábiles totales.
+const TRANSIT_TIME_MIN = 2;
+const TRANSIT_TIME_MAX = 5;
 
 // Mapa interno categoría → Google Product Category (taxonomy oficial).
 // https://www.google.com/basepages/producttype/taxonomy.es-CL.txt
@@ -77,7 +86,11 @@ function buildItem(p) {
     `        <g:country>CL</g:country>`,
     `        <g:service>BlueExpress Express</g:service>`,
     `        <g:price>${price >= FREE_SHIPPING_THRESHOLD ? 0 : SHIPPING_DEFAULT_CLP} CLP</g:price>`,
+    `        <g:min_transit_time>${TRANSIT_TIME_MIN}</g:min_transit_time>`,
+    `        <g:max_transit_time>${TRANSIT_TIME_MAX}</g:max_transit_time>`,
     `      </g:shipping>`,
+    `      <g:max_handling_time>1</g:max_handling_time>`,
+    `      <g:min_handling_time>0</g:min_handling_time>`,
     p.peso_kg ? `      <g:shipping_weight>${p.peso_kg} kg</g:shipping_weight>` : null,
     '    </item>',
   ].filter(Boolean);
