@@ -126,6 +126,7 @@ export default function ProductoDetalle() {
   const navigate = useNavigate();
   const ctaRef = useRef(null);
   const [producto, setProducto] = useState(null);
+  const [notFound, setNotFound] = useState(false);
   const [relacionados, setRelacionados] = useState([]);
   const [cantidad, setCantidad] = useState(1);
   const [colorSeleccionado, setColorSeleccionado] = useState(null);
@@ -150,10 +151,17 @@ export default function ProductoDetalle() {
       if (el.scrollTop > 0) el.scrollTop = 0;
     });
 
+    // Si la URL trae el placeholder ":id" (acceso directo sin producto), redirigimos
+    if (!id || id === ':id' || id.length < 6) {
+      navigate('/shop', { replace: true });
+      return;
+    }
+
+    setNotFound(false);
     // Carga directa por ID (rápido) — sin descargar el catálogo entero
     base44.entities.Producto.get(id).then(prod => {
       if (!prod) {
-        setProducto(null);
+        setNotFound(true);
         return;
       }
       setProducto(prod);
@@ -173,7 +181,7 @@ export default function ProductoDetalle() {
       base44.entities.Producto.filter({ categoria: prod.categoria }, '-updated_date', 8).then(rel => {
         setRelacionados(rel.filter(p => p.id !== id && p.canal !== 'B2B Exclusivo').slice(0, 4));
       }).catch(() => setRelacionados([]));
-    }).catch(() => setProducto(null));
+    }).catch(() => setNotFound(true));
   }, [id]);
 
   useEffect(() => {
@@ -246,6 +254,21 @@ export default function ProductoDetalle() {
         ...(Array.isArray(producto.galeria_urls) ? producto.galeria_urls : []),
       ].filter(Boolean)))
     : [];
+
+  if (notFound) return (
+    <div className="flex-1 flex items-center justify-center py-20 ld-canvas min-h-screen px-6">
+      <div className="text-center space-y-4 max-w-md">
+        <div className="text-5xl">🔍</div>
+        <h2 className="ld-display text-2xl text-ld-fg">Producto no encontrado</h2>
+        <p className="text-ld-fg-muted text-sm">Es posible que ya no esté disponible o que el enlace esté incorrecto.</p>
+        <Link to="/shop">
+          <Button className="ld-btn-primary gap-2 rounded-full mt-2">
+            <ArrowLeft className="w-4 h-4" /> Ver toda la tienda
+          </Button>
+        </Link>
+      </div>
+    </div>
+  );
 
   if (!producto) return (
     <div className="flex-1 flex items-center justify-center py-20 ld-canvas min-h-screen">
