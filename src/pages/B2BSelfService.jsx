@@ -199,8 +199,8 @@ export default function B2BSelfService() {
           { name: 'B2B Self-Service', url: 'https://peyuchile.cl/b2b/self-service' },
         ]}
       />
-      {/* Header sticky — premium glass + glow */}
-      <div className="bg-gradient-to-r from-teal-600/40 via-cyan-600/35 to-teal-600/40 border-b border-white/15 px-3 sm:px-6 py-3 flex items-center justify-between sticky top-0 z-40 backdrop-blur-2xl shadow-lg shadow-black/20">
+      {/* Header sticky — premium glass + glow (Liquid Dual safe) */}
+      <div className="ld-glass-strong border-b border-ld-border px-3 sm:px-6 py-3 flex items-center justify-between sticky top-0 z-40 shadow-lg">
         <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
           <button
             onClick={() => step > 0 && !propuesta ? setStep(step - 1) : navigate(-1)}

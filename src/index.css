@@ -370,11 +370,32 @@ html[data-liquid-mode="day"] {
   .bg-slate-900\/60,
   .bg-slate-900\/70,
   .bg-slate-900\/80,
+  .bg-slate-900\/90,
+  .bg-slate-950\/80,
   .bg-zinc-900\/60,
   .bg-zinc-900\/70 {
     background-color: var(--ld-glass-strong) !important;
     backdrop-filter: blur(20px) saturate(170%);
   }
+
+  /* Texto colored hardcoded en chips/badges → mantienen color pero más oscuros para contraste sobre fondo claro */
+  .text-teal-200,
+  .text-teal-100        { color: #0B6E55 !important; }
+  .text-cyan-200        { color: #0E7490 !important; }
+  .text-amber-200,
+  .text-amber-300       { color: #B45309 !important; }
+  .text-purple-200,
+  .text-purple-300      { color: #7C3AED !important; }
+  .text-emerald-200,
+  .text-emerald-300     { color: #047857 !important; }
+  .text-pink-200,
+  .text-pink-300        { color: #BE185D !important; }
+  .text-red-200,
+  .text-red-300         { color: #B91C1C !important; }
+  .text-orange-200,
+  .text-orange-300      { color: #C2410C !important; }
+  .text-blue-200,
+  .text-blue-300        { color: #1D4ED8 !important; }
 
   /* Accents teal hardcoded del legacy → action token del sistema */
   .text-teal-300,
