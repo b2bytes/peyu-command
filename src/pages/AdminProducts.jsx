@@ -6,6 +6,7 @@ import AIContentGenerator from '@/components/admin-products/AIContentGenerator';
 import AIImageEnhancer from '@/components/admin-products/AIImageEnhancer';
 import ProductQuickEdit from '@/components/admin-products/ProductQuickEdit';
 import PromoImageGenerator from '@/components/admin-products/PromoImageGenerator';
+import WordPressMigrationPanel from '@/components/admin-products/WordPressMigrationPanel';
 import { Button } from '@/components/ui/button';
 
 /**
@@ -118,6 +119,9 @@ export default function AdminProducts() {
           <button onClick={() => setSyncResult(null)} className="text-white/50 hover:text-white"><X className="w-3 h-3" /></button>
         </div>
       )}
+
+      {/* Panel migración WordPress → Base44 CDN */}
+      <WordPressMigrationPanel onComplete={loadData} />
 
       {/* KPIs — clickeables como filtros rápidos */}
       <div className="grid grid-cols-2 md:grid-cols-6 gap-2 flex-shrink-0">
