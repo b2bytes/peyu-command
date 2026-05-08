@@ -414,10 +414,7 @@ export default function ShopLanding() {
               </div>
             </div>
 
-            {/* Banner editorial de celebración (cuando hay fecha activa) */}
-            <CelebrationBanner onChatPrompt={sendMessage} />
-
-            {/* Hero gigante */}
+            {/* Hero unificado — incorpora la celebración activa como strip editorial superior */}
             <div className="flex-1 min-h-0">
               <DesktopHeroSplit onOpenChat={() => document.getElementById('peyu-chat-input-desktop')?.focus()} />
             </div>

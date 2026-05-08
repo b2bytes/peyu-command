@@ -1,5 +1,7 @@
 import { Link } from 'react-router-dom';
 import { Sparkles, ArrowRight, Recycle, ShieldCheck, Award } from 'lucide-react';
+import HeroCelebrationStrip from './HeroCelebrationStrip';
+import { getActiveCelebration } from '@/lib/celebration-moments';
 
 /**
  * Hero Liquid Dual — desktop.
@@ -8,6 +10,15 @@ import { Sparkles, ArrowRight, Recycle, ShieldCheck, Award } from 'lucide-react'
  * acento terracota para palabras editoriales.
  */
 export default function DesktopHeroSplit({ onOpenChat }) {
+  const celebration = getActiveCelebration();
+  const headline = celebration?.copy?.title || 'Regalos';
+  const highlight = celebration?.copy?.highlight || 'con propósito.';
+  const paragraph =
+    celebration?.copy?.paragraph ||
+    'Plástico 100% reciclado, grabado láser de regalo y diez años de garantía. Para tu casa, tu oficina o tu equipo entero.';
+  const ctaPrimaryLabel = celebration?.copy?.ctaPrimary?.label || 'Explorar tienda';
+  const ctaPrimaryHref = celebration?.copy?.ctaPrimary?.href || '/shop';
+
   return (
     <div className="ld-glass rounded-[28px] overflow-hidden flex flex-col h-full p-9 xl:p-12 relative">
       {/* Glow ambient sutil — verde acción + terracota highlight */}
@@ -21,39 +32,46 @@ export default function DesktopHeroSplit({ onOpenChat }) {
       />
 
       <div className="relative flex-1 flex flex-col justify-center">
-        {/* Eyebrow */}
-        <div
-          className="inline-flex items-center gap-2 ld-glass-soft rounded-full px-3.5 py-1.5 mb-7 self-start"
-        >
-          <span
-            className="w-1.5 h-1.5 rounded-full animate-pulse"
-            style={{ background: 'var(--ld-action)' }}
-          />
-          <span className="text-[10.5px] font-bold tracking-[0.18em] uppercase text-ld-fg-soft">
-            PEYU 2026 · Hecho en Chile
-          </span>
-        </div>
+        {/* Eyebrow — strip editorial si hay celebración activa, eyebrow estándar si no */}
+        {celebration ? (
+          <HeroCelebrationStrip />
+        ) : (
+          <div className="inline-flex items-center gap-2 ld-glass-soft rounded-full px-3.5 py-1.5 mb-7 self-start">
+            <span
+              className="w-1.5 h-1.5 rounded-full animate-pulse"
+              style={{ background: 'var(--ld-action)' }}
+            />
+            <span className="text-[10.5px] font-bold tracking-[0.18em] uppercase text-ld-fg-soft">
+              PEYU 2026 · Hecho en Chile
+            </span>
+          </div>
+        )}
 
-        {/* Headline editorial — Fraunces italic firma del sistema */}
-        <h2 className="ld-display text-[56px] xl:text-[80px] mb-5 text-ld-fg">
-          Regalos
+        {/* Headline editorial — Fraunces italic firma del sistema.
+            Si hay celebración activa, el headline + highlight viene de copy contextual.
+            Tamaños adaptables: sin celebración = display gigante; con celebración = más
+            contenido => tamaño moderado para que respire. */}
+        <h2
+          className={`ld-display leading-[0.98] mb-5 text-ld-fg max-w-[640px] ${
+            celebration ? 'text-[40px] xl:text-[56px]' : 'text-[52px] xl:text-[76px]'
+          }`}
+        >
+          {headline}
           <br />
           <span className="ld-display-italic" style={{ color: 'var(--ld-highlight)' }}>
-            con propósito.
+            {highlight}
           </span>
         </h2>
 
-        <p className="text-base xl:text-[17px] leading-[1.65] mb-9 max-w-[500px] text-ld-fg-soft font-light">
-          Plástico 100% reciclado, grabado láser de regalo y diez años de garantía.
-          Para tu casa, tu oficina o tu equipo entero —{' '}
-          <span className="font-semibold text-ld-fg">en cualquier hora del día</span>.
+        <p className="text-base xl:text-[17px] leading-[1.65] mb-9 max-w-[520px] text-ld-fg-soft font-light">
+          {paragraph}
         </p>
 
         {/* CTAs duales */}
         <div className="flex flex-wrap gap-3 mb-9">
-          <Link to="/shop">
+          <Link to={ctaPrimaryHref}>
             <button className="ld-btn-primary rounded-2xl px-7 py-4 flex items-center gap-2 font-semibold text-[15px]">
-              <span>Explorar tienda</span>
+              <span>{ctaPrimaryLabel}</span>
               <ArrowRight className="w-4 h-4" />
             </button>
           </Link>

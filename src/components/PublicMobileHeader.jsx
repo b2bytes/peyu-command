@@ -3,19 +3,17 @@ import { Link } from 'react-router-dom';
 import { Menu, ShoppingCart } from 'lucide-react';
 import PublicMobileDrawer from './PublicMobileDrawer';
 import PEYULogo from './PEYULogo';
+import LiquidDualToggle from './LiquidDualToggle';
 
 /**
  * Header sticky para móvil (<lg) en las páginas públicas internas.
- * Muestra logo PEYU + botón hamburguesa + acceso directo al carrito.
- * El drawer es el mismo que abre el botón "Más" del bottom nav.
+ * Liquid Dual: glass auto-adaptativo día/noche.
+ * Logo PEYU + botón hamburguesa + toggle día/noche + acceso al carrito.
  */
 export default function PublicMobileHeader() {
   const [open, setOpen] = useState(false);
   const [cartCount, setCartCount] = useState(0);
 
-  // Sincronizar contador del carrito desde localStorage.
-  // Usamos la key 'carrito' (la misma que usa el resto del sitio: ShopLanding,
-  // Carrito.js, ProductoDetalle, etc.) y escuchamos los eventos que emiten.
   useEffect(() => {
     const update = () => {
       try {
@@ -38,12 +36,12 @@ export default function PublicMobileHeader() {
   return (
     <>
       <header
-        className="lg:hidden sticky top-0 z-30 bg-slate-900/90 backdrop-blur-xl border-b border-white/10 flex items-center justify-between px-3 h-14 flex-shrink-0"
+        className="lg:hidden sticky top-0 z-30 ld-glass-strong border-b border-ld-border flex items-center justify-between px-3 h-14 flex-shrink-0"
         style={{ paddingTop: 'env(safe-area-inset-top)' }}
       >
         <button
           onClick={() => setOpen(true)}
-          className="w-10 h-10 rounded-xl bg-white/10 hover:bg-white/20 active:bg-white/30 flex items-center justify-center text-white transition"
+          className="w-10 h-10 rounded-xl ld-glass-soft flex items-center justify-center text-ld-fg active:scale-95 transition"
           aria-label="Abrir menú"
         >
           <Menu className="w-5 h-5" />
@@ -53,18 +51,24 @@ export default function PublicMobileHeader() {
           <PEYULogo size="sm" />
         </Link>
 
-        <Link
-          to="/cart"
-          className="relative w-10 h-10 rounded-xl bg-teal-500 hover:bg-teal-600 active:bg-teal-700 flex items-center justify-center text-white transition"
-          aria-label="Ver carrito"
-        >
-          <ShoppingCart className="w-5 h-5" />
-          {cartCount > 0 && (
-            <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-slate-900">
-              {cartCount}
-            </span>
-          )}
-        </Link>
+        <div className="flex items-center gap-1.5">
+          <LiquidDualToggle compact />
+          <Link
+            to="/cart"
+            className="relative w-10 h-10 inline-flex items-center justify-center rounded-full ld-btn-primary text-white"
+            aria-label="Ver carrito"
+          >
+            <ShoppingCart className="w-4 h-4" />
+            {cartCount > 0 && (
+              <span
+                className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 text-[10px] font-bold rounded-full flex items-center justify-center text-white ring-2"
+                style={{ background: 'var(--ld-highlight)', borderColor: 'var(--ld-bg)' }}
+              >
+                {cartCount}
+              </span>
+            )}
+          </Link>
+        </div>
       </header>
 
       <PublicMobileDrawer open={open} onClose={() => setOpen(false)} />

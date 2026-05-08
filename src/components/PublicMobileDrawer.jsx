@@ -45,16 +45,16 @@ export default function PublicMobileDrawer({ open, onClose }) {
         onClick={onClose}
       />
 
-      {/* Drawer */}
-      <div className="absolute inset-y-0 left-0 w-[85%] max-w-sm bg-gradient-to-b from-slate-900 via-slate-900 to-slate-950 border-r border-white/10 shadow-2xl flex flex-col animate-in slide-in-from-left duration-300">
+      {/* Drawer Liquid Dual */}
+      <div className="absolute inset-y-0 left-0 w-[85%] max-w-sm ld-glass-strong border-r border-ld-border flex flex-col animate-in slide-in-from-left duration-300" style={{ boxShadow: '8px 0 32px rgba(0,0,0,0.25)' }}>
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-white/10 flex-shrink-0 pt-[max(1rem,env(safe-area-inset-top))]">
+        <div className="flex items-center justify-between p-4 border-b border-ld-border flex-shrink-0 pt-[max(1rem,env(safe-area-inset-top))]">
           <Link to="/" onClick={onClose} className="flex items-center" aria-label="PEYU Chile - Inicio">
             <PEYULogo size="sm" />
           </Link>
           <button
             onClick={onClose}
-            className="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 active:bg-white/30 flex items-center justify-center text-white transition"
+            className="w-10 h-10 rounded-full ld-glass-soft flex items-center justify-center text-ld-fg active:scale-95 transition"
             aria-label="Cerrar menú"
           >
             <X className="w-5 h-5" />
@@ -70,11 +70,10 @@ export default function PublicMobileDrawer({ open, onClose }) {
                 key={href}
                 to={href}
                 onClick={onClose}
-                className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition ${
-                  active
-                    ? 'bg-teal-500/20 border border-teal-400/40 text-teal-200'
-                    : 'text-white/80 hover:bg-white/10 active:bg-white/15'
+                className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition ${
+                  active ? 'text-ld-fg ring-1' : 'text-ld-fg-muted hover:text-ld-fg active:scale-95'
                 }`}
+                style={active ? { background: 'var(--ld-action-soft)', boxShadow: 'inset 0 0 0 1px var(--ld-action)' } : undefined}
               >
                 <Icon className="w-5 h-5 flex-shrink-0" />
                 <span>{label}</span>
@@ -84,26 +83,26 @@ export default function PublicMobileDrawer({ open, onClose }) {
         </nav>
 
         {/* Contact footer */}
-        <div className="border-t border-white/10 p-4 space-y-2 flex-shrink-0 pb-[max(1rem,env(safe-area-inset-bottom))]">
-          <p className="text-[10px] uppercase tracking-wider text-white/40 font-bold mb-2">Contáctanos</p>
+        <div className="border-t border-ld-border p-4 space-y-2 flex-shrink-0 pb-[max(1rem,env(safe-area-inset-bottom))]">
+          <p className="text-[10px] uppercase tracking-[0.18em] text-ld-fg-muted font-bold mb-2">Contáctanos</p>
           <a
             href="https://wa.me/56935040242"
             target="_blank"
             rel="noreferrer"
-            className="flex items-center gap-2.5 text-sm text-white/80 hover:text-teal-300 transition"
+            className="flex items-center gap-2.5 text-sm text-ld-fg-soft hover:text-ld-fg transition"
           >
-            <Phone className="w-4 h-4" /> +56 9 3504 0242
+            <Phone className="w-4 h-4" style={{ color: 'var(--ld-action)' }} /> +56 9 3504 0242
           </a>
           <a
             href="https://instagram.com/peyu.chile"
             target="_blank"
             rel="noreferrer"
-            className="flex items-center gap-2.5 text-sm text-white/80 hover:text-teal-300 transition"
+            className="flex items-center gap-2.5 text-sm text-ld-fg-soft hover:text-ld-fg transition"
           >
-            <Instagram className="w-4 h-4" /> @peyu.chile
+            <Instagram className="w-4 h-4" style={{ color: 'var(--ld-action)' }} /> @peyu.chile
           </a>
-          <p className="flex items-start gap-2.5 text-xs text-white/60">
-            <MapPin className="w-4 h-4 flex-shrink-0 mt-0.5" />
+          <p className="flex items-start gap-2.5 text-xs text-ld-fg-muted">
+            <MapPin className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: 'var(--ld-action)' }} />
             Providencia · Macul, Santiago
           </p>
         </div>
