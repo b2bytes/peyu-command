@@ -1,13 +1,8 @@
 import { useState, useRef, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
-import { Brain, Send, Loader2, Sparkles, Terminal } from 'lucide-react';
+import { Send, Loader2, Sparkles, Terminal } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 
-/**
- * BrainTerminal — terminal de comandos para Peyu Brain.
- * No es un widget — ocupa una columna completa del Cockpit.
- * Estilo Bloomberg / consola de operador.
- */
 const SUGGESTIONS = [
   '¿Qué necesita acción urgente?',
   'Resumen del día',
@@ -59,48 +54,58 @@ export default function BrainTerminal() {
   };
 
   return (
-    <div className="bg-gradient-to-br from-slate-950 via-violet-950/40 to-indigo-950/40 backdrop-blur-md rounded-2xl border border-violet-400/30 shadow-xl flex flex-col h-[480px] overflow-hidden">
-      <div className="flex items-center gap-2 px-4 py-2.5 bg-violet-500/10 border-b border-violet-400/20 flex-shrink-0">
+    <div className="bg-gradient-to-br from-slate-950 via-violet-950/30 to-indigo-950/30 backdrop-blur-md rounded-2xl border border-violet-400/30 shadow-xl flex flex-col h-[520px] overflow-hidden">
+      {/* Header bar */}
+      <div className="flex items-center gap-2 px-4 py-2.5 bg-violet-500/5 border-b border-violet-400/10 flex-shrink-0">
         <Terminal className="w-3.5 h-3.5 text-violet-300" />
-        <span className="text-xs font-bold text-violet-100 tracking-wide">BRAIN TERMINAL</span>
-        <span className="text-[10px] text-violet-300/60 ml-auto font-mono">peyu_brain v2.0</span>
+        <h3 className="text-[11px] font-bold tracking-[0.2em] text-white">BRAIN TERMINAL</h3>
+        <span className="text-[9px] text-violet-300/60 font-mono">· peyu_brain_v2</span>
+        <span className="ml-auto flex items-center gap-1 text-[9px] text-emerald-400 font-mono">
+          <span className="w-1 h-1 rounded-full bg-emerald-400 shadow-[0_0_4px_rgba(52,211,153,0.8)]" />
+          ONLINE
+        </span>
       </div>
 
-      <div ref={scrollRef} className="flex-1 min-h-0 overflow-y-auto peyu-scrollbar-light px-3 py-3 space-y-2 overscroll-contain">
+      <div ref={scrollRef} className="flex-1 min-h-0 overflow-y-auto peyu-scrollbar-light px-3 py-3 space-y-2 overscroll-contain font-mono">
         {messages.length === 0 && (
-          <div className="space-y-2">
-            <p className="text-[10px] text-violet-300/70 font-bold uppercase tracking-wider flex items-center gap-1">
-              <Sparkles className="w-3 h-3" /> Sugerencias
-            </p>
-            <div className="flex flex-wrap gap-1.5">
-              {SUGGESTIONS.map((s, i) => (
-                <button
-                  key={i}
-                  onClick={() => ask(s)}
-                  className="text-[10px] bg-white/5 hover:bg-violet-500/20 border border-white/10 hover:border-violet-400/40 text-white/80 rounded-full px-2.5 py-1 transition"
-                >
-                  {s}
-                </button>
-              ))}
+          <div className="space-y-3">
+            {/* Boot log */}
+            <div className="text-[10px] text-violet-300/40 leading-relaxed border-l border-violet-400/20 pl-2 space-y-0.5">
+              <p>&gt; <span className="text-emerald-400">●</span> connected · pinecone_rag</p>
+              <p>&gt; <span className="text-emerald-400">●</span> connected · live_data (PedidoWeb, B2BLead, Envío…)</p>
+              <p>&gt; <span className="text-emerald-400">●</span> agent_router · ops|rag|cmd</p>
+              <p className="text-violet-300/70 mt-1">&gt; ready_</p>
             </div>
-            <div className="mt-4 text-[10px] text-violet-300/50 font-mono leading-relaxed border-l-2 border-violet-400/30 pl-2">
-              <p>&gt; Conectado a data viva (PedidoWeb, B2BLead, Envío…)</p>
-              <p>&gt; Conectado a knowledge base (Pinecone RAG)</p>
-              <p>&gt; Listo para operar.</p>
+
+            <div className="pt-2">
+              <p className="text-[10px] text-violet-300/70 font-bold uppercase tracking-widest flex items-center gap-1 mb-2">
+                <Sparkles className="w-3 h-3" /> Quick queries
+              </p>
+              <div className="flex flex-wrap gap-1.5">
+                {SUGGESTIONS.map((s, i) => (
+                  <button
+                    key={i}
+                    onClick={() => ask(s)}
+                    className="text-[10px] bg-white/5 hover:bg-violet-500/20 border border-white/10 hover:border-violet-400/40 text-white/80 rounded-md px-2 py-1 transition"
+                  >
+                    {s}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
         )}
 
         {messages.map((m, i) => (
           <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-            <div className={`max-w-[90%] rounded-lg px-3 py-2 text-xs ${
+            <div className={`max-w-[92%] rounded-lg px-3 py-2 text-xs ${
               m.role === 'user'
-                ? 'bg-violet-500/30 text-white border border-violet-400/40'
-                : 'bg-white/5 text-white border border-white/10'
+                ? 'bg-violet-500/25 text-white border border-violet-400/30'
+                : 'bg-white/5 text-white/95 border border-white/10'
             }`}>
               {m.role === 'assistant'
-                ? <div className="prose prose-invert prose-xs max-w-none [&>*]:my-1"><ReactMarkdown>{m.content}</ReactMarkdown></div>
-                : <p>{m.content}</p>}
+                ? <div className="prose prose-invert prose-xs max-w-none [&>*]:my-1 font-sans"><ReactMarkdown>{m.content}</ReactMarkdown></div>
+                : <p className="font-sans">{m.content}</p>}
               {m.sources?.length > 0 && (
                 <div className="mt-1.5 pt-1.5 border-t border-white/10 flex flex-wrap gap-1">
                   {m.sources.map((s, j) => (
@@ -117,22 +122,22 @@ export default function BrainTerminal() {
         {loading && (
           <div className="flex justify-start">
             <div className="bg-white/5 border border-white/10 rounded-lg px-3 py-2 flex items-center gap-2 text-xs text-white/60">
-              <Loader2 className="w-3 h-3 animate-spin" /> procesando...
+              <Loader2 className="w-3 h-3 animate-spin text-violet-400" /> <span className="font-mono">processing...</span>
             </div>
           </div>
         )}
       </div>
 
-      <div className="flex-shrink-0 p-2.5 border-t border-violet-400/20 bg-slate-950/40">
-        <div className="flex gap-2">
-          <span className="text-violet-400 font-mono text-xs flex items-center">&gt;</span>
+      <div className="flex-shrink-0 px-3 py-2 border-t border-violet-400/20 bg-slate-950/60">
+        <div className="flex gap-2 items-center">
+          <span className="text-violet-400 font-mono text-xs">$</span>
           <input
             value={input}
             onChange={e => setInput(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && ask()}
-            placeholder="Pregunta al Brain..."
+            placeholder="pregunta o comando..."
             disabled={loading}
-            className="flex-1 bg-transparent border-0 px-1 text-xs text-white placeholder:text-white/30 focus:outline-none font-mono"
+            className="flex-1 bg-transparent border-0 px-1 text-xs text-white placeholder:text-white/25 focus:outline-none font-mono"
           />
           <button
             onClick={() => ask()}

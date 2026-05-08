@@ -1,11 +1,10 @@
 import { useEffect, useState } from 'react';
 import { base44 } from '@/api/base44Client';
-import { Activity, ShoppingCart, Users, MessageSquare, DollarSign, Truck, AlertTriangle, Zap } from 'lucide-react';
+import { Activity, ShoppingCart, Users, MessageSquare, DollarSign, Truck, AlertTriangle, Brain } from 'lucide-react';
 
 /**
- * PulseBar — el "latido" de la empresa en una sola fila.
- * Heartbeat animado tipo HUD de nave espacial.
- * Auto-refresh cada 60s.
+ * PulseBar — heartbeat HUD style, ultra denso.
+ * 8 KPIs en 1 fila con LED activo cuando hay actividad.
  */
 export default function PulseBar() {
   const [data, setData] = useState(null);
@@ -55,38 +54,60 @@ export default function PulseBar() {
   }, []);
 
   const items = [
-    { label: 'Ingresos hoy', value: data ? `$${(data.revenue / 1000).toFixed(0)}K` : '…', icon: DollarSign, color: 'text-emerald-300' },
-    { label: 'Pedidos', value: data?.orders ?? '…', icon: ShoppingCart, color: 'text-cyan-300' },
-    { label: 'Entregados', value: data?.delivered ?? '…', icon: Truck, color: 'text-green-300' },
-    { label: 'En tránsito', value: data?.inTransit ?? '…', icon: Activity, color: 'text-blue-300' },
-    { label: 'Leads B2B', value: data?.leads ?? '…', icon: Users, color: 'text-teal-300' },
-    { label: 'Chats Peyu', value: data?.chats ?? '…', icon: MessageSquare, color: 'text-violet-300' },
-    { label: 'Consultas', value: data?.consultas ?? '…', icon: MessageSquare, color: 'text-orange-300' },
-    { label: 'Stock crítico', value: data?.lowStock ?? '…', icon: AlertTriangle, color: data?.lowStock > 0 ? 'text-red-300' : 'text-gray-300' },
+    { label: 'INGRESOS', value: data ? `$${(data.revenue / 1000).toFixed(0)}K` : '—', icon: DollarSign, accent: 'emerald', live: data?.revenue > 0 },
+    { label: 'PEDIDOS', value: data?.orders ?? '—', icon: ShoppingCart, accent: 'cyan', live: data?.orders > 0 },
+    { label: 'ENTREGADOS', value: data?.delivered ?? '—', icon: Truck, accent: 'green', live: data?.delivered > 0 },
+    { label: 'TRÁNSITO', value: data?.inTransit ?? '—', icon: Activity, accent: 'blue', live: data?.inTransit > 0 },
+    { label: 'LEADS B2B', value: data?.leads ?? '—', icon: Users, accent: 'teal', live: data?.leads > 0 },
+    { label: 'CHATS PEYU', value: data?.chats ?? '—', icon: Brain, accent: 'violet', live: data?.chats > 0 },
+    { label: 'CONSULTAS', value: data?.consultas ?? '—', icon: MessageSquare, accent: 'orange', live: data?.consultas > 0, alert: data?.consultas > 5 },
+    { label: 'STOCK BAJO', value: data?.lowStock ?? '—', icon: AlertTriangle, accent: 'red', alert: data?.lowStock > 0 },
   ];
 
+  const accentMap = {
+    emerald: 'text-emerald-300 border-emerald-400/30',
+    cyan: 'text-cyan-300 border-cyan-400/30',
+    green: 'text-green-300 border-green-400/30',
+    blue: 'text-blue-300 border-blue-400/30',
+    teal: 'text-teal-300 border-teal-400/30',
+    violet: 'text-violet-300 border-violet-400/30',
+    orange: 'text-orange-300 border-orange-400/30',
+    red: 'text-red-300 border-red-400/30',
+  };
+
   return (
-    <div className="bg-gradient-to-r from-slate-950 via-slate-900 to-slate-950 border border-emerald-400/20 rounded-2xl p-3 shadow-[0_0_60px_rgba(16,185,129,0.15)]">
-      <div className="flex items-center justify-between mb-2 px-2">
+    <div className="relative bg-gradient-to-r from-slate-950 via-slate-900 to-slate-950 border border-emerald-400/20 rounded-2xl overflow-hidden shadow-[0_0_40px_rgba(16,185,129,0.08)]">
+      {/* Top status bar */}
+      <div className="flex items-center justify-between px-3 py-1.5 bg-emerald-500/5 border-b border-emerald-400/10">
         <div className="flex items-center gap-2">
-          <span className="relative flex h-2 w-2">
+          <span className="relative flex h-1.5 w-1.5">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400"></span>
+            <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-400"></span>
           </span>
-          <span className="text-[10px] uppercase tracking-[0.2em] text-emerald-400/80 font-bold">PULSE · LIVE</span>
+          <span className="text-[9px] uppercase tracking-[0.25em] text-emerald-400/90 font-bold">PULSE · LIVE FEED</span>
         </div>
-        <span className="text-[10px] text-emerald-300/50 font-mono">
-          {now.toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+        <span className="text-[9px] text-emerald-300/40 font-mono tracking-wider">
+          T+ {now.toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
         </span>
       </div>
-      <div className="grid grid-cols-4 md:grid-cols-8 gap-1.5">
+      {/* KPIs grid */}
+      <div className="grid grid-cols-4 md:grid-cols-8 divide-x divide-white/5">
         {items.map((it, i) => {
           const Icon = it.icon;
+          const accent = accentMap[it.accent] || accentMap.cyan;
           return (
-            <div key={i} className="bg-white/5 hover:bg-white/10 border border-white/5 rounded-lg p-2 flex flex-col gap-0.5 transition">
-              <Icon className={`w-3.5 h-3.5 ${it.color}`} />
-              <span className={`text-base font-bold font-poppins ${it.color} leading-none`}>{it.value}</span>
-              <span className="text-[9px] text-white/50 leading-tight">{it.label}</span>
+            <div key={i} className="px-3 py-2.5 hover:bg-white/[0.02] transition relative group">
+              {it.live && (
+                <span className="absolute top-1.5 right-1.5 w-1 h-1 rounded-full bg-emerald-400 animate-pulse" />
+              )}
+              {it.alert && (
+                <span className="absolute top-1.5 right-1.5 w-1 h-1 rounded-full bg-red-400 animate-pulse" />
+              )}
+              <div className="flex items-center gap-1.5 mb-0.5">
+                <Icon className={`w-2.5 h-2.5 ${accent.split(' ')[0]}`} />
+                <span className="text-[8px] tracking-widest text-white/40 font-mono">{it.label}</span>
+              </div>
+              <p className={`text-xl font-bold font-poppins leading-none ${accent.split(' ')[0]}`}>{it.value}</p>
             </div>
           );
         })}

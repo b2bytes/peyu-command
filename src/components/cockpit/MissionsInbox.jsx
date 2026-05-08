@@ -1,17 +1,15 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
-import { Loader2, Target, AlertTriangle, ArrowUpRight, ChevronRight } from 'lucide-react';
+import { Loader2, Target, ChevronRight, CheckCircle2 } from 'lucide-react';
 
 /**
- * MissionsInbox — la bandeja de misiones que requieren decisión humana.
- * Cada misión = una propuesta de un agente IA esperando aprobación / acción.
- * Filosofía co-pilot híbrido.
+ * MissionsInbox — inbox priorizado de decisiones humanas (co-pilot híbrido).
  */
 const PRIORITY = {
-  critical: { label: 'CRÍTICO', color: 'border-red-400/60 bg-red-500/10', dot: 'bg-red-400 animate-pulse', text: 'text-red-300' },
-  high: { label: 'ALTO', color: 'border-amber-400/40 bg-amber-500/10', dot: 'bg-amber-400', text: 'text-amber-300' },
-  medium: { label: 'MEDIO', color: 'border-blue-400/40 bg-blue-500/10', dot: 'bg-blue-400', text: 'text-blue-300' },
+  critical: { label: 'CRÍTICO', border: 'border-l-red-400', bg: 'hover:bg-red-500/5', dot: 'bg-red-400 shadow-[0_0_6px_rgba(248,113,113,0.8)]', text: 'text-red-300' },
+  high: { label: 'ALTO', border: 'border-l-amber-400', bg: 'hover:bg-amber-500/5', dot: 'bg-amber-400', text: 'text-amber-300' },
+  medium: { label: 'MEDIO', border: 'border-l-blue-400', bg: 'hover:bg-blue-500/5', dot: 'bg-blue-400', text: 'text-blue-300' },
 };
 
 const TYPE_ICON = {
@@ -26,17 +24,24 @@ const TYPE_ICON = {
 };
 
 export default function MissionsInbox() {
-  const [data, setData] = useState(null);
+  const [data, setData] = useState({ missions: [], by_priority: {}, total: 0 });
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [filter, setFilter] = useState('all');
 
   const load = async () => {
     try {
       const res = await base44.functions.invoke('cockpitMissions', {});
-      setData(res?.data || { missions: [], by_priority: {} });
+      const payload = res?.data || {};
+      if (payload.missions !== undefined) {
+        setData(payload);
+        setError(null);
+      } else if (payload.error) {
+        setError(payload.error);
+      }
     } catch (e) {
-      console.warn('Missions:', e);
-      setData({ missions: [], by_priority: {} });
+      console.warn('Missions error:', e);
+      setError(e?.response?.data?.error || e?.message || 'load_failed');
     } finally {
       setLoading(false);
     }
@@ -48,69 +53,84 @@ export default function MissionsInbox() {
     return () => clearInterval(id);
   }, []);
 
-  const missions = (data?.missions || []).filter(m => filter === 'all' || m.priority === filter);
+  const missions = (data.missions || []).filter(m => filter === 'all' || m.priority === filter);
 
   return (
-    <div className="bg-gradient-to-br from-slate-900/80 to-amber-950/30 backdrop-blur-md rounded-2xl border border-amber-400/20 p-4 shadow-xl flex flex-col h-[480px]">
-      <div className="flex items-center justify-between mb-3 flex-shrink-0">
+    <div className="bg-gradient-to-br from-slate-950/80 to-amber-950/20 backdrop-blur-md rounded-2xl border border-amber-400/20 shadow-xl flex flex-col h-[520px] overflow-hidden">
+      {/* Header */}
+      <div className="flex items-center justify-between px-4 py-2.5 bg-amber-500/5 border-b border-amber-400/10 flex-shrink-0">
         <div className="flex items-center gap-2">
-          <Target className="w-4 h-4 text-amber-300" />
-          <h3 className="font-poppins font-semibold text-white text-sm">MISIONES</h3>
-          <span className="text-[10px] text-amber-300/70">· requieren tu decisión</span>
+          <Target className="w-3.5 h-3.5 text-amber-300" />
+          <h3 className="text-[11px] font-bold tracking-[0.2em] text-white">MISSIONS</h3>
+          <span className="text-[9px] text-amber-300/60 font-mono">· require_decision</span>
         </div>
-        <div className="flex items-center gap-1.5 text-[10px]">
+        <div className="flex items-center gap-1 text-[9px] font-mono">
           {[
-            { k: 'all', l: 'Todas', n: data?.total || 0 },
-            { k: 'critical', l: 'Crítico', n: data?.by_priority?.critical || 0, c: 'text-red-300' },
-            { k: 'high', l: 'Alto', n: data?.by_priority?.high || 0, c: 'text-amber-300' },
+            { k: 'all', l: 'all', n: data.total || 0, c: 'text-white' },
+            { k: 'critical', l: 'crit', n: data.by_priority?.critical || 0, c: 'text-red-300' },
+            { k: 'high', l: 'high', n: data.by_priority?.high || 0, c: 'text-amber-300' },
+            { k: 'medium', l: 'med', n: data.by_priority?.medium || 0, c: 'text-blue-300' },
           ].map(b => (
             <button
               key={b.k}
               onClick={() => setFilter(b.k)}
-              className={`px-2 py-0.5 rounded-full transition ${
-                filter === b.k ? 'bg-white/15 text-white' : 'bg-white/5 text-white/50 hover:bg-white/10'
-              } ${b.c || ''}`}
+              className={`px-2 py-0.5 rounded transition tracking-wider ${
+                filter === b.k ? 'bg-white/10 text-white' : `${b.c} opacity-50 hover:opacity-100`
+              }`}
             >
-              {b.l} {b.n > 0 && <span className="opacity-70">({b.n})</span>}
+              {b.l}·{b.n}
             </button>
           ))}
         </div>
       </div>
 
-      <div className="flex-1 min-h-0 overflow-y-auto peyu-scrollbar-light pr-1 space-y-1.5">
+      {/* List */}
+      <div className="flex-1 min-h-0 overflow-y-auto peyu-scrollbar-light">
         {loading ? (
-          <div className="flex items-center justify-center h-32 text-amber-300/60">
-            <Loader2 className="w-4 h-4 animate-spin" />
+          <div className="flex items-center justify-center h-full text-amber-300/50">
+            <Loader2 className="w-4 h-4 animate-spin mr-2" />
+            <span className="text-xs font-mono">scanning...</span>
+          </div>
+        ) : error ? (
+          <div className="flex flex-col items-center justify-center h-full text-red-300/70 px-4 text-center">
+            <span className="text-xs font-mono mb-1">⚠ missions_offline</span>
+            <span className="text-[10px] text-white/40 font-mono">{error}</span>
           </div>
         ) : missions.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-full text-center text-white/40 text-sm">
-            <span className="text-3xl mb-2">🎯</span>
-            <p>Sin misiones pendientes</p>
-            <p className="text-[10px] mt-1">Tu flota tiene todo bajo control.</p>
+          <div className="flex flex-col items-center justify-center h-full text-center text-white/40 px-4">
+            <CheckCircle2 className="w-10 h-10 text-emerald-400/40 mb-2" />
+            <p className="text-sm font-medium text-white/60">Inbox limpio</p>
+            <p className="text-[10px] mt-1 text-white/40 font-mono">all_systems_nominal · agents_running_autonomous</p>
           </div>
         ) : (
-          missions.map((m) => {
-            const cfg = PRIORITY[m.priority] || PRIORITY.medium;
-            return (
-              <Link
-                key={m.id}
-                to={m.action_target}
-                className={`flex items-start gap-2.5 p-2.5 rounded-xl border ${cfg.color} hover:bg-white/10 transition group`}
-              >
-                <span className="text-base mt-0.5">{TYPE_ICON[m.type] || '⚡'}</span>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-1.5 mb-0.5">
-                    <span className={`w-1.5 h-1.5 rounded-full ${cfg.dot}`} />
-                    <span className={`text-[9px] font-bold tracking-wider ${cfg.text}`}>{cfg.label}</span>
-                    <span className="text-[9px] text-white/40">· {m.agent}</span>
+          <div className="divide-y divide-white/5">
+            {missions.map((m) => {
+              const cfg = PRIORITY[m.priority] || PRIORITY.medium;
+              return (
+                <Link
+                  key={m.id}
+                  to={m.action_target}
+                  className={`flex items-start gap-2.5 p-3 border-l-2 ${cfg.border} ${cfg.bg} transition group`}
+                >
+                  <span className="text-lg leading-none mt-0.5">{TYPE_ICON[m.type] || '⚡'}</span>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-1.5 mb-0.5">
+                      <span className={`w-1 h-1 rounded-full ${cfg.dot}`} />
+                      <span className={`text-[8px] font-mono tracking-widest ${cfg.text}`}>{cfg.label}</span>
+                      <span className="text-[8px] text-white/30 font-mono">·</span>
+                      <span className="text-[9px] text-white/45 font-mono">{m.agent}</span>
+                    </div>
+                    <p className="text-xs text-white font-medium leading-tight">{m.title}</p>
+                    <p className="text-[10px] text-white/55 leading-tight mt-0.5 line-clamp-2">{m.subtitle}</p>
                   </div>
-                  <p className="text-xs text-white font-medium leading-tight line-clamp-1">{m.title}</p>
-                  <p className="text-[10px] text-white/60 leading-tight line-clamp-2 mt-0.5">{m.subtitle}</p>
-                </div>
-                <ChevronRight className="w-3.5 h-3.5 text-white/40 group-hover:text-white group-hover:translate-x-0.5 transition shrink-0 mt-1" />
-              </Link>
-            );
-          })
+                  <div className="flex flex-col items-end gap-1 shrink-0">
+                    <span className="text-[9px] text-amber-300/80 font-mono group-hover:text-amber-200">{m.action_label}</span>
+                    <ChevronRight className="w-3 h-3 text-white/30 group-hover:text-white group-hover:translate-x-0.5 transition" />
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
         )}
       </div>
     </div>

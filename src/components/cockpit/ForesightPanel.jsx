@@ -2,24 +2,20 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import {
-  Loader2, Eye, TrendingDown, TrendingUp, AlertTriangle, Clock, UserX, PackageX, ArrowUpRight
+  Loader2, Eye, TrendingDown, TrendingUp, AlertTriangle, Clock, UserX, PackageX, ArrowUpRight, CheckCircle2
 } from 'lucide-react';
 
 const ICONS = { TrendingDown, TrendingUp, AlertTriangle, Clock, UserX, PackageX };
 
 const SEV = {
-  critical: { color: 'border-red-400/50 bg-red-500/10', text: 'text-red-300', label: 'CRÍTICO' },
-  high: { color: 'border-amber-400/50 bg-amber-500/10', text: 'text-amber-300', label: 'ALTO' },
-  medium: { color: 'border-blue-400/50 bg-blue-500/10', text: 'text-blue-300', label: 'MEDIO' },
-  low: { color: 'border-emerald-400/50 bg-emerald-500/10', text: 'text-emerald-300', label: 'INFO' },
+  critical: { border: 'border-l-red-400', text: 'text-red-300' },
+  high: { border: 'border-l-amber-400', text: 'text-amber-300' },
+  medium: { border: 'border-l-blue-400', text: 'text-blue-300' },
+  low: { border: 'border-l-emerald-400', text: 'text-emerald-300' },
 };
 
-/**
- * ForesightPanel — visión a futuro. Lo que VA a pasar si nada cambia.
- * Filosofía 2027+: no es analítica reactiva, es predicción accionable.
- */
 export default function ForesightPanel() {
-  const [data, setData] = useState(null);
+  const [data, setData] = useState({ insights: [] });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -29,58 +25,65 @@ export default function ForesightPanel() {
         setData(res?.data || { insights: [] });
       } catch (e) {
         console.warn('Foresight:', e);
-        setData({ insights: [] });
       } finally {
         setLoading(false);
       }
     })();
   }, []);
 
+  const insights = data.insights || [];
+
   return (
-    <div className="bg-gradient-to-br from-slate-900/80 to-cyan-950/30 backdrop-blur-md rounded-2xl border border-cyan-400/20 p-4 shadow-xl">
-      <div className="flex items-center gap-2 mb-3">
-        <Eye className="w-4 h-4 text-cyan-300" />
-        <h3 className="font-poppins font-semibold text-white text-sm">FORESIGHT</h3>
-        <span className="text-[10px] text-cyan-300/70">· lo que viene</span>
+    <div className="bg-gradient-to-br from-slate-950/80 to-cyan-950/20 backdrop-blur-md rounded-2xl border border-cyan-400/20 shadow-xl overflow-hidden">
+      <div className="flex items-center justify-between px-4 py-2.5 bg-cyan-500/5 border-b border-cyan-400/10">
+        <div className="flex items-center gap-2">
+          <Eye className="w-3.5 h-3.5 text-cyan-300" />
+          <h3 className="text-[11px] font-bold tracking-[0.2em] text-white">FORESIGHT</h3>
+          <span className="text-[9px] text-cyan-300/60 font-mono">· lookahead_14d</span>
+        </div>
+        {!loading && <span className="text-[9px] text-cyan-300/40 font-mono">{insights.length} signals</span>}
       </div>
 
-      {loading ? (
-        <div className="flex items-center justify-center h-20 text-cyan-300/60">
-          <Loader2 className="w-4 h-4 animate-spin" />
-        </div>
-      ) : (data?.insights || []).length === 0 ? (
-        <p className="text-xs text-white/40 text-center py-6">Sin alertas predictivas. Todo en verde.</p>
-      ) : (
-        <div className="space-y-2">
-          {data.insights.map((ins) => {
-            const cfg = SEV[ins.severity] || SEV.medium;
-            const Icon = ICONS[ins.icon] || AlertTriangle;
-            return (
-              <Link
-                key={ins.id}
-                to={ins.link || '/admin'}
-                className={`flex items-start gap-2.5 p-2.5 rounded-xl border ${cfg.color} hover:bg-white/10 transition group`}
-              >
-                <Icon className={`w-4 h-4 ${cfg.text} mt-0.5 shrink-0`} />
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-1.5 mb-0.5">
-                    <span className={`text-[9px] font-bold tracking-wider ${cfg.text}`}>{cfg.label}</span>
-                    <span className="text-[9px] text-white/40">·</span>
-                    <span className="text-[10px] text-white/70 font-medium">{ins.title}</span>
+      <div className="p-2.5">
+        {loading ? (
+          <div className="flex items-center justify-center h-20 text-cyan-300/50">
+            <Loader2 className="w-4 h-4 animate-spin mr-2" />
+            <span className="text-xs font-mono">analyzing...</span>
+          </div>
+        ) : insights.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-6 text-white/40">
+            <CheckCircle2 className="w-8 h-8 text-emerald-400/40 mb-2" />
+            <p className="text-xs font-medium text-white/60">Sin alertas predictivas</p>
+            <p className="text-[10px] mt-0.5 text-white/30 font-mono">forecast_clean · all_signals_green</p>
+          </div>
+        ) : (
+          <div className="space-y-1.5">
+            {insights.map((ins) => {
+              const cfg = SEV[ins.severity] || SEV.medium;
+              const Icon = ICONS[ins.icon] || AlertTriangle;
+              return (
+                <Link
+                  key={ins.id}
+                  to={ins.link || '/admin'}
+                  className={`flex items-start gap-2.5 p-2.5 border-l-2 ${cfg.border} bg-white/[0.02] hover:bg-white/[0.05] rounded-r-lg transition group`}
+                >
+                  <Icon className={`w-3.5 h-3.5 ${cfg.text} mt-0.5 shrink-0`} />
+                  <div className="flex-1 min-w-0">
+                    <p className={`text-[10px] font-bold tracking-wider ${cfg.text} mb-0.5`}>{ins.title}</p>
+                    <p className="text-[10px] text-white/70 leading-tight">{ins.message}</p>
+                    {ins.action && (
+                      <p className={`text-[9px] mt-1 ${cfg.text} font-mono flex items-center gap-1`}>
+                        → {ins.action}
+                        <ArrowUpRight className="w-2.5 h-2.5 group-hover:translate-x-0.5 transition" />
+                      </p>
+                    )}
                   </div>
-                  <p className="text-[11px] text-white/80 leading-tight">{ins.message}</p>
-                  {ins.action && (
-                    <div className="flex items-center gap-1 mt-1.5">
-                      <span className={`text-[10px] font-medium ${cfg.text}`}>{ins.action}</span>
-                      <ArrowUpRight className="w-3 h-3 text-white/40 group-hover:text-white transition" />
-                    </div>
-                  )}
-                </div>
-              </Link>
-            );
-          })}
-        </div>
-      )}
+                </Link>
+              );
+            })}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
