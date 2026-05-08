@@ -27,18 +27,25 @@ export default function CelebrationBanner({ onChatPrompt, compact = false }) {
 
   // VARIANTE ULTRA-COMPACTA: una sola línea tipo notification bar
   if (compact) {
+    // Compact pill — diseñado para el header desktop. Limitamos ancho con
+    // max-w para que el truncate del título funcione antes de que el chip
+    // del countdown y la flecha se salgan del contenedor padre.
     return (
       <Link
         to={copy.ctaPrimary.href}
-        className="group flex items-center gap-2 rounded-full px-3 py-1.5 relative overflow-hidden transition-all hover:scale-[1.01]"
+        className="group hidden xl:inline-flex items-center gap-2 rounded-full pl-2.5 pr-3 py-1.5 relative overflow-hidden transition-all hover:scale-[1.02] max-w-[360px] min-w-0"
         style={{
-          background: `linear-gradient(90deg, ${palette.tint} 0%, rgba(0,0,0,0.2) 100%)`,
-          border: `1px solid ${palette.accent}40`,
-          boxShadow: `0 4px 20px ${palette.glow}`,
+          background: `linear-gradient(90deg, ${palette.tint} 0%, rgba(0,0,0,0.18) 100%)`,
+          border: `1px solid ${palette.accent}55`,
+          boxShadow: `0 4px 18px ${palette.glow}`,
         }}
+        title={copy.title}
       >
         <span className="text-base leading-none flex-shrink-0">{emoji}</span>
-        <span className="text-white/95 text-[10px] font-bold uppercase tracking-wider flex-shrink-0" style={{ color: palette.accent }}>
+        <span
+          className="text-[10px] font-bold uppercase tracking-wider flex-shrink-0 hidden 2xl:inline"
+          style={{ color: palette.accent }}
+        >
           {copy.kicker}
         </span>
         <span className="text-white text-xs font-semibold truncate flex-1 min-w-0">
