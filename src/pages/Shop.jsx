@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Search, SlidersHorizontal, X, Recycle, Truck, Shield, Check, Building2, Loader2 } from 'lucide-react';
 import CategoryTabs from '@/components/shop/CategoryTabs';
 import ProductCard from '@/components/shop/ProductCard';
+import ShopHeroCollage from '@/components/shop/ShopHeroCollage';
 import { getProductImage } from '@/utils/productImages';
 import PublicSEO from '@/components/PublicSEO';
 import { SITE_URL } from '@/lib/seo-catalog';
@@ -226,70 +227,8 @@ export default function Shop() {
             </div>
           </div>
 
-          {/* DERECHA — Imagen editorial collage */}
-          <div className="relative h-[320px] sm:h-[420px] lg:h-[520px]">
-            {/* Glow ambient */}
-            <div
-              aria-hidden
-              className="absolute -top-10 -right-10 w-72 h-72 rounded-full blur-3xl pointer-events-none"
-              style={{ background: 'var(--ld-action-soft)', opacity: 0.6 }}
-            />
-            <div
-              aria-hidden
-              className="absolute -bottom-10 -left-10 w-72 h-72 rounded-full blur-3xl pointer-events-none"
-              style={{ background: 'var(--ld-highlight-soft)', opacity: 0.5 }}
-            />
-
-            {/* Imagen principal — producto hero */}
-            <div className="absolute inset-y-0 right-0 w-[78%] rounded-3xl overflow-hidden ld-card shadow-2xl">
-              <img
-                src="https://images.unsplash.com/photo-1606760227091-3dd870d97f1d?auto=format&fit=crop&w=1200&q=80"
-                alt="Productos PEYU hechos en plástico reciclado"
-                className="w-full h-full object-cover"
-                loading="eager"
-                fetchpriority="high"
-              />
-              {/* Overlay editorial */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
-              {/* Etiqueta flotante de procedencia */}
-              <div className="absolute top-4 right-4 ld-glass-strong rounded-full px-3 py-1.5 flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: 'var(--ld-action)' }} />
-                <span className="text-[10px] font-bold text-ld-fg tracking-wider uppercase">Hecho en Santiago</span>
-              </div>
-              {/* Pieza editorial inferior */}
-              <div className="absolute bottom-4 left-4 right-4 flex items-end justify-between text-white drop-shadow-lg">
-                <div>
-                  <p className="text-[10px] font-bold tracking-[0.18em] uppercase opacity-90">Nueva colección</p>
-                  <p className="ld-display text-xl sm:text-2xl mt-1 leading-tight">Otoño · Invierno 2026</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Card secundaria flotante — número de productos */}
-            <div className="absolute bottom-6 left-0 lg:-left-4 ld-glass-strong rounded-2xl p-4 w-44 hidden sm:block">
-              <p className="text-[10px] font-bold uppercase tracking-[0.18em]" style={{ color: 'var(--ld-action)' }}>
-                Catálogo
-              </p>
-              <p className="ld-display text-3xl text-ld-fg leading-none mt-1">
-                {productos.length || '50+'}
-              </p>
-              <p className="text-xs text-ld-fg-muted mt-1">productos sostenibles activos</p>
-            </div>
-
-            {/* Card terciaria — material */}
-            <div className="absolute top-6 left-0 lg:-left-2 ld-glass-strong rounded-2xl p-3 hidden md:flex items-center gap-2.5 max-w-[200px]">
-              <div
-                className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
-                style={{ background: 'var(--ld-grad-action)' }}
-              >
-                <Recycle className="w-4 h-4 text-white" />
-              </div>
-              <div className="min-w-0">
-                <p className="text-xs font-bold text-ld-fg leading-tight">Plástico recuperado</p>
-                <p className="text-[10px] text-ld-fg-muted leading-tight">de océanos y rellenos</p>
-              </div>
-            </div>
-          </div>
+          {/* DERECHA — Hero collage con productos REALES del catálogo */}
+          <ShopHeroCollage productos={productos} />
         </div>
       </section>
 
