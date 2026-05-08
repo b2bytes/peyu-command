@@ -42,7 +42,7 @@ export default function StatusFooter({ now }) {
   }, []);
 
   return (
-    <div className="bg-black/40 backdrop-blur-md border border-white/5 rounded-xl px-3 py-2 flex items-center gap-3 flex-wrap text-[10px] font-mono">
+    <div className="bg-black/40 backdrop-blur-md border border-white/5 rounded-xl px-3 py-2 flex items-center gap-2 sm:gap-3 flex-wrap text-[10px] font-mono">
       <span className="text-emerald-400 font-bold tracking-widest">SYS</span>
       <div className="h-3 w-px bg-white/10" />
       {status.loading ? (

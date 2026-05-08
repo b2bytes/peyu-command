@@ -56,7 +56,7 @@ export default function MissionsInbox() {
   const missions = (data.missions || []).filter(m => filter === 'all' || m.priority === filter);
 
   return (
-    <div className="bg-gradient-to-br from-slate-950/80 to-amber-950/20 backdrop-blur-md rounded-2xl border border-amber-400/20 shadow-xl flex flex-col h-[520px] overflow-hidden">
+    <div className="bg-gradient-to-br from-slate-950/80 to-amber-950/20 backdrop-blur-md rounded-2xl border border-amber-400/20 shadow-xl flex flex-col h-[420px] lg:h-[520px] overflow-hidden">
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-2.5 bg-amber-500/5 border-b border-amber-400/10 flex-shrink-0">
         <div className="flex items-center gap-2">

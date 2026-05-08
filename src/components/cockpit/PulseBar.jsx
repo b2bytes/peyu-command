@@ -78,20 +78,20 @@ export default function PulseBar() {
   return (
     <div className="relative bg-gradient-to-r from-slate-950 via-slate-900 to-slate-950 border border-emerald-400/20 rounded-2xl overflow-hidden shadow-[0_0_40px_rgba(16,185,129,0.08)]">
       {/* Top status bar */}
-      <div className="flex items-center justify-between px-3 py-1.5 bg-emerald-500/5 border-b border-emerald-400/10">
-        <div className="flex items-center gap-2">
-          <span className="relative flex h-1.5 w-1.5">
+      <div className="flex items-center justify-between px-3 py-1.5 bg-emerald-500/5 border-b border-emerald-400/10 gap-2">
+        <div className="flex items-center gap-2 min-w-0">
+          <span className="relative flex h-1.5 w-1.5 shrink-0">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
             <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-400"></span>
           </span>
-          <span className="text-[9px] uppercase tracking-[0.25em] text-emerald-400/90 font-bold">PULSE · LIVE FEED</span>
+          <span className="text-[9px] uppercase tracking-[0.2em] text-emerald-400/90 font-bold truncate">PULSE · LIVE</span>
         </div>
-        <span className="text-[9px] text-emerald-300/40 font-mono tracking-wider">
+        <span className="text-[9px] text-emerald-300/40 font-mono tracking-wider shrink-0">
           T+ {now.toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
         </span>
       </div>
       {/* KPIs grid */}
-      <div className="grid grid-cols-4 md:grid-cols-8 divide-x divide-white/5">
+      <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-8 divide-x divide-y sm:divide-y-0 divide-white/5">
         {items.map((it, i) => {
           const Icon = it.icon;
           const accent = accentMap[it.accent] || accentMap.cyan;

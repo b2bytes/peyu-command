@@ -120,7 +120,7 @@ export default function NorthStarMetrics() {
       {loading ? (
         <div className="text-white/30 text-xs text-center py-8 font-mono">computing metrics...</div>
       ) : (
-        <div className="grid grid-cols-2 md:grid-cols-5 divide-x divide-y md:divide-y-0 divide-white/5">
+        <div className="grid grid-cols-2 lg:grid-cols-5 divide-x divide-y lg:divide-y-0 divide-white/5">
           {metrics.map((m, i) => {
             const cm = colorMap[m.color] || colorMap.emerald;
             const TrendIcon = m.delta == null ? Minus : m.delta > 0 ? TrendingUp : m.delta < 0 ? TrendingDown : Minus;

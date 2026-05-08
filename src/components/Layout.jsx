@@ -5,10 +5,10 @@
 // tipografías premium (Plus Jakarta Sans + Inter) y navegación reorganizada
 // por frecuencia de uso. La nav vive en components/admin/SidebarNav.jsx.
 // ============================================================================
-import { Outlet } from 'react-router-dom';
+import { Outlet, useLocation } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import {
-  ChevronLeft, ChevronRight, ShoppingCart, Building2, Turtle,
+  ChevronLeft, ChevronRight, ShoppingCart, Building2, Turtle, Menu, X,
 } from 'lucide-react';
 import SEO from '@/components/SEO';
 import SidebarNav from '@/components/admin/SidebarNav';
@@ -18,14 +18,20 @@ import PeyuCompanion from '@/components/admin/PeyuCompanion';
 const COLLAPSED_KEY = 'peyu_sidebar_collapsed';
 
 export default function Layout() {
-  // Estado persistente del colapso del sidebar
+  // Estado persistente del colapso del sidebar (desktop)
   const [collapsed, setCollapsed] = useState(() => {
     try { return localStorage.getItem(COLLAPSED_KEY) === '1'; } catch { return false; }
   });
+  // Drawer móvil (siempre cerrado por defecto)
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const location = useLocation();
 
   useEffect(() => {
     try { localStorage.setItem(COLLAPSED_KEY, collapsed ? '1' : '0'); } catch {}
   }, [collapsed]);
+
+  // Cerrar drawer al cambiar de ruta
+  useEffect(() => { setMobileOpen(false); }, [location.pathname]);
 
   return (
     <div className="flex h-screen bg-background overflow-hidden">
@@ -35,9 +41,38 @@ export default function Layout() {
         noindex
       />
 
+      {/* ─── TOP BAR MÓVIL (sólo < lg) ─── */}
+      <div className="lg:hidden fixed top-0 inset-x-0 z-40 h-14 flex items-center justify-between px-3 border-b border-white/[0.06] backdrop-blur-md" style={{ background: 'rgba(15,18,28,0.85)' }}>
+        <button
+          onClick={() => setMobileOpen(true)}
+          className="w-10 h-10 rounded-lg flex items-center justify-center text-white/80 hover:bg-white/10 active:scale-95 transition"
+          aria-label="Abrir menú"
+        >
+          <Menu className="w-5 h-5" />
+        </button>
+        <div className="flex items-center gap-2">
+          <div className="w-7 h-7 rounded-lg flex items-center justify-center bg-gradient-to-br from-teal-500 to-cyan-600">
+            <Turtle className="w-4 h-4 text-white" strokeWidth={2.2} />
+          </div>
+          <span className="font-jakarta font-extrabold text-white text-sm tracking-tight">PEYU</span>
+          <span className="text-[10px] text-teal-300/80 font-medium">· Comando</span>
+        </div>
+        <div className="w-10" />
+      </div>
+
+      {/* Backdrop drawer móvil */}
+      {mobileOpen && (
+        <div
+          className="lg:hidden fixed inset-0 z-40 bg-black/60 backdrop-blur-sm"
+          onClick={() => setMobileOpen(false)}
+        />
+      )}
+
       {/* ─── SIDEBAR ─── */}
       <aside
-        className="flex-shrink-0 flex flex-col relative border-r border-white/[0.06] transition-[width] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]"
+        className={`flex flex-col border-r border-white/[0.06] transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] z-50
+          lg:flex-shrink-0 lg:relative lg:translate-x-0
+          fixed inset-y-0 left-0 ${mobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}
         style={{
           background: 'linear-gradient(180deg, hsl(220,22%,11%) 0%, hsl(222,20%,9%) 100%)',
           width: collapsed ? 68 : 240,
@@ -56,15 +91,23 @@ export default function Layout() {
             <div className="font-jakarta font-extrabold text-white text-[17px] leading-none tracking-tight">PEYU</div>
             <div className="text-[11px] mt-1 truncate text-teal-300/90 font-inter font-medium">Centro de Comando</div>
           </div>
+          {/* Cerrar drawer (sólo móvil) */}
+          <button
+            onClick={() => setMobileOpen(false)}
+            className="lg:hidden ml-auto w-8 h-8 rounded-lg flex items-center justify-center text-white/60 hover:bg-white/10 active:scale-95 transition"
+            aria-label="Cerrar menú"
+          >
+            <X className="w-4 h-4" />
+          </button>
         </div>
 
         {/* Navigation (focal component) */}
         <SidebarNav collapsed={collapsed} />
 
-        {/* Botón de colapsar */}
+        {/* Botón de colapsar (sólo desktop) */}
         <button
           onClick={() => setCollapsed(!collapsed)}
-          className="absolute -right-3 top-[52px] w-6 h-6 rounded-full flex items-center justify-center border z-10 transition-all hover:bg-teal-500/20 hover:border-teal-400 hover:scale-110 active:scale-95 shadow-lg"
+          className="hidden lg:flex absolute -right-3 top-[52px] w-6 h-6 rounded-full items-center justify-center border z-10 transition-all hover:bg-teal-500/20 hover:border-teal-400 hover:scale-110 active:scale-95 shadow-lg"
           style={{ background: 'hsl(220,18%,13%)', borderColor: 'hsl(220,14%,24%)', color: '#9ca3af' }}
           title={collapsed ? 'Expandir' : 'Colapsar'}
         >
@@ -118,7 +161,7 @@ export default function Layout() {
       </aside>
 
       {/* Main */}
-      <main className="flex-1 min-w-0 overflow-y-auto overflow-x-hidden bg-gradient-to-br from-slate-900 via-slate-900 to-slate-800 relative">
+      <main className="flex-1 min-w-0 overflow-y-auto overflow-x-hidden bg-gradient-to-br from-slate-900 via-slate-900 to-slate-800 relative pt-14 lg:pt-0">
         <Outlet />
         {/* FAB flotante: vuelve al Centro de Comando desde cualquier vista admin */}
         <CommandCenterFAB />

@@ -54,7 +54,7 @@ export default function BrainTerminal() {
   };
 
   return (
-    <div className="bg-gradient-to-br from-slate-950 via-violet-950/30 to-indigo-950/30 backdrop-blur-md rounded-2xl border border-violet-400/30 shadow-xl flex flex-col h-[520px] overflow-hidden">
+    <div className="bg-gradient-to-br from-slate-950 via-violet-950/30 to-indigo-950/30 backdrop-blur-md rounded-2xl border border-violet-400/30 shadow-xl flex flex-col h-[420px] lg:h-[520px] overflow-hidden">
       {/* Header bar */}
       <div className="flex items-center gap-2 px-4 py-2.5 bg-violet-500/5 border-b border-violet-400/10 flex-shrink-0">
         <Terminal className="w-3.5 h-3.5 text-violet-300" />
