@@ -19,6 +19,7 @@ import BackgroundSwitcher from '@/components/BackgroundSwitcher';
 import CelebrationBanner from '@/components/landing/CelebrationBanner';
 import FeaturedCarousel from '@/components/landing/FeaturedCarousel';
 import PublicSEO from '@/components/PublicSEO';
+import MobileShopLanding from '@/components/landing/mobile/MobileShopLanding';
 
 // Limpia los bloques [CONTEXTO] y [BRAIN] que se inyectan al agente —
 // no deben verse en la UI. En withContext() el mensaje real del usuario
@@ -283,8 +284,29 @@ export default function ShopLanding() {
     <h1 className="sr-only">
       PEYU Chile · Regalos Corporativos Sustentables en Plástico 100% Reciclado
     </h1>
+
+    {/* ─── MOBILE: Home e-commerce agéntico ─── */}
+    <div className="lg:hidden">
+      <MobileShopLanding
+        menuItems={MENU_ITEMS}
+        cartCount={carrito.length}
+        messages={messages}
+        loading={loading}
+        input={input}
+        setInput={setInput}
+        onSend={sendMessage}
+        onOccasionClick={handleOccasionClick}
+        historyCount={historyCount}
+        onShowHistory={() => setShowHistory(true)}
+        showHistory={showHistory}
+        onCloseHistory={() => setShowHistory(false)}
+        onResumeFromHistory={handleResumeFromHistory}
+      />
+    </div>
+
+    {/* ─── DESKTOP: Layout chat-first original (sin cambios) ─── */}
     <div
-      className="landing-viewport transition-colors duration-500"
+      className="landing-viewport transition-colors duration-500 hidden lg:block"
       data-theme-mode={isTheme ? 'theme' : 'nature'}
       style={{
         backgroundColor: bg.tint || '#0f172a',
@@ -297,17 +319,19 @@ export default function ShopLanding() {
       }}
     >
       <style>{`
-        /* Estabilización global del landing: sin overflow, sin espacios blancos,
-           altura exacta al viewport (con fallback a svh para mobile dinámico). */
+        /* Estabilización global del landing — SOLO desktop tiene fixed.
+           En móvil renderizamos MobileShopLanding con scroll natural. */
         html, body { margin: 0; padding: 0; background: #0f172a; overscroll-behavior: none; }
-        .landing-viewport {
-          position: fixed;
-          inset: 0;
-          width: 100vw;
-          height: 100vh;
-          height: 100svh;
-          overflow: hidden;
-          background-color: #0f172a;
+        @media (min-width: 1024px) {
+          .landing-viewport {
+            position: fixed;
+            inset: 0;
+            width: 100vw;
+            height: 100vh;
+            height: 100svh;
+            overflow: hidden;
+            background-color: #0f172a;
+          }
         }
 
         /* ============================================================
