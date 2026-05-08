@@ -1,13 +1,15 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { FOUNDERS_LAYOUTS, ROUND_INFO } from '@/lib/founders-layouts';
 import LayoutCard from '@/components/founders/LayoutCard';
 import LayoutPreviewModal from '@/components/founders/LayoutPreviewModal';
-import { Sparkles, Filter, Heart, ArrowRight } from 'lucide-react';
+import { Sparkles, Filter, Heart, ArrowRight, LayoutGrid, Rows3 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 /**
  * Presentación a fundadores: 22 layouts del design system PEYU 2026.
- * Permite filtrar por ronda, ver detalle, marcar shortlist en localStorage.
+ * Layouts visibles COMPLETOS (object-contain) con toggle entre 2 vistas:
+ *  - Wide grid (2 cols) — densidad media, layout completo
+ *  - Cinema (1 col) — máxima escala, uno por fila
  */
 const STORAGE_KEY = 'peyu-founders-shortlist';
 
@@ -21,8 +23,9 @@ const loadShortlist = () => {
 
 export default function FoundersPresentation() {
   const [filter, setFilter] = useState('all');
-  const [preview, setPreview] = useState(null);
+  const [previewIndex, setPreviewIndex] = useState(null);
   const [shortlist, setShortlist] = useState(loadShortlist);
+  const [viewMode, setViewMode] = useState('wide'); // 'wide' | 'cinema'
 
   const rounds = useMemo(() => {
     const counts = { 1: 0, 2: 0, 3: 0, 4: 0 };
@@ -38,11 +41,24 @@ export default function FoundersPresentation() {
     return FOUNDERS_LAYOUTS.filter((l) => l.round === parseInt(filter));
   }, [filter, shortlist]);
 
-  const toggleSelect = (id) => {
-    const next = shortlist.includes(id) ? shortlist.filter((x) => x !== id) : [...shortlist, id];
-    setShortlist(next);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
-  };
+  const toggleSelect = useCallback(
+    (id) => {
+      setShortlist((prev) => {
+        const next = prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id];
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+        return next;
+      });
+    },
+    []
+  );
+
+  const previewLayout = previewIndex !== null ? filteredLayouts[previewIndex] : null;
+  const handlePrev =
+    previewIndex !== null && previewIndex > 0 ? () => setPreviewIndex(previewIndex - 1) : null;
+  const handleNext =
+    previewIndex !== null && previewIndex < filteredLayouts.length - 1
+      ? () => setPreviewIndex(previewIndex + 1)
+      : null;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-emerald-50/30 to-amber-50/40">
@@ -53,7 +69,7 @@ export default function FoundersPresentation() {
           <div className="absolute -top-32 -right-32 w-96 h-96 bg-amber-300/20 rounded-full blur-[100px]" />
         </div>
 
-        <div className="relative max-w-7xl mx-auto px-6 py-12 md:py-16">
+        <div className="relative max-w-[1600px] mx-auto px-6 py-12 md:py-16">
           <div className="flex items-center gap-2 mb-4">
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-bold uppercase tracking-wider">
               <Sparkles className="w-3.5 h-3.5" />
@@ -70,27 +86,18 @@ export default function FoundersPresentation() {
           </h1>
 
           <p className="text-lg md:text-xl text-slate-700 max-w-3xl leading-relaxed">
-            <strong>{FOUNDERS_LAYOUTS.length} propuestas visuales</strong> para evolucionar la cohesión digital de PEYU
-            (desktop + móvil). Cada propuesta tiene un mecanismo de conversión distinto validado para B2C y B2B en 2026.
-            Recórralas, abran cada una y armen su shortlist.
+            <strong>{FOUNDERS_LAYOUTS.length} propuestas visuales</strong> con cada layout completo a la vista. Cada
+            propuesta tiene un mecanismo de conversión distinto validado para B2C y B2B en 2026. Click en cualquier
+            layout para verlo a pantalla completa con navegación con flechas.
           </p>
 
           {/* Stats */}
           <div className="flex flex-wrap items-center gap-6 mt-6 text-sm">
-            <div>
-              <p className="text-2xl font-bold font-jakarta text-slate-900">{FOUNDERS_LAYOUTS.length}</p>
-              <p className="text-xs text-slate-500 uppercase tracking-wider">Layouts totales</p>
-            </div>
+            <Stat value={FOUNDERS_LAYOUTS.length} label="Layouts totales" />
             <div className="w-px h-10 bg-slate-200" />
-            <div>
-              <p className="text-2xl font-bold font-jakarta text-emerald-700">+31%</p>
-              <p className="text-xs text-slate-500 uppercase tracking-wider">CVR AI-traffic (Adobe 2026)</p>
-            </div>
+            <Stat value="+31%" label="CVR AI-traffic (Adobe 2026)" color="emerald" />
             <div className="w-px h-10 bg-slate-200" />
-            <div>
-              <p className="text-2xl font-bold font-jakarta text-amber-700">+59%</p>
-              <p className="text-xs text-slate-500 uppercase tracking-wider">Growth con shopping agent</p>
-            </div>
+            <Stat value="+59%" label="Growth con shopping agent" color="amber" />
             <div className="w-px h-10 bg-slate-200" />
             <div>
               <p className="text-2xl font-bold font-jakarta text-rose-600 flex items-center gap-1">
@@ -102,33 +109,57 @@ export default function FoundersPresentation() {
         </div>
       </header>
 
-      {/* Filtros */}
+      {/* Filtros + view mode toggle */}
       <div className="sticky top-0 z-20 bg-white/85 backdrop-blur-xl border-b border-slate-200/70">
-        <div className="max-w-7xl mx-auto px-6 py-3 flex items-center gap-2 overflow-x-auto scrollbar-hide">
-          <Filter className="w-4 h-4 text-slate-500 shrink-0" />
-          <FilterChip active={filter === 'all'} onClick={() => setFilter('all')}>
-            Todas <span className="opacity-60 ml-1">{FOUNDERS_LAYOUTS.length}</span>
-          </FilterChip>
-          {[1, 2, 3, 4].map((r) => (
-            <FilterChip key={r} active={filter === String(r)} onClick={() => setFilter(String(r))}>
-              {ROUND_INFO[r].name} <span className="opacity-60 ml-1">{rounds[r]}</span>
+        <div className="max-w-[1600px] mx-auto px-6 py-3 flex items-center gap-2">
+          <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide flex-1">
+            <Filter className="w-4 h-4 text-slate-500 shrink-0" />
+            <FilterChip active={filter === 'all'} onClick={() => setFilter('all')}>
+              Todas <span className="opacity-60 ml-1">{FOUNDERS_LAYOUTS.length}</span>
             </FilterChip>
-          ))}
-          {shortlist.length > 0 && (
-            <FilterChip
-              active={filter === 'shortlist'}
-              onClick={() => setFilter('shortlist')}
-              variant="rose"
+            {[1, 2, 3, 4].map((r) => (
+              <FilterChip key={r} active={filter === String(r)} onClick={() => setFilter(String(r))}>
+                {ROUND_INFO[r].name} <span className="opacity-60 ml-1">{rounds[r]}</span>
+              </FilterChip>
+            ))}
+            {shortlist.length > 0 && (
+              <FilterChip
+                active={filter === 'shortlist'}
+                onClick={() => setFilter('shortlist')}
+                variant="rose"
+              >
+                <Heart className="w-3.5 h-3.5 inline mr-1 fill-current" /> Shortlist {shortlist.length}
+              </FilterChip>
+            )}
+          </div>
+
+          {/* View mode toggle */}
+          <div className="hidden md:flex items-center gap-1 bg-slate-100 rounded-full p-1 shrink-0">
+            <button
+              onClick={() => setViewMode('wide')}
+              className={`px-3 py-1.5 rounded-full text-xs font-semibold flex items-center gap-1.5 transition ${
+                viewMode === 'wide' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-600 hover:text-slate-900'
+              }`}
+              title="Grid amplio (2 columnas)"
             >
-              <Heart className="w-3.5 h-3.5 inline mr-1 fill-current" /> Shortlist {shortlist.length}
-            </FilterChip>
-          )}
+              <LayoutGrid className="w-3.5 h-3.5" /> Grid
+            </button>
+            <button
+              onClick={() => setViewMode('cinema')}
+              className={`px-3 py-1.5 rounded-full text-xs font-semibold flex items-center gap-1.5 transition ${
+                viewMode === 'cinema' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-600 hover:text-slate-900'
+              }`}
+              title="Vista cinema (uno por fila)"
+            >
+              <Rows3 className="w-3.5 h-3.5" /> Cinema
+            </button>
+          </div>
         </div>
       </div>
 
       {/* Round descripción */}
       {filter !== 'all' && filter !== 'shortlist' && ROUND_INFO[filter] && (
-        <div className="max-w-7xl mx-auto px-6 pt-6">
+        <div className="max-w-[1600px] mx-auto px-6 pt-6">
           <div className="bg-gradient-to-r from-emerald-50 to-amber-50 border border-emerald-100 rounded-2xl p-5">
             <p className="text-xs uppercase tracking-wider font-bold text-emerald-700 mb-1">
               Ronda {filter} · {ROUND_INFO[filter].name}
@@ -139,7 +170,7 @@ export default function FoundersPresentation() {
       )}
 
       {/* Grid */}
-      <main className="max-w-7xl mx-auto px-6 py-8">
+      <main className="max-w-[1600px] mx-auto px-6 py-8">
         {filteredLayouts.length === 0 ? (
           <div className="text-center py-20 text-slate-500">
             <p>Aún no hay layouts en tu shortlist.</p>
@@ -151,7 +182,13 @@ export default function FoundersPresentation() {
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+          <div
+            className={`grid gap-6 ${
+              viewMode === 'cinema'
+                ? 'grid-cols-1 max-w-5xl mx-auto'
+                : 'grid-cols-1 md:grid-cols-2 xl:grid-cols-2 2xl:grid-cols-3'
+            }`}
+          >
             {filteredLayouts.map((layout, i) => (
               <LayoutCard
                 key={layout.id}
@@ -159,7 +196,8 @@ export default function FoundersPresentation() {
                 index={FOUNDERS_LAYOUTS.indexOf(layout)}
                 selected={shortlist.includes(layout.id)}
                 onToggleSelect={toggleSelect}
-                onPreview={setPreview}
+                onPreview={() => setPreviewIndex(i)}
+                viewMode={viewMode}
               />
             ))}
           </div>
@@ -167,7 +205,7 @@ export default function FoundersPresentation() {
       </main>
 
       {/* Footer CTA */}
-      <footer className="max-w-7xl mx-auto px-6 py-12 border-t border-slate-200/70 mt-12">
+      <footer className="max-w-[1600px] mx-auto px-6 py-12 border-t border-slate-200/70 mt-12">
         <div className="bg-gradient-to-br from-slate-900 via-emerald-950 to-slate-900 text-white rounded-3xl p-8 md:p-12 text-center">
           <Sparkles className="w-10 h-10 mx-auto mb-4 text-emerald-300" />
           <h2 className="text-3xl md:text-4xl font-bold font-jakarta mb-3">¿Listos para decidir?</h2>
@@ -193,22 +231,35 @@ export default function FoundersPresentation() {
         </div>
       </footer>
 
-      {/* Modal preview */}
+      {/* Modal preview con navegación */}
       <LayoutPreviewModal
-        layout={preview}
-        onClose={() => setPreview(null)}
+        layout={previewLayout}
+        onClose={() => setPreviewIndex(null)}
         onToggleSelect={toggleSelect}
-        selected={preview && shortlist.includes(preview.id)}
+        selected={previewLayout && shortlist.includes(previewLayout.id)}
+        onPrev={handlePrev}
+        onNext={handleNext}
       />
+    </div>
+  );
+}
+
+function Stat({ value, label, color }) {
+  const colorMap = {
+    emerald: 'text-emerald-700',
+    amber: 'text-amber-700',
+  };
+  return (
+    <div>
+      <p className={`text-2xl font-bold font-jakarta ${colorMap[color] || 'text-slate-900'}`}>{value}</p>
+      <p className="text-xs text-slate-500 uppercase tracking-wider">{label}</p>
     </div>
   );
 }
 
 function FilterChip({ active, onClick, children, variant = 'emerald' }) {
   const activeCls =
-    variant === 'rose'
-      ? 'bg-rose-500 text-white shadow-md'
-      : 'bg-slate-900 text-white shadow-md';
+    variant === 'rose' ? 'bg-rose-500 text-white shadow-md' : 'bg-slate-900 text-white shadow-md';
   return (
     <button
       onClick={onClick}
