@@ -16,6 +16,7 @@ import { syncShownSkusFromMessages, buildOccasionPrompt, clearShownSkus } from '
 import { History } from 'lucide-react';
 import { useAppBackground, getBackgroundById, buildBackgroundImageCSS, BG_OVERLAY, THEME_OVERLAY } from '@/lib/background';
 import BackgroundSwitcher from '@/components/BackgroundSwitcher';
+import LiquidDualToggle from '@/components/LiquidDualToggle';
 import CelebrationBanner from '@/components/landing/CelebrationBanner';
 import FeaturedCarousel from '@/components/landing/FeaturedCarousel';
 import PublicSEO from '@/components/PublicSEO';
@@ -308,117 +309,35 @@ export default function ShopLanding() {
       />
     </div>
 
-    {/* ─── DESKTOP: Layout chat-first original (sin cambios) ─── */}
-    <div
-      className="landing-viewport transition-colors duration-500 hidden lg:block"
-      data-theme-mode={isTheme ? 'theme' : 'nature'}
-      style={{
-        backgroundColor: bg.tint || '#0f172a',
-        backgroundImage: isTheme
-          ? `${THEME_OVERLAY}, url('${bg.url}')`
-          : buildBackgroundImageCSS(bg.url, bg.gradient),
-        backgroundSize: isTheme ? 'auto 100%, cover' : 'cover',
-        backgroundPosition: 'center',
-        backgroundRepeat: 'no-repeat',
-      }}
-    >
+    {/* ─── DESKTOP: Liquid Dual canvas (auto día/noche) ─── */}
+    <div className="landing-viewport ld-canvas hidden lg:block min-h-screen">
       <style>{`
-        /* Desktop: scroll vertical natural (e-commerce showcase).
-           Mobile usa MobileShopLanding con su propio scroll. */
-        html, body { margin: 0; padding: 0; background: #0f172a; }
+        html, body { margin: 0; padding: 0; }
         @media (min-width: 1024px) {
-          .landing-viewport {
-            min-height: 100vh;
-            min-height: 100svh;
-            background-color: #0f172a;
-          }
-        }
-
-        /* ============================================================
-           LIQUID GLASS — iOS 26 / visionOS style (2026-2027 UX trend)
-           Dejamos ver MUCHO más la imagen de fondo:
-           - Transparencia real (bg 6-8%)
-           - Blur sutil + saturate para "vidrio líquido"
-           - Doble capa de luz: highlight superior + borde refractivo
-           - Inner shadow suave para profundidad
-           ============================================================ */
-        .peyu-liquid-glass {
-          background:
-            linear-gradient(180deg, rgba(255,255,255,0.10) 0%, rgba(255,255,255,0.04) 40%, rgba(255,255,255,0.06) 100%);
-          backdrop-filter: blur(18px) saturate(160%);
-          -webkit-backdrop-filter: blur(18px) saturate(160%);
-          border: 1px solid rgba(255,255,255,0.18);
-          box-shadow:
-            0 1px 0 0 rgba(255,255,255,0.25) inset,          /* highlight superior */
-            0 -1px 0 0 rgba(255,255,255,0.06) inset,         /* highlight inferior */
-            0 20px 60px -20px rgba(0,0,0,0.55),              /* sombra profundidad */
-            0 0 0 1px rgba(255,255,255,0.04) inset;          /* refracción */
-          position: relative;
-        }
-        /* Brillo de luz superior (hot spot) — característico del liquid glass */
-        .peyu-liquid-glass::before {
-          content: "";
-          position: absolute;
-          inset: 0;
-          border-radius: inherit;
-          background: radial-gradient(120% 60% at 20% 0%, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0) 55%);
-          pointer-events: none;
-          mix-blend-mode: screen;
-          opacity: 0.8;
-        }
-
-        /* Variante interior (chat) — aún más translúcida */
-        .peyu-liquid-glass-inner {
-          background:
-            linear-gradient(180deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.03) 100%);
-          backdrop-filter: blur(14px) saturate(150%);
-          -webkit-backdrop-filter: blur(14px) saturate(150%);
-          border: 1px solid rgba(255,255,255,0.14);
-          box-shadow:
-            0 1px 0 0 rgba(255,255,255,0.20) inset,
-            0 10px 40px -10px rgba(0,0,0,0.45);
-        }
-
-        /* Modo temático cálido (Día del Trabajador / campañas) */
-        .peyu-liquid-glass-warm {
-          background:
-            linear-gradient(180deg, rgba(244,162,97,0.10) 0%, rgba(120,53,15,0.06) 100%) !important;
-          border-color: rgba(251,191,36,0.22) !important;
-          box-shadow:
-            0 1px 0 0 rgba(253,230,138,0.25) inset,
-            0 10px 40px -10px rgba(0,0,0,0.45),
-            0 0 40px rgba(244,162,97,0.12) !important;
-        }
-
-        /* Fallback para navegadores sin backdrop-filter (raros en 2026) */
-        @supports not (backdrop-filter: blur(1px)) {
-          .peyu-liquid-glass, .peyu-liquid-glass-inner {
-            background: rgba(15,23,42,0.55);
-          }
+          .landing-viewport { min-height: 100vh; min-height: 100svh; }
         }
       `}</style>
       <WhatsAppFloat />
 
-      {/* SIDEBAR - overlay flotante (no empuja el contenido, no duplica fondo) */}
+
+      {/* SIDEBAR Liquid Dual */}
       <aside
-        className={`hidden lg:flex flex-col fixed left-0 top-0 bottom-0 z-[60] bg-slate-900/70 backdrop-blur-md border-r border-white/10 transition-[width] duration-200 ease-out overflow-hidden ${
-          sidebarExpanded ? 'w-48 shadow-2xl shadow-black/40' : 'w-14'
+        className={`hidden lg:flex flex-col fixed left-0 top-0 bottom-0 z-[60] ld-glass-strong border-r border-ld-border transition-[width] duration-200 ease-out overflow-hidden ${
+          sidebarExpanded ? 'w-48 shadow-2xl' : 'w-14'
         }`}
         onMouseEnter={() => setSidebarExpanded(true)}
         onMouseLeave={() => setSidebarExpanded(false)}
       >
-        {/* macOS Header */}
-        <div className="px-3 py-2.5 flex items-center gap-2 flex-shrink-0 border-b border-white/10">
+        <div className="px-3 py-2.5 flex items-center gap-2 flex-shrink-0 border-b border-ld-border">
           <div className="flex gap-1.5">
             <span className="w-2.5 h-2.5 rounded-full bg-red-500/90" />
             <span className="w-2.5 h-2.5 rounded-full bg-yellow-500/90" />
             <span className="w-2.5 h-2.5 rounded-full bg-green-500/90" />
           </div>
-          {sidebarExpanded && <span className="text-[10px] text-white/50 ml-auto font-semibold tracking-wide">PEYU</span>}
+          {sidebarExpanded && <span className="text-[10px] text-ld-fg-muted ml-auto font-bold tracking-[0.18em]">PEYU</span>}
         </div>
 
-        {/* Menu Items — scroll interno si crece (no empuja el footer fuera de pantalla) */}
-        <nav className="flex flex-col items-stretch gap-0.5 px-1.5 py-3 flex-1 overflow-y-auto peyu-scrollbar-light min-h-0">
+        <nav className="flex flex-col items-stretch gap-0.5 px-1.5 py-3 flex-1 overflow-y-auto min-h-0">
           {MENU_ITEMS.map((item) => {
             const Icon = item.icon;
             const isActive = item.href === '/';
@@ -427,27 +346,31 @@ export default function ShopLanding() {
                 key={item.href}
                 to={item.href}
                 title={item.label}
-                className={`flex items-center rounded-lg transition-colors h-11 flex-shrink-0 ${
+                className={`flex items-center rounded-xl transition-colors h-11 flex-shrink-0 ${
                   sidebarExpanded ? 'px-3 gap-3 justify-start' : 'justify-center'
                 } ${
-                  isActive ? 'bg-teal-500/25 text-white ring-1 ring-teal-400/40' : 'text-white/80 hover:bg-white/10 hover:text-white'
+                  isActive ? 'text-ld-fg' : 'text-ld-fg-muted hover:text-ld-fg'
                 }`}
+                style={isActive ? { background: 'var(--ld-action-soft)', boxShadow: 'inset 0 0 0 1px var(--ld-action)' } : undefined}
               >
                 <Icon className="w-[18px] h-[18px] flex-shrink-0" />
-                {sidebarExpanded && <span className="text-xs font-medium whitespace-nowrap overflow-hidden">{item.label}</span>}
+                {sidebarExpanded && <span className="text-xs font-semibold whitespace-nowrap overflow-hidden">{item.label}</span>}
               </Link>
             );
           })}
         </nav>
 
-        {/* Acceso admin discreto — fundadores PEYU.
-            Se posiciona ANTES del espacio del BackgroundSwitcher (bottom-4 + 44px botón = ~64px reservado)
-            para que el botón Admin quede SIEMPRE visible y no se tape con el selector de imagen. */}
-        <div className="px-1.5 pt-2 border-t border-white/10 flex-shrink-0" style={{ paddingBottom: '72px' }}>
+        {/* Toggle Liquid Dual al pie del sidebar */}
+        <div className={`flex-shrink-0 border-t border-ld-border p-2 flex ${sidebarExpanded ? 'justify-start px-3' : 'justify-center'}`}>
+          <LiquidDualToggle compact />
+        </div>
+
+        {/* Acceso admin discreto */}
+        <div className="px-1.5 pb-3 flex-shrink-0">
           <Link
             to="/admin"
             title="Acceso administrador"
-            className={`flex items-center rounded-lg transition-colors h-10 text-white/55 hover:text-teal-300 hover:bg-teal-500/10 border border-white/5 hover:border-teal-400/30 ${
+            className={`flex items-center rounded-lg transition-colors h-10 text-ld-fg-subtle hover:text-ld-action ${
               sidebarExpanded ? 'px-3 gap-3 justify-start' : 'justify-center'
             }`}
           >
@@ -455,11 +378,7 @@ export default function ShopLanding() {
             {sidebarExpanded && <span className="text-[11px] font-semibold whitespace-nowrap overflow-hidden">Admin</span>}
           </Link>
         </div>
-
       </aside>
-
-      {/* Selector de fondo — flotante independiente */}
-      <BackgroundSwitcher />
 
       {/* Main content area — reserva espacio dinámico según sidebar (colapsado 56px / expandido 192px). */}
       <div className={`overflow-y-auto overflow-x-hidden peyu-scrollbar-light transition-[padding] duration-200 ease-out ${sidebarExpanded ? 'lg:pl-48' : 'lg:pl-14'}`}>
@@ -468,22 +387,26 @@ export default function ShopLanding() {
         <div className="flex gap-4 p-4 relative z-10 w-full max-w-[1440px] mx-auto" style={{ minHeight: 'calc(100vh - 32px)' }}>
           {/* IZQUIERDA: Hero gigante (60%) */}
           <div className="flex-1 min-w-0 flex flex-col gap-4">
-            {/* Header bar superior con logo + carrito */}
-            <div className="peyu-liquid-glass rounded-2xl px-5 py-3 flex items-center justify-between gap-3 flex-shrink-0">
+            {/* Header bar Liquid Dual — vidrio auto-adaptativo */}
+            <div className="ld-glass rounded-2xl px-5 py-3 flex items-center justify-between gap-3 flex-shrink-0">
               <PEYULogo size="sm" showText={true} />
               <div className="flex items-center gap-2 flex-shrink-0">
                 <CelebrationBanner onChatPrompt={sendMessage} compact />
+                <LiquidDualToggle compact />
                 <Link to="/shop">
-                  <Button className="bg-red-600 hover:bg-red-700 text-white font-bold rounded-full px-4 h-9 shadow-lg text-xs">📮 Tienda</Button>
+                  <Button className="ld-btn-primary rounded-full px-4 h-9 text-xs font-semibold">Tienda</Button>
                 </Link>
                 <Link to="/b2b/contacto">
-                  <Button className="bg-yellow-400 hover:bg-yellow-500 text-gray-900 font-bold rounded-full px-4 h-9 shadow-lg text-xs">✨ B2B</Button>
+                  <Button className="ld-btn-ghost rounded-full px-4 h-9 text-xs font-semibold text-ld-fg">B2B</Button>
                 </Link>
                 <Link to="/cart">
-                  <button className="relative w-10 h-10 inline-flex items-center justify-center rounded-full bg-teal-500 hover:bg-teal-600 border border-teal-400/50 text-white shadow-md">
+                  <button className="relative w-10 h-10 inline-flex items-center justify-center rounded-full ld-btn-primary">
                     <ShoppingCart className="w-4 h-4" />
                     {carrito.length > 0 && (
-                      <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center ring-2 ring-[#0f172a]/60">
+                      <span
+                        className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 text-[10px] font-bold rounded-full flex items-center justify-center text-white ring-2"
+                        style={{ background: 'var(--ld-highlight)', borderColor: 'var(--ld-bg)' }}
+                      >
                         {carrito.length}
                       </span>
                     )}
@@ -501,23 +424,25 @@ export default function ShopLanding() {
           {/* DERECHA: Chat sticky (40%) */}
           <div className="hidden lg:flex w-[400px] xl:w-[440px] flex-shrink-0">
             <div className="w-full sticky top-4" style={{ height: 'calc(100vh - 32px)' }}>
-              <div className={`peyu-liquid-glass-inner rounded-2xl p-3 flex flex-col h-full overflow-hidden relative transition-all duration-500 ${isTheme ? 'peyu-liquid-glass-warm' : ''}`}>
-                {isTheme && (
-                  <div aria-hidden="true" className="pointer-events-none absolute -top-16 -left-16 w-48 h-48 rounded-full opacity-40 blur-3xl" style={{ backgroundColor: bg.accent || '#F4A261' }} />
-                )}
-
+              <div className="ld-glass rounded-2xl p-3 flex flex-col h-full overflow-hidden relative transition-all duration-500">
                 {/* Agent header */}
-                <div className="mb-2 pb-2 border-b border-white/15 flex items-center gap-2 flex-shrink-0">
+                <div className="mb-2 pb-2 border-b border-ld-border flex items-center gap-2 flex-shrink-0">
                   <div className="relative flex-shrink-0">
-                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-teal-400 to-cyan-500 flex items-center justify-center text-white text-base shadow-md ring-2 ring-white/20">🐢</div>
-                    <span className="absolute -bottom-0.5 -right-0.5 w-2 h-2 rounded-full bg-green-400 ring-2 ring-slate-900/80" />
+                    <div
+                      className="w-8 h-8 rounded-full flex items-center justify-center text-white text-base shadow-md ring-2 ring-white/20"
+                      style={{ background: 'var(--ld-grad-action)' }}
+                    >🐢</div>
+                    <span className="absolute -bottom-0.5 -right-0.5 w-2 h-2 rounded-full bg-emerald-400 ring-2" style={{ borderColor: 'var(--ld-bg)' }} />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="text-white font-bold text-sm leading-tight">Peyu IA</p>
-                    <p className="text-white/55 text-[10px]">Asistente de Gifting · en línea</p>
+                    <p className="font-bold text-sm leading-tight text-ld-fg">Peyu IA</p>
+                    <p className="text-[10px] text-ld-fg-muted">Asistente de Gifting · en línea</p>
                   </div>
                   {historyCount > 0 && (
-                    <button onClick={() => setShowHistory(true)} className="flex items-center gap-1 px-2 py-1 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 text-white/90 text-[10px] font-semibold flex-shrink-0">
+                    <button
+                      onClick={() => setShowHistory(true)}
+                      className="ld-btn-ghost flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-semibold flex-shrink-0"
+                    >
                       <History className="w-3 h-3" />
                       <span>{historyCount}</span>
                     </button>
@@ -533,48 +458,62 @@ export default function ShopLanding() {
                   {messages.map((msg, idx) => (
                     <div key={idx} className={`flex gap-2 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                       {msg.role === 'assistant' && (
-                        <div className="w-6 h-6 rounded-full bg-teal-500/30 flex items-center justify-center flex-shrink-0 text-xs">🐢</div>
+                        <div
+                          className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 text-xs"
+                          style={{ background: 'var(--ld-action-soft)' }}
+                        >🐢</div>
                       )}
-                      <div className={`rounded-2xl px-3.5 py-2 text-xs sm:text-sm break-words leading-relaxed shadow-sm ${msg.role === 'user' ? 'bg-teal-600 text-white rounded-br-sm max-w-[75%]' : 'bg-white/15 text-white border border-white/25 rounded-bl-sm backdrop-blur-sm max-w-[85%]'}`}>
+                      <div
+                        className={`rounded-2xl px-3.5 py-2 text-xs sm:text-sm break-words leading-relaxed shadow-sm ${msg.role === 'user' ? 'rounded-br-sm max-w-[75%] text-white' : 'ld-glass-soft rounded-bl-sm max-w-[85%] text-ld-fg'}`}
+                        style={msg.role === 'user' ? { background: 'var(--ld-grad-action)' } : undefined}
+                      >
                         {msg.role === 'assistant' ? <ChatMessageContent content={msg.content} /> : msg.content}
                       </div>
                     </div>
                   ))}
                   {loading && (
                     <div className="flex gap-2 justify-start">
-                      <div className="w-6 h-6 rounded-full bg-teal-500/30 flex items-center justify-center flex-shrink-0 text-xs">🐢</div>
-                      <div className="bg-white/15 border border-white/25 rounded-xl rounded-bl-none px-3.5 py-2.5 text-white flex items-center gap-1 backdrop-blur-sm">
-                        <div className="w-1.5 h-1.5 bg-white rounded-full animate-bounce"></div>
-                        <div className="w-1.5 h-1.5 bg-white rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
-                        <div className="w-1.5 h-1.5 bg-white rounded-full animate-bounce" style={{ animationDelay: '0.4s' }}></div>
+                      <div className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 text-xs" style={{ background: 'var(--ld-action-soft)' }}>🐢</div>
+                      <div className="ld-glass-soft rounded-xl rounded-bl-none px-3.5 py-2.5 text-ld-fg flex items-center gap-1">
+                        <div className="w-1.5 h-1.5 rounded-full animate-bounce" style={{ background: 'var(--ld-action)' }}></div>
+                        <div className="w-1.5 h-1.5 rounded-full animate-bounce" style={{ background: 'var(--ld-action)', animationDelay: '0.2s' }}></div>
+                        <div className="w-1.5 h-1.5 rounded-full animate-bounce" style={{ background: 'var(--ld-action)', animationDelay: '0.4s' }}></div>
                       </div>
                     </div>
                   )}
                   <div ref={messagesEndRef} />
                 </div>
 
-                {/* Input */}
-                <div className="peyu-chat-input flex gap-2 flex-shrink-0 items-center bg-slate-950/65 rounded-full pl-1.5 pr-1.5 py-1.5 border border-white/15 shadow-[0_8px_24px_-8px_rgba(0,0,0,0.5)] backdrop-blur-xl transition-all">
+                {/* Input Liquid Dual */}
+                <div className="ld-input flex gap-2 flex-shrink-0 items-center pl-1.5 pr-1.5 py-1.5">
                   <Input
                     id="peyu-chat-input-desktop"
                     value={input}
                     onChange={e => setInput(e.target.value)}
                     onKeyDown={e => e.key === 'Enter' && !loading && sendMessage(input)}
                     placeholder="Escribe tu mensaje a Peyu…"
-                    className="bg-transparent border-0 text-white placeholder:text-white/50 text-sm rounded-full focus:ring-0 focus-visible:ring-0 flex-1 h-11 px-4 disabled:opacity-60 shadow-none font-medium"
+                    className="bg-transparent border-0 text-ld-fg placeholder:text-ld-fg-muted text-sm rounded-full focus:ring-0 focus-visible:ring-0 flex-1 h-11 px-4 disabled:opacity-60 shadow-none font-medium"
                     disabled={loading}
                   />
-                  <Button onClick={() => sendMessage(input)} disabled={loading || !input.trim()} className="bg-gradient-to-br from-teal-400 to-cyan-500 hover:from-teal-500 hover:to-cyan-600 text-white rounded-full w-11 h-11 p-0 flex items-center justify-center flex-shrink-0 shadow-lg shadow-teal-500/30 transition-all disabled:opacity-50">
+                  <Button
+                    onClick={() => sendMessage(input)}
+                    disabled={loading || !input.trim()}
+                    className="ld-btn-primary rounded-full w-11 h-11 p-0 flex items-center justify-center flex-shrink-0 disabled:opacity-50"
+                  >
                     <Send className="w-[18px] h-[18px]" />
                   </Button>
                 </div>
 
-                {/* Quick replies */}
+                {/* Quick replies Liquid Dual */}
                 <div className="flex-shrink-0 mt-2 overflow-x-auto scrollbar-hide flex gap-1 pb-0.5">
                   {OCASIONES.map(occ => (
-                    <button key={occ.id} onClick={() => handleOccasionClick(occ)} className="flex items-center gap-1 flex-shrink-0 bg-white/[0.06] hover:bg-teal-500/20 border border-white/10 hover:border-teal-400/40 transition rounded-full px-2 py-0.5">
+                    <button
+                      key={occ.id}
+                      onClick={() => handleOccasionClick(occ)}
+                      className="ld-btn-ghost flex items-center gap-1 flex-shrink-0 rounded-full px-2 py-0.5 hover:border-ld-action transition"
+                    >
                       <span className="text-[10px] leading-none">{occ.icon}</span>
-                      <span className="text-white/75 text-[10px] font-medium whitespace-nowrap">{occ.label}</span>
+                      <span className="text-[10px] font-medium whitespace-nowrap text-ld-fg-soft">{occ.label}</span>
                     </button>
                   ))}
                 </div>

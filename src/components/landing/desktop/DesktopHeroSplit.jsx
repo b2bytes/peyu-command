@@ -2,72 +2,86 @@ import { Link } from 'react-router-dom';
 import { Sparkles, ArrowRight, Recycle, ShieldCheck, Award } from 'lucide-react';
 
 /**
- * Hero gigante (col izquierda) en desktop.
- * Propuesta de valor + CTAs + micro trust signals.
- * Glassmorphism sobre el fondo dinámico (BackgroundSwitcher).
+ * Hero Liquid Dual — desktop.
+ * Sigue el sistema PEYU 2026: tipografía Fraunces italic display,
+ * vidrio líquido auto-adaptativo (light/dark), acción verde firma,
+ * acento terracota para palabras editoriales.
  */
 export default function DesktopHeroSplit({ onOpenChat }) {
   return (
-    <div className="peyu-liquid-glass rounded-3xl overflow-hidden flex flex-col h-full p-8 xl:p-10 relative">
-      {/* Glow ambient */}
-      <div className="absolute -top-20 -left-20 w-64 h-64 bg-emerald-500/25 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute -bottom-20 -right-20 w-64 h-64 bg-cyan-500/15 rounded-full blur-3xl pointer-events-none" />
+    <div className="ld-glass rounded-[28px] overflow-hidden flex flex-col h-full p-9 xl:p-12 relative">
+      {/* Glow ambient sutil — verde acción + terracota highlight */}
+      <div
+        className="absolute -top-24 -left-20 w-72 h-72 rounded-full pointer-events-none opacity-50 blur-3xl"
+        style={{ background: 'var(--ld-action)' }}
+      />
+      <div
+        className="absolute -bottom-24 -right-20 w-80 h-80 rounded-full pointer-events-none opacity-25 blur-3xl"
+        style={{ background: 'var(--ld-highlight)' }}
+      />
 
       <div className="relative flex-1 flex flex-col justify-center">
-        {/* Badge */}
-        <div className="inline-flex items-center gap-1.5 bg-white/15 backdrop-blur-md border border-white/25 rounded-full px-3 py-1 mb-5 self-start">
-          <Sparkles className="w-3.5 h-3.5 text-yellow-300" />
-          <span className="text-[11px] font-bold tracking-wider uppercase text-white">
-            Hecho en Chile · 100% Reciclado
+        {/* Eyebrow */}
+        <div
+          className="inline-flex items-center gap-2 ld-glass-soft rounded-full px-3.5 py-1.5 mb-7 self-start"
+        >
+          <span
+            className="w-1.5 h-1.5 rounded-full animate-pulse"
+            style={{ background: 'var(--ld-action)' }}
+          />
+          <span className="text-[10.5px] font-bold tracking-[0.18em] uppercase text-ld-fg-soft">
+            PEYU 2026 · Hecho en Chile
           </span>
         </div>
 
-        {/* Headline */}
-        <h2 className="font-poppins font-black text-white text-[44px] xl:text-[56px] leading-[1.02] mb-4 tracking-tight">
-          Regalos chilenos<br />
-          <span className="bg-gradient-to-r from-emerald-300 to-cyan-300 bg-clip-text text-transparent">
-            con propósito 🌱
+        {/* Headline editorial — Fraunces italic firma del sistema */}
+        <h2 className="ld-display text-[56px] xl:text-[80px] mb-5 text-ld-fg">
+          Regalos
+          <br />
+          <span className="ld-display-italic" style={{ color: 'var(--ld-highlight)' }}>
+            con propósito.
           </span>
         </h2>
 
-        <p className="text-white/80 text-base xl:text-lg leading-relaxed mb-7 max-w-[480px]">
-          Diseñados con plástico 100% reciclado, grabado láser gratis y 10 años de garantía.
-          Para tu casa, tu oficina o tu equipo entero.
+        <p className="text-base xl:text-[17px] leading-[1.65] mb-9 max-w-[500px] text-ld-fg-soft font-light">
+          Plástico 100% reciclado, grabado láser de regalo y diez años de garantía.
+          Para tu casa, tu oficina o tu equipo entero —{' '}
+          <span className="font-semibold text-ld-fg">en cualquier hora del día</span>.
         </p>
 
         {/* CTAs duales */}
-        <div className="flex flex-wrap gap-3 mb-7">
+        <div className="flex flex-wrap gap-3 mb-9">
           <Link to="/shop">
-            <button className="bg-white hover:bg-white/95 active:bg-white/90 text-emerald-900 font-bold rounded-2xl px-6 py-3.5 flex items-center gap-2 shadow-xl shadow-emerald-900/30 transition-all hover:scale-[1.02] active:scale-[0.98]">
-              <span className="text-sm">Ver tienda</span>
+            <button className="ld-btn-primary rounded-2xl px-7 py-4 flex items-center gap-2 font-semibold text-[15px]">
+              <span>Explorar tienda</span>
               <ArrowRight className="w-4 h-4" />
             </button>
           </Link>
           <button
             onClick={onOpenChat}
-            className="bg-white/10 hover:bg-white/20 active:bg-white/25 text-white border border-white/30 backdrop-blur-md font-semibold rounded-2xl px-6 py-3.5 flex items-center gap-2 transition-all hover:scale-[1.02]"
+            className="ld-btn-ghost rounded-2xl px-6 py-4 flex items-center gap-2 font-semibold text-[15px] text-ld-fg"
           >
-            <Sparkles className="w-4 h-4 text-cyan-300" />
-            <span className="text-sm">Hablar con Peyu IA →</span>
+            <Sparkles className="w-4 h-4" style={{ color: 'var(--ld-highlight)' }} />
+            <span>Conversar con Peyu IA</span>
           </button>
         </div>
 
-        {/* Trust mini-row */}
-        <div className="flex flex-wrap items-center gap-x-5 gap-y-2 pt-5 border-t border-white/15">
-          <div className="flex items-center gap-1.5 text-white/85">
-            <Recycle className="w-4 h-4 text-emerald-300" />
-            <span className="text-[12px] font-semibold">100% Reciclado</span>
-          </div>
-          <div className="flex items-center gap-1.5 text-white/85">
-            <ShieldCheck className="w-4 h-4 text-cyan-300" />
-            <span className="text-[12px] font-semibold">10 años garantía</span>
-          </div>
-          <div className="flex items-center gap-1.5 text-white/85">
-            <Award className="w-4 h-4 text-yellow-300" />
-            <span className="text-[12px] font-semibold">Empresa B Chile</span>
-          </div>
+        {/* Trust row */}
+        <div className="flex flex-wrap items-center gap-x-7 gap-y-2 pt-6 border-t border-ld-border">
+          <TrustItem icon={Recycle} label="100% reciclado" />
+          <TrustItem icon={ShieldCheck} label="10 años garantía" />
+          <TrustItem icon={Award} label="Empresa B Chile" />
         </div>
       </div>
+    </div>
+  );
+}
+
+function TrustItem({ icon: Icon, label }) {
+  return (
+    <div className="flex items-center gap-2 text-ld-fg-soft">
+      <Icon className="w-[15px] h-[15px]" style={{ color: 'var(--ld-action)' }} />
+      <span className="text-[12px] font-semibold tracking-tight">{label}</span>
     </div>
   );
 }

@@ -1,51 +1,149 @@
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,400;1,9..144,500;1,9..144,600;1,9..144,700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/* ═══════════════════════════════════════════════════════════════════
+   PEYU 2026 · LIQUID DUAL DESIGN SYSTEM
+   Sistema dual día/noche auto-adaptativo (Apple iOS 26 vibe).
+   Paleta firma:
+     Light  · #FFFFFF (canvas) + #020617 (text) + #0F8B6C (action) + #D96B4D (highlight)
+     Dark   · #020617 (canvas) + #FFFFFF (text) + #0F8B6C (action) + #D96B4D (highlight)
+   Selector: html[data-liquid-mode="day"] | html[data-liquid-mode="night"]
+   ─────────────────────────────────────────────────────────────────── */
+
 @layer base {
-  :root {
-    --background: 40 20% 97%;
-    --foreground: 210 15% 20%;
+  :root,
+  html[data-liquid-mode="day"] {
+    /* ─── Liquid Dual · DAY ─── */
+    --ld-bg:            #FFFFFF;
+    --ld-bg-soft:       #F7F7F5;
+    --ld-bg-elevated:   #FBFBF9;
+    --ld-fg:            #020617;
+    --ld-fg-soft:       #1F2937;
+    --ld-fg-muted:      #6B7280;
+    --ld-fg-subtle:     #9CA3AF;
+    --ld-action:        #0F8B6C;
+    --ld-action-hover:  #0B6E55;
+    --ld-action-soft:   #E6F4EF;
+    --ld-highlight:     #D96B4D;
+    --ld-highlight-soft:#FBE9E1;
+    --ld-border:        rgba(2, 6, 23, 0.08);
+    --ld-border-strong: rgba(2, 6, 23, 0.16);
+    --ld-glass:         rgba(255, 255, 255, 0.72);
+    --ld-glass-soft:    rgba(255, 255, 255, 0.55);
+    --ld-glass-strong:  rgba(255, 255, 255, 0.88);
+    --ld-glass-border:  rgba(255, 255, 255, 0.65);
+    --ld-glass-shadow:  0 1px 0 rgba(255,255,255,0.9) inset, 0 12px 40px -16px rgba(2,6,23,0.18);
+    --ld-glass-blur:    18px;
+    --ld-grad-action:   linear-gradient(135deg,#0F8B6C 0%, #0B6E55 100%);
+    --ld-grad-canvas:   radial-gradient(120% 80% at 0% 0%, #F0FDF8 0%, #FFFFFF 35%, #FBF6F0 100%);
+    --ld-shadow-sm:     0 1px 2px rgba(2, 6, 23, 0.06);
+    --ld-shadow-md:     0 8px 24px -8px rgba(2, 6, 23, 0.12);
+    --ld-shadow-lg:     0 24px 60px -20px rgba(2, 6, 23, 0.20);
+    --ld-ring:          rgba(15, 139, 108, 0.45);
+
+    /* ─── Shadcn aliases (light) ─── */
+    --background: 0 0% 100%;
+    --foreground: 222 47% 4%;
     --card: 0 0% 100%;
-    --card-foreground: 210 15% 20%;
+    --card-foreground: 222 47% 4%;
     --popover: 0 0% 100%;
-    --popover-foreground: 210 15% 20%;
+    --popover-foreground: 222 47% 4%;
     --primary: 163 80% 30%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 35 30% 85%;
-    --secondary-foreground: 210 15% 20%;
-    --muted: 35 20% 92%;
-    --muted-foreground: 210 10% 50%;
-    --accent: 163 40% 88%;
-    --accent-foreground: 163 80% 20%;
+    --secondary: 60 9% 96%;
+    --secondary-foreground: 222 47% 4%;
+    --muted: 60 9% 96%;
+    --muted-foreground: 215 14% 42%;
+    --accent: 163 40% 92%;
+    --accent-foreground: 163 80% 18%;
     --destructive: 15 65% 55%;
     --destructive-foreground: 0 0% 100%;
-    --border: 35 20% 88%;
-    --input: 35 20% 88%;
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
     --ring: 163 80% 30%;
     --chart-1: 163 80% 30%;
     --chart-2: 15 65% 55%;
     --chart-3: 35 30% 70%;
     --chart-4: 163 40% 60%;
-    --chart-5: 210 15% 40%;
-    --radius: 0.75rem;
-    --sidebar-background: 210 20% 15%;
-    --sidebar-foreground: 35 30% 90%;
+    --chart-5: 222 47% 20%;
+    --radius: 0.875rem;
+    --sidebar-background: 222 47% 4%;
+    --sidebar-foreground: 60 9% 96%;
     --sidebar-primary: 163 80% 40%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 210 20% 22%;
-    --sidebar-accent-foreground: 35 30% 90%;
-    --sidebar-border: 210 20% 22%;
+    --sidebar-accent: 222 47% 10%;
+    --sidebar-accent-foreground: 60 9% 96%;
+    --sidebar-border: 222 47% 12%;
     --sidebar-ring: 163 80% 40%;
 
-    /* Peyu Brand */
+    /* Peyu brand */
     --peyu-green: #0F8B6C;
     --peyu-arena: #E7D8C6;
     --peyu-gray: #4B4F54;
     --peyu-terracota: #D96B4D;
     --peyu-light-green: #A7D9C9;
+  }
+
+  html[data-liquid-mode="night"] {
+    /* ─── Liquid Dual · NIGHT ─── */
+    --ld-bg:            #020617;
+    --ld-bg-soft:       #0B1224;
+    --ld-bg-elevated:   #0F172A;
+    --ld-fg:            #FFFFFF;
+    --ld-fg-soft:       #E5E7EB;
+    --ld-fg-muted:      #94A3B8;
+    --ld-fg-subtle:     #64748B;
+    --ld-action:        #14B894;
+    --ld-action-hover:  #1FD6AC;
+    --ld-action-soft:   rgba(15, 139, 108, 0.18);
+    --ld-highlight:     #F08560;
+    --ld-highlight-soft:rgba(217, 107, 77, 0.18);
+    --ld-border:        rgba(255, 255, 255, 0.10);
+    --ld-border-strong: rgba(255, 255, 255, 0.20);
+    --ld-glass:         rgba(15, 23, 42, 0.55);
+    --ld-glass-soft:    rgba(15, 23, 42, 0.35);
+    --ld-glass-strong:  rgba(2, 6, 23, 0.78);
+    --ld-glass-border:  rgba(255, 255, 255, 0.14);
+    --ld-glass-shadow:  0 1px 0 rgba(255,255,255,0.10) inset, 0 16px 40px -16px rgba(0,0,0,0.55);
+    --ld-glass-blur:    20px;
+    --ld-grad-action:   linear-gradient(135deg,#14B894 0%, #0F8B6C 100%);
+    --ld-grad-canvas:   radial-gradient(120% 80% at 0% 0%, #0B2A24 0%, #020617 45%, #0A0F1E 100%);
+    --ld-shadow-sm:     0 1px 2px rgba(0, 0, 0, 0.40);
+    --ld-shadow-md:     0 8px 24px -8px rgba(0, 0, 0, 0.55);
+    --ld-shadow-lg:     0 24px 60px -20px rgba(0, 0, 0, 0.65);
+    --ld-ring:          rgba(20, 184, 148, 0.50);
+
+    /* ─── Shadcn aliases (dark) ─── */
+    --background: 222 47% 4%;
+    --foreground: 0 0% 100%;
+    --card: 222 47% 6%;
+    --card-foreground: 0 0% 100%;
+    --popover: 222 47% 6%;
+    --popover-foreground: 0 0% 100%;
+    --primary: 165 80% 40%;
+    --primary-foreground: 222 47% 4%;
+    --secondary: 222 47% 10%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 222 47% 10%;
+    --muted-foreground: 215 14% 65%;
+    --accent: 165 50% 18%;
+    --accent-foreground: 165 80% 70%;
+    --destructive: 15 70% 55%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 222 47% 12%;
+    --input: 222 47% 12%;
+    --ring: 165 80% 50%;
+  }
+
+  /* Reduced motion respeta sistema */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
   }
 }
 
@@ -53,16 +151,137 @@
   * {
     @apply border-border outline-ring/50;
   }
+  html {
+    color-scheme: light;
+    transition: background-color 600ms ease, color 600ms ease;
+  }
+  html[data-liquid-mode="night"] { color-scheme: dark; }
+
   body {
-    @apply bg-background text-foreground font-inter;
+    @apply font-inter;
+    background-color: var(--ld-bg);
+    color: var(--ld-fg);
     font-feature-settings: "cv02", "cv03", "cv04", "cv11", "ss01";
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    transition: background-color 600ms ease, color 600ms ease;
   }
   h1, h2, h3, h4, h5, h6 {
     @apply font-jakarta;
     letter-spacing: -0.02em;
   }
+  /* Selección con highlight terracota distintivo */
+  ::selection {
+    background: var(--ld-highlight-soft);
+    color: var(--ld-fg);
+  }
+}
+
+/* ═══ Liquid Dual · utility classes ═══ */
+@layer components {
+  /* Canvas full-screen con gradient ambient característico */
+  .ld-canvas {
+    background: var(--ld-grad-canvas);
+    color: var(--ld-fg);
+    transition: background 600ms ease, color 600ms ease;
+  }
+  /* Vidrio líquido — variante principal */
+  .ld-glass {
+    background: var(--ld-glass);
+    backdrop-filter: blur(var(--ld-glass-blur)) saturate(160%);
+    -webkit-backdrop-filter: blur(var(--ld-glass-blur)) saturate(160%);
+    border: 1px solid var(--ld-glass-border);
+    box-shadow: var(--ld-glass-shadow);
+    color: var(--ld-fg);
+  }
+  .ld-glass-soft {
+    background: var(--ld-glass-soft);
+    backdrop-filter: blur(14px) saturate(150%);
+    -webkit-backdrop-filter: blur(14px) saturate(150%);
+    border: 1px solid var(--ld-glass-border);
+    color: var(--ld-fg);
+  }
+  .ld-glass-strong {
+    background: var(--ld-glass-strong);
+    backdrop-filter: blur(24px) saturate(170%);
+    -webkit-backdrop-filter: blur(24px) saturate(170%);
+    border: 1px solid var(--ld-glass-border);
+    box-shadow: var(--ld-glass-shadow);
+    color: var(--ld-fg);
+  }
+  /* Botón principal Liquid Dual (acción verde firma) */
+  .ld-btn-primary {
+    background: var(--ld-grad-action);
+    color: #FFFFFF;
+    box-shadow: var(--ld-shadow-md), 0 0 0 1px rgba(255,255,255,0.05) inset;
+    transition: transform 200ms ease, box-shadow 200ms ease, filter 200ms ease;
+  }
+  .ld-btn-primary:hover { filter: brightness(1.06); transform: translateY(-1px); }
+  .ld-btn-primary:active { transform: translateY(0); filter: brightness(0.97); }
+
+  .ld-btn-ghost {
+    background: var(--ld-glass-soft);
+    color: var(--ld-fg);
+    border: 1px solid var(--ld-glass-border);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    transition: background 200ms ease;
+  }
+  .ld-btn-ghost:hover { background: var(--ld-glass); }
+
+  /* Card Liquid Dual */
+  .ld-card {
+    background: var(--ld-bg-elevated);
+    color: var(--ld-fg);
+    border: 1px solid var(--ld-border);
+    border-radius: var(--radius);
+    box-shadow: var(--ld-shadow-sm);
+    transition: box-shadow 250ms ease, transform 250ms ease, border-color 250ms ease;
+  }
+  .ld-card:hover {
+    box-shadow: var(--ld-shadow-md);
+    border-color: var(--ld-border-strong);
+  }
+
+  /* Input estilo iOS 26 */
+  .ld-input {
+    background: var(--ld-glass-soft);
+    color: var(--ld-fg);
+    border: 1px solid var(--ld-border);
+    border-radius: 999px;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    transition: border-color 200ms ease, box-shadow 200ms ease;
+  }
+  .ld-input::placeholder { color: var(--ld-fg-muted); }
+  .ld-input:focus {
+    outline: none;
+    border-color: var(--ld-action);
+    box-shadow: 0 0 0 3px var(--ld-ring);
+  }
+
+  /* Highlight terracota (acentos editoriales) */
+  .ld-highlight { color: var(--ld-highlight); }
+  .ld-highlight-bg { background: var(--ld-highlight-soft); color: var(--ld-fg); }
+
+  /* Texto editorial Fraunces — la firma del sistema */
+  .ld-display {
+    font-family: 'Fraunces', 'Plus Jakarta Sans', serif;
+    font-variation-settings: "opsz" 144;
+    font-weight: 500;
+    letter-spacing: -0.025em;
+    line-height: 0.95;
+  }
+  .ld-display-italic {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-variation-settings: "opsz" 144;
+    font-weight: 400;
+    letter-spacing: -0.02em;
+  }
+
+  /* Divider sutil */
+  .ld-divider { background: var(--ld-border); height: 1px; width: 100%; }
 }
 
 /* Scrollbar premium para el chat Peyu (widget flotante). Fina, translúcida,

@@ -8,6 +8,8 @@ module.exports = {
         jakarta: ['"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
         poppins: ['Poppins', 'sans-serif'],
         inter: ['Inter', 'system-ui', 'sans-serif'],
+        fraunces: ['Fraunces', 'Georgia', 'serif'],
+        display: ['Fraunces', '"Plus Jakarta Sans"', 'serif'],
       },
   		borderRadius: {
   			lg: 'var(--radius)',
@@ -71,6 +73,23 @@ module.exports = {
           gray: '#4B4F54',
           terracota: '#D96B4D',
           'light-green': '#A7D9C9',
+        },
+        ld: {
+          bg: 'var(--ld-bg)',
+          'bg-soft': 'var(--ld-bg-soft)',
+          'bg-elevated': 'var(--ld-bg-elevated)',
+          fg: 'var(--ld-fg)',
+          'fg-soft': 'var(--ld-fg-soft)',
+          'fg-muted': 'var(--ld-fg-muted)',
+          'fg-subtle': 'var(--ld-fg-subtle)',
+          action: 'var(--ld-action)',
+          'action-hover': 'var(--ld-action-hover)',
+          'action-soft': 'var(--ld-action-soft)',
+          highlight: 'var(--ld-highlight)',
+          'highlight-soft': 'var(--ld-highlight-soft)',
+          border: 'var(--ld-border)',
+          'border-strong': 'var(--ld-border-strong)',
+          glass: 'var(--ld-glass)',
         }
   		},
   		keyframes: {
@@ -94,5 +113,11 @@ module.exports = {
     'bg-peyu-green', 'bg-peyu-arena', 'bg-peyu-gray', 'bg-peyu-terracota', 'bg-peyu-light-green',
     'text-peyu-green', 'text-peyu-terracota', 'text-peyu-gray',
     'border-peyu-green', 'border-peyu-terracota',
+    'ld-canvas', 'ld-glass', 'ld-glass-soft', 'ld-glass-strong',
+    'ld-btn-primary', 'ld-btn-ghost', 'ld-card', 'ld-input',
+    'ld-display', 'ld-display-italic', 'ld-highlight', 'ld-highlight-bg',
+    'bg-ld-bg', 'bg-ld-bg-soft', 'bg-ld-bg-elevated',
+    'text-ld-fg', 'text-ld-fg-muted', 'text-ld-fg-soft', 'text-ld-action', 'text-ld-highlight',
+    'border-ld-border', 'border-ld-action',
   ]
 }

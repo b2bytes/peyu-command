@@ -1,11 +1,10 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
-import { Star, ArrowRight } from 'lucide-react';
+import { Star, ArrowUpRight } from 'lucide-react';
 
 /**
- * Grid 4-columnas de top sellers para desktop.
- * Mismos productos REALES del top sellers móvil pero con cards más grandes y hover.
+ * Top sellers Liquid Dual — cards editoriales con vidrio auto-adaptativo.
  */
 export default function DesktopTopSellers() {
   const [products, setProducts] = useState([]);
@@ -31,54 +30,63 @@ export default function DesktopTopSellers() {
   if (!loading && products.length === 0) return null;
 
   return (
-    <section className="px-6 py-10">
-      <div className="flex items-end justify-between mb-6">
+    <section className="px-6 py-12">
+      <div className="flex items-end justify-between mb-7">
         <div>
-          <p className="text-yellow-300 text-[11px] font-bold tracking-[0.2em] uppercase mb-1">⭐ Top Sellers</p>
-          <h2 className="text-white font-poppins font-black text-3xl">Lo más regalado</h2>
-          <p className="text-white/55 text-sm mt-1">Los favoritos de nuestros clientes</p>
+          <p className="text-[11px] font-bold tracking-[0.22em] uppercase mb-2" style={{ color: 'var(--ld-highlight)' }}>
+            ★ Top Sellers
+          </p>
+          <h2 className="ld-display text-4xl xl:text-5xl text-ld-fg">
+            Lo más <span className="ld-display-italic" style={{ color: 'var(--ld-highlight)' }}>regalado</span>
+          </h2>
+          <p className="text-ld-fg-muted text-sm mt-2">Los favoritos de nuestros clientes</p>
         </div>
-        <Link to="/shop" className="text-teal-300 text-sm font-semibold hover:text-teal-200 flex items-center gap-1 transition">
-          Ver toda la tienda →
+        <Link
+          to="/shop"
+          className="text-sm font-semibold flex items-center gap-1 transition hover:opacity-80"
+          style={{ color: 'var(--ld-action)' }}
+        >
+          Ver toda la tienda <ArrowUpRight className="w-4 h-4" />
         </Link>
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {loading
           ? [...Array(4)].map((_, i) => (
-              <div key={i} className="aspect-[3/4] rounded-2xl bg-white/5 peyu-shimmer" />
+              <div key={i} className="aspect-[3/4] rounded-2xl peyu-shimmer" style={{ background: 'var(--ld-bg-soft)' }} />
             ))
           : products.slice(0, 8).map((p) => (
-              <Link
-                key={p.id}
-                to={`/producto/${p.id}`}
-                className="group block"
-              >
-                <div className="relative aspect-[3/4] rounded-2xl overflow-hidden bg-white/5 border border-white/10 mb-3 hover:border-teal-400/40 hover:scale-[1.02] transition-all duration-300">
+              <Link key={p.id} to={`/producto/${p.id}`} className="group block">
+                <div
+                  className="relative aspect-[3/4] rounded-2xl overflow-hidden mb-3 transition-all duration-300 group-hover:-translate-y-1"
+                  style={{
+                    background: 'var(--ld-bg-soft)',
+                    border: '1px solid var(--ld-border)',
+                    boxShadow: 'var(--ld-shadow-sm)',
+                  }}
+                >
                   <img
                     src={p.imagen_url}
                     alt={p.nombre}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                     loading="lazy"
                   />
-                  <div className="absolute top-3 left-3 bg-black/70 backdrop-blur-sm text-white text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md">
+                  <div
+                    className="absolute top-3 left-3 backdrop-blur-md text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md"
+                    style={{ background: 'var(--ld-glass-strong)', color: 'var(--ld-fg)', border: '1px solid var(--ld-glass-border)' }}
+                  >
                     {p.categoria}
                   </div>
-                  <div className="absolute bottom-3 left-3 flex items-center gap-1 bg-black/70 backdrop-blur-sm rounded-md px-2 py-1">
-                    <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
-                    <span className="text-white text-[10px] font-bold">4.8</span>
-                  </div>
-                  {/* Quick view overlay */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition flex items-end justify-center pb-4">
-                    <span className="text-white text-xs font-bold flex items-center gap-1">
-                      Ver detalle <ArrowRight className="w-3 h-3" />
-                    </span>
+                  <div
+                    className="absolute bottom-3 left-3 flex items-center gap-1 backdrop-blur-md rounded-md px-2 py-1"
+                    style={{ background: 'var(--ld-glass-strong)', border: '1px solid var(--ld-glass-border)' }}
+                  >
+                    <Star className="w-3 h-3" style={{ color: 'var(--ld-highlight)', fill: 'var(--ld-highlight)' }} />
+                    <span className="text-[10px] font-bold text-ld-fg">4.8</span>
                   </div>
                 </div>
-                <p className="text-white text-sm font-semibold leading-tight line-clamp-2 mb-1">
-                  {p.nombre}
-                </p>
-                <p className="text-teal-300 text-base font-bold">
+                <p className="text-sm font-semibold leading-tight line-clamp-2 mb-1 text-ld-fg">{p.nombre}</p>
+                <p className="text-base font-bold" style={{ color: 'var(--ld-action)' }}>
                   ${(p.precio_b2c || 0).toLocaleString('es-CL')}
                 </p>
               </Link>

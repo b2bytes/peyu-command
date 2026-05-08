@@ -6,8 +6,7 @@ import AsistenteChat from './AsistenteChat';
 import ChatCartToast from './chat/ChatCartToast';
 import PublicMobileNav from './PublicMobileNav';
 import PublicMobileHeader from './PublicMobileHeader';
-import BackgroundSwitcher from './BackgroundSwitcher';
-import { useAppBackground, getBackgroundById, buildBackgroundImageCSS, BG_OVERLAY, THEME_OVERLAY } from '@/lib/background';
+import LiquidDualToggle from './LiquidDualToggle';
 
 const MENU_ITEMS = [
   { href: '/', label: 'Inicio', icon: Home },
@@ -25,44 +24,27 @@ const MENU_ITEMS = [
 export default function PublicLayout() {
   const [sidebarExpanded, setSidebarExpanded] = useState(false);
   const location = useLocation();
-  const [bgId] = useAppBackground();
-  const bg = getBackgroundById(bgId);
-  const isTheme = bg.category === 'Temas';
 
   return (
-    // Un SOLO contenedor con el fondo. Evita repintar la imagen 3 veces.
-    // Si es un tema (poster/editorial con texto), se muestra COMPLETO sobre un tinte,
-    // evitando que el mensaje se corte. Para naturaleza se usa cover clásico.
-    <div
-      className="relative h-screen w-full overflow-hidden transition-colors duration-500"
-      data-theme-mode={isTheme ? 'theme' : 'nature'}
-      style={{
-        backgroundColor: bg.tint || '#0f172a',
-        backgroundImage: isTheme
-          ? `${THEME_OVERLAY}, url('${bg.url}')`
-          : buildBackgroundImageCSS(bg.url),
-        backgroundSize: isTheme ? 'auto 100%, cover' : 'cover',
-        backgroundPosition: 'center',
-        backgroundRepeat: 'no-repeat',
-      }}
-    >
-      {/* SIDEBAR - overlay flotante, no empuja el contenido */}
+    // Liquid Dual canvas — auto día/noche, sin imágenes de fondo dinámicas.
+    <div className="relative h-screen w-full overflow-hidden ld-canvas">
+      {/* SIDEBAR Liquid Dual */}
       <aside
         onMouseEnter={() => setSidebarExpanded(true)}
         onMouseLeave={() => setSidebarExpanded(false)}
-        className={`hidden lg:flex flex-col fixed left-0 top-0 bottom-0 z-[60] bg-slate-900/70 backdrop-blur-md border-r border-white/10 transition-[width] duration-200 ease-out overflow-hidden ${
-          sidebarExpanded ? 'w-48 shadow-2xl shadow-black/40' : 'w-14'
+        className={`hidden lg:flex flex-col fixed left-0 top-0 bottom-0 z-[60] ld-glass-strong border-r border-ld-border transition-[width] duration-200 ease-out overflow-hidden ${
+          sidebarExpanded ? 'w-48 shadow-2xl' : 'w-14'
         }`}
       >
         {/* macOS Header */}
-        <div className="px-3 py-2.5 flex items-center gap-2 flex-shrink-0 border-b border-white/10">
+        <div className="px-3 py-2.5 flex items-center gap-2 flex-shrink-0 border-b border-ld-border">
           <div className="flex gap-1.5">
             <span className="w-2.5 h-2.5 rounded-full bg-red-500/90" />
             <span className="w-2.5 h-2.5 rounded-full bg-yellow-500/90" />
             <span className="w-2.5 h-2.5 rounded-full bg-green-500/90" />
           </div>
           {sidebarExpanded && (
-            <span className="text-[10px] text-white/50 ml-auto font-semibold tracking-wide">PEYU</span>
+            <span className="text-[10px] text-ld-fg-muted ml-auto font-bold tracking-[0.18em]">PEYU</span>
           )}
         </div>
 
@@ -78,17 +60,18 @@ export default function PublicLayout() {
                 key={item.href}
                 to={item.href}
                 title={item.label}
-                className={`flex items-center rounded-lg transition-colors h-11 ${
+                className={`flex items-center rounded-xl transition-colors h-11 ${
                   sidebarExpanded ? 'px-3 gap-3 justify-start' : 'justify-center'
                 } ${
                   isActive
-                    ? 'bg-teal-500/25 text-white ring-1 ring-teal-400/40'
-                    : 'text-white/80 hover:bg-white/10 hover:text-white'
+                    ? 'text-ld-fg ring-1'
+                    : 'text-ld-fg-muted hover:text-ld-fg'
                 }`}
+                style={isActive ? { background: 'var(--ld-action-soft)', boxShadow: 'inset 0 0 0 1px var(--ld-action)' } : undefined}
               >
                 <Icon className="w-[18px] h-[18px] flex-shrink-0" />
                 {sidebarExpanded && (
-                  <span className="text-xs font-medium whitespace-nowrap overflow-hidden">
+                  <span className="text-xs font-semibold whitespace-nowrap overflow-hidden">
                     {item.label}
                   </span>
                 )}
@@ -97,10 +80,11 @@ export default function PublicLayout() {
           })}
         </nav>
 
+        {/* Toggle Liquid Dual al pie del sidebar */}
+        <div className={`flex-shrink-0 border-t border-ld-border p-2 flex ${sidebarExpanded ? 'justify-start px-3' : 'justify-center'}`}>
+          <LiquidDualToggle compact />
+        </div>
       </aside>
-
-      {/* Selector de fondo — flotante independiente */}
-      <BackgroundSwitcher />
 
       {/* MAIN CONTENT — sin backgroundImage propio, reserva espacio solo para el sidebar colapsado en desktop */}
       <main className="absolute inset-0 overflow-auto pb-16 lg:pb-0 lg:pl-14 flex flex-col">
