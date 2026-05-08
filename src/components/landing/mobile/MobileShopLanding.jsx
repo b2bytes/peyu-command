@@ -57,12 +57,17 @@ export default function MobileShopLanding({
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-950 via-emerald-950/40 to-slate-950 relative">
-      {/* Background ambient */}
+    <div className="min-h-screen ld-canvas relative">
+      {/* Glow ambient auto-adaptativo (verde acción + terracota highlight) */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
-        <div className="absolute -top-40 -right-20 w-80 h-80 bg-emerald-500/15 rounded-full blur-[100px]" />
-        <div className="absolute top-[40%] -left-20 w-72 h-72 bg-cyan-500/10 rounded-full blur-[100px]" />
-        <div className="absolute bottom-0 right-0 w-72 h-72 bg-violet-500/10 rounded-full blur-[100px]" />
+        <div
+          className="absolute -top-40 -right-20 w-80 h-80 rounded-full blur-[100px] opacity-30"
+          style={{ background: 'var(--ld-action)' }}
+        />
+        <div
+          className="absolute bottom-0 left-0 w-72 h-72 rounded-full blur-[100px] opacity-20"
+          style={{ background: 'var(--ld-highlight)' }}
+        />
       </div>
 
       <div className="relative">
@@ -92,22 +97,22 @@ export default function MobileShopLanding({
 
         <MobileTrustBand />
 
-        {/* Footer mini */}
-        <footer className="px-4 py-6 border-t border-white/5">
+        {/* Footer mini Liquid Dual */}
+        <footer className="px-4 py-6 border-t border-ld-border">
           <div className="flex flex-col items-center gap-2 text-center">
-            <p className="text-white/50 text-[11px] font-medium">PEYU Chile · Regalos con propósito</p>
-            <div className="flex items-center gap-3 text-[10px] text-white/40">
-              <Link to="/nosotros" className="hover:text-teal-300">Nosotros</Link>
-              <span>·</span>
-              <Link to="/blog" className="hover:text-teal-300">Blog</Link>
-              <span>·</span>
-              <Link to="/soporte" className="hover:text-teal-300">Soporte</Link>
-              <span>·</span>
-              <Link to="/seguimiento" className="hover:text-teal-300">Seguimiento</Link>
+            <p className="text-ld-fg-muted text-[11px] font-medium">PEYU Chile · Regalos con propósito</p>
+            <div className="flex items-center gap-3 text-[10px] text-ld-fg-muted">
+              <Link to="/nosotros"    className="hover:text-ld-action transition">Nosotros</Link>
+              <span className="text-ld-fg-subtle">·</span>
+              <Link to="/blog"        className="hover:text-ld-action transition">Blog</Link>
+              <span className="text-ld-fg-subtle">·</span>
+              <Link to="/soporte"     className="hover:text-ld-action transition">Soporte</Link>
+              <span className="text-ld-fg-subtle">·</span>
+              <Link to="/seguimiento" className="hover:text-ld-action transition">Seguimiento</Link>
             </div>
             <Link
               to="/admin"
-              className="mt-2 inline-flex items-center gap-1.5 text-[10px] text-white/30 hover:text-teal-300 transition"
+              className="mt-2 inline-flex items-center gap-1.5 text-[10px] text-ld-fg-subtle hover:text-ld-action transition"
             >
               <Lock className="w-3 h-3" /> Admin
             </Link>

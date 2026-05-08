@@ -1,70 +1,110 @@
 import { Link } from 'react-router-dom';
-import { Home, Briefcase, Building2, Gift } from 'lucide-react';
+import { Home, Briefcase, Building2, Gift, ArrowUpRight } from 'lucide-react';
 
 /**
- * Grid 2x2 de categorías visuales para mobile.
- * Cada tile lleva al shop filtrado o al hub correspondiente.
+ * Categorías mobile Liquid Dual — tiles editoriales con imagen real.
+ * Mantiene el lenguaje del desktop (foto + icon chip glass + Fraunces)
+ * adaptado a 2x2 mobile.
  */
 const CATEGORIES = [
   {
     label: 'Hogar',
-    desc: 'Para tu casa',
+    desc: 'Calidez para tu casa',
     icon: Home,
     to: '/shop?categoria=Hogar',
-    gradient: 'from-orange-500/90 to-rose-500/90',
-    emoji: '🏡',
+    image:
+      'https://images.unsplash.com/photo-1554995207-c18c203602cb?auto=format&fit=crop&w=600&q=70',
   },
   {
     label: 'Oficina',
     desc: 'Escritorio · Trabajo',
     icon: Briefcase,
     to: '/shop?categoria=Escritorio',
-    gradient: 'from-cyan-500/90 to-blue-500/90',
-    emoji: '💼',
+    image:
+      'https://images.unsplash.com/photo-1497032628192-86f99bcd76bc?auto=format&fit=crop&w=600&q=70',
   },
   {
     label: 'Empresas',
     desc: 'Regalos B2B',
     icon: Building2,
     to: '/b2b/catalogo',
-    gradient: 'from-emerald-500/90 to-teal-500/90',
-    emoji: '🏢',
+    image:
+      'https://images.unsplash.com/photo-1556761175-5973dc0f32e7?auto=format&fit=crop&w=600&q=70',
   },
   {
     label: 'Gift Card',
-    desc: 'Regalo perfecto',
+    desc: 'El regalo perfecto',
     icon: Gift,
     to: '/regalar-giftcard',
-    gradient: 'from-violet-500/90 to-fuchsia-500/90',
-    emoji: '🎁',
+    image:
+      'https://images.unsplash.com/photo-1607344645866-009c320b63e0?auto=format&fit=crop&w=600&q=70',
   },
 ];
 
 export default function MobileCategoryTiles() {
   return (
     <section className="px-4 pb-5">
-      <div className="flex items-center justify-between mb-3">
-        <h2 className="text-white font-poppins font-bold text-base">¿Qué buscas hoy?</h2>
-        <Link to="/shop" className="text-teal-300 text-[11px] font-semibold flex items-center gap-1 hover:text-teal-200">
-          Ver todo →
+      <div className="flex items-end justify-between mb-3 gap-2">
+        <div className="min-w-0">
+          <p
+            className="text-[10px] font-bold tracking-[0.18em] uppercase mb-1"
+            style={{ color: 'var(--ld-action)' }}
+          >
+            Categorías
+          </p>
+          <h2 className="ld-display text-2xl text-ld-fg leading-none">
+            ¿Qué buscas{' '}
+            <span className="ld-display-italic" style={{ color: 'var(--ld-highlight)' }}>
+              hoy?
+            </span>
+          </h2>
+        </div>
+        <Link
+          to="/shop"
+          className="text-[11px] font-semibold flex items-center gap-0.5 flex-shrink-0"
+          style={{ color: 'var(--ld-action)' }}
+        >
+          Ver todo <ArrowUpRight className="w-3 h-3" />
         </Link>
       </div>
+
       <div className="grid grid-cols-2 gap-2.5">
-        {CATEGORIES.map((cat) => (
-          <Link
-            key={cat.label}
-            to={cat.to}
-            className={`relative overflow-hidden rounded-2xl bg-gradient-to-br ${cat.gradient} aspect-[1.15/1] p-3.5 flex flex-col justify-between shadow-lg active:scale-95 transition-transform`}
-          >
-            <span className="text-2xl leading-none">{cat.emoji}</span>
-            <div>
-              <p className="text-white font-poppins font-bold text-sm leading-tight">{cat.label}</p>
-              <p className="text-white/75 text-[10px] font-medium leading-tight">{cat.desc}</p>
-            </div>
-            {/* Glow */}
-            <div className="absolute -top-4 -right-4 w-16 h-16 bg-white/20 rounded-full blur-2xl" />
-          </Link>
-        ))}
+        {CATEGORIES.map((cat) => {
+          const Icon = cat.icon;
+          return (
+            <Link
+              key={cat.label}
+              to={cat.to}
+              className="ld-card relative overflow-hidden aspect-[1.05/1] flex flex-col justify-end active:scale-95 transition-transform"
+            >
+              {/* Imagen de fondo */}
+              <div
+                className="absolute inset-0 bg-cover bg-center"
+                style={{ backgroundImage: `url("${cat.image}")` }}
+              />
+              {/* Overlay legibilidad */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-black/15" />
+
+              {/* Icon chip top-left glass */}
+              <div
+                className="absolute top-2.5 left-2.5 w-8 h-8 rounded-lg flex items-center justify-center backdrop-blur-md ring-1 ring-white/30"
+                style={{ background: 'rgba(255,255,255,0.18)' }}
+              >
+                <Icon className="w-4 h-4 text-white" strokeWidth={2} />
+              </div>
+
+              {/* Bottom content */}
+              <div className="relative z-10 p-3 text-white">
+                <p className="ld-display text-xl leading-none mb-0.5 drop-shadow-lg">
+                  {cat.label}
+                </p>
+                <p className="text-[10px] font-medium text-white/85 drop-shadow leading-tight">
+                  {cat.desc}
+                </p>
+              </div>
+            </Link>
+          );
+        })}
       </div>
     </section>
   );

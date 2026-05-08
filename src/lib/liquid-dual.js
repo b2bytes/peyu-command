@@ -16,7 +16,27 @@ const STORAGE_KEY = 'peyu_liquid_mode';
 const ATTR = 'data-liquid-mode';
 const EVT = 'peyu:liquid-mode';
 
-const isDayHour = (h) => h >= 6 && h < 19;
+// Definición horaria PEYU 2026:
+//   05:30–07:59 → dawn (día con tinte cálido)
+//   08:00–17:29 → day pleno
+//   17:30–19:29 → dusk (día con tinte cálido)
+//   19:30–05:29 → night
+// El sistema sigue siendo BINARIO (día/noche) en CSS, pero exponemos
+// `getLiquidPhase()` para que componentes puedan reaccionar a dawn/dusk
+// (p.ej. saludo "Buenos días" / "Buenas noches").
+const isDayHour = (h, m = 0) => {
+  const t = h * 60 + m; // minutos desde medianoche
+  return t >= 5 * 60 + 30 && t < 19 * 60 + 30;
+};
+
+export function getLiquidPhase() {
+  const d = new Date();
+  const t = d.getHours() * 60 + d.getMinutes();
+  if (t >= 5 * 60 + 30 && t < 8 * 60)        return 'dawn';
+  if (t >= 8 * 60 && t < 17 * 60 + 30)       return 'day';
+  if (t >= 17 * 60 + 30 && t < 19 * 60 + 30) return 'dusk';
+  return 'night';
+}
 
 export function getLiquidPreference() {
   try {
@@ -28,8 +48,8 @@ export function getLiquidPreference() {
 export function getLiquidMode() {
   const pref = getLiquidPreference();
   if (pref === 'day' || pref === 'night') return pref;
-  const h = new Date().getHours();
-  return isDayHour(h) ? 'day' : 'night';
+  const d = new Date();
+  return isDayHour(d.getHours(), d.getMinutes()) ? 'day' : 'night';
 }
 
 export function setLiquidPreference(pref) {

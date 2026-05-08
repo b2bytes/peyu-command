@@ -387,18 +387,17 @@ export default function ShopLanding() {
         <div className="flex gap-4 p-4 relative z-10 w-full max-w-[1440px] mx-auto" style={{ minHeight: 'calc(100vh - 32px)' }}>
           {/* IZQUIERDA: Hero gigante (60%) */}
           <div className="flex-1 min-w-0 flex flex-col gap-4">
-            {/* Header bar Liquid Dual — vidrio auto-adaptativo */}
+            {/* Header bar Liquid Dual — limpio: logo + CTAs + toggle + carrito */}
             <div className="ld-glass rounded-2xl px-5 py-3 flex items-center justify-between gap-3 flex-shrink-0">
-              <PEYULogo size="sm" showText={true} />
+              <PEYULogo size="sm" />
               <div className="flex items-center gap-2 flex-shrink-0">
-                <CelebrationBanner onChatPrompt={sendMessage} compact />
-                <LiquidDualToggle compact />
                 <Link to="/shop">
                   <Button className="ld-btn-primary rounded-full px-4 h-9 text-xs font-semibold">Tienda</Button>
                 </Link>
                 <Link to="/b2b/contacto">
                   <Button className="ld-btn-ghost rounded-full px-4 h-9 text-xs font-semibold text-ld-fg">B2B</Button>
                 </Link>
+                <LiquidDualToggle compact />
                 <Link to="/cart">
                   <button className="relative w-10 h-10 inline-flex items-center justify-center rounded-full ld-btn-primary">
                     <ShoppingCart className="w-4 h-4" />
@@ -414,6 +413,9 @@ export default function ShopLanding() {
                 </Link>
               </div>
             </div>
+
+            {/* Banner editorial de celebración (cuando hay fecha activa) */}
+            <CelebrationBanner onChatPrompt={sendMessage} />
 
             {/* Hero gigante */}
             <div className="flex-1 min-h-0">
