@@ -318,6 +318,76 @@
   .ld-divider { background: var(--ld-border); height: 1px; width: 100%; }
 }
 
+/* ═══════════════════════════════════════════════════════════════════
+   LIQUID DUAL · LEGACY DARK COMPAT LAYER
+   ────────────────────────────────────────────────────────────────────
+   Páginas públicas legacy fueron diseñadas asumiendo un fondo oscuro
+   con `text-white`, `bg-white/X`, `border-white/X`, etc. En modo día
+   estos colores producen contraste 1:1 (texto blanco sobre canvas claro).
+
+   En lugar de migrar 50+ archivos uno por uno, este layer remapea esas
+   clases hardcoded a los tokens Liquid Dual cuando estamos en modo día.
+   Cuando el usuario está en modo noche, las clases recuperan su color
+   blanco original (porque CSS variables ya hacen el switch).
+
+   Estrategia: en MODO DÍA, sobreescribimos las clases más comunes para
+   que usen tokens semánticos. En MODO NOCHE no tocamos nada (el diseño
+   legacy ya funciona allí).
+   ─────────────────────────────────────────────────────────────────── */
+html[data-liquid-mode="day"] {
+  /* Texto blanco hardcoded → token foreground del modo día */
+  .text-white               { color: var(--ld-fg) !important; }
+  .text-white\/95           { color: var(--ld-fg) !important; }
+  .text-white\/90           { color: var(--ld-fg) !important; }
+  .text-white\/85           { color: var(--ld-fg-soft) !important; }
+  .text-white\/80           { color: var(--ld-fg-soft) !important; }
+  .text-white\/75           { color: var(--ld-fg-soft) !important; }
+  .text-white\/70           { color: var(--ld-fg-soft) !important; }
+  .text-white\/65           { color: var(--ld-fg-muted) !important; }
+  .text-white\/60           { color: var(--ld-fg-muted) !important; }
+  .text-white\/55           { color: var(--ld-fg-muted) !important; }
+  .text-white\/50           { color: var(--ld-fg-muted) !important; }
+  .text-white\/45           { color: var(--ld-fg-muted) !important; }
+  .text-white\/40           { color: var(--ld-fg-subtle) !important; }
+  .text-white\/30           { color: var(--ld-fg-subtle) !important; }
+  .placeholder\:text-white\/30::placeholder { color: var(--ld-fg-subtle) !important; }
+  .placeholder\:text-white\/40::placeholder { color: var(--ld-fg-subtle) !important; }
+  .placeholder\:text-white\/50::placeholder { color: var(--ld-fg-muted) !important; }
+
+  /* Backgrounds glass semitransparentes blancos → glass del sistema */
+  .bg-white\/5,
+  .bg-white\/10             { background-color: var(--ld-glass-soft) !important; }
+  .bg-white\/15,
+  .bg-white\/20             { background-color: var(--ld-glass) !important; }
+
+  /* Borders blancos hardcoded → border del sistema */
+  .border-white\/10,
+  .border-white\/15,
+  .border-white\/20         { border-color: var(--ld-border) !important; }
+  .border-white\/30         { border-color: var(--ld-border-strong) !important; }
+
+  /* Slate/zinc oscuros como navbars sticky → glass strong (legibles en día) */
+  .bg-slate-900\/60,
+  .bg-slate-900\/70,
+  .bg-slate-900\/80,
+  .bg-zinc-900\/60,
+  .bg-zinc-900\/70 {
+    background-color: var(--ld-glass-strong) !important;
+    backdrop-filter: blur(20px) saturate(170%);
+  }
+
+  /* Accents teal hardcoded del legacy → action token del sistema */
+  .text-teal-300,
+  .text-teal-400,
+  .text-cyan-300,
+  .text-cyan-400            { color: var(--ld-action) !important; }
+
+  /* Fondos full-bleed dark slate → bg-soft del sistema */
+  .bg-slate-900,
+  .bg-slate-950,
+  .bg-zinc-900              { background-color: var(--ld-bg-soft) !important; }
+}
+
 /* Scrollbar premium para el chat Peyu (widget flotante). Fina, translúcida,
    con el verde PEYU al hacer hover. Firefox + WebKit. */
 @layer utilities {
