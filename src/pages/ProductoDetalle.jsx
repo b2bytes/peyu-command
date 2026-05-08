@@ -243,10 +243,10 @@ export default function ProductoDetalle() {
     : [];
 
   if (!producto) return (
-    <div className="flex-1 flex items-center justify-center py-20">
+    <div className="flex-1 flex items-center justify-center py-20 ld-canvas min-h-screen">
       <div className="text-center space-y-4">
-        <div className="w-12 h-12 border-4 border-teal-400/30 border-t-teal-400 rounded-full animate-spin mx-auto" />
-        <p className="text-white/60 text-sm font-medium">Cargando producto...</p>
+        <div className="w-12 h-12 border-4 rounded-full animate-spin mx-auto" style={{ borderColor: 'var(--ld-border)', borderTopColor: 'var(--ld-action)' }} />
+        <p className="text-ld-fg-muted text-sm font-medium">Cargando producto...</p>
       </div>
     </div>
   );
@@ -336,26 +336,26 @@ export default function ProductoDetalle() {
         retailerItemId: producto.sku,
       }}
     />
-    <div className="flex-1 overflow-auto font-inter">
+    <div className="flex-1 overflow-auto font-inter ld-canvas min-h-screen">
 
         {/* STICKY CTA BAR */}
         <div className={`fixed top-0 left-0 right-0 z-[100] transition-all duration-300 ${showStickyBar ? 'translate-y-0' : '-translate-y-full'}`}>
-          <div className="bg-slate-900/95 backdrop-blur-xl border-b border-white/15 shadow-2xl">
+          <div className="ld-glass-strong border-b border-ld-border shadow-2xl">
             <div className="max-w-5xl mx-auto px-5 py-3 flex items-center justify-between gap-4">
               <div className="flex items-center gap-3 min-w-0">
-                <img src={imgPrincipal} alt="" className="w-10 h-10 rounded-xl object-cover flex-shrink-0 border border-white/20" />
-                <p className="font-semibold text-sm text-white truncate">{producto.nombre}</p>
+                <img src={imgPrincipal} alt="" className="w-10 h-10 rounded-xl object-cover flex-shrink-0 border border-ld-border" />
+                <p className="font-semibold text-sm text-ld-fg truncate">{producto.nombre}</p>
               </div>
               <div className="flex items-center gap-3 flex-shrink-0">
-                <p className="font-poppins font-bold text-white">${precioActual.toLocaleString('es-CL')}</p>
+                <p className="font-poppins font-bold text-ld-fg">${precioActual.toLocaleString('es-CL')}</p>
                 {agregado ? (
                   <Link to="/cart">
-                    <Button size="sm" className="gap-2 rounded-xl bg-green-500 hover:bg-green-600 text-white border-0">
+                    <Button size="sm" className="ld-btn-primary gap-2 rounded-full">
                       <ShoppingCart className="w-4 h-4" /> Ver carrito
                     </Button>
                   </Link>
                 ) : (
-                  <Button onClick={agregarAlCarrito} size="sm" className="gap-2 rounded-xl bg-gradient-to-r from-teal-500 to-cyan-500 hover:from-teal-600 hover:to-cyan-600 text-white border-0">
+                  <Button onClick={agregarAlCarrito} size="sm" className="ld-btn-primary gap-2 rounded-full">
                     <ShoppingCart className="w-4 h-4" /> Agregar
                   </Button>
                 )}
@@ -365,22 +365,22 @@ export default function ProductoDetalle() {
         </div>
 
         {/* HEADER */}
-        <div className="bg-gradient-to-r from-teal-500/30 to-cyan-500/30 border-b border-white/20 px-4 sm:px-6 py-3 flex items-center justify-between sticky top-0 z-50 backdrop-blur-md">
+        <div className="ld-glass-strong border-b border-ld-border px-4 sm:px-6 py-3 flex items-center justify-between sticky top-0 z-50">
           <div className="flex items-center gap-3">
-            <button onClick={() => navigate(-1)} className="w-9 h-9 bg-white/20 rounded-lg flex items-center justify-center hover:bg-white/30 transition-colors">
-              <ArrowLeft className="w-4 h-4 text-white" />
+            <button onClick={() => navigate(-1)} className="w-9 h-9 ld-btn-ghost rounded-xl flex items-center justify-center">
+              <ArrowLeft className="w-4 h-4 text-ld-fg" />
             </button>
             <Link to="/" className="flex items-center gap-2">
-              <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-teal-400 to-cyan-500 flex items-center justify-center shadow-lg text-white font-bold text-sm">P</div>
-              <span className="font-poppins font-bold text-sm text-white hidden sm:inline">PEYU Chile</span>
+              <div className="w-9 h-9 rounded-xl flex items-center justify-center shadow-lg text-white font-bold text-sm" style={{ background: 'var(--ld-grad-action)' }}>P</div>
+              <span className="font-poppins font-bold text-sm text-ld-fg hidden sm:inline">PEYU Chile</span>
             </Link>
           </div>
           <Link to="/cart" className="relative">
-            <Button size="sm" className="gap-2 rounded-xl bg-gradient-to-r from-teal-500 to-cyan-500 hover:from-teal-600 hover:to-cyan-600 text-white border-0 shadow-lg">
+            <Button size="sm" className="ld-btn-primary gap-2 rounded-full">
               <ShoppingCart className="w-4 h-4" />
               <span className="hidden sm:inline text-sm">Carrito</span>
               {carrito.length > 0 && (
-                <span className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center shadow">
+                <span className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] px-1 text-white text-[10px] font-bold rounded-full flex items-center justify-center shadow ring-2" style={{ background: 'var(--ld-highlight)', borderColor: 'var(--ld-bg)' }}>
                   {carrito.length}
                 </span>
               )}
@@ -388,15 +388,15 @@ export default function ProductoDetalle() {
           </Link>
         </div>
 
-        {/* Breadcrumb — accesible y semántico (aria-label = mejor SEO + lectores de pantalla) */}
-        <nav aria-label="Migas de pan" className="max-w-6xl mx-auto px-4 sm:px-6 py-3 flex items-center gap-1.5 text-xs text-white/40">
-          <Link to="/" className="hover:text-white transition-colors">Inicio</Link>
+        {/* Breadcrumb */}
+        <nav aria-label="Migas de pan" className="max-w-6xl mx-auto px-4 sm:px-6 py-3 flex items-center gap-1.5 text-xs text-ld-fg-muted">
+          <Link to="/" className="hover:text-ld-fg transition-colors">Inicio</Link>
           <ChevronRight className="w-3 h-3" aria-hidden="true" />
-          <Link to="/shop" className="hover:text-white transition-colors">Tienda</Link>
+          <Link to="/shop" className="hover:text-ld-fg transition-colors">Tienda</Link>
           <ChevronRight className="w-3 h-3" aria-hidden="true" />
           <span>{producto.categoria}</span>
           <ChevronRight className="w-3 h-3" aria-hidden="true" />
-          <span className="text-white/70 font-medium truncate max-w-[200px]" aria-current="page">{producto.nombre}</span>
+          <span className="text-ld-fg font-medium truncate max-w-[200px]" aria-current="page">{producto.nombre}</span>
         </nav>
 
         <div className="max-w-[1200px] mx-auto px-4 sm:px-6 pb-10">
@@ -409,7 +409,7 @@ export default function ProductoDetalle() {
               {/* Main visual: GiftCard oficial o imagen del producto */}
               {isGiftCard ? (
                 <div className="space-y-4">
-                  <div className="bg-gradient-to-br from-slate-800/40 to-slate-900/60 backdrop-blur-sm border border-white/15 rounded-3xl p-4 sm:p-6 shadow-2xl">
+                  <div className="ld-card p-4 sm:p-6 shadow-2xl">
                     <GiftCardVisual monto={giftCardMonto} />
                   </div>
                   <div className="grid grid-cols-3 gap-2">
@@ -418,16 +418,16 @@ export default function ProductoDetalle() {
                       { e: '♻️', t: 'Sin impresión', s: 'Digital, cero residuos' },
                       { e: '📅', t: 'Vigencia 12 meses', s: 'Sin apuros' },
                     ].map((b, i) => (
-                      <div key={i} className="bg-white/5 backdrop-blur-sm border border-white/15 rounded-2xl p-3 text-center">
+                      <div key={i} className="ld-glass rounded-2xl p-3 text-center">
                         <div className="text-2xl mb-1">{b.e}</div>
-                        <div className="text-[11px] font-bold text-white leading-tight">{b.t}</div>
-                        <div className="text-[10px] text-white/50 mt-0.5">{b.s}</div>
+                        <div className="text-[11px] font-bold text-ld-fg leading-tight">{b.t}</div>
+                        <div className="text-[10px] text-ld-fg-muted mt-0.5">{b.s}</div>
                       </div>
                     ))}
                   </div>
                 </div>
               ) : (
-              <div className="relative bg-gradient-to-br from-white via-teal-50 to-emerald-50 border border-white/20 rounded-2xl overflow-hidden shadow-xl mx-auto w-full max-w-[460px] lg:max-w-none" style={{ aspectRatio: '1' }}>
+              <div className="relative ld-card overflow-hidden shadow-xl mx-auto w-full max-w-[460px] lg:max-w-none bg-white" style={{ aspectRatio: '1' }}>
                 <img
                   src={galeria[vistaActiva] || imgPrincipal}
                   alt={`${producto.nombre} · ${producto.material || 'Plástico reciclado'} · ${producto.categoria} · PEYU Chile`}
@@ -455,36 +455,37 @@ export default function ProductoDetalle() {
                 )}
                 {/* Material badge */}
                 <div className="absolute top-4 left-4">
-                  <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full bg-teal-500/30 backdrop-blur border border-teal-400/40 text-teal-300 shadow">
-                    <Recycle className="w-3 h-3" />
+                  <span className="ld-glass-strong inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full text-ld-fg shadow">
+                    <Recycle className="w-3 h-3" style={{ color: 'var(--ld-action)' }} />
                     {producto.material?.includes('100%') ? '100% Reciclado' : 'Compostable'}
                   </span>
                 </div>
                 {/* Actions */}
                 <div className="absolute top-4 right-4 flex flex-col gap-2">
                   <button onClick={() => setWishlist(!wishlist)}
-                    className="w-9 h-9 bg-white/20 backdrop-blur rounded-xl flex items-center justify-center border border-white/30 hover:scale-110 transition-transform">
-                    <Heart className={`w-4 h-4 transition-colors ${wishlist ? 'fill-red-400 text-red-400' : 'text-white/70'}`} />
+                    className="w-9 h-9 ld-glass-strong rounded-xl flex items-center justify-center hover:scale-110 transition-transform">
+                    <Heart className={`w-4 h-4 transition-colors ${wishlist ? 'fill-red-500 text-red-500' : 'text-ld-fg-muted'}`} />
                   </button>
                   <button onClick={handleShare}
-                    className="w-9 h-9 bg-white/20 backdrop-blur rounded-xl flex items-center justify-center border border-white/30 hover:scale-110 transition-transform">
-                    {shareMsg ? <Check className="w-4 h-4 text-green-400" /> : <Share2 className="w-4 h-4 text-white/70" />}
+                    className="w-9 h-9 ld-glass-strong rounded-xl flex items-center justify-center hover:scale-110 transition-transform">
+                    {shareMsg ? <Check className="w-4 h-4" style={{ color: 'var(--ld-action)' }} /> : <Share2 className="w-4 h-4 text-ld-fg-muted" />}
                   </button>
                 </div>
                 {shareMsg && (
-                  <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-slate-900/90 border border-white/20 text-white text-xs font-semibold px-4 py-2 rounded-xl shadow-xl flex items-center gap-2">
+                  <div className="absolute bottom-4 left-1/2 -translate-x-1/2 ld-glass-strong text-ld-fg text-xs font-semibold px-4 py-2 rounded-xl shadow-xl flex items-center gap-2">
                     <Copy className="w-3 h-3" /> {shareMsg}
                   </div>
                 )}
               </div>
               )}
 
-              {/* Thumbnails — solo si hay más de 1 imagen real */}
+              {/* Thumbnails */}
               {!isGiftCard && galeria.length > 1 && (
               <div className="grid grid-cols-4 gap-2">
                 {galeria.slice(0, 4).map((img, i) => (
                   <button key={`${img}-${i}`} onClick={() => setVistaActiva(i)}
-                    className={`aspect-square rounded-2xl overflow-hidden border-2 transition-all bg-gradient-to-br from-white via-teal-50 to-emerald-50 ${vistaActiva === i ? 'border-teal-400 shadow-lg shadow-teal-400/20 scale-[1.03]' : 'border-white/20 hover:border-white/40'}`}>
+                    className={`aspect-square rounded-2xl overflow-hidden border-2 transition-all bg-white ${vistaActiva === i ? 'shadow-lg scale-[1.03]' : 'opacity-70 hover:opacity-100'}`}
+                    style={{ borderColor: vistaActiva === i ? 'var(--ld-action)' : 'var(--ld-border)' }}>
                     <img
                       src={img}
                       alt={`${producto.nombre} - vista ${i + 1}`}
@@ -502,28 +503,27 @@ export default function ProductoDetalle() {
 
               {/* Sustainability story / Cómo funciona la GiftCard */}
               {isGiftCard ? (
-                <div className="bg-gradient-to-br from-emerald-900/40 to-teal-900/30 backdrop-blur-sm border border-emerald-400/25 rounded-3xl p-6 text-white space-y-4 shadow-xl mt-6">
-                  <div className="flex items-center gap-2">
-                    <Gift className="w-5 h-5 text-emerald-300" />
-                    <h3 className="font-poppins font-bold text-sm text-white">¿Cómo funciona?</h3>
+                <div className="ld-card p-6 space-y-4 shadow-xl mt-6 relative overflow-hidden">
+                  <div aria-hidden className="absolute -top-16 -right-16 w-40 h-40 rounded-full blur-3xl pointer-events-none" style={{ background: 'var(--ld-action-soft)', opacity: 0.5 }} />
+                  <div className="relative flex items-center gap-2">
+                    <Gift className="w-5 h-5" style={{ color: 'var(--ld-action)' }} />
+                    <h3 className="font-poppins font-bold text-sm text-ld-fg">¿Cómo funciona?</h3>
                   </div>
-                  <ol className="space-y-2.5 text-sm text-white/70">
-                    <li className="flex gap-3">
-                      <span className="flex-shrink-0 w-6 h-6 rounded-full bg-emerald-500/30 border border-emerald-400/40 flex items-center justify-center text-xs font-bold text-emerald-200">1</span>
-                      <span><strong className="text-white">Compras la Gift Card</strong> con el monto que quieras</span>
-                    </li>
-                    <li className="flex gap-3">
-                      <span className="flex-shrink-0 w-6 h-6 rounded-full bg-emerald-500/30 border border-emerald-400/40 flex items-center justify-center text-xs font-bold text-emerald-200">2</span>
-                      <span>Le <strong className="text-white">enviamos un email</strong> al destinatario con el código y tu mensaje</span>
-                    </li>
-                    <li className="flex gap-3">
-                      <span className="flex-shrink-0 w-6 h-6 rounded-full bg-emerald-500/30 border border-emerald-400/40 flex items-center justify-center text-xs font-bold text-emerald-200">3</span>
-                      <span>Canjea el código en <strong className="text-white">peyuchile.cl/canjear</strong> o en el checkout</span>
-                    </li>
+                  <ol className="relative space-y-2.5 text-sm text-ld-fg-soft">
+                    {[
+                      <><strong className="text-ld-fg">Compras la Gift Card</strong> con el monto que quieras</>,
+                      <>Le <strong className="text-ld-fg">enviamos un email</strong> al destinatario con el código y tu mensaje</>,
+                      <>Canjea el código en <strong className="text-ld-fg">peyuchile.cl/canjear</strong> o en el checkout</>,
+                    ].map((content, i) => (
+                      <li key={i} className="flex gap-3">
+                        <span className="flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white" style={{ background: 'var(--ld-grad-action)' }}>{i + 1}</span>
+                        <span>{content}</span>
+                      </li>
+                    ))}
                   </ol>
-                  <div className="flex gap-4 pt-2 flex-wrap border-t border-white/10">
+                  <div className="relative flex gap-4 pt-2 flex-wrap border-t border-ld-border">
                     {[['⚡', 'Entrega instantánea'], ['📅', 'Válida 12 meses'], ['♻️', 'Sin plástico ni papel']].map(([e, l]) => (
-                      <div key={l} className="flex items-center gap-1.5 text-xs text-emerald-300/80">
+                      <div key={l} className="flex items-center gap-1.5 text-xs text-ld-fg-muted pt-2">
                         <span>{e}</span><span>{l}</span>
                       </div>
                     ))}
@@ -534,24 +534,25 @@ export default function ProductoDetalle() {
                   const tipo = getTipoMaterial(producto);
                   const isFibra = tipo === 'fibra_trigo';
                   return (
-                  <div className={`backdrop-blur-sm border rounded-3xl p-6 text-white space-y-3 shadow-xl mt-6 ${isFibra ? 'bg-gradient-to-br from-amber-900/40 to-orange-900/25 border-amber-400/25' : 'bg-gradient-to-br from-teal-900/40 to-cyan-900/30 border-teal-400/25'}`}>
-                    <div className="flex items-center gap-2">
+                  <div className="ld-card p-6 space-y-3 shadow-xl mt-6 relative overflow-hidden">
+                    <div aria-hidden className="absolute -top-16 -right-16 w-40 h-40 rounded-full blur-3xl pointer-events-none" style={{ background: isFibra ? 'var(--ld-highlight-soft)' : 'var(--ld-action-soft)', opacity: 0.5 }} />
+                    <div className="relative flex items-center gap-2">
                       <span className="text-xl">{isFibra ? '🌾' : '♻️'}</span>
-                      <h3 className="font-poppins font-bold text-sm text-white">
+                      <h3 className="font-poppins font-bold text-sm text-ld-fg">
                         {isFibra ? 'Nacida del trigo, devuelta a la tierra' : 'Plástico chileno con segunda vida'}
                       </h3>
                     </div>
-                    <p className="text-white/65 text-sm leading-relaxed">
+                    <p className="relative text-ld-fg-soft text-sm leading-relaxed">
                       {isFibra
                         ? 'Esta carcasa está hecha con paja de trigo: el residuo agrícola que tradicionalmente se quema en el campo y contamina el aire. La valorizamos en un biocomposite duradero que protege tu equipo igual que una carcasa convencional, pero al final de su vida útil se composta en 90-180 días sin dejar microplásticos. Cada unidad evita ~2.4 kg de CO₂ frente a una carcasa de policarbonato virgen.'
                         : 'Este producto se fabrica con plástico post-consumo recolectado en Santiago — botellas, tapas y envases que iban al vertedero o al mar. Cada pieza es única: el marmolado nace del proceso de inyección artesanal con materiales reciclados mezclados a mano. Cada unidad rescata ~30 g de plástico y evita ~2.1 kg de CO₂.'}
                     </p>
-                    <div className="flex gap-4 pt-1 flex-wrap">
+                    <div className="relative flex gap-4 pt-1 flex-wrap">
                       {(isFibra
                         ? [['🌾', 'Paja valorizada'], ['🌱', 'Compostable'], ['🇨🇱', 'Hecho en Chile']]
                         : [['♻️', '100% Reciclado'], ['🛡️', '10 años garantía'], ['🇨🇱', 'Hecho en Chile']]
                       ).map(([e, l]) => (
-                        <div key={l} className={`flex items-center gap-1.5 text-xs ${isFibra ? 'text-amber-200/85' : 'text-teal-300/85'}`}>
+                        <div key={l} className="flex items-center gap-1.5 text-xs font-semibold" style={{ color: isFibra ? 'var(--ld-highlight)' : 'var(--ld-action)' }}>
                           <span>{e}</span><span>{l}</span>
                         </div>
                       ))}
@@ -568,96 +569,96 @@ export default function ProductoDetalle() {
               {/* Header */}
               <div>
                 <div className="flex flex-wrap gap-1.5 mb-2">
-                  <span className="text-[10px] px-2 py-0.5 rounded-full font-semibold bg-teal-500/20 border border-teal-400/30 text-teal-300">{producto.categoria}</span>
-                  <span className="text-[10px] px-2 py-0.5 rounded-full font-mono bg-white/10 border border-white/20 text-white/50">{producto.sku}</span>
+                  <span className="text-[10px] px-2.5 py-1 rounded-full font-bold uppercase tracking-wider" style={{ background: 'var(--ld-action-soft)', color: 'var(--ld-action)' }}>{producto.categoria}</span>
+                  <span className="text-[10px] px-2.5 py-1 rounded-full font-mono ld-glass-soft text-ld-fg-muted border border-ld-border">{producto.sku}</span>
                   {producto.stock_actual !== undefined && producto.stock_actual <= 5 && producto.stock_actual > 0 && (
-                    <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-orange-500/20 border border-orange-400/30 text-orange-300 animate-pulse">⚡ Últimas {producto.stock_actual} u.</span>
+                    <span className="text-[10px] px-2.5 py-1 rounded-full font-bold animate-pulse" style={{ background: 'var(--ld-highlight-soft)', color: 'var(--ld-highlight)' }}>⚡ Últimas {producto.stock_actual} u.</span>
                   )}
                 </div>
-                <h1 className="text-xl lg:text-2xl font-poppins font-bold text-white leading-tight mb-1.5">{producto.nombre}</h1>
+                <h1 className="ld-display text-3xl lg:text-4xl text-ld-fg leading-tight mb-2">{producto.nombre}</h1>
                 {producto.descripcion && (
                   isGiftCard ? (
                     (() => {
                       const { intro, bullets, outro } = parseGiftCardDescription(producto.descripcion);
                       return (
                         <div className="space-y-2.5 mt-2">
-                          {intro && <p className="text-sm text-white/65 leading-relaxed">{intro}</p>}
+                          {intro && <p className="text-sm text-ld-fg-soft leading-relaxed">{intro}</p>}
                           {bullets.length > 0 && (
                             <ul className="space-y-1.5">
                               {bullets.map((b, i) => (
-                                <li key={i} className="flex items-start gap-2 text-sm text-white/65">
-                                  <Check className="w-4 h-4 text-emerald-400 flex-shrink-0 mt-0.5" />
+                                <li key={i} className="flex items-start gap-2 text-sm text-ld-fg-soft">
+                                  <Check className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: 'var(--ld-action)' }} />
                                   <span>{b}</span>
                                 </li>
                               ))}
                             </ul>
                           )}
-                          {outro && <p className="text-xs text-white/45 leading-relaxed pt-1">{outro}</p>}
+                          {outro && <p className="text-xs text-ld-fg-muted leading-relaxed pt-1">{outro}</p>}
                         </div>
                       );
                     })()
                   ) : (
-                    <p className="text-sm text-white/55 leading-relaxed whitespace-pre-line">{cleanDescripcion(producto.descripcion)}</p>
+                    <p className="text-sm text-ld-fg-soft leading-relaxed whitespace-pre-line">{cleanDescripcion(producto.descripcion)}</p>
                   )
                 )}
                 <div className="flex items-center gap-2 mt-3">
                   <div className="flex gap-0.5">
                     {[1, 2, 3, 4, 5].map(s => <Star key={s} className="w-4 h-4 fill-yellow-400 text-yellow-400" />)}
                   </div>
-                  <span className="text-sm font-semibold text-white">5.0</span>
-                  <span className="text-xs text-white/40">· 127 reseñas verificadas</span>
+                  <span className="text-sm font-bold text-ld-fg">5.0</span>
+                  <span className="text-xs text-ld-fg-muted">· 127 reseñas verificadas</span>
                 </div>
               </div>
 
               {/* Precio */}
-              <div className="bg-white/5 backdrop-blur-sm border border-white/20 rounded-2xl p-3.5 shadow-lg space-y-2.5">
+              <div className="ld-card p-4 shadow-lg space-y-2.5">
                 <div className="flex items-start justify-between gap-3">
                   <div>
                     {precioVolumen ? (
                       <>
-                        <p className="text-[10px] text-purple-300 font-bold mb-0.5">Precio volumen ({precioVolumen.label})</p>
-                        <p className="text-3xl font-poppins font-bold text-white leading-none">${precioVolumen.precio.toLocaleString('es-CL')}</p>
-                        <p className="text-[10px] text-white/40 mt-0.5">por unidad · IVA incluido</p>
+                        <p className="text-[10px] font-bold mb-0.5 uppercase tracking-wider" style={{ color: 'var(--ld-highlight)' }}>Precio volumen ({precioVolumen.label})</p>
+                        <p className="ld-display text-4xl text-ld-fg leading-none">${precioVolumen.precio.toLocaleString('es-CL')}</p>
+                        <p className="text-[10px] text-ld-fg-muted mt-1">por unidad · IVA incluido</p>
                       </>
                     ) : (
                       <>
-                        <p className="text-xs text-white/30 line-through">${(producto.precio_b2c || 9990).toLocaleString('es-CL')}</p>
-                        <p className="text-3xl font-poppins font-bold text-white leading-none">${precioFinal.toLocaleString('es-CL')}</p>
-                        <p className="text-[10px] text-white/40 mt-0.5">IVA incluido</p>
+                        <p className="text-xs text-ld-fg-muted line-through">${(producto.precio_b2c || 9990).toLocaleString('es-CL')}</p>
+                        <p className="ld-display text-4xl text-ld-fg leading-none">${precioFinal.toLocaleString('es-CL')}</p>
+                        <p className="text-[10px] text-ld-fg-muted mt-1">IVA incluido</p>
                       </>
                     )}
                   </div>
-                  <div className="text-right space-y-0.5">
-                    {!precioVolumen && <span className="inline-block text-[11px] font-bold text-green-300 bg-green-500/20 border border-green-400/30 px-2 py-0.5 rounded-lg">−15% online</span>}
-                    {!precioVolumen && <p className="text-[10px] text-green-400 font-medium">Ahorras ${ahorro.toLocaleString('es-CL')}</p>}
-                    {precioVolumen && <span className="inline-block text-[11px] font-bold text-purple-300 bg-purple-500/20 border border-purple-400/30 px-2 py-0.5 rounded-lg">Precio B2B</span>}
+                  <div className="text-right space-y-1">
+                    {!precioVolumen && <span className="inline-block text-[11px] font-bold px-2 py-0.5 rounded-lg" style={{ background: 'var(--ld-action-soft)', color: 'var(--ld-action)' }}>−15% online</span>}
+                    {!precioVolumen && <p className="text-[10px] font-semibold" style={{ color: 'var(--ld-action)' }}>Ahorras ${ahorro.toLocaleString('es-CL')}</p>}
+                    {precioVolumen && <span className="inline-block text-[11px] font-bold px-2 py-0.5 rounded-lg" style={{ background: 'var(--ld-highlight-soft)', color: 'var(--ld-highlight)' }}>Precio B2B</span>}
                   </div>
                 </div>
                 {precioFinal * cantidad < 40000 && !precioVolumen && (
-                  <div className="flex items-center gap-2 text-xs text-amber-300 bg-amber-500/15 border border-amber-400/25 rounded-xl p-2.5">
+                  <div className="flex items-center gap-2 text-xs font-semibold rounded-xl p-2.5" style={{ background: 'var(--ld-highlight-soft)', color: 'var(--ld-highlight)' }}>
                     <Truck className="w-3.5 h-3.5 flex-shrink-0" />
                     Agrega ${(40000 - precioFinal * cantidad).toLocaleString('es-CL')} más para envío gratis
                   </div>
                 )}
                 {(producto.precio_50_199 || producto.precio_base_b2b) && (
                   <button onClick={() => setShowB2BTable(!showB2BTable)}
-                    className="text-xs text-purple-300 font-semibold flex items-center gap-1 hover:text-purple-200 transition-colors">
+                    className="text-xs font-bold flex items-center gap-1 transition-colors hover:opacity-80" style={{ color: 'var(--ld-action)' }}>
                     <Sparkles className="w-3 h-3" />
                     {showB2BTable ? 'Ocultar' : 'Ver'} precios por volumen B2B
                     <ChevronRight className={`w-3 h-3 transition-transform ${showB2BTable ? 'rotate-90' : ''}`} />
                   </button>
                 )}
                 {showB2BTable && (
-                  <div className="bg-purple-500/10 rounded-xl overflow-hidden border border-purple-400/20">
+                  <div className="rounded-xl overflow-hidden border border-ld-border ld-glass-soft">
                     <table className="w-full text-xs">
                       <thead>
-                        <tr className="bg-purple-500/20 text-purple-200">
-                          <th className="px-3 py-2 text-left font-bold">Cantidad</th>
-                          <th className="px-3 py-2 text-right font-bold">Precio/u</th>
-                          <th className="px-3 py-2 text-right font-bold">Descuento</th>
+                        <tr style={{ background: 'var(--ld-action-soft)' }}>
+                          <th className="px-3 py-2 text-left font-bold text-ld-fg">Cantidad</th>
+                          <th className="px-3 py-2 text-right font-bold text-ld-fg">Precio/u</th>
+                          <th className="px-3 py-2 text-right font-bold text-ld-fg">Descuento</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-white/5">
+                      <tbody className="divide-y divide-ld-border">
                         {[
                           { label: '1–9 u.', precio: precioFinal, base: true },
                           producto.precio_base_b2b && { label: '10–49 u.', precio: producto.precio_base_b2b },
@@ -665,17 +666,17 @@ export default function ProductoDetalle() {
                           producto.precio_200_499 && { label: '200–499 u.', precio: producto.precio_200_499 },
                           producto.precio_500_mas && { label: '500+ u.', precio: producto.precio_500_mas },
                         ].filter(Boolean).map((tier, i) => (
-                          <tr key={i} className="hover:bg-white/5 transition-colors">
-                            <td className="px-3 py-2 font-semibold text-white/70">{tier.label}</td>
-                            <td className="px-3 py-2 text-right font-bold text-white">${tier.precio.toLocaleString('es-CL')}</td>
-                            <td className="px-3 py-2 text-right text-purple-300 font-semibold">
+                          <tr key={i}>
+                            <td className="px-3 py-2 font-semibold text-ld-fg-soft">{tier.label}</td>
+                            <td className="px-3 py-2 text-right font-bold text-ld-fg">${tier.precio.toLocaleString('es-CL')}</td>
+                            <td className="px-3 py-2 text-right font-bold" style={{ color: 'var(--ld-action)' }}>
                               {i === 0 ? '—' : `−${Math.round((1 - tier.precio / (producto.precio_b2c || 9990)) * 100)}%`}
                             </td>
                           </tr>
                         ))}
                       </tbody>
                     </table>
-                    <p className="text-[10px] text-purple-300/60 px-3 py-2">* Personalización láser UV gratis desde {producto.moq_personalizacion || 10} u.</p>
+                    <p className="text-[10px] text-ld-fg-muted px-3 py-2">* Personalización láser UV gratis desde {producto.moq_personalizacion || 10} u.</p>
                   </div>
                 )}
               </div>
@@ -691,15 +692,15 @@ export default function ProductoDetalle() {
                   />
                 ) : (
                   <div>
-                    <label className="text-sm font-bold text-white/80 mb-2.5 block">
-                      Color: <span className="font-normal text-white/50">{colores.find(c => c.id === colorSeleccionado)?.label || ''}</span>
+                    <label className="text-sm font-bold text-ld-fg mb-2.5 block">
+                      Color: <span className="font-normal text-ld-fg-muted">{colores.find(c => c.id === colorSeleccionado)?.label || ''}</span>
                     </label>
                     <div className="flex gap-2 flex-wrap">
                       {colores.map(c => (
                         <button key={c.id} onClick={() => setColorSeleccionado(c.id)}
                           title={c.label}
-                          className={`w-10 h-10 rounded-xl border-2 transition-all hover:scale-110 ${colorSeleccionado === c.id ? 'border-white scale-110 shadow-lg' : 'border-white/20 shadow-sm'}`}
-                          style={{ backgroundColor: c.hex }}>
+                          className="w-10 h-10 rounded-xl border-2 transition-all hover:scale-110 shadow-md"
+                          style={{ backgroundColor: c.hex, borderColor: colorSeleccionado === c.id ? 'var(--ld-action)' : 'var(--ld-border)', boxShadow: colorSeleccionado === c.id ? '0 0 0 3px var(--ld-action-soft)' : undefined }}>
                           {colorSeleccionado === c.id && <Check className="w-4 h-4 text-white mx-auto drop-shadow" />}
                         </button>
                       ))}
@@ -710,67 +711,67 @@ export default function ProductoDetalle() {
 
               {/* Cantidad */}
               <div>
-                <label className="text-sm font-bold text-white/80 mb-2 block">Cantidad</label>
+                <label className="text-sm font-bold text-ld-fg mb-2 block">Cantidad</label>
                 <div className="flex items-center gap-3 flex-wrap">
-                  <div className="flex items-center bg-white/10 border border-white/20 rounded-2xl overflow-hidden backdrop-blur-sm">
+                  <div className="flex items-center ld-card overflow-hidden">
                     <button onClick={() => setCantidad(Math.max(1, cantidad - 1))}
-                      className="w-11 h-11 hover:bg-white/15 font-bold text-xl text-white transition-colors flex items-center justify-center">−</button>
+                      className="w-11 h-11 hover:bg-ld-bg-soft font-bold text-xl text-ld-fg transition-colors flex items-center justify-center">−</button>
                     <input
                       type="number" min="1" value={cantidad}
                       onChange={e => setCantidad(Math.max(1, parseInt(e.target.value) || 1))}
-                      className="w-14 h-11 text-center font-bold text-white border-x border-white/10 focus:outline-none text-sm bg-transparent" />
+                      className="w-14 h-11 text-center font-bold text-ld-fg border-x border-ld-border focus:outline-none text-sm bg-transparent" />
                     <button onClick={() => setCantidad(cantidad + 1)}
-                      className="w-11 h-11 hover:bg-white/15 font-bold text-xl text-white transition-colors flex items-center justify-center">+</button>
+                      className="w-11 h-11 hover:bg-ld-bg-soft font-bold text-xl text-ld-fg transition-colors flex items-center justify-center">+</button>
                   </div>
                   {cantidad >= 500 && producto.precio_500_mas && (
-                    <span className="text-xs font-bold text-purple-200 bg-purple-500/20 border border-purple-400/30 px-3 py-2 rounded-xl flex items-center gap-1.5">
+                    <span className="text-xs font-bold px-3 py-2 rounded-xl flex items-center gap-1.5" style={{ background: 'var(--ld-highlight-soft)', color: 'var(--ld-highlight)' }}>
                       <Sparkles className="w-3 h-3" /> Máximo descuento
                     </span>
                   )}
                   {cantidad >= 200 && cantidad < 500 && producto.precio_200_499 && (
-                    <span className="text-xs font-bold text-purple-200 bg-purple-500/15 border border-purple-400/25 px-3 py-2 rounded-xl">−{Math.round((1 - producto.precio_200_499 / (producto.precio_b2c || 9990)) * 100)}% vol.</span>
+                    <span className="text-xs font-bold px-3 py-2 rounded-xl" style={{ background: 'var(--ld-highlight-soft)', color: 'var(--ld-highlight)' }}>−{Math.round((1 - producto.precio_200_499 / (producto.precio_b2c || 9990)) * 100)}% vol.</span>
                   )}
                   {cantidad >= 50 && cantidad < 200 && producto.precio_50_199 && (
-                    <span className="text-xs font-bold text-teal-200 bg-teal-500/15 border border-teal-400/25 px-3 py-2 rounded-xl">−{Math.round((1 - producto.precio_50_199 / (producto.precio_b2c || 9990)) * 100)}% vol.</span>
+                    <span className="text-xs font-bold px-3 py-2 rounded-xl" style={{ background: 'var(--ld-action-soft)', color: 'var(--ld-action)' }}>−{Math.round((1 - producto.precio_50_199 / (producto.precio_b2c || 9990)) * 100)}% vol.</span>
                   )}
                   {cantidad >= 10 && cantidad < 50 && (
-                    <span className="text-xs font-bold text-yellow-200 bg-yellow-500/15 border border-yellow-400/25 px-3 py-2 rounded-xl flex items-center gap-1">
+                    <span className="text-xs font-bold px-3 py-2 rounded-xl flex items-center gap-1" style={{ background: 'var(--ld-action-soft)', color: 'var(--ld-action)' }}>
                       <Sparkles className="w-3 h-3" /> Láser gratis
                     </span>
                   )}
                 </div>
-                <p className="text-xs text-white/40 mt-1.5">Total: <span className="font-bold text-white/70">${(precioActual * cantidad).toLocaleString('es-CL')}</span></p>
+                <p className="text-xs text-ld-fg-muted mt-2">Total: <span className="font-bold text-ld-fg">${(precioActual * cantidad).toLocaleString('es-CL')}</span></p>
               </div>
 
               {/* Personalización — no aplicable a giftcards */}
               {!isGiftCard && producto.moq_personalizacion && (
-                <div className="p-4 bg-purple-500/10 border border-purple-400/25 rounded-2xl space-y-3 backdrop-blur-sm">
+                <div className="ld-card p-4 space-y-3" style={{ background: 'var(--ld-highlight-soft)' }}>
                   <div className="flex items-center justify-between">
-                    <label className="text-sm font-bold text-purple-200 flex items-center gap-2">
-                      <Sparkles className="w-4 h-4 text-yellow-400" /> Personalización láser UV
+                    <label className="text-sm font-bold text-ld-fg flex items-center gap-2">
+                      <Sparkles className="w-4 h-4" style={{ color: 'var(--ld-highlight)' }} /> Personalización láser UV
                     </label>
-                    <span className="text-[10px] font-bold text-purple-300 bg-purple-500/20 border border-purple-400/25 px-2 py-0.5 rounded-full">
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full text-white" style={{ background: 'var(--ld-highlight)' }}>
                       GRATIS desde {producto.moq_personalizacion} u.
                     </span>
                   </div>
                   <Input value={personalizacion} onChange={e => setPersonalizacion(e.target.value.slice(0, 25))}
                     placeholder="Tu nombre, logo, frase favorita..."
-                    className="text-sm bg-white/10 border-purple-400/30 text-white placeholder:text-white/30 focus:ring-purple-400/30 rounded-xl h-11 font-medium tracking-wide" />
+                    className="ld-input text-sm rounded-xl h-11 font-medium tracking-wide bg-ld-bg text-ld-fg placeholder:text-ld-fg-muted" />
                   <div className="flex items-center justify-between">
-                    <p className="text-xs text-purple-300/70">Área: {producto.area_laser_mm || '40×25mm'} · Grabado permanente</p>
+                    <p className="text-xs text-ld-fg-soft">Área: {producto.area_laser_mm || '40×25mm'} · Grabado permanente</p>
                     <div className="flex items-center gap-2">
                       {personalizacion && (
-                        <button onClick={() => setPersonalizacion('')} className="text-purple-400/60 hover:text-purple-300">
+                        <button onClick={() => setPersonalizacion('')} className="text-ld-fg-muted hover:text-ld-fg">
                           <X className="w-3.5 h-3.5" />
                         </button>
                       )}
-                      <span className={`text-xs font-bold ${personalizacion.length >= 22 ? 'text-orange-400' : 'text-purple-400/60'}`}>{personalizacion.length}/25</span>
+                      <span className="text-xs font-bold" style={{ color: personalizacion.length >= 22 ? 'var(--ld-highlight)' : 'var(--ld-fg-muted)' }}>{personalizacion.length}/25</span>
                     </div>
                   </div>
                   {personalizacion && (
-                    <div className="bg-gray-900/80 border border-yellow-400/30 rounded-xl px-4 py-2 text-center">
-                      <p className="text-yellow-400 font-bold tracking-[0.2em] text-sm" style={{ fontFamily: 'monospace' }}>{personalizacion.toUpperCase()}</p>
-                      <p className="text-white/30 text-[9px] mt-0.5">Preview del grabado láser</p>
+                    <div className="rounded-xl px-4 py-2 text-center bg-slate-900 border border-yellow-500/40">
+                      <p className="font-bold tracking-[0.2em] text-sm text-yellow-400" style={{ fontFamily: 'monospace' }}>{personalizacion.toUpperCase()}</p>
+                      <p className="text-white/40 text-[9px] mt-0.5">Preview del grabado láser</p>
                     </div>
                   )}
 
@@ -778,16 +779,16 @@ export default function ProductoDetalle() {
                   <button
                     type="button"
                     onClick={() => setMockupOpen(true)}
-                    className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-purple-500/30 to-pink-500/30 hover:from-purple-500/50 hover:to-pink-500/50 border border-purple-400/40 text-white text-xs font-bold rounded-xl py-2.5 transition-all"
+                    className="ld-btn-primary w-full flex items-center justify-center gap-2 text-xs font-bold rounded-xl py-2.5 transition-all"
                   >
-                    <Sparkles className="w-3.5 h-3.5 text-yellow-300" />
+                    <Sparkles className="w-3.5 h-3.5" />
                     {mockupGenerado ? 'Regenerar mockup con IA' : 'Probar mi mockup realista con IA'}
                   </button>
 
                   {mockupGenerado && (
-                    <div className="rounded-xl overflow-hidden border border-purple-400/40 bg-black/30">
+                    <div className="rounded-xl overflow-hidden border border-ld-border bg-white">
                       <img src={mockupGenerado} alt="Mockup generado" className="w-full h-auto" />
-                      <p className="text-[10px] text-white/60 text-center py-1.5 bg-purple-500/20">✨ Mockup generado con IA · referencial</p>
+                      <p className="text-[10px] text-ld-fg-muted text-center py-1.5" style={{ background: 'var(--ld-action-soft)' }}>✨ Mockup generado con IA · referencial</p>
                     </div>
                   )}
                 </div>
@@ -797,45 +798,44 @@ export default function ProductoDetalle() {
               <div ref={ctaRef} className="space-y-2.5">
                 {agregado ? (
                   <div className="space-y-2">
-                    <div className="w-full h-12 bg-green-500/20 border-2 border-green-400/40 rounded-xl flex items-center justify-center gap-2">
-                      <Check className="w-4 h-4 text-green-400" />
-                      <span className="font-bold text-green-300 text-sm">¡Producto agregado al carrito!</span>
+                    <div className="w-full h-12 rounded-xl flex items-center justify-center gap-2 font-bold text-sm" style={{ background: 'var(--ld-action-soft)', color: 'var(--ld-action)' }}>
+                      <Check className="w-4 h-4" />
+                      <span>¡Producto agregado al carrito!</span>
                     </div>
                     <div className="grid grid-cols-2 gap-2">
                       <Link to="/cart">
-                        <Button size="sm" className="w-full h-10 rounded-xl bg-gradient-to-r from-teal-500 to-cyan-500 hover:from-teal-600 hover:to-cyan-600 text-white font-semibold gap-2 text-xs border-0 shadow-lg">
+                        <Button size="sm" className="ld-btn-primary w-full h-10 rounded-xl font-semibold gap-2 text-xs">
                           <ShoppingCart className="w-3.5 h-3.5" /> Ir al carrito
                         </Button>
                       </Link>
                       <Button size="sm" onClick={() => setAgregado(false)}
-                        className="w-full h-10 rounded-xl bg-white/15 hover:bg-white/25 text-white font-semibold text-xs border border-white/30">
+                        className="ld-btn-ghost w-full h-10 rounded-xl text-ld-fg font-semibold text-xs">
                         Seguir comprando
                       </Button>
                     </div>
                   </div>
                 ) : (
                   <Button onClick={agregarAlCarrito} size="lg"
-                    className="w-full h-12 font-bold text-sm gap-2 rounded-xl shadow-xl bg-gradient-to-r from-teal-500 to-cyan-500 hover:from-teal-600 hover:to-cyan-600 text-white border-0 shadow-teal-500/30 hover:scale-[1.01] transition-all duration-200">
+                    className="ld-btn-primary w-full h-12 font-bold text-sm gap-2 rounded-xl hover:scale-[1.01] transition-all duration-200">
                     <ShoppingCart className="w-4 h-4" /> Agregar al carrito · ${(precioActual * cantidad).toLocaleString('es-CL')}
                   </Button>
                 )}
 
-                {/* B2B funnel — destacado · oculto para giftcards (ellos van a /regalar-giftcard) */}
+                {/* B2B funnel */}
                 {!isGiftCard && (
-                <div className="bg-gradient-to-r from-blue-600/20 to-indigo-600/15 border border-blue-400/30 rounded-2xl p-4 space-y-3 backdrop-blur-sm">
-                  <div className="flex items-center gap-2">
-                    <Building2 className="w-4 h-4 text-blue-300" />
-                    <p className="text-xs font-bold text-blue-200 uppercase tracking-wide">Canal Corporativo B2B</p>
+                <div className="ld-card p-4 space-y-3 relative overflow-hidden">
+                  <div aria-hidden className="absolute -top-12 -right-12 w-32 h-32 rounded-full blur-3xl pointer-events-none" style={{ background: 'var(--ld-action-soft)', opacity: 0.6 }} />
+                  <div className="relative flex items-center gap-2">
+                    <Building2 className="w-4 h-4" style={{ color: 'var(--ld-action)' }} />
+                    <p className="text-xs font-bold uppercase tracking-wide" style={{ color: 'var(--ld-action)' }}>Canal Corporativo B2B</p>
                   </div>
-                  <p className="text-xs text-white/55 leading-relaxed">
+                  <p className="relative text-xs text-ld-fg-soft leading-relaxed">
                     ¿Necesitas +10 unidades con tu logo? Cotización con mockup en menos de 24 horas. Precios por volumen y personalización láser gratis.
                   </p>
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="relative grid grid-cols-2 gap-2">
                     <Link
                       to={`/b2b/contacto?productoId=${producto.id}&nombre=${encodeURIComponent(producto.nombre || '')}${mockupGenerado ? '&mockup=1' : ''}${personalizacion ? `&texto=${encodeURIComponent(personalizacion)}` : ''}`}
                       onClick={() => {
-                        // Si hay personalización en curso o mockup generado, lo persistimos
-                        // para que B2BContacto lo recupere sin perder nada.
                         if (mockupGenerado || personalizacion) {
                           saveMockupDraft({
                             productoId: producto.id,
@@ -849,13 +849,13 @@ export default function ProductoDetalle() {
                         }
                       }}
                     >
-                      <Button size="sm" className="w-full font-bold gap-1.5 rounded-xl bg-blue-500/30 hover:bg-blue-500/50 text-blue-200 border border-blue-400/30 h-10 text-xs">
+                      <Button size="sm" className="ld-btn-primary w-full font-bold gap-1.5 rounded-xl h-10 text-xs">
                         <Building2 className="w-3.5 h-3.5" /> Cotizar B2B
                       </Button>
                     </Link>
                     <a href={`https://wa.me/56933766573?text=${encodeURIComponent(`Hola, me interesa cotizar el producto: ${producto.nombre} (SKU: ${producto.sku}) para mi empresa`)}`}
                       target="_blank" rel="noreferrer" className="block">
-                      <Button size="sm" className="w-full font-bold gap-1.5 rounded-xl bg-green-500/25 hover:bg-green-500/40 text-green-200 border border-green-400/30 h-10 text-xs">
+                      <Button size="sm" className="ld-btn-ghost w-full font-bold gap-1.5 rounded-xl text-ld-fg h-10 text-xs">
                         💬 WhatsApp B2B
                       </Button>
                     </a>
@@ -866,21 +866,21 @@ export default function ProductoDetalle() {
                 {/* Atajo a flujo de regalo personalizado para gift cards */}
                 {isGiftCard && (
                   <Link to="/regalar-giftcard" className="block">
-                    <Button size="lg" className="w-full h-12 gap-2 rounded-2xl bg-gradient-to-r from-pink-500/30 to-rose-500/30 hover:from-pink-500/50 hover:to-rose-500/50 border border-pink-400/40 text-white font-bold backdrop-blur-sm">
+                    <Button size="lg" className="ld-btn-primary w-full h-12 gap-2 rounded-2xl font-bold">
                       <Gift className="w-4 h-4" /> Regalar con mensaje personalizado
                     </Button>
                   </Link>
                 )}
               </div>
 
-              {/* Garantías — grid 4 columnas más compacta */}
+              {/* Garantías */}
               <div className="grid grid-cols-4 gap-1.5">
                 {GARANTIAS.map((g, i) => (
-                  <div key={i} className="flex flex-col items-center gap-1 bg-white/5 border border-white/15 rounded-xl p-2 backdrop-blur-sm text-center">
-                    <div className="w-6 h-6 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: g.color + '20' }}>
-                      <g.icon className="w-3 h-3" style={{ color: g.color }} />
+                  <div key={i} className="ld-card flex flex-col items-center gap-1 p-2 text-center">
+                    <div className="w-6 h-6 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: 'var(--ld-action-soft)' }}>
+                      <g.icon className="w-3 h-3" style={{ color: 'var(--ld-action)' }} />
                     </div>
-                    <p className="text-[9px] font-bold text-white leading-tight">{g.label}</p>
+                    <p className="text-[9px] font-bold text-ld-fg leading-tight">{g.label}</p>
                   </div>
                 ))}
               </div>
@@ -889,14 +889,18 @@ export default function ProductoDetalle() {
 
           {/* TABS */}
           <div className="mt-9">
-            <div className="flex gap-0 border-b border-white/15 mb-4 overflow-x-auto scrollbar-hide">
+            <div className="flex gap-0 border-b border-ld-border mb-4 overflow-x-auto scrollbar-hide">
               {[
                 { id: 'descripcion', label: 'Descripción' },
                 { id: 'specs', label: 'Especificaciones' },
                 { id: 'faq', label: 'Preguntas frecuentes' },
               ].map(t => (
                 <button key={t.id} onClick={() => setTabActiva(t.id)}
-                  className={`px-4 py-2.5 text-xs font-semibold border-b-2 transition-all whitespace-nowrap ${tabActiva === t.id ? 'border-teal-400 text-teal-300' : 'border-transparent text-white/40 hover:text-white/70'}`}>
+                  className="px-4 py-2.5 text-sm font-semibold border-b-2 transition-all whitespace-nowrap"
+                  style={{
+                    borderColor: tabActiva === t.id ? 'var(--ld-action)' : 'transparent',
+                    color: tabActiva === t.id ? 'var(--ld-action)' : 'var(--ld-fg-muted)',
+                  }}>
                   {t.label}
                 </button>
               ))}
@@ -905,8 +909,8 @@ export default function ProductoDetalle() {
             {tabActiva === 'descripcion' && (
               <div className="grid md:grid-cols-2 gap-6">
                 <div className="space-y-4">
-                  <h3 className="font-poppins font-bold text-lg text-white">Sobre este producto</h3>
-                  <p className="text-sm text-white/55 leading-relaxed whitespace-pre-line">
+                  <h3 className="ld-display text-2xl text-ld-fg">Sobre este producto</h3>
+                  <p className="text-sm text-ld-fg-soft leading-relaxed whitespace-pre-line">
                     {cleanDescripcion(producto.descripcion) || `${producto.nombre} es un producto diseñado y fabricado en Chile con materiales ${producto.material?.includes('100%') ? '100% reciclados post-consumo' : 'compostables de fibra de trigo'}. Cada unidad es única gracias al proceso de inyección artesanal.`}
                   </p>
                   <ul className="space-y-2">
@@ -917,8 +921,8 @@ export default function ProductoDetalle() {
                       'Fabricado en Santiago, Chile',
                       'Compatible con personalización UV',
                     ].filter(Boolean).map((f, i) => (
-                      <li key={i} className="flex items-start gap-2 text-sm text-white/60">
-                        <Check className="w-4 h-4 text-teal-400 flex-shrink-0 mt-0.5" />
+                      <li key={i} className="flex items-start gap-2 text-sm text-ld-fg-soft">
+                        <Check className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: 'var(--ld-action)' }} />
                         {f}
                       </li>
                     ))}
@@ -929,8 +933,8 @@ export default function ProductoDetalle() {
             )}
 
             {tabActiva === 'specs' && (
-              <div className="bg-white/5 backdrop-blur-sm border border-white/15 rounded-2xl overflow-hidden max-w-lg">
-                <div className="divide-y divide-white/5">
+              <div className="ld-card overflow-hidden max-w-lg">
+                <div className="divide-y divide-ld-border">
                   {[
                     ['Material', producto.material],
                     ['Categoría', producto.categoria],
@@ -944,8 +948,8 @@ export default function ProductoDetalle() {
                     ['Stock actual', producto.stock_actual > 0 ? `${producto.stock_actual} u. disponibles` : 'Consultar disponibilidad'],
                   ].filter(Boolean).map(([k, v]) => (
                     <div key={k} className="px-5 py-3 flex items-center justify-between text-sm">
-                      <span className="text-white/40 font-medium">{k}</span>
-                      <span className="font-semibold text-white text-right max-w-[55%]">{v}</span>
+                      <span className="text-ld-fg-muted font-medium">{k}</span>
+                      <span className="font-semibold text-ld-fg text-right max-w-[55%]">{v}</span>
                     </div>
                   ))}
                 </div>
@@ -961,12 +965,12 @@ export default function ProductoDetalle() {
                   ['¿Qué pasa si el producto llega dañado?', 'Ofrecemos 30 días de devolución sin preguntas. Además, todos nuestros productos tienen garantía de 10 años contra defectos de fabricación.'],
                   ['¿Tienen precios especiales para empresas?', `Sí. Desde ${producto.moq_personalizacion || 10} unidades accedes a precios B2B. Desde 50 unidades, descuento adicional.`],
                 ].map(([q, a], i) => (
-                  <details key={i} className="group bg-white/5 border border-white/15 rounded-2xl overflow-hidden backdrop-blur-sm">
-                    <summary className="px-5 py-4 cursor-pointer font-semibold text-sm text-white/80 flex items-center justify-between list-none hover:bg-white/5 transition-colors">
+                  <details key={i} className="group ld-card overflow-hidden">
+                    <summary className="px-5 py-4 cursor-pointer font-semibold text-sm text-ld-fg flex items-center justify-between list-none hover:bg-ld-bg-soft transition-colors">
                       {q}
-                      <ChevronRight className="w-4 h-4 text-white/40 group-open:rotate-90 transition-transform flex-shrink-0" />
+                      <ChevronRight className="w-4 h-4 text-ld-fg-muted group-open:rotate-90 transition-transform flex-shrink-0" />
                     </summary>
-                    <div className="px-5 pb-4 text-sm text-white/50 leading-relaxed border-t border-white/5 pt-3">{a}</div>
+                    <div className="px-5 pb-4 text-sm text-ld-fg-soft leading-relaxed border-t border-ld-border pt-3">{a}</div>
                   </details>
                 ))}
               </div>
@@ -974,43 +978,43 @@ export default function ProductoDetalle() {
           </div>
 
           {/* REVIEWS */}
-          <div className="mt-9 space-y-4">
-            <div className="flex items-end justify-between">
+          <div className="mt-12 space-y-4">
+            <div className="flex items-end justify-between flex-wrap gap-3">
               <div>
-                <p className="text-[10px] font-semibold text-teal-400 uppercase tracking-widest mb-0.5">Reseñas verificadas</p>
-                <h2 className="text-lg font-poppins font-bold text-white">Lo que dicen nuestros clientes</h2>
+                <p className="text-[10px] font-bold uppercase tracking-[0.22em] mb-1" style={{ color: 'var(--ld-action)' }}>Reseñas verificadas</p>
+                <h2 className="ld-display text-3xl text-ld-fg">Lo que dicen nuestros clientes</h2>
               </div>
-              <div className="hidden sm:flex items-center gap-2 bg-white/5 border border-white/15 rounded-2xl px-4 py-3">
+              <div className="ld-card hidden sm:flex items-center gap-2 px-4 py-3">
                 <div className="flex gap-0.5">
                   {[1, 2, 3, 4, 5].map(s => <Star key={s} className="w-4 h-4 fill-yellow-400 text-yellow-400" />)}
                 </div>
-                <span className="font-poppins font-bold text-white">5.0</span>
-                <span className="text-xs text-white/40">/ 127</span>
+                <span className="font-poppins font-bold text-ld-fg">5.0</span>
+                <span className="text-xs text-ld-fg-muted">/ 127</span>
               </div>
             </div>
             <div className="grid md:grid-cols-3 gap-4">
               {REVIEWS_MOCK.map((r, i) => (
-                <div key={i} className="bg-white/5 backdrop-blur-sm border border-white/15 rounded-3xl p-5 hover:bg-white/10 hover:-translate-y-1 transition-all shadow-lg">
+                <div key={i} className="ld-card p-5 hover:-translate-y-1 transition-all shadow-lg">
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex gap-0.5">
                       {[1, 2, 3, 4, 5].map(s => (
-                        <Star key={s} className={`w-3.5 h-3.5 ${s <= r.rating ? 'fill-yellow-400 text-yellow-400' : 'text-white/20'}`} />
+                        <Star key={s} className={`w-3.5 h-3.5 ${s <= r.rating ? 'fill-yellow-400 text-yellow-400' : 'text-ld-fg-subtle'}`} />
                       ))}
                     </div>
                     {r.verificado && (
-                      <span className="flex items-center gap-1 text-[10px] font-bold text-teal-300 bg-teal-500/15 border border-teal-400/25 px-2 py-0.5 rounded-full">
+                      <span className="flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ background: 'var(--ld-action-soft)', color: 'var(--ld-action)' }}>
                         <BadgeCheck className="w-3 h-3" /> Verificado
                       </span>
                     )}
                   </div>
-                  <p className="text-sm text-white/60 italic leading-relaxed mb-4">"{r.txt}"</p>
-                  <div className="flex items-center gap-2.5 pt-3 border-t border-white/5">
-                    <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-teal-500 to-cyan-500 flex items-center justify-center text-white text-xs font-bold">
+                  <p className="text-sm text-ld-fg-soft italic leading-relaxed mb-4">"{r.txt}"</p>
+                  <div className="flex items-center gap-2.5 pt-3 border-t border-ld-border">
+                    <div className="w-9 h-9 rounded-xl flex items-center justify-center text-white text-sm font-bold" style={{ background: 'var(--ld-grad-action)' }}>
                       {r.autor[0]}
                     </div>
                     <div>
-                      <p className="text-xs font-bold text-white">{r.autor}</p>
-                      <p className="text-[10px] text-white/40">{r.ciudad} · {r.fecha}</p>
+                      <p className="text-xs font-bold text-ld-fg">{r.autor}</p>
+                      <p className="text-[10px] text-ld-fg-muted">{r.ciudad} · {r.fecha}</p>
                     </div>
                   </div>
                 </div>

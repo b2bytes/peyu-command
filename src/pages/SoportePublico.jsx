@@ -2,9 +2,10 @@ import { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { ChevronDown, ChevronRight, MessageCircle, Search, CheckCircle2, HelpCircle, Send } from 'lucide-react';
+import { ChevronDown, ChevronRight, MessageCircle, Search, CheckCircle2, Send, Mail, MapPin } from 'lucide-react';
 import SEO from '@/components/SEO';
 import { combineSchemas, buildOrganizationSchema, buildBreadcrumbSchema } from '@/lib/schemas-peyu';
+import PublicHero from '@/components/public/PublicHero';
 
 const FAQS = [
   {
@@ -54,25 +55,26 @@ const FAQS = [
 function FAQItem({ item }) {
   const [open, setOpen] = useState(false);
   return (
-    <div className="border-b border-white/10 last:border-0">
-      <button onClick={() => setOpen(!open)}
-        className="w-full flex items-center justify-between gap-3 py-4 text-left hover:bg-white/5 px-3 rounded-xl transition-colors">
-        <span className="font-medium text-sm text-white/80">{item.q}</span>
-        {open
-          ? <ChevronDown className="w-4 h-4 text-teal-400 flex-shrink-0" />
-          : <ChevronRight className="w-4 h-4 text-white/40 flex-shrink-0" />
-        }
+    <div className="border-b border-ld-border last:border-0">
+      <button
+        onClick={() => setOpen(!open)}
+        className="w-full flex items-center justify-between gap-3 py-3.5 text-left active:scale-[0.99] transition px-3 rounded-xl hover:bg-ld-bg-soft"
+      >
+        <span className="font-medium text-sm text-ld-fg-soft">{item.q}</span>
+        {open ? (
+          <ChevronDown className="w-4 h-4 flex-shrink-0" style={{ color: 'var(--ld-action)' }} />
+        ) : (
+          <ChevronRight className="w-4 h-4 text-ld-fg-muted flex-shrink-0" />
+        )}
       </button>
       {open && (
-        <div className="px-3 pb-4">
-          <p className="text-sm text-white/55 leading-relaxed">{item.a}</p>
+        <div className="px-3 pb-3.5">
+          <p className="text-sm text-ld-fg-muted leading-relaxed">{item.a}</p>
         </div>
       )}
     </div>
   );
 }
-
-
 
 export default function SoportePublico() {
   const [search, setSearch] = useState('');
@@ -94,7 +96,6 @@ export default function SoportePublico() {
     setEnviando(false);
   };
 
-  // FAQPage schema con todas las preguntas para rich snippets
   const faqJsonLd = {
     '@context': 'https://schema.org',
     '@type': 'FAQPage',
@@ -113,135 +114,165 @@ export default function SoportePublico() {
     faqJsonLd,
   );
 
+  const CHANNELS = [
+    { icon: MessageCircle, title: 'WhatsApp', desc: 'Respuesta en menos de 2 horas', cta: 'Chatear ahora', href: 'https://wa.me/56935040242', accent: '#22c55e' },
+    { icon: Mail, title: 'Email', desc: 'ventas@peyuchile.cl', cta: 'Enviar email', href: 'mailto:ventas@peyuchile.cl', accent: 'var(--ld-action)' },
+    { icon: MapPin, title: 'Tiendas', desc: 'F. Bilbao 3775 · P. Valdivia 6603', cta: 'Ver horarios', href: '/contacto', accent: 'var(--ld-highlight)' },
+  ];
+
   return (
-    <div className="flex-1 overflow-auto font-inter pb-20 lg:pb-0">
-        <SEO
-          title="Centro de Ayuda PEYU · Soporte, FAQ y Contacto Directo"
-          description="Resuelve dudas sobre pedidos, personalización láser, materiales y devoluciones. Atención por WhatsApp, email y tiendas físicas en Providencia y Macul."
-          canonical="https://peyuchile.cl/soporte"
-          jsonLd={soporteJsonLd}
-        />
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 py-10 space-y-8">
+    <div className="ld-canvas flex-1 overflow-auto pb-20 lg:pb-0 font-inter">
+      <SEO
+        title="Centro de Ayuda PEYU · Soporte, FAQ y Contacto Directo"
+        description="Resuelve dudas sobre pedidos, personalización láser, materiales y devoluciones. Atención por WhatsApp, email y tiendas físicas en Providencia y Macul."
+        canonical="https://peyuchile.cl/soporte"
+        jsonLd={soporteJsonLd}
+      />
 
-          {/* Hero + Search */}
-          <div className="text-center space-y-4">
-            <div className="inline-flex items-center gap-2 bg-teal-500/20 border border-teal-400/40 text-teal-300 px-4 py-1.5 rounded-full text-sm font-semibold backdrop-blur-sm">
-              <HelpCircle className="w-4 h-4" /> Centro de Ayuda
-            </div>
-            <h1 className="text-3xl md:text-5xl font-poppins font-black text-white drop-shadow-lg">¿En qué te <span className="text-cyan-400">ayudamos?</span></h1>
-            <p className="text-white/60 text-sm">Respuestas a las preguntas más frecuentes sobre Peyu Chile</p>
-            <div className="relative max-w-lg mx-auto">
-              <Search className="w-4 h-4 absolute left-4 top-1/2 -translate-y-1/2 text-white/40" />
-              <Input value={search} onChange={e => setSearch(e.target.value)}
-                placeholder="Buscar en preguntas frecuentes..."
-                className="pl-11 h-12 rounded-2xl text-sm bg-white/10 border-white/20 text-white placeholder:text-white/40 focus:bg-white/15 focus:border-teal-400/60 focus:ring-teal-400/30" />
-            </div>
-          </div>
+      <PublicHero
+        eyebrow="Centro de Ayuda"
+        align="center"
+        title={<>¿En qué te <span className="ld-display-italic" style={{ color: 'var(--ld-highlight)' }}>ayudamos?</span></>}
+        subtitle="Respuestas a las preguntas más frecuentes sobre PEYU Chile."
+      />
 
-          {/* Canales rápidos */}
-          <div className="grid md:grid-cols-3 gap-4">
-            {[
-              { icon: '💬', title: 'WhatsApp', desc: 'Respuesta en menos de 2 horas', cta: 'Chatear ahora', href: 'https://wa.me/56935040242', color: '#22c55e' },
-              { icon: '📧', title: 'Email', desc: 'ventas@peyuchile.cl', cta: 'Enviar email', href: 'mailto:ventas@peyuchile.cl', color: '#2dd4bf' },
-              { icon: '📍', title: 'Tiendas', desc: 'F. Bilbao 3775 · P. Valdivia 6603', cta: 'Ver horarios', href: '/shop', color: '#f97316' },
-            ].map((c, i) => (
-              <a key={i} href={c.href} target={c.href.startsWith('http') ? '_blank' : '_self'} rel="noreferrer"
-                className="bg-white/5 backdrop-blur-sm border border-white/15 rounded-3xl p-6 hover:bg-white/10 hover:-translate-y-1 transition-all text-center block group shadow-lg">
-                <div className="text-4xl mb-3">{c.icon}</div>
-                <h3 className="font-poppins font-bold text-white">{c.title}</h3>
-                <p className="text-xs text-white/50 mt-1 mb-4 leading-relaxed">{c.desc}</p>
-                <span className="text-xs font-bold px-3 py-1.5 rounded-xl" style={{ color: c.color, background: c.color + '20' }}>{c.cta} →</span>
-              </a>
-            ))}
-          </div>
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 pb-12 space-y-8">
+        {/* Search */}
+        <div className="relative max-w-lg mx-auto">
+          <Search className="w-4 h-4 absolute left-4 top-1/2 -translate-y-1/2 text-ld-fg-muted z-10" />
+          <Input
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            placeholder="Buscar en preguntas frecuentes..."
+            className="ld-input pl-11 h-12 rounded-full text-sm bg-transparent border-ld-border text-ld-fg placeholder:text-ld-fg-subtle"
+          />
+        </div>
 
-          {/* FAQs */}
-          <div className="grid md:grid-cols-2 gap-4">
-            {filteredFaqs.map((cat, i) => (
-              <div key={i} className="bg-white/5 backdrop-blur-md border border-white/15 rounded-3xl p-5 shadow-lg hover:bg-white/8 transition-all">
-                <h3 className="font-poppins font-bold text-white mb-3">{cat.categoria}</h3>
-                <div>{cat.items.map((item, j) => <FAQItem key={j} item={item} />)}</div>
-              </div>
-            ))}
-            {filteredFaqs.length === 0 && (
-              <div className="col-span-2 text-center py-16 text-white/50 bg-white/5 border border-white/15 rounded-3xl backdrop-blur-sm">
-                <p className="font-medium text-white">No encontramos resultados para "{search}"</p>
-                <p className="text-sm mt-1">Intenta con otras palabras o contáctanos.</p>
-              </div>
-            )}
-          </div>
-
-          {/* Ticket Form */}
-          <div className="bg-white/5 backdrop-blur-md border border-white/15 rounded-3xl p-6 md:p-8 shadow-2xl">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-10 h-10 rounded-xl bg-teal-500/20 border border-teal-400/30 flex items-center justify-center">
-                <Send className="w-5 h-5 text-teal-400" />
-              </div>
-              <div>
-                <h3 className="font-poppins font-bold text-white text-lg">¿No encontraste lo que buscas?</h3>
-                <p className="text-sm text-white/50">Te respondemos en menos de 24 horas.</p>
-              </div>
-            </div>
-
-            {enviado ? (
-              <div className="text-center py-10 space-y-4">
-                <div className="w-16 h-16 bg-teal-500/20 border border-teal-400/30 rounded-3xl flex items-center justify-center mx-auto">
-                  <CheckCircle2 className="w-8 h-8 text-teal-400" />
+        {/* Canales rápidos */}
+        <div className="grid md:grid-cols-3 gap-4">
+          {CHANNELS.map((c, i) => {
+            const Icon = c.icon;
+            return (
+              <a
+                key={i}
+                href={c.href}
+                target={c.href.startsWith('http') ? '_blank' : '_self'}
+                rel="noreferrer"
+                className="ld-card p-6 text-center hover:-translate-y-1 transition-all group"
+              >
+                <div
+                  className="w-12 h-12 mx-auto rounded-2xl flex items-center justify-center mb-3"
+                  style={{ background: `${c.accent}1f`, boxShadow: `inset 0 0 0 1px ${c.accent}` }}
+                >
+                  <Icon className="w-6 h-6" style={{ color: c.accent }} />
                 </div>
-                <p className="font-poppins font-bold text-white text-lg">¡Mensaje enviado!</p>
-                <p className="text-sm text-white/50 max-w-xs mx-auto">Te responderemos a la brevedad. También puedes escribirnos al WhatsApp para una respuesta más rápida.</p>
+                <h3 className="ld-display text-xl text-ld-fg">{c.title}</h3>
+                <p className="text-xs text-ld-fg-muted mt-1 mb-3 leading-relaxed">{c.desc}</p>
+                <span className="text-xs font-bold rounded-full px-3 py-1.5 inline-block" style={{ color: c.accent, background: `${c.accent}1f` }}>{c.cta} →</span>
+              </a>
+            );
+          })}
+        </div>
+
+        {/* FAQs */}
+        <div className="grid md:grid-cols-2 gap-4">
+          {filteredFaqs.map((cat, i) => (
+            <div key={i} className="ld-card p-5">
+              <h3 className="ld-display text-xl text-ld-fg mb-3">{cat.categoria}</h3>
+              <div>{cat.items.map((item, j) => <FAQItem key={j} item={item} />)}</div>
+            </div>
+          ))}
+          {filteredFaqs.length === 0 && (
+            <div className="col-span-2 text-center py-16 ld-card">
+              <p className="font-semibold text-ld-fg">No encontramos resultados para "{search}"</p>
+              <p className="text-sm text-ld-fg-muted mt-1">Intenta con otras palabras o contáctanos.</p>
+            </div>
+          )}
+        </div>
+
+        {/* Ticket Form */}
+        <div className="ld-card p-6 md:p-8">
+          <div className="flex items-center gap-3 mb-6">
+            <div
+              className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+              style={{ background: 'var(--ld-action-soft)', boxShadow: 'inset 0 0 0 1px var(--ld-action)' }}
+            >
+              <Send className="w-5 h-5" style={{ color: 'var(--ld-action)' }} />
+            </div>
+            <div>
+              <h3 className="ld-display text-xl text-ld-fg">¿No encontraste lo que buscas?</h3>
+              <p className="text-sm text-ld-fg-muted">Te respondemos en menos de 24 horas.</p>
+            </div>
+          </div>
+
+          {enviado ? (
+            <div className="text-center py-10 space-y-4">
+              <div
+                className="w-16 h-16 rounded-3xl flex items-center justify-center mx-auto"
+                style={{ background: 'var(--ld-action-soft)', boxShadow: 'inset 0 0 0 1px var(--ld-action)' }}
+              >
+                <CheckCircle2 className="w-8 h-8" style={{ color: 'var(--ld-action)' }} />
+              </div>
+              <p className="ld-display text-2xl text-ld-fg">¡Mensaje enviado!</p>
+              <p className="text-sm text-ld-fg-muted max-w-xs mx-auto">Te responderemos a la brevedad. También puedes escribirnos al WhatsApp para una respuesta más rápida.</p>
+              <a href="https://wa.me/56935040242" target="_blank" rel="noreferrer">
+                <Button className="ld-btn-primary gap-2 rounded-full mt-2 text-white">
+                  <MessageCircle className="w-4 h-4" /> Ir a WhatsApp
+                </Button>
+              </a>
+            </div>
+          ) : (
+            <div className="grid md:grid-cols-2 gap-4">
+              {[
+                { label: 'Nombre *', key: 'nombre', placeholder: 'Tu nombre' },
+                { label: 'Email *', key: 'email', placeholder: 'tu@email.com', type: 'email' },
+              ].map(f => (
+                <div key={f.key}>
+                  <label className="text-xs font-bold text-ld-fg-muted uppercase tracking-[0.18em] block mb-1.5">{f.label}</label>
+                  <Input
+                    type={f.type || 'text'}
+                    value={ticketForm[f.key]}
+                    onChange={e => setTicketForm({ ...ticketForm, [f.key]: e.target.value })}
+                    placeholder={f.placeholder}
+                    className="ld-input h-11 text-sm rounded-full bg-transparent text-ld-fg placeholder:text-ld-fg-subtle"
+                  />
+                </div>
+              ))}
+              <div>
+                <label className="text-xs font-bold text-ld-fg-muted uppercase tracking-[0.18em] block mb-1.5">Tipo de consulta</label>
+                <select
+                  value={ticketForm.tipo}
+                  onChange={e => setTicketForm({ ...ticketForm, tipo: e.target.value })}
+                  className="ld-input w-full h-11 px-4 text-sm bg-transparent text-ld-fg focus:outline-none rounded-full border border-ld-border"
+                >
+                  {['Pregunta General', 'Cotización Corporativa', 'Estado Pedido', 'Personalización Tienda', 'Compra Individual'].map(t => (
+                    <option key={t} value={t} style={{ background: 'var(--ld-bg)', color: 'var(--ld-fg)' }}>{t}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="md:col-span-2">
+                <label className="text-xs font-bold text-ld-fg-muted uppercase tracking-[0.18em] block mb-1.5">Mensaje *</label>
+                <textarea
+                  value={ticketForm.mensaje}
+                  onChange={e => setTicketForm({ ...ticketForm, mensaje: e.target.value })}
+                  placeholder="Cuéntanos en qué podemos ayudarte..."
+                  className="w-full ld-input bg-transparent text-ld-fg placeholder:text-ld-fg-subtle px-4 py-3 text-sm resize-none h-24 rounded-2xl focus:outline-none border border-ld-border"
+                />
+              </div>
+              <div className="md:col-span-2 flex gap-3 flex-wrap">
+                <Button onClick={enviarTicket} disabled={enviando} className="ld-btn-primary gap-2 rounded-full font-semibold text-white">
+                  {enviando ? 'Enviando...' : 'Enviar consulta'}
+                </Button>
                 <a href="https://wa.me/56935040242" target="_blank" rel="noreferrer">
-                  <Button className="gap-2 rounded-xl mt-2 bg-green-500 hover:bg-green-600 text-white border-0">
-                    <MessageCircle className="w-4 h-4" /> Ir a WhatsApp
+                  <Button className="ld-btn-ghost gap-2 rounded-full text-ld-fg">
+                    <MessageCircle className="w-4 h-4" /> WhatsApp (más rápido)
                   </Button>
                 </a>
               </div>
-            ) : (
-              <div className="grid md:grid-cols-2 gap-4">
-                {[
-                  { label: 'Nombre *', key: 'nombre', placeholder: 'Tu nombre' },
-                  { label: 'Email *', key: 'email', placeholder: 'tu@email.com', type: 'email' },
-                ].map(f => (
-                  <div key={f.key}>
-                    <label className="text-xs font-semibold text-white/50 uppercase tracking-wide block mb-1.5">{f.label}</label>
-                    <Input type={f.type || 'text'} value={ticketForm[f.key]}
-                      onChange={e => setTicketForm({ ...ticketForm, [f.key]: e.target.value })}
-                      placeholder={f.placeholder}
-                      className="h-11 text-sm rounded-xl bg-white/10 border-white/20 text-white placeholder:text-white/30 focus:bg-white/15 focus:border-teal-400/60" />
-                  </div>
-                ))}
-                <div>
-                  <label className="text-xs font-semibold text-white/50 uppercase tracking-wide block mb-1.5">Tipo de consulta</label>
-                  <select value={ticketForm.tipo} onChange={e => setTicketForm({ ...ticketForm, tipo: e.target.value })}
-                    className="w-full h-11 border border-white/20 rounded-xl px-3 text-sm bg-white/10 text-white focus:outline-none focus:ring-2 focus:ring-teal-400/30 focus:border-teal-400/60">
-                    {['Pregunta General', 'Cotización Corporativa', 'Estado Pedido', 'Personalización Tienda', 'Compra Individual'].map(t => (
-                      <option key={t} value={t} className="bg-slate-900">{t}</option>
-                    ))}
-                  </select>
-                </div>
-                <div className="md:col-span-2">
-                  <label className="text-xs font-semibold text-white/50 uppercase tracking-wide block mb-1.5">Mensaje *</label>
-                  <textarea value={ticketForm.mensaje} onChange={e => setTicketForm({ ...ticketForm, mensaje: e.target.value })}
-                    placeholder="Cuéntanos en qué podemos ayudarte..."
-                    className="w-full border border-white/20 bg-white/10 text-white placeholder:text-white/30 rounded-xl px-4 py-3 text-sm resize-none h-24 focus:outline-none focus:ring-2 focus:ring-teal-400/30 focus:border-teal-400/60 transition" />
-                </div>
-                <div className="md:col-span-2 flex gap-3 flex-wrap">
-                  <Button onClick={enviarTicket} disabled={enviando}
-                    className="gap-2 rounded-xl font-semibold bg-gradient-to-r from-teal-500 to-cyan-500 hover:from-teal-600 hover:to-cyan-600 text-white border-0 shadow-lg shadow-teal-500/20">
-                    {enviando ? 'Enviando...' : 'Enviar consulta'}
-                  </Button>
-                  <a href="https://wa.me/56935040242" target="_blank" rel="noreferrer">
-                    <Button className="gap-2 rounded-xl bg-white/15 hover:bg-white/25 text-white border border-white/30">
-                      <MessageCircle className="w-4 h-4" /> WhatsApp (más rápido)
-                    </Button>
-                  </a>
-                </div>
-              </div>
-            )}
-          </div>
-
-          <div className="pb-8" />
+            </div>
+          )}
         </div>
+      </div>
     </div>
   );
 }

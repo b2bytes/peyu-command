@@ -6,6 +6,7 @@ import AsistenteChat from './AsistenteChat';
 import ChatCartToast from './chat/ChatCartToast';
 import PublicMobileNav from './PublicMobileNav';
 import PublicMobileHeader from './PublicMobileHeader';
+import PublicFooter from './PublicFooter';
 import LiquidDualToggle from './LiquidDualToggle';
 
 const MENU_ITEMS = [
@@ -89,7 +90,10 @@ export default function PublicLayout() {
       {/* MAIN CONTENT — sin backgroundImage propio, reserva espacio solo para el sidebar colapsado en desktop */}
       <main className="absolute inset-0 overflow-auto pb-16 lg:pb-0 lg:pl-14 flex flex-col">
         <PublicMobileHeader />
-        <Outlet />
+        <div className="flex-1">
+          <Outlet />
+        </div>
+        <PublicFooter />
       </main>
 
       {/* Navegación inferior móvil */}
