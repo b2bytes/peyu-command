@@ -20,6 +20,10 @@ import CelebrationBanner from '@/components/landing/CelebrationBanner';
 import FeaturedCarousel from '@/components/landing/FeaturedCarousel';
 import PublicSEO from '@/components/PublicSEO';
 import MobileShopLanding from '@/components/landing/mobile/MobileShopLanding';
+import DesktopHeroSplit from '@/components/landing/desktop/DesktopHeroSplit';
+import DesktopCategorySection from '@/components/landing/desktop/DesktopCategorySection';
+import DesktopTopSellers from '@/components/landing/desktop/DesktopTopSellers';
+import DesktopTrustFooter from '@/components/landing/desktop/DesktopTrustFooter';
 
 // Limpia los bloques [CONTEXTO] y [BRAIN] que se inyectan al agente —
 // no deben verse en la UI. En withContext() el mensaje real del usuario
@@ -319,17 +323,13 @@ export default function ShopLanding() {
       }}
     >
       <style>{`
-        /* Estabilización global del landing — SOLO desktop tiene fixed.
-           En móvil renderizamos MobileShopLanding con scroll natural. */
-        html, body { margin: 0; padding: 0; background: #0f172a; overscroll-behavior: none; }
+        /* Desktop: scroll vertical natural (e-commerce showcase).
+           Mobile usa MobileShopLanding con su propio scroll. */
+        html, body { margin: 0; padding: 0; background: #0f172a; }
         @media (min-width: 1024px) {
           .landing-viewport {
-            position: fixed;
-            inset: 0;
-            width: 100vw;
-            height: 100vh;
-            height: 100svh;
-            overflow: hidden;
+            min-height: 100vh;
+            min-height: 100svh;
             background-color: #0f172a;
           }
         }
@@ -461,31 +461,29 @@ export default function ShopLanding() {
       {/* Selector de fondo — flotante independiente */}
       <BackgroundSwitcher />
 
-      {/* Main content area — reserva espacio dinámico según sidebar (colapsado 56px / expandido 192px).
-          En mobile usamos altura fija (100svh) y SIN scroll vertical: el chat tiene su propio scroll interno
-          para que NO se expanda infinitamente al agregar mensajes. */}
-      <div className={`absolute inset-0 overflow-hidden lg:overflow-y-auto overflow-x-hidden peyu-scrollbar-light transition-[padding] duration-200 ease-out ${sidebarExpanded ? 'lg:pl-48' : 'lg:pl-14'}`}>
-        {/* Main container — Liquid Glass (iOS 26 / visionOS style).
-            Mobile: altura fija al viewport (100% del padre). Desktop: ancho máx 1280px. */}
-        <div className="flex gap-2 sm:gap-3 lg:gap-3 p-2 sm:p-3 lg:p-3 relative z-10 flex-col lg:flex-row items-stretch h-full lg:h-full w-full lg:max-w-[1280px] lg:mx-auto">
-          {/* LEFT CONTAINER - Liquid Glass · ocupa todo el alto disponible en mobile */}
-          <div className="peyu-liquid-glass flex-1 rounded-2xl lg:rounded-3xl overflow-hidden flex flex-col min-w-0 min-h-0">
+      {/* Main content area — reserva espacio dinámico según sidebar (colapsado 56px / expandido 192px). */}
+      <div className={`overflow-y-auto overflow-x-hidden peyu-scrollbar-light transition-[padding] duration-200 ease-out ${sidebarExpanded ? 'lg:pl-48' : 'lg:pl-14'}`}>
 
-            {/* Header — altura reducida */}
-            <div className="bg-gradient-to-r from-teal-500/20 to-cyan-500/20 border-b border-white/15 px-3 sm:px-4 py-2 flex items-center justify-between gap-3 flex-shrink-0 backdrop-blur-md">
-              <div className="flex items-center gap-2 flex-1 min-w-0">
-                <MobileMenu items={MENU_ITEMS} />
-                <PEYULogo size="sm" showText={true} />
-              </div>
-              <div className="flex items-center gap-1.5 flex-shrink-0">
-                <button className="hidden sm:inline-flex w-9 h-9 items-center justify-center rounded-full bg-white/15 hover:bg-white/25 border border-white/20 text-white transition-all active:bg-white/35">
-                  <Bell className="w-4 h-4" />
-                </button>
+        {/* ─── ABOVE THE FOLD: Hero split + chat sticky ─── */}
+        <div className="flex gap-4 p-4 relative z-10 w-full max-w-[1440px] mx-auto" style={{ minHeight: 'calc(100vh - 32px)' }}>
+          {/* IZQUIERDA: Hero gigante (60%) */}
+          <div className="flex-1 min-w-0 flex flex-col gap-4">
+            {/* Header bar superior con logo + carrito */}
+            <div className="peyu-liquid-glass rounded-2xl px-5 py-3 flex items-center justify-between gap-3 flex-shrink-0">
+              <PEYULogo size="sm" showText={true} />
+              <div className="flex items-center gap-2 flex-shrink-0">
+                <CelebrationBanner onChatPrompt={sendMessage} compact />
+                <Link to="/shop">
+                  <Button className="bg-red-600 hover:bg-red-700 text-white font-bold rounded-full px-4 h-9 shadow-lg text-xs">📮 Tienda</Button>
+                </Link>
+                <Link to="/b2b/contacto">
+                  <Button className="bg-yellow-400 hover:bg-yellow-500 text-gray-900 font-bold rounded-full px-4 h-9 shadow-lg text-xs">✨ B2B</Button>
+                </Link>
                 <Link to="/cart">
-                  <button className="relative w-9 h-9 inline-flex items-center justify-center rounded-full bg-teal-500 hover:bg-teal-600 border border-teal-400/50 text-white transition-all active:bg-teal-700 shadow-md">
+                  <button className="relative w-10 h-10 inline-flex items-center justify-center rounded-full bg-teal-500 hover:bg-teal-600 border border-teal-400/50 text-white shadow-md">
                     <ShoppingCart className="w-4 h-4" />
                     {carrito.length > 0 && (
-                      <span className="absolute -top-1 -right-1 min-w-[16px] h-[16px] px-1 bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center ring-2 ring-[#0f172a]/60">
+                      <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center ring-2 ring-[#0f172a]/60">
                         {carrito.length}
                       </span>
                     )}
@@ -494,115 +492,71 @@ export default function ShopLanding() {
               </div>
             </div>
 
-            {/* Barra superior unificada: celebration pill + CTAs — compacta */}
-            <div className="px-3 sm:px-4 pt-2 pb-0.5 flex items-center gap-2 flex-wrap">
-              <div className="flex-1 min-w-[220px]">
-                <CelebrationBanner onChatPrompt={sendMessage} compact />
-              </div>
-              <div className="flex gap-1.5 flex-shrink-0">
-                <Link to="/shop">
-                  <Button className="bg-red-600 hover:bg-red-700 active:bg-red-800 text-white font-bold rounded-full px-3 py-1 h-7 shadow-lg text-[10px] transition-all">
-                    📮 Explorar
-                  </Button>
-                </Link>
-                <Link to="/b2b/contacto">
-                  <Button className="bg-yellow-400 hover:bg-yellow-500 active:bg-yellow-600 text-gray-900 font-bold rounded-full px-3 py-1 h-7 shadow-lg text-[10px] transition-all">
-                    ✨ B2B
-                  </Button>
-                </Link>
-              </div>
+            {/* Hero gigante */}
+            <div className="flex-1 min-h-0">
+              <DesktopHeroSplit onOpenChat={() => document.getElementById('peyu-chat-input-desktop')?.focus()} />
             </div>
+          </div>
 
-            {/* Content — flex-1 + min-h-0 hace que el chat respete la altura disponible y no se expanda */}
-            <div className="flex flex-col gap-1 p-2 sm:p-2.5 flex-1 min-h-0 overflow-hidden">
-
-              {/* Chat Agent — Liquid Glass; epicentro del landing.
-                  IMPORTANTE: SIN min-h en mobile para que el flex-1 lo limite al alto disponible
-                  y el scroll quede dentro del contenedor de mensajes (no en la página). */}
-              <div
-                className={`peyu-liquid-glass-inner rounded-xl lg:rounded-2xl p-2 sm:p-2.5 flex flex-col flex-1 min-h-0 overflow-hidden relative transition-all duration-500 ${
-                  isTheme ? 'peyu-liquid-glass-warm' : ''
-                }`}
-              >
-                {/* Glow temático sutil arriba-izquierda — solo en modo Temas */}
+          {/* DERECHA: Chat sticky (40%) */}
+          <div className="hidden lg:flex w-[400px] xl:w-[440px] flex-shrink-0">
+            <div className="w-full sticky top-4" style={{ height: 'calc(100vh - 32px)' }}>
+              <div className={`peyu-liquid-glass-inner rounded-2xl p-3 flex flex-col h-full overflow-hidden relative transition-all duration-500 ${isTheme ? 'peyu-liquid-glass-warm' : ''}`}>
                 {isTheme && (
-                  <div
-                    aria-hidden="true"
-                    className="pointer-events-none absolute -top-16 -left-16 w-48 h-48 rounded-full opacity-40 blur-3xl"
-                    style={{ backgroundColor: bg.accent || '#F4A261' }}
-                  />
+                  <div aria-hidden="true" className="pointer-events-none absolute -top-16 -left-16 w-48 h-48 rounded-full opacity-40 blur-3xl" style={{ backgroundColor: bg.accent || '#F4A261' }} />
                 )}
-                
-                {/* Agent Header — compacto, deja más espacio al chat */}
-                <div className="mb-1.5 pb-1.5 border-b border-white/15 flex items-center gap-2 flex-shrink-0 min-w-0">
+
+                {/* Agent header */}
+                <div className="mb-2 pb-2 border-b border-white/15 flex items-center gap-2 flex-shrink-0">
                   <div className="relative flex-shrink-0">
-                    <div className="w-7 h-7 rounded-full bg-gradient-to-br from-teal-400 to-cyan-500 flex items-center justify-center text-white text-sm shadow-md ring-2 ring-white/20">🐢</div>
-                    <span className="absolute -bottom-0.5 -right-0.5 w-2 h-2 rounded-full bg-green-400 ring-2 ring-slate-900/80" title="En línea" />
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-teal-400 to-cyan-500 flex items-center justify-center text-white text-base shadow-md ring-2 ring-white/20">🐢</div>
+                    <span className="absolute -bottom-0.5 -right-0.5 w-2 h-2 rounded-full bg-green-400 ring-2 ring-slate-900/80" />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="text-white font-bold text-xs leading-tight">Peyu</p>
-                    <p className="text-white/55 text-[9px] line-clamp-1">Asistente de Gifting · en línea</p>
+                    <p className="text-white font-bold text-sm leading-tight">Peyu IA</p>
+                    <p className="text-white/55 text-[10px]">Asistente de Gifting · en línea</p>
                   </div>
                   {historyCount > 0 && (
-                    <button
-                      onClick={() => setShowHistory(true)}
-                      className="flex items-center gap-1 px-2 py-1 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 text-white/90 text-[9px] font-semibold transition flex-shrink-0"
-                      title="Conversaciones anteriores"
-                    >
-                      <History className="w-2.5 h-2.5" />
-                      <span className="hidden sm:inline">Anteriores · {historyCount}</span>
-                      <span className="sm:hidden">{historyCount}</span>
+                    <button onClick={() => setShowHistory(true)} className="flex items-center gap-1 px-2 py-1 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 text-white/90 text-[10px] font-semibold flex-shrink-0">
+                      <History className="w-3 h-3" />
+                      <span>{historyCount}</span>
                     </button>
                   )}
                 </div>
 
-                {/* Panel de historial (overlay dentro del chat) */}
                 {showHistory && (
-                  <ChatHistoryPanel
-                    onResume={handleResumeFromHistory}
-                    onClose={() => setShowHistory(false)}
-                  />
+                  <ChatHistoryPanel onResume={handleResumeFromHistory} onClose={() => setShowHistory(false)} />
                 )}
 
-                {/* Messages Container — scroll natural; los nuevos mensajes quedan abajo vía scrollIntoView */}
+                {/* Messages */}
                 <div className="peyu-scrollbar-light flex-1 overflow-y-auto overflow-x-hidden mb-2 pr-1 flex flex-col gap-2 min-h-0">
-                  {messages.length === 0 && (
-                    <div className="text-center text-white/60 text-xs py-6 space-y-2">
-                      <p className="text-sm font-medium">👋 Hola, soy Peyu</p>
-                      <p>Tu asistente para regalos corporativos sostenibles</p>
-                      <p className="text-[10px] text-white/40 mt-2">Cuéntame qué necesitas o usa los botones de ocasiones</p>
-                    </div>
-                  )}
                   {messages.map((msg, idx) => (
                     <div key={idx} className={`flex gap-2 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                       {msg.role === 'assistant' && (
                         <div className="w-6 h-6 rounded-full bg-teal-500/30 flex items-center justify-center flex-shrink-0 text-xs">🐢</div>
                       )}
                       <div className={`rounded-2xl px-3.5 py-2 text-xs sm:text-sm break-words leading-relaxed shadow-sm ${msg.role === 'user' ? 'bg-teal-600 text-white rounded-br-sm max-w-[75%]' : 'bg-white/15 text-white border border-white/25 rounded-bl-sm backdrop-blur-sm max-w-[85%]'}`}>
-                        {msg.role === 'assistant'
-                          ? <ChatMessageContent content={msg.content} />
-                          : msg.content}
+                        {msg.role === 'assistant' ? <ChatMessageContent content={msg.content} /> : msg.content}
                       </div>
                     </div>
                   ))}
                   {loading && (
                     <div className="flex gap-2 justify-start">
                       <div className="w-6 h-6 rounded-full bg-teal-500/30 flex items-center justify-center flex-shrink-0 text-xs">🐢</div>
-                      <div className="bg-white/15 border border-white/25 rounded-xl rounded-bl-none px-3.5 py-2.5 text-white flex items-center gap-2 backdrop-blur-sm">
-                        <div className="flex gap-1">
-                          <div className="w-1.5 h-1.5 bg-white rounded-full animate-bounce"></div>
-                          <div className="w-1.5 h-1.5 bg-white rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
-                          <div className="w-1.5 h-1.5 bg-white rounded-full animate-bounce" style={{ animationDelay: '0.4s' }}></div>
-                        </div>
+                      <div className="bg-white/15 border border-white/25 rounded-xl rounded-bl-none px-3.5 py-2.5 text-white flex items-center gap-1 backdrop-blur-sm">
+                        <div className="w-1.5 h-1.5 bg-white rounded-full animate-bounce"></div>
+                        <div className="w-1.5 h-1.5 bg-white rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                        <div className="w-1.5 h-1.5 bg-white rounded-full animate-bounce" style={{ animationDelay: '0.4s' }}></div>
                       </div>
                     </div>
                   )}
                   <div ref={messagesEndRef} />
                 </div>
 
-                {/* Input — protagonista del chat: alto, sólido, glow teal en focus */}
-                <div className="peyu-chat-input flex gap-2 flex-shrink-0 min-w-0 items-center bg-slate-950/65 rounded-full pl-1.5 pr-1.5 py-1.5 border border-white/15 shadow-[0_8px_24px_-8px_rgba(0,0,0,0.5)] backdrop-blur-xl transition-all">
+                {/* Input */}
+                <div className="peyu-chat-input flex gap-2 flex-shrink-0 items-center bg-slate-950/65 rounded-full pl-1.5 pr-1.5 py-1.5 border border-white/15 shadow-[0_8px_24px_-8px_rgba(0,0,0,0.5)] backdrop-blur-xl transition-all">
                   <Input
+                    id="peyu-chat-input-desktop"
                     value={input}
                     onChange={e => setInput(e.target.value)}
                     onKeyDown={e => e.key === 'Enter' && !loading && sendMessage(input)}
@@ -610,42 +564,32 @@ export default function ShopLanding() {
                     className="bg-transparent border-0 text-white placeholder:text-white/50 text-sm rounded-full focus:ring-0 focus-visible:ring-0 flex-1 h-11 px-4 disabled:opacity-60 shadow-none font-medium"
                     disabled={loading}
                   />
-                  <Button
-                    onClick={() => sendMessage(input)}
-                    disabled={loading || !input.trim()}
-                    className="bg-gradient-to-br from-teal-400 to-cyan-500 hover:from-teal-500 hover:to-cyan-600 active:from-teal-600 active:to-cyan-700 text-white rounded-full w-11 h-11 p-0 flex items-center justify-center flex-shrink-0 shadow-lg shadow-teal-500/30 transition-all disabled:opacity-50 disabled:shadow-none">
+                  <Button onClick={() => sendMessage(input)} disabled={loading || !input.trim()} className="bg-gradient-to-br from-teal-400 to-cyan-500 hover:from-teal-500 hover:to-cyan-600 text-white rounded-full w-11 h-11 p-0 flex items-center justify-center flex-shrink-0 shadow-lg shadow-teal-500/30 transition-all disabled:opacity-50">
                     <Send className="w-[18px] h-[18px]" />
                   </Button>
                 </div>
-                <style>{`
-                  .peyu-chat-input:focus-within {
-                    border-color: rgba(45, 212, 191, 0.55);
-                    box-shadow: 0 0 0 4px rgba(45, 212, 191, 0.12), 0 8px 24px -8px rgba(0,0,0,0.5);
-                  }
-                `}</style>
 
-                {/* Quick Replies — sin label, en una sola fila ultra-compacta */}
-                <div className="flex-shrink-0 mt-1.5 overflow-x-auto scrollbar-hide flex gap-1 pb-0.5">
+                {/* Quick replies */}
+                <div className="flex-shrink-0 mt-2 overflow-x-auto scrollbar-hide flex gap-1 pb-0.5">
                   {OCASIONES.map(occ => (
-                    <button
-                      key={occ.id}
-                      onClick={() => handleOccasionClick(occ)}
-                      className="flex items-center gap-1 flex-shrink-0 bg-white/[0.06] hover:bg-teal-500/20 border border-white/10 hover:border-teal-400/40 active:bg-teal-600/30 transition-all rounded-full px-2 py-0.5"
-                    >
+                    <button key={occ.id} onClick={() => handleOccasionClick(occ)} className="flex items-center gap-1 flex-shrink-0 bg-white/[0.06] hover:bg-teal-500/20 border border-white/10 hover:border-teal-400/40 transition rounded-full px-2 py-0.5">
                       <span className="text-[10px] leading-none">{occ.icon}</span>
-                      <span className="text-white/75 text-[9.5px] font-medium whitespace-nowrap">{occ.label}</span>
+                      <span className="text-white/75 text-[10px] font-medium whitespace-nowrap">{occ.label}</span>
                     </button>
                   ))}
                 </div>
               </div>
             </div>
           </div>
-
-          {/* RIGHT CONTAINER - Product Carousel (productos REALES desde la BD) */}
-          <div className="hidden lg:block flex-shrink-0 lg:w-72 xl:w-80 2xl:w-96">
-            <FeaturedCarousel />
-          </div>
         </div>
+
+        {/* ─── BELOW THE FOLD: E-commerce sections ─── */}
+        <div className="w-full max-w-[1440px] mx-auto">
+          <DesktopCategorySection />
+          <DesktopTopSellers />
+          <DesktopTrustFooter />
+        </div>
+
       </div>
     </div>
     </>
