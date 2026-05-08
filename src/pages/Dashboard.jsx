@@ -219,20 +219,37 @@ export default function Dashboard() {
           <h1 className="text-3xl font-poppins font-black text-white">Centro de Comandos</h1>
           <p className="text-teal-300/70 text-sm mt-1">KPIs en vivo · Acciones 1-click · Peyu Brain</p>
         </div>
-        <Link
-          to="/admin/bluex"
-          className="group flex items-center gap-3 px-4 py-3 rounded-2xl bg-gradient-to-br from-blue-600 via-cyan-600 to-teal-600 hover:from-blue-500 hover:via-cyan-500 hover:to-teal-500 text-white shadow-lg shadow-cyan-500/30 border border-white/20 transition-all hover:scale-[1.02]"
-        >
-          <div className="w-10 h-10 rounded-xl bg-white/15 flex items-center justify-center backdrop-blur-md">
-            <Truck className="w-5 h-5" />
-          </div>
-          <div className="text-left">
-            <p className="text-[10px] uppercase tracking-wider font-bold text-cyan-100/90">BlueExpress</p>
-            <p className="text-sm font-poppins font-bold leading-tight">Centro Logístico</p>
-            <p className="text-[10px] text-white/70">Tracking · Etiquetas · Secuencias IA</p>
-          </div>
-          <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-        </Link>
+        <div className="flex items-center gap-2 flex-wrap">
+          <Link
+            to="/admin/cockpit"
+            className="group flex items-center gap-3 px-4 py-3 rounded-2xl bg-gradient-to-br from-violet-600 via-indigo-600 to-cyan-600 hover:from-violet-500 hover:via-indigo-500 hover:to-cyan-500 text-white shadow-lg shadow-violet-500/40 border border-white/20 transition-all hover:scale-[1.02] relative"
+          >
+            <span className="absolute -top-1.5 -right-1.5 text-[9px] bg-white text-violet-700 px-1.5 py-0.5 rounded-full font-black tracking-wider">NEW</span>
+            <div className="w-10 h-10 rounded-xl bg-white/15 flex items-center justify-center backdrop-blur-md">
+              <Zap className="w-5 h-5" />
+            </div>
+            <div className="text-left">
+              <p className="text-[10px] uppercase tracking-wider font-bold text-violet-100/90">Cockpit</p>
+              <p className="text-sm font-poppins font-bold leading-tight">Puente de Mando</p>
+              <p className="text-[10px] text-white/70">Flota IA · Misiones · Foresight</p>
+            </div>
+            <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+          </Link>
+          <Link
+            to="/admin/bluex"
+            className="group flex items-center gap-3 px-4 py-3 rounded-2xl bg-gradient-to-br from-blue-600 via-cyan-600 to-teal-600 hover:from-blue-500 hover:via-cyan-500 hover:to-teal-500 text-white shadow-lg shadow-cyan-500/30 border border-white/20 transition-all hover:scale-[1.02]"
+          >
+            <div className="w-10 h-10 rounded-xl bg-white/15 flex items-center justify-center backdrop-blur-md">
+              <Truck className="w-5 h-5" />
+            </div>
+            <div className="text-left">
+              <p className="text-[10px] uppercase tracking-wider font-bold text-cyan-100/90">BlueExpress</p>
+              <p className="text-sm font-poppins font-bold leading-tight">Centro Logístico</p>
+              <p className="text-[10px] text-white/70">Tracking · Etiquetas · Secuencias IA</p>
+            </div>
+            <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+          </Link>
+        </div>
       </div>
 
       {/* ── CENTRO DE COMANDOS — Bloque superior ──
