@@ -5,6 +5,7 @@ import {
   Image as ImageIcon, Loader2, Check, Wand2, Sparkles,
   Plus, Trash2, Star, AlertTriangle, X
 } from 'lucide-react';
+import ManualImageUpload from './ManualImageUpload';
 
 /**
  * AIImageEnhancer — flujo mejorado:
@@ -222,9 +223,12 @@ Photography style: PEYU Chile brand aesthetic, premium product photography, high
         </div>
       )}
 
+      {/* Subida manual desde el equipo */}
+      <ManualImageUpload producto={producto} onSaved={onSaved} />
+
       {/* Selector estilo */}
       <div>
-        <p className="text-xs uppercase tracking-wider text-white/40 mb-2">Estilo del entorno</p>
+        <p className="text-xs uppercase tracking-wider text-white/40 mb-2">Estilo del entorno (IA)</p>
         <div className="flex flex-wrap gap-2">
           {ESTILOS.map(s => (
             <button
