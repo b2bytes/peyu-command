@@ -420,10 +420,10 @@ export default function ShopLanding() {
             </div>
           </div>
 
-          {/* DERECHA: Chat sticky (40%) */}
-          <div className="hidden lg:flex w-[400px] xl:w-[440px] flex-shrink-0">
-            <div className="w-full sticky top-4" style={{ height: 'calc(100vh - 32px)' }}>
-              <div className="ld-glass rounded-2xl p-3 flex flex-col h-full overflow-hidden relative transition-all duration-500">
+          {/* DERECHA: Chat — mismo alto que el hero contenedor (header + hero) */}
+          <div className="hidden lg:flex w-[400px] xl:w-[440px] flex-shrink-0 self-stretch">
+            <div className="w-full flex">
+              <div className="ld-glass rounded-2xl p-3 flex flex-col flex-1 overflow-hidden relative transition-all duration-500">
                 {/* Agent header */}
                 <div className="mb-2 pb-2 border-b border-ld-border flex items-center gap-2 flex-shrink-0">
                   <div className="relative flex-shrink-0">

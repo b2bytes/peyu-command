@@ -190,37 +190,37 @@ export default function Shop() {
         ]}
         jsonLd={itemListJsonLd}
       />
-      {/* HERO — ultra compacto en mobile (header + 1 línea de trust badges) */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 pt-3 sm:pt-10 pb-3 sm:pb-6">
+      {/* HERO Liquid Dual */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 pt-6 sm:pt-12 pb-4 sm:pb-8">
         <div className="flex items-end justify-between gap-6 flex-wrap">
-          <div className="space-y-2 sm:space-y-3 max-w-2xl">
-            <div className="inline-flex items-center gap-1.5 text-[10px] sm:text-xs font-semibold text-teal-300 bg-teal-500/20 border border-teal-400/30 px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full backdrop-blur-sm">
+          <div className="space-y-3 max-w-2xl">
+            <div className="inline-flex items-center gap-1.5 text-[11px] font-bold tracking-[0.18em] uppercase" style={{ color: 'var(--ld-action)' }}>
               <Recycle className="w-3 h-3" />
-              <span className="hidden sm:inline">100% plástico reciclado · Hecho en Chile</span>
-              <span className="sm:hidden">100% reciclado · Chile</span>
+              <span className="hidden sm:inline">100% Plástico Reciclado · Chile</span>
+              <span className="sm:hidden">100% Reciclado · Chile</span>
             </div>
-            {/* H1 con keyword principal "Tienda" + "regalos sostenibles Chile" */}
-            <h1 className="text-[1.5rem] sm:text-4xl md:text-5xl font-poppins font-bold leading-[1.1] text-white drop-shadow-lg tracking-tight">
-              Tienda PEYU · Regalos Sostenibles
-              <br className="hidden sm:block" />
-              <span className="text-cyan-400 sm:block"> Hechos en Chile.</span>
+            <h1 className="ld-display text-3xl sm:text-5xl md:text-6xl text-ld-fg leading-[0.95]">
+              Tienda PEYU.{' '}
+              <span className="ld-display-italic" style={{ color: 'var(--ld-highlight)' }}>
+                Regalos sostenibles.
+              </span>
             </h1>
-            <p className="hidden sm:block text-white/70 text-sm sm:text-base leading-relaxed max-w-lg">
-              Productos fabricados en Santiago con plástico recuperado. Personalización láser UV y garantía 10 años.
+            <p className="hidden sm:block text-ld-fg-muted text-base leading-relaxed max-w-lg">
+              Fabricados en Santiago con plástico recuperado. Personalización láser UV y garantía 10 años.
             </p>
           </div>
-          {/* Trust badges — fila scrolleable en mobile, completa en desktop */}
+          {/* Trust badges Liquid Dual */}
           <div className="flex gap-2 overflow-x-auto sm:flex-wrap scrollbar-hide -mx-4 px-4 sm:mx-0 sm:px-0 w-[calc(100%+2rem)] sm:w-auto">
             {[
               { icon: Shield, label: '10 años', sub: 'garantía' },
               { icon: Truck, label: 'Envío gratis', sub: 'sobre $40K' },
               { icon: Check, label: '500+', sub: 'reseñas 5★' },
             ].map((b, i) => (
-              <div key={i} className="flex-shrink-0 bg-white/5 backdrop-blur-sm border border-white/15 rounded-xl sm:rounded-2xl px-2.5 sm:px-3.5 py-1.5 sm:py-2.5 flex items-center gap-1.5 sm:gap-2.5 shadow-lg">
-                <b.icon className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-teal-400 flex-shrink-0" />
+              <div key={i} className="ld-glass flex-shrink-0 rounded-xl sm:rounded-2xl px-3 sm:px-3.5 py-2 sm:py-2.5 flex items-center gap-2">
+                <b.icon className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" style={{ color: 'var(--ld-action)' }} />
                 <div>
-                  <p className="text-[11px] sm:text-xs font-bold text-white leading-tight whitespace-nowrap">{b.label}</p>
-                  <p className="text-[9px] sm:text-[10px] text-white/50 leading-tight whitespace-nowrap">{b.sub}</p>
+                  <p className="text-[11px] sm:text-xs font-bold text-ld-fg leading-tight whitespace-nowrap">{b.label}</p>
+                  <p className="text-[9px] sm:text-[10px] text-ld-fg-muted leading-tight whitespace-nowrap">{b.sub}</p>
                 </div>
               </div>
             ))}
@@ -229,19 +229,19 @@ export default function Shop() {
       </section>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 pb-20">
-        {/* Search bar inline — sticky en mobile para acceso rápido */}
-        <div className="mb-3 sm:mb-3 sticky top-14 sm:static z-20 -mx-4 px-4 sm:mx-0 sm:px-0 py-2 sm:py-0 bg-slate-900/80 sm:bg-transparent backdrop-blur-xl sm:backdrop-blur-none">
-          <div className="flex items-center gap-2 bg-white/10 border border-white/25 rounded-xl px-3.5 py-2.5 backdrop-blur-sm focus-within:border-teal-400/60 focus-within:bg-white/15 transition-all max-w-xl">
-            <Search className="w-4 h-4 text-white/50 flex-shrink-0" />
+        {/* Search bar Liquid Dual — sticky en mobile */}
+        <div className="mb-3 sm:mb-3 sticky top-14 sm:static z-20 -mx-4 px-4 sm:mx-0 sm:px-0 py-2 sm:py-0 ld-glass-strong sm:bg-transparent sm:backdrop-blur-none">
+          <div className="ld-input flex items-center gap-2 px-3.5 py-2.5 max-w-xl rounded-full">
+            <Search className="w-4 h-4 text-ld-fg-muted flex-shrink-0" />
             <input
               type="text"
               placeholder="Buscar productos, SKU..."
               value={search}
               onChange={e => setSearch(e.target.value)}
-              className="bg-transparent border-0 text-white placeholder:text-white/40 focus:ring-0 focus:outline-none text-sm w-full"
+              className="bg-transparent border-0 text-ld-fg placeholder:text-ld-fg-subtle focus:ring-0 focus:outline-none text-sm w-full"
             />
             {search && (
-              <button onClick={() => setSearch('')} className="text-white/50 hover:text-white">
+              <button onClick={() => setSearch('')} className="text-ld-fg-muted hover:text-ld-fg">
                 <X className="w-4 h-4" />
               </button>
             )}
@@ -257,47 +257,46 @@ export default function Shop() {
 
         {/* Sub-controls bar (sort + filtros) — conteo oculto en mobile para reducir scroll */}
         <div className="flex items-center justify-between gap-3 mt-3 sm:mt-4 mb-3 sm:mb-4 flex-wrap">
-          <p className="hidden sm:block text-sm text-white/65" ref={gridTopRef}>
+          <p className="hidden sm:block text-sm text-ld-fg-muted" ref={gridTopRef}>
             {loading ? (
               'Cargando...'
             ) : (
               <>
-                Mostrando <span className="font-bold text-white">{visibleProductos.length}</span> de{' '}
-                <span className="font-bold text-white">{filtered.length}</span>
-                {selectedCategory !== 'Todos' && <> en <span className="text-teal-300 font-semibold">{selectedCategory}</span></>}
+                Mostrando <span className="font-bold text-ld-fg">{visibleProductos.length}</span> de{' '}
+                <span className="font-bold text-ld-fg">{filtered.length}</span>
+                {selectedCategory !== 'Todos' && <> en <span className="font-semibold" style={{ color: 'var(--ld-action)' }}>{selectedCategory}</span></>}
               </>
             )}
           </p>
-          {/* Anchor invisible para scroll en mobile (el conteo está oculto) */}
           <span ref={gridTopRef} className="sm:hidden block w-full h-0" />
           <div className="flex items-center gap-2 flex-shrink-0 ml-auto">
             <select
               value={sortBy}
               onChange={e => setSortBy(e.target.value)}
-              className="bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-sm text-white font-medium focus:outline-none focus:border-teal-400/60 cursor-pointer backdrop-blur-sm">
-              {SORT_OPTIONS.map(s => <option key={s.id} value={s.id} className="bg-slate-900">{s.label}</option>)}
+              className="ld-glass-soft rounded-full px-3.5 py-2 text-sm text-ld-fg font-semibold focus:outline-none cursor-pointer border border-ld-border">
+              {SORT_OPTIONS.map(s => <option key={s.id} value={s.id} style={{ background: 'var(--ld-bg)', color: 'var(--ld-fg)' }}>{s.label}</option>)}
             </select>
             <button
               onClick={() => setFiltersOpen(!filtersOpen)}
-              className={`px-3 py-2 rounded-xl text-sm font-medium border transition-all flex items-center gap-1.5 backdrop-blur-sm ${
+              className={`px-3.5 py-2 rounded-full text-sm font-semibold transition-all flex items-center gap-1.5 ${
                 filtersOpen || selectedPrice !== 'all'
-                  ? 'bg-teal-500/30 text-white border-teal-400/50'
-                  : 'bg-white/5 text-white/70 border-white/20 hover:bg-white/10'
+                  ? 'ld-btn-primary text-white'
+                  : 'ld-glass-soft text-ld-fg border border-ld-border'
               }`}>
               <SlidersHorizontal className="w-3.5 h-3.5" />
               Filtros
-              {selectedPrice !== 'all' && <span className="w-1.5 h-1.5 rounded-full bg-teal-300" />}
+              {selectedPrice !== 'all' && <span className="w-1.5 h-1.5 rounded-full" style={{ background: 'var(--ld-highlight)' }} />}
             </button>
           </div>
         </div>
 
-        {/* Filter panel */}
+        {/* Filter panel Liquid Dual */}
         {filtersOpen && (
-          <div className="bg-white/5 backdrop-blur-md border border-white/15 rounded-2xl p-4 mb-5 shadow-xl">
+          <div className="ld-card p-4 mb-5">
             <div className="flex items-center justify-between mb-3">
-              <p className="text-xs font-bold text-white/70 uppercase tracking-wider">Precio</p>
+              <p className="text-[11px] font-bold uppercase tracking-[0.18em]" style={{ color: 'var(--ld-action)' }}>Precio</p>
               {hasActiveFilters && (
-                <button onClick={clearFilters} className="text-xs text-white/50 hover:text-white font-medium flex items-center gap-1">
+                <button onClick={clearFilters} className="text-xs text-ld-fg-muted hover:text-ld-fg font-semibold flex items-center gap-1">
                   <X className="w-3 h-3" /> Limpiar todo
                 </button>
               )}
@@ -307,10 +306,10 @@ export default function Shop() {
                 <button
                   key={r.id}
                   onClick={() => setSelectedPrice(r.id)}
-                  className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+                  className={`px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all ${
                     selectedPrice === r.id
-                      ? 'bg-teal-500/30 text-white border border-teal-400/50'
-                      : 'bg-white/5 text-white/70 border border-white/15 hover:bg-white/10'
+                      ? 'ld-btn-primary text-white'
+                      : 'ld-glass-soft text-ld-fg-soft border border-ld-border hover:text-ld-fg'
                   }`}>
                   {r.label}
                 </button>
@@ -323,24 +322,24 @@ export default function Shop() {
         {loading ? (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5">
             {[...Array(8)].map((_, i) => (
-              <div key={i} className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden animate-pulse backdrop-blur-sm">
-                <div className="aspect-square bg-white/5" />
+              <div key={i} className="ld-card overflow-hidden animate-pulse">
+                <div className="aspect-square peyu-shimmer" />
                 <div className="p-4 space-y-2">
-                  <div className="h-4 bg-white/10 rounded w-3/4" />
-                  <div className="h-3 bg-white/10 rounded w-1/2" />
-                  <div className="h-6 bg-white/10 rounded w-1/3 mt-3" />
+                  <div className="h-4 rounded w-3/4 peyu-shimmer" />
+                  <div className="h-3 rounded w-1/2 peyu-shimmer" />
+                  <div className="h-6 rounded w-1/3 mt-3 peyu-shimmer" />
                 </div>
               </div>
             ))}
           </div>
         ) : filtered.length === 0 ? (
-          <div className="text-center py-20 bg-white/5 rounded-3xl border border-white/15 backdrop-blur-sm">
-            <div className="w-16 h-16 rounded-2xl bg-white/10 flex items-center justify-center mx-auto mb-4">
-              <Search className="w-6 h-6 text-white/40" />
+          <div className="text-center py-20 ld-card">
+            <div className="w-16 h-16 rounded-2xl ld-glass-soft flex items-center justify-center mx-auto mb-4">
+              <Search className="w-6 h-6 text-ld-fg-muted" />
             </div>
-            <p className="text-white font-semibold">No encontramos productos</p>
-            <p className="text-sm text-white/50 mt-1">Intenta con otros filtros</p>
-            <Button onClick={clearFilters} variant="outline" className="mt-4 rounded-xl bg-white/10 border-white/25 text-white hover:bg-white/20">Limpiar filtros</Button>
+            <p className="text-ld-fg font-semibold">No encontramos productos</p>
+            <p className="text-sm text-ld-fg-muted mt-1">Intenta con otros filtros</p>
+            <Button onClick={clearFilters} className="ld-btn-ghost mt-4 rounded-full text-ld-fg">Limpiar filtros</Button>
           </div>
         ) : (
           <>
@@ -362,13 +361,13 @@ export default function Shop() {
             {/* Sentinel + indicador "load more" */}
             {hasMore && (
               <div ref={sentinelRef} className="mt-8 flex flex-col items-center justify-center gap-3 py-6">
-                <div className="flex items-center gap-2 text-white/60 text-sm">
+                <div className="flex items-center gap-2 text-ld-fg-muted text-sm">
                   <Loader2 className="w-4 h-4 animate-spin" />
                   Cargando más productos...
                 </div>
                 <button
                   onClick={() => setVisibleCount(prev => Math.min(prev + PAGE_SIZE, filtered.length))}
-                  className="px-5 py-2 rounded-full text-xs font-semibold bg-white/10 hover:bg-white/20 border border-white/20 text-white transition-all"
+                  className="ld-btn-ghost px-5 py-2 rounded-full text-xs font-semibold text-ld-fg"
                 >
                   Cargar {Math.min(PAGE_SIZE, filtered.length - visibleCount)} más
                 </button>
@@ -378,8 +377,8 @@ export default function Shop() {
             {/* Fin del catálogo */}
             {!hasMore && filtered.length > PAGE_SIZE && (
               <div className="mt-8 text-center py-6">
-                <div className="inline-flex items-center gap-2 text-xs font-semibold text-white/50 px-4 py-2 rounded-full bg-white/5 border border-white/10 backdrop-blur-sm">
-                  <Check className="w-3.5 h-3.5 text-teal-400" />
+                <div className="ld-glass inline-flex items-center gap-2 text-xs font-semibold text-ld-fg-muted px-4 py-2 rounded-full">
+                  <Check className="w-3.5 h-3.5" style={{ color: 'var(--ld-action)' }} />
                   Has visto los {filtered.length} productos
                 </div>
               </div>
@@ -387,27 +386,39 @@ export default function Shop() {
           </>
         )}
 
-        {/* B2B Banner — paddings reducidos en mobile */}
-        <div className="mt-10 sm:mt-12 bg-gradient-to-br from-teal-600/20 via-cyan-600/15 to-blue-600/15 backdrop-blur-md border border-teal-400/30 rounded-2xl sm:rounded-3xl p-5 sm:p-8 md:p-10 text-white relative overflow-hidden shadow-2xl">
-          <div className="absolute -top-16 -right-16 w-64 h-64 rounded-full bg-teal-500/20 blur-3xl" />
+        {/* B2B Banner Liquid Dual */}
+        <div className="ld-card mt-10 sm:mt-12 relative overflow-hidden p-5 sm:p-8 md:p-10">
+          <div
+            aria-hidden
+            className="absolute -top-20 -right-20 w-72 h-72 rounded-full blur-3xl pointer-events-none"
+            style={{ background: 'var(--ld-action-soft)', opacity: 0.7 }}
+          />
+          <div
+            aria-hidden
+            className="absolute -bottom-20 -left-20 w-72 h-72 rounded-full blur-3xl pointer-events-none"
+            style={{ background: 'var(--ld-highlight-soft)', opacity: 0.5 }}
+          />
           <div className="relative max-w-2xl">
-            <div className="inline-flex items-center gap-1.5 text-[10px] sm:text-xs font-semibold text-teal-300 bg-teal-500/20 border border-teal-400/30 px-3 py-1 rounded-full mb-3">
-              <Building2 className="w-3 h-3" /> Canal corporativo
+            <div className="inline-flex items-center gap-1.5 text-[11px] font-bold tracking-[0.18em] uppercase mb-3" style={{ color: 'var(--ld-action)' }}>
+              <Building2 className="w-3 h-3" /> Canal Corporativo
             </div>
-            <h2 className="text-xl sm:text-2xl md:text-3xl font-poppins font-bold leading-tight mb-3">
-              ¿Necesitas +10 unidades con tu logo?
+            <h2 className="ld-display text-2xl sm:text-3xl md:text-4xl text-ld-fg leading-tight mb-3">
+              ¿Necesitas +10 unidades{' '}
+              <span className="ld-display-italic" style={{ color: 'var(--ld-highlight)' }}>
+                con tu logo?
+              </span>
             </h2>
-            <p className="text-white/70 text-[13px] sm:text-sm md:text-base mb-4 sm:mb-5 leading-relaxed">
+            <p className="text-ld-fg-muted text-sm md:text-base mb-5 leading-relaxed">
               Cotización con mockup en menos de 24 horas. Precios por volumen y personalización láser UV gratis desde 10 unidades.
             </p>
             <div className="flex gap-2 flex-wrap">
               <Link to="/b2b/contacto" className="flex-1 sm:flex-initial">
-                <Button className="w-full sm:w-auto rounded-xl bg-white text-slate-900 hover:bg-white/90 font-semibold px-6">
+                <Button className="ld-btn-primary w-full sm:w-auto rounded-full font-semibold px-6 h-11">
                   Cotizar ahora
                 </Button>
               </Link>
               <a href="https://wa.me/56933766573" target="_blank" rel="noreferrer" className="flex-1 sm:flex-initial">
-                <Button variant="outline" className="w-full sm:w-auto rounded-xl bg-transparent border-white/25 text-white hover:bg-white/10 font-semibold px-6">
+                <Button className="ld-btn-ghost w-full sm:w-auto rounded-full text-ld-fg font-semibold px-6 h-11">
                   💬 WhatsApp
                 </Button>
               </a>
