@@ -131,27 +131,33 @@ async function lookupSlugDirect(slug) {
   }
 }
 
-// Extrae números/modelos del nombre. Si dos productos comparten todas las palabras
-// pero los modelos numéricos no coinciden (iPhone 17 vs iPhone 11), NO es match.
-const extractModelNumbers = (s) => {
+// Extrae tokens-modelo (números y letras-modelo X/XR/XS/SE/FE/Plus/Ultra/Max/Pro/Mini/Air).
+// Si dos productos comparten palabras pero los modelos NO coinciden, NO es match.
+const MODEL_LETTERS = new Set(['x','xr','xs','se','fe','plus','ultra','max','pro','mini','air','edge','lite','note']);
+const extractModelTokens = (s) => {
   const tokens = slugify(s).split('-');
-  return tokens.filter(t => /^\d+$/.test(t) || /^p\d+$/.test(t) || /^[a-z]\d+$/.test(t));
+  return tokens.filter(t =>
+    /^\d+$/.test(t) ||           // 11, 14, 17, 22
+    /^[a-z]\d+$/.test(t) ||      // p40, s22, s24
+    /^\d+[a-z]+$/.test(t) ||     // 11s, 11pro
+    MODEL_LETTERS.has(t)         // x, xr, xs, plus, ultra, max, pro, fe, etc.
+  );
 };
 
 function findBestMatch(nombre, index) {
   const nombreSlug = slugify(nombre);
-  const nombreNumbers = extractModelNumbers(nombre);
+  const nombreModels = extractModelTokens(nombre);
   let best = null;
   let bestScore = 0;
   for (const entry of index) {
     const score = similarity(nombreSlug, entry.slug);
     if (score <= bestScore) continue;
-    // Guard de modelos: si el producto tiene números (iPhone 17, P40, etc.)
-    // el slug archivado debe contener AL MENOS UNO de esos números.
-    if (nombreNumbers.length > 0) {
-      const slugNumbers = extractModelNumbers(entry.slug);
-      const sharedModel = nombreNumbers.some(n => slugNumbers.includes(n));
-      if (!sharedModel) continue;
+    // Guard de modelos: si el producto tiene tokens-modelo (iPhone XR, S24 FE),
+    // el slug archivado debe contener TODOS los tokens-modelo (orden flexible).
+    if (nombreModels.length > 0) {
+      const slugModels = extractModelTokens(entry.slug);
+      const allPresent = nombreModels.every(m => slugModels.includes(m));
+      if (!allPresent) continue;
     }
     bestScore = score;
     best = entry;
