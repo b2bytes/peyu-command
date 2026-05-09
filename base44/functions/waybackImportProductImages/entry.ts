@@ -65,41 +65,98 @@ function extractWpImages(html) {
   return [...found];
 }
 
+// Fetch con timeout y reintentos. Wayback CDX es notoriamente lento/inestable.
+async function fetchWithRetry(url, { tries = 3, timeoutMs = 25000 } = {}) {
+  let lastErr;
+  for (let i = 0; i < tries; i++) {
+    const ctrl = new AbortController();
+    const t = setTimeout(() => ctrl.abort(), timeoutMs);
+    try {
+      const r = await fetch(url, {
+        headers: { 'User-Agent': 'PEYU-Recovery/1.0' },
+        signal: ctrl.signal,
+      });
+      clearTimeout(t);
+      if (r.ok) return r;
+      lastErr = new Error(`HTTP ${r.status}`);
+    } catch (e) {
+      lastErr = e;
+    } finally {
+      clearTimeout(t);
+    }
+    // backoff: 1s, 3s, 6s
+    if (i < tries - 1) await new Promise(res => setTimeout(res, 1000 * (i + 1) * (i + 1)));
+  }
+  throw lastErr || new Error('fetch failed');
+}
+
 // Cache del índice CDX por isolate (sobrevive entre lotes mientras dure)
 let cdxCache = null;
 async function loadWaybackIndex() {
   if (cdxCache) return cdxCache;
-  const url = 'https://web.archive.org/cdx/search/cdx?url=peyuchile.cl/producto/*&output=json&fl=original,timestamp&filter=statuscode:200&collapse=urlkey&limit=2000';
-  const r = await fetch(url, { headers: { 'User-Agent': 'PEYU-Recovery/1.0' } });
-  if (!r.ok) throw new Error(`CDX API ${r.status}`);
-  const arr = await r.json();
-  // primer fila es header, descartar
-  const rows = arr.slice(1).map(([original, timestamp]) => {
-    const m = original.match(/\/producto\/([^\/]+)\/?$/i);
-    return m ? { url: original, slug: m[1], timestamp } : null;
-  }).filter(Boolean);
-  // dedupe por slug, quedarse con el snapshot más reciente
-  const bySlug = new Map();
-  for (const r of rows) {
-    const prev = bySlug.get(r.slug);
-    if (!prev || r.timestamp > prev.timestamp) bySlug.set(r.slug, r);
+  const url = 'https://web.archive.org/cdx/search/cdx?url=peyuchile.cl/producto/*&output=json&fl=original,timestamp&filter=statuscode:200&collapse=urlkey&limit=1000';
+  try {
+    const r = await fetchWithRetry(url, { tries: 4, timeoutMs: 50000 });
+    const arr = await r.json();
+    const rows = arr.slice(1).map(([original, timestamp]) => {
+      const m = original.match(/\/producto\/([^\/]+)\/?$/i);
+      return m ? { url: original, slug: m[1], timestamp } : null;
+    }).filter(Boolean);
+    const bySlug = new Map();
+    for (const r of rows) {
+      const prev = bySlug.get(r.slug);
+      if (!prev || r.timestamp > prev.timestamp) bySlug.set(r.slug, r);
+    }
+    cdxCache = [...bySlug.values()];
+  } catch (e) {
+    console.warn('CDX index falló, modo fallback per-slug:', e.message);
+    cdxCache = []; // fallback: buscamos slug por slug
   }
-  cdxCache = [...bySlug.values()];
   return cdxCache;
 }
 
+// Fallback: buscar el slug específico de UN producto cuando el índice global falló
+async function lookupSlugDirect(slug) {
+  const url = `https://web.archive.org/cdx/search/cdx?url=peyuchile.cl/producto/${encodeURIComponent(slug)}/&output=json&fl=original,timestamp&filter=statuscode:200&limit=5`;
+  try {
+    const r = await fetchWithRetry(url, { tries: 2, timeoutMs: 15000 });
+    const arr = await r.json();
+    if (arr.length < 2) return null;
+    // tomar el snapshot más reciente
+    const rows = arr.slice(1).map(([original, timestamp]) => ({ url: original, slug, timestamp }));
+    rows.sort((a, b) => b.timestamp.localeCompare(a.timestamp));
+    return rows[0];
+  } catch {
+    return null;
+  }
+}
+
+// Extrae números/modelos del nombre. Si dos productos comparten todas las palabras
+// pero los modelos numéricos no coinciden (iPhone 17 vs iPhone 11), NO es match.
+const extractModelNumbers = (s) => {
+  const tokens = slugify(s).split('-');
+  return tokens.filter(t => /^\d+$/.test(t) || /^p\d+$/.test(t) || /^[a-z]\d+$/.test(t));
+};
+
 function findBestMatch(nombre, index) {
   const nombreSlug = slugify(nombre);
+  const nombreNumbers = extractModelNumbers(nombre);
   let best = null;
   let bestScore = 0;
   for (const entry of index) {
     const score = similarity(nombreSlug, entry.slug);
-    if (score > bestScore) {
-      bestScore = score;
-      best = entry;
+    if (score <= bestScore) continue;
+    // Guard de modelos: si el producto tiene números (iPhone 17, P40, etc.)
+    // el slug archivado debe contener AL MENOS UNO de esos números.
+    if (nombreNumbers.length > 0) {
+      const slugNumbers = extractModelNumbers(entry.slug);
+      const sharedModel = nombreNumbers.some(n => slugNumbers.includes(n));
+      if (!sharedModel) continue;
     }
+    bestScore = score;
+    best = entry;
   }
-  return bestScore >= 0.4 ? { ...best, score: bestScore } : null;
+  return bestScore >= 0.5 ? { ...best, score: bestScore } : null;
 }
 
 // ─── Handler ───────────────────────────────────────────────────────
@@ -117,6 +174,7 @@ Deno.serve(async (req) => {
     const replacePrincipal = body.replacePrincipal === true;
     const onlyMissing = body.onlyMissing !== false;
     const previewOnly = body.previewOnly === true;
+    const useDirectFallback = body.useDirectFallback === true;
 
     const index = await loadWaybackIndex();
 
@@ -141,7 +199,15 @@ Deno.serve(async (req) => {
 
     for (const producto of lote) {
       try {
-        const match = findBestMatch(producto.nombre, index);
+        let match = index.length > 0 ? findBestMatch(producto.nombre, index) : null;
+        // Fallback opt-in (lento): buscar el slug derivado del nombre directo en CDX.
+        if (!match && useDirectFallback) {
+          const slugCandidato = slugify(producto.nombre);
+          if (slugCandidato.length >= 4) {
+            const direct = await lookupSlugDirect(slugCandidato);
+            if (direct) match = { ...direct, score: 1 };
+          }
+        }
         if (!match) {
           resultados.push({ sku: producto.sku, nombre: producto.nombre, ok: false, error: 'Sin match en Wayback' });
           continue;
