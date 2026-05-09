@@ -75,6 +75,7 @@ export const NAV_GROUPS = [
     defaultOpen: false,
     items: [
       { path: '/admin/marketing-hub', label: 'Marketing Hub IA',   icon: Sparkles },
+      { path: '/admin/social-studio', label: 'Social Studio',      icon: Megaphone },
       { path: '/admin/catalogo',      label: 'Catálogo',           icon: Package },
       { path: '/admin/admin-products',label: 'Productos IA',       icon: Wand2 },
       { path: '/admin/imagenes',      label: 'Galería Maestra',    icon: Package },
