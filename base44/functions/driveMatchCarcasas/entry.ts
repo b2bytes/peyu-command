@@ -193,9 +193,13 @@ Deno.serve(async (req) => {
     }
 
     const body = await req.json().catch(() => ({}));
-    const mode = body.mode === 'apply' ? 'apply' : 'preview';
+    // mode: "preview" (matching automático) | "apply" (todos los matches automáticos)
+    //     | "applySelection" (solo los matches confirmados/editados por el humano)
+    const mode = ['apply', 'applySelection'].includes(body.mode) ? body.mode : 'preview';
     const replacePrincipal = body.replacePrincipal !== false; // default true para fix
     const folderId = body.folderId || ROOT_FOLDER;
+    // selection: [{ file_id, file_name, mime_type, producto_id, producto_sku }]
+    const selection = Array.isArray(body.selection) ? body.selection : [];
 
     const { accessToken } = await base44.asServiceRole.connectors.getConnection('googledrive');
     const headers = { 'Authorization': `Bearer ${accessToken}` };
@@ -285,6 +289,42 @@ Deno.serve(async (req) => {
       const productosConMatch = Object.values(byProducto).sort((a, b) =>
         a.producto.nombre.localeCompare(b.producto.nombre)
       );
+      // Catálogo plano de productos para el dropdown del UI de revisión
+      const catalogo = productos.map(p => ({
+        id: p.id,
+        sku: p.sku,
+        nombre: p.nombre,
+        imagen_url: p.imagen_url || null,
+      })).sort((a, b) => (a.nombre || '').localeCompare(b.nombre || ''));
+
+      // Lista plana de archivos con su sugerencia (para tabla de revisión).
+      // Incluye thumbnail directo de Drive (vía thumbnailLink no, pero usamos webContentLink no, mejor =
+      // un endpoint proxy del Drive: usamos la URL de Drive con alt=media requiere auth. Por eso entregamos
+      // el id y el front lo pide vía /uc?id=... público — pero no es público. Mejor: dejamos el id y nada más,
+      // el modal muestra solo el nombre. Si el usuario quiere ver, lo abre en Drive.)
+      const matchByFileId = new Map(matches.map(m => [m.file.id, m]));
+      const filesPlanos = driveFiles.map(f => {
+        const sug = matchByFileId.get(f.id);
+        return {
+          file_id: f.id,
+          file_name: f.name,
+          mime_type: f.mimeType,
+          drive_view_url: `https://drive.google.com/file/d/${f.id}/view`,
+          thumb_url: `https://drive.google.com/thumbnail?id=${f.id}&sz=w200`,
+          color: sug?.color || null,
+          suggestion: sug ? {
+            producto_id: sug.producto.id,
+            producto_sku: sug.producto.sku,
+            producto_nombre: sug.producto.nombre,
+            strength: sug.match_strength,
+          } : null,
+        };
+      }).sort((a, b) => {
+        // Primero los que tienen sugerencia
+        if (!!a.suggestion !== !!b.suggestion) return a.suggestion ? -1 : 1;
+        return (a.file_name || '').localeCompare(b.file_name || '');
+      });
+
       return Response.json({
         ok: true,
         mode: 'preview',
@@ -297,16 +337,36 @@ Deno.serve(async (req) => {
         productos: productosConMatch,
         unmatched_files: unmatched,
         all_matches: matches,
+        files: filesPlanos,
+        catalogo,
       });
     }
 
-    // ── Apply mode: descargar, subir al CDN, actualizar productos ──
+    // ── Apply: construir la lista efectiva de asignaciones a ejecutar ──
+    // En modo "apply" usamos los matches automáticos.
+    // En modo "applySelection" usamos las asignaciones humanas (selection).
+    let assignments = [];
+    if (mode === 'applySelection') {
+      const fileById = new Map(driveFiles.map(f => [f.id, f]));
+      const prodById = new Map(productos.map(p => [p.id, p]));
+      for (const sel of selection) {
+        const f = fileById.get(sel.file_id);
+        const p = prodById.get(sel.producto_id);
+        if (!f || !p) continue;
+        assignments.push({
+          file: { id: f.id, name: f.name, mimeType: f.mimeType },
+          producto: { id: p.id, sku: p.sku, nombre: p.nombre },
+        });
+      }
+    } else {
+      assignments = matches.map(m => ({ file: m.file, producto: m.producto }));
+    }
+
     const results = [];
     const updatesPorProducto = {};
 
-    for (const m of matches) {
+    for (const m of assignments) {
       try {
-        // Descargar el archivo de Drive
         const dlR = await fetch(
           `https://www.googleapis.com/drive/v3/files/${m.file.id}?alt=media&supportsAllDrives=true`,
           { headers }
@@ -321,7 +381,6 @@ Deno.serve(async (req) => {
           continue;
         }
 
-        // Subir al CDN base44
         const safeName = m.file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
         const file = new File([blob], `${m.producto.sku}-drv-${safeName}`, {
           type: m.file.mimeType || 'image/jpeg',
@@ -345,20 +404,22 @@ Deno.serve(async (req) => {
     // Actualizar cada producto: nueva imagen principal + galería limpia
     for (const { producto, urls } of Object.values(updatesPorProducto)) {
       if (urls.length === 0) continue;
+      const prodActual = productos.find(p => p.id === producto.id);
       const patch = {};
-      if (replacePrincipal || !productos.find(p => p.id === producto.id)?.imagen_url) {
+      if (replacePrincipal || !prodActual?.imagen_url) {
         patch.imagen_url = urls[0];
       }
-      // Galería: las nuevas urls (la nueva principal va al inicio)
-      patch.galeria_urls = [...new Set(urls)];
+      // Galería: append de urls nuevas a la galería existente, sin duplicados
+      const existing = Array.isArray(prodActual?.galeria_urls) ? prodActual.galeria_urls : [];
+      patch.galeria_urls = [...new Set([...urls, ...existing])];
       await base44.asServiceRole.entities.Producto.update(producto.id, patch);
     }
 
     return Response.json({
       ok: true,
-      mode: 'apply',
+      mode,
       total_drive_files: driveFiles.length,
-      total_matches: matches.length,
+      total_assignments: assignments.length,
       total_subidas_ok: results.filter(r => r.ok).length,
       productos_actualizados: Object.keys(updatesPorProducto).length,
       replace_principal: replacePrincipal,
