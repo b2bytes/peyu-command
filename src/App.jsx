@@ -98,8 +98,8 @@ const CentroCostosReal = lazyWithRetry(() => import('./pages/CentroCostosReal'),
 const CentroLogistico = lazyWithRetry(() => import('./pages/CentroLogistico'), { name: 'CentroLogistico' });
 const PipelineB2C = lazyWithRetry(() => import('./pages/PipelineB2C'), { name: 'PipelineB2C' });
 const Cockpit = lazyWithRetry(() => import('./pages/Cockpit'), { name: 'Cockpit' });
-const GaleriaMaestra = lazyWithRetry(() => import('./pages/GaleriaMaestra'), { name: 'GaleriaMaestra' });
-const SocialStudio = lazyWithRetry(() => import('./pages/SocialStudio'), { name: 'SocialStudio' });
+const GaleriaMaestra = lazyWithRetry(() => import('./pages/GaleriaMaestra.jsx'), { name: 'GaleriaMaestra' });
+const SocialStudio = lazyWithRetry(() => import('./pages/SocialStudio.jsx'), { name: 'SocialStudio' });
 
 const AdminLoader = () => (
   <div className="fixed inset-0 flex items-center justify-center bg-background">
