@@ -13,7 +13,7 @@ import GaleriaMaestraCard from '@/components/imagenes/GaleriaMaestraCard';
 const FILTROS_ROL = [
   { id: 'all', label: 'Todas', icon: Layers },
   { id: 'principal', label: 'Principales', icon: Star },
-  { id: 'gallery', label: 'Galería', icon: ImageIcon },
+  { id: 'galeria', label: 'Galería', icon: ImageIcon },
   { id: 'promo', label: 'Promo social', icon: Share2 },
 ];
 
@@ -29,8 +29,11 @@ export default function GaleriaMaestra() {
     try {
       const res = await base44.functions.invoke('listAllProductImages', {});
       const payload = res?.data || {};
+      const list = Array.isArray(payload.imagenes)
+        ? payload.imagenes
+        : (Array.isArray(payload.images) ? payload.images : []);
       setData({
-        images: Array.isArray(payload.images) ? payload.images : [],
+        images: list,
         stats: payload.stats || null,
       });
     } catch (e) {
@@ -46,7 +49,7 @@ export default function GaleriaMaestra() {
 
   const sources = useMemo(() => {
     const s = new Set();
-    images.forEach(img => img?.source && s.add(img.source));
+    images.forEach(img => img?.origin && s.add(img.origin));
     return [...s].sort();
   }, [images]);
 
@@ -54,7 +57,7 @@ export default function GaleriaMaestra() {
     const q = search.toLowerCase();
     return images.filter(img => {
       if (filterRol !== 'all' && img.role !== filterRol) return false;
-      if (filterSource !== 'all' && img.source !== filterSource) return false;
+      if (filterSource !== 'all' && img.origin !== filterSource) return false;
       if (q && !img.producto_nombre?.toLowerCase().includes(q) && !img.producto_sku?.toLowerCase().includes(q)) return false;
       return true;
     });
@@ -63,7 +66,7 @@ export default function GaleriaMaestra() {
   const counts = useMemo(() => ({
     all: images.length,
     principal: images.filter(i => i?.role === 'principal').length,
-    gallery: images.filter(i => i?.role === 'gallery').length,
+    galeria: images.filter(i => i?.role === 'galeria').length,
     promo: images.filter(i => i?.role === 'promo').length,
   }), [images]);
 
