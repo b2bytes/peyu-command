@@ -13,6 +13,7 @@ import { Search, Image as ImageIcon, Loader2, RefreshCw, Star, Share2, Layers, A
 import GaleriaCategoryFolders from '@/components/imagenes/GaleriaCategoryFolders';
 import GaleriaProductGroup from '@/components/imagenes/GaleriaProductGroup';
 import CarcasasMatchPanel from '@/components/imagenes/CarcasasMatchPanel';
+import AllProductsMatchPanel from '@/components/imagenes/AllProductsMatchPanel';
 
 const FILTROS_ROL = [
   { id: 'all', label: 'Todas', icon: Layers },
@@ -213,6 +214,12 @@ export default function GaleriaMaestra() {
           <div className="space-y-2">
             {activeCategory === 'Carcasas B2C' && (
               <CarcasasMatchPanel onApplied={load} />
+            )}
+            {activeCategory && activeCategory !== 'Carcasas B2C' && (
+              <AllProductsMatchPanel onApplied={load} />
+            )}
+            {activeCategory && activeCategory !== 'Carcasas B2C' && (
+              <AllProductsMatchPanel onApplied={load} />
             )}
             {productGroups.map((group, idx) => (
               <GaleriaProductGroup
