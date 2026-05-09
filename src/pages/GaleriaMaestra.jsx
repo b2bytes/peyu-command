@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button';
 import { Search, Image as ImageIcon, Loader2, RefreshCw, Star, Share2, Layers, ArrowLeft } from 'lucide-react';
 import GaleriaCategoryFolders from '@/components/imagenes/GaleriaCategoryFolders';
 import GaleriaProductGroup from '@/components/imagenes/GaleriaProductGroup';
+import CarcasasMatchPanel from '@/components/imagenes/CarcasasMatchPanel';
 
 const FILTROS_ROL = [
   { id: 'all', label: 'Todas', icon: Layers },
@@ -210,6 +211,9 @@ export default function GaleriaMaestra() {
         ) : (
           // Vista categoría o búsqueda: agrupado por producto
           <div className="space-y-2">
+            {activeCategory === 'Carcasas B2C' && (
+              <CarcasasMatchPanel onApplied={load} />
+            )}
             {productGroups.map((group, idx) => (
               <GaleriaProductGroup
                 key={group.producto_id || idx}
