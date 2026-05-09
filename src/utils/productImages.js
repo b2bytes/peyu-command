@@ -173,14 +173,14 @@ export const CATEGORY_SHOWCASE = [
  * Resuelve la mejor imagen para un producto.
  *
  * PRIORIDAD (una sola fuente de verdad en toda la app):
- *   1. SKU exacto en el mapa (imágenes reales curadas) — más confiable
- *   2. imagen_url del producto (si es válida y http)
- *   3. Match inteligente por keywords del nombre (ej. "macetero" → macetero)
- *   4. Fallback por categoría
- *   5. Fallback universal
+ *   1. imagen_url del producto en BD (CDN base44 — fuente actual de verdad)
+ *   2. galeria_urls[0] (recuperaciones Wayback / Drive caen acá)
+ *   3. SKU exacto en el mapa (imágenes legacy curadas — fallback)
+ *   4. Match inteligente por keywords del nombre
+ *   5. Fallback por categoría
  *
- * IMPORTANTE: el SKU gana sobre imagen_url porque WooCommerce suele traer
- * imágenes desactualizadas o cruzadas entre productos similares.
+ * NOTA: tras la migración a base44, las URLs i0.wp.com/peyuchile.cl están
+ * caídas. Por eso la BD (imagen_url + galeria_urls) tiene prioridad.
  *
  * Uso preferido: getProductImage(producto)
  * Legacy: getProductImage(sku, categoria) sigue funcionando.
@@ -190,17 +190,23 @@ export function getProductImage(skuOrProducto, categoria) {
   if (skuOrProducto && typeof skuOrProducto === 'object') {
     const p = skuOrProducto;
 
-    // 1. SKU curado (máxima prioridad)
-    if (p.sku && SKU_IMAGES[p.sku]) return SKU_IMAGES[p.sku];
-
-    // 2. imagen_url válida
+    // 1. imagen_url válida (CDN base44 — fuente de verdad post-migración)
     if (isValidImageUrl(p.imagen_url)) return p.imagen_url;
 
-    // 3. Match por keywords del nombre
+    // 2. Primera de galeria_urls (Wayback/Drive recovery)
+    if (Array.isArray(p.galeria_urls) && p.galeria_urls.length > 0) {
+      const first = p.galeria_urls.find(u => isValidImageUrl(u));
+      if (first) return first;
+    }
+
+    // 3. SKU curado (legacy, si BD no tiene nada)
+    if (p.sku && SKU_IMAGES[p.sku]) return SKU_IMAGES[p.sku];
+
+    // 4. Match por keywords del nombre
     const byName = matchImageByName(p.nombre);
     if (byName) return byName;
 
-    // 4. Categoría
+    // 5. Categoría
     return CATEGORY_IMAGES[p.categoria] || CATEGORY_IMAGES['Hogar'];
   }
 
