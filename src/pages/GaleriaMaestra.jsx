@@ -1,14 +1,17 @@
 // ============================================================================
 // GaleriaMaestra — Vista unificada de TODAS las imágenes del catálogo.
-// Permite filtrar por rol (principal/galería/promo), origen, producto, y
-// gestionar cada imagen (promover, mover, eliminar).
+// Navegación tipo carpetas:
+//   1. Categoría (Escritorio, Hogar, ...) → muestra carpetas con preview.
+//   2. Click en categoría → entra y agrupa por producto (sub-carpetas).
+//   3. Filtros transversales (rol, origen, búsqueda) siguen funcionando.
 // ============================================================================
 import { useState, useEffect, useMemo } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Search, Image as ImageIcon, Loader2, RefreshCw, Star, Share2, Layers } from 'lucide-react';
-import GaleriaMaestraCard from '@/components/imagenes/GaleriaMaestraCard';
+import { Search, Image as ImageIcon, Loader2, RefreshCw, Star, Share2, Layers, ArrowLeft } from 'lucide-react';
+import GaleriaCategoryFolders from '@/components/imagenes/GaleriaCategoryFolders';
+import GaleriaProductGroup from '@/components/imagenes/GaleriaProductGroup';
 
 const FILTROS_ROL = [
   { id: 'all', label: 'Todas', icon: Layers },
@@ -23,6 +26,7 @@ export default function GaleriaMaestra() {
   const [search, setSearch] = useState('');
   const [filterRol, setFilterRol] = useState('all');
   const [filterSource, setFilterSource] = useState('all');
+  const [activeCategory, setActiveCategory] = useState(null); // null = vista carpetas
 
   const load = async () => {
     setLoading(true);
@@ -53,7 +57,8 @@ export default function GaleriaMaestra() {
     return [...s].sort();
   }, [images]);
 
-  const filtered = useMemo(() => {
+  // Filtros transversales (rol, origen, búsqueda) — se aplican antes de agrupar
+  const baseFiltered = useMemo(() => {
     const q = search.toLowerCase();
     return images.filter(img => {
       if (filterRol !== 'all' && img.role !== filterRol) return false;
@@ -62,6 +67,37 @@ export default function GaleriaMaestra() {
       return true;
     });
   }, [images, search, filterRol, filterSource]);
+
+  // Si hay búsqueda activa, salimos del modo carpetas para mostrar resultados directos
+  const searchActive = search.trim().length > 0;
+  const inCategoryView = activeCategory !== null && !searchActive;
+
+  // Imágenes de la categoría activa (o todas si hay búsqueda)
+  const visibleImages = useMemo(() => {
+    if (searchActive) return baseFiltered;
+    if (activeCategory) return baseFiltered.filter(i => (i.producto_categoria || 'Sin categoría') === activeCategory);
+    return baseFiltered;
+  }, [baseFiltered, activeCategory, searchActive]);
+
+  // Agrupar por producto cuando estamos en categoría o búsqueda activa
+  const productGroups = useMemo(() => {
+    const map = new Map();
+    for (const img of visibleImages) {
+      const key = img.producto_id || 'unknown';
+      if (!map.has(key)) {
+        map.set(key, {
+          producto_id: img.producto_id,
+          producto_nombre: img.producto_nombre,
+          producto_sku: img.producto_sku,
+          images: [],
+        });
+      }
+      map.get(key).images.push(img);
+    }
+    return [...map.values()].sort((a, b) =>
+      (a.producto_nombre || '').localeCompare(b.producto_nombre || '')
+    );
+  }, [visibleImages]);
 
   const counts = useMemo(() => ({
     all: images.length,
@@ -74,14 +110,31 @@ export default function GaleriaMaestra() {
     <div className="h-full flex flex-col p-4 lg:p-6 gap-4 min-h-0">
       {/* Header */}
       <div className="flex items-start justify-between flex-wrap gap-3 flex-shrink-0">
-        <div>
-          <h1 className="text-xl lg:text-2xl font-poppins font-bold text-white flex items-center gap-2">
-            <ImageIcon className="w-5 h-5 lg:w-6 lg:h-6 text-cyan-400" />
-            Galería Maestra
-          </h1>
-          <p className="text-white/60 text-xs lg:text-sm mt-1">
-            Todas las imágenes del catálogo en un solo lugar. Filtra, promueve, elimina o ajusta su rol.
-          </p>
+        <div className="flex items-center gap-3 min-w-0">
+          {inCategoryView && (
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => setActiveCategory(null)}
+              className="text-white/70 hover:text-white hover:bg-white/10 -ml-2"
+            >
+              <ArrowLeft className="w-4 h-4 mr-1" /> Volver
+            </Button>
+          )}
+          <div className="min-w-0">
+            <h1 className="text-xl lg:text-2xl font-poppins font-bold text-white flex items-center gap-2">
+              <ImageIcon className="w-5 h-5 lg:w-6 lg:h-6 text-cyan-400" />
+              Galería Maestra
+              {inCategoryView && (
+                <span className="text-white/50 text-base font-normal"> · {activeCategory}</span>
+              )}
+            </h1>
+            <p className="text-white/60 text-xs lg:text-sm mt-1">
+              {inCategoryView
+                ? 'Imágenes agrupadas por producto. Expandí para ver detalles y gestionar cada una.'
+                : 'Navegá por categoría o usá el buscador para encontrar imágenes específicas.'}
+            </p>
+          </div>
         </div>
         <Button onClick={load} disabled={loading} className="gap-2 bg-cyan-600 hover:bg-cyan-700 text-white">
           {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
@@ -135,26 +188,38 @@ export default function GaleriaMaestra() {
           </select>
         )}
         <span className="text-xs text-white/50">
-          {filtered.length} imagen{filtered.length !== 1 ? 'es' : ''}
+          {visibleImages.length} imagen{visibleImages.length !== 1 ? 'es' : ''}
         </span>
       </div>
 
-      {/* Grid */}
+      {/* Contenido */}
       <div className="flex-1 overflow-y-auto peyu-scrollbar-light min-h-0">
         {loading ? (
           <div className="text-center py-16 text-white/50">
             <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2" />
             Escaneando catálogo de imágenes…
           </div>
-        ) : filtered.length === 0 ? (
+        ) : visibleImages.length === 0 ? (
           <div className="text-center py-16 text-white/40">
             <ImageIcon className="w-12 h-12 mx-auto mb-3 opacity-30" />
             <p className="text-sm">No hay imágenes con esos filtros</p>
           </div>
+        ) : !inCategoryView && !searchActive ? (
+          // Vista raíz: carpetas por categoría
+          <GaleriaCategoryFolders images={baseFiltered} onPick={setActiveCategory} />
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
-            {filtered.map(img => (
-              <GaleriaMaestraCard key={`${img.producto_id}-${img.url}`} image={img} onUpdated={load} />
+          // Vista categoría o búsqueda: agrupado por producto
+          <div className="space-y-2">
+            {productGroups.map((group, idx) => (
+              <GaleriaProductGroup
+                key={group.producto_id || idx}
+                producto_id={group.producto_id}
+                producto_nombre={group.producto_nombre}
+                producto_sku={group.producto_sku}
+                images={group.images}
+                onUpdated={load}
+                defaultOpen={searchActive || productGroups.length <= 3}
+              />
             ))}
           </div>
         )}
