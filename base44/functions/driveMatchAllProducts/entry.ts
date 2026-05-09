@@ -74,11 +74,16 @@ async function walkTree(rootId, headers, maxDepth = 4) {
           queue.push({ id: c.id, path: childPath, depth: cur.depth + 1 });
         }
       } else if (c.mimeType?.startsWith('image/') && Number(c.size || 0) > 5000) {
-        filesHere.push({ id: c.id, name: c.name, mimeType: c.mimeType });
+        filesHere.push({ id: c.id, name: c.name, mimeType: c.mimeType, size: Number(c.size || 0) });
       }
     }
     if (filesHere.length > 0 && cur.path) {
-      result.set(cur.path, { folderId: cur.id, files: filesHere });
+      // Quedarnos con los archivos más grandes (mejor calidad) — limitamos a 10 por carpeta
+      // para evitar timeouts en apply.
+      const top = filesHere
+        .sort((a, b) => (b.size || 0) - (a.size || 0))
+        .slice(0, 10);
+      result.set(cur.path, { folderId: cur.id, files: top });
     }
   }
   return result;
@@ -138,6 +143,8 @@ Deno.serve(async (req) => {
     const folderId = body.folderId || ROOT_FOLDER;
     const replacePrincipal = body.replacePrincipal === true; // default false (no pisar imagen actual)
     const selection = Array.isArray(body.selection) ? body.selection : [];
+    const maxAssignments = Math.max(1, Math.min(Number(body.maxAssignments) || 5, 14));
+    const skipExisting = body.skipExisting !== false; // default true: saltar productos que ya tienen galería
 
     const { accessToken } = await base44.asServiceRole.connectors.getConnection('googledrive');
     const headers = { 'Authorization': `Bearer ${accessToken}` };
@@ -212,7 +219,12 @@ Deno.serve(async (req) => {
         const fdata = tree.get(plan.folder_path);
         const prod = productosTarget.find(p => p.id === plan.suggestion.producto_id);
         if (!fdata || !prod) continue;
+        // Saltar productos que ya tienen galería con archivos del Drive (-drv-)
+        if (skipExisting && Array.isArray(prod.galeria_urls) && prod.galeria_urls.some(u => /-drv-/i.test(u))) {
+          continue;
+        }
         assignments.push({ folder_path: plan.folder_path, files: fdata.files, producto: prod });
+        if (assignments.length >= maxAssignments) break;
       }
     }
 
