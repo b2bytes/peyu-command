@@ -77,6 +77,7 @@ export const NAV_GROUPS = [
       { path: '/admin/marketing-hub', label: 'Marketing Hub IA',   icon: Sparkles },
       { path: '/admin/catalogo',      label: 'Catálogo',           icon: Package },
       { path: '/admin/admin-products',label: 'Productos IA',       icon: Wand2 },
+      { path: '/admin/imagenes',      label: 'Galería Maestra',    icon: Package },
       { path: '/admin/indexacion',    label: 'SEO & Indexación',   icon: Radar },
       { path: '/admin/ga-realtime',   label: 'GA4 Realtime',       icon: BarChart3 },
     ],

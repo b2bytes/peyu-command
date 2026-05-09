@@ -98,6 +98,7 @@ const CentroCostosReal = lazyWithRetry(() => import('./pages/CentroCostosReal'),
 const CentroLogistico = lazyWithRetry(() => import('./pages/CentroLogistico'), { name: 'CentroLogistico' });
 const PipelineB2C = lazyWithRetry(() => import('./pages/PipelineB2C'), { name: 'PipelineB2C' });
 const Cockpit = lazyWithRetry(() => import('./pages/Cockpit'), { name: 'Cockpit' });
+const GaleriaMaestra = lazyWithRetry(() => import('./pages/GaleriaMaestra'), { name: 'GaleriaMaestra' });
 
 const AdminLoader = () => (
   <div className="fixed inset-0 flex items-center justify-center bg-background">
@@ -175,6 +176,7 @@ const AuthenticatedApp = () => {
           <Route path="bluex" element={<CentroLogistico />} />
           <Route path="pipeline-b2c" element={<PipelineB2C />} />
           <Route path="cockpit" element={<Cockpit />} />
+          <Route path="imagenes" element={<GaleriaMaestra />} />
         </Route>
         <Route path="*" element={<PageNotFound />} />
       </Routes>
