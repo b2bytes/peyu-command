@@ -28,37 +28,44 @@ export default function GaleriaMaestra() {
     setLoading(true);
     try {
       const res = await base44.functions.invoke('listAllProductImages', {});
-      setData(res.data || { images: [], stats: null });
+      const payload = res?.data || {};
+      setData({
+        images: Array.isArray(payload.images) ? payload.images : [],
+        stats: payload.stats || null,
+      });
     } catch (e) {
       console.error('listAllProductImages error:', e);
+      setData({ images: [], stats: null });
     }
     setLoading(false);
   };
 
   useEffect(() => { load(); }, []);
 
+  const images = data.images || [];
+
   const sources = useMemo(() => {
     const s = new Set();
-    data.images.forEach(img => img.source && s.add(img.source));
+    images.forEach(img => img?.source && s.add(img.source));
     return [...s].sort();
-  }, [data.images]);
+  }, [images]);
 
   const filtered = useMemo(() => {
     const q = search.toLowerCase();
-    return data.images.filter(img => {
+    return images.filter(img => {
       if (filterRol !== 'all' && img.role !== filterRol) return false;
       if (filterSource !== 'all' && img.source !== filterSource) return false;
       if (q && !img.producto_nombre?.toLowerCase().includes(q) && !img.producto_sku?.toLowerCase().includes(q)) return false;
       return true;
     });
-  }, [data.images, search, filterRol, filterSource]);
+  }, [images, search, filterRol, filterSource]);
 
   const counts = useMemo(() => ({
-    all: data.images.length,
-    principal: data.images.filter(i => i.role === 'principal').length,
-    gallery: data.images.filter(i => i.role === 'gallery').length,
-    promo: data.images.filter(i => i.role === 'promo').length,
-  }), [data.images]);
+    all: images.length,
+    principal: images.filter(i => i?.role === 'principal').length,
+    gallery: images.filter(i => i?.role === 'gallery').length,
+    promo: images.filter(i => i?.role === 'promo').length,
+  }), [images]);
 
   return (
     <div className="h-full flex flex-col p-4 lg:p-6 gap-4 min-h-0">
