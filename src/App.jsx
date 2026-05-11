@@ -112,7 +112,7 @@ const AdminLoader = () => (
 );
 
 const AuthenticatedApp = () => {
-  const { user, isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
+  const { user, isAuthenticated, isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
 
   if (isLoadingPublicSettings || isLoadingAuth) {
     return <AdminLoader />;
@@ -127,8 +127,15 @@ const AuthenticatedApp = () => {
     }
   }
 
+  // Si no hay sesión activa, mandamos a login ANTES de validar whitelist
+  // (de lo contrario user?.email es undefined y el gate de equipo bloquea por error).
+  if (!isAuthenticated || !user?.email) {
+    navigateToLogin();
+    return <AdminLoader />;
+  }
+
   // 🔒 Solo miembros del equipo PEYU pueden ver /admin/*
-  if (!isTeamMember(user?.email)) {
+  if (!isTeamMember(user.email)) {
     return <AdminAccessDenied />;
   }
 
