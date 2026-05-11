@@ -22,7 +22,7 @@ const B2B_FAQS = [
   { q: '¿Hacen factura electrónica a empresa?', a: 'Sí, emitimos factura electrónica con IVA a nombre de tu empresa. Aceptamos pago con transferencia, orden de compra (OC) y crédito 30 días para empresas con historial.' },
   { q: '¿Despachan a regiones de Chile?', a: 'Sí, despachamos a todo Chile vía BlueExpress, Starken y Chilexpress. Lead time típico: 7 días sin personalización, 9 días con grabado láser UV. Envío gratis B2C sobre $40.000.' },
   { q: '¿Qué tipo de personalización ofrecen?', a: 'Grabado láser UV permanente en plástico reciclado y fibra de trigo compostable. Incluye mockup gratuito de tu logo antes de producción. Compatible con logos vectoriales (SVG, AI, PDF) o imágenes en alta resolución (PNG con fondo transparente).' },
-  { q: '¿Por qué elegir productos PEYU vs imprentas tradicionales?', a: 'PEYU es fabricante chileno con producción local en Santiago: plástico 100% reciclado post-consumo o fibra de trigo compostable, garantía 10 años, certificación ESG con trazabilidad de material y huella de carbono evitada en factura.' },
+  { q: '¿Por qué elegir productos PEYU vs imprentas tradicionales?', a: 'PEYU es fabricante chileno con producción local en Santiago: plástico 100% reciclado post-consumo o fibra de trigo compostable, garantía 10 años, política ESG con trazabilidad de material y huella de carbono evitada estimada en factura.' },
 ];
 
 const MENU_ITEMS = [
