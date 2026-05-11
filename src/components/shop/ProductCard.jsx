@@ -33,9 +33,11 @@ function ProductCard({ producto, onAddToCart, agregandoId, index = 0 }) {
           alt={`${p.nombre} · ${p.categoria || 'PEYU'} · ${p.material?.includes('Trigo') ? 'Fibra de trigo compostable' : 'Plástico 100% reciclado'} · Hecho en Chile`}
           width="600"
           height="600"
-          className={`w-full h-full object-cover group-hover:scale-105 transition-all duration-500 ${
-            imgLoaded ? 'opacity-100' : 'opacity-0'
-          }`}
+          className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-all duration-500"
+          style={{
+            opacity: imgLoaded ? 1 : 0,
+            color: 'transparent', // oculta alt text si falla la carga
+          }}
           loading={index < 4 ? 'eager' : 'lazy'}
           fetchpriority={index < 2 ? 'high' : 'auto'}
           decoding="async"
