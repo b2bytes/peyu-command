@@ -118,31 +118,34 @@ export default function RealtimeKPIs() {
   ];
 
   return (
-    <div className="bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 p-5 shadow-xl">
+    <div className="ld-card p-5">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <span className="relative flex h-2.5 w-2.5">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-400"></span>
+            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
           </span>
-          <h3 className="font-poppins font-semibold text-white text-sm">EN VIVO · KPIs del día</h3>
+          <h3 className="font-poppins font-bold text-ld-fg text-sm tracking-tight">EN VIVO · KPIs del día</h3>
         </div>
-        <span className="text-[10px] text-teal-300/70">
+        <span className="text-[11px] font-medium text-ld-fg-muted">
           {lastUpdate ? `Actualizado ${lastUpdate.toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}` : 'Cargando...'}
         </span>
       </div>
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2.5">
         {items.map((it, i) => {
           const Icon = it.icon;
           return (
-            <div key={i} className={`${it.bg} border border-white/10 rounded-xl p-3 flex items-center gap-2.5 hover:bg-white/15 transition`}>
+            <div
+              key={i}
+              className={`${it.bg} border border-ld-border rounded-xl p-3 flex items-center gap-2.5 hover:border-ld-border-strong transition`}
+            >
               <Icon className={`w-4 h-4 ${it.color} shrink-0`} />
               <div className="min-w-0">
-                <div className={`text-lg font-bold font-poppins leading-tight ${it.color}`}>
+                <div className={`text-xl font-bold font-poppins leading-tight ${it.color}`}>
                   {loading ? '…' : it.value}
                 </div>
-                <div className="text-[10px] text-gray-300/70 leading-tight">{it.label}</div>
-                {it.sub && <div className="text-[9px] text-white/40 leading-tight">{it.sub}</div>}
+                <div className="text-[11px] font-semibold text-ld-fg-soft leading-tight mt-0.5">{it.label}</div>
+                {it.sub && <div className="text-[10px] text-ld-fg-muted leading-tight">{it.sub}</div>}
               </div>
             </div>
           );
