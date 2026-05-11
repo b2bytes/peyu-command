@@ -25,23 +25,24 @@ export default function PromoBox({
   const [open, setOpen] = useState(false);
 
   return (
-    <div className="bg-white border border-gray-100 rounded-3xl shadow-sm overflow-hidden">
+    <div className="bg-white border border-gray-200 rounded-3xl shadow-sm overflow-hidden">
       <button
         type="button"
         onClick={() => setOpen(!open)}
-        className="w-full flex items-center justify-between gap-3 px-5 py-4 hover:bg-gray-50/50 transition-colors"
+        aria-expanded={open}
+        className="w-full flex items-center justify-between gap-3 px-5 py-4 hover:bg-gray-50 transition-colors"
       >
-        <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-xl bg-gray-100 flex items-center justify-center">
-            <Tag className="w-3.5 h-3.5 text-gray-700" />
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 rounded-xl bg-teal-50 border border-teal-100 flex items-center justify-center">
+            <Tag className="w-4 h-4 text-teal-700" />
           </div>
           <div className="text-left">
             <p className="text-sm font-bold text-gray-900 leading-tight">¿Tienes un código?</p>
-            <p className="text-[11px] text-gray-500 mt-0.5">Cupón o Gift Card</p>
+            <p className="text-xs text-gray-600 mt-0.5 font-medium">Cupón o Gift Card</p>
           </div>
         </div>
         <ChevronDown
-          className={`w-4 h-4 text-gray-400 transition-transform ${open ? 'rotate-180' : ''}`}
+          className={`w-5 h-5 text-gray-500 transition-transform ${open ? 'rotate-180' : ''}`}
         />
       </button>
 

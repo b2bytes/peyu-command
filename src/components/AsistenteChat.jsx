@@ -45,11 +45,13 @@ export default function AsistenteChat() {
   // Do NOT render on landing — landing page has its own embedded chat UI
   const path = location.pathname;
   const isLanding = path === '/';
-  const isPublicPage = (
+  // Checkout pages: ocultamos los floats para no competir con el CTA principal
+  // (best practice Amazon/Shopify — ningún elemento debe distraer del "Pagar").
+  const isCheckout = path.startsWith('/cart') || path.startsWith('/gracias');
+  const isPublicPage = !isCheckout && (
     path.startsWith('/shop') ||
     path.startsWith('/producto') ||
     path.startsWith('/b2b') ||
-    path.startsWith('/cart') ||
     path.startsWith('/catalogo-visual') ||
     path.startsWith('/nosotros') ||
     path.startsWith('/soporte') ||

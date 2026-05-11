@@ -48,10 +48,11 @@ export default function PaymentMethodSelector({ value, onChange, totalCubiertoCo
             key={m.id}
             type="button"
             onClick={() => onChange(m.id)}
+            aria-pressed={selected}
             className={`w-full flex items-center gap-3 p-3.5 rounded-2xl border-2 transition-all text-left ${
               selected
-                ? 'border-gray-900 bg-gray-50 shadow-sm'
-                : 'border-gray-100 bg-white hover:border-gray-300'
+                ? 'border-teal-600 bg-teal-50/40 shadow-md ring-2 ring-teal-100'
+                : 'border-gray-200 bg-white hover:border-gray-400 hover:shadow-sm'
             }`}
           >
             <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${m.color} flex items-center justify-center text-white flex-shrink-0`}>
@@ -68,10 +69,10 @@ export default function PaymentMethodSelector({ value, onChange, totalCubiertoCo
               </div>
               <p className="text-xs text-gray-500 truncate">{m.sub}</p>
             </div>
-            <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
-              selected ? 'border-gray-900 bg-gray-900' : 'border-gray-300'
+            <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all ${
+              selected ? 'border-teal-600 bg-teal-600' : 'border-gray-300'
             }`}>
-              {selected && <Check className="w-3 h-3 text-white" />}
+              {selected && <Check className="w-3 h-3 text-white" strokeWidth={3} />}
             </div>
           </button>
         );

@@ -275,27 +275,27 @@ export default function Carrito() {
         canonical="https://peyuchile.cl/cart"
         noindex
       />
-      <nav className="sticky top-0 z-40 bg-white/85 backdrop-blur-xl border-b border-black/5">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between gap-4">
-          <button onClick={() => navigate('/shop')} className="flex items-center gap-3 text-gray-600 hover:text-gray-900 transition-colors group">
-            <div className="w-9 h-9 bg-gray-100 rounded-xl flex items-center justify-center group-hover:bg-gray-200 transition-colors">
+      <nav className="sticky top-0 z-40 bg-white/90 backdrop-blur-xl border-b border-gray-200/70 shadow-sm">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-3.5 flex items-center justify-between gap-4">
+          <button onClick={() => navigate('/shop')} className="flex items-center gap-3 text-gray-700 hover:text-gray-900 transition-colors group">
+            <div className="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center group-hover:bg-gray-900 group-hover:text-white transition-all shadow-sm">
               <ArrowLeft className="w-4 h-4" />
             </div>
-            <div>
+            <div className="text-left">
               <h1 className="font-poppins font-bold text-gray-900 text-base leading-none">Tu carrito</h1>
-              <p className="text-xs text-gray-400 mt-0.5">{carrito.length} producto{carrito.length !== 1 ? 's' : ''}</p>
+              <p className="text-xs text-gray-500 mt-1 font-medium">{carrito.length} producto{carrito.length !== 1 ? 's' : ''} · {carrito.reduce((s, i) => s + i.cantidad, 0)} unidades</p>
             </div>
           </button>
 
-          <div className="hidden sm:flex items-center gap-2 text-xs">
-            <div className={`flex items-center gap-1.5 ${step >= 1 ? 'text-gray-900' : 'text-gray-400'}`}>
-              <div className={`w-6 h-6 rounded-full flex items-center justify-center font-bold ${step >= 1 ? 'bg-gray-900 text-white' : 'bg-gray-100'}`}>1</div>
-              <span className="font-semibold">Carrito</span>
+          <div className="hidden sm:flex items-center gap-2.5 text-xs">
+            <div className={`flex items-center gap-2 transition-colors ${step >= 1 ? 'text-gray-900' : 'text-gray-400'}`}>
+              <div className={`w-7 h-7 rounded-full flex items-center justify-center font-bold text-xs transition-all ${step >= 1 ? 'bg-teal-600 text-white shadow-sm ring-2 ring-teal-100' : 'bg-gray-100 text-gray-400'}`}>{step > 1 ? '✓' : '1'}</div>
+              <span className="font-bold">Carrito</span>
             </div>
-            <div className="w-6 h-px bg-gray-200" />
-            <div className={`flex items-center gap-1.5 ${step >= 2 ? 'text-gray-900' : 'text-gray-400'}`}>
-              <div className={`w-6 h-6 rounded-full flex items-center justify-center font-bold ${step >= 2 ? 'bg-gray-900 text-white' : 'bg-gray-100'}`}>2</div>
-              <span className="font-semibold">Envío y pago</span>
+            <div className={`w-8 h-px transition-colors ${step >= 2 ? 'bg-teal-300' : 'bg-gray-200'}`} />
+            <div className={`flex items-center gap-2 transition-colors ${step >= 2 ? 'text-gray-900' : 'text-gray-400'}`}>
+              <div className={`w-7 h-7 rounded-full flex items-center justify-center font-bold text-xs transition-all ${step >= 2 ? 'bg-teal-600 text-white shadow-sm ring-2 ring-teal-100' : 'bg-gray-100 text-gray-400'}`}>2</div>
+              <span className="font-bold">Envío y pago</span>
             </div>
           </div>
         </div>
@@ -318,37 +318,50 @@ export default function Carrito() {
             {step === 1 && (
               <>
                 {carrito.map(item => (
-                  <div key={item.id} className="bg-white border border-gray-100 rounded-3xl p-4 sm:p-5 flex gap-4 shadow-sm hover:shadow-md transition-shadow">
-                    <div className="w-20 h-20 sm:w-24 sm:h-24 bg-gradient-to-br from-teal-50 to-emerald-50 rounded-2xl flex-shrink-0 overflow-hidden flex items-center justify-center">
+                  <div key={item.id} className="bg-white border border-gray-200 rounded-3xl p-4 sm:p-5 flex gap-4 shadow-sm hover:shadow-md hover:border-gray-300 transition-all">
+                    <div className="w-20 h-20 sm:w-24 sm:h-24 bg-gradient-to-br from-teal-50 to-emerald-50 rounded-2xl flex-shrink-0 overflow-hidden flex items-center justify-center border border-gray-100">
                       {item.imagen ? (
-                        <img src={item.imagen} alt={item.nombre} className="w-full h-full object-cover" />
+                        <img src={item.imagen} alt={item.nombre} className="w-full h-full object-cover" loading="lazy" />
                       ) : (
                         <span className="text-4xl">📦</span>
                       )}
                     </div>
                     <div className="flex-1 min-w-0 flex flex-col justify-between">
                       <div>
-                        <h3 className="font-semibold text-gray-900 leading-snug line-clamp-2">{item.nombre}</h3>
+                        <h3 className="font-poppins font-semibold text-gray-900 leading-snug line-clamp-2 text-[15px]">{item.nombre}</h3>
                         {item.personalizacion && (
-                          <p className="text-xs text-purple-600 mt-1 font-medium flex items-center gap-1">✨ Grabado: "{item.personalizacion}"</p>
+                          <p className="text-xs text-purple-700 mt-1.5 font-semibold flex items-center gap-1 bg-purple-50 inline-flex px-2 py-0.5 rounded-md">✨ Grabado: "{item.personalizacion}"</p>
                         )}
                         {item.pack_resumen && (
-                          <p className="text-xs text-teal-700 mt-1 font-medium">🎨 Pack: {item.pack_resumen}</p>
+                          <p className="text-xs text-teal-800 mt-1.5 font-semibold bg-teal-50 inline-flex px-2 py-0.5 rounded-md">🎨 Pack: {item.pack_resumen}</p>
                         )}
                         {item.color && !item.pack_resumen && (
-                          <p className="text-xs text-gray-400 mt-0.5 capitalize">Color: {item.color}</p>
+                          <p className="text-xs text-gray-600 mt-1 capitalize font-medium">Color: <span className="text-gray-900">{item.color}</span></p>
                         )}
                       </div>
-                      <div className="flex items-center justify-between mt-3">
-                        <div className="flex items-center border border-gray-200 rounded-xl overflow-hidden bg-gray-50">
-                          <button onClick={() => actualizar(item.id, item.cantidad - 1)} className="w-9 h-9 hover:bg-white font-bold text-gray-600 transition-colors">−</button>
-                          <span className="px-3 text-sm font-bold text-gray-900 min-w-[32px] text-center">{item.cantidad}</span>
-                          <button onClick={() => actualizar(item.id, item.cantidad + 1)} className="w-9 h-9 hover:bg-white font-bold text-gray-600 transition-colors">+</button>
+                      <div className="flex items-center justify-between mt-3 gap-3 flex-wrap">
+                        <div className="flex items-center border-2 border-gray-200 rounded-xl overflow-hidden bg-white shadow-sm">
+                          <button
+                            onClick={() => actualizar(item.id, item.cantidad - 1)}
+                            disabled={item.cantidad <= 1}
+                            aria-label="Disminuir cantidad"
+                            className="w-9 h-9 hover:bg-gray-100 font-bold text-gray-900 text-lg leading-none transition-colors disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center"
+                          >−</button>
+                          <span className="px-3 text-sm font-bold text-gray-900 min-w-[36px] text-center border-x border-gray-200 h-9 flex items-center justify-center bg-gray-50">{item.cantidad}</span>
+                          <button
+                            onClick={() => actualizar(item.id, item.cantidad + 1)}
+                            aria-label="Aumentar cantidad"
+                            className="w-9 h-9 hover:bg-gray-100 font-bold text-gray-900 text-lg leading-none transition-colors flex items-center justify-center"
+                          >+</button>
                         </div>
-                        <div className="flex items-center gap-3">
-                          <span className="font-poppins font-bold text-gray-900 text-base">${(item.precio * item.cantidad).toLocaleString('es-CL')}</span>
-                          <button onClick={() => eliminar(item.id)} className="w-8 h-8 rounded-xl bg-gray-50 flex items-center justify-center hover:bg-red-50 transition-colors group">
-                            <Trash2 className="w-3.5 h-3.5 text-gray-400 group-hover:text-red-500" />
+                        <div className="flex items-center gap-2.5">
+                          <span className="font-poppins font-bold text-gray-900 text-lg tabular-nums">${(item.precio * item.cantidad).toLocaleString('es-CL')}</span>
+                          <button
+                            onClick={() => eliminar(item.id)}
+                            aria-label={`Eliminar ${item.nombre}`}
+                            className="w-9 h-9 rounded-xl bg-gray-50 border border-gray-200 flex items-center justify-center hover:bg-red-50 hover:border-red-200 transition-all group"
+                          >
+                            <Trash2 className="w-4 h-4 text-gray-500 group-hover:text-red-600 transition-colors" />
                           </button>
                         </div>
                       </div>
@@ -358,14 +371,16 @@ export default function Carrito() {
 
                 <div className="grid grid-cols-3 gap-2 sm:gap-3 pt-2">
                   {[
-                    { icon: Shield, text: 'Garantía 10 años', sub: 'Plástico reciclado', color: 'text-teal-600' },
-                    { icon: Truck, text: 'Envío gratis', sub: 'Sobre $40.000', color: 'text-blue-600' },
-                    { icon: Recycle, text: '100% reciclado', sub: 'Hecho en Chile', color: 'text-emerald-600' },
+                    { icon: Shield, text: 'Garantía 10 años', sub: 'Plástico reciclado', color: 'text-teal-700', bg: 'bg-teal-50' },
+                    { icon: Truck, text: 'Envío gratis', sub: 'Sobre $40.000', color: 'text-blue-700', bg: 'bg-blue-50' },
+                    { icon: Recycle, text: '100% reciclado', sub: 'Hecho en Chile', color: 'text-emerald-700', bg: 'bg-emerald-50' },
                   ].map((b, i) => (
-                    <div key={i} className="bg-white rounded-2xl p-3 border border-gray-100 text-center shadow-sm">
-                      <b.icon className={`w-5 h-5 mx-auto mb-1.5 ${b.color}`} />
+                    <div key={i} className="bg-white rounded-2xl p-3 sm:p-3.5 border border-gray-200 text-center shadow-sm hover:shadow-md transition-shadow">
+                      <div className={`w-9 h-9 rounded-xl ${b.bg} flex items-center justify-center mx-auto mb-2`}>
+                        <b.icon className={`w-4.5 h-4.5 ${b.color}`} />
+                      </div>
                       <p className="text-xs font-bold text-gray-900 leading-tight">{b.text}</p>
-                      <p className="text-[10px] text-gray-400 mt-0.5">{b.sub}</p>
+                      <p className="text-[10px] text-gray-500 mt-0.5 font-medium">{b.sub}</p>
                     </div>
                   ))}
                 </div>
@@ -445,18 +460,18 @@ export default function Carrito() {
           <div className="space-y-3 lg:sticky lg:top-20 lg:self-start">
 
             {/* Resumen — protagonista */}
-            <div className="bg-white border border-gray-100 rounded-3xl p-5 shadow-sm">
-              <h3 className="font-poppins font-bold text-gray-900 mb-4">Resumen</h3>
+            <div className="bg-white border border-gray-200 rounded-3xl p-5 shadow-md">
+              <h3 className="font-poppins font-bold text-gray-900 mb-4 text-base">Resumen del pedido</h3>
               <div className="space-y-2.5 text-sm">
-                <div className="flex justify-between text-gray-600">
-                  <span>Subtotal ({carrito.reduce((s, i) => s + i.cantidad, 0)} items)</span>
-                  <span className="font-semibold text-gray-900">${subtotal.toLocaleString('es-CL')}</span>
+                <div className="flex justify-between text-gray-700">
+                  <span className="font-medium">Subtotal <span className="text-gray-400 font-normal">({carrito.reduce((s, i) => s + i.cantidad, 0)} ítems)</span></span>
+                  <span className="font-semibold text-gray-900 tabular-nums">${subtotal.toLocaleString('es-CL')}</span>
                 </div>
-                <div className="flex justify-between text-gray-600">
-                  <span>Envío</span>
+                <div className="flex justify-between text-gray-700">
+                  <span className="font-medium">Envío</span>
                   {envio === 0
-                    ? <span className="text-teal-600 font-bold">GRATIS</span>
-                    : <span className="font-semibold text-gray-900">${envio.toLocaleString('es-CL')}</span>
+                    ? <span className="text-teal-700 font-bold inline-flex items-center gap-1">✓ GRATIS</span>
+                    : <span className="font-semibold text-gray-900 tabular-nums">${envio.toLocaleString('es-CL')}</span>
                   }
                 </div>
 
@@ -492,9 +507,9 @@ export default function Carrito() {
                   </div>
                 )}
               </div>
-              <div className="border-t border-gray-100 pt-3 mt-4 flex justify-between items-baseline">
-                <span className="font-bold text-gray-900 text-sm">Total</span>
-                <span className="font-poppins font-bold text-2xl text-gray-900">${total.toLocaleString('es-CL')}</span>
+              <div className="border-t-2 border-dashed border-gray-200 pt-4 mt-4 flex justify-between items-baseline">
+                <span className="font-poppins font-bold text-gray-900 text-base">Total</span>
+                <span className="font-poppins font-extrabold text-3xl text-gray-900 tabular-nums tracking-tight">${total.toLocaleString('es-CL')}</span>
               </div>
 
               {/* Tu impacto real — integrado como footer del resumen, no flotando */}
@@ -531,47 +546,46 @@ export default function Carrito() {
 
             {/* CTA */}
             {step === 1 ? (
-              <div className="space-y-2">
+              <div className="space-y-2.5">
                 {/* Compra en 1 Clic — solo aparece si hay perfil guardado válido */}
                 <OneClickBuyButton items={carrito} variant="light" />
-                <Button
+                <button
                   onClick={() => {
                     trackBeginCheckout(carrito, subtotal);
-                    // Trazabilidad 360°: checkout start
                     track.checkoutStart({ total: subtotal + envio, items: carrito });
                     setStep(2);
                   }}
-                  size="lg"
-                  className="w-full font-semibold gap-2 rounded-2xl bg-gray-900 hover:bg-gray-800 text-white shadow-lg h-13 py-4">
-                  Continuar <ChevronRight className="w-4 h-4" />
-                </Button>
+                  className="w-full h-14 rounded-2xl bg-gradient-to-br from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 text-white shadow-lg hover:shadow-xl active:scale-[0.99] transition-all flex items-center justify-center gap-2 font-poppins font-bold text-base tracking-tight"
+                >
+                  Continuar al pago <ChevronRight className="w-5 h-5" />
+                </button>
               </div>
             ) : (
-              <Button
+              <button
                 onClick={crearPedido}
                 disabled={creando}
-                size="lg"
-                className="w-full font-semibold gap-2 rounded-2xl bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 text-white shadow-lg h-13 py-4">
+                className="w-full h-14 rounded-2xl bg-gradient-to-br from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 disabled:from-gray-400 disabled:to-gray-500 disabled:cursor-not-allowed text-white shadow-lg hover:shadow-xl active:scale-[0.99] transition-all flex items-center justify-center gap-2 font-poppins font-bold text-base tracking-tight"
+              >
                 {creando ? (
-                  <><div className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" /> Procesando...</>
+                  <><div className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" /> Procesando…</>
                 ) : total === 0 ? (
-                  <><Gift className="w-4 h-4" /> Confirmar pedido (cubierto por Gift Card)</>
+                  <><Gift className="w-5 h-5" /> Confirmar pedido</>
                 ) : medioPago === 'Transferencia' ? (
-                  <><Lock className="w-4 h-4" /> Confirmar pedido · ${total.toLocaleString('es-CL')}</>
+                  <><Lock className="w-4 h-4" /> Confirmar · ${total.toLocaleString('es-CL')}</>
                 ) : (
                   <><Lock className="w-4 h-4" /> Pagar ${total.toLocaleString('es-CL')}</>
                 )}
-              </Button>
+              </button>
             )}
 
-            <div className="flex items-center justify-center gap-1.5 text-xs text-gray-400">
+            <div className="flex items-center justify-center gap-1.5 text-xs text-gray-500 font-medium pt-1">
               <Lock className="w-3 h-3" />
-              Pago 100% seguro · {medioPago === 'Transferencia' ? 'Banco Santander' : 'Mercado Pago'}
+              <span>Pago 100% seguro · {medioPago === 'Transferencia' ? 'Banco Santander' : 'Mercado Pago'}</span>
             </div>
 
-            <div className="flex justify-center gap-5 text-xs text-gray-400 pt-1">
-              <Link to="/seguimiento" className="hover:text-gray-900">🔍 Seguimiento</Link>
-              <Link to="/soporte" className="hover:text-gray-900">❓ Ayuda</Link>
+            <div className="flex justify-center gap-5 text-xs font-medium text-gray-500 pt-1">
+              <Link to="/seguimiento" className="hover:text-teal-700 transition-colors inline-flex items-center gap-1">🔍 Seguimiento</Link>
+              <Link to="/soporte" className="hover:text-teal-700 transition-colors inline-flex items-center gap-1">❓ Ayuda</Link>
             </div>
           </div>
         </div>

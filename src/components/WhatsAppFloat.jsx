@@ -1,4 +1,10 @@
+import { useLocation } from 'react-router-dom';
+
 export default function WhatsAppFloat() {
+  const { pathname } = useLocation();
+  // Ocultar en checkout (Amazon/Shopify best practice — sin distracciones del CTA)
+  if (pathname.startsWith('/cart') || pathname.startsWith('/gracias')) return null;
+
   return (
     <a
       href="https://wa.me/56935040242?text=Hola%2C%20me%20interesa%20información%20sobre%20regalos%20corporativos%20sostenibles"
