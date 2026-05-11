@@ -146,7 +146,9 @@ Deno.serve(async (req) => {
 
     const body = await req.json().catch(() => ({}));
     const mode = body.mode === 'apply' ? 'apply' : 'preview';
-    const limit = Math.min(Math.max(Number(body.limit) || 50, 1), 100);
+    // Lotes pequeños para evitar timeout (cada archivo ~3-5s entre descarga+upload+IA)
+    const limit = Math.min(Math.max(Number(body.limit) || 8, 1), 15);
+    const offset = Math.max(Number(body.offset) || 0, 0);
 
     const { accessToken } = await base44.asServiceRole.connectors.getConnection('googledrive');
     const headers = { 'Authorization': `Bearer ${accessToken}` };
@@ -176,21 +178,104 @@ Deno.serve(async (req) => {
     }
 
     // Archivos candidatos (no usados aún)
-    const noUsados = driveFiles.filter(f => {
+    const noUsadosRaw = driveFiles.filter(f => {
       const safeName = f.name.replace(/[^a-zA-Z0-9._-]/g, '_').toLowerCase();
       return !usadosNombres.has(safeName);
     });
 
-    // 4. Para cada archivo no usado, subir al CDN para obtener URL pública,
-    // analizarla con IA y matchear contra producto sin foto.
+    // 4. Para cada archivo no usado: PRIMERO intentar match por nombre (rápido,
+    // sin IA). Si el nombre del archivo no es claro, usar IA de visión como fallback.
     const matches = [];
     const unmatched = [];
     let analizados = 0;
+    let matched_by_name = 0;
+    let matched_by_vision = 0;
 
-    for (const file of noUsados.slice(0, limit)) {
+    // Helper: del nombre del archivo, extraer "marca modelo" probable.
+    // Ej: "S23.jpg" → "samsung s23"; "P40lite.jpg" → "huawei p40 lite"
+    // Definido como function declaration para poder usarlo arriba en el sort.
+    function inferirModeloDeNombre(filename) {
+      const n = normalize(filename.replace(/\.[^.]+$/, '')); // sin extensión
+      // Detecta patrón Samsung S/A
+      const s = n.match(/\bs(\d{1,2})(fe|plus|ultra|e)?\b/);
+      if (s) {
+        const sufijo = s[2] === 'fe' ? ' fe' : s[2] === 'plus' ? ' plus' : s[2] === 'ultra' ? ' ultra' : s[2] === 'e' ? 'e' : '';
+        return `samsung s${s[1]}${sufijo}`;
+      }
+      const a = n.match(/\ba(\d{1,3})(s)?\b/);
+      if (a) return `samsung a${a[1]}${a[2] || ''}`;
+      // Huawei P
+      const p = n.match(/\bp(\d{1,2})(lite|pro)?\b/);
+      if (p) {
+        const sufijo = p[2] ? ' ' + p[2] : '';
+        return `huawei p${p[1]}${sufijo}`;
+      }
+      // iPhone
+      const i = n.match(/\biphone\s*(\d{1,2})\s*(promax|pro\s*max|pro|plus|mini|max)?\b/);
+      if (i) {
+        const sufijo = i[2] ? ' ' + i[2].replace(/\s+/g, '') : '';
+        return `iphone ${i[1]}${sufijo}`;
+      }
+      // Xiaomi Redmi Note / Mi
+      const r = n.match(/\bredmi\s*note\s*(\d{1,2})\b/);
+      if (r) return `xiaomi redmi note ${r[1]}`;
+      const mi = n.match(/\bmi\s*(\d{1,2})\b/);
+      if (mi) return `xiaomi mi ${mi[1]}`;
+      // Motorola
+      const m = n.match(/\bg(\d{1,2})\b/);
+      if (m && /motorola|moto/.test(n)) return `motorola g${m[1]}`;
+      return null;
+    }
+
+    // PRIORIZAR archivos cuyo nombre ya delata el modelo (más rápido y certero
+    // que IA de visión). Los archivos sin pista de nombre van al final.
+    const noUsados = [...noUsadosRaw].sort((a, b) => {
+      const aHasModel = inferirModeloDeNombre(a.name) ? 0 : 1;
+      const bHasModel = inferirModeloDeNombre(b.name) ? 0 : 1;
+      return aHasModel - bHasModel;
+    });
+
+    const batch = noUsados.slice(offset, offset + limit);
+    for (const file of batch) {
       analizados++;
       try {
-        // Descarga del Drive
+        // ── PASO 1: match por nombre (sin descarga, sin IA) ─────
+        const modeloPorNombre = inferirModeloDeNombre(file.name);
+        if (modeloPorNombre) {
+          const productoNombre = matchProductoPorTexto(modeloPorNombre, sinFoto);
+          if (productoNombre) {
+            // Descargar y subir directo (sin pasar por IA)
+            const dlR2 = await fetch(
+              `https://www.googleapis.com/drive/v3/files/${file.id}?alt=media&supportsAllDrives=true`,
+              { headers }
+            );
+            if (dlR2.ok) {
+              const blob2 = await dlR2.blob();
+              if (blob2.size >= 5000 && blob2.size <= 15000000) {
+                const safeName2 = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+                const tmpFile2 = new File([blob2], `vision-tmp-${safeName2}`, {
+                  type: file.mimeType || 'image/jpeg',
+                });
+                const upload2 = await base44.asServiceRole.integrations.Core.UploadFile({ file: tmpFile2 });
+                if (upload2?.file_url) {
+                  matches.push({
+                    file: { id: file.id, name: file.name, mime_type: file.mimeType },
+                    uploaded_url: upload2.file_url,
+                    producto: { id: productoNombre.id, sku: productoNombre.sku, nombre: productoNombre.nombre },
+                    modelo_ia: modeloPorNombre,
+                    confianza: 'alta',
+                    razon_ia: `Match por nombre de archivo: "${file.name}" → ${modeloPorNombre}`,
+                    method: 'filename',
+                  });
+                  matched_by_name++;
+                  continue;
+                }
+              }
+            }
+          }
+        }
+
+        // ── PASO 2: fallback a visión IA (si el nombre no fue suficiente) ─────
         const dlR = await fetch(
           `https://www.googleapis.com/drive/v3/files/${file.id}?alt=media&supportsAllDrives=true`,
           { headers }
@@ -283,7 +368,9 @@ Responde SOLO con el nombre exacto del modelo en formato "Marca Modelo" (ej: "Sa
           modelo_ia: modelo,
           confianza,
           razon_ia: visionResp?.razon,
+          method: 'vision',
         });
+        matched_by_vision++;
       } catch (err) {
         unmatched.push({ file: file.name, reason: err.message });
       }
@@ -329,12 +416,21 @@ Responde SOLO con el nombre exacto del modelo en formato "Marca Modelo" (ej: "Sa
       }
     }
 
+    const next_offset = offset + limit;
+    const has_more = next_offset < noUsados.length;
+
     return Response.json({
       ok: true,
       mode,
       total_drive_files: driveFiles.length,
       archivos_no_usados: noUsados.length,
+      offset,
+      limit,
+      next_offset: has_more ? next_offset : null,
+      has_more,
       analizados,
+      matched_by_name,
+      matched_by_vision,
       matches_count: matches.length,
       productos_actualizados: aplicados,
       unmatched_count: unmatched.length,
