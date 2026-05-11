@@ -9,6 +9,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Search, Image as ImageIcon, Loader2, RefreshCw, Star, Share2, Layers, ArrowLeft } from 'lucide-react';
 import GaleriaCategoryFolders from '@/components/imagenes/GaleriaCategoryFolders';
 import GaleriaProductGroup from '@/components/imagenes/GaleriaProductGroup';
@@ -169,27 +170,36 @@ export default function GaleriaMaestra() {
       {/* Filtros secundarios */}
       <div className="flex items-center gap-2 flex-wrap flex-shrink-0">
         <div className="relative flex-1 min-w-[220px]">
-          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-white/40" />
+          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
           <Input
             value={search}
             onChange={e => setSearch(e.target.value)}
             placeholder="Buscar producto o SKU…"
-            className="pl-9 h-9 bg-white/5 border-white/10 text-white placeholder:text-white/40"
+            className="pl-9 h-10 bg-white border-slate-300 text-slate-900 placeholder:text-slate-400 focus-visible:ring-cyan-500 focus-visible:border-cyan-500"
           />
         </div>
         {sources.length > 1 && (
-          <select
-            value={filterSource}
-            onChange={e => setFilterSource(e.target.value)}
-            className="h-9 bg-white/5 border border-white/10 rounded-md px-3 text-sm text-white"
-          >
-            <option value="all" className="bg-slate-900">Todos los orígenes</option>
-            {sources.map(s => (
-              <option key={s} value={s} className="bg-slate-900">{s}</option>
-            ))}
-          </select>
+          <Select value={filterSource} onValueChange={setFilterSource}>
+            <SelectTrigger className="h-10 w-[200px] bg-white border-slate-300 text-slate-900">
+              <SelectValue placeholder="Todos los orígenes" />
+            </SelectTrigger>
+            <SelectContent className="bg-white border-slate-200">
+              <SelectItem value="all" className="text-slate-900 focus:bg-slate-100 focus:text-slate-900">
+                Todos los orígenes
+              </SelectItem>
+              {sources.map(s => (
+                <SelectItem
+                  key={s}
+                  value={s}
+                  className="text-slate-900 focus:bg-slate-100 focus:text-slate-900"
+                >
+                  {s}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         )}
-        <span className="text-xs text-white/50">
+        <span className="text-xs text-white/60">
           {visibleImages.length} imagen{visibleImages.length !== 1 ? 'es' : ''}
         </span>
       </div>
