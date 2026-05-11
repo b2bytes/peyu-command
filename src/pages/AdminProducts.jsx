@@ -66,9 +66,9 @@ export default function AdminProducts() {
   };
 
   return (
-    <div className="h-full flex flex-col p-4 lg:p-6 gap-4 min-h-0">
+    <div className="min-h-screen flex flex-col p-4 lg:p-6 gap-4">
       {/* Header */}
-      <div className="flex items-start justify-between flex-wrap gap-3 flex-shrink-0">
+      <div className="flex items-start justify-between flex-wrap gap-3">
         <div className="min-w-0">
           <h1 className="text-xl lg:text-2xl font-poppins font-bold text-white flex items-center gap-2">
             <Sparkles className="w-5 h-5 lg:w-6 lg:h-6 text-violet-400 flex-shrink-0" />
@@ -99,7 +99,7 @@ export default function AdminProducts() {
       </div>
 
       {syncResult && (
-        <div className={`px-4 py-2.5 rounded-xl border flex items-start gap-2 text-xs flex-shrink-0 ${
+        <div className={`px-4 py-2.5 rounded-xl border flex items-start gap-2 text-xs ${
           syncResult.error
             ? 'bg-rose-500/10 border-rose-400/30 text-rose-300'
             : 'bg-emerald-500/10 border-emerald-400/30 text-emerald-300'
@@ -132,7 +132,7 @@ export default function AdminProducts() {
       <WordPressMigrationPanel onComplete={loadData} />
 
       {/* KPIs — clickeables como filtros rápidos */}
-      <div className="grid grid-cols-2 md:grid-cols-6 gap-2 flex-shrink-0">
+      <div className="grid grid-cols-2 md:grid-cols-6 gap-2">
         <KPI label="Publicados" value={stats.publicados} color="text-emerald-300" active={filter === 'publicados'} onClick={() => setFilter('publicados')} />
         <KPI label="Inactivos" value={stats.inactivos} color="text-white/70" active={filter === 'inactivos'} onClick={() => setFilter('inactivos')} />
         <KPI label="Todos" value={stats.total} color="text-white" active={filter === 'todos'} onClick={() => setFilter('todos')} />
@@ -142,9 +142,10 @@ export default function AdminProducts() {
       </div>
 
       {/* Layout: lista + detalle (estable, sin desbordes) */}
-      <div className="grid grid-cols-1 lg:grid-cols-[340px_minmax(0,1fr)] gap-3 flex-1 min-h-0">
+      {/* Altura fija para que ambos paneles tengan scroll interno real, sin depender de flex-1 del padre */}
+      <div className="grid grid-cols-1 lg:grid-cols-[340px_minmax(0,1fr)] gap-3 h-[720px] max-h-[calc(100vh-120px)]">
         {/* Lista (izquierda) */}
-        <div className="bg-white/5 border border-white/10 rounded-2xl flex flex-col min-h-0 overflow-hidden">
+        <div className="bg-white/5 border border-white/10 rounded-2xl flex flex-col min-h-0 overflow-hidden h-[720px] max-h-[calc(100vh-120px)] lg:h-auto">
           <div className="p-3 space-y-2 border-b border-white/10 flex-shrink-0">
             <div className="relative">
               <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-white/40" />
@@ -223,7 +224,7 @@ export default function AdminProducts() {
         </div>
 
         {/* Detalle (derecha) — nunca desborda, scroll interno */}
-        <div className="bg-white/5 border border-white/10 rounded-2xl flex flex-col min-h-0 overflow-hidden">
+        <div className="bg-white/5 border border-white/10 rounded-2xl flex flex-col min-h-0 overflow-hidden h-[720px] max-h-[calc(100vh-120px)] lg:h-auto">
           {!selected ? (
             <div className="flex-1 flex flex-col items-center justify-center text-white/40">
               <AlertCircle className="w-10 h-10 mb-3" />
