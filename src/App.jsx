@@ -8,6 +8,8 @@ import ErrorBoundary from '@/components/ErrorBoundary';
 import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
+import AdminAccessDenied from '@/components/AdminAccessDenied';
+import { isTeamMember } from '@/lib/team-whitelist';
 import PWAInstallBanner from '@/components/PWAInstallBanner';
 import CookieBanner from '@/components/CookieBanner';
 
@@ -109,7 +111,7 @@ const AdminLoader = () => (
 );
 
 const AuthenticatedApp = () => {
-  const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
+  const { user, isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
 
   if (isLoadingPublicSettings || isLoadingAuth) {
     return <AdminLoader />;
@@ -122,6 +124,11 @@ const AuthenticatedApp = () => {
       navigateToLogin();
       return null;
     }
+  }
+
+  // 🔒 Solo miembros del equipo PEYU pueden ver /admin/*
+  if (!isTeamMember(user?.email)) {
+    return <AdminAccessDenied />;
   }
 
   return (
