@@ -14,8 +14,10 @@ export default function WaybackRecoveryPanel({ onComplete }) {
   const [progress, setProgress] = useState({ processed: 0, total: 0, results: [] });
   const [paused, setPaused] = useState(false);
   const [error, setError] = useState(null);
-  const [replacePrincipal, setReplacePrincipal] = useState(false);
-  const [onlyMissing, setOnlyMissing] = useState(true);
+  // Defaults: rescatar TODOS los productos y reemplazar la imagen principal con la archivada.
+  // El usuario migró 100% desde WooCommerce y quiere recuperar el catálogo completo.
+  const [replacePrincipal, setReplacePrincipal] = useState(true);
+  const [onlyMissing, setOnlyMissing] = useState(false);
 
   const run = async (previewOnly = false) => {
     setStage(previewOnly ? 'preview' : 'migrating');
