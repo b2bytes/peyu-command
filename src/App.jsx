@@ -103,6 +103,7 @@ const Cockpit = lazyWithRetry(() => import('./pages/Cockpit'), { name: 'Cockpit'
 const GaleriaMaestra = lazyWithRetry(() => import('./pages/GaleriaMaestra'), { name: 'GaleriaMaestra' });
 const AuditoriaImagenes = lazyWithRetry(() => import('./pages/AuditoriaImagenes'), { name: 'AuditoriaImagenes' });
 const SocialStudio = lazyWithRetry(() => import('./pages/SocialStudio'), { name: 'SocialStudio' });
+const AuditoriaVisual = lazyWithRetry(() => import('./pages/AuditoriaVisual'), { name: 'AuditoriaVisual' });
 
 const AdminLoader = () => (
   <div className="fixed inset-0 flex items-center justify-center bg-background">
@@ -188,6 +189,7 @@ const AuthenticatedApp = () => {
           <Route path="imagenes" element={<GaleriaMaestra />} />
           <Route path="auditoria-imagenes" element={<AuditoriaImagenes />} />
           <Route path="social-studio" element={<SocialStudio />} />
+          <Route path="auditoria-visual" element={<AuditoriaVisual />} />
         </Route>
         <Route path="*" element={<PageNotFound />} />
       </Routes>
