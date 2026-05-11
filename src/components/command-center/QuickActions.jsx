@@ -1,10 +1,11 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { useToast } from '@/components/ui/use-toast';
 import {
   RefreshCw, Search, Send, Megaphone, FileText, Mail,
   Sparkles, Zap, Loader2, CheckCircle2, XCircle, ChevronRight,
-  ShoppingBag, Globe, Activity,
+  ShoppingBag, Globe, Activity, Image as ImageIcon, Wand2, FolderSearch,
 } from 'lucide-react';
 
 /**
@@ -22,6 +23,16 @@ const GROUPS = [
     actions: [
       { id: 'sync-woo',    label: 'Sync WooCommerce',  desc: 'Importar productos',     icon: RefreshCw,  fn: 'syncWooCatalogo',      payload: {} },
       { id: 'audit-cat',   label: 'Auditar catálogo',  desc: 'IA revisa productos',    icon: Megaphone,  fn: 'auditoriaCatalogoCRON', payload: {} },
+    ],
+  },
+  {
+    label: 'Imágenes de productos',
+    icon: ImageIcon,
+    accent: 'text-pink-300',
+    actions: [
+      { id: 'admin-products',  label: 'Editor de productos', desc: 'Subir, generar IA, editar', icon: Wand2,        to: '/admin/admin-products' },
+      { id: 'galeria-maestra', label: 'Galería maestra',     desc: 'Ver todas las imágenes',    icon: ImageIcon,    to: '/admin/imagenes' },
+      { id: 'auditoria-img',   label: 'Auditoría Drive',     desc: 'Match 1:1 desde Drive',     icon: FolderSearch, to: '/admin/auditoria-imagenes' },
     ],
   },
   {
@@ -122,14 +133,11 @@ export default function QuickActions() {
                   const state = running[a.id];
                   const StateCfg = state && STATE_STYLE[state];
                   const StateIcon = StateCfg?.icon;
-                  return (
-                    <button
-                      key={a.id}
-                      onClick={() => run(a)}
-                      disabled={state === 'loading'}
-                      title={a.desc}
-                      className="flex items-center gap-2.5 p-2.5 rounded-xl bg-white/[0.03] hover:bg-white/[0.08] border border-white/[0.06] hover:border-white/15 transition-all disabled:opacity-50 disabled:cursor-not-allowed group text-left"
-                    >
+                  const isNav = !!a.to;
+                  const commonClass = "flex items-center gap-2.5 p-2.5 rounded-xl bg-white/[0.03] hover:bg-white/[0.08] border border-white/[0.06] hover:border-white/15 transition-all disabled:opacity-50 disabled:cursor-not-allowed group text-left";
+
+                  const inner = (
+                    <>
                       <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 transition ${
                         state === 'success' ? 'bg-emerald-500/20'
                         : state === 'error' ? 'bg-red-500/20'
@@ -145,6 +153,25 @@ export default function QuickActions() {
                         <div className="text-[10px] text-white/45 truncate">{a.desc}</div>
                       </div>
                       <ChevronRight className="w-3 h-3 text-white/20 group-hover:text-white/60 group-hover:translate-x-0.5 transition shrink-0" />
+                    </>
+                  );
+
+                  if (isNav) {
+                    return (
+                      <Link key={a.id} to={a.to} title={a.desc} className={commonClass}>
+                        {inner}
+                      </Link>
+                    );
+                  }
+                  return (
+                    <button
+                      key={a.id}
+                      onClick={() => run(a)}
+                      disabled={state === 'loading'}
+                      title={a.desc}
+                      className={commonClass}
+                    >
+                      {inner}
                     </button>
                   );
                 })}
