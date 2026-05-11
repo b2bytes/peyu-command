@@ -56,20 +56,16 @@ Deno.serve(async (req) => {
   </div>
 </body></html>`;
 
-    await Promise.all([
+    // Notifica a todos los buzones del equipo comercial
+    const TEAM_INBOXES = ['jnilo@peyuchile.cl', 'ventas@peyuchile.cl', 'ti@peyuchile.cl'];
+    await Promise.all(TEAM_INBOXES.map(to =>
       base44.integrations.Core.SendEmail({
         from_name: 'PEYU Consultas',
-        to: 'ti@peyuchile.cl',
+        to,
         subject,
         body: html,
-      }),
-      base44.integrations.Core.SendEmail({
-        from_name: 'PEYU Consultas',
-        to: 'ventas@peyuchile.cl',
-        subject,
-        body: html,
-      }),
-    ]);
+      })
+    ));
 
     return Response.json({ ok: true, consultaId, calidad: c.calidad, isCaliente });
   } catch (error) {

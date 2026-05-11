@@ -8,7 +8,7 @@ const SIGNALS = [
   { icon: Recycle,     label: '100% Reciclado',  desc: 'Plástico chileno' },
   { icon: ShieldCheck, label: '10 años garantía',desc: 'Sin letra chica' },
   { icon: Truck,       label: 'Envío Bluex',     desc: 'Todo Chile' },
-  { icon: Award,       label: 'Hecho en Chile',  desc: 'Empresa B' },
+  { icon: Award,       label: 'Hecho en Chile',  desc: 'Producción local' },
 ];
 
 export default function MobileTrustBand() {

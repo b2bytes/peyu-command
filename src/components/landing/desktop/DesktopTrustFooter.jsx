@@ -5,7 +5,7 @@ const SIGNALS = [
   { icon: Recycle,     label: '100% Plástico Reciclado', desc: 'Recolectado en Chile' },
   { icon: ShieldCheck, label: '10 años de garantía',     desc: 'Sin letra chica' },
   { icon: Truck,       label: 'Despacho Bluex',          desc: 'A todo Chile en 2-5 días' },
-  { icon: Award,       label: 'Empresa B Chile',         desc: 'Triple impacto certificado' },
+  { icon: Award,       label: 'Hecho en Chile',          desc: 'Producción local · Santiago' },
 ];
 
 export default function DesktopTrustFooter() {

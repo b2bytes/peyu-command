@@ -18,7 +18,7 @@ const HITOS = [
   { año: '2022', evento: '6 inyectoras operativas. Primer pedido de 10.000 unidades (Adidas Chile)' },
   { año: '2023', evento: 'Segunda tienda en Macul. Expansión a fibra de trigo compostable' },
   { año: '2024', evento: 'Lanzamiento plataforma digital B2B. +50 empresas clientes activas' },
-  { año: '2025', evento: 'Certificación ESG. Alianza con BancoEstado, DUOC UC, UAI' },
+  { año: '2025', evento: 'Política ESG interna publicada. Alianza con BancoEstado, DUOC UC, UAI' },
   { año: '2026', evento: 'Más de 500.000 kg de plástico reciclado. Meta: 1M kg en 2027' },
 ];
 

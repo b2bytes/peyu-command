@@ -236,12 +236,26 @@ Deno.serve(async (req) => {
 
     const html = buildHtml({ prop, items, propUrl, acceptUrl, rejectUrl });
 
+    const subject = `Propuesta PEYU N° ${prop.numero || proposalId.slice(-6)} · ${prop.empresa}`;
+
+    // 1) Email al cliente
     await base44.integrations.Core.SendEmail({
       to: prop.email,
-      subject: `Propuesta PEYU N° ${prop.numero || proposalId.slice(-6)} · ${prop.empresa}`,
+      subject,
       body: html,
       from_name: 'Carlos · PEYU Chile',
     });
+
+    // 2) Copia interna al equipo comercial (visibilidad de qué se envió)
+    const TEAM_INBOXES = ['jnilo@peyuchile.cl', 'ventas@peyuchile.cl'];
+    await Promise.all(TEAM_INBOXES.map(to =>
+      base44.integrations.Core.SendEmail({
+        to,
+        subject: `[COPIA] ${subject}`,
+        body: html,
+        from_name: 'PEYU · Propuestas enviadas',
+      }).catch(e => console.warn(`Copia interna a ${to} falló:`, e.message))
+    ));
 
     await base44.asServiceRole.entities.CorporateProposal.update(proposalId, {
       status: 'Enviada',

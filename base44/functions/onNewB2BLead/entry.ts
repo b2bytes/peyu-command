@@ -146,20 +146,16 @@ ${lead.notes ? `\nNotas:\n${lead.notes}` : ''}
         ? `🔥 Lead B2B Alto · ${lead.company_name || 'sin nombre'} · ${leadScore}pts`
         : `📥 Nuevo Lead B2B · ${lead.company_name || 'sin nombre'} · ${leadScore}pts`;
 
-      await Promise.all([
+      // Notifica a todos los buzones del equipo comercial
+      const TEAM_INBOXES = ['jnilo@peyuchile.cl', 'ventas@peyuchile.cl', 'ti@peyuchile.cl'];
+      await Promise.all(TEAM_INBOXES.map(to =>
         base44.integrations.Core.SendEmail({
           from_name: 'PEYU Pipeline B2B',
-          to: 'ti@peyuchile.cl',
+          to,
           subject,
           body: summary,
-        }),
-        base44.integrations.Core.SendEmail({
-          from_name: 'PEYU Pipeline B2B',
-          to: 'ventas@peyuchile.cl',
-          subject,
-          body: summary,
-        }),
-      ]);
+        })
+      ));
       log.steps.push({ step: 'notify', ok: true });
     } catch (e) {
       log.steps.push({ step: 'notify', ok: false, error: e.message });

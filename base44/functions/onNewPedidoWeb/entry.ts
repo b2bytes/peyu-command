@@ -437,18 +437,25 @@ Deno.serve(async (req) => {
     }
 
     // ── 2. EMAIL INTERNO ────────────────────────────────────────
-    // NOTA: mientras el dominio peyuchile.cl no esté verificado en Resend, el
-    // sandbox solo permite enviar al owner de la cuenta. Por eso enviamos a
-    // alfonsovambe@gmail.com (founder, owner de Resend) que reenvía/avisa al
-    // equipo. Una vez verificado el dominio se puede cambiar a ventas@peyuchile.cl.
-    const INTERNAL_EMAIL = 'alfonsovambe@gmail.com';
-    tareas.push(
-      sendViaResend({
-        to: INTERNAL_EMAIL,
-        subject: `🛒 Nuevo pedido · ${pedido.numero_pedido} · ${fmtCLP(pedido.total)} · ${pedido.medio_pago || 'WebPay'}`,
-        html: buildInternalHtml(pedido),
-      }).catch(e => console.error('Email interno falló:', e.message))
-    );
+    // Notifica a todos los buzones del equipo comercial.
+    // alfonsovambe@gmail.com se mantiene como respaldo (founder, owner de
+    // Resend) por si los buzones @peyuchile.cl aún no están verificados.
+    const INTERNAL_EMAILS = [
+      'jnilo@peyuchile.cl',
+      'ventas@peyuchile.cl',
+      'alfonsovambe@gmail.com',
+    ];
+    const internalSubject = `🛒 Nuevo pedido · ${pedido.numero_pedido} · ${fmtCLP(pedido.total)} · ${pedido.medio_pago || 'WebPay'}`;
+    const internalHtml = buildInternalHtml(pedido);
+    for (const to of INTERNAL_EMAILS) {
+      tareas.push(
+        sendViaResend({
+          to,
+          subject: internalSubject,
+          html: internalHtml,
+        }).catch(e => console.error(`Email interno (${to}) falló:`, e.message))
+      );
+    }
 
     // ── 3. STOCK ─────────────────────────────────────────────────
     if (pedido.sku && pedido.cantidad) {
