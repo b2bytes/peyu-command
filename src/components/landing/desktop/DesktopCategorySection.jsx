@@ -16,7 +16,7 @@ const CATEGORY_CONFIG = [
     icon: Home,
     queryCategoria: 'Hogar',
     fallbackImage:
-      'https://images.unsplash.com/photo-1554995207-c18c203602cb?auto=format&fit=crop&w=900&q=80',
+      'https://media.base44.com/images/public/69d99b9d61f699701129c103/09fc39248_generated_image.png',
   },
   {
     label: 'Oficina',
@@ -25,7 +25,7 @@ const CATEGORY_CONFIG = [
     icon: Briefcase,
     queryCategoria: 'Escritorio',
     fallbackImage:
-      'https://images.unsplash.com/photo-1497032628192-86f99bcd76bc?auto=format&fit=crop&w=900&q=80',
+      'https://media.base44.com/images/public/69d99b9d61f699701129c103/74c9c31ab_generated_image.png',
   },
   {
     label: 'Empresas',
@@ -34,7 +34,7 @@ const CATEGORY_CONFIG = [
     icon: Building2,
     queryCategoria: 'Corporativo',
     fallbackImage:
-      'https://images.unsplash.com/photo-1556761175-5973dc0f32e7?auto=format&fit=crop&w=900&q=80',
+      'https://media.base44.com/images/public/69d99b9d61f699701129c103/21d776343_generated_image.png',
   },
   {
     label: 'Gift Card',
@@ -43,7 +43,7 @@ const CATEGORY_CONFIG = [
     icon: Gift,
     queryCategoria: null, // Gift card no tiene categoría de producto
     fallbackImage:
-      'https://images.unsplash.com/photo-1607344645866-009c320b63e0?auto=format&fit=crop&w=900&q=80',
+      'https://media.base44.com/images/public/69d99b9d61f699701129c103/c97d667e5_generated_image.png',
   },
 ];
 
