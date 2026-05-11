@@ -80,61 +80,69 @@ export default function AIImageEnhancer({ producto, onSaved }) {
   const [deletingMain, setDeletingMain] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [instruccionExtra, setInstruccionExtra] = useState('');
+  // Generación batch: una imagen por cada uno de los 4 estilos en paralelo.
+  const [batchLoading, setBatchLoading] = useState(false);
+  const [batchProgress, setBatchProgress] = useState({ done: 0, total: 0 });
+  const [batchResults, setBatchResults] = useState([]); // [{ id, label, url, error }]
+  const [savingBatch, setSavingBatch] = useState(false);
 
   const galeria = Array.isArray(producto.galeria_urls) ? producto.galeria_urls : [];
   const cantidadEsperada = detectarCantidad(producto.nombre);
   const itemNombre = detectarItem(producto.nombre);
 
-  // ── Generar imagen alternativa (preservando producto cuando hay referencia,
-  // o creando desde cero usando título + descripción cuando no hay imagen) ──
-  const generar = async () => {
-    setLoading(true);
-    setPreviewUrl('');
-    try {
-      const styleObj = ESTILOS.find(s => s.id === estilo);
-      const refs = [producto.imagen_url, ...galeria].filter(Boolean).slice(0, 4);
-      const tieneReferencia = refs.length > 0;
-
-      // 🎯 Restricción de cantidad: si el nombre dice "Pack 6", forzamos a la IA a mostrar 6.
-      const reglaCantidad = cantidadEsperada
-        ? `\n\nCRITICAL — EXACT QUANTITY REQUIRED:
+  // ── Construcción del prompt (reutilizable para single + batch) ────
+  // 🚫 Compatible con Google Shopping: NO marcas, NO logos, NO texto, NO watermark.
+  const buildPrompt = (styleObj, tieneReferencia) => {
+    const reglaCantidad = cantidadEsperada
+      ? `\n\nCRITICAL — EXACT QUANTITY REQUIRED:
 - This product is a "${producto.nombre}". You MUST show EXACTLY ${cantidadEsperada} ${itemNombre} in the image. Not fewer, not more.
 - Count them visually before finishing. The image MUST contain ${cantidadEsperada} individual ${itemNombre} clearly visible.
 - Arrange them neatly so all ${cantidadEsperada} are clearly countable.`
-        : '';
+      : '';
 
-      // Instrucción libre del admin
-      const reglaExtra = instruccionExtra.trim()
-        ? `\n\nADDITIONAL ADMIN INSTRUCTION:\n${instruccionExtra.trim()}`
-        : '';
+    const reglaExtra = instruccionExtra.trim()
+      ? `\n\nADDITIONAL ADMIN INSTRUCTION:\n${instruccionExtra.trim()}`
+      : '';
 
-      // Contexto rico: descripción real del producto + material visual + categoría
-      const descripcionResumida = resumirDescripcion(producto.descripcion);
-      const materialVisual = describirMaterial(producto.material);
-      const contextoProducto = `
+    const descripcionResumida = resumirDescripcion(producto.descripcion);
+    const materialVisual = describirMaterial(producto.material);
+    const contextoProducto = `
 PRODUCT BRIEF (use this to understand what to show):
 - Name: ${producto.nombre}
 - Category: ${producto.categoria}
 - Material: ${materialVisual}
 - Channel: ${producto.canal}${descripcionResumida ? `\n- Real product description (from catalog): "${descripcionResumida}"` : ''}`;
 
-      let prompt;
-      if (tieneReferencia) {
-        // MODO RESTYLE: tenemos imagen real, solo cambia el entorno
-        prompt = `Take the EXACT product shown in the reference image(s) and place it in a new scene.${contextoProducto}
+    // 🚫 Reglas anti-marca obligatorias (Google Shopping compliance)
+    const reglasAntiMarca = `
+
+ABSOLUTE PROHIBITIONS (Google Shopping policy — STRICTLY ENFORCED):
+- ❌ NO brand names, NO company names, NO text of any kind anywhere in the image.
+- ❌ NO logos: not on the product, not in the background, not on packaging, not on props.
+- ❌ NO watermarks, NO captions, NO labels with readable text.
+- ❌ NO third-party trademarks (Apple, Nike, Coca-Cola, IKEA, Starbucks, etc.) visible on any object, screen, book cover, mug, sign, or surface.
+- ❌ NO competitor products or branded competitor packaging.
+- ❌ NO PEYU logo either — this image must be 100% brand-neutral.
+- ✅ The product itself must appear completely UNBRANDED — plain surface, no engraved/printed brand marks.
+- ✅ If props appear (laptop, phone, mug, notebook), they must be GENERIC and brandless.
+- ✅ All text-like surfaces (book spines, packaging, screens, signs) must be blank or blurred.`;
+
+    if (tieneReferencia) {
+      return `Take the EXACT product shown in the reference image(s) and place it in a new scene.${contextoProducto}
 
 CRITICAL — DO NOT CHANGE THE PRODUCT:
 - The product must look IDENTICAL to the reference: same shape, exact same color, same material texture, same proportions, same details and finishings.
 - Do not redesign, restyle, recolor, or alter the product in any way.
+- IMPORTANT: If the reference shows any logo or brand mark on the product, REMOVE it cleanly in the output. The output product must be unbranded.
 - Keep the product as the clear hero of the composition, centered and in sharp focus.${reglaCantidad}
 
 ONLY CHANGE THE BACKGROUND, SETTING AND LIGHTING:
-${styleObj.prompt}.${reglaExtra}
+${styleObj.prompt}.${reglaExtra}${reglasAntiMarca}
 
-Photography style: PEYU Chile brand aesthetic, premium product photography, high resolution, sharp focus on the product, natural realistic shadows, no text, no watermark, no logos other than the product's own.`;
-      } else {
-        // MODO CREATIVO: no hay imagen, generamos basándonos en la descripción del producto
-        prompt = `Create a realistic, premium product photograph for an e-commerce listing of a sustainable Chilean product by PEYU Chile.${contextoProducto}
+Photography style: premium e-commerce product photography, high resolution, sharp focus on the product, natural realistic shadows. Looks like a real DSLR product photo, not 3D render.`;
+    }
+
+    return `Create a realistic, premium product photograph for an e-commerce listing of a sustainable Chilean product.${contextoProducto}
 
 CRITICAL — DESIGN THE PRODUCT FROM THE BRIEF:
 - Render the product as accurately as possible based on the name, category and description above.
@@ -143,15 +151,23 @@ CRITICAL — DESIGN THE PRODUCT FROM THE BRIEF:
 - Single hero product, well composed, sharp focus, realistic proportions.${reglaCantidad}
 
 SCENE / BACKGROUND:
-${styleObj.prompt}.${reglaExtra}
+${styleObj.prompt}.${reglaExtra}${reglasAntiMarca}
 
-Photography style: PEYU Chile brand aesthetic — sustainability-forward, natural, warm and premium. High resolution, realistic shadows, no text, no watermark, no logos. Looks like a real DSLR product photo, not 3D render.`;
-      }
+Photography style: sustainability-forward, natural, warm and premium. High resolution, realistic shadows. Looks like a real DSLR product photo, not 3D render.`;
+  };
+
+  // ── Generar 1 imagen del estilo seleccionado ──────────────────────
+  const generar = async () => {
+    setLoading(true);
+    setPreviewUrl('');
+    try {
+      const styleObj = ESTILOS.find(s => s.id === estilo);
+      const refs = [producto.imagen_url, ...galeria].filter(Boolean).slice(0, 4);
+      const tieneReferencia = refs.length > 0;
+      const prompt = buildPrompt(styleObj, tieneReferencia);
 
       const payload = { prompt };
-      if (tieneReferencia) {
-        payload.existing_image_urls = refs;
-      }
+      if (tieneReferencia) payload.existing_image_urls = refs;
 
       const res = await base44.integrations.Core.GenerateImage(payload);
       const url = res?.url || res?.data?.url;
@@ -161,6 +177,56 @@ Photography style: PEYU Chile brand aesthetic — sustainability-forward, natura
     } finally {
       setLoading(false);
     }
+  };
+
+  // ── Generar 1 imagen por cada estilo (4 imágenes en paralelo) ─────
+  const generarTodosLosEstilos = async () => {
+    setBatchLoading(true);
+    setBatchResults([]);
+    setBatchProgress({ done: 0, total: ESTILOS.length });
+    const refs = [producto.imagen_url, ...galeria].filter(Boolean).slice(0, 4);
+    const tieneReferencia = refs.length > 0;
+
+    const runOne = async (styleObj) => {
+      try {
+        const payload = { prompt: buildPrompt(styleObj, tieneReferencia) };
+        if (tieneReferencia) payload.existing_image_urls = refs;
+        const res = await base44.integrations.Core.GenerateImage(payload);
+        const url = res?.url || res?.data?.url;
+        setBatchProgress(prev => ({ ...prev, done: prev.done + 1 }));
+        return { id: styleObj.id, label: styleObj.label, url };
+      } catch (e) {
+        setBatchProgress(prev => ({ ...prev, done: prev.done + 1 }));
+        return { id: styleObj.id, label: styleObj.label, error: e.message };
+      }
+    };
+
+    const results = await Promise.all(ESTILOS.map(runOne));
+    setBatchResults(results);
+    setBatchLoading(false);
+  };
+
+  // ── Guardar TODAS las imágenes batch exitosas a la galería ────────
+  const guardarBatchEnGaleria = async () => {
+    const urls = batchResults.filter(r => r.url).map(r => r.url);
+    if (urls.length === 0) return;
+    setSavingBatch(true);
+    try {
+      const nueva = [...galeria, ...urls];
+      await base44.entities.Producto.update(producto.id, { galeria_urls: nueva });
+      onSaved?.({ galeria_urls: nueva });
+      setBatchResults([]);
+    } finally {
+      setSavingBatch(false);
+    }
+  };
+
+  const guardarUnaDelBatch = async (url) => {
+    if (!url) return;
+    const nueva = [...galeria, url];
+    await base44.entities.Producto.update(producto.id, { galeria_urls: nueva });
+    onSaved?.({ galeria_urls: nueva });
+    setBatchResults(prev => prev.filter(r => r.url !== url));
   };
 
   // ── Guardar en galería (NO reemplaza la principal) ────────────────
@@ -383,12 +449,23 @@ Photography style: PEYU Chile brand aesthetic — sustainability-forward, natura
       <div className="flex gap-2 flex-wrap">
         <Button
           onClick={generar}
-          disabled={loading}
+          disabled={loading || batchLoading}
           size="sm"
           className="flex-1 min-w-[160px] gap-2 bg-gradient-to-r from-violet-500 to-fuchsia-600 hover:from-violet-600 hover:to-fuchsia-700 text-white"
         >
           {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
-          {previewUrl ? 'Regenerar' : 'Generar imagen IA'}
+          {previewUrl ? 'Regenerar estilo actual' : 'Generar 1 imagen'}
+        </Button>
+        <Button
+          onClick={generarTodosLosEstilos}
+          disabled={loading || batchLoading}
+          size="sm"
+          className="flex-1 min-w-[160px] gap-2 bg-gradient-to-r from-cyan-500 to-emerald-600 hover:from-cyan-600 hover:to-emerald-700 text-white"
+        >
+          {batchLoading
+            ? <><Loader2 className="w-4 h-4 animate-spin" /> {batchProgress.done}/{batchProgress.total}…</>
+            : <><Wand2 className="w-4 h-4" /> Generar 4 estilos</>
+          }
         </Button>
         {previewUrl && (
           <>
@@ -412,6 +489,63 @@ Photography style: PEYU Chile brand aesthetic — sustainability-forward, natura
           </>
         )}
       </div>
+
+      {/* Resultados batch (4 estilos) */}
+      {(batchLoading || batchResults.length > 0) && (
+        <div className="bg-cyan-500/5 border border-cyan-400/20 rounded-xl p-3 space-y-2.5">
+          <div className="flex items-center justify-between gap-2 flex-wrap">
+            <p className="text-xs font-semibold text-cyan-200 flex items-center gap-1.5">
+              <Wand2 className="w-3.5 h-3.5" />
+              Los 4 estilos (sin marcas — apto Google Shopping)
+            </p>
+            {batchResults.filter(r => r.url).length > 0 && !batchLoading && (
+              <Button
+                onClick={guardarBatchEnGaleria}
+                disabled={savingBatch}
+                size="sm"
+                className="bg-emerald-600 hover:bg-emerald-700 text-white gap-1.5 h-7 text-xs"
+              >
+                {savingBatch ? <Loader2 className="w-3 h-3 animate-spin" /> : <Plus className="w-3 h-3" />}
+                Guardar todas en galería ({batchResults.filter(r => r.url).length})
+              </Button>
+            )}
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+            {ESTILOS.map(s => {
+              const res = batchResults.find(r => r.id === s.id);
+              const pendiente = batchLoading && !res;
+              return (
+                <div key={s.id} className="bg-black/20 border border-white/10 rounded-lg overflow-hidden">
+                  <div className="aspect-square relative bg-white/5 flex items-center justify-center">
+                    {pendiente && <Loader2 className="w-5 h-5 text-cyan-300 animate-spin" />}
+                    {res?.url && (
+                      <>
+                        <img src={res.url} alt={s.label} className="w-full h-full object-cover" />
+                        <button
+                          onClick={() => guardarUnaDelBatch(res.url)}
+                          className="absolute bottom-1.5 right-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-[10px] px-2 py-1 rounded-md font-medium flex items-center gap-1"
+                          title="Añadir a galería"
+                        >
+                          <Plus className="w-3 h-3" /> Guardar
+                        </button>
+                      </>
+                    )}
+                    {res?.error && (
+                      <div className="text-[10px] text-rose-300 px-2 text-center">
+                        <AlertTriangle className="w-4 h-4 mx-auto mb-1" />
+                        Falló
+                      </div>
+                    )}
+                  </div>
+                  <div className="px-2 py-1.5 text-[11px] text-white/70 font-medium text-center border-t border-white/5">
+                    {s.label}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {/* ───── Galería ───── */}
       <div>
