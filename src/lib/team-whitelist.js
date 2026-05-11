@@ -12,7 +12,10 @@ export const TEAM_EMAILS = [
   'ti@peyuchile.cl',
 ];
 
+// Normalizamos la lista una sola vez al cargar el módulo.
+const NORMALIZED = TEAM_EMAILS.map(e => String(e).trim().toLowerCase());
+
 export function isTeamMember(email) {
   if (!email) return false;
-  return TEAM_EMAILS.includes(String(email).trim().toLowerCase());
+  return NORMALIZED.includes(String(email).trim().toLowerCase());
 }
