@@ -30,6 +30,27 @@ const ESTILOS = [
   { id: 'eco',       label: 'Eco / Natural', prompt: 'on a natural eco surface (wood, linen, recycled paper), surrounded by leaves and natural fibers, earthy tones, sustainability mood' },
 ];
 
+// Detecta cantidad declarada en el título del producto.
+// "Pack 6 Cachos", "Set 4 Posavasos", "Promoción 3 Maceteros", "Pack de 5", etc.
+function detectarCantidad(nombre = '') {
+  const m = nombre.match(/(?:pack|set|kit|combo|promo(?:ci[oó]n)?|caja|grupo)\s*(?:de\s+)?(\d{1,2})/i)
+        || nombre.match(/\b(\d{1,2})\s*(?:unidades?|u\.?|pcs|piezas?)\b/i)
+        || nombre.match(/\b(\d{1,2})\s*x\s+/i); // "6x cachos"
+  if (!m) return null;
+  const n = parseInt(m[1], 10);
+  return n >= 2 && n <= 20 ? n : null;
+}
+
+// Detecta el "ítem" del pack (cachos, posavasos, maceteros, etc.)
+function detectarItem(nombre = '') {
+  const lower = nombre.toLowerCase();
+  const items = ['cachos', 'cacho', 'posavasos', 'posacachos', 'maceteros', 'macetero',
+                 'sujetadores', 'sujetador', 'paletas', 'paleta', 'pocillos', 'pocillo',
+                 'llaveros', 'llavero', 'soportes', 'soporte'];
+  for (const it of items) if (lower.includes(it)) return it;
+  return 'unidades';
+}
+
 export default function AIImageEnhancer({ producto, onSaved }) {
   const [estilo, setEstilo] = useState('lifestyle');
   const [loading, setLoading] = useState(false);
@@ -38,8 +59,11 @@ export default function AIImageEnhancer({ producto, onSaved }) {
   const [promoting, setPromoting] = useState(false);
   const [deletingMain, setDeletingMain] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [instruccionExtra, setInstruccionExtra] = useState('');
 
   const galeria = Array.isArray(producto.galeria_urls) ? producto.galeria_urls : [];
+  const cantidadEsperada = detectarCantidad(producto.nombre);
+  const itemNombre = detectarItem(producto.nombre);
 
   // ── Generar imagen alternativa (preservando producto) ─────────────
   const generar = async () => {
@@ -48,25 +72,37 @@ export default function AIImageEnhancer({ producto, onSaved }) {
     try {
       const styleObj = ESTILOS.find(s => s.id === estilo);
 
-      // Prompt fidelity-first: el producto debe ser idéntico al de la referencia.
-      const prompt = `Take the EXACT product shown in the reference image (${producto.nombre} — ${producto.material}, ${producto.categoria.toLowerCase()}) and place it in a new scene.
+      // 🎯 Restricción de cantidad: si el nombre dice "Pack 6", forzamos a la IA a mostrar 6.
+      const reglaCantidad = cantidadEsperada
+        ? `\n\nCRITICAL — EXACT QUANTITY REQUIRED:
+- This product is a "${producto.nombre}". You MUST show EXACTLY ${cantidadEsperada} ${itemNombre} in the image. Not fewer, not more.
+- Count them visually before finishing. The image MUST contain ${cantidadEsperada} individual ${itemNombre} clearly visible.
+- Arrange them neatly so all ${cantidadEsperada} are clearly countable.`
+        : '';
+
+      // Instrucción libre del admin
+      const reglaExtra = instruccionExtra.trim()
+        ? `\n\nADDITIONAL ADMIN INSTRUCTION:\n${instruccionExtra.trim()}`
+        : '';
+
+      const prompt = `Take the EXACT product shown in the reference image(s) (${producto.nombre} — ${producto.material}, ${producto.categoria.toLowerCase()}) and place it in a new scene.
 
 CRITICAL — DO NOT CHANGE THE PRODUCT:
 - The product must look IDENTICAL to the reference: same shape, exact same color, same material texture, same proportions, same details and finishings.
 - Do not redesign, restyle, recolor, or alter the product in any way.
-- Keep the product as the clear hero of the composition, centered and in sharp focus.
+- Keep the product as the clear hero of the composition, centered and in sharp focus.${reglaCantidad}
 
 ONLY CHANGE THE BACKGROUND, SETTING AND LIGHTING:
-${styleObj.prompt}.
+${styleObj.prompt}.${reglaExtra}
 
 Photography style: PEYU Chile brand aesthetic, premium product photography, high resolution, sharp focus on the product, natural realistic shadows, no text, no watermark, no logos other than the product's own.`;
 
       const payload = { prompt };
-      // Referencia obligatoria: la imagen actual del producto.
-      // Si no hay imagen principal, usamos la primera de galería como ancla.
-      const refUrl = producto.imagen_url || galeria[0];
-      if (refUrl) {
-        payload.existing_image_urls = [refUrl];
+      // Referencia robusta: principal + hasta 3 de galería para que la IA capture
+      // mejor la forma real del producto (colores, ángulos, packaging).
+      const refs = [producto.imagen_url, ...galeria].filter(Boolean).slice(0, 4);
+      if (refs.length > 0) {
+        payload.existing_image_urls = refs;
       }
 
       const res = await base44.integrations.Core.GenerateImage(payload);
@@ -225,6 +261,35 @@ Photography style: PEYU Chile brand aesthetic, premium product photography, high
 
       {/* Subida manual desde el equipo */}
       <ManualImageUpload producto={producto} onSaved={onSaved} />
+
+      {/* 🎯 Cantidad detectada del título — fuerza a la IA a mostrar la cantidad real */}
+      {cantidadEsperada && (
+        <div className="bg-emerald-500/10 border border-emerald-400/30 rounded-lg p-3 flex items-start gap-2.5">
+          <Sparkles className="w-4 h-4 text-emerald-300 flex-shrink-0 mt-0.5" />
+          <div className="flex-1 text-xs">
+            <p className="text-emerald-200 font-semibold">
+              Detectamos "<strong>Pack {cantidadEsperada} {itemNombre}</strong>" en el título.
+            </p>
+            <p className="text-emerald-300/80 mt-0.5">
+              La IA va a generar la imagen con <strong>{cantidadEsperada} {itemNombre}</strong> visibles, no menos.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Instrucción adicional libre — para casos especiales (color, ángulo, contexto) */}
+      <div>
+        <label className="text-xs uppercase tracking-wider text-white/40 mb-1.5 block">
+          Instrucción extra para la IA <span className="text-white/30 normal-case">(opcional)</span>
+        </label>
+        <textarea
+          value={instruccionExtra}
+          onChange={(e) => setInstruccionExtra(e.target.value)}
+          placeholder='Ej: "mostrar los 6 cachos en círculo con una mano sosteniendo uno", "tomas cenitales", "incluir empaque"…'
+          className="w-full bg-white/5 border border-white/15 rounded-lg px-3 py-2 text-xs text-white placeholder:text-white/30 focus:border-violet-400/50 focus:outline-none resize-none"
+          rows={2}
+        />
+      </div>
 
       {/* Selector estilo */}
       <div>
