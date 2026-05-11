@@ -30,6 +30,26 @@ const ESTILOS = [
   { id: 'eco',       label: 'Eco / Natural', prompt: 'on a natural eco surface (wood, linen, recycled paper), surrounded by leaves and natural fibers, earthy tones, sustainability mood' },
 ];
 
+// Mapea material a una descripción visual rica para la IA cuando NO hay imagen de referencia.
+function describirMaterial(material = '') {
+  const m = material.toLowerCase();
+  if (m.includes('reciclado')) {
+    return 'made of 100% recycled plastic with a subtle marbled/speckled texture (visible color flecks from recycled HDPE/PP plastic), matte finish, slightly irregular natural surface that proves it is reclaimed material — NOT shiny mass-produced plastic';
+  }
+  if (m.includes('trigo') || m.includes('compostable')) {
+    return 'made of compostable wheat fiber bioplastic, soft beige/cream color with a natural fibrous texture, matte organic finish, slight grain visible — looks earthy and biodegradable';
+  }
+  return `made of ${material}`;
+}
+
+// Resumen corto de la descripción para inyectar en el prompt sin saturarlo.
+function resumirDescripcion(desc = '', maxChars = 280) {
+  if (!desc) return '';
+  const limpio = desc.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+  if (limpio.length <= maxChars) return limpio;
+  return limpio.slice(0, maxChars).replace(/\s\S*$/, '') + '…';
+}
+
 // Detecta cantidad declarada en el título del producto.
 // "Pack 6 Cachos", "Set 4 Posavasos", "Promoción 3 Maceteros", "Pack de 5", etc.
 function detectarCantidad(nombre = '') {
@@ -65,12 +85,15 @@ export default function AIImageEnhancer({ producto, onSaved }) {
   const cantidadEsperada = detectarCantidad(producto.nombre);
   const itemNombre = detectarItem(producto.nombre);
 
-  // ── Generar imagen alternativa (preservando producto) ─────────────
+  // ── Generar imagen alternativa (preservando producto cuando hay referencia,
+  // o creando desde cero usando título + descripción cuando no hay imagen) ──
   const generar = async () => {
     setLoading(true);
     setPreviewUrl('');
     try {
       const styleObj = ESTILOS.find(s => s.id === estilo);
+      const refs = [producto.imagen_url, ...galeria].filter(Boolean).slice(0, 4);
+      const tieneReferencia = refs.length > 0;
 
       // 🎯 Restricción de cantidad: si el nombre dice "Pack 6", forzamos a la IA a mostrar 6.
       const reglaCantidad = cantidadEsperada
@@ -85,7 +108,20 @@ export default function AIImageEnhancer({ producto, onSaved }) {
         ? `\n\nADDITIONAL ADMIN INSTRUCTION:\n${instruccionExtra.trim()}`
         : '';
 
-      const prompt = `Take the EXACT product shown in the reference image(s) (${producto.nombre} — ${producto.material}, ${producto.categoria.toLowerCase()}) and place it in a new scene.
+      // Contexto rico: descripción real del producto + material visual + categoría
+      const descripcionResumida = resumirDescripcion(producto.descripcion);
+      const materialVisual = describirMaterial(producto.material);
+      const contextoProducto = `
+PRODUCT BRIEF (use this to understand what to show):
+- Name: ${producto.nombre}
+- Category: ${producto.categoria}
+- Material: ${materialVisual}
+- Channel: ${producto.canal}${descripcionResumida ? `\n- Real product description (from catalog): "${descripcionResumida}"` : ''}`;
+
+      let prompt;
+      if (tieneReferencia) {
+        // MODO RESTYLE: tenemos imagen real, solo cambia el entorno
+        prompt = `Take the EXACT product shown in the reference image(s) and place it in a new scene.${contextoProducto}
 
 CRITICAL — DO NOT CHANGE THE PRODUCT:
 - The product must look IDENTICAL to the reference: same shape, exact same color, same material texture, same proportions, same details and finishings.
@@ -96,12 +132,24 @@ ONLY CHANGE THE BACKGROUND, SETTING AND LIGHTING:
 ${styleObj.prompt}.${reglaExtra}
 
 Photography style: PEYU Chile brand aesthetic, premium product photography, high resolution, sharp focus on the product, natural realistic shadows, no text, no watermark, no logos other than the product's own.`;
+      } else {
+        // MODO CREATIVO: no hay imagen, generamos basándonos en la descripción del producto
+        prompt = `Create a realistic, premium product photograph for an e-commerce listing of a sustainable Chilean product by PEYU Chile.${contextoProducto}
+
+CRITICAL — DESIGN THE PRODUCT FROM THE BRIEF:
+- Render the product as accurately as possible based on the name, category and description above.
+- Make sure the MATERIAL is visually unmistakable: ${materialVisual}. This is the most important visual detail — the viewer must instantly recognize the product is made of this material.
+- If the description mentions specific features (size, color, finish, parts), include them faithfully.
+- Single hero product, well composed, sharp focus, realistic proportions.${reglaCantidad}
+
+SCENE / BACKGROUND:
+${styleObj.prompt}.${reglaExtra}
+
+Photography style: PEYU Chile brand aesthetic — sustainability-forward, natural, warm and premium. High resolution, realistic shadows, no text, no watermark, no logos. Looks like a real DSLR product photo, not 3D render.`;
+      }
 
       const payload = { prompt };
-      // Referencia robusta: principal + hasta 3 de galería para que la IA capture
-      // mejor la forma real del producto (colores, ángulos, packaging).
-      const refs = [producto.imagen_url, ...galeria].filter(Boolean).slice(0, 4);
-      if (refs.length > 0) {
+      if (tieneReferencia) {
         payload.existing_image_urls = refs;
       }
 
@@ -261,6 +309,26 @@ Photography style: PEYU Chile brand aesthetic, premium product photography, high
 
       {/* Subida manual desde el equipo */}
       <ManualImageUpload producto={producto} onSaved={onSaved} />
+
+      {/* Modo de generación + contexto que recibirá la IA */}
+      <div className="bg-violet-500/5 border border-violet-400/20 rounded-lg p-3 space-y-1.5">
+        <p className="text-xs font-semibold text-violet-200 flex items-center gap-1.5">
+          <Wand2 className="w-3.5 h-3.5" />
+          {producto.imagen_url || galeria.length > 0
+            ? 'Modo Restyle · preserva el producto real y cambia el entorno'
+            : 'Modo Creativo · sin imagen base, genera desde el título y descripción'}
+        </p>
+        <ul className="text-[11px] text-white/60 space-y-0.5 pl-5 list-disc">
+          <li>Título: <span className="text-white/80">{producto.nombre}</span></li>
+          <li>Material: <span className="text-white/80">{producto.material}</span> · Categoría: <span className="text-white/80">{producto.categoria}</span></li>
+          <li>
+            Descripción del catálogo:{' '}
+            {producto.descripcion
+              ? <span className="text-emerald-300">✓ se usará para guiar la imagen</span>
+              : <span className="text-amber-300">⚠ vacía — generá una en la pestaña "Descripción IA" para mejores resultados</span>}
+          </li>
+        </ul>
+      </div>
 
       {/* 🎯 Cantidad detectada del título — fuerza a la IA a mostrar la cantidad real */}
       {cantidadEsperada && (
