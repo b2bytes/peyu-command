@@ -229,6 +229,31 @@ Photography style: sustainability-forward, natural, warm and premium. High resol
     setBatchResults(prev => prev.filter(r => r.url !== url));
   };
 
+  // ── Elegir 1 del batch como PRINCIPAL y el resto a GALERÍA ────────
+  // La imagen actual (si existe) también se conserva en galería.
+  const elegirComoPrincipal = async (urlElegida) => {
+    if (!urlElegida) return;
+    setSavingBatch(true);
+    try {
+      const otrasDelBatch = batchResults
+        .filter(r => r.url && r.url !== urlElegida)
+        .map(r => r.url);
+      const nuevaGaleria = [
+        ...(producto.imagen_url ? [producto.imagen_url] : []),
+        ...galeria,
+        ...otrasDelBatch,
+      ];
+      await base44.entities.Producto.update(producto.id, {
+        imagen_url: urlElegida,
+        galeria_urls: nuevaGaleria,
+      });
+      onSaved?.({ imagen_url: urlElegida, galeria_urls: nuevaGaleria });
+      setBatchResults([]);
+    } finally {
+      setSavingBatch(false);
+    }
+  };
+
   // ── Guardar en galería (NO reemplaza la principal) ────────────────
   const guardarEnGaleria = async () => {
     if (!previewUrl) return;
@@ -521,13 +546,24 @@ Photography style: sustainability-forward, natural, warm and premium. High resol
                     {res?.url && (
                       <>
                         <img src={res.url} alt={s.label} className="w-full h-full object-cover" />
-                        <button
-                          onClick={() => guardarUnaDelBatch(res.url)}
-                          className="absolute bottom-1.5 right-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-[10px] px-2 py-1 rounded-md font-medium flex items-center gap-1"
-                          title="Añadir a galería"
-                        >
-                          <Plus className="w-3 h-3" /> Guardar
-                        </button>
+                        <div className="absolute inset-x-1.5 bottom-1.5 flex gap-1">
+                          <button
+                            onClick={() => elegirComoPrincipal(res.url)}
+                            disabled={savingBatch}
+                            className="flex-1 bg-yellow-500 hover:bg-yellow-400 text-slate-900 text-[10px] px-2 py-1 rounded-md font-bold flex items-center justify-center gap-1 shadow-lg"
+                            title="Elegir como principal · las otras 3 van a galería"
+                          >
+                            <Star className="w-3 h-3 fill-current" /> Elegir
+                          </button>
+                          <button
+                            onClick={() => guardarUnaDelBatch(res.url)}
+                            disabled={savingBatch}
+                            className="bg-emerald-600 hover:bg-emerald-500 text-white text-[10px] px-2 py-1 rounded-md font-medium flex items-center gap-1"
+                            title="Solo añadir a galería"
+                          >
+                            <Plus className="w-3 h-3" />
+                          </button>
+                        </div>
                       </>
                     )}
                     {res?.error && (
