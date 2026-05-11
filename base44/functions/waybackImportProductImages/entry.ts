@@ -65,6 +65,100 @@ function extractWpImages(html) {
   return [...found];
 }
 
+// Decode HTML entities básicos (suficiente para descripciones de WooCommerce)
+function decodeHtmlEntities(s) {
+  if (!s) return '';
+  return s
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#039;/g, "'")
+    .replace(/&apos;/g, "'")
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&#(\d+);/g, (_, n) => String.fromCharCode(Number(n)))
+    .replace(/&#x([0-9a-f]+);/gi, (_, n) => String.fromCharCode(parseInt(n, 16)));
+}
+
+// Extrae descripción larga del producto WooCommerce. WooCommerce envuelve la
+// descripción en <div class="woocommerce-product-details__short-description"> o
+// en <div id="tab-description"> según el tema. Probamos ambos + meta description.
+function extractDescription(html) {
+  // 1) JSON-LD del producto (lo más confiable)
+  const jsonLdRe = /<script[^>]*type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi;
+  let m;
+  while ((m = jsonLdRe.exec(html)) !== null) {
+    try {
+      const data = JSON.parse(m[1].trim());
+      const items = Array.isArray(data) ? data : (data['@graph'] || [data]);
+      for (const it of items) {
+        if (it && (it['@type'] === 'Product' || (Array.isArray(it['@type']) && it['@type'].includes('Product')))) {
+          if (it.description) return decodeHtmlEntities(String(it.description)).trim().slice(0, 2000);
+        }
+      }
+    } catch { /* siguiente */ }
+  }
+  // 2) Tab description (WooCommerce default)
+  const tabRe = /<div[^>]*id=["']tab-description["'][^>]*>([\s\S]*?)<\/div>\s*<div/i;
+  const tabM = tabRe.exec(html);
+  if (tabM) {
+    const text = decodeHtmlEntities(tabM[1].replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ')).trim();
+    if (text.length > 30) return text.slice(0, 2000);
+  }
+  // 3) Short description
+  const shortRe = /<div[^>]*class=["'][^"']*woocommerce-product-details__short-description[^"']*["'][^>]*>([\s\S]*?)<\/div>/i;
+  const shortM = shortRe.exec(html);
+  if (shortM) {
+    const text = decodeHtmlEntities(shortM[1].replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ')).trim();
+    if (text.length > 30) return text.slice(0, 2000);
+  }
+  // 4) Meta description (fallback débil)
+  const metaRe = /<meta[^>]*name=["']description["'][^>]*content=["']([^"']+)["']/i;
+  const metaM = metaRe.exec(html);
+  if (metaM) return decodeHtmlEntities(metaM[1]).trim().slice(0, 2000);
+  return '';
+}
+
+// Extrae precio en CLP del producto. WooCommerce usa <meta property="product:price:amount">
+// o el JSON-LD. Devuelve número entero (CLP) o null.
+function extractPrice(html) {
+  // 1) JSON-LD offers.price
+  const jsonLdRe = /<script[^>]*type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi;
+  let m;
+  while ((m = jsonLdRe.exec(html)) !== null) {
+    try {
+      const data = JSON.parse(m[1].trim());
+      const items = Array.isArray(data) ? data : (data['@graph'] || [data]);
+      for (const it of items) {
+        if (it && (it['@type'] === 'Product' || (Array.isArray(it['@type']) && it['@type'].includes('Product')))) {
+          const offers = Array.isArray(it.offers) ? it.offers[0] : it.offers;
+          const price = offers?.price || offers?.lowPrice;
+          if (price) {
+            const n = parseInt(String(price).replace(/[^\d]/g, ''), 10);
+            if (n > 0 && n < 100000000) return n;
+          }
+        }
+      }
+    } catch { /* siguiente */ }
+  }
+  // 2) <meta property="product:price:amount" content="12990">
+  const metaRe = /<meta[^>]*property=["']product:price:amount["'][^>]*content=["']([^"']+)["']/i;
+  const metaM = metaRe.exec(html);
+  if (metaM) {
+    const n = parseInt(metaM[1].replace(/[^\d]/g, ''), 10);
+    if (n > 0) return n;
+  }
+  // 3) <span class="woocommerce-Price-amount"> visible price
+  const priceRe = /<(?:span|p|bdi)[^>]*class=["'][^"']*woocommerce-Price-amount[^"']*["'][^>]*>([\s\S]*?)<\/(?:span|p|bdi)>/i;
+  const priceM = priceRe.exec(html);
+  if (priceM) {
+    const txt = priceM[1].replace(/<[^>]+>/g, '');
+    const n = parseInt(txt.replace(/[^\d]/g, ''), 10);
+    if (n > 100) return n; // descarta números basura tipo "1"
+  }
+  return null;
+}
+
 // Fetch con timeout y reintentos. Wayback CDX es notoriamente lento/inestable.
 async function fetchWithRetry(url, { tries = 3, timeoutMs = 25000 } = {}) {
   let lastErr;
@@ -184,7 +278,9 @@ Deno.serve(async (req) => {
 
     const index = await loadWaybackIndex();
 
-    const productos = await base44.asServiceRole.entities.Producto.list('-updated_date', 500);
+    // Orden estable por created_date: las actualizaciones (que tocan updated_date)
+    // no reordenan la lista, por lo que el cursor avanza correctamente entre lotes.
+    const productos = await base44.asServiceRole.entities.Producto.list('created_date', 500);
     let candidatos = productos.filter(p => p.sku && p.activo !== false && p.nombre);
 
     if (onlyMissing) {
@@ -241,6 +337,8 @@ Deno.serve(async (req) => {
         }
         const html = await htmlR.text();
         const imgsOriginales = extractWpImages(html);
+        const descripcionRescatada = extractDescription(html);
+        const precioRescatado = extractPrice(html);
 
         if (imgsOriginales.length === 0) {
           resultados.push({ sku: producto.sku, ok: false, error: 'HTML sin imágenes', slug_match: match.slug });
@@ -281,6 +379,15 @@ Deno.serve(async (req) => {
           patch.galeria_urls = [...new Set([...galeriaActual, ...nuevasUrls])];
         }
 
+        // Solo escribimos descripción/precio si están VACÍOS en Base44 — nunca
+        // pisamos contenido que el usuario o un agente IA ya editaron.
+        if (descripcionRescatada && (!producto.descripcion || producto.descripcion.length < 20)) {
+          patch.descripcion = descripcionRescatada;
+        }
+        if (precioRescatado && (!producto.precio_b2c || producto.precio_b2c === 0)) {
+          patch.precio_b2c = precioRescatado;
+        }
+
         await base44.asServiceRole.entities.Producto.update(producto.id, patch);
 
         resultados.push({
@@ -292,6 +399,8 @@ Deno.serve(async (req) => {
           encontradas: imgsOriginales.length,
           subidas: nuevasUrls.length,
           principal_actualizada: !!patch.imagen_url,
+          descripcion_rescatada: !!patch.descripcion,
+          precio_rescatado: patch.precio_b2c || null,
         });
       } catch (err) {
         resultados.push({ sku: producto.sku, ok: false, error: err.message });
