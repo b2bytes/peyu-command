@@ -30,7 +30,9 @@ export default function Carrito() {
   const [step, setStep] = useState(1); // 1=Carrito, 2=Datos+Pago
   const [giftCard, setGiftCard] = useState(null);
   const [cupon, setCupon] = useState(null); // { codigo, descuento_clp, libera_envio, ... }
-  const [medioPago, setMedioPago] = useState('WebPay');
+  // Default: MercadoPago (es el único checkout online activo. WebPay no está integrado).
+  const [medioPago, setMedioPago] = useState('MercadoPago');
+  const [errorPago, setErrorPago] = useState(null);
   // Envío Bluex: { servicio, costo, costo_real, lead_time_dias, comuna, peso_kg, envio_gratis_aplicado }
   const [envioBluex, setEnvioBluex] = useState(null);
   const captureTimerRef = useRef(null);
@@ -100,6 +102,10 @@ export default function Carrito() {
   };
 
   const crearPedido = async () => {
+    // 🛡️ Anti doble-click: si ya está procesando, ignoramos.
+    if (creando) return;
+    setErrorPago(null);
+
     if (!validarYContinuar()) {
       // Scroll al primer error
       setTimeout(() => {
@@ -107,6 +113,15 @@ export default function Carrito() {
       }, 100);
       return;
     }
+
+    // 🛡️ Validar método de pago soportado (WebPay no está integrado todavía)
+    const mediosValidos = ['MercadoPago', 'Transferencia', 'GiftCard'];
+    const medioPagoFinal = totalCubiertoConGC ? 'GiftCard' : medioPago;
+    if (!mediosValidos.includes(medioPagoFinal)) {
+      setErrorPago('Selecciona un método de pago válido (Mercado Pago o Transferencia).');
+      return;
+    }
+
     setCreando(true);
     const numero = `WEB-${Date.now()}`;
     const items = carrito.map(i => `${i.nombre} x${i.cantidad}${i.personalizacion ? ` [${i.personalizacion}]` : ''}`).join(' | ');
@@ -120,31 +135,38 @@ export default function Carrito() {
     ].filter(Boolean).join(' | ');
 
     const descuentoTotal = descuentoCupon + descuentoTransferencia + gcDescuento;
-    const medioPagoFinal = totalCubiertoConGC ? 'GiftCard' : medioPago;
 
-    const pedido = await base44.entities.PedidoWeb.create({
-      numero_pedido: numero,
-      fecha: new Date().toISOString().split('T')[0],
-      canal: 'Web Propia',
-      cliente_nombre: cliente.nombre,
-      cliente_email: cliente.email,
-      cliente_telefono: cliente.telefono,
-      tipo_cliente: 'B2C Individual',
-      descripcion_items: items,
-      cantidad: carrito.reduce((s, i) => s + i.cantidad, 0),
-      subtotal,
-      costo_envio: envio,
-      descuento: descuentoTotal,
-      total,
-      medio_pago: medioPagoFinal,
-      estado: medioPagoFinal === 'Transferencia' ? 'Nuevo' : 'Nuevo',
-      ciudad: cliente.ciudad,
-      direccion_envio: cliente.direccion,
-      requiere_personalizacion: carrito.some(i => i.personalizacion),
-      texto_personalizacion: carrito.filter(i => i.personalizacion).map(i => i.personalizacion).join(', '),
-      courier: envioBluex ? `BlueExpress ${envioBluex.servicio}` : 'Pendiente',
-      notas: `Carrito: ${carrito.length} items${notasExtras ? ' | ' + notasExtras : ''}`,
-    });
+    let pedido;
+    try {
+      pedido = await base44.entities.PedidoWeb.create({
+        numero_pedido: numero,
+        fecha: new Date().toISOString().split('T')[0],
+        canal: 'Web Propia',
+        cliente_nombre: cliente.nombre,
+        cliente_email: cliente.email,
+        cliente_telefono: cliente.telefono,
+        tipo_cliente: 'B2C Individual',
+        descripcion_items: items,
+        cantidad: carrito.reduce((s, i) => s + i.cantidad, 0),
+        subtotal,
+        costo_envio: envio,
+        descuento: descuentoTotal,
+        total,
+        medio_pago: medioPagoFinal,
+        estado: 'Nuevo',
+        ciudad: cliente.ciudad,
+        direccion_envio: cliente.direccion,
+        requiere_personalizacion: carrito.some(i => i.personalizacion),
+        texto_personalizacion: carrito.filter(i => i.personalizacion).map(i => i.personalizacion).join(', '),
+        courier: envioBluex ? `BlueExpress ${envioBluex.servicio}` : 'Pendiente',
+        notas: `Carrito: ${carrito.length} items${notasExtras ? ' | ' + notasExtras : ''}`,
+      });
+    } catch (e) {
+      console.error('Error creando pedido:', e);
+      setErrorPago('No pudimos crear tu pedido. Revisá tu conexión e intentá nuevamente. Si el problema persiste, escribínos por WhatsApp.');
+      setCreando(false);
+      return;
+    }
 
     // Gift Card: descontar saldo
     if (gcDescuento > 0 && giftCard) {
@@ -193,12 +215,12 @@ export default function Carrito() {
           return;
         }
         console.error('MP no devolvió init_point', mp);
-        alert('No se pudo iniciar el pago con Mercado Pago. Inténtalo nuevamente o elige otro medio.');
+        setErrorPago('No pudimos iniciar el pago con Mercado Pago. Intentá nuevamente o cambiá a transferencia bancaria.');
         setCreando(false);
         return;
       } catch (e) {
         console.error('Error MP:', e);
-        alert('Error iniciando Mercado Pago. Inténtalo nuevamente.');
+        setErrorPago(`Error al iniciar Mercado Pago${e?.message ? `: ${e.message}` : ''}. Probá nuevamente o usá transferencia.`);
         setCreando(false);
         return;
       }
@@ -249,7 +271,7 @@ export default function Carrito() {
     <div className="min-h-screen bg-[#FAFAF8] font-inter pb-20">
       <SEO
         title="Tu Carrito · Checkout Seguro | PEYU Chile"
-        description="Revisa tu pedido y completa tu compra de forma segura con WebPay, Mercado Pago o transferencia. Envío a todo Chile."
+        description="Revisá tu pedido y completá tu compra de forma segura con Mercado Pago o transferencia bancaria. Envío a todo Chile."
         canonical="https://peyuchile.cl/cart"
         noindex
       />
@@ -489,6 +511,24 @@ export default function Carrito() {
               showGiftCard={!carritoTieneGC}
             />
 
+            {/* Error pago — mensaje inline, evita perder al cliente */}
+            {errorPago && (
+              <div className="bg-red-50 border border-red-200 rounded-2xl p-3.5 flex items-start gap-2.5">
+                <AlertCircle className="w-4 h-4 text-red-600 flex-shrink-0 mt-0.5" />
+                <div className="text-xs text-red-900 flex-1">
+                  <p className="font-bold leading-snug">{errorPago}</p>
+                  <a
+                    href="https://wa.me/56935040242?text=Hola%2C%20tuve%20un%20problema%20al%20pagar%20en%20peyuchile.cl"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-1 mt-1.5 font-bold text-red-700 hover:text-red-900 underline"
+                  >
+                    Pedir ayuda por WhatsApp →
+                  </a>
+                </div>
+              </div>
+            )}
+
             {/* CTA */}
             {step === 1 ? (
               <div className="space-y-2">
@@ -526,7 +566,7 @@ export default function Carrito() {
 
             <div className="flex items-center justify-center gap-1.5 text-xs text-gray-400">
               <Lock className="w-3 h-3" />
-              Pago 100% seguro · {medioPago === 'Transferencia' ? 'Banco Santander' : medioPago === 'MercadoPago' ? 'Mercado Pago' : 'Webpay'}
+              Pago 100% seguro · {medioPago === 'Transferencia' ? 'Banco Santander' : 'Mercado Pago'}
             </div>
 
             <div className="flex justify-center gap-5 text-xs text-gray-400 pt-1">
