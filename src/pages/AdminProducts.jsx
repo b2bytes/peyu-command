@@ -9,6 +9,7 @@ import PromoImageGenerator from '@/components/admin-products/PromoImageGenerator
 import WordPressMigrationPanel from '@/components/admin-products/WordPressMigrationPanel';
 import DriveMatchMigrationPanel from '@/components/admin-products/DriveMatchMigrationPanel';
 import WaybackRecoveryPanel from '@/components/admin-products/WaybackRecoveryPanel';
+import GoogleShoppingAuditPanel from '@/components/admin-products/GoogleShoppingAuditPanel';
 import { Button } from '@/components/ui/button';
 
 /**
@@ -130,6 +131,11 @@ export default function AdminProducts() {
 
       {/* Panel migración WordPress → Base44 CDN */}
       <WordPressMigrationPanel onComplete={loadData} />
+
+      {/* Panel auditoría Google Shopping (IA): marcas, texto, centrado */}
+      <GoogleShoppingAuditPanel
+        onProductClick={(id) => { setSelectedId(id); setTab('imagen'); }}
+      />
 
       {/* KPIs — clickeables como filtros rápidos */}
       <div className="grid grid-cols-2 md:grid-cols-6 gap-2">
