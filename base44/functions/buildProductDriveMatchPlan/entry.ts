@@ -119,8 +119,11 @@ Deno.serve(async (req) => {
     }
 
     const body = await req.json().catch(() => ({}));
-    const mode = body.mode === 'apply' ? 'apply' : 'plan';
+    const mode = ['apply', 'applyAll'].includes(body.mode) ? body.mode : 'plan';
     const replacePrincipal = body.replacePrincipal === true;
+    const offset = Number(body.offset) || 0;
+    const batchSize = Math.max(1, Math.min(Number(body.batchSize) || 6, 10));
+    const filesPerProduct = Math.max(1, Math.min(Number(body.filesPerProduct) || 5, 8));
 
     const { accessToken } = await base44.asServiceRole.connectors.getConnection('googledrive');
     const headers = { 'Authorization': `Bearer ${accessToken}` };
@@ -173,10 +176,40 @@ Deno.serve(async (req) => {
       });
     }
 
-    // ── APPLY ────────────────────────────────────────────────────
-    const assignments = Array.isArray(body.assignments) ? body.assignments : [];
+    // ── APPLY ALL: procesa N productos del catálogo de forma automática ──
+    // Toma el plan, filtra los productos con carpeta válida, y procesa
+    // batchSize productos a partir de offset.
+    let assignments = [];
+    if (mode === 'applyAll') {
+      const tree = await walkTree(ROOT_FOLDER, headers);
+      const productos = await base44.asServiceRole.entities.Producto.filter(
+        { activo: true },
+        '-updated_date',
+        300
+      );
+      const target = productos.filter(p => p.categoria !== 'Carcasas B2C');
+
+      const eligibles = [];
+      for (const p of target) {
+        const folder = suggestFolder(p);
+        if (!folder) continue;
+        const fdata = tree.get(folder);
+        if (!fdata || fdata.files.length === 0) continue;
+        eligibles.push({
+          producto_id: p.id,
+          folder_path: folder,
+          files: fdata.files.slice(0, filesPerProduct).map(f => ({
+            id: f.id, name: f.name, mimeType: f.mimeType || 'image/jpeg',
+          })),
+        });
+      }
+      assignments = eligibles.slice(offset, offset + batchSize);
+    } else {
+      assignments = Array.isArray(body.assignments) ? body.assignments : [];
+    }
+
     if (assignments.length === 0) {
-      return Response.json({ error: 'Sin assignments' }, { status: 400 });
+      return Response.json({ ok: true, mode, total: 0, success: 0, failed: 0, results: [], done: true });
     }
 
     const results = [];
