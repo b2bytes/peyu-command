@@ -160,8 +160,8 @@ export default function Layout() {
         </div>
       </aside>
 
-      {/* Main */}
-      <main className="flex-1 min-w-0 overflow-y-auto overflow-x-hidden bg-gradient-to-br from-slate-900 via-slate-900 to-slate-800 relative pt-14 lg:pt-0">
+      {/* Main · canvas Liquid Dual (respeta día/noche) */}
+      <main className="flex-1 min-w-0 overflow-y-auto overflow-x-hidden ld-canvas relative pt-14 lg:pt-0">
         <Outlet />
         {/* FAB flotante: vuelve al Centro de Comando desde cualquier vista admin */}
         <CommandCenterFAB />
