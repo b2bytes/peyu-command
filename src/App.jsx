@@ -127,10 +127,14 @@ const AuthenticatedApp = () => {
     }
   }
 
-  // Si no hay sesión activa, mandamos a login ANTES de validar whitelist
-  // (de lo contrario user?.email es undefined y el gate de equipo bloquea por error).
-  if (!isAuthenticated || !user?.email) {
+  // Si no hay sesión activa, mandamos a login ANTES de validar whitelist.
+  if (!isAuthenticated) {
     navigateToLogin();
+    return <AdminLoader />;
+  }
+
+  // Tenemos token pero user aún no resolvió → seguimos esperando (evita bloquear por race).
+  if (!user?.email) {
     return <AdminLoader />;
   }
 
