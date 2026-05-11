@@ -1,5 +1,6 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // BlueExpress · Crear envío (emitir Orden de Transporte / OT)
+// Re-deploy: 2026-05-11 (force fresh compile)
 // ─────────────────────────────────────────────────────────────────────────────
 // Integración con BlueExpress en DOS MODOS:
 //
