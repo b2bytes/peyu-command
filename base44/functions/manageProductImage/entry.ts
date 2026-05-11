@@ -32,11 +32,11 @@ Deno.serve(async (req) => {
       if (producto.imagen_url === url) {
         // Si borramos la principal, ascendemos la 1ª de galería que no sea ella
         const sustituta = galeria.find(u => u && u !== url);
-        newPatch.imagen_url = sustituta || '';
+        newPatch.imagen_url = sustituta || null;
       }
       newPatch.galeria_urls = galeria.filter(u => u !== url);
       if (producto.imagen_promo_url === url) {
-        newPatch.imagen_promo_url = '';
+        newPatch.imagen_promo_url = null;
       }
       patch = newPatch;
     } else if (action === 'promote') {
@@ -55,7 +55,7 @@ Deno.serve(async (req) => {
       const newGaleria = [...new Set([url, ...galeria])];
       // Buscamos sustituta principal: primera de la galería original distinta
       const sustituta = galeria.find(u => u && u !== url);
-      patch = { imagen_url: sustituta || '', galeria_urls: newGaleria.filter(u => u !== sustituta) };
+      patch = { imagen_url: sustituta || null, galeria_urls: newGaleria.filter(u => u !== sustituta) };
     } else if (action === 'setAsPromo') {
       patch = { imagen_promo_url: url };
     } else {
