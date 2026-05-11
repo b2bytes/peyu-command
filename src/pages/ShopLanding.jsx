@@ -229,10 +229,9 @@ export default function ShopLanding() {
         if (!convId) throw new Error('No se pudo crear la conversación');
         setConversationId(convId);
         localStorage.setItem(STORAGE_KEY, convId);
-      } else {
-        const getRes = await base44.functions.invoke('publicChatProxy', { action: 'get', conversation_id: convId });
-        msgCountBefore = (getRes.data?.messages || []).length;
       }
+      // 💡 Ya NO consultamos el server para sacar msgCountBefore: usamos el
+      // estado local que es la fuente de verdad y evita race conditions.
 
       // Registrar/actualizar esta conversación en el historial con el texto del usuario
       addToHistory(convId, text);
@@ -254,33 +253,55 @@ export default function ShopLanding() {
         page_path: pagePath,
       });
 
-      // Polling: verificar cada 1.5s si llegó respuesta del agente
-      let attempts = 0;
-      const maxAttempts = 30; // 45 segundos máx
+      // Polling adaptativo: rápido al inicio, luego se relaja.
+      // El agente suele responder en 5-12s, así que arrancamos a 700ms.
+      const intervals = [700, 800, 900, 1000, 1200, 1500, 1500, 1500, 2000, 2000, 2000, 2500, 2500, 2500, 3000, 3000, 3000, 3000, 3000, 3000]; // ~36s total
+      let attempt = 0;
 
       const poll = async () => {
-        attempts++;
-        const updated = await base44.functions.invoke('publicChatProxy', { action: 'get', conversation_id: convId });
-        const msgs = (updated.data?.messages || []).filter(m => m.content).map(stripContext);
-        const last = msgs[msgs.length - 1];
+        try {
+          const updated = await base44.functions.invoke('publicChatProxy', {
+            action: 'get',
+            conversation_id: convId,
+          });
+          const msgs = (updated.data?.messages || []).filter(m => m.content).map(stripContext);
 
-        // Actualizar mensajes siempre (para mostrar streaming parcial si aplica)
-        if (msgs.length > 0) setMessages(msgs);
+          // Detección robusta: existe un mensaje 'assistant' DESPUÉS del último 'user'.
+          // Esto funciona aunque el server reciba mensajes en orden inesperado.
+          let respondió = false;
+          for (let i = msgs.length - 1; i >= 0; i--) {
+            if (msgs[i].role === 'user') break;
+            if (msgs[i].role === 'assistant' && msgs[i].content?.trim()) {
+              respondió = true;
+              break;
+            }
+          }
 
-        // Respuesta lista: más mensajes que antes, y el último es del asistente
-        if (last?.role === 'assistant' && msgs.length > msgCountBefore + 1) {
-          setLoading(false);
-          return;
+          if (msgs.length > 0) setMessages(msgs);
+
+          if (respondió) {
+            setLoading(false);
+            return;
+          }
+        } catch (pollErr) {
+          console.warn('Poll error (continúa):', pollErr);
         }
 
-        if (attempts < maxAttempts) {
-          setTimeout(poll, 1500);
+        attempt++;
+        if (attempt < intervals.length) {
+          setTimeout(poll, intervals[attempt]);
         } else {
+          // Timeout: mostrar mensaje amigable con ruta alternativa
           setLoading(false);
+          const waUrl = `https://wa.me/56935040242?text=${encodeURIComponent(`Hola Peyu, te escribí en el chat: "${text}"`)}`;
+          setMessages(prev => [...prev, {
+            role: 'assistant',
+            content: `Estoy tardando más de lo normal 🐢. Si prefieres, [conversa conmigo por WhatsApp](${waUrl}) y te respondo al toque.`,
+          }]);
         }
       };
 
-      setTimeout(poll, 1500);
+      setTimeout(poll, intervals[0]);
 
     } catch (e) {
       console.error('Error chat:', e);
