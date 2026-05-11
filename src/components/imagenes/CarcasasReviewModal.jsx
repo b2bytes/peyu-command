@@ -118,7 +118,10 @@ export default function CarcasasReviewModal({ open, onClose, preview, onApplied 
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="max-w-5xl bg-slate-900 border-white/10 text-white max-h-[90vh] flex flex-col p-0">
+      <DialogContent
+        className="max-w-5xl border max-h-[90vh] flex flex-col p-0"
+        style={{ backgroundColor: '#0f172a', borderColor: 'rgba(255,255,255,0.12)', color: '#fff' }}
+      >
         <DialogHeader className="p-5 pb-3 border-b border-white/10">
           <DialogTitle className="text-white flex items-center gap-2">
             <Sparkles className="w-5 h-5 text-indigo-300" />
@@ -145,7 +148,8 @@ export default function CarcasasReviewModal({ open, onClose, preview, onApplied 
                 value={search}
                 onChange={e => setSearch(e.target.value)}
                 placeholder="Buscar archivo…"
-                className="pl-8 h-8 bg-white/5 border-white/10 text-white placeholder:text-white/40 text-xs"
+                style={{ backgroundColor: 'rgba(255,255,255,0.08)', borderColor: 'rgba(255,255,255,0.18)', color: '#fff' }}
+                className="pl-8 h-8 placeholder:text-white/50 text-xs"
               />
             </div>
             <FilterChip active={filter === 'all'} onClick={() => setFilter('all')}>Todos</FilterChip>
@@ -280,19 +284,28 @@ function FileRow({ file, catalogo, assigned, onChange }) {
       {/* Filename */}
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-1.5">
-          <p className="text-xs text-white truncate font-mono">{file.file_name}</p>
+          <p
+            className="text-sm truncate font-mono font-medium"
+            style={{ color: '#fff' }}
+            title={file.file_name}
+          >
+            {file.file_name}
+          </p>
           <a
             href={file.drive_view_url}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-white/40 hover:text-white flex-shrink-0"
+            className="flex-shrink-0"
+            style={{ color: 'rgba(255,255,255,0.6)' }}
             title="Abrir en Drive"
           >
-            <ExternalLink className="w-3 h-3" />
+            <ExternalLink className="w-3.5 h-3.5" />
           </a>
         </div>
         {file.color && (
-          <p className="text-[10px] text-white/40">color: {file.color}</p>
+          <p className="text-[11px] mt-0.5" style={{ color: 'rgba(255,255,255,0.6)' }}>
+            color: {file.color}
+          </p>
         )}
       </div>
 
@@ -322,14 +335,18 @@ function FileRow({ file, catalogo, assigned, onChange }) {
         {open && (
           <>
             <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
-            <div className="absolute right-0 mt-1 w-[320px] bg-slate-800 border border-white/15 rounded-lg shadow-2xl z-50 overflow-hidden">
-              <div className="p-2 border-b border-white/10">
+            <div
+              className="absolute right-0 mt-1 w-[320px] border rounded-lg shadow-2xl z-50 overflow-hidden"
+              style={{ backgroundColor: '#1e293b', borderColor: 'rgba(255,255,255,0.18)' }}
+            >
+              <div className="p-2 border-b" style={{ borderColor: 'rgba(255,255,255,0.1)' }}>
                 <Input
                   autoFocus
                   value={q}
                   onChange={e => setQ(e.target.value)}
                   placeholder="Buscar producto o SKU…"
-                  className="h-8 bg-white/5 border-white/10 text-white text-xs"
+                  style={{ backgroundColor: 'rgba(255,255,255,0.08)', borderColor: 'rgba(255,255,255,0.18)', color: '#fff' }}
+                  className="h-8 placeholder:text-white/50 text-xs"
                 />
               </div>
               <div className="max-h-64 overflow-y-auto peyu-scrollbar-light">
