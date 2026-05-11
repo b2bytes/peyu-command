@@ -10,6 +10,7 @@ import WordPressMigrationPanel from '@/components/admin-products/WordPressMigrat
 import DriveMatchMigrationPanel from '@/components/admin-products/DriveMatchMigrationPanel';
 import WaybackRecoveryPanel from '@/components/admin-products/WaybackRecoveryPanel';
 import GoogleShoppingAuditPanel from '@/components/admin-products/GoogleShoppingAuditPanel';
+import BulkImageGeneratorPanel from '@/components/admin-products/BulkImageGeneratorPanel';
 import { Button } from '@/components/ui/button';
 
 /**
@@ -136,6 +137,9 @@ export default function AdminProducts() {
       <GoogleShoppingAuditPanel
         onProductClick={(id) => { setSelectedId(id); setTab('imagen'); }}
       />
+
+      {/* Panel generación masiva: todo el catálogo o un subconjunto en una sola corrida */}
+      <BulkImageGeneratorPanel productos={productos} onComplete={loadData} />
 
       {/* KPIs — clickeables como filtros rápidos */}
       <div className="grid grid-cols-2 md:grid-cols-6 gap-2">
