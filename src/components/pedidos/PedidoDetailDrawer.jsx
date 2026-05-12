@@ -87,20 +87,56 @@ export default function PedidoDetailDrawer({ pedido, onClose, onUpdate }) {
           </section>
 
           {/* Productos */}
-          <section className="bg-gray-50 rounded-xl p-4 space-y-2">
-            <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider">Productos</h3>
-            <div className="flex items-center gap-2 text-sm text-gray-700">
-              <Package className="w-4 h-4" /> {pedido.cantidad || 1}u · SKU {pedido.sku || '—'}
+          <section className="bg-gray-50 rounded-xl p-4 space-y-3">
+            <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider">Productos del pedido</h3>
+            <div className="flex items-center gap-2 text-sm text-gray-700 font-medium">
+              <Package className="w-4 h-4 text-teal-600" /> {pedido.cantidad || 1} unidad{(pedido.cantidad || 1) > 1 ? 'es' : ''} {pedido.sku && `· SKU ${pedido.sku}`}
             </div>
+
+            {/* Detalle línea por línea, parseando color, pack y grabado */}
             {pedido.descripcion_items && (
-              <p className="text-xs text-gray-600 whitespace-pre-line">{pedido.descripcion_items}</p>
+              <div className="space-y-2">
+                {pedido.descripcion_items.split(/\n|\s\|\s/).filter(Boolean).map((linea, i) => {
+                  const partes = linea.split(' · ').map(p => p.trim());
+                  const titulo = partes[0];
+                  const detalles = partes.slice(1);
+                  return (
+                    <div key={i} className="bg-white border border-gray-200 rounded-lg p-3">
+                      <p className="text-sm font-semibold text-gray-900">{titulo}</p>
+                      {detalles.length > 0 && (
+                        <div className="mt-1.5 flex flex-wrap gap-1.5">
+                          {detalles.map((d, j) => {
+                            const lower = d.toLowerCase();
+                            const isColor = lower.startsWith('color');
+                            const isPack = lower.startsWith('pack');
+                            const isGrabado = lower.startsWith('grabado');
+                            const isSku = lower.startsWith('sku');
+                            const cls = isColor ? 'bg-amber-50 text-amber-800 border-amber-200'
+                              : isPack ? 'bg-teal-50 text-teal-800 border-teal-200'
+                              : isGrabado ? 'bg-purple-50 text-purple-800 border-purple-200'
+                              : isSku ? 'bg-gray-100 text-gray-600 border-gray-200 font-mono'
+                              : 'bg-gray-50 text-gray-700 border-gray-200';
+                            const icon = isColor ? '🎨' : isPack ? '📦' : isGrabado ? '✨' : '';
+                            return (
+                              <span key={j} className={`inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-md border ${cls}`}>
+                                {icon} {d}
+                              </span>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
             )}
+
             {pedido.requiere_personalizacion && (
-              <div className="mt-2 bg-purple-50 border border-purple-200 rounded-lg p-2 text-xs">
+              <div className="bg-purple-50 border border-purple-200 rounded-lg p-2.5 text-xs">
                 <p className="flex items-center gap-1.5 font-semibold text-purple-800">
-                  <Sparkles className="w-3.5 h-3.5" /> Personalización láser UV
+                  <Sparkles className="w-3.5 h-3.5" /> Personalización láser UV (a producir)
                 </p>
-                {pedido.texto_personalizacion && <p className="text-purple-700 mt-1">{pedido.texto_personalizacion}</p>}
+                {pedido.texto_personalizacion && <p className="text-purple-700 mt-1 font-mono bg-white/60 px-2 py-1 rounded">"{pedido.texto_personalizacion}"</p>}
               </div>
             )}
           </section>

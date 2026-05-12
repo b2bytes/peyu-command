@@ -124,7 +124,16 @@ export default function Carrito() {
 
     setCreando(true);
     const numero = `WEB-${Date.now()}`;
-    const items = carrito.map(i => `${i.nombre} x${i.cantidad}${i.personalizacion ? ` [${i.personalizacion}]` : ''}`).join(' | ');
+    // Detalle enriquecido por línea: nombre · color · pack · personalización · SKU · precio unitario
+    const items = carrito.map(i => {
+      const partes = [`${i.nombre} x${i.cantidad}`];
+      if (i.color) partes.push(`Color: ${i.color}`);
+      if (i.pack_resumen) partes.push(`Pack: ${i.pack_resumen}`);
+      if (i.personalizacion) partes.push(`Grabado: "${i.personalizacion}"`);
+      if (i.sku) partes.push(`SKU ${i.sku}`);
+      partes.push(`$${(i.precio || 0).toLocaleString('es-CL')}/u`);
+      return partes.join(' · ');
+    }).join('\n');
     const notasExtras = [
       gcDescuento > 0 ? `GiftCard ${giftCard.codigo} -$${gcDescuento.toLocaleString('es-CL')}` : null,
       cupon ? `Cupón ${cupon.codigo} -$${(cupon.descuento_clp || 0).toLocaleString('es-CL')}` : null,
@@ -146,6 +155,7 @@ export default function Carrito() {
         cliente_email: cliente.email,
         cliente_telefono: cliente.telefono,
         tipo_cliente: 'B2C Individual',
+        sku: carrito[0]?.sku || carrito[0]?.productoId || null,
         descripcion_items: items,
         cantidad: carrito.reduce((s, i) => s + i.cantidad, 0),
         subtotal,
