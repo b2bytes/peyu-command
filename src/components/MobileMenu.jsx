@@ -56,7 +56,7 @@ export default function MobileMenu({ items }) {
 
         {/* Sección título */}
         <div className="px-5 pt-5 pb-2">
-          <p className="text-[10px] font-bold text-white/40 uppercase tracking-[0.15em]">Navegación</p>
+          <p className="text-[10px] font-bold uppercase tracking-[0.15em]" style={{ color: 'rgba(255,255,255,0.55)' }}>Navegación</p>
         </div>
 
         {/* Menú */}
@@ -71,13 +71,14 @@ export default function MobileMenu({ items }) {
                 onClick={handleNavClick}
                 className={`flex items-center gap-3 px-3 py-3 rounded-xl transition-all active:scale-[0.98] text-[15px] font-medium ${
                   isActive
-                    ? 'bg-teal-500/25 text-white ring-1 ring-teal-400/40 shadow-lg'
-                    : 'text-white/85 hover:bg-white/10 hover:text-white'
+                    ? 'bg-teal-500/25 ring-1 ring-teal-400/40 shadow-lg'
+                    : 'hover:bg-white/10'
                 }`}
+                style={{ color: isActive ? '#FFFFFF' : 'rgba(255,255,255,0.92)' }}
               >
                 <span className={`w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 ${
                   isActive ? 'bg-teal-500/40' : 'bg-white/10'
-                }`}>
+                }`} style={{ color: '#FFFFFF' }}>
                   <Icon className="w-[18px] h-[18px]" />
                 </span>
                 <span className="flex-1 truncate">{item.label}</span>
@@ -92,7 +93,8 @@ export default function MobileMenu({ items }) {
           <Link
             to="/cart"
             onClick={handleNavClick}
-            className="w-full flex items-center justify-center gap-2 py-3 rounded-full bg-gradient-to-r from-teal-500 to-cyan-500 text-white text-sm font-bold shadow-lg active:scale-[0.98] transition"
+            className="w-full flex items-center justify-center gap-2 py-3 rounded-full bg-gradient-to-r from-teal-500 to-cyan-500 text-sm font-bold shadow-lg active:scale-[0.98] transition"
+            style={{ color: '#FFFFFF' }}
           >
             <ShoppingCart className="w-4 h-4" />
             Ver carrito
@@ -101,7 +103,8 @@ export default function MobileMenu({ items }) {
             href="https://wa.me/56912345678"
             target="_blank"
             rel="noopener noreferrer"
-            className="w-full flex items-center justify-center gap-2 py-3 rounded-full bg-white/10 border border-white/20 text-white text-sm font-semibold active:scale-[0.98] transition"
+            className="w-full flex items-center justify-center gap-2 py-3 rounded-full bg-white/10 border border-white/20 text-sm font-semibold active:scale-[0.98] transition"
+            style={{ color: '#FFFFFF' }}
           >
             <Phone className="w-4 h-4" />
             Hablar por WhatsApp
@@ -109,7 +112,7 @@ export default function MobileMenu({ items }) {
         </div>
 
         {/* Footer */}
-        <div className="px-5 pb-[max(env(safe-area-inset-bottom),1rem)] pt-2 flex-shrink-0 text-white/40 text-[11px] text-center">
+        <div className="px-5 pb-[max(env(safe-area-inset-bottom),1rem)] pt-2 flex-shrink-0 text-[11px] text-center" style={{ color: 'rgba(255,255,255,0.45)' }}>
           PEYU · Regalos corporativos sostenibles
         </div>
       </aside>
