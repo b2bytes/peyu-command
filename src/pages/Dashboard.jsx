@@ -4,7 +4,7 @@ import {
   TrendingUp, TrendingDown, Users, Package, DollarSign,
   MessageSquare, Factory, AlertTriangle, CheckCircle2,
   Clock, Target, Zap, ArrowRight,
-  Store, UserCheck, Flag, Truck
+  Store, UserCheck, Flag, Truck, ShoppingBag
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import {
@@ -240,6 +240,25 @@ export default function Dashboard() {
               <p className="text-[10px] uppercase tracking-[0.12em] font-bold text-white/90">Cockpit</p>
               <p className="text-sm font-poppins font-bold leading-tight text-white">Puente de Mando</p>
               <p className="text-[10px] text-white/85 font-medium">Flota IA · Misiones · Foresight</p>
+            </div>
+            <ArrowRight className="w-4 h-4 text-white group-hover:translate-x-1 transition-transform" />
+          </Link>
+          <Link
+            to="/admin/procesar-pedidos"
+            className="group flex items-center gap-3 px-4 py-3 rounded-2xl bg-gradient-to-br from-orange-500 via-amber-500 to-rose-500 hover:from-orange-400 hover:via-amber-400 hover:to-rose-400 text-white shadow-lg shadow-orange-500/40 border border-white/20 transition-all hover:scale-[1.02] relative"
+          >
+            {pedidosWebPendientes > 0 && (
+              <span className="absolute -top-1.5 -right-1.5 text-[9px] bg-white text-rose-600 px-1.5 py-0.5 rounded-full font-black tracking-wider shadow animate-pulse">
+                {pedidosWebPendientes} NUEVOS
+              </span>
+            )}
+            <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center backdrop-blur-md ring-1 ring-white/30">
+              <ShoppingBag className="w-5 h-5 text-white" />
+            </div>
+            <div className="text-left">
+              <p className="text-[10px] uppercase tracking-[0.12em] font-bold text-white/90">Pedidos B2C</p>
+              <p className="text-sm font-poppins font-bold leading-tight text-white">Detalle de Compras</p>
+              <p className="text-[10px] text-white/85 font-medium">Color · Personalización · Cliente</p>
             </div>
             <ArrowRight className="w-4 h-4 text-white group-hover:translate-x-1 transition-transform" />
           </Link>
