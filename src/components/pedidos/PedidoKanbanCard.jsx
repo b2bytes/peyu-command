@@ -1,5 +1,6 @@
-import { Package, Clock, MapPin, User, Sparkles, Eye } from 'lucide-react';
+import { Package, Clock, MapPin, User, Sparkles, Eye, CheckCircle2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { getPagoStatus } from '@/lib/pago-status';
 
 const ESTADO_COLORS = {
   'Nuevo': 'border-l-amber-400 bg-amber-50/50',
@@ -21,6 +22,7 @@ export default function PedidoKanbanCard({ pedido, onClick }) {
   const color = ESTADO_COLORS[pedido.estado] || 'border-l-gray-300 bg-white';
   const days = daysSince(pedido.fecha);
   const urgent = pedido.estado === 'Nuevo' && days >= 1;
+  const pago = getPagoStatus(pedido);
 
   return (
     <button
@@ -59,6 +61,16 @@ export default function PedidoKanbanCard({ pedido, onClick }) {
           </span>
         )}
         <Eye className="w-3 h-3 text-gray-400 group-hover:text-teal-600" />
+      </div>
+      {/* Chip de pago: visible "Pagado" verde o "Por pagar" ámbar */}
+      <div className={`mt-2 inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-semibold ${
+        pago.tone === 'green' ? 'bg-emerald-50 text-emerald-700'
+        : pago.tone === 'amber' ? 'bg-amber-50 text-amber-800'
+        : pago.tone === 'red' ? 'bg-red-50 text-red-700'
+        : 'bg-gray-100 text-gray-600'
+      }`}>
+        {pago.pagado ? <CheckCircle2 className="w-2.5 h-2.5" /> : <Clock className="w-2.5 h-2.5" />}
+        {pago.pagado ? 'Pagado' : 'Por pagar'}
       </div>
     </button>
   );

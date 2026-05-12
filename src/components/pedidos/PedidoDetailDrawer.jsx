@@ -3,10 +3,11 @@ import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { X, Mail, Phone, MapPin, Package, CreditCard, Sparkles, Loader2, ExternalLink } from 'lucide-react';
+import { X, Mail, Phone, MapPin, Package, CreditCard, Sparkles, Loader2, ExternalLink, CheckCircle2, Clock } from 'lucide-react';
 import { toast } from 'sonner';
 import BluexShipmentButton from './BluexShipmentButton';
 import BluexManualDispatchCard from './BluexManualDispatchCard';
+import { getPagoStatus } from '@/lib/pago-status';
 
 const ESTADOS = ['Nuevo', 'Confirmado', 'En Producción', 'Listo para Despacho', 'Despachado', 'Entregado', 'Cancelado'];
 const COURIERS = ['Starken', 'Chilexpress', 'BlueExpress', 'Correos Chile', 'Retiro en Tienda'];
@@ -48,14 +49,31 @@ export default function PedidoDetailDrawer({ pedido, onClose, onUpdate }) {
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="sticky top-0 bg-gradient-to-r from-teal-600 to-cyan-600 text-white p-5 flex items-center justify-between z-10">
-          <div>
-            <p className="text-xs uppercase tracking-wider opacity-80">Pedido</p>
-            <h2 className="text-xl font-bold">{pedido.numero_pedido || pedido.id.slice(-8)}</h2>
+        <div className="sticky top-0 bg-gradient-to-r from-teal-600 to-cyan-600 text-white p-5 z-10">
+          <div className="flex items-center justify-between">
+            <div className="min-w-0">
+              <p className="text-xs uppercase tracking-wider opacity-80">Pedido</p>
+              <h2 className="text-xl font-bold truncate">{pedido.numero_pedido || pedido.id.slice(-8)}</h2>
+            </div>
+            <button onClick={onClose} className="p-1.5 hover:bg-white/20 rounded-lg flex-shrink-0">
+              <X className="w-5 h-5" />
+            </button>
           </div>
-          <button onClick={onClose} className="p-1.5 hover:bg-white/20 rounded-lg">
-            <X className="w-5 h-5" />
-          </button>
+          {/* Estado de pago — visible y claro */}
+          {(() => {
+            const ps = getPagoStatus(pedido);
+            return (
+              <div className={`mt-3 inline-flex items-center gap-2 px-3 py-1.5 rounded-lg font-semibold text-sm ${
+                ps.tone === 'green' ? 'bg-emerald-50 text-emerald-800'
+                : ps.tone === 'amber' ? 'bg-amber-50 text-amber-900'
+                : ps.tone === 'red' ? 'bg-red-50 text-red-800'
+                : 'bg-gray-100 text-gray-700'
+              }`}>
+                {ps.pagado ? <CheckCircle2 className="w-4 h-4" /> : <Clock className="w-4 h-4" />}
+                {ps.label}
+              </div>
+            );
+          })()}
         </div>
 
         <div className="p-5 space-y-5">
