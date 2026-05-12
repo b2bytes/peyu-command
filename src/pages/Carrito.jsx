@@ -106,10 +106,30 @@ export default function Carrito() {
     if (creando) return;
     setErrorPago(null);
 
+    // 🛡️ Validar carrito no vacío y con items válidos (precio > 0, cantidad > 0)
+    if (!carrito.length) {
+      setErrorPago('Tu carrito está vacío. Volvé al shop para agregar productos.');
+      return;
+    }
+    const itemsInvalidos = carrito.filter(i => !i.precio || i.precio < 0 || !i.cantidad || i.cantidad < 1);
+    if (itemsInvalidos.length > 0) {
+      setErrorPago('Hay productos con precio o cantidad inválida. Removelos y agregalos de nuevo desde el shop.');
+      return;
+    }
+
     if (!validarYContinuar()) {
       // Scroll al primer error
       setTimeout(() => {
         document.querySelector('[class*="border-red-300"]')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 100);
+      return;
+    }
+
+    // 🛡️ Validar selección de envío (Bluex) — evita pedidos sin courier definido
+    if (!envioBluex) {
+      setErrorPago('Selecciona una forma de envío antes de continuar.');
+      setTimeout(() => {
+        document.querySelector('[data-shipping-selector]')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
       }, 100);
       return;
     }
@@ -123,7 +143,11 @@ export default function Carrito() {
     }
 
     setCreando(true);
-    const numero = `WEB-${Date.now()}`;
+    // Reusamos número/pedido si el usuario está reintentando tras fallo de MP
+    // (evita pedidos duplicados en la base por reintento).
+    const reintentoNumero = typeof window !== 'undefined' ? sessionStorage.getItem('peyu_pending_order_numero') : null;
+    const reintentoId = typeof window !== 'undefined' ? sessionStorage.getItem('peyu_pending_order_id') : null;
+    const numero = reintentoNumero || `WEB-${Date.now()}`;
     // Detalle enriquecido por línea: nombre · color · pack · personalización · SKU · precio unitario
     const items = carrito.map(i => {
       const partes = [`${i.nombre} x${i.cantidad}`];
@@ -146,31 +170,43 @@ export default function Carrito() {
     const descuentoTotal = descuentoCupon + descuentoTransferencia + gcDescuento;
 
     let pedido;
+    const datosPedido = {
+      numero_pedido: numero,
+      fecha: new Date().toISOString().split('T')[0],
+      canal: 'Web Propia',
+      cliente_nombre: cliente.nombre.trim(),
+      cliente_email: cliente.email.trim().toLowerCase(),
+      cliente_telefono: cliente.telefono,
+      tipo_cliente: 'B2C Individual',
+      sku: carrito[0]?.sku || carrito[0]?.productoId || null,
+      descripcion_items: items,
+      cantidad: carrito.reduce((s, i) => s + i.cantidad, 0),
+      subtotal,
+      costo_envio: envio,
+      descuento: descuentoTotal,
+      total,
+      medio_pago: medioPagoFinal,
+      estado: 'Nuevo',
+      ciudad: cliente.ciudad,
+      direccion_envio: cliente.direccion.trim(),
+      requiere_personalizacion: carrito.some(i => i.personalizacion),
+      texto_personalizacion: carrito.filter(i => i.personalizacion).map(i => i.personalizacion).join(', '),
+      courier: envioBluex ? `BlueExpress ${envioBluex.servicio}` : 'Pendiente',
+      notas: `Carrito: ${carrito.length} items${notasExtras ? ' | ' + notasExtras : ''}`,
+    };
     try {
-      pedido = await base44.entities.PedidoWeb.create({
-        numero_pedido: numero,
-        fecha: new Date().toISOString().split('T')[0],
-        canal: 'Web Propia',
-        cliente_nombre: cliente.nombre,
-        cliente_email: cliente.email,
-        cliente_telefono: cliente.telefono,
-        tipo_cliente: 'B2C Individual',
-        sku: carrito[0]?.sku || carrito[0]?.productoId || null,
-        descripcion_items: items,
-        cantidad: carrito.reduce((s, i) => s + i.cantidad, 0),
-        subtotal,
-        costo_envio: envio,
-        descuento: descuentoTotal,
-        total,
-        medio_pago: medioPagoFinal,
-        estado: 'Nuevo',
-        ciudad: cliente.ciudad,
-        direccion_envio: cliente.direccion,
-        requiere_personalizacion: carrito.some(i => i.personalizacion),
-        texto_personalizacion: carrito.filter(i => i.personalizacion).map(i => i.personalizacion).join(', '),
-        courier: envioBluex ? `BlueExpress ${envioBluex.servicio}` : 'Pendiente',
-        notas: `Carrito: ${carrito.length} items${notasExtras ? ' | ' + notasExtras : ''}`,
-      });
+      if (reintentoId) {
+        // Actualizamos el pedido pendiente en vez de crear uno nuevo
+        await base44.entities.PedidoWeb.update(reintentoId, datosPedido);
+        pedido = { id: reintentoId, ...datosPedido };
+      } else {
+        pedido = await base44.entities.PedidoWeb.create(datosPedido);
+        // Guardamos referencia por si el pago falla → reintento
+        try {
+          sessionStorage.setItem('peyu_pending_order_numero', numero);
+          sessionStorage.setItem('peyu_pending_order_id', pedido.id);
+        } catch {}
+      }
     } catch (e) {
       console.error('Error creando pedido:', e);
       setErrorPago('No pudimos crear tu pedido. Revisá tu conexión e intentá nuevamente. Si el problema persiste, escribínos por WhatsApp.');
@@ -249,6 +285,12 @@ export default function Carrito() {
       name: cliente.nombre,
     });
     setCreando(false);
+
+    // Pago completado (transferencia / giftcard) → limpiamos refs de reintento
+    try {
+      sessionStorage.removeItem('peyu_pending_order_numero');
+      sessionStorage.removeItem('peyu_pending_order_id');
+    } catch {}
 
     // Redirigimos a /gracias — es la "thank you page" estándar para conversión.
     // Mejor que mostrar un estado inline porque permite indexación del funnel
@@ -432,15 +474,17 @@ export default function Carrito() {
                       <p className="text-xs text-gray-500 mt-0.5">Tarifa real BlueExpress según tu comuna</p>
                     </div>
                   </div>
-                  <ShippingSelector
-                    variant="light"
-                    items={carrito.map(i => ({ productoId: i.productoId, cantidad: i.cantidad, nombre: i.nombre }))}
-                    comuna={cliente.ciudad}
-                    region={cliente.region}
-                    subtotal={subtotal}
-                    umbralEnvioGratis={40000}
-                    onSelect={setEnvioBluex}
-                  />
+                  <div data-shipping-selector>
+                    <ShippingSelector
+                      variant="light"
+                      items={carrito.map(i => ({ productoId: i.productoId, cantidad: i.cantidad, nombre: i.nombre }))}
+                      comuna={cliente.ciudad}
+                      region={cliente.region}
+                      subtotal={subtotal}
+                      umbralEnvioGratis={40000}
+                      onSelect={setEnvioBluex}
+                    />
+                  </div>
                 </div>
 
                 {/* 3 · Método de pago */}
