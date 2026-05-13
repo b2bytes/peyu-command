@@ -24,7 +24,23 @@ export default function ProcesarPedidos() {
 
   const load = async () => {
     setLoading(true);
-    const data = await base44.entities.PedidoWeb.list('-fecha', 300);
+    // Retry con backoff exponencial para tolerar rate limits (429)
+    let data = [];
+    for (let attempt = 0; attempt < 4; attempt++) {
+      try {
+        data = await base44.entities.PedidoWeb.list('-fecha', 300);
+        break;
+      } catch (err) {
+        const msg = err?.message || '';
+        const isRateLimit = msg.includes('Rate limit') || err?.response?.status === 429;
+        if (isRateLimit && attempt < 3) {
+          await new Promise(r => setTimeout(r, 1000 * Math.pow(2, attempt))); // 1s, 2s, 4s
+          continue;
+        }
+        console.warn('ProcesarPedidos load falló:', msg);
+        break;
+      }
+    }
     setPedidos(data || []);
     setLoading(false);
   };
