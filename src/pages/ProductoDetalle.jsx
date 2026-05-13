@@ -196,6 +196,15 @@ export default function ProductoDetalle() {
   const precioVolumen = getPrecioVolumen(producto, cantidad);
   const precioActual = precioVolumen ? precioVolumen.precio : precioFinal;
 
+  // 🔧 FIX CRÍTICO: estas variables se usan dentro de agregarAlCarrito() y
+  // antes vivían DESPUÉS del return condicional (líneas ~301). Eso causaba
+  // ReferenceError (TDZ) al hacer click en "Agregar al carrito" sobre PACKS
+  // como "Pack 6 Cachos" — el carrito recibía objetos rotos sin color ni
+  // pack_resumen, y luego mostraba la imagen / precio del primer producto.
+  // Las dejamos acá, antes de cualquier handler que las consuma.
+  const colores = producto ? getColores(producto) : [];
+  const packSize = producto ? getPackSize(producto) : null;
+
   const agregarAlCarrito = () => {
     // Resumen legible del pack para mostrar en carrito (ej. "2× Negro · 1× Verde")
     const packSummary = (packSize && coloresPack.length === packSize)
@@ -297,9 +306,6 @@ export default function ProductoDetalle() {
       </div>
     </div>
   );
-
-  const colores = getColores(producto);
-  const packSize = getPackSize(producto); // null si no es pack
 
   // ── Detección de Gift Card ────────────────────────────────────────
   // Si el producto es una giftcard (por categoría, sku o nombre), mostramos
