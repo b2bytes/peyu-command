@@ -15,8 +15,9 @@ const CATEGORY_CONFIG = [
     to: '/shop?categoria=Hogar',
     icon: Home,
     queryCategoria: 'Hogar',
-    fallbackImage:
-      'https://media.base44.com/images/public/69d99b9d61f699701129c103/09fc39248_generated_image.png',
+    // Editorial lifestyle — taza + posavasos en mesa cálida
+    image:
+      'https://media.base44.com/images/public/69d99b9d61f699701129c103/9bc5ff697_generated_image.png',
   },
   {
     label: 'Oficina',
@@ -24,8 +25,9 @@ const CATEGORY_CONFIG = [
     to: '/shop?categoria=Escritorio',
     icon: Briefcase,
     queryCategoria: 'Escritorio',
-    fallbackImage:
-      'https://media.base44.com/images/public/69d99b9d61f699701129c103/74c9c31ab_generated_image.png',
+    // Editorial lifestyle — soporte laptop + accesorios escritorio
+    image:
+      'https://media.base44.com/images/public/69d99b9d61f699701129c103/062d09698_generated_image.png',
   },
   {
     label: 'Empresas',
@@ -33,23 +35,27 @@ const CATEGORY_CONFIG = [
     to: '/b2b/catalogo',
     icon: Building2,
     queryCategoria: 'Corporativo',
-    fallbackImage:
-      'https://media.base44.com/images/public/69d99b9d61f699701129c103/21d776343_generated_image.png',
+    // Editorial corporate gifting — set regalo premium con caja kraft
+    image:
+      'https://media.base44.com/images/public/69d99b9d61f699701129c103/89897ff94_generated_image.png',
   },
   {
     label: 'Gift Card',
     tagline: 'El regalo perfecto',
     to: '/regalar-giftcard',
     icon: Gift,
-    queryCategoria: null, // Gift card no tiene categoría de producto
-    fallbackImage:
-      'https://media.base44.com/images/public/69d99b9d61f699701129c103/c97d667e5_generated_image.png',
+    queryCategoria: null,
+    // Editorial gift — manos sosteniendo gift card con eucaliptus
+    image:
+      'https://media.base44.com/images/public/69d99b9d61f699701129c103/e60598fc6_generated_image.png',
   },
 ];
 
 export default function DesktopCategorySection() {
+  // Imágenes editoriales fijas — comunican OCASIÓN, no producto suelto.
+  // Solo el contador de productos se enriquece desde la BD.
   const [categories, setCategories] = useState(
-    CATEGORY_CONFIG.map((c) => ({ ...c, image: c.fallbackImage, count: null }))
+    CATEGORY_CONFIG.map((c) => ({ ...c, count: null }))
   );
 
   useEffect(() => {
@@ -59,23 +65,12 @@ export default function DesktopCategorySection() {
         const all = await base44.entities.Producto.filter({ activo: true }, '-stock_actual', 200);
         if (!alive) return;
         const enriched = CATEGORY_CONFIG.map((cfg) => {
-          if (!cfg.queryCategoria) {
-            return { ...cfg, image: cfg.fallbackImage, count: null };
-          }
+          if (!cfg.queryCategoria) return { ...cfg, count: null };
           const matches = all.filter((p) => p.categoria === cfg.queryCategoria);
-          const withImg = matches.find(
-            (p) => p.imagen_promo_url || (p.galeria_urls && p.galeria_urls[0]) || p.imagen_url
-          );
-          const image =
-            withImg?.imagen_promo_url ||
-            withImg?.galeria_urls?.[0] ||
-            withImg?.imagen_url ||
-            cfg.fallbackImage;
-          return { ...cfg, image, count: matches.length };
+          return { ...cfg, count: matches.length };
         });
         setCategories(enriched);
       } catch (err) {
-        // Network error u otro fallo no debe tumbar la landing — quedan los fallbacks
         if (alive) console.warn('DesktopCategorySection: usando fallbacks', err?.message || err);
       }
     })();
