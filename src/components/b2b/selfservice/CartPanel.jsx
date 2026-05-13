@@ -3,8 +3,15 @@ import { getProductImage } from '@/utils/productImages';
 
 /**
  * Panel del carrito del flujo Self-Service B2B.
- * Diseño UI/UX 2027 trend: thumbnails, stepper +/-, total destacado en gradient.
- * Se reutiliza tanto en el sidebar desktop como en el drawer inferior móvil.
+ * Diseño 2027: cada item es una "row card" con thumb cuadrado a la izquierda,
+ * nombre + meta en el centro y stepper + precios alineados a la derecha.
+ * Se reutiliza tanto en el sidebar desktop como en el drawer móvil (compact=true).
+ *
+ * UX claves:
+ *  • Thumbnail más grande y consistente (no se aplasta cuando el nombre es largo).
+ *  • Stepper y precio total en columna a la derecha → mismo eje vertical en todos los items.
+ *  • Precio unitario chiquito debajo del total → contexto sin ruido.
+ *  • Botón "eliminar" siempre visible en mobile (no on-hover) para tap targets HIG.
  */
 export default function CartPanel({ cart, calcPrice, updateQty, setQty, removeFromCart, subtotalEstimado, compact = false }) {
   const totalUnidades = cart.reduce((s, c) => s + c.cantidad, 0);
@@ -34,17 +41,18 @@ export default function CartPanel({ cart, calcPrice, updateQty, setQty, removeFr
           <p className="text-white/35 text-[10px] mt-1">Agrega productos del catálogo</p>
         </div>
       ) : (
-        <div className={`space-y-2 ${compact ? 'max-h-[55vh]' : 'max-h-[420px]'} overflow-y-auto peyu-scrollbar-light pr-1`}>
+        <div className={`space-y-2.5 ${compact ? 'max-h-[55vh]' : 'max-h-[420px]'} overflow-y-auto peyu-scrollbar-light pr-1`}>
           {cart.map(c => {
             const unitario = calcPrice(c.producto, c.cantidad);
+            const totalLinea = unitario * c.cantidad;
             const imageUrl = getProductImage(c.producto);
             return (
               <div
                 key={c.producto.id}
-                className="bg-white/[0.05] hover:bg-white/[0.08] transition-colors border border-white/10 rounded-2xl p-2.5 flex gap-2.5 group"
+                className="bg-white/[0.05] hover:bg-white/[0.08] transition-colors border border-white/10 rounded-2xl p-3 flex gap-3 items-center"
               >
                 {/* Thumbnail */}
-                <div className="w-14 h-14 rounded-xl overflow-hidden bg-slate-800/50 flex-shrink-0 border border-white/5">
+                <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-xl overflow-hidden bg-slate-800/50 flex-shrink-0 border border-white/5">
                   <img
                     src={imageUrl}
                     alt={c.producto.nombre}
@@ -53,49 +61,53 @@ export default function CartPanel({ cart, calcPrice, updateQty, setQty, removeFr
                   />
                 </div>
 
-                {/* Info + controls */}
-                <div className="flex-1 min-w-0 flex flex-col justify-between">
-                  <div className="flex items-start justify-between gap-1.5">
-                    <p className="text-[12px] font-semibold text-white leading-tight line-clamp-2 flex-1">
-                      {c.producto.nombre}
-                    </p>
+                {/* Info central: nombre + stepper */}
+                <div className="flex-1 min-w-0 flex flex-col gap-1.5">
+                  <p className="text-[12px] sm:text-[13px] font-semibold text-white leading-tight line-clamp-2">
+                    {c.producto.nombre}
+                  </p>
+
+                  {/* Stepper de cantidad */}
+                  <div className="flex items-center bg-white/[0.06] border border-white/10 rounded-lg overflow-hidden w-fit">
                     <button
-                      onClick={() => removeFromCart(c.producto.id)}
-                      className="text-white/30 hover:text-red-400 active:text-red-500 p-0.5 -mr-0.5 -mt-0.5 transition opacity-0 group-hover:opacity-100"
-                      aria-label="Eliminar"
+                      onClick={() => updateQty(c.producto.id, -10)}
+                      className="w-7 h-7 text-white/80 hover:bg-white/10 active:bg-white/15 transition text-base font-bold flex items-center justify-center"
+                      aria-label="Restar 10"
                     >
-                      <Trash2 className="w-3 h-3" />
+                      −
+                    </button>
+                    <input
+                      type="number"
+                      inputMode="numeric"
+                      value={c.cantidad}
+                      onChange={e => setQty(c.producto.id, e.target.value)}
+                      className="w-10 h-7 text-center text-white text-xs font-bold bg-transparent focus:outline-none focus:bg-white/[0.08] tabular-nums"
+                    />
+                    <button
+                      onClick={() => updateQty(c.producto.id, 10)}
+                      className="w-7 h-7 text-white/80 hover:bg-white/10 active:bg-white/15 transition text-base font-bold flex items-center justify-center"
+                      aria-label="Sumar 10"
+                    >
+                      +
                     </button>
                   </div>
+                </div>
 
-                  <div className="flex items-center justify-between gap-2 mt-1.5">
-                    <div className="flex items-center bg-white/[0.06] border border-white/10 rounded-lg overflow-hidden">
-                      <button
-                        onClick={() => updateQty(c.producto.id, -10)}
-                        className="w-7 h-7 text-white/80 hover:bg-white/10 active:bg-white/15 transition text-base font-bold"
-                        aria-label="Restar 10"
-                      >
-                        −
-                      </button>
-                      <input
-                        type="number"
-                        inputMode="numeric"
-                        value={c.cantidad}
-                        onChange={e => setQty(c.producto.id, e.target.value)}
-                        className="w-10 h-7 text-center text-white text-xs font-bold bg-transparent focus:outline-none focus:bg-white/[0.08] tabular-nums"
-                      />
-                      <button
-                        onClick={() => updateQty(c.producto.id, 10)}
-                        className="w-7 h-7 text-white/80 hover:bg-white/10 active:bg-white/15 transition text-base font-bold"
-                        aria-label="Sumar 10"
-                      >
-                        +
-                      </button>
-                    </div>
-                    <p className="text-sm font-poppins font-bold text-teal-300 tabular-nums">
-                      ${(unitario * c.cantidad).toLocaleString('es-CL')}
-                    </p>
-                  </div>
+                {/* Columna derecha: precio total + unitario + eliminar */}
+                <div className="flex flex-col items-end gap-1 flex-shrink-0">
+                  <button
+                    onClick={() => removeFromCart(c.producto.id)}
+                    className="text-white/40 hover:text-red-400 active:text-red-500 p-1 -mr-1 -mt-1 transition"
+                    aria-label="Eliminar"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                  <p className="text-sm sm:text-base font-poppins font-bold text-teal-300 tabular-nums leading-none">
+                    ${totalLinea.toLocaleString('es-CL')}
+                  </p>
+                  <p className="text-[10px] text-white/45 tabular-nums leading-none">
+                    ${unitario.toLocaleString('es-CL')} c/u
+                  </p>
                 </div>
               </div>
             );
