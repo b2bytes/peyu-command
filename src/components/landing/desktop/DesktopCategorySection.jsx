@@ -85,8 +85,8 @@ export default function DesktopCategorySection() {
   }, []);
 
   return (
-    <section className="px-6 py-14">
-      <div className="flex items-end justify-between mb-8 gap-4 flex-wrap">
+    <section className="px-6 py-16">
+      <div className="flex items-end justify-between mb-10 gap-4 flex-wrap">
         <div>
           <p
             className="text-[11px] font-bold tracking-[0.22em] uppercase mb-2"
@@ -111,53 +111,73 @@ export default function DesktopCategorySection() {
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-5">
-        {categories.map((cat) => {
+        {categories.map((cat, idx) => {
           const Icon = cat.icon;
           const itemsLabel =
             cat.queryCategoria
               ? cat.count != null
-                ? `${cat.count}+ productos`
+                ? `${cat.count} productos`
                 : 'Ver catálogo'
               : 'Desde $10.000';
           return (
             <Link
               key={cat.label}
               to={cat.to}
-              className="ld-card group relative overflow-hidden aspect-[4/5] flex flex-col justify-end transition-all duration-500 hover:-translate-y-1.5"
+              className="group relative flex flex-col overflow-hidden rounded-3xl bg-ld-bg-elevated border border-ld-border transition-all duration-500 hover:-translate-y-2 hover:shadow-2xl hover:border-ld-action/30"
+              style={{ animation: `peyuCardIn 0.5s cubic-bezier(0.22,1,0.36,1) ${idx * 80}ms backwards` }}
             >
-              {/* Imagen de fondo (producto real PEYU) */}
-              <div
-                className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105"
-                style={{ backgroundImage: `url("${cat.image}")` }}
-              />
-              {/* Overlay legibilidad — gradient negro->transparente arriba */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-black/10" />
+              {/* ── Zona imagen — limpia, sin overlay invasivo ── */}
+              <div className="relative aspect-[4/5] overflow-hidden bg-ld-bg-soft">
+                <img
+                  src={cat.image}
+                  alt={cat.label}
+                  loading="lazy"
+                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                />
+                {/* Vignette muy sutil solo en esquinas para dar profundidad */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/25 via-transparent to-transparent pointer-events-none" />
 
-              {/* Icon chip top-left */}
-              <div
-                className="absolute top-4 left-4 w-11 h-11 rounded-xl flex items-center justify-center backdrop-blur-md ring-1 ring-white/30"
-                style={{ background: 'rgba(255,255,255,0.18)' }}
-              >
-                <Icon className="w-5 h-5 text-white" strokeWidth={2} />
+                {/* Icon chip flotante top-left — glass blanco */}
+                <div className="absolute top-4 left-4 w-10 h-10 rounded-2xl flex items-center justify-center bg-white/90 backdrop-blur-md shadow-lg ring-1 ring-white/60">
+                  <Icon className="w-5 h-5" strokeWidth={2} style={{ color: 'var(--ld-action)' }} />
+                </div>
+
+                {/* Count badge top-right */}
+                {cat.count != null && cat.count > 0 && (
+                  <div className="absolute top-4 right-4 px-2.5 py-1 rounded-full bg-white/95 backdrop-blur-md shadow-md text-[11px] font-bold text-ld-fg">
+                    {cat.count}
+                  </div>
+                )}
+
+                {/* Arrow CTA — slide-in en hover */}
+                <div
+                  className="absolute bottom-4 right-4 w-11 h-11 rounded-full flex items-center justify-center shadow-xl opacity-0 group-hover:opacity-100 translate-x-2 group-hover:translate-x-0 transition-all duration-400"
+                  style={{ background: 'var(--ld-action)' }}
+                >
+                  <ArrowUpRight className="w-5 h-5 text-white" strokeWidth={2.5} />
+                </div>
               </div>
 
-              {/* Arrow chip top-right (aparece en hover) */}
-              <div
-                className="absolute top-4 right-4 w-9 h-9 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 -translate-y-1 group-hover:translate-y-0"
-                style={{ background: 'var(--ld-action)' }}
-              >
-                <ArrowUpRight className="w-4 h-4 text-white" />
-              </div>
-
-              {/* Bottom content */}
-              <div className="relative z-10 p-5 text-white">
-                <p className="ld-display text-3xl xl:text-4xl leading-none mb-1.5 drop-shadow-lg">
-                  {cat.label}
-                </p>
-                <p className="text-sm font-medium text-white/90 drop-shadow">{cat.tagline}</p>
-                <p className="text-[11px] font-semibold mt-2 text-white/70 uppercase tracking-wider">
-                  {itemsLabel}
-                </p>
+              {/* ── Zona contenido editorial — sobre fondo neutro ── */}
+              <div className="px-5 py-4 flex-1 flex flex-col justify-between gap-2">
+                <div>
+                  <p className="ld-display text-2xl xl:text-3xl leading-none text-ld-fg mb-1.5">
+                    {cat.label}
+                  </p>
+                  <p className="text-sm text-ld-fg-muted leading-snug">{cat.tagline}</p>
+                </div>
+                <div className="flex items-center justify-between pt-2 border-t border-ld-border">
+                  <span
+                    className="text-[10px] font-bold uppercase tracking-widest"
+                    style={{ color: 'var(--ld-action)' }}
+                  >
+                    {itemsLabel}
+                  </span>
+                  <ArrowUpRight
+                    className="w-4 h-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
+                    style={{ color: 'var(--ld-action)' }}
+                  />
+                </div>
               </div>
             </Link>
           );
