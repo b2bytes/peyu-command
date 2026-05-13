@@ -254,8 +254,14 @@ export default function ShopLanding() {
       });
 
       // Polling adaptativo: rápido al inicio, luego se relaja.
-      // El agente suele responder en 5-12s, así que arrancamos a 700ms.
-      const intervals = [700, 800, 900, 1000, 1200, 1500, 1500, 1500, 2000, 2000, 2000, 2500, 2500, 2500, 3000, 3000, 3000, 3000, 3000, 3000]; // ~36s total
+      // El agente suele responder en 5-12s, pero con Brain + cotizaciones puede ir
+      // hasta ~45s. Damos hasta ~70s totales antes de mostrar el fallback.
+      const intervals = [
+        700, 800, 900, 1000, 1200, 1500, 1500, 1500,
+        2000, 2000, 2000, 2500, 2500, 2500,
+        3000, 3000, 3000, 3000, 3000, 3000,
+        3500, 3500, 4000, 4000, 4000, 4000
+      ]; // ~70s total
       let attempt = 0;
 
       const poll = async () => {
@@ -291,12 +297,14 @@ export default function ShopLanding() {
         if (attempt < intervals.length) {
           setTimeout(poll, intervals[attempt]);
         } else {
-          // Timeout: mostrar mensaje amigable con ruta alternativa
+          // Timeout: el agente no respondió en ~70s. Mostramos mensaje amigable
+          // del asistente + WhatsApp como ruta alternativa. El mensaje del
+          // usuario QUEDA guardado en la conversación para retomar después.
           setLoading(false);
           const waUrl = `https://wa.me/56935040242?text=${encodeURIComponent(`Hola Peyu, te escribí en el chat: "${text}"`)}`;
           setMessages(prev => [...prev, {
             role: 'assistant',
-            content: `Estoy tardando más de lo normal 🐢. Si prefieres, [conversa conmigo por WhatsApp](${waUrl}) y te respondo al toque.`,
+            content: `🐢 Uy, estoy lento hoy. Tu mensaje quedó guardado, pero si quieres respuesta inmediata, [escríbenos por WhatsApp](${waUrl}) y te atiende un humano en segundos.\n\n[[ACTION:whatsapp]]`,
           }]);
         }
       };

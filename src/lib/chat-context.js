@@ -156,9 +156,11 @@ export function serializeContext(ctx) {
 // 🧠 Brain lookup: consulta Pinecone con el mensaje del usuario y devuelve
 // un bloque compacto con productos/políticas/memoria más relevantes.
 // Falla silenciosamente si el Brain no está disponible — degrada al modo legacy.
+// 🛡️ Hard timeout 4s: si Pinecone está lento, NO bloqueamos el chat (peor UX
+// que no tener Brain es esperar 30s para que aparezca el agente).
 async function brainLookup(userMessage, userEmail) {
   try {
-    const res = await base44.functions.invoke('askPeyuBrain', {
+    const brainPromise = base44.functions.invoke('askPeyuBrain', {
       query: userMessage,
       top_k: 4,
       format: 'context',
@@ -166,6 +168,10 @@ async function brainLookup(userMessage, userEmail) {
         ? ['products', 'policies_faq', 'sustainability', 'conversations', 'customers']
         : ['products', 'policies_faq', 'sustainability'],
     });
+    const timeoutPromise = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error('brain_timeout')), 4000)
+    );
+    const res = await Promise.race([brainPromise, timeoutPromise]);
     return res?.data?.context || '';
   } catch {
     return '';
