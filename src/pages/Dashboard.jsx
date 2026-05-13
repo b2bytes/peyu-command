@@ -276,6 +276,20 @@ export default function Dashboard() {
             </div>
             <ArrowRight className="w-4 h-4 text-white group-hover:translate-x-1 transition-transform" />
           </Link>
+          <Link
+            to="/admin/admin-products"
+            className="group flex items-center gap-3 px-4 py-3 rounded-2xl bg-gradient-to-br from-pink-600 via-fuchsia-600 to-violet-600 hover:from-pink-500 hover:via-fuchsia-500 hover:to-violet-500 text-white shadow-lg shadow-fuchsia-500/40 border border-white/20 transition-all hover:scale-[1.02]"
+          >
+            <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center backdrop-blur-md ring-1 ring-white/30">
+              <Package className="w-5 h-5 text-white" />
+            </div>
+            <div className="text-left">
+              <p className="text-[10px] uppercase tracking-[0.12em] font-bold text-white/90">Productos</p>
+              <p className="text-sm font-poppins font-bold leading-tight text-white">Editor IA</p>
+              <p className="text-[10px] text-white/85 font-medium">Imágenes · Precios · SEO</p>
+            </div>
+            <ArrowRight className="w-4 h-4 text-white group-hover:translate-x-1 transition-transform" />
+          </Link>
         </div>
       </div>
 
