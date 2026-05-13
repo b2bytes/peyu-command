@@ -1,4 +1,4 @@
-import { Package, Clock, MapPin, User, Sparkles, Eye, CheckCircle2 } from 'lucide-react';
+import { Package, Clock, MapPin, User, Sparkles, Eye, CheckCircle2, ShieldAlert } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { getPagoStatus } from '@/lib/pago-status';
 
@@ -35,6 +35,16 @@ export default function PedidoKanbanCard({ pedido, onClick }) {
             <span className="font-bold text-xs text-gray-900 truncate">{pedido.numero_pedido || pedido.id.slice(-6)}</span>
             {urgent && <span className="text-[9px] font-bold bg-red-100 text-red-700 px-1.5 py-0.5 rounded">URGENTE</span>}
             {pedido.requiere_personalizacion && <Sparkles className="w-3 h-3 text-purple-500" />}
+            {(pedido.risk_score || 0) >= 70 && (
+              <span title={`Riesgo ${pedido.risk_score} · ${(pedido.risk_flags || []).join(', ')}`} className="text-[9px] font-bold bg-red-100 text-red-700 px-1.5 py-0.5 rounded inline-flex items-center gap-0.5">
+                <ShieldAlert className="w-2.5 h-2.5" /> R{pedido.risk_score}
+              </span>
+            )}
+            {(pedido.risk_score || 0) >= 40 && (pedido.risk_score || 0) < 70 && (
+              <span title={`Riesgo medio ${pedido.risk_score}`} className="text-[9px] font-bold bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded">
+                R{pedido.risk_score}
+              </span>
+            )}
           </div>
           <p className="text-xs text-gray-600 truncate flex items-center gap-1 mt-0.5">
             <User className="w-3 h-3" /> {pedido.cliente_nombre}

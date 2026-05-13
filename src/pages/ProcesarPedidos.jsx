@@ -4,6 +4,7 @@ import { Package, Search, RefreshCw, TrendingUp, AlertTriangle, DollarSign, User
 import { Input } from '@/components/ui/input';
 import PedidoKanbanCard from '../components/pedidos/PedidoKanbanCard';
 import PedidoDetailDrawer from '../components/pedidos/PedidoDetailDrawer';
+import PaymentStatusTabs from '../components/pedidos/PaymentStatusTabs';
 
 const COLUMNAS = [
   { key: 'Nuevo', label: 'Nuevo', color: 'bg-amber-500' },
@@ -19,6 +20,7 @@ export default function ProcesarPedidos() {
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState(null);
   const [search, setSearch] = useState('');
+  const [paymentTab, setPaymentTab] = useState('todos');
 
   const load = async () => {
     setLoading(true);
@@ -29,16 +31,30 @@ export default function ProcesarPedidos() {
 
   useEffect(() => { load(); }, []);
 
+  // Conteos por payment_status sobre la lista completa (no afectados por search)
+  const paymentCounts = useMemo(() => {
+    const c = { todos: pedidos.length, paid: 0, pending_mp: 0, manual_review: 0, expired: 0, failed: 0 };
+    pedidos.forEach(p => {
+      const ps = p.payment_status;
+      if (ps && c[ps] !== undefined) c[ps]++;
+    });
+    return c;
+  }, [pedidos]);
+
   const filtered = useMemo(() => {
-    if (!search) return pedidos;
+    let list = pedidos;
+    if (paymentTab !== 'todos') {
+      list = list.filter(p => p.payment_status === paymentTab);
+    }
+    if (!search) return list;
     const q = search.toLowerCase();
-    return pedidos.filter(p =>
+    return list.filter(p =>
       p.numero_pedido?.toLowerCase().includes(q) ||
       p.cliente_nombre?.toLowerCase().includes(q) ||
       p.cliente_email?.toLowerCase().includes(q) ||
       p.sku?.toLowerCase().includes(q)
     );
-  }, [pedidos, search]);
+  }, [pedidos, search, paymentTab]);
 
   const porEstado = useMemo(() => {
     const map = {};
@@ -86,6 +102,9 @@ export default function ProcesarPedidos() {
           <StatCard icon={AlertTriangle} label="Urgentes (+24h)" value={stats.urgentes} color="red" urgent={stats.urgentes > 0} />
           <StatCard icon={Users} label="Clientes únicos" value={stats.clientesUnicos} color="blue" />
         </div>
+
+        {/* Tabs de payment_status */}
+        <PaymentStatusTabs active={paymentTab} onChange={setPaymentTab} counts={paymentCounts} />
 
         {/* Buscador */}
         <div className="mb-5 relative max-w-md">
