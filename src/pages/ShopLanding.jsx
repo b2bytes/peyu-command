@@ -194,6 +194,10 @@ export default function ShopLanding() {
     const text = (typeof messageText === 'string' ? messageText : input).trim();
     if (!text || loading) return;
 
+    // 🐢 Pista visual inmediata: mostramos el "loading" ANTES de cualquier await,
+    // así el usuario sabe que su mensaje se está procesando aunque el primer
+    // round-trip de red tarde unos segundos (el bug de la captura: usuario no
+    // veía dots y pensó que el chat estaba muerto, mandó "?" frustrado).
     setInput('');
     setLoading(true);
     setMessages(prev => [...prev, { role: 'user', content: text }]);

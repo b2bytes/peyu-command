@@ -116,14 +116,20 @@ export async function buildChatContext() {
     }
   } catch { /* no-op */ }
 
-  // Usuario si está autenticado
+  // Usuario si está autenticado. CRITICAL: usamos isAuthenticated() ANTES de
+  // me() porque me() en visitante anónimo lanza un 401 que termina reportándose
+  // a logClientError y ensucia los runtime logs. isAuthenticated() es síncrono
+  // contra el token local, así que es seguro y rápido.
   try {
-    const user = await base44.auth.me();
-    if (user) {
-      ctx.user_name = user.full_name || null;
-      ctx.user_email = user.email || null;
+    const authed = await base44.auth.isAuthenticated();
+    if (authed) {
+      const user = await base44.auth.me();
+      if (user) {
+        ctx.user_name = user.full_name || null;
+        ctx.user_email = user.email || null;
+      }
     }
-  } catch { /* not logged in, ignore */ }
+  } catch { /* anónimo, ignore */ }
 
   // 🎯 Top SKUs reales disponibles — la línea más importante:
   // garantiza que el agente SOLO use SKUs que existen y pueda mostrarlos con [[PRODUCTO:sku]]
