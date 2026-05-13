@@ -97,11 +97,32 @@ export default function PedidoDetailDrawer({ pedido, onClose, onUpdate }) {
                 </a>
               </p>
             )}
-            {pedido.ciudad && (
-              <p className="text-sm text-gray-600 flex items-center gap-2">
-                <MapPin className="w-3.5 h-3.5" /> {pedido.ciudad}{pedido.direccion_envio && ` — ${pedido.direccion_envio}`}
-              </p>
-            )}
+            {(pedido.direccion_envio || pedido.ciudad) && (() => {
+              // Extraemos el depto/referencia para mostrarlo destacado.
+              // El carrito guarda "Depto/Ref: XYZ" dentro de direccion_envio.
+              const dir = pedido.direccion_envio || '';
+              const deptoMatch = dir.match(/Depto\/Ref:\s*([^·|]+)/i);
+              const depto = deptoMatch ? deptoMatch[1].trim() : null;
+              return (
+                <div className="mt-1 space-y-1.5">
+                  <p className="text-xs font-bold text-gray-500 uppercase tracking-wider flex items-center gap-1.5">
+                    <MapPin className="w-3.5 h-3.5" /> Dirección de despacho
+                  </p>
+                  <p className="text-sm text-gray-800 leading-relaxed">
+                    {dir || pedido.ciudad}
+                  </p>
+                  {depto && (
+                    <div className="bg-amber-50 border border-amber-200 rounded-lg px-2.5 py-1.5 flex items-start gap-2">
+                      <span className="text-base leading-none mt-0.5">🏢</span>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-[10px] font-bold text-amber-700 uppercase tracking-wider leading-none">Depto / Oficina / Referencia</p>
+                        <p className="text-sm font-bold text-amber-900 mt-0.5 leading-tight">{depto}</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
           </section>
 
           {/* Productos */}

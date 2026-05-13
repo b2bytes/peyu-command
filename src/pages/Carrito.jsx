@@ -23,7 +23,7 @@ export default function Carrito() {
   const [carrito, setCarrito] = useState(JSON.parse(localStorage.getItem('carrito') || '[]'));
   const [cliente, setCliente] = useState({
     nombre: '', email: '', telefono: '',
-    region: '', ciudad: '', direccion: '', codigo_postal: '',
+    region: '', ciudad: '', direccion: '', referencia: '', codigo_postal: '',
   });
   const [errors, setErrors] = useState({});
   const [creando, setCreando] = useState(false);
@@ -158,7 +158,19 @@ export default function Carrito() {
       partes.push(`$${(i.precio || 0).toLocaleString('es-CL')}/u`);
       return partes.join(' · ');
     }).join('\n');
+    // 📍 Dirección de despacho COMPLETA — concatena calle + depto/referencia + comuna + región + CP
+    // Producción/despacho necesitan TODO el detalle, especialmente el N° de depto (depto/oficina/casa).
+    const referenciaTrim = (cliente.referencia || '').trim();
+    const direccionCompleta = [
+      cliente.direccion.trim(),
+      referenciaTrim ? `Depto/Ref: ${referenciaTrim}` : null,
+      cliente.ciudad,
+      cliente.region,
+      cliente.codigo_postal ? `CP ${cliente.codigo_postal}` : null,
+    ].filter(Boolean).join(' · ');
+
     const notasExtras = [
+      referenciaTrim ? `📍 Depto/Oficina/Ref: ${referenciaTrim}` : null,
       gcDescuento > 0 ? `GiftCard ${giftCard.codigo} -$${gcDescuento.toLocaleString('es-CL')}` : null,
       cupon ? `Cupón ${cupon.codigo} -$${(cupon.descuento_clp || 0).toLocaleString('es-CL')}` : null,
       descuentoTransferencia > 0 ? `Dscto transferencia -$${descuentoTransferencia.toLocaleString('es-CL')}` : null,
@@ -188,7 +200,7 @@ export default function Carrito() {
       medio_pago: medioPagoFinal,
       estado: 'Nuevo',
       ciudad: cliente.ciudad,
-      direccion_envio: cliente.direccion.trim(),
+      direccion_envio: direccionCompleta,
       requiere_personalizacion: carrito.some(i => i.personalizacion),
       texto_personalizacion: carrito.filter(i => i.personalizacion).map(i => i.personalizacion).join(', '),
       courier: envioBluex ? `BlueExpress ${envioBluex.servicio}` : 'Pendiente',
