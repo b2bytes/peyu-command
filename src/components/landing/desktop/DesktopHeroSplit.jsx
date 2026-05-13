@@ -21,6 +21,14 @@ export default function DesktopHeroSplit({ onOpenChat }) {
 
   return (
     <div className="ld-glass rounded-[28px] overflow-hidden flex flex-col h-full p-7 xl:p-10 relative">
+      {/* 📸 Imagen editorial de fondo — productos PEYU sobre lino beige.
+          Sutil (opacidad baja) para no competir con el texto pero dar vida al hero. */}
+      <img
+        src="https://media.base44.com/images/public/69d99b9d61f699701129c103/93a75051d_generated_image.png"
+        alt=""
+        aria-hidden="true"
+        className="absolute inset-0 w-full h-full object-cover opacity-20 mix-blend-multiply pointer-events-none"
+      />
       {/* Glow ambient sutil — verde acción + terracota highlight */}
       <div
         className="absolute -top-24 -left-20 w-72 h-72 rounded-full pointer-events-none opacity-50 blur-3xl"

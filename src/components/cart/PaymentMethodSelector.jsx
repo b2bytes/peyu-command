@@ -8,7 +8,7 @@ export const PAYMENT_METHODS = [
   {
     id: 'MercadoPago',
     label: 'Mercado Pago',
-    sub: 'Tarjetas, débito y hasta 12 cuotas',
+    sub: 'Tarjetas de crédito y débito',
     icon: Wallet,
     color: 'from-cyan-400 to-sky-500',
     badge: 'Más usado',
@@ -103,7 +103,6 @@ export default function PaymentMethodSelector({ value, onChange, totalCubiertoCo
           <p className="font-bold flex items-center gap-1.5">💳 Pago seguro con Mercado Pago</p>
           <ul className="space-y-0.5 text-sky-800/90 pl-1">
             <li>• Tarjeta de crédito, débito o efectivo en sucursales</li>
-            <li>• Hasta <strong>12 cuotas sin interés</strong> con bancos seleccionados</li>
             <li>• Te redirigimos al checkout oficial de Mercado Pago</li>
           </ul>
         </div>

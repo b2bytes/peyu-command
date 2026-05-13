@@ -192,8 +192,7 @@ export default function ProductoDetalle() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const precioFinal = producto ? Math.floor((producto.precio_b2c || 9990) * 0.85) : 0;
-  const ahorro = producto ? (producto.precio_b2c || 9990) - precioFinal : 0;
+  const precioFinal = producto ? (producto.precio_b2c || 9990) : 0;
   const precioVolumen = getPrecioVolumen(producto, cantidad);
   const precioActual = precioVolumen ? precioVolumen.precio : precioFinal;
 
@@ -254,6 +253,26 @@ export default function ProductoDetalle() {
         ...(Array.isArray(producto.galeria_urls) ? producto.galeria_urls : []),
       ].filter(Boolean)))
     : [];
+
+  // 🎨 Cuando el cliente elige un color, intentamos mostrar la imagen de ese color.
+  // Match heurístico: buscamos en TODA la galería un URL que contenga el alias
+  // del color seleccionado (turquesa, azul, rosa, negro, etc.). Si encontramos,
+  // saltamos a esa imagen automáticamente.
+  useEffect(() => {
+    if (!colorSeleccionado || !producto || galeria.length === 0) return;
+    const colores = getColores(producto);
+    const color = colores.find(c => c.id === colorSeleccionado);
+    if (!color) return;
+    // Lista de aliases para buscar en el URL (sin tildes, lowercase)
+    const aliases = [color.id, color.label.toLowerCase().split(' ')[0]]
+      .map(a => a.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase());
+    const idx = galeria.findIndex(url => {
+      const u = url.toLowerCase();
+      return aliases.some(a => u.includes(a));
+    });
+    if (idx >= 0 && idx !== vistaActiva) setVistaActiva(idx);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [colorSeleccionado, producto?.id]);
 
   if (notFound) return (
     <div className="flex-1 flex items-center justify-center py-20 ld-canvas min-h-screen px-6">
@@ -650,15 +669,12 @@ export default function ProductoDetalle() {
                       </>
                     ) : (
                       <>
-                        <p className="text-xs text-ld-fg-muted line-through">${(producto.precio_b2c || 9990).toLocaleString('es-CL')}</p>
                         <p className="ld-display text-4xl text-ld-fg leading-none">${precioFinal.toLocaleString('es-CL')}</p>
                         <p className="text-[10px] text-ld-fg-muted mt-1">IVA incluido</p>
                       </>
                     )}
                   </div>
                   <div className="text-right space-y-1">
-                    {!precioVolumen && <span className="inline-block text-[11px] font-bold px-2 py-0.5 rounded-lg" style={{ background: 'var(--ld-action-soft)', color: 'var(--ld-action)' }}>−15% online</span>}
-                    {!precioVolumen && <p className="text-[10px] font-semibold" style={{ color: 'var(--ld-action)' }}>Ahorras ${ahorro.toLocaleString('es-CL')}</p>}
                     {precioVolumen && <span className="inline-block text-[11px] font-bold px-2 py-0.5 rounded-lg" style={{ background: 'var(--ld-highlight-soft)', color: 'var(--ld-highlight)' }}>Precio B2B</span>}
                   </div>
                 </div>
@@ -1085,7 +1101,7 @@ export default function ProductoDetalle() {
                       </div>
                       <div className="p-3">
                         <h3 className="font-semibold text-xs text-ld-fg line-clamp-2 transition-colors leading-snug" style={{ transitionProperty: 'color' }}>{p.nombre}</h3>
-                        <p className="font-poppins font-bold text-sm mt-1" style={{ color: 'var(--ld-action)' }}>${Math.floor((p.precio_b2c || 9990) * 0.85).toLocaleString('es-CL')}</p>
+                        <p className="font-poppins font-bold text-sm mt-1" style={{ color: 'var(--ld-action)' }}>${(p.precio_b2c || 9990).toLocaleString('es-CL')}</p>
                       </div>
                     </div>
                   </Link>

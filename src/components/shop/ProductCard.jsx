@@ -10,7 +10,7 @@ import { getProductImage } from '@/utils/productImages';
  */
 function ProductCard({ producto, onAddToCart, agregandoId, index = 0 }) {
   const p = producto;
-  const precioOnline = Math.floor((p.precio_b2c || 9990) * 0.85);
+  const precio = p.precio_b2c || 9990;
   const isAdding = agregandoId === p.id;
   const [imgLoaded, setImgLoaded] = useState(false);
 
@@ -55,12 +55,6 @@ function ProductCard({ producto, onAddToCart, agregandoId, index = 0 }) {
             </span>
           )}
         </div>
-        {/* Discount pill terracota */}
-        <div className="absolute top-3 right-3">
-          <span className="text-white text-[10px] font-bold px-2.5 py-1 rounded-full" style={{ background: 'var(--ld-highlight)' }}>
-            −15%
-          </span>
-        </div>
         {/* Quick add */}
         <button
           onClick={(e) => onAddToCart(e, p)}
@@ -90,14 +84,9 @@ function ProductCard({ producto, onAddToCart, agregandoId, index = 0 }) {
           {p.nombre}
         </h3>
         <div className="flex items-baseline justify-between mt-3">
-          <div>
-            <p className="text-[10px] text-ld-fg-muted line-through font-medium">
-              ${(p.precio_b2c || 9990).toLocaleString('es-CL')}
-            </p>
-            <p className="font-jakarta font-bold text-lg text-ld-fg leading-none">
-              ${precioOnline.toLocaleString('es-CL')}
-            </p>
-          </div>
+          <p className="font-jakarta font-bold text-lg text-ld-fg leading-none">
+            ${precio.toLocaleString('es-CL')}
+          </p>
           <span className="text-[10px] text-ld-fg-muted font-medium">Envío 7 días</span>
         </div>
       </div>
