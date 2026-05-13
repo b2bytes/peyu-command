@@ -55,24 +55,29 @@ export default function DesktopCategorySection() {
   useEffect(() => {
     let alive = true;
     (async () => {
-      const all = await base44.entities.Producto.filter({ activo: true }, '-stock_actual', 200);
-      if (!alive) return;
-      const enriched = CATEGORY_CONFIG.map((cfg) => {
-        if (!cfg.queryCategoria) {
-          return { ...cfg, image: cfg.fallbackImage, count: null };
-        }
-        const matches = all.filter((p) => p.categoria === cfg.queryCategoria);
-        const withImg = matches.find(
-          (p) => p.imagen_promo_url || (p.galeria_urls && p.galeria_urls[0]) || p.imagen_url
-        );
-        const image =
-          withImg?.imagen_promo_url ||
-          withImg?.galeria_urls?.[0] ||
-          withImg?.imagen_url ||
-          cfg.fallbackImage;
-        return { ...cfg, image, count: matches.length };
-      });
-      setCategories(enriched);
+      try {
+        const all = await base44.entities.Producto.filter({ activo: true }, '-stock_actual', 200);
+        if (!alive) return;
+        const enriched = CATEGORY_CONFIG.map((cfg) => {
+          if (!cfg.queryCategoria) {
+            return { ...cfg, image: cfg.fallbackImage, count: null };
+          }
+          const matches = all.filter((p) => p.categoria === cfg.queryCategoria);
+          const withImg = matches.find(
+            (p) => p.imagen_promo_url || (p.galeria_urls && p.galeria_urls[0]) || p.imagen_url
+          );
+          const image =
+            withImg?.imagen_promo_url ||
+            withImg?.galeria_urls?.[0] ||
+            withImg?.imagen_url ||
+            cfg.fallbackImage;
+          return { ...cfg, image, count: matches.length };
+        });
+        setCategories(enriched);
+      } catch (err) {
+        // Network error u otro fallo no debe tumbar la landing — quedan los fallbacks
+        if (alive) console.warn('DesktopCategorySection: usando fallbacks', err?.message || err);
+      }
     })();
     return () => {
       alive = false;
