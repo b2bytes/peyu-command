@@ -13,7 +13,7 @@ const CATEGORIES = [
     icon: Home,
     to: '/shop?categoria=Hogar',
     image:
-      'https://images.unsplash.com/photo-1554995207-c18c203602cb?auto=format&fit=crop&w=600&q=70',
+      'https://media.base44.com/images/public/69d99b9d61f699701129c103/9bc5ff697_generated_image.png',
   },
   {
     label: 'Oficina',
@@ -21,7 +21,7 @@ const CATEGORIES = [
     icon: Briefcase,
     to: '/shop?categoria=Escritorio',
     image:
-      'https://images.unsplash.com/photo-1497032628192-86f99bcd76bc?auto=format&fit=crop&w=600&q=70',
+      'https://media.base44.com/images/public/69d99b9d61f699701129c103/062d09698_generated_image.png',
   },
   {
     label: 'Empresas',
@@ -29,7 +29,7 @@ const CATEGORIES = [
     icon: Building2,
     to: '/b2b/catalogo',
     image:
-      'https://images.unsplash.com/photo-1556761175-5973dc0f32e7?auto=format&fit=crop&w=600&q=70',
+      'https://media.base44.com/images/public/69d99b9d61f699701129c103/89897ff94_generated_image.png',
   },
   {
     label: 'Gift Card',
@@ -37,7 +37,7 @@ const CATEGORIES = [
     icon: Gift,
     to: '/regalar-giftcard',
     image:
-      'https://images.unsplash.com/photo-1607344645866-009c320b63e0?auto=format&fit=crop&w=600&q=70',
+      'https://media.base44.com/images/public/69d99b9d61f699701129c103/e60598fc6_generated_image.png',
   },
 ];
 
