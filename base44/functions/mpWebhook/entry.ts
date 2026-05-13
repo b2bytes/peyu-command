@@ -97,10 +97,29 @@ Deno.serve(async (req) => {
 
     const estadoAnterior = pedido.estado;
 
+    // Mapeamos también payment_status fino para distinguir "pagado" vs "esperando".
+    let nuevoPaymentStatus = pedido.payment_status || 'pending_mp';
+    if (mpStatus === 'approved') nuevoPaymentStatus = 'paid';
+    else if (['rejected', 'cancelled', 'charged_back'].includes(mpStatus)) nuevoPaymentStatus = 'failed';
+    else if (mpStatus === 'refunded') nuevoPaymentStatus = 'refunded';
+
     await base44.asServiceRole.entities.PedidoWeb.update(pedido.id, {
       estado: nuevoEstado,
       medio_pago: 'MercadoPago',
+      payment_status: nuevoPaymentStatus,
+      mp_payment_id: String(dataId),
       notas: `${pedido.notas || ''} | ${notaMP}`.slice(0, 1000),
+      historial: [
+        ...(pedido.historial || []),
+        {
+          at: new Date().toISOString(),
+          type: mpStatus === 'approved' ? 'paid' : 'status_changed',
+          actor: 'mpWebhook',
+          channel: 'system',
+          detail: `MP ${mpStatus}/${mpStatusDetail}`,
+          meta: { mp_payment_id: dataId, amount: transactionAmount },
+        },
+      ],
     });
 
     // Si pasó a "Confirmado" por primera vez, enviamos email al cliente.

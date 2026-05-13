@@ -89,9 +89,13 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Error MP', details: data }, { status: 500 });
     }
 
-    // Guardamos referencia en el pedido para auditoría.
+    // Guardamos referencia en el pedido para auditoría + expiración a 5 días.
     try {
+      const expiresAt = new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString();
       await base44.asServiceRole.entities.PedidoWeb.update(pedido.id, {
+        mp_preference_id: data.id,
+        payment_status: pedido.payment_status === 'manual_review' ? 'manual_review' : 'pending_mp',
+        expires_at: expiresAt,
         notas: `${pedido.notas || ''} | MP_PREF:${data.id}`.slice(0, 1000),
       });
     } catch {}

@@ -15,6 +15,14 @@ Deno.serve(async (req) => {
     const abandonados = pedidos.filter(p => {
       if (p.estado !== 'Nuevo') return false;
       if (!p.cliente_email) return false;
+      // 🛡️ NO enviar a pedidos sospechosos (test interno, alto riesgo)
+      if (p.payment_status === 'manual_review') return false;
+      if ((p.risk_flags || []).includes('email_test_interno')) return false;
+      // 🛡️ NO enviar a pedidos que YA se pagaron (paid) ni a los que ya expiraron
+      if (p.payment_status === 'paid' || p.payment_status === 'expired') return false;
+      // 🛡️ NO reenviar si ya se envió el primer toque en últimas 22h
+      const ultimoEnvio = p.recovery_secuencia?.toque_1_enviado_at;
+      if (ultimoEnvio && new Date(ultimoEnvio) > new Date(Date.now() - 22 * 60 * 60 * 1000)) return false;
       const creado = new Date(p.created_date);
       return creado < new Date(hace2h) && creado > new Date(hace72h);
     });

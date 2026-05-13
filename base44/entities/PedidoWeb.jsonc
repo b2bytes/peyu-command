@@ -102,6 +102,52 @@
         "Reembolsado"
       ]
     },
+    "payment_status": {
+      "type": "string",
+      "title": "Estado del pago",
+      "description": "Estado fino del pago, independiente del estado operativo. Permite distinguir 'esperando MP' de 'cancelado por expiraci\u00f3n' o 'pagado'.",
+      "enum": [
+        "pending_mp",
+        "pending_transfer",
+        "paid",
+        "expired",
+        "failed",
+        "manual_review",
+        "refunded"
+      ],
+      "default": "pending_mp"
+    },
+    "mp_preference_id": {
+      "type": "string",
+      "title": "ID Preferencia MercadoPago",
+      "description": "ID de la preferencia MP creada para este pedido. Permite reconciliar con la API de MP."
+    },
+    "mp_payment_id": {
+      "type": "string",
+      "title": "ID Pago MercadoPago",
+      "description": "ID del pago efectivo en MP (poblado por el webhook al confirmar)."
+    },
+    "expires_at": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Expira el",
+      "description": "Fecha l\u00edmite para completar el pago. Si pasa sin pagar, el pedido se cancela autom\u00e1ticamente."
+    },
+    "risk_score": {
+      "type": "number",
+      "title": "Score de riesgo (0-100)",
+      "description": "Calculado al crear el pedido. >70 requiere revisi\u00f3n manual antes de procesar.",
+      "default": 0
+    },
+    "risk_flags": {
+      "type": "array",
+      "title": "Banderas de riesgo",
+      "description": "Lista de razones por las que el pedido fue marcado sospechoso (volumen_alto_b2c, telefono_repetido, email_test, etc.)",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    },
     "requiere_personalizacion": {
       "type": "boolean",
       "title": "Requiere Personalizaci\u00f3n"
@@ -145,6 +191,90 @@
     "notas": {
       "type": "string",
       "title": "Notas"
+    },
+    "recovery_secuencia": {
+      "type": "object",
+      "title": "Estado de la secuencia de recuperaci\u00f3n",
+      "description": "Trackea qu\u00e9 emails de recuperaci\u00f3n se enviaron al cliente que no complet\u00f3 pago.",
+      "additionalProperties": true,
+      "properties": {
+        "toque_1_enviado_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "toque_2_enviado_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "toque_3_enviado_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "convertido": {
+          "type": "boolean",
+          "default": false
+        },
+        "cupon_emitido": {
+          "type": "string"
+        }
+      }
+    },
+    "historial": {
+      "type": "array",
+      "title": "Historial del pedido",
+      "description": "Trazabilidad cronol\u00f3gica del pedido B2C/B2B (creaci\u00f3n, pago, producci\u00f3n, despacho, entrega, calificaci\u00f3n).",
+      "items": {
+        "type": "object",
+        "properties": {
+          "at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "created",
+              "paid",
+              "confirmed",
+              "in_production",
+              "ready_to_ship",
+              "shipped",
+              "delivered",
+              "rated",
+              "cancelled",
+              "refunded",
+              "status_changed",
+              "email_sent",
+              "tracking_added",
+              "note",
+              "risk_assessed",
+              "expired",
+              "recovery_sent"
+            ]
+          },
+          "actor": {
+            "type": "string"
+          },
+          "channel": {
+            "type": "string",
+            "enum": [
+              "email",
+              "whatsapp",
+              "web",
+              "system",
+              "manual"
+            ]
+          },
+          "detail": {
+            "type": "string"
+          },
+          "meta": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        }
+      },
+      "default": []
     }
   },
   "required": [
