@@ -50,13 +50,13 @@ export default function SocialStudio() {
         <div className="absolute bottom-0 left-1/3 w-[400px] h-[400px] bg-cyan-500/5 rounded-full blur-[100px]" />
       </div>
 
-      <div className="relative flex-1 flex flex-col min-h-0 p-4 lg:p-6 gap-4">
+      <div className="relative flex-1 flex flex-col min-h-0 p-3 lg:p-4 gap-3">
         {/* Hero · KPIs vivos */}
         <SocialStudioHero stats={stats} onPendientesClick={() => setTab('queue')} />
 
-        {/* Segmented control glassmorphic */}
+        {/* Segmented control glassmorphic compacto */}
         <div className="flex-shrink-0">
-          <div className="inline-flex p-1 bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl gap-1 max-w-full overflow-x-auto scrollbar-hide">
+          <div className="inline-flex p-0.5 bg-white/5 backdrop-blur-xl border border-white/10 rounded-xl gap-0.5 max-w-full overflow-x-auto scrollbar-hide">
             {TABS.map(t => {
               const Icon = t.icon;
               const active = tab === t.id;
@@ -64,17 +64,17 @@ export default function SocialStudio() {
                 <button
                   key={t.id}
                   onClick={() => setTab(t.id)}
-                  className={`relative flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition-all ${
+                  className={`relative flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-all ${
                     active ? 'text-white' : 'text-white/50 hover:text-white/80'
                   }`}
                 >
                   {active && (
-                    <span className={`absolute inset-0 rounded-xl bg-gradient-to-br ${t.accent} opacity-90 shadow-lg`} />
+                    <span className={`absolute inset-0 rounded-lg bg-gradient-to-br ${t.accent} opacity-90 shadow-md`} />
                   )}
-                  <Icon className="w-4 h-4 relative z-10" />
+                  <Icon className="w-3.5 h-3.5 relative z-10" />
                   <span className="relative z-10">{t.label}</span>
                   {t.id === 'queue' && stats.pendientes > 0 && (
-                    <span className={`relative z-10 px-1.5 py-0.5 rounded-full text-[10px] font-bold ${
+                    <span className={`relative z-10 px-1.5 rounded-full text-[9px] font-bold ${
                       active ? 'bg-white/25 text-white' : 'bg-amber-500/30 text-amber-200'
                     }`}>
                       {stats.pendientes}
