@@ -103,14 +103,28 @@ export default function PedidoDetailDrawer({ pedido, onClose, onUpdate }) {
               const dir = pedido.direccion_envio || '';
               const deptoMatch = dir.match(/Depto\/Ref:\s*([^·|]+)/i);
               const depto = deptoMatch ? deptoMatch[1].trim() : null;
+              // Para Google Maps: usamos dirección completa + ciudad + "Chile"
+              const mapsQuery = encodeURIComponent(
+                `${dir || pedido.ciudad}${pedido.ciudad && !dir.includes(pedido.ciudad) ? ', ' + pedido.ciudad : ''}, Chile`
+              );
+              const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${mapsQuery}`;
               return (
                 <div className="mt-1 space-y-1.5">
                   <p className="text-xs font-bold text-gray-500 uppercase tracking-wider flex items-center gap-1.5">
                     <MapPin className="w-3.5 h-3.5" /> Dirección de despacho
                   </p>
-                  <p className="text-sm text-gray-800 leading-relaxed">
+                  <a
+                    href={mapsUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    title="Abrir en Google Maps"
+                    className="block text-sm text-teal-700 hover:text-teal-900 hover:underline leading-relaxed font-medium group"
+                  >
                     {dir || pedido.ciudad}
-                  </p>
+                    <span className="inline-flex items-center gap-0.5 ml-1.5 text-[11px] text-teal-600 opacity-70 group-hover:opacity-100">
+                      <ExternalLink className="w-3 h-3" /> Maps
+                    </span>
+                  </a>
                   {depto && (
                     <div className="bg-amber-50 border border-amber-200 rounded-lg px-2.5 py-1.5 flex items-start gap-2">
                       <span className="text-base leading-none mt-0.5">🏢</span>

@@ -87,7 +87,6 @@ function ProductCard({ producto, onAddToCart, agregandoId, index = 0 }) {
           <p className="font-jakarta font-bold text-lg text-ld-fg leading-none">
             ${precio.toLocaleString('es-CL')}
           </p>
-          <span className="text-[10px] text-ld-fg-muted font-medium">Envío 7 días</span>
         </div>
       </div>
     </Link>
