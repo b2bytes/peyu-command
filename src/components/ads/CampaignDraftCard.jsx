@@ -8,8 +8,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import {
   Target, Download, Loader2, ExternalLink, Brain, Microscope,
-  DollarSign, TrendingUp, Shield, Users, Image as ImageIcon, Sparkles
+  DollarSign, TrendingUp, Shield, Users, Image as ImageIcon, Sparkles, Eye
 } from 'lucide-react';
+import AdPreviewModal from './AdPreviewModal';
 
 const STATUS_COLORS = {
   'Draft IA': 'bg-blue-100 text-blue-700',
@@ -25,6 +26,7 @@ const STATUS_COLORS = {
 export default function CampaignDraftCard({ draft, onUpdated }) {
   const [exporting, setExporting] = useState(false);
   const [csvUrl, setCsvUrl] = useState(draft.exported_csv_url);
+  const [previewOpen, setPreviewOpen] = useState(false);
 
   const exportCSV = async () => {
     setExporting(true);
@@ -229,6 +231,9 @@ export default function CampaignDraftCard({ draft, onUpdated }) {
 
         {/* Actions */}
         <div className="flex gap-2 pt-2 border-t border-slate-100">
+          <Button onClick={() => setPreviewOpen(true)} size="sm" variant="outline" className="gap-1.5">
+            <Eye className="w-3.5 h-3.5" /> Preview
+          </Button>
           <Button onClick={exportCSV} disabled={exporting} size="sm" className="gap-1.5 flex-1">
             {exporting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Download className="w-3.5 h-3.5" />}
             {csvUrl ? 'Re-exportar CSV' : 'Exportar a Google Ads Editor (CSV)'}
@@ -242,6 +247,8 @@ export default function CampaignDraftCard({ draft, onUpdated }) {
           )}
         </div>
       </CardContent>
+
+      <AdPreviewModal open={previewOpen} onOpenChange={setPreviewOpen} draft={draft} />
     </Card>
   );
 }
