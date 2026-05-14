@@ -103,6 +103,47 @@ Deno.serve(async (req) => {
         '', '', '', '', '', '', '', '', '', '', '', '', '', '', '']);
     }
 
+    // Asset Groups (Performance Max + Demand Gen)
+    // Google Ads Editor importa asset groups con su set de assets en filas separadas.
+    for (const ag of (draft.asset_groups || [])) {
+      const agName = ag.name;
+      // Fila del asset group
+      rows.push([cname, '', 'Paused', '', '', '', '', '', '', agName, 'Enabled',
+        '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '',
+        '', '', '', '', '', '', '', '', '', '', '', '', '', '', '']);
+
+      // Headlines como assets de texto
+      for (const h of (ag.headlines || [])) {
+        rows.push([cname, '', 'Paused', '', '', '', '', '', '', agName, '',
+          '', '', '', h, '', '', '', '', '', '', '', '', '', '', '', '', '', '',
+          '', '', '', '', '', '', '', 'Headline asset', '', '', '', '', '', '', '']);
+      }
+      // Long headlines
+      for (const lh of (ag.long_headlines || [])) {
+        rows.push([cname, '', 'Paused', '', '', '', '', '', '', agName, '',
+          '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '',
+          lh, '', '', '', '', '', '', 'Long headline asset', '', '', '', '', '', '', '']);
+      }
+      // Descriptions
+      for (const d of (ag.descriptions || [])) {
+        rows.push([cname, '', 'Paused', '', '', '', '', '', '', agName, '',
+          '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '',
+          d, '', '', '', '', '', '', 'Description asset', '', '', '', '', '', '', '']);
+      }
+      // Image URLs (Google Ads Editor importa por URL externa)
+      for (const img of (ag.image_urls || [])) {
+        rows.push([cname, '', 'Paused', '', '', '', '', '', '', agName, '',
+          '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '',
+          '', '', '', '', '', img, utmSuffix, 'Image asset', '', '', '', '', '', '', '']);
+      }
+      // Business name + CTA como callout-like
+      if (ag.business_name) {
+        rows.push([cname, '', 'Paused', '', '', '', '', '', '', agName, '',
+          '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '',
+          '', '', '', '', '', '', '', 'Business name', '', '', '', '', ag.business_name, '', '']);
+      }
+    }
+
     // Sitelinks
     for (const sl of (draft.sitelinks || [])) {
       rows.push([cname, '', 'Paused', '', '', '', '', '', '', '', '',

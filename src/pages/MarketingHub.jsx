@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { Sparkles, MessageSquare, CalendarDays, Target, Zap, Plug, LayoutGrid } from 'lucide-react';
+import { Sparkles, MessageSquare, CalendarDays, Target, Zap, Plug, LayoutGrid, Crosshair } from 'lucide-react';
 import { toast } from 'sonner';
 import MarketingHubChat from '@/components/marketing/MarketingHubChat';
 import MarketingHubStats from '@/components/marketing/MarketingHubStats';
@@ -11,6 +11,7 @@ import ChannelConnections from '@/components/marketing/ChannelConnections';
 import ContentGeneratorPanel from '@/components/marketing/ContentGeneratorPanel';
 import AISuggestionsPanel from '@/components/marketing/AISuggestionsPanel';
 import ContentCalendarView from '@/components/marketing/ContentCalendarView';
+import GoogleAdsPanel from '@/components/marketing/GoogleAdsPanel';
 
 export default function MarketingHub() {
   const [posts, setPosts] = useState([]);
@@ -116,12 +117,15 @@ export default function MarketingHub() {
         <div className="lg:col-span-2 h-[640px]">
           <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden h-full flex flex-col">
             <Tabs defaultValue="posts" className="flex flex-col h-full">
-              <TabsList className="grid grid-cols-3 m-3 mb-0 flex-shrink-0">
+              <TabsList className="grid grid-cols-4 m-3 mb-0 flex-shrink-0">
                 <TabsTrigger value="posts" className="text-xs">
                   <MessageSquare className="w-3 h-3 mr-1" /> Posts
                 </TabsTrigger>
                 <TabsTrigger value="ads" className="text-xs">
                   <Target className="w-3 h-3 mr-1" /> Ads
+                </TabsTrigger>
+                <TabsTrigger value="google_ads" className="text-xs">
+                  <Crosshair className="w-3 h-3 mr-1" /> Google
                 </TabsTrigger>
                 <TabsTrigger value="calendars" className="text-xs">
                   <LayoutGrid className="w-3 h-3 mr-1" /> Plan
@@ -134,6 +138,9 @@ export default function MarketingHub() {
                 </TabsContent>
                 <TabsContent value="ads" className="mt-0">
                   {loading ? <p className="text-sm text-gray-400 text-center py-8">Cargando...</p> : <AdCampaignsList campanas={campanas} />}
+                </TabsContent>
+                <TabsContent value="google_ads" className="mt-0">
+                  <GoogleAdsPanel />
                 </TabsContent>
                 <TabsContent value="calendars" className="mt-0">
                   {loading ? <p className="text-sm text-gray-400 text-center py-8">Cargando...</p> : (
