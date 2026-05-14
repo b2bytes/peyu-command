@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import AdPreviewModal from './AdPreviewModal';
 import PublishCampaignButton from './PublishCampaignButton';
+import ForecastPanel from './ForecastPanel';
 
 const STATUS_COLORS = {
   'Draft IA': 'bg-blue-100 text-blue-700',
@@ -75,6 +76,9 @@ export default function CampaignDraftCard({ draft, onUpdated }) {
           <ForecastKpi label="CPC esp." value={draft.expected_cpc_clp ? `$${Math.round(draft.expected_cpc_clp).toLocaleString()}` : '—'} />
           <ForecastKpi label="Conv/sem" value={draft.expected_conversions_week || '—'} />
         </div>
+
+        {/* Forecast IA — predicción de rendimiento antes de publicar */}
+        <ForecastPanel draft={draft} onUpdated={onUpdated} />
 
         {/* Racional */}
         {draft.strategic_rationale && (

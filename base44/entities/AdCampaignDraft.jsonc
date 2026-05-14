@@ -467,6 +467,152 @@
     "scientist_analysis": {
       "type": "string",
       "title": "An\u00e1lisis del agente scientist"
+    },
+    "forecast": {
+      "type": "object",
+      "title": "Forecast IA pre-publicaci\u00f3n",
+      "description": "Predicci\u00f3n del agente Ads Forecaster: KPIs esperados, verdict y sugerencias antes de lanzar.",
+      "additionalProperties": true,
+      "properties": {
+        "confidence_score": {
+          "type": "number"
+        },
+        "performance_score": {
+          "type": "number"
+        },
+        "verdict": {
+          "type": "string",
+          "enum": [
+            "ship_it",
+            "review",
+            "pivot",
+            "kill"
+          ]
+        },
+        "headline": {
+          "type": "string"
+        },
+        "impressions_weekly": {
+          "type": "object",
+          "properties": {
+            "pessimistic": {
+              "type": "number"
+            },
+            "expected": {
+              "type": "number"
+            },
+            "optimistic": {
+              "type": "number"
+            }
+          }
+        },
+        "ctr_pct": {
+          "type": "object",
+          "properties": {
+            "pessimistic": {
+              "type": "number"
+            },
+            "expected": {
+              "type": "number"
+            },
+            "optimistic": {
+              "type": "number"
+            }
+          }
+        },
+        "conversions_weekly": {
+          "type": "object",
+          "properties": {
+            "pessimistic": {
+              "type": "number"
+            },
+            "expected": {
+              "type": "number"
+            },
+            "optimistic": {
+              "type": "number"
+            }
+          }
+        },
+        "cac_clp": {
+          "type": "object",
+          "properties": {
+            "pessimistic": {
+              "type": "number"
+            },
+            "expected": {
+              "type": "number"
+            },
+            "optimistic": {
+              "type": "number"
+            }
+          }
+        },
+        "roas": {
+          "type": "object",
+          "properties": {
+            "pessimistic": {
+              "type": "number"
+            },
+            "expected": {
+              "type": "number"
+            },
+            "optimistic": {
+              "type": "number"
+            }
+          }
+        },
+        "risk_flags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "strengths": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "optimization_suggestions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "area": {
+                "type": "string"
+              },
+              "suggestion": {
+                "type": "string"
+              },
+              "impact": {
+                "type": "string",
+                "enum": [
+                  "high",
+                  "medium",
+                  "low"
+                ]
+              }
+            }
+          }
+        },
+        "comparable_campaigns": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "forecasted_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "forecasted_by": {
+          "type": "string"
+        },
+        "historical_n": {
+          "type": "number"
+        }
+      }
     }
   },
   "required": [
