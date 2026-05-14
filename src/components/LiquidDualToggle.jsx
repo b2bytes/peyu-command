@@ -31,17 +31,17 @@ export default function LiquidDualToggle({ compact = false }) {
         aria-pressed={active}
         aria-label={label}
         className={`relative z-10 flex items-center justify-center transition-all duration-300 ${
-          compact ? 'w-7 h-7' : 'w-8 h-8'
+          compact ? 'w-6 h-6' : 'w-8 h-8'
         } rounded-full ${active ? 'text-[var(--ld-bg)]' : 'text-[var(--ld-fg-muted)] hover:text-[var(--ld-fg)]'}`}
       >
-        <Icon className={compact ? 'w-3.5 h-3.5' : 'w-4 h-4'} />
+        <Icon className={compact ? 'w-3 h-3' : 'w-4 h-4'} />
       </button>
     );
   };
 
   // Posición del knob: 0 (day), 1 (auto), 2 (night)
   const idx = pref === 'day' ? 0 : pref === 'night' ? 2 : 1;
-  const knobSize = compact ? 28 : 32;
+  const knobSize = compact ? 24 : 32;
   const offset = idx * knobSize;
 
   return (

@@ -151,6 +151,13 @@
   * {
     @apply border-border outline-ring/50;
   }
+  html, body {
+    /* Mata cualquier scroll horizontal residual en mobile (decoraciones blur,
+       toggles, badges que se salen por 1-2px del viewport). Sin esto, iOS
+       Safari muestra una "tira lateral" que rompe la sensación de app. */
+    overflow-x: hidden;
+    max-width: 100vw;
+  }
   html {
     color-scheme: light;
     transition: background-color 600ms ease, color 600ms ease;
