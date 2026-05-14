@@ -417,28 +417,17 @@ export default function ProductoDetalle() {
           </div>
         </div>
 
-        {/* HEADER */}
-        <div className="ld-glass-strong border-b border-ld-border px-4 sm:px-6 py-3 flex items-center justify-between sticky top-0 z-50">
-          <div className="flex items-center gap-3">
-            <button onClick={() => navigate(-1)} className="w-9 h-9 ld-btn-ghost rounded-xl flex items-center justify-center">
-              <ArrowLeft className="w-4 h-4 text-ld-fg" />
-            </button>
-            <Link to="/" className="flex items-center gap-2">
-              <div className="w-9 h-9 rounded-xl flex items-center justify-center shadow-lg text-white font-bold text-sm" style={{ background: 'var(--ld-grad-action)' }}>P</div>
-              <span className="font-poppins font-bold text-sm text-ld-fg hidden sm:inline">PEYU Chile</span>
-            </Link>
-          </div>
-          <Link to="/cart" className="relative">
-            <Button size="sm" className="ld-btn-primary gap-2 rounded-full">
-              <ShoppingCart className="w-4 h-4" />
-              <span className="hidden sm:inline text-sm">Carrito</span>
-              {carrito.length > 0 && (
-                <span className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] px-1 text-white text-[10px] font-bold rounded-full flex items-center justify-center shadow ring-2" style={{ background: 'var(--ld-highlight)', borderColor: 'var(--ld-bg)' }}>
-                  {carrito.length}
-                </span>
-              )}
-            </Button>
-          </Link>
+        {/* Botón "volver" minimal — el header global ya viene de PublicLayout
+            (PublicMobileHeader). Antes esta página agregaba SU PROPIO header
+            con logo "P" + carrito, causando una doble barra superpuesta. */}
+        <div className="px-4 sm:px-6 pt-3 flex items-center">
+          <button
+            onClick={() => navigate(-1)}
+            className="w-9 h-9 ld-btn-ghost rounded-xl flex items-center justify-center"
+            aria-label="Volver"
+          >
+            <ArrowLeft className="w-4 h-4 text-ld-fg" />
+          </button>
         </div>
 
         {/* Breadcrumb */}

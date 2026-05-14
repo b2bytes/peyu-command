@@ -133,8 +133,10 @@ export async function buildChatContext() {
 
   // 🎯 Top SKUs reales disponibles — la línea más importante:
   // garantiza que el agente SOLO use SKUs que existen y pueda mostrarlos con [[PRODUCTO:sku]]
+  // 6 SKUs es suficiente para tener variedad sin sobrecargar el system prompt
+  // (antes 12 generaba respuestas largas porque el agente se distraía leyéndolos).
   try {
-    const picks = pickTopSkus(allProducts, { excludeSku: ctx.viewing_sku, maxItems: 12 });
+    const picks = pickTopSkus(allProducts, { excludeSku: ctx.viewing_sku, maxItems: 6 });
     if (picks.length) {
       ctx.top_skus = picks.map(formatSkuLine).join(', ');
     }
@@ -184,13 +186,33 @@ async function brainLookup(userMessage, userEmail) {
   }
 }
 
+// Saludos / mensajes triviales que NO necesitan consulta a Brain.
+// Si el usuario solo dice "hola" / "gracias", inyectar Brain genera contexto
+// pesado que dispara respuestas largas del agente — exactamente lo opuesto a
+// lo que queremos. En esos casos el agente responde con el system prompt limpio
+// y devuelve la respuesta corta esperada (1-2 líneas).
+const SHORT_GREETINGS = /^(hola|holi|holaa+|buenas|hey|hi|hello|qué tal|que tal|gracias|ok|sí|si|no|listo|dale|chao|adiós|adios|👋|🐢|🌱|❤️|👍|😊|😄|🙏)[\s.!?¡¿]*$/i;
+
+function isTrivialMessage(msg) {
+  if (!msg) return true;
+  const trimmed = msg.trim();
+  if (trimmed.length < 4) return true; // "hola", "ok", emojis sueltos
+  if (SHORT_GREETINGS.test(trimmed)) return true;
+  return false;
+}
+
 // Helper unificado: arma el contexto, lo enriquece con RAG del Brain y lo antepone al mensaje.
 export async function withContext(userMessage) {
   const ctx = await buildChatContext();
   const ctxLine = serializeContext(ctx);
 
-  // 🧠 Consulta al Brain en paralelo — mejora precisión de SKUs recomendados
-  const brainBlock = await brainLookup(userMessage, ctx.user_email);
+  // 🧠 Brain lookup — solo cuando hay intención real (no en saludos).
+  // En "hola" devolvíamos un párrafo enorme porque Brain inyectaba políticas,
+  // sostenibilidad, etc. Ahora en saludos confiamos solo en el system prompt
+  // del agente, que ya tiene la regla "1-2 líneas + 1 producto".
+  const brainBlock = isTrivialMessage(userMessage)
+    ? ''
+    : await brainLookup(userMessage, ctx.user_email);
 
   const parts = [];
   if (ctxLine) parts.push(ctxLine);
