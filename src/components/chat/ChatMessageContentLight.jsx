@@ -6,6 +6,7 @@ import { ShoppingCart, Building2, MessageCircle, ArrowRight, Check } from 'lucid
 import ChatNavLink from '@/components/chat/ChatNavLink';
 import ChatCheckoutCard from '@/components/chat/ChatCheckoutCard';
 import ChatProductCard from '@/components/chat/ChatProductCard';
+import ChatQuoteCard from '@/components/chat/ChatQuoteCard';
 import { sanitizeAgentText } from '@/lib/chat-sanitize';
 
 function getChatQty() {
@@ -37,7 +38,7 @@ function addToCart(producto, cantidad) {
   window.dispatchEvent(new CustomEvent('peyu:cart-added', { detail: nuevoItem }));
 }
 
-const TAG_REGEX = /\[\[(PRODUCTO|ACTION|NAV|CHECKOUT|CART|NEWSLETTER):?([^\]]*)\]\]/g;
+const TAG_REGEX = /\[\[(PRODUCTO|ACTION|NAV|CHECKOUT|CART|NEWSLETTER|QUOTE_PDF):?([^\]]*)\]\]/g;
 
 function buildB2BUrlFromChat() {
   const qty = getChatQty();
@@ -146,6 +147,7 @@ function ChatMessageContentLight({ content }) {
         if (tk.type === 'ACTION') return <ActionButtonLight key={i} action={tk.value} />;
         if (tk.type === 'CHECKOUT') return <ChatCheckoutCard key={i} variant="light" />;
         if (tk.type === 'CART') return <CartInjectLight key={i} spec={tk.value} />;
+        if (tk.type === 'QUOTE_PDF') return <ChatQuoteCard key={i} spec={tk.value} variant="light" />;
         if (tk.type === 'NAV') {
           const [to, label] = tk.value.split('|').map(s => s.trim());
           return <ChatNavLink key={i} to={to} label={label} variant="light" />;

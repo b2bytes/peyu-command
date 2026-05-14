@@ -125,6 +125,27 @@ export async function buildChatContext() {
     }
   } catch { /* no-op */ }
 
+  // 🏢 Datos B2B capturados durante la conversación.
+  // Cuando hay empresa + contacto/email + qty >= 10 + producto, el agente
+  // puede emitir [[QUOTE_PDF]] para generar cotización descargable.
+  try {
+    const raw = localStorage.getItem('peyu_chat_b2b_contact');
+    const contact = raw ? JSON.parse(raw) : {};
+    if (contact.empresa) ctx.b2b_empresa = contact.empresa;
+    if (contact.contacto) ctx.b2b_contacto = contact.contacto;
+    if (contact.email) ctx.b2b_email = contact.email;
+    if (contact.telefono) ctx.b2b_telefono = contact.telefono;
+    if (contact.fecha_requerida) ctx.b2b_fecha = contact.fecha_requerida;
+    // Flag: ¿tenemos todo lo mínimo para cotizar PDF?
+    const hasProduct = !!localStorage.getItem('peyu_chat_last_product');
+    const hasQty = parseInt(localStorage.getItem('peyu_chat_last_qty') || '0', 10) >= 10;
+    const hasContact = !!(contact.email || contact.telefono);
+    const hasEmpresa = !!contact.empresa;
+    if (hasProduct && hasQty && hasEmpresa && hasContact) {
+      ctx.b2b_quote_ready = 'true';
+    }
+  } catch { /* no-op */ }
+
   // Usuario si está autenticado. CRITICAL: usamos isAuthenticated() ANTES de
   // me() porque me() en visitante anónimo lanza un 401 que termina reportándose
   // a logClientError y ensucia los runtime logs. isAuthenticated() es síncrono
@@ -216,6 +237,47 @@ const B2B_KEYWORDS = /\b(empresa|empleados?|equipo|colaboradores?|corporativo|of
 const B2C_KEYWORDS = /\b(para m[ií]|uno solo|individual|mi (mam[áa]|pap[áa]|pareja|polola|pololo|amig[oa]|herman[oa]|hij[oa]|jefe|sobrin[oa])|cumplea[ñn]os|aniversario|regalo personal)\b/i;
 const QTY_REGEX = /\b(\d{1,5})\s*(u\.?|unidades?|pcs|piezas|regalos|personas|empleados?|colaboradores?)?\b/i;
 
+// 📞 Extractores B2B: detectan email, teléfono CL, RUT y empresa en mensajes
+// del usuario. Lo persistimos en peyu_chat_b2b_contact para que el agente pueda
+// emitir [[QUOTE_PDF]] cuando estén los datos mínimos.
+const EMAIL_REGEX = /([a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,})/i;
+const PHONE_REGEX = /(\+?56\s?9[\s-]?\d{4}[\s-]?\d{4}|\b9\s?\d{4}\s?\d{4}\b|\b\d{9}\b)/;
+const EMPRESA_HINT = /\b(soy de|trabajo en|nuestra empresa|empresa[: ]|de la empresa|en )\s*([A-ZÁÉÍÓÚÑ][\w\s&.,'-]{2,40})/;
+const DATE_HINT = /\b(\d{1,2})\s?(?:de\s)?(enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|setiembre|octubre|noviembre|diciembre|ene|feb|mar|abr|may|jun|jul|ago|sep|oct|nov|dic)\b/i;
+
+function extractAndPersistB2BContact(msg) {
+  if (!msg) return;
+  try {
+    const raw = localStorage.getItem('peyu_chat_b2b_contact') || '{}';
+    const contact = JSON.parse(raw);
+    let changed = false;
+
+    const emailMatch = msg.match(EMAIL_REGEX);
+    if (emailMatch && !contact.email) { contact.email = emailMatch[1]; changed = true; }
+
+    const phoneMatch = msg.match(PHONE_REGEX);
+    if (phoneMatch && !contact.telefono) { contact.telefono = phoneMatch[1].replace(/\s+/g, ' ').trim(); changed = true; }
+
+    const empMatch = msg.match(EMPRESA_HINT);
+    if (empMatch && !contact.empresa) {
+      contact.empresa = empMatch[2].split(/[,.\n]/)[0].trim().slice(0, 50);
+      changed = true;
+    }
+
+    const dateMatch = msg.match(DATE_HINT);
+    if (dateMatch && !contact.fecha_requerida) {
+      contact.fecha_requerida = `${dateMatch[1]} de ${dateMatch[2]}`;
+      changed = true;
+    }
+
+    // Si el mensaje es "soy Juan" o "me llamo Pedro" → contacto
+    const nameMatch = msg.match(/\b(?:soy|me llamo|mi nombre es)\s+([A-ZÁÉÍÓÚÑ][a-záéíóúñ]+(?:\s+[A-ZÁÉÍÓÚÑ][a-záéíóúñ]+)?)/);
+    if (nameMatch && !contact.contacto) { contact.contacto = nameMatch[1]; changed = true; }
+
+    if (changed) localStorage.setItem('peyu_chat_b2b_contact', JSON.stringify(contact));
+  } catch { /* no-op */ }
+}
+
 function detectAndPersistIntent(msg) {
   try {
     const current = localStorage.getItem('peyu_chat_intent');
@@ -249,6 +311,9 @@ function detectAndPersistIntent(msg) {
 export async function withContext(userMessage) {
   // Detectamos intent ANTES de armar el contexto para que quede disponible.
   detectAndPersistIntent(userMessage);
+  // Extraemos datos B2B del mensaje (email, teléfono, empresa, fecha) para
+  // poder emitir [[QUOTE_PDF]] cuando estén los datos mínimos.
+  extractAndPersistB2BContact(userMessage);
 
   const ctx = await buildChatContext();
   const ctxLine = serializeContext(ctx);
