@@ -6,6 +6,7 @@ import { ShoppingCart, Building2, MessageCircle, ArrowRight, Check } from 'lucid
 import ChatNavLink from '@/components/chat/ChatNavLink';
 import ChatCheckoutCard from '@/components/chat/ChatCheckoutCard';
 import ChatProductCard from '@/components/chat/ChatProductCard';
+import { sanitizeAgentText } from '@/lib/chat-sanitize';
 
 function getChatQty() {
   try {
@@ -37,25 +38,6 @@ function addToCart(producto, cantidad) {
 }
 
 const TAG_REGEX = /\[\[(PRODUCTO|ACTION|NAV|CHECKOUT|CART|NEWSLETTER):?([^\]]*)\]\]/g;
-
-// Limpia artefactos del [BRAIN]/contexto que a veces se fugan a la respuesta
-// del agente (numeritos sueltos, paths del vector store, listados crudos).
-// Esto evita el "muro negro" ilegible cuando el agente no formatea bien.
-function sanitizeAgentText(raw) {
-  if (!raw) return '';
-  let t = String(raw);
-  // Quitar referencias estilo "[7] (products)" / "[12] (customers)"
-  t = t.replace(/\[\s*\d+\s*\]\s*\(\s*(products|customers|conversations|policies)[^)]*\)/gi, '');
-  // Quitar paths sueltos tipo "(products/PROD-SKU)" o "PROD-XXX|nombre|categoria|precio"
-  t = t.replace(/\(\s*(products|customers|conversations|policies)\/[^)]+\)/gi, '');
-  t = t.replace(/^[A-Z0-9\-]{4,}\s*\|.*\|.*\|\s*\d+\s*$/gm, '');
-  // Etiquetas técnicas que nunca deben llegar al usuario
-  t = t.replace(/\[CONTEXTO\][^\n]*/g, '');
-  t = t.replace(/\[BRAIN\][^\n]*/g, '');
-  // Saltos triples → dobles
-  t = t.replace(/\n{3,}/g, '\n\n');
-  return t.trim();
-}
 
 function buildB2BUrlFromChat() {
   const qty = getChatQty();

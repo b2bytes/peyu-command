@@ -7,6 +7,7 @@ import ChatNavLink from '@/components/chat/ChatNavLink';
 import ChatCheckoutCard from '@/components/chat/ChatCheckoutCard';
 import ChatProductCard from '@/components/chat/ChatProductCard';
 import ChatNewsletterCard from '@/components/chat/ChatNewsletterCard';
+import { sanitizeAgentText } from '@/lib/chat-sanitize';
 
 function getChatQty() {
   try {
@@ -34,21 +35,6 @@ function addToCart(producto, cantidad) {
 }
 
 const TAG_REGEX = /\[\[(PRODUCTO|ACTION|NAV|CHECKOUT|CART|NEWSLETTER):?([^\]]*)\]\]/g;
-
-// Limpia artefactos del [BRAIN]/contexto que a veces se fugan a la respuesta
-// del agente (numeritos sueltos, paths del vector store, listados crudos),
-// evitando el "muro de texto" ilegible en el chat.
-function sanitizeAgentText(raw) {
-  if (!raw) return '';
-  let t = String(raw);
-  t = t.replace(/\[\s*\d+\s*\]\s*\(\s*(products|customers|conversations|policies)[^)]*\)/gi, '');
-  t = t.replace(/\(\s*(products|customers|conversations|policies)\/[^)]+\)/gi, '');
-  t = t.replace(/^[A-Z0-9\-]{4,}\s*\|.*\|.*\|\s*\d+\s*$/gm, '');
-  t = t.replace(/\[CONTEXTO\][^\n]*/g, '');
-  t = t.replace(/\[BRAIN\][^\n]*/g, '');
-  t = t.replace(/\n{3,}/g, '\n\n');
-  return t.trim();
-}
 
 function buildB2BUrlFromChat() {
   const qty = getChatQty();
