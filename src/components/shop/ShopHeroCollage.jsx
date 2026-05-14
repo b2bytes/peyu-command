@@ -14,13 +14,13 @@ import { getProductImage } from '@/utils/productImages';
  * los colores firma (sin recurrir a stock photos externas).
  */
 export default function ShopHeroCollage({ productos = [] }) {
-  // Selección curada: mostramos productos con imagen propia de peyuchile.cl
-  // y stock disponible. Tomamos representantes de distintas categorías para
-  // que el collage refleje el catálogo real, no un solo SKU repetido.
+  // Selección curada: tomamos representantes de distintas categorías para que
+  // el collage refleje el catálogo real (no un solo SKU repetido). Aceptamos
+  // CUALQUIER imagen disponible (peyuchile.cl, base44, Drive, Woo) — antes
+  // filtrábamos solo por peyuchile.cl y eso dejaba el hero vacío cuando las
+  // URLs venían de otro CDN. getProductImage() ya garantiza un fallback útil.
   const seleccion = useMemo(() => {
-    const conImagen = productos.filter(p =>
-      p.imagen_url && /peyuchile\.cl/i.test(p.imagen_url)
-    );
+    const conImagen = productos.filter(p => !!getProductImage(p));
 
     // Priorizamos categorías clave: una por familia para máxima diversidad.
     const ordenCategorias = ['Escritorio', 'Hogar', 'Corporativo', 'Entretenimiento', 'Carcasas B2C'];
