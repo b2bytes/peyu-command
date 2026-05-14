@@ -11,6 +11,7 @@ import {
   DollarSign, TrendingUp, Shield, Users, Image as ImageIcon, Sparkles, Eye
 } from 'lucide-react';
 import AdPreviewModal from './AdPreviewModal';
+import PublishCampaignButton from './PublishCampaignButton';
 
 const STATUS_COLORS = {
   'Draft IA': 'bg-blue-100 text-blue-700',
@@ -230,21 +231,27 @@ export default function CampaignDraftCard({ draft, onUpdated }) {
         )}
 
         {/* Actions */}
-        <div className="flex gap-2 pt-2 border-t border-slate-100">
-          <Button onClick={() => setPreviewOpen(true)} size="sm" variant="outline" className="gap-1.5">
-            <Eye className="w-3.5 h-3.5" /> Preview
-          </Button>
-          <Button onClick={exportCSV} disabled={exporting} size="sm" className="gap-1.5 flex-1">
-            {exporting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Download className="w-3.5 h-3.5" />}
-            {csvUrl ? 'Re-exportar CSV' : 'Exportar a Google Ads Editor (CSV)'}
-          </Button>
-          {csvUrl && (
-            <a href={csvUrl} target="_blank" rel="noreferrer">
-              <Button size="sm" variant="outline" className="gap-1.5">
-                <ExternalLink className="w-3.5 h-3.5" /> Descargar
-              </Button>
-            </a>
-          )}
+        <div className="space-y-2 pt-2 border-t border-slate-100">
+          {/* Botón híbrido publicar (API real → CSV fallback automático) */}
+          <PublishCampaignButton draft={draft} onPublished={onUpdated} />
+
+          {/* Acciones secundarias */}
+          <div className="flex gap-2">
+            <Button onClick={() => setPreviewOpen(true)} size="sm" variant="outline" className="gap-1.5 flex-1">
+              <Eye className="w-3.5 h-3.5" /> Preview
+            </Button>
+            <Button onClick={exportCSV} disabled={exporting} size="sm" variant="outline" className="gap-1.5 flex-1">
+              {exporting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Download className="w-3.5 h-3.5" />}
+              {csvUrl ? 'Re-exportar CSV' : 'Exportar CSV'}
+            </Button>
+            {csvUrl && (
+              <a href={csvUrl} target="_blank" rel="noreferrer">
+                <Button size="sm" variant="outline" className="gap-1.5">
+                  <ExternalLink className="w-3.5 h-3.5" />
+                </Button>
+              </a>
+            )}
+          </div>
         </div>
       </CardContent>
 
