@@ -175,8 +175,14 @@ export default function ShopLanding() {
         try {
           base44.functions.invoke('summarizeAndSaveConversation', {
             conversation_id: conversationId,
-            messages: messages.slice(-20).map(m => ({ role: m.role, content: m.content })),
-            last_query: messages.filter(m => m.role === 'user').slice(-1)[0]?.content || '',
+            // 🧹 Sanitizar mensajes del usuario antes de persistir en memoria
+            // vectorial. Si entra basura técnica al Brain, contamina futuras
+            // respuestas (el bug que ya vimos en la captura).
+            messages: messages.slice(-20).map(m => ({
+              role: m.role,
+              content: m.role === 'user' ? sanitizeUserMessage(m.content) : m.content,
+            })),
+            last_query: sanitizeUserMessage(messages.filter(m => m.role === 'user').slice(-1)[0]?.content || ''),
           });
         } catch { /* best-effort */ }
       }
@@ -523,7 +529,7 @@ export default function ShopLanding() {
                         className={`rounded-2xl px-3.5 py-2 text-xs sm:text-sm break-words leading-relaxed shadow-sm ${msg.role === 'user' ? 'rounded-br-sm max-w-[75%] text-white' : 'ld-glass-soft rounded-bl-sm max-w-[85%] text-ld-fg'}`}
                         style={msg.role === 'user' ? { background: 'var(--ld-grad-action)' } : undefined}
                       >
-                        {msg.role === 'assistant' ? <ChatMessageContent content={msg.content} /> : msg.content}
+                        {msg.role === 'assistant' ? <ChatMessageContent content={msg.content} /> : sanitizeUserMessage(msg.content)}
                       </div>
                     </div>
                   ))}

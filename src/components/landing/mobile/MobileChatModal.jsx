@@ -3,6 +3,7 @@ import { X, Send, History, Sparkles } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import ChatMessageContent from '@/components/chat/ChatMessageContent';
+import { sanitizeUserMessage } from '@/lib/chat-sanitize';
 
 /**
  * Modal full-screen del chat Peyu en móvil — Liquid Dual edition.
@@ -156,7 +157,7 @@ export default function MobileChatModal({
                     boxShadow: '0 2px 12px -4px rgba(15, 139, 108, 0.3)',
                   }}
                 >
-                  {msg.content}
+                  {sanitizeUserMessage(msg.content)}
                 </div>
               ) : (
                 <div className="ld-glass-soft rounded-2xl rounded-bl-md px-3.5 py-2.5 text-[13.5px] break-words leading-relaxed text-ld-fg max-w-[82%]">
