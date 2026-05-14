@@ -66,10 +66,17 @@ Deno.serve(async (req) => {
     const hits = results.flat().sort((a, b) => (b.score || 0) - (a.score || 0));
 
     if (format === 'context') {
-      // Bloque de texto listo para inyectar en prompt de agente
-      const contextBlock = hits.slice(0, 8).map((h, i) =>
-        `[${i+1}] (${h.namespace}) ${h.chunk_text}`
-      ).join('\n\n');
+      // Bloque de texto listo para inyectar en prompt de agente.
+      // 🔧 LIMITADO: solo 3 hits y cada chunk truncado a 180 chars.
+      // Antes (8 hits sin truncar) el LLM recibía ~3000 chars de contexto y a
+      // veces lo pegaba crudo en la respuesta como "muro de texto". Con menos
+      // contexto el agente vuelve a su instrucción base "1-2 líneas + 1 producto".
+      const MAX_HITS = 3;
+      const MAX_CHARS_PER_CHUNK = 180;
+      const contextBlock = hits.slice(0, MAX_HITS).map((h, i) => {
+        const txt = (h.chunk_text || '').slice(0, MAX_CHARS_PER_CHUNK).replace(/\s+/g, ' ').trim();
+        return `[${i+1}] ${txt}`;
+      }).join('\n');
       return Response.json({ ok: true, context: contextBlock, hits_count: hits.length });
     }
 
