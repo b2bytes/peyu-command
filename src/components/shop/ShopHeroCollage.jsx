@@ -1,6 +1,11 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { Recycle, Shield, Truck, Check } from 'lucide-react';
 import { getProductImage } from '@/utils/productImages';
+
+// Fallback editorial: imagen real de producto PEYU en el CDN base44, siempre
+// disponible. Garantiza que el hero NUNCA se vea vacío aunque la BD esté
+// cargando o un CDN legacy esté caído.
+const HERO_FALLBACK_IMG = 'https://media.base44.com/images/public/69d99b9d61f699701129c103/5d536f7a4_generated_image.png';
 
 /**
  * ShopHeroCollage — Hero editorial Liquid Dual del Shop.
@@ -14,6 +19,9 @@ import { getProductImage } from '@/utils/productImages';
  * los colores firma (sin recurrir a stock photos externas).
  */
 export default function ShopHeroCollage({ productos = [] }) {
+  // Si la imagen del producto seleccionado falla (CDN caído / 404), cambiamos
+  // a la imagen fallback editorial. Evita el contenedor blanco del bug visual.
+  const [imgFailed, setImgFailed] = useState(false);
   // Selección curada: tomamos representantes de distintas categorías para que
   // el collage refleje el catálogo real (no un solo SKU repetido). Aceptamos
   // CUALQUIER imagen disponible (peyuchile.cl, base44, Drive, Woo) — antes
@@ -67,63 +75,51 @@ export default function ShopHeroCollage({ productos = [] }) {
       />
 
       {/* PIEZA HERO — producto principal con imagen real difuminada + gradiente.
-          En mobile ocupa todo el ancho derecho; usamos dos capas (blur fondo +
-          producto nítido al frente) para lograr el efecto editorial Apple-like. */}
+          Tres capas: blur ambient + gradiente firma + imagen nítida al frente.
+          Si falla la carga de la imagen del producto, hacemos fallback a una
+          imagen editorial fija del CDN base44 para que NUNCA se vea vacío. */}
       <div className="absolute inset-y-0 right-0 w-[88%] sm:w-[78%] rounded-3xl overflow-hidden ld-card shadow-2xl">
-        {hero ? (
-          <>
-            {/* Capa 1 — imagen del producto AMPLIADA y difuminada como ambient
-                background. Esto llena el contenedor con color real del producto
-                y evita el espacio vacío blanco que se veía antes. */}
-            <img
-              src={getProductImage(hero)}
-              alt=""
-              aria-hidden
-              className="absolute inset-0 w-full h-full object-cover scale-125 blur-2xl opacity-80"
-              loading="eager"
-            />
-            {/* Capa 2 — gradiente firma PEYU sobre el blur para fundir colores */}
-            <div
-              aria-hidden
-              className="absolute inset-0 mix-blend-soft-light"
-              style={{
-                background: 'linear-gradient(135deg, var(--ld-action-soft) 0%, transparent 45%, var(--ld-highlight-soft) 100%)',
-              }}
-            />
-            {/* Capa 3 — degradado de profundidad bottom→top para legibilidad */}
-            <div
-              aria-hidden
-              className="absolute inset-0"
-              style={{
-                background: 'linear-gradient(180deg, rgba(255,255,255,0.05) 0%, transparent 35%, rgba(2,6,23,0.35) 100%)',
-              }}
-            />
-            {/* Capa 4 — imagen REAL nítida del producto, centrada y contenida */}
-            <img
-              src={getProductImage(hero)}
-              alt={`${hero.nombre} · PEYU Chile`}
-              className="relative w-full h-full object-contain p-6 sm:p-10 drop-shadow-2xl"
-              loading="eager"
-              fetchpriority="high"
-            />
-          </>
-        ) : (
-          <>
-            {/* Placeholder — gradiente firma + textura sutil mientras cargan productos */}
-            <div
-              className="absolute inset-0"
-              style={{ background: 'var(--ld-grad-canvas)' }}
-            />
-            <div
-              aria-hidden
-              className="absolute inset-0"
-              style={{
-                background: 'radial-gradient(circle at 70% 40%, var(--ld-action-soft) 0%, transparent 55%), radial-gradient(circle at 30% 80%, var(--ld-highlight-soft) 0%, transparent 50%)',
-                opacity: 0.85,
-              }}
-            />
-          </>
-        )}
+        {(() => {
+          const heroSrc = hero && !imgFailed ? getProductImage(hero) : HERO_FALLBACK_IMG;
+          return (
+            <>
+              {/* Capa 1 — imagen AMPLIADA y difuminada como ambient background.
+                  Llena el contenedor con color real del producto, sin huecos. */}
+              <img
+                src={heroSrc}
+                alt=""
+                aria-hidden
+                className="absolute inset-0 w-full h-full object-cover scale-125 blur-2xl opacity-80"
+                loading="eager"
+                onError={() => setImgFailed(true)}
+              />
+              {/* Capa 2 — gradiente firma PEYU sobre el blur para fundir colores */}
+              <div
+                aria-hidden
+                className="absolute inset-0 mix-blend-soft-light"
+                style={{
+                  background: 'linear-gradient(135deg, var(--ld-action-soft) 0%, transparent 45%, var(--ld-highlight-soft) 100%)',
+                }}
+              />
+              {/* Capa 3 — degradado de profundidad bottom→top para legibilidad */}
+              <div
+                aria-hidden
+                className="absolute inset-0"
+                style={{
+                  background: 'linear-gradient(180deg, rgba(255,255,255,0.05) 0%, transparent 35%, rgba(2,6,23,0.35) 100%)',
+                }}
+              />
+              {/* Capa 4 — imagen REAL nítida del producto, centrada */}
+              <img
+                src={heroSrc}
+                alt={hero ? `${hero.nombre} · PEYU Chile` : 'Catálogo PEYU Chile'}
+                className="relative w-full h-full object-contain p-6 sm:p-10 drop-shadow-2xl"
+                loading="eager"
+                fetchpriority="high"
+              />
+            </>
+          );
+        })()}
 
         {/* Etiqueta flotante de procedencia (siempre visible) */}
         <div className="absolute top-4 right-4 ld-glass-strong rounded-full px-3 py-1.5 flex items-center gap-1.5 z-10">
