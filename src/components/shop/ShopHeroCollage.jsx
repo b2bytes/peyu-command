@@ -66,42 +66,81 @@ export default function ShopHeroCollage({ productos = [] }) {
         style={{ background: 'var(--ld-highlight-soft)', opacity: 0.5 }}
       />
 
-      {/* PIEZA HERO — producto principal con imagen real */}
-      <div className="absolute inset-y-0 right-0 w-[78%] rounded-3xl overflow-hidden ld-card shadow-2xl">
+      {/* PIEZA HERO — producto principal con imagen real difuminada + gradiente.
+          En mobile ocupa todo el ancho derecho; usamos dos capas (blur fondo +
+          producto nítido al frente) para lograr el efecto editorial Apple-like. */}
+      <div className="absolute inset-y-0 right-0 w-[88%] sm:w-[78%] rounded-3xl overflow-hidden ld-card shadow-2xl">
         {hero ? (
-          <img
-            src={getProductImage(hero)}
-            alt={`${hero.nombre} · PEYU Chile`}
-            className="w-full h-full object-cover bg-white"
-            loading="eager"
-            fetchpriority="high"
-          />
+          <>
+            {/* Capa 1 — imagen del producto AMPLIADA y difuminada como ambient
+                background. Esto llena el contenedor con color real del producto
+                y evita el espacio vacío blanco que se veía antes. */}
+            <img
+              src={getProductImage(hero)}
+              alt=""
+              aria-hidden
+              className="absolute inset-0 w-full h-full object-cover scale-125 blur-2xl opacity-80"
+              loading="eager"
+            />
+            {/* Capa 2 — gradiente firma PEYU sobre el blur para fundir colores */}
+            <div
+              aria-hidden
+              className="absolute inset-0 mix-blend-soft-light"
+              style={{
+                background: 'linear-gradient(135deg, var(--ld-action-soft) 0%, transparent 45%, var(--ld-highlight-soft) 100%)',
+              }}
+            />
+            {/* Capa 3 — degradado de profundidad bottom→top para legibilidad */}
+            <div
+              aria-hidden
+              className="absolute inset-0"
+              style={{
+                background: 'linear-gradient(180deg, rgba(255,255,255,0.05) 0%, transparent 35%, rgba(2,6,23,0.35) 100%)',
+              }}
+            />
+            {/* Capa 4 — imagen REAL nítida del producto, centrada y contenida */}
+            <img
+              src={getProductImage(hero)}
+              alt={`${hero.nombre} · PEYU Chile`}
+              className="relative w-full h-full object-contain p-6 sm:p-10 drop-shadow-2xl"
+              loading="eager"
+              fetchpriority="high"
+            />
+          </>
         ) : (
-          <div
-            className="w-full h-full"
-            style={{ background: 'var(--ld-grad-canvas)' }}
-          />
+          <>
+            {/* Placeholder — gradiente firma + textura sutil mientras cargan productos */}
+            <div
+              className="absolute inset-0"
+              style={{ background: 'var(--ld-grad-canvas)' }}
+            />
+            <div
+              aria-hidden
+              className="absolute inset-0"
+              style={{
+                background: 'radial-gradient(circle at 70% 40%, var(--ld-action-soft) 0%, transparent 55%), radial-gradient(circle at 30% 80%, var(--ld-highlight-soft) 0%, transparent 50%)',
+                opacity: 0.85,
+              }}
+            />
+          </>
         )}
 
         {/* Etiqueta flotante de procedencia (siempre visible) */}
-        <div className="absolute top-4 right-4 ld-glass-strong rounded-full px-3 py-1.5 flex items-center gap-1.5">
+        <div className="absolute top-4 right-4 ld-glass-strong rounded-full px-3 py-1.5 flex items-center gap-1.5 z-10">
           <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: 'var(--ld-action)' }} />
           <span className="text-[10px] font-bold text-ld-fg tracking-wider uppercase">Hecho en Santiago</span>
         </div>
 
-        {/* Pieza editorial inferior — referencia al producto real, no a una colección inventada */}
+        {/* Pieza editorial inferior — referencia al producto real */}
         {hero && (
-          <>
-            <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-black/55 via-black/15 to-transparent pointer-events-none" />
-            <div className="absolute bottom-4 left-4 right-4 text-white drop-shadow-lg">
-              <p className="text-[10px] font-bold tracking-[0.18em] uppercase opacity-90">
-                Destacado · {hero.categoria}
-              </p>
-              <p className="ld-display text-lg sm:text-xl mt-1 leading-tight line-clamp-2 max-w-[85%]">
-                {hero.nombre}
-              </p>
-            </div>
-          </>
+          <div className="absolute bottom-4 left-4 right-4 text-white drop-shadow-lg z-10">
+            <p className="text-[10px] font-bold tracking-[0.18em] uppercase opacity-90">
+              Destacado · {hero.categoria}
+            </p>
+            <p className="ld-display text-lg sm:text-xl mt-1 leading-tight line-clamp-2 max-w-[85%]">
+              {hero.nombre}
+            </p>
+          </div>
         )}
       </div>
 
