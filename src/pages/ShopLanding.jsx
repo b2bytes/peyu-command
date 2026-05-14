@@ -11,7 +11,7 @@ import ChatMessageContent from '@/components/chat/ChatMessageContent';
 import ChatHistoryPanel from '@/components/chat/ChatHistoryPanel';
 import { ensureFreshSession, addToHistory, readHistory } from '@/lib/chat-history';
 import { withContext } from '@/lib/chat-context';
-import { closeConversation } from '@/lib/chat-brain';
+import { sanitizeUserMessage } from '@/lib/chat-sanitize';
 import { syncShownSkusFromMessages, buildOccasionPrompt, clearShownSkus } from '@/lib/chat-recommendations';
 import { History } from 'lucide-react';
 import { useAppBackground, getBackgroundById, buildBackgroundImageCSS, BG_OVERLAY, THEME_OVERLAY } from '@/lib/background';
@@ -27,18 +27,13 @@ import DesktopCategorySection from '@/components/landing/desktop/DesktopCategory
 import DesktopTopSellers from '@/components/landing/desktop/DesktopTopSellers';
 import DesktopTrustFooter from '@/components/landing/desktop/DesktopTrustFooter';
 
-// Limpia los bloques [CONTEXTO] y [BRAIN] que se inyectan al agente —
-// no deben verse en la UI. En withContext() el mensaje real del usuario
-// SIEMPRE queda al final, separado por '\n\n' del último bloque inyectado.
-// Estrategia: si detectamos marcadores, devolvemos solo lo que viene
-// después del último '\n\n' (= el mensaje real del usuario).
+// Limpia los bloques [CONTEXTO] y [BRAIN] inyectados al agente — no deben
+// verse en la UI. Usamos sanitizeUserMessage (que ya conoce todos los patrones)
+// para ser robustos contra cualquier variante de inyección.
 const stripContext = (m) => {
   if (!m || m.role !== 'user' || !m.content) return m;
-  const hasMarkers = /\[CONTEXTO\]|\[BRAIN\]/.test(m.content);
-  if (!hasMarkers) return m;
-  const idx = m.content.lastIndexOf('\n\n');
-  const cleaned = idx >= 0 ? m.content.slice(idx + 2).trim() : m.content;
-  return { ...m, content: cleaned };
+  const cleaned = sanitizeUserMessage(m.content);
+  return { ...m, content: cleaned || m.content };
 };
 
 const OCASIONES = [
@@ -258,15 +253,15 @@ export default function ShopLanding() {
       });
 
       // Polling adaptativo: rápido al inicio, luego se relaja.
-      // El agente suele responder en 5-12s, pero con Brain + cotizaciones puede ir
-      // hasta ~45s. Damos hasta ~70s totales antes de mostrar el fallback.
+      // El agente suele responder en 4-12s. Damos hasta ~35s totales antes
+      // del fallback — más allá la UX se siente rota.
       const intervals = [
-        700, 800, 900, 1000, 1200, 1500, 1500, 1500,
-        2000, 2000, 2000, 2500, 2500, 2500,
-        3000, 3000, 3000, 3000, 3000, 3000,
-        3500, 3500, 4000, 4000, 4000, 4000
-      ]; // ~70s total
+        700, 800, 900, 1000, 1200, 1500, 1500,
+        2000, 2000, 2000, 2500, 2500,
+        3000, 3000, 3000, 3000
+      ]; // ~30-32s total
       let attempt = 0;
+      let consecutiveErrors = 0;
 
       const poll = async () => {
         try {
@@ -274,10 +269,10 @@ export default function ShopLanding() {
             action: 'get',
             conversation_id: convId,
           });
+          consecutiveErrors = 0;
           const msgs = (updated.data?.messages || []).filter(m => m.content).map(stripContext);
 
           // Detección robusta: existe un mensaje 'assistant' DESPUÉS del último 'user'.
-          // Esto funciona aunque el server reciba mensajes en orden inesperado.
           let respondió = false;
           for (let i = msgs.length - 1; i >= 0; i--) {
             if (msgs[i].role === 'user') break;
@@ -295,20 +290,29 @@ export default function ShopLanding() {
           }
         } catch (pollErr) {
           console.warn('Poll error (continúa):', pollErr);
+          consecutiveErrors++;
+          // Si fallan 3 polls seguidos, asumimos red caída → fallback ya.
+          if (consecutiveErrors >= 3) {
+            setLoading(false);
+            const waUrl = `https://wa.me/56935040242?text=${encodeURIComponent(`Hola Peyu, te escribí en el chat: "${text}"`)}`;
+            setMessages(prev => [...prev, {
+              role: 'assistant',
+              content: `Estoy teniendo problemas de conexión 🐢. Escríbenos por WhatsApp y te ayudo al toque.\n\n[[ACTION:whatsapp]]`,
+            }]);
+            return;
+          }
         }
 
         attempt++;
         if (attempt < intervals.length) {
           setTimeout(poll, intervals[attempt]);
         } else {
-          // Timeout: el agente no respondió en ~70s. Mostramos mensaje amigable
-          // del asistente + WhatsApp como ruta alternativa. El mensaje del
-          // usuario QUEDA guardado en la conversación para retomar después.
+          // Timeout ~30s. Mensaje amigable + WhatsApp.
           setLoading(false);
           const waUrl = `https://wa.me/56935040242?text=${encodeURIComponent(`Hola Peyu, te escribí en el chat: "${text}"`)}`;
           setMessages(prev => [...prev, {
             role: 'assistant',
-            content: `🐢 Uy, estoy lento hoy. Tu mensaje quedó guardado, pero si quieres respuesta inmediata, [escríbenos por WhatsApp](${waUrl}) y te atiende un humano en segundos.\n\n[[ACTION:whatsapp]]`,
+            content: `🐢 Uy, estoy lento hoy. Tu mensaje quedó guardado. ¿Te respondo por WhatsApp?\n\n[[ACTION:whatsapp]]`,
           }]);
         }
       };
