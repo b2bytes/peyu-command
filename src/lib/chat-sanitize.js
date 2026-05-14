@@ -15,12 +15,20 @@
 const KNOWN_NAMESPACES = '(products|customers|conversations|policies|policies_faq|sustainability|proposals|brand_voice)';
 
 const STRIP_PATTERNS = [
-  // Bloques completos con header [CONTEXTO] / [BRAIN] (multilínea, voraces hasta otro bloque o fin)
-  /\[CONTEXTO\][\s\S]*?(?=\n\s*\[|\n\n|$)/gi,
-  /\[BRAIN\][\s\S]*?(?=\n\s*\[|\n\n|$)/gi,
+  // 🔥 BLOQUE [BRAIN]…\n\n[…fin del Brain…] — el lookahead acepta el siguiente
+  // bloque técnico ([CONTEXTO]/[BRAIN]/[PRODUCTOS]) o un \n\n que separa del
+  // mensaje real del usuario. ⚠️ NO usamos \n\s*\[ porque las líneas del Brain
+  // son "[1] texto", "[2] texto" y se quedaban dentro del payload visible.
+  /\[CONTEXTO\][\s\S]*?(?=\n\s*\[(?:CONTEXTO|BRAIN|PRODUCTOS|CATALOGO|MEMORIA)\]|\n\n|$)/gi,
+  /\[BRAIN\][\s\S]*?(?=\n\s*\[(?:CONTEXTO|BRAIN|PRODUCTOS|CATALOGO|MEMORIA)\]|\n\n|$)/gi,
 
   // Headers sueltos que se hayan colado
   /^\s*\[(CONTEXTO|BRAIN|PRODUCTOS|CATALOGO|MEMORIA)\]\s*:?\s*$/gim,
+
+  // 🧹 Líneas residuales del Brain tipo "[1] Conversación del…", "[2] Resumen…"
+  // Estas son el artefacto típico cuando el bloque [BRAIN] no se cortó bien.
+  // Cubre el caso del usuario en la captura.
+  /^\s*\[\d+\]\s.*$/gm,
 
   // Pares clave=valor típicos del [CONTEXTO]
   new RegExp(`\\b(page|top_skus|categorias_disponibles|viewing_sku|viewing_name|viewing_category|viewing_price_b2c|cart_items|cart_total|detected_qty|already_shown_skus|user_name|user_email)\\s*=\\s*("[^"]*"|[^\\s,]+)`, 'gi'),
@@ -33,9 +41,6 @@ const STRIP_PATTERNS = [
 
   // Paths de vector store sueltos: "(products/PROD-SKU)"
   new RegExp(`\\(\\s*${KNOWN_NAMESPACES}\\/[^)]+\\)`, 'gi'),
-
-  // Numeración tipo "[1]" / "[2]" al inicio de líneas (residuo del brain)
-  /^\s*\[\d+\]\s*/gm,
 
   // Strings literales tipo: top_skus="…" (cuando viene con comillas)
   /top_skus\s*=\s*"[\s\S]*?"/gi,
@@ -138,5 +143,25 @@ export function sanitizeUserMessage(raw) {
   }
   t = t.replace(/\n{3,}/g, '\n\n');
   t = t.replace(/^[\s,;:.|]+$/gm, '');
-  return t.trim();
+  t = t.trim();
+
+  // 🛡️ Última línea de defensa: si después de limpiar quedan vestigios del Brain
+  // (palabras clave técnicas como "Conversación del", "Consulta clave:", "Usuario
+  // anónimo", "Resumen:"), recortamos al último párrafo no-técnico. withContext()
+  // siempre pone el mensaje real del usuario al FINAL tras un \n\n, así que el
+  // último bloque es lo que el usuario realmente escribió.
+  const BRAIN_LEAK = /(Consulta clave:|Usuario an[oó]nimo|Conversaci[oó]n del \d|Resumen:)/i;
+  if (BRAIN_LEAK.test(t)) {
+    const blocks = t.split(/\n\n+/).map(b => b.trim()).filter(Boolean);
+    // Encontrar el último bloque que NO tenga leaks técnicos
+    for (let i = blocks.length - 1; i >= 0; i--) {
+      if (!BRAIN_LEAK.test(blocks[i]) && blocks[i].length < 300) {
+        return blocks[i];
+      }
+    }
+    // Si todos los bloques son leak, devolvemos vacío para no mostrar basura
+    return '';
+  }
+
+  return t;
 }
