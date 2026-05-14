@@ -8,6 +8,7 @@ import ChatProductContentLight from '@/components/chat/ChatMessageContentLight';
 import ChatHistoryPanel from '@/components/chat/ChatHistoryPanel';
 import { ensureFreshSession, addToHistory } from '@/lib/chat-history';
 import { withContext } from '@/lib/chat-context';
+import { sanitizeUserMessage } from '@/lib/chat-sanitize';
 
 // Clave PROPIA del chat flotante autenticado (NO compartir con la landing pública,
 // que usa publicChatProxy y puede crear conversaciones bajo otro user → "Access denied").
@@ -19,10 +20,12 @@ const AGENT_NAV_KEY = 'peyu_chat_agent_navigated_at';
 // que la navegación la disparó el agente y mantenemos el chat abierto.
 const AGENT_NAV_WINDOW_MS = 8000;
 
-// Limpia el bloque [CONTEXTO] que se inyecta al agente — no debe verse en la UI.
+// Limpia los bloques [CONTEXTO] y [BRAIN] que inyectamos al agente — no deben
+// verse en la UI. Usamos sanitizeAgentText (que ya conoce todos los patrones
+// de filtrado) para ser robustos contra cualquier variante de prefijo.
 const stripContext = (m) => {
   if (!m || m.role !== 'user' || !m.content) return m;
-  const cleaned = m.content.replace(/^\[CONTEXTO\][^\n]*\n+/, '').trim();
+  const cleaned = sanitizeUserMessage(m.content);
   return { ...m, content: cleaned };
 };
 

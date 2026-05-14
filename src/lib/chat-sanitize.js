@@ -121,3 +121,22 @@ export function sanitizeAgentText(raw) {
 
   return t.trim();
 }
+
+/**
+ * Limpieza específica para mensajes del USUARIO. Quita únicamente los bloques
+ * técnicos [CONTEXTO] y [BRAIN] inyectados por withContext(), pero NUNCA
+ * recorta el contenido real del usuario aunque sea largo.
+ *
+ * Si lo único que queda tras limpiar es vacío o el chip de "prompt sugerido",
+ * devuelve el texto original sin los bloques tag, no el colapso de muro.
+ */
+export function sanitizeUserMessage(raw) {
+  if (!raw) return '';
+  let t = String(raw);
+  for (const re of STRIP_PATTERNS) {
+    t = t.replace(re, '');
+  }
+  t = t.replace(/\n{3,}/g, '\n\n');
+  t = t.replace(/^[\s,;:.|]+$/gm, '');
+  return t.trim();
+}
