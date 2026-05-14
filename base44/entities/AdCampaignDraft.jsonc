@@ -1,7 +1,7 @@
 {
   "name": "AdCampaignDraft",
   "type": "object",
-  "description": "Borrador de campa\u00f1a Google Ads generado por IA, listo para exportar a Google Ads Editor v\u00eda CSV. Dise\u00f1ado para military-grade launch blitz.",
+  "description": "Borrador de campa\u00f1a Google Ads generado por IA, listo para exportar a Google Ads Editor v\u00eda CSV o publicar v\u00eda Google Ads API v23.1 (2026). Soporta Search, Shopping, Performance Max y Demand Gen con AI brand safety (text_guidelines).",
   "properties": {
     "description": {
       "type": "string",
@@ -23,6 +23,7 @@
         "Search",
         "Shopping",
         "Performance Max",
+        "Demand Gen",
         "Display",
         "Video",
         "Discovery"
@@ -37,7 +38,8 @@
         "Leads B2B",
         "Sales B2C",
         "Brand Search Defense",
-        "Competitor Conquest"
+        "Competitor Conquest",
+        "Catalog Sales"
       ]
     },
     "audience_segment": {
@@ -49,7 +51,8 @@
         "B2C Regalos",
         "B2C Sostenibilidad",
         "Remarketing",
-        "Lookalike"
+        "Lookalike",
+        "Custom Intent"
       ]
     },
     "daily_budget_clp": {
@@ -241,6 +244,140 @@
         }
       }
     },
+    "asset_groups": {
+      "type": "array",
+      "title": "Asset Groups (Performance Max / Demand Gen)",
+      "description": "Grupos de assets para campa\u00f1as Performance Max y Demand Gen. Cada grupo es un \u00e1ngulo creativo distinto con headlines, descriptions, im\u00e1genes, logos y videos.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "theme": {
+            "type": "string"
+          },
+          "headlines": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "long_headlines": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "descriptions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "business_name": {
+            "type": "string"
+          },
+          "call_to_action": {
+            "type": "string"
+          },
+          "image_urls": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "logo_urls": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "video_urls": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "youtube_video_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "final_urls": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "audience_signals": {
+      "type": "array",
+      "title": "Audience signals (PMax/Demand Gen)",
+      "description": "Se\u00f1ales de audiencia para guiar la IA de Google. Custom segments, intereses, datos propios.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "custom_segment",
+              "interest",
+              "remarketing",
+              "customer_match",
+              "lookalike"
+            ]
+          },
+          "name": {
+            "type": "string"
+          },
+          "signals": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "text_guidelines": {
+      "type": "object",
+      "title": "Text guidelines (v23.1 \u2014 control AI brand safety)",
+      "description": "Permite controlar el copy AI-generado de Google. term_exclusions (hasta 25 strings) bloquea palabras espec\u00edficas. messaging_restrictions (hasta 40) aplica reglas sem\u00e1nticas de tono.",
+      "properties": {
+        "term_exclusions": {
+          "type": "array",
+          "title": "T\u00e9rminos prohibidos (hasta 25, case-insensitive)",
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 25
+        },
+        "messaging_restrictions": {
+          "type": "array",
+          "title": "Restricciones sem\u00e1nticas de mensaje (hasta 40)",
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 40
+        }
+      }
+    },
+    "frequency_caps": {
+      "type": "object",
+      "title": "Frequency caps (Demand Gen / Display)",
+      "properties": {
+        "impressions_per_day": {
+          "type": "number"
+        },
+        "impressions_per_week": {
+          "type": "number"
+        }
+      }
+    },
     "utm_params": {
       "type": "object",
       "title": "UTM parameters",
@@ -280,6 +417,10 @@
       "type": "number",
       "title": "CAC esperado (CLP)"
     },
+    "expected_reach_users": {
+      "type": "number",
+      "title": "Alcance esperado (usuarios \u00fanicos)"
+    },
     "status": {
       "type": "string",
       "title": "Estado",
@@ -302,6 +443,18 @@
     "exported_csv_url": {
       "type": "string",
       "title": "URL CSV export"
+    },
+    "google_ads_campaign_id": {
+      "type": "string",
+      "title": "ID campa\u00f1a en Google Ads (cuando se publica v\u00eda API)"
+    },
+    "google_ads_resource_name": {
+      "type": "string",
+      "title": "Resource name v23.1 (customers/{cid}/campaigns/{id})"
+    },
+    "api_version_used": {
+      "type": "string",
+      "title": "Versi\u00f3n API usada (ej: v23.1)"
     },
     "launched_at": {
       "type": "string",
