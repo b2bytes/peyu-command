@@ -12,6 +12,7 @@ import WaybackRecoveryPanel from '@/components/admin-products/WaybackRecoveryPan
 import GoogleShoppingAuditPanel from '@/components/admin-products/GoogleShoppingAuditPanel';
 import BulkImageGeneratorPanel from '@/components/admin-products/BulkImageGeneratorPanel';
 import LaunchReadinessPanel from '@/components/admin-products/LaunchReadinessPanel';
+import DuplicateMergePanel from '@/components/admin-products/DuplicateMergePanel';
 import { Button } from '@/components/ui/button';
 
 /**
@@ -130,6 +131,9 @@ export default function AdminProducts() {
         onProductClick={(id) => { setSelectedId(id); setTab('datos'); }}
         onAction={loadData}
       />
+
+      {/* Fusión inteligente de duplicados — fuzzy matching + merge de metadatos */}
+      <DuplicateMergePanel onActionComplete={loadData} />
 
       {/* Panel restauración 121 imágenes desde Google Drive */}
       <DriveMatchMigrationPanel onComplete={loadData} />
