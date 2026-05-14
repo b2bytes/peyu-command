@@ -91,12 +91,23 @@ function ChatProductCard({ sku, variant = 'dark' }) {
     return () => { alive = false; };
   }, [sku]);
 
-  // Persistir último producto para CTAs globales
+  // Persistir último producto para CTAs globales + trackear SKUs mostrados
+  // para que el agente NO repita el mismo producto en respuestas siguientes.
   useEffect(() => {
     if (producto?.id) {
       localStorage.setItem('peyu_chat_last_product', JSON.stringify({
         id: producto.id, nombre: producto.nombre, sku: producto.sku,
       }));
+      // Append al stack de SKUs mostrados (últimos 15)
+      try {
+        const raw = localStorage.getItem('peyu_chat_shown_skus');
+        const arr = raw ? JSON.parse(raw) : [];
+        if (Array.isArray(arr) && producto.sku && !arr.includes(producto.sku)) {
+          arr.push(producto.sku);
+          const trimmed = arr.slice(-15);
+          localStorage.setItem('peyu_chat_shown_skus', JSON.stringify(trimmed));
+        }
+      } catch { /* no-op */ }
     }
   }, [producto]);
 

@@ -116,6 +116,15 @@ export async function buildChatContext() {
     }
   } catch { /* no-op */ }
 
+  // 🎯 Intent detectado (B2C/B2B) — una vez que el cliente lo confirma,
+  // persistimos para no volver a preguntar en cada turno.
+  try {
+    const intent = localStorage.getItem('peyu_chat_intent');
+    if (intent === 'B2C' || intent === 'B2B') {
+      ctx.chat_intent = intent;
+    }
+  } catch { /* no-op */ }
+
   // Usuario si está autenticado. CRITICAL: usamos isAuthenticated() ANTES de
   // me() porque me() en visitante anónimo lanza un 401 que termina reportándose
   // a logClientError y ensucia los runtime logs. isAuthenticated() es síncrono
@@ -201,8 +210,46 @@ function isTrivialMessage(msg) {
   return false;
 }
 
+// Detecta intent (B2C/B2B) del mensaje del usuario y lo persiste para que
+// el agente no vuelva a preguntar. Solo escribe la primera vez que se detecta.
+const B2B_KEYWORDS = /\b(empresa|empleados?|equipo|colaboradores?|corporativo|oficina|rrhh|cliente[s]?|proveedor(es)?|evento|fin de a[ñn]o|logo|marca|branded|masivo|para mi (empresa|pega|trabajo)|para el equipo|para la oficina|cotizaci[oó]n)\b/i;
+const B2C_KEYWORDS = /\b(para m[ií]|uno solo|individual|mi (mam[áa]|pap[áa]|pareja|polola|pololo|amig[oa]|herman[oa]|hij[oa]|jefe|sobrin[oa])|cumplea[ñn]os|aniversario|regalo personal)\b/i;
+const QTY_REGEX = /\b(\d{1,5})\s*(u\.?|unidades?|pcs|piezas|regalos|personas|empleados?|colaboradores?)?\b/i;
+
+function detectAndPersistIntent(msg) {
+  try {
+    const current = localStorage.getItem('peyu_chat_intent');
+    if (current === 'B2C' || current === 'B2B') return;
+    if (!msg) return;
+    // Por cantidad explícita
+    const m = msg.match(QTY_REGEX);
+    if (m) {
+      const n = parseInt(m[1], 10);
+      if (n >= 10 && n <= 10000) {
+        localStorage.setItem('peyu_chat_intent', 'B2B');
+        return;
+      }
+      if (n >= 1 && n <= 9) {
+        localStorage.setItem('peyu_chat_intent', 'B2C');
+        return;
+      }
+    }
+    if (B2B_KEYWORDS.test(msg)) {
+      localStorage.setItem('peyu_chat_intent', 'B2B');
+      return;
+    }
+    if (B2C_KEYWORDS.test(msg)) {
+      localStorage.setItem('peyu_chat_intent', 'B2C');
+      return;
+    }
+  } catch { /* no-op */ }
+}
+
 // Helper unificado: arma el contexto, lo enriquece con RAG del Brain y lo antepone al mensaje.
 export async function withContext(userMessage) {
+  // Detectamos intent ANTES de armar el contexto para que quede disponible.
+  detectAndPersistIntent(userMessage);
+
   const ctx = await buildChatContext();
   const ctxLine = serializeContext(ctx);
 
