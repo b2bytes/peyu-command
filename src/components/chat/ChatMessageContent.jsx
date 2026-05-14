@@ -35,6 +35,21 @@ function addToCart(producto, cantidad) {
 
 const TAG_REGEX = /\[\[(PRODUCTO|ACTION|NAV|CHECKOUT|CART|NEWSLETTER):?([^\]]*)\]\]/g;
 
+// Limpia artefactos del [BRAIN]/contexto que a veces se fugan a la respuesta
+// del agente (numeritos sueltos, paths del vector store, listados crudos),
+// evitando el "muro de texto" ilegible en el chat.
+function sanitizeAgentText(raw) {
+  if (!raw) return '';
+  let t = String(raw);
+  t = t.replace(/\[\s*\d+\s*\]\s*\(\s*(products|customers|conversations|policies)[^)]*\)/gi, '');
+  t = t.replace(/\(\s*(products|customers|conversations|policies)\/[^)]+\)/gi, '');
+  t = t.replace(/^[A-Z0-9\-]{4,}\s*\|.*\|.*\|\s*\d+\s*$/gm, '');
+  t = t.replace(/\[CONTEXTO\][^\n]*/g, '');
+  t = t.replace(/\[BRAIN\][^\n]*/g, '');
+  t = t.replace(/\n{3,}/g, '\n\n');
+  return t.trim();
+}
+
 function buildB2BUrlFromChat() {
   const qty = getChatQty();
   let lastProd = null;
@@ -120,17 +135,19 @@ function CartInject({ spec }) {
 
 function ChatMessageContent({ content }) {
   if (!content) return null;
+  const cleanContent = sanitizeAgentText(content);
+  if (!cleanContent) return null;
 
   const tokens = [];
   let lastIdx = 0;
   let match;
   const re = new RegExp(TAG_REGEX.source, 'g');
-  while ((match = re.exec(content)) !== null) {
-    if (match.index > lastIdx) tokens.push({ type: 'text', value: content.slice(lastIdx, match.index) });
+  while ((match = re.exec(cleanContent)) !== null) {
+    if (match.index > lastIdx) tokens.push({ type: 'text', value: cleanContent.slice(lastIdx, match.index) });
     tokens.push({ type: match[1], value: (match[2] || '').trim() });
     lastIdx = match.index + match[0].length;
   }
-  if (lastIdx < content.length) tokens.push({ type: 'text', value: content.slice(lastIdx) });
+  if (lastIdx < cleanContent.length) tokens.push({ type: 'text', value: cleanContent.slice(lastIdx) });
 
   return (
     <div className="space-y-1">

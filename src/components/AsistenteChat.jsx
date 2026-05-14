@@ -244,12 +244,16 @@ export default function AsistenteChat() {
         </div>
       )}
 
-      {/* Chat Window — en móvil ocupa ancho completo y respeta bottom nav */}
+      {/* Chat Window — en móvil ocupa ancho completo y respeta bottom nav.
+          En móvil le damos una altura mínima cómoda (60vh) y un max-h que no
+          tape el bottom nav, así el chat se siente como una "ventana real"
+          y no una caja pequeña. */}
       {open && (
         <div
           className="fixed right-2 sm:right-6 left-2 sm:left-auto z-50 w-auto sm:w-96 max-w-[calc(100vw-1rem)] sm:max-w-[calc(100vw-2rem)] bg-white rounded-2xl shadow-2xl border border-gray-100 flex flex-col overflow-hidden"
           style={{
             bottom: 'calc(env(safe-area-inset-bottom) + 5.5rem)',
+            height: 'min(72vh, calc(100vh - env(safe-area-inset-bottom) - 7rem))',
             maxHeight: 'calc(100vh - env(safe-area-inset-bottom) - 7rem)',
           }}
         >
@@ -293,7 +297,7 @@ export default function AsistenteChat() {
           )}
 
           {/* Messages */}
-          <div className="peyu-scrollbar flex-1 overflow-y-auto min-h-[320px] max-h-[60vh] space-y-3 p-4 bg-gradient-to-b from-gray-50 to-white flex flex-col">
+          <div className="peyu-scrollbar flex-1 overflow-y-auto space-y-3 p-3.5 bg-gradient-to-b from-gray-50 to-white flex flex-col">
             {messages.length === 0 && !loading && (
               <div className="text-center text-gray-500 text-xs py-8 space-y-3">
                 <p className="text-sm font-medium">👋 ¡Hola! Soy Peyu</p>
@@ -318,12 +322,17 @@ export default function AsistenteChat() {
               </div>
             )}
             {messages.map((msg, i) => (
-              <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+              <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'} gap-2`}>
+                {msg.role === 'assistant' && (
+                  <div className="w-7 h-7 rounded-full bg-teal-50 border border-teal-100 flex items-center justify-center text-sm flex-shrink-0 mt-0.5">
+                    🐢
+                  </div>
+                )}
                 <div
-                  className={`rounded-2xl px-4 py-2.5 text-sm ${
+                  className={`rounded-2xl text-[13.5px] leading-relaxed break-words ${
                     msg.role === 'user'
-                      ? 'bg-gray-900 text-white rounded-br-none max-w-[75%]'
-                      : 'bg-white border border-gray-200 text-gray-900 rounded-bl-none max-w-[90%] w-full'
+                      ? 'bg-gradient-to-br from-teal-600 to-cyan-600 text-white rounded-br-md px-3.5 py-2.5 max-w-[78%] shadow-sm font-medium'
+                      : 'bg-white border border-gray-200 text-gray-900 rounded-bl-md px-3.5 py-2.5 max-w-[85%] shadow-sm'
                   }`}
                 >
                   {msg.role === 'assistant'

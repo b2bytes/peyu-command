@@ -36,7 +36,26 @@ function addToCart(producto, cantidad) {
   window.dispatchEvent(new CustomEvent('peyu:cart-added', { detail: nuevoItem }));
 }
 
-const TAG_REGEX = /\[\[(PRODUCTO|ACTION|NAV|CHECKOUT|CART):?([^\]]*)\]\]/g;
+const TAG_REGEX = /\[\[(PRODUCTO|ACTION|NAV|CHECKOUT|CART|NEWSLETTER):?([^\]]*)\]\]/g;
+
+// Limpia artefactos del [BRAIN]/contexto que a veces se fugan a la respuesta
+// del agente (numeritos sueltos, paths del vector store, listados crudos).
+// Esto evita el "muro negro" ilegible cuando el agente no formatea bien.
+function sanitizeAgentText(raw) {
+  if (!raw) return '';
+  let t = String(raw);
+  // Quitar referencias estilo "[7] (products)" / "[12] (customers)"
+  t = t.replace(/\[\s*\d+\s*\]\s*\(\s*(products|customers|conversations|policies)[^)]*\)/gi, '');
+  // Quitar paths sueltos tipo "(products/PROD-SKU)" o "PROD-XXX|nombre|categoria|precio"
+  t = t.replace(/\(\s*(products|customers|conversations|policies)\/[^)]+\)/gi, '');
+  t = t.replace(/^[A-Z0-9\-]{4,}\s*\|.*\|.*\|\s*\d+\s*$/gm, '');
+  // Etiquetas técnicas que nunca deben llegar al usuario
+  t = t.replace(/\[CONTEXTO\][^\n]*/g, '');
+  t = t.replace(/\[BRAIN\][^\n]*/g, '');
+  // Saltos triples → dobles
+  t = t.replace(/\n{3,}/g, '\n\n');
+  return t.trim();
+}
 
 function buildB2BUrlFromChat() {
   const qty = getChatQty();
@@ -123,16 +142,20 @@ function CartInjectLight({ spec }) {
 
 function ChatMessageContentLight({ content }) {
   if (!content) return null;
+  // Limpieza preventiva ANTES de parsear los tags, así los textos crudos del
+  // brain nunca se renderizan como párrafos negros sin formato.
+  const cleanContent = sanitizeAgentText(content);
+  if (!cleanContent) return null;
   const tokens = [];
   let lastIdx = 0;
   let match;
   const re = new RegExp(TAG_REGEX.source, 'g');
-  while ((match = re.exec(content)) !== null) {
-    if (match.index > lastIdx) tokens.push({ type: 'text', value: content.slice(lastIdx, match.index) });
+  while ((match = re.exec(cleanContent)) !== null) {
+    if (match.index > lastIdx) tokens.push({ type: 'text', value: cleanContent.slice(lastIdx, match.index) });
     tokens.push({ type: match[1], value: (match[2] || '').trim() });
     lastIdx = match.index + match[0].length;
   }
-  if (lastIdx < content.length) tokens.push({ type: 'text', value: content.slice(lastIdx) });
+  if (lastIdx < cleanContent.length) tokens.push({ type: 'text', value: cleanContent.slice(lastIdx) });
 
   return (
     <div className="space-y-1">
