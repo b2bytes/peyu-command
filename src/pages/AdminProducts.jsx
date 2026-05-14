@@ -11,6 +11,7 @@ import DriveMatchMigrationPanel from '@/components/admin-products/DriveMatchMigr
 import WaybackRecoveryPanel from '@/components/admin-products/WaybackRecoveryPanel';
 import GoogleShoppingAuditPanel from '@/components/admin-products/GoogleShoppingAuditPanel';
 import BulkImageGeneratorPanel from '@/components/admin-products/BulkImageGeneratorPanel';
+import LaunchReadinessPanel from '@/components/admin-products/LaunchReadinessPanel';
 import { Button } from '@/components/ui/button';
 
 /**
@@ -123,6 +124,12 @@ export default function AdminProducts() {
           <button onClick={() => setSyncResult(null)} className="text-white/50 hover:text-white"><X className="w-3 h-3" /></button>
         </div>
       )}
+
+      {/* Pre-Launch Audit — duplicados / precios / descripciones / imágenes */}
+      <LaunchReadinessPanel
+        onProductClick={(id) => { setSelectedId(id); setTab('datos'); }}
+        onAction={loadData}
+      />
 
       {/* Panel restauración 121 imágenes desde Google Drive */}
       <DriveMatchMigrationPanel onComplete={loadData} />
