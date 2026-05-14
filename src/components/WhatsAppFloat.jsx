@@ -10,7 +10,9 @@ export default function WhatsAppFloat() {
       href="https://wa.me/56935040242?text=Hola%2C%20me%20interesa%20información%20sobre%20regalos%20corporativos%20sostenibles"
       target="_blank"
       rel="noreferrer"
-      className="fixed right-4 sm:right-6 z-50 w-12 h-12 sm:w-14 sm:h-14 rounded-full flex items-center justify-center shadow-2xl shadow-green-500/40 hover:scale-110 active:scale-95 transition-transform"
+      /* Oculto en mobile: el chat IA Peyu es el canal principal y WhatsApp acá
+         competía visualmente con él. En desktop sí se muestra como respaldo. */
+      className="hidden sm:flex fixed right-6 z-40 w-14 h-14 rounded-full items-center justify-center shadow-2xl shadow-green-500/40 hover:scale-110 active:scale-95 transition-transform"
       style={{
         backgroundColor: '#25D366',
         bottom: 'calc(env(safe-area-inset-bottom) + 7rem)',

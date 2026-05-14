@@ -3,7 +3,7 @@ import { useLocation } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Send, X, History } from 'lucide-react';
+import { Send, X, History, Sparkles, Gift, Building2, Leaf } from 'lucide-react';
 import ChatProductContentLight from '@/components/chat/ChatMessageContentLight';
 import ChatHistoryPanel from '@/components/chat/ChatHistoryPanel';
 import { ensureFreshSession, addToHistory } from '@/lib/chat-history';
@@ -215,28 +215,39 @@ export default function AsistenteChat() {
 
   return (
     <>
-      {/* FAB Button — posicionado encima del botón de WhatsApp */}
+      {/* FAB Premium estilo Intercom — pill con texto + avatar.
+          En mobile: pill compacto sobre el bottom nav (sin tapar contenido).
+          En desktop: pill expandido para invitar al diálogo. */}
       {!open && (
         <div
-          className="fixed right-4 sm:right-6 z-40 flex items-center gap-2"
-          style={{ bottom: 'calc(env(safe-area-inset-bottom) + 10.5rem)' }}
+          className="fixed right-4 sm:right-6 z-40"
+          style={{ bottom: 'calc(env(safe-area-inset-bottom) + 5.5rem)' }}
         >
-          {hasHistory && (
-            <button
-              onClick={handleOpen}
-              className="hidden sm:flex items-center gap-1.5 bg-white/95 backdrop-blur border border-teal-200 text-teal-700 text-xs font-semibold px-3 py-1.5 rounded-full shadow-lg hover:bg-teal-50 transition animate-pulse"
-            >
-              💬 Retomar chat
-            </button>
-          )}
           <button
             onClick={handleOpen}
-            className="relative w-14 h-14 bg-gradient-to-br from-teal-500 to-cyan-600 rounded-full shadow-xl hover:shadow-2xl transition-all flex items-center justify-center text-white group hover:scale-110"
+            className="group relative flex items-center gap-2.5 pl-2 pr-4 py-2 bg-white rounded-full shadow-[0_8px_32px_-8px_rgba(15,139,108,0.4)] hover:shadow-[0_12px_40px_-8px_rgba(15,139,108,0.5)] border border-teal-100/80 hover:scale-[1.02] active:scale-[0.98] transition-all"
             aria-label="Abrir chat con Peyu"
           >
-            <span className="text-2xl group-hover:rotate-12 transition-transform">🐢</span>
+            {/* Avatar circular con gradiente firma */}
+            <span className="relative flex items-center justify-center w-9 h-9 rounded-full bg-gradient-to-br from-teal-500 to-cyan-600 text-lg shadow-inner">
+              🐢
+              {/* Status dot vivo */}
+              <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-400 border-2 border-white rounded-full" />
+            </span>
+            {/* Copy comercial */}
+            <span className="flex flex-col items-start leading-tight">
+              <span className="text-[13px] font-bold text-slate-900 flex items-center gap-1">
+                {hasHistory ? 'Sigue tu chat' : 'Habla con Peyu'}
+                <Sparkles className="w-3 h-3 text-amber-500" />
+              </span>
+              <span className="text-[10px] text-teal-700 font-medium flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                {hasHistory ? `${messages.filter(m => m.role === 'assistant').length} mensajes` : 'Te respondo al toque'}
+              </span>
+            </span>
+            {/* Badge contador (solo si historia) */}
             {hasHistory && (
-              <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-white">
+              <span className="absolute -top-1.5 -right-1.5 min-w-[20px] h-5 px-1.5 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-white shadow-sm">
                 {messages.filter(m => m.role === 'assistant').length}
               </span>
             )}
@@ -257,22 +268,26 @@ export default function AsistenteChat() {
             maxHeight: 'calc(100vh - env(safe-area-inset-bottom) - 7rem)',
           }}
         >
-          {/* Header */}
-          <div className="bg-gradient-to-r from-teal-600 to-cyan-600 text-white p-4 flex items-center justify-between flex-shrink-0 relative">
-            <div className="flex items-center gap-2.5">
-              <div className="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center text-xl">🐢</div>
+          {/* Header — gradiente verde Peyu con micro-cta de confianza */}
+          <div className="bg-gradient-to-br from-teal-600 via-teal-600 to-cyan-700 text-white p-3.5 flex items-center justify-between flex-shrink-0 relative overflow-hidden">
+            {/* Decorativo */}
+            <div className="absolute -top-8 -right-8 w-28 h-28 bg-white/10 rounded-full blur-2xl pointer-events-none" />
+            <div className="flex items-center gap-2.5 relative">
+              <div className="relative w-10 h-10 rounded-full bg-white/15 backdrop-blur flex items-center justify-center text-xl ring-2 ring-white/20">
+                🐢
+                <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-400 border-2 border-teal-600 rounded-full" />
+              </div>
               <div>
-                <h3 className="font-bold text-sm">Peyu · PEYU Chile</h3>
-                <p className="text-xs text-white/80 flex items-center gap-1">
-                  <span className="w-1.5 h-1.5 rounded-full bg-green-300 animate-pulse" />
-                  En línea · sigue tu conversación
+                <h3 className="font-bold text-[14px] leading-tight">Peyu</h3>
+                <p className="text-[10.5px] text-white/85 flex items-center gap-1 leading-tight mt-0.5">
+                  Tu asistente de regalos sostenibles
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-0.5 relative">
               <button
                 onClick={() => setShowHistory(v => !v)}
-                className="text-white hover:bg-white/20 p-1.5 rounded-lg transition"
+                className="text-white/90 hover:text-white hover:bg-white/15 p-1.5 rounded-lg transition"
                 aria-label="Ver historial"
                 title="Conversaciones anteriores"
               >
@@ -280,7 +295,7 @@ export default function AsistenteChat() {
               </button>
               <button
                 onClick={() => setOpen(false)}
-                className="text-white hover:bg-white/20 p-1 rounded-lg transition"
+                className="text-white/90 hover:text-white hover:bg-white/15 p-1.5 rounded-lg transition"
                 aria-label="Minimizar chat"
               >
                 <X className="w-5 h-5" />
@@ -299,9 +314,45 @@ export default function AsistenteChat() {
           {/* Messages */}
           <div className="peyu-scrollbar flex-1 overflow-y-auto space-y-3 p-3.5 bg-gradient-to-b from-gray-50 to-white flex flex-col">
             {messages.length === 0 && !loading && (
-              <div className="text-center text-gray-500 text-xs py-8 space-y-3">
-                <p className="text-sm font-medium">👋 ¡Hola! Soy Peyu</p>
-                <p>Tu asistente de gifting sostenible. Cuéntame qué necesitas.</p>
+              <div className="py-3 space-y-3">
+                {/* Burbuja de bienvenida tipo Peyu (orientada a venta) */}
+                <div className="flex items-start gap-2">
+                  <div className="w-7 h-7 rounded-full bg-teal-50 border border-teal-100 flex items-center justify-center text-sm flex-shrink-0">
+                    🐢
+                  </div>
+                  <div className="bg-white border border-gray-200 rounded-2xl rounded-bl-md px-3.5 py-2.5 max-w-[85%] shadow-sm">
+                    <p className="text-[13.5px] text-gray-900 leading-relaxed">
+                      Hola 🌱 Soy <b>Peyu</b>. Te ayudo a encontrar el regalo perfecto en segundos.
+                    </p>
+                    <p className="text-[12px] text-gray-500 mt-1.5">¿Qué necesitas hoy?</p>
+                  </div>
+                </div>
+
+                {/* Chips de venta — disparan conversación B2C / B2B / gifting */}
+                <div className="grid grid-cols-1 gap-1.5 px-1 pt-1">
+                  {[
+                    { icon: Gift, text: 'Buscar regalo personal', q: 'Estoy buscando un regalo personal, ¿qué me recomiendas?', color: 'from-pink-500 to-rose-500' },
+                    { icon: Building2, text: 'Regalos para mi empresa', q: 'Necesito regalos corporativos para mi empresa', color: 'from-blue-500 to-indigo-500' },
+                    { icon: Leaf, text: '¿Por qué Peyu?', q: '¿Qué hace especial a Peyu? Cuéntame del impacto ambiental.', color: 'from-emerald-500 to-teal-500' },
+                  ].map((chip, i) => {
+                    const Icon = chip.icon;
+                    return (
+                      <button
+                        key={i}
+                        onClick={() => { setInput(chip.q); setTimeout(() => sendMessage(), 50); }}
+                        className="group flex items-center gap-2.5 bg-white hover:bg-gray-50 border border-gray-200 hover:border-teal-300 rounded-xl px-3 py-2 text-left transition-all shadow-sm hover:shadow"
+                      >
+                        <span className={`w-7 h-7 rounded-lg bg-gradient-to-br ${chip.color} flex items-center justify-center text-white flex-shrink-0`}>
+                          <Icon className="w-3.5 h-3.5" />
+                        </span>
+                        <span className="text-[12.5px] font-semibold text-gray-800 flex-1">{chip.text}</span>
+                        <span className="text-teal-600 text-xs opacity-0 group-hover:opacity-100 transition">→</span>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* Retomar conversación anterior */}
                 {typeof window !== 'undefined' && (() => {
                   try {
                     const raw = localStorage.getItem('peyu_chat_history');
@@ -310,7 +361,7 @@ export default function AsistenteChat() {
                       return (
                         <button
                           onClick={() => setShowHistory(true)}
-                          className="inline-flex items-center gap-1.5 mt-2 px-3 py-1.5 rounded-full bg-teal-50 hover:bg-teal-100 border border-teal-200 text-teal-700 text-[11px] font-semibold transition"
+                          className="w-full inline-flex items-center justify-center gap-1.5 mt-1 px-3 py-1.5 rounded-full bg-teal-50 hover:bg-teal-100 border border-teal-200 text-teal-700 text-[11px] font-semibold transition"
                         >
                           <History className="w-3 h-3" /> Retomar conversación anterior ({hist.length})
                         </button>
@@ -319,6 +370,13 @@ export default function AsistenteChat() {
                   } catch {}
                   return null;
                 })()}
+
+                {/* Trust signals minimales */}
+                <div className="flex items-center justify-center gap-3 pt-2 text-[10px] text-gray-500">
+                  <span className="flex items-center gap-1">⚡ Respuesta &lt;5s</span>
+                  <span className="w-1 h-1 rounded-full bg-gray-300" />
+                  <span>🇨🇱 Hecho en Chile</span>
+                </div>
               </div>
             )}
             {messages.map((msg, i) => (
