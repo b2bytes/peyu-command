@@ -82,6 +82,13 @@ export const LAUNCH_ROADMAP = [
         owner: 'humano + constructor',
         detail: 'Verificar el dominio en el proveedor de email para que las confirmaciones siempre lleguen.',
       },
+      {
+        title: '🚨 Pedir clave definitiva a BlueExpress (bloqueante para envíos)',
+        impact: 'critical',
+        effort_hours: 0.3,
+        owner: 'humano',
+        detail: 'BlueExpress aún no entregó la credencial productiva. Sin esto, no podemos generar etiquetas reales ni cotizar envíos en vivo. Contactar al ejecutivo de cuenta para acelerar.',
+      },
     ],
   },
 
@@ -317,7 +324,8 @@ export const SNAPSHOT_HOY = {
     { tag: '🟩', titulo: 'El sistema antifraude ya está protegiendo el negocio', simple: 'Esta semana frenó solo 2 pedidos falsos de $3.9M cada uno. Funciona sin que tengas que mirarlo.' },
     { tag: '🟩', titulo: 'El chat de la web vende con tono cálido y consultivo', simple: 'Recomienda productos, detecta si es regalo personal o corporativo, y guía hasta el cierre. Probado y afinado esta semana.' },
     { tag: '🟩', titulo: '7 publicaciones de Instagram listas para la semana próxima', simple: 'La IA ya generó los posts para lun-dom. Solo falta revisarlos y darle "publicar".' },
-    { tag: '🟩', titulo: 'Las integraciones clave ya están conectadas', simple: 'Bluex, MercadoPago, Pinecone, Google Workspace, WooCommerce y GA4 operando.' },
+    { tag: '🟩', titulo: 'Las integraciones clave ya están conectadas', simple: 'MercadoPago, Pinecone, Google Workspace, WooCommerce y GA4 operando.' },
+    { tag: '🟥', titulo: 'Falta la clave productiva de BlueExpress', simple: 'La integración con Bluex está lista y probada, pero BlueExpress aún no nos entregó la credencial definitiva. Sin esto no podemos generar etiquetas reales. Hay que apurar al ejecutivo.' },
     { tag: '🟧', titulo: 'Falta cerrar los detalles del catálogo tras migrar de WooCommerce', simple: 'Algunos productos quedaron con datos incompletos (precio mayorista, peso, descripción). Se completa esta semana.' },
     { tag: '🟧', titulo: 'Algunas fotos quedaron rotas tras la sincronización', simple: 'La importación desde WooCommerce desordenó la galería. Limpieza programada para sábado-domingo.' },
     { tag: '🟨', titulo: 'WhatsApp todavía no responde con la IA', simple: 'El agente cálido está listo, falta vincularlo a tu WhatsApp Business (10 minutos de configuración).' },
