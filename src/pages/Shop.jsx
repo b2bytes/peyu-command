@@ -4,7 +4,7 @@ import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Search, SlidersHorizontal, X, Recycle, Truck, Shield, Check, Building2, Loader2 } from 'lucide-react';
 import CategoryTabs from '@/components/shop/CategoryTabs';
-import ProductCard from '@/components/shop/ProductCard';
+import ProductCard from '@/components/shop/ProductCard.jsx';
 import ShopHeroCollage from '@/components/shop/ShopHeroCollage';
 import { getProductImage } from '@/utils/productImages';
 import PublicSEO from '@/components/PublicSEO';
