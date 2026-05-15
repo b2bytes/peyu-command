@@ -113,8 +113,8 @@ function CartInject({ spec }) {
 
   if (!done) return null;
   return (
-    <div className="my-1.5 bg-green-500/20 border border-green-400/40 rounded-lg px-2.5 py-1.5 text-[11px] text-green-100 flex items-center gap-1.5">
-      <Check className="w-3 h-3" />
+    <div className="my-1.5 bg-emerald-50 border border-emerald-200 rounded-lg px-2.5 py-1.5 text-[11px] text-emerald-800 flex items-center gap-1.5">
+      <Check className="w-3 h-3 text-emerald-600 flex-shrink-0" />
       <span>Agregado: <b>{nombre}</b> × {qty}</span>
     </div>
   );
