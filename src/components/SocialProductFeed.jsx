@@ -2,8 +2,9 @@ import { useState, useMemo, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { Heart, MessageCircle, Share2, Bookmark, ShoppingCart, Building2, Loader2 } from 'lucide-react';
+import { Heart, MessageCircle, Share2, Bookmark, ShoppingCart, Building2 } from 'lucide-react';
 import { getProductImage } from '@/utils/productImages.js';
+import SkeletonCard from '@/components/SocialFeedSkeleton';
 
 const CATEGORIES = ['Todos', 'Escritorio', 'Hogar', 'Entretenimiento', 'Corporativo', 'Carcasas B2C'];
 
@@ -65,7 +66,7 @@ export default function SocialProductFeed() {
 
   return (
     <div className="space-y-5">
-      {/* Filtros tipo "Stories" horizontal scroll */}
+      {/* Filtros tipo "Stories" horizontal scroll — tokenizados (legibles en día/noche) */}
       <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide -mx-1 px-1">
         {CATEGORIES.map(cat => (
           <button
@@ -74,7 +75,7 @@ export default function SocialProductFeed() {
             className={`flex-shrink-0 px-4 py-2 rounded-full text-xs font-bold transition-all border ${
               filter === cat
                 ? 'bg-gradient-to-r from-teal-500 to-cyan-500 text-white border-teal-400 shadow-lg shadow-teal-500/30'
-                : 'bg-white/10 text-white/80 border-white/20 hover:bg-white/20'
+                : 'ld-glass text-ld-fg border-ld-border hover:border-ld-action'
             }`}
           >
             {cat}
@@ -82,17 +83,19 @@ export default function SocialProductFeed() {
         ))}
       </div>
 
-      {/* Loading */}
+      {/* Loading: skeletons reales (no spinner). Mantienen layout y dan
+          sensación de "carga rápida". 6 cards fantasma = 2 filas en desktop. */}
       {isLoading && (
-        <div className="flex items-center justify-center py-16 text-white/60">
-          <Loader2 className="w-6 h-6 animate-spin mr-2" />
-          Cargando productos...
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <SkeletonCard key={i} />
+          ))}
         </div>
       )}
 
       {/* Empty */}
       {!isLoading && filtered.length === 0 && (
-        <div className="text-center py-16 text-white/60 text-sm">
+        <div className="text-center py-16 text-ld-fg-muted text-sm">
           No hay productos en esta categoría aún.
         </div>
       )}
@@ -201,11 +204,14 @@ export default function SocialProductFeed() {
                 </div>
 
                 <div className="grid grid-cols-2 gap-2">
+                  {/* Comprar: outline verde (acción secundaria → B2C directo).
+                      Antes era bg-gray-900 (negro duro). Ahora coherente con el design system. */}
                   <Link to={`/producto/${producto.id}`}>
-                    <button className="w-full bg-gray-900 hover:bg-gray-800 text-white text-xs font-bold py-2.5 rounded-xl flex items-center justify-center gap-1.5 transition">
+                    <button className="w-full border-2 border-teal-600 text-teal-700 hover:bg-teal-50 text-xs font-bold py-2.5 rounded-xl flex items-center justify-center gap-1.5 transition">
                       <ShoppingCart className="w-3.5 h-3.5" /> Comprar
                     </button>
                   </Link>
+                  {/* Cotizar B2B: solid verde (acción primaria, mayor AOV) */}
                   <Link to={esCarcasa ? `/producto/${producto.id}` : `/b2b/self-service?sku=${encodeURIComponent(sku)}`}>
                     <button className="w-full bg-gradient-to-r from-teal-500 to-cyan-500 hover:from-teal-600 hover:to-cyan-600 text-white text-xs font-bold py-2.5 rounded-xl flex items-center justify-center gap-1.5 transition shadow-lg shadow-teal-500/20">
                       <Building2 className="w-3.5 h-3.5" /> Cotizar B2B
