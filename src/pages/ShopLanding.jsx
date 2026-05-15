@@ -82,11 +82,28 @@ export default function ShopLanding() {
   // Si la pestaña es nueva (usuario cerró y volvió), archivar la conv anterior al historial.
   const [freshSession] = useState(() => {
     const fresh = ensureFreshSession();
-    // Sesión nueva → resetear memoria de SKUs ya mostrados
-    if (fresh) clearShownSkus();
+    if (fresh) {
+      // Sesión nueva → resetear toda la memoria efímera de la conv anterior:
+      // SKUs mostrados, datos B2B capturados, intent detectado, cantidad detectada.
+      // Si no, la conv nueva arranca con sesgos de la sesión pasada (el bug que
+      // hace que Peyu siga hablando del "regalo para mamá" que se preguntó ayer).
+      clearShownSkus();
+      try {
+        localStorage.removeItem('peyu_chat_b2b_contact');
+        localStorage.removeItem('peyu_chat_intent');
+        localStorage.removeItem('peyu_chat_last_qty');
+        localStorage.removeItem('peyu_chat_last_product');
+      } catch { /* noop */ }
+    }
     return fresh;
   });
-  const [conversationId, setConversationId] = useState(() => localStorage.getItem(STORAGE_KEY) || null);
+  // CRITICAL: si es sesión nueva, ensureFreshSession ya archivó la conv anterior
+  // y borró ACTIVE_KEY. Pero por seguridad nos aseguramos: si freshSession=true
+  // arrancamos SIEMPRE con conversationId=null aunque por algún race quede algo
+  // en localStorage. Esto previene el bug de "se queda cargando la conv vieja".
+  const [conversationId, setConversationId] = useState(() => {
+    return freshSession ? null : (localStorage.getItem(STORAGE_KEY) || null);
+  });
   const [messages, setMessages] = useState([WELCOME_MSG]);
   const [showHistory, setShowHistory] = useState(false);
   const [historyCount, setHistoryCount] = useState(() => readHistory().length);
@@ -203,17 +220,28 @@ export default function ShopLanding() {
   };
 
   // 🧠 Al cerrar la pestaña: destilar resumen de la conversación y guardarlo
-  // como memoria vectorial de largo plazo (Fase 5).
+  // como memoria vectorial de largo plazo. SOLO para usuarios registrados,
+  // porque la memoria de chat se indexa por user_email — para visitantes
+  // anónimos no aporta valor y además genera errores en runtime (no hay
+  // identidad). Para anónimos basta con el historial local de localStorage.
   useEffect(() => {
+    let isRegistered = false;
+    (async () => {
+      try {
+        const authed = await base44.auth.isAuthenticated();
+        if (authed) {
+          const u = await base44.auth.me();
+          isRegistered = !!u?.email;
+        }
+      } catch { /* anónimo */ }
+    })();
+
     const handleUnload = () => {
+      if (!isRegistered) return; // visitante anónimo → nada que guardar
       if (conversationId && messages.length >= 3) {
-        // Fire-and-forget: el navegador puede cortar la request, pero suele llegar.
         try {
           base44.functions.invoke('summarizeAndSaveConversation', {
             conversation_id: conversationId,
-            // 🧹 Sanitizar mensajes del usuario antes de persistir en memoria
-            // vectorial. Si entra basura técnica al Brain, contamina futuras
-            // respuestas (el bug que ya vimos en la captura).
             messages: messages.slice(-20).map(m => ({
               role: m.role,
               content: m.role === 'user' ? sanitizeUserMessage(m.content) : m.content,
