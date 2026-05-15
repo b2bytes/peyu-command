@@ -86,118 +86,119 @@ export const LAUNCH_ROADMAP = [
   },
 
   // ════════════════════════════════════════════════════════════════════
-  // FASE 1 — CATÁLOGO TERMINADO (dom 17 — mié 20 may, 4 días)
+  // FASE 1 — CATÁLOGO TERMINADO (dom 17 — mar 19 may, 3 días)
   // ════════════════════════════════════════════════════════════════════
   {
     id: 'fase-1',
     nombre: 'Fase 1 · Catálogo terminado',
-    semana: 'Dom 17 — Mié 20 mayo',
-    duracion_dias: 4,
+    semana: 'Dom 17 — Mar 19 mayo',
+    duracion_dias: 3,
     objetivo: 'Cada producto visible tiene foto, precio, descripción y datos de envío correctos.',
-    gate_salida: 'Catálogo aprobado: foto bonita, precios B2C y mayorista, peso para Bluex y descripción real.',
+    gate_salida: 'Catálogo aprobado: foto bonita, precios B2C y mayorista, peso para Bluex y descripción real. Listo para empujar tráfico el miércoles.',
     status: 'pending',
     items: [
       {
         title: 'Dom 17 · Fotos de los 20 productos más vendidos',
         impact: 'critical',
-        effort_hours: 4,
+        effort_hours: 3,
         owner: 'humano',
         detail: 'Fondo blanco, formato cuadrado. La IA puede ayudarte a mejorar las que ya tengas.',
       },
       {
         title: 'Dom 17 · Calcular precios mayoristas automáticamente',
         impact: 'high',
-        effort_hours: 0.5,
+        effort_hours: 0.3,
         owner: 'constructor',
         detail: 'Productos sin precio B2B: se calcula automáticamente. Tú revisas la tabla antes de aplicar.',
       },
       {
-        title: 'Lun 18 · Descripciones con tono PEYU para 50 productos',
+        title: 'Dom 17 · Descripciones con tono PEYU para 50 productos',
         impact: 'high',
-        effort_hours: 1.5,
+        effort_hours: 1,
         owner: 'constructor',
-        detail: 'La IA escribe descripciones por lote, tú apruebas. Tomar ~30 min revisar.',
+        detail: 'La IA escribe descripciones por lote, tú apruebas. Tomar ~20 min revisar.',
       },
       {
         title: 'Lun 18 · Completar peso y dimensiones para Bluex',
         impact: 'high',
-        effort_hours: 2,
+        effort_hours: 1.5,
         owner: 'humano',
         detail: 'Sin esto, Bluex cobra mal el envío. Pesar una muestra de cada producto.',
       },
       {
-        title: 'Mar 19 · Activar combos "Frecuentemente comprados juntos"',
+        title: 'Lun 18 · Activar combos "Frecuentemente comprados juntos"',
         impact: 'medium',
-        effort_hours: 0.5,
+        effort_hours: 0.3,
         owner: 'constructor',
         detail: 'La IA detecta combinaciones reales del historial y propone 5-8 packs.',
       },
       {
-        title: 'Mar 19 · SEO para Google (títulos y descripciones)',
+        title: 'Lun 18 · SEO para Google (títulos y descripciones)',
         impact: 'medium',
-        effort_hours: 1,
+        effort_hours: 0.5,
         owner: 'constructor',
         detail: 'Optimizar cómo aparecen los productos en buscadores. Por lote.',
       },
       {
-        title: 'Mié 20 · Revisión final + enviar sitemap a Google',
+        title: 'Mar 19 · Revisión final + enviar sitemap a Google',
         impact: 'high',
-        effort_hours: 0.5,
+        effort_hours: 0.3,
         owner: 'constructor',
-        detail: 'Última pasada antes del jueves para activar tráfico.',
+        detail: 'Última pasada antes de prender los agentes el miércoles.',
       },
     ],
   },
 
   // ════════════════════════════════════════════════════════════════════
-  // FASE 2 — AGENTES IA TRABAJANDO (jue 21 — mar 26 may, 6 días)
+  // FASE 2 — AGENTES IA TRABAJANDO (mié 20 — vie 22 may, 3 días)
+  // Arranca el miércoles tal como lo pidió el cliente.
   // ════════════════════════════════════════════════════════════════════
   {
     id: 'fase-2',
     nombre: 'Fase 2 · Agentes IA trabajando',
-    semana: 'Jue 21 — Mar 26 mayo',
-    duracion_dias: 6,
+    semana: 'Mié 20 — Vie 22 mayo',
+    duracion_dias: 3,
     objetivo: 'El chat web vende solo, WhatsApp responde 24/7 e Instagram publica automáticamente.',
     gate_salida: 'WhatsApp respondiendo en menos de 30s, Instagram publicando 5 posts y al menos 3 conversaciones del chat convertidas.',
     status: 'pending',
     items: [
       {
-        title: 'Jue 21 · Conectar WhatsApp Business al asistente IA',
+        title: 'Mié 20 AM · Conectar WhatsApp Business al asistente IA',
         impact: 'critical',
         effort_hours: 0.5,
         owner: 'humano + constructor',
         detail: 'El agente cálido ya está listo. Solo falta vincular tu WhatsApp Business escaneando un QR.',
       },
       {
-        title: 'Vie 22 · Probar 10 conversaciones reales con el chat',
-        impact: 'critical',
-        effort_hours: 1.5,
-        owner: 'humano',
-        detail: 'Hacer pruebas como cliente: regalo de pareja, mamá, empresa de 50 unidades, "está caro", etc. Confirmar que cierra bien.',
-      },
-      {
-        title: 'Lun 25 · Aprobar los 7 posts de Instagram de la semana',
+        title: 'Mié 20 PM · Aprobar los 7 posts de Instagram de la semana',
         impact: 'high',
         effort_hours: 0.3,
         owner: 'humano + constructor',
         detail: 'Ya están listos para revisión. Solo dar OK uno por uno y programar publicación.',
       },
       {
-        title: 'Lun 25 · Conectar Instagram para que publique solo',
+        title: 'Mié 20 PM · Conectar Instagram para que publique solo',
         impact: 'high',
         effort_hours: 0.5,
         owner: 'humano',
         detail: 'Vincular cuenta de Instagram Business. Después la IA publica automáticamente cada día a la mejor hora.',
       },
       {
-        title: 'Mar 26 · Asistente B2B en WhatsApp con cotización automática',
+        title: 'Jue 21 · Probar 10 conversaciones reales con el chat',
+        impact: 'critical',
+        effort_hours: 1,
+        owner: 'humano',
+        detail: 'Pruebas como cliente: regalo de pareja, mamá, empresa de 50 unidades, "está caro", etc. Confirmar que cierra bien.',
+      },
+      {
+        title: 'Jue 21 · Asistente B2B en WhatsApp con cotización automática',
         impact: 'high',
         effort_hours: 1.5,
         owner: 'constructor',
         detail: 'Cuando una empresa escribe pidiendo cotización por WhatsApp, recibe propuesta en menos de 1 hora sin intervención.',
       },
       {
-        title: 'Mar 26 · Tablero de control de los agentes',
+        title: 'Vie 22 · Tablero de control de los agentes',
         impact: 'medium',
         effort_hours: 0.5,
         owner: 'constructor',
@@ -207,47 +208,47 @@ export const LAUNCH_ROADMAP = [
   },
 
   // ════════════════════════════════════════════════════════════════════
-  // FASE 3 — ENCENDER EL TRÁFICO (mié 27 may — sáb 30 may, 4 días)
+  // FASE 3 — ENCENDER EL TRÁFICO (sáb 23 — mar 26 may, 4 días)
   // ════════════════════════════════════════════════════════════════════
   {
     id: 'fase-3',
     nombre: 'Fase 3 · Encender el tráfico',
-    semana: 'Mié 27 — Sáb 30 mayo',
+    semana: 'Sáb 23 — Mar 26 mayo',
     duracion_dias: 4,
     objetivo: 'Activar Google Ads, llegar a buscadores y empezar a medir cuánto cuesta cada nuevo cliente.',
     gate_salida: 'Google Ads activa y midiendo, productos apareciendo en buscadores y al menos 10 visitas orgánicas por día.',
     status: 'pending',
     items: [
       {
-        title: 'Mié 27 · Crear 3 campañas de Google Ads con IA',
+        title: 'Sáb 23 · Crear 3 campañas de Google Ads con IA',
         impact: 'critical',
         effort_hours: 0.5,
         owner: 'constructor + humano',
         detail: 'Una para buscadores ("regalos sostenibles Chile"), otra Shopping y una Demand Gen. La IA predice resultados antes de gastar.',
       },
       {
-        title: 'Jue 28 · Conectar Google Shopping (Merchant Center)',
+        title: 'Dom 24 · Conectar Google Shopping (Merchant Center)',
         impact: 'high',
         effort_hours: 1,
         owner: 'humano + constructor',
         detail: 'Para que tus productos aparezcan con foto y precio en Google.',
       },
       {
-        title: 'Jue 28 · Posicionar PEYU en 10 comunas top',
+        title: 'Dom 24 · Posicionar PEYU en 10 comunas top',
         impact: 'high',
         effort_hours: 0.5,
         owner: 'constructor',
         detail: 'Generar contenido SEO geo-localizado: "regalos corporativos Las Condes", "Providencia", etc.',
       },
       {
-        title: 'Vie 29 · Avisar a buscadores que el sitio es nuevo',
+        title: 'Lun 25 · Avisar a buscadores que el sitio es nuevo',
         impact: 'medium',
         effort_hours: 0.3,
         owner: 'constructor',
         detail: 'Acelerar la indexación de Google, Bing y Yandex con un blast masivo.',
       },
       {
-        title: 'Sáb 30 · Revisión primera semana de tráfico',
+        title: 'Mar 26 · Revisión primera semana de tráfico',
         impact: 'high',
         effort_hours: 0.5,
         owner: 'humano + constructor',
@@ -257,12 +258,12 @@ export const LAUNCH_ROADMAP = [
   },
 
   // ════════════════════════════════════════════════════════════════════
-  // FASE 4 — MÁQUINA AUTOMÁTICA (lun 1 jun en adelante)
+  // FASE 4 — MÁQUINA AUTOMÁTICA (mié 27 may en adelante)
   // ════════════════════════════════════════════════════════════════════
   {
     id: 'fase-4',
     nombre: 'Fase 4 · Máquina automática',
-    semana: 'Lun 1 jun en adelante',
+    semana: 'Mié 27 may en adelante',
     duracion_dias: 7,
     objetivo: 'Que el sistema venda, atienda y publique sin que tengas que mirarlo todos los días.',
     gate_salida: 'Sobre $5M/mes en ventas web, 8+ cotizaciones B2B mensuales y satisfacción de clientes alta.',
@@ -308,18 +309,20 @@ export const LAUNCH_ROADMAP = [
 ];
 
 // Estado del proyecto HOY — versión humana, sin jerga técnica
+// Empezamos por lo sólido (la máquina está armada) y después los ajustes finos.
 export const SNAPSHOT_HOY = {
   fecha: '2026-05-15',
   hallazgos_criticos: [
-    { tag: '🟥', titulo: 'El formulario B2B se está cayendo en celulares', simple: 'Los clientes corporativos no pueden enviar consultas desde su teléfono. Lo arreglamos mañana.' },
-    { tag: '🟥', titulo: 'La tienda da error al filtrar por categoría en móvil', simple: 'A veces, al elegir "Escritorio" o "Hogar" desde el celular, no carga. Vamos a estabilizarlo.' },
-    { tag: '🟧', titulo: 'Catálogo a medio terminar tras migrar de WooCommerce', simple: 'Muchos productos perdieron datos clave (precio mayorista, peso, descripción). Hay que completarlos.' },
-    { tag: '🟧', titulo: 'Algunas fotos de productos están rotas o duplicadas', simple: 'La sincronización con WooCommerce desordenó la galería. Hay que limpiarla.' },
-    { tag: '🟨', titulo: 'WhatsApp todavía no responde con el asistente IA', simple: 'El agente cálido ya está listo, falta conectarlo al WhatsApp Business.' },
-    { tag: '🟨', titulo: 'Los emails de confirmación pueden no estar llegando', simple: 'Necesitamos verificar el dominio peyuchile.cl en el proveedor de email para que ningún cliente quede sin respuesta.' },
-    { tag: '🟩', titulo: 'El sistema antifraude ya está bloqueando intentos sospechosos', simple: 'Esta semana frenó automáticamente 2 pedidos falsos de $3.9M cada uno. Funciona.' },
-    { tag: '🟩', titulo: 'El chat de la web ya tiene tono cálido y consultivo', simple: 'El agente recomienda productos, detecta si es regalo personal o corporativo y guía al cierre.' },
-    { tag: '🟩', titulo: '7 publicaciones de Instagram listas para la semana próxima', simple: 'La IA ya generó posts para lun-dom. Solo falta revisarlos y darle "publicar".' },
+    { tag: '🟩', titulo: 'La estructura del sistema está sólida', simple: 'Más de 60 funciones automáticas operando: pedidos, pagos, envíos con Bluex, alertas, reportes y CRM. La base está construida.' },
+    { tag: '🟩', titulo: 'El sistema antifraude ya está protegiendo el negocio', simple: 'Esta semana frenó solo 2 pedidos falsos de $3.9M cada uno. Funciona sin que tengas que mirarlo.' },
+    { tag: '🟩', titulo: 'El chat de la web vende con tono cálido y consultivo', simple: 'Recomienda productos, detecta si es regalo personal o corporativo, y guía hasta el cierre. Probado y afinado esta semana.' },
+    { tag: '🟩', titulo: '7 publicaciones de Instagram listas para la semana próxima', simple: 'La IA ya generó los posts para lun-dom. Solo falta revisarlos y darle "publicar".' },
+    { tag: '🟩', titulo: 'Las integraciones clave ya están conectadas', simple: 'Bluex, MercadoPago, Pinecone, Google Workspace, WooCommerce y GA4 operando.' },
+    { tag: '🟧', titulo: 'Falta cerrar los detalles del catálogo tras migrar de WooCommerce', simple: 'Algunos productos quedaron con datos incompletos (precio mayorista, peso, descripción). Se completa esta semana.' },
+    { tag: '🟧', titulo: 'Algunas fotos quedaron rotas tras la sincronización', simple: 'La importación desde WooCommerce desordenó la galería. Limpieza programada para sábado-domingo.' },
+    { tag: '🟨', titulo: 'WhatsApp todavía no responde con la IA', simple: 'El agente cálido está listo, falta vincularlo a tu WhatsApp Business (10 minutos de configuración).' },
+    { tag: '🟨', titulo: 'Verificar emails desde peyuchile.cl', simple: 'Configuración del dominio en el proveedor para que las confirmaciones siempre lleguen al cliente.' },
+    { tag: '🟨', titulo: 'Pequeños ajustes de estabilidad en móvil', simple: 'Mejorar el formulario B2B y los filtros de categoría desde el celular.' },
   ],
 };
 

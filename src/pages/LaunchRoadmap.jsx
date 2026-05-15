@@ -168,14 +168,14 @@ export default function LaunchRoadmap() {
           </div>
         </div>
 
-        {/* SNAPSHOT — lenguaje cliente, sin jerga */}
+        {/* SNAPSHOT — empieza por lo sólido, después los ajustes */}
         <div className="ld-card p-5">
           <div className="flex items-center gap-2 mb-4">
-            <AlertTriangle className="w-5 h-5" style={{ color: 'var(--ld-highlight)' }} />
-            <h2 className="font-poppins font-bold text-lg text-ld-fg">Cómo está PEYU hoy, sin maquillaje</h2>
+            <CheckCircle2 className="w-5 h-5" style={{ color: 'var(--ld-action)' }} />
+            <h2 className="font-poppins font-bold text-lg text-ld-fg">Dónde estamos parados</h2>
           </div>
           <p className="text-sm text-ld-fg-muted mb-4">
-            Esto es lo que detectamos esta semana. 🟥 hay que arreglarlo ya, 🟧 esta semana, 🟨 cuando se pueda, 🟩 ya funcionando bien.
+            La máquina está armada y operando. Quedan ajustes finos para dejarla impecable. 🟩 funcionando · 🟧 esta semana · 🟨 ajustes finos.
           </p>
           <div className="space-y-2">
             {SNAPSHOT_HOY.hallazgos_criticos.map((h, i) => (
