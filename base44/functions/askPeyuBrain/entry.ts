@@ -46,10 +46,9 @@ async function searchNs(host, apiKey, ns, query, topK, filter) {
 
 Deno.serve(async (req) => {
   try {
-    const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
-    if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
-
+    // Endpoint RAG público: usado por el chat anónimo del landing.
+    // No requiere auth — solo devuelve hits del knowledge base (productos, FAQs,
+    // ESG, brand voice). No expone datos sensibles del cliente.
     const apiKey = Deno.env.get('PINECONE_API_KEY');
     if (!apiKey) return Response.json({ error: 'PINECONE_API_KEY missing' }, { status: 500 });
 
