@@ -105,6 +105,7 @@ const AuditoriaImagenes = lazyWithRetry(() => import('./pages/AuditoriaImagenes'
 const SocialStudio = lazyWithRetry(() => import('./pages/SocialStudio'), { name: 'SocialStudio' });
 const AuditoriaVisual = lazyWithRetry(() => import('./pages/AuditoriaVisual'), { name: 'AuditoriaVisual' });
 const SEOMetaBulk = lazyWithRetry(() => import('./pages/SEOMetaBulk'), { name: 'SEOMetaBulk' });
+const ChatLeads = lazyWithRetry(() => import('./pages/ChatLeads'), { name: 'ChatLeads' });
 
 const AdminLoader = () => (
   <div className="fixed inset-0 flex items-center justify-center bg-background">
@@ -203,6 +204,7 @@ const AuthenticatedApp = () => {
           <Route path="social-studio" element={<SocialStudio />} />
           <Route path="auditoria-visual" element={<AuditoriaVisual />} />
           <Route path="seo-meta-bulk" element={<SEOMetaBulk />} />
+          <Route path="chat-leads" element={<ChatLeads />} />
         </Route>
         <Route path="*" element={<PageNotFound />} />
       </Routes>

@@ -1,0 +1,137 @@
+{
+  "name": "ChatLead",
+  "type": "object",
+  "description": "Lead capturado progresivamente desde conversaciones del agente Peyu (chat p\u00fablico). Un registro por conversation_id, se va enriqueciendo turn a turn con cualquier dato que el visitante mencione (1 dato basta para crearlo). Agrupado por tipo (B2C/B2B/Sin clasificar) y enlazado a la conversaci\u00f3n completa.",
+  "properties": {
+    "conversation_id": {
+      "type": "string",
+      "title": "ID conversaci\u00f3n Base44 (clave \u00fanica)"
+    },
+    "session_id": {
+      "type": "string",
+      "title": "Session ID an\u00f3nima"
+    },
+    "tipo": {
+      "type": "string",
+      "title": "Tipo de cliente",
+      "enum": [
+        "B2C",
+        "B2B",
+        "Sin clasificar"
+      ],
+      "default": "Sin clasificar"
+    },
+    "estado": {
+      "type": "string",
+      "title": "Estado",
+      "enum": [
+        "Activo",
+        "Calificado",
+        "Convertido",
+        "Abandonado",
+        "Descartado"
+      ],
+      "default": "Activo"
+    },
+    "nombre": {
+      "type": "string",
+      "title": "Nombre / Contacto"
+    },
+    "email": {
+      "type": "string",
+      "title": "Email"
+    },
+    "telefono": {
+      "type": "string",
+      "title": "Tel\u00e9fono"
+    },
+    "empresa": {
+      "type": "string",
+      "title": "Empresa"
+    },
+    "rut": {
+      "type": "string",
+      "title": "RUT"
+    },
+    "fecha_requerida": {
+      "type": "string",
+      "title": "Fecha que necesita"
+    },
+    "cantidad_estimada": {
+      "type": "number",
+      "title": "Cantidad estimada (u)"
+    },
+    "producto_interes_sku": {
+      "type": "string",
+      "title": "SKU producto de inter\u00e9s"
+    },
+    "producto_interes_nombre": {
+      "type": "string",
+      "title": "Nombre producto de inter\u00e9s"
+    },
+    "mensajes_count": {
+      "type": "number",
+      "title": "N\u00b0 mensajes en la conversaci\u00f3n",
+      "default": 0
+    },
+    "ultimo_mensaje_at": {
+      "type": "string",
+      "format": "date-time",
+      "title": "\u00daltimo mensaje"
+    },
+    "ultimo_mensaje_preview": {
+      "type": "string",
+      "title": "Preview \u00faltimo mensaje (140 chars)"
+    },
+    "page_origen": {
+      "type": "string",
+      "title": "P\u00e1gina donde inici\u00f3 el chat"
+    },
+    "referrer": {
+      "type": "string",
+      "title": "Referrer"
+    },
+    "datos_capturados": {
+      "type": "array",
+      "title": "Datos capturados (log)",
+      "description": "Historial de qu\u00e9 dato se captur\u00f3 y cu\u00e1ndo. Permite auditar la captura progresiva.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "campo": {
+            "type": "string"
+          },
+          "valor": {
+            "type": "string"
+          },
+          "at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "default": []
+    },
+    "score": {
+      "type": "number",
+      "title": "Score de calidad (0-100)",
+      "default": 0,
+      "description": "Se incrementa seg\u00fan completitud: +20 nombre, +25 email, +25 tel\u00e9fono, +15 empresa, +15 cantidad/fecha"
+    },
+    "convertido_a_b2b_lead_id": {
+      "type": "string",
+      "title": "B2BLead generado (si convirti\u00f3)"
+    },
+    "convertido_a_pedido_id": {
+      "type": "string",
+      "title": "PedidoWeb generado (si convirti\u00f3 B2C)"
+    },
+    "notas_internas": {
+      "type": "string",
+      "title": "Notas internas"
+    }
+  },
+  "required": [
+    "conversation_id"
+  ]
+}
