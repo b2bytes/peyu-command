@@ -76,7 +76,7 @@ export default function ShopHeroCollage({ productos = [] }) {
   const totalActivos = productos.length;
 
   return (
-    <div className="relative h-[340px] sm:h-[440px] lg:h-[540px]">
+    <div className="relative h-[380px] sm:h-[480px] lg:h-[580px]">
       {/* Glows ambient — refinados, menos saturados */}
       <div
         aria-hidden
@@ -89,14 +89,12 @@ export default function ShopHeroCollage({ productos = [] }) {
         style={{ background: 'var(--ld-highlight-soft)', opacity: 0.35 }}
       />
 
-      {/* ═════════ PIEZA HERO — producto principal (editorial, sin padding feo) ═════════
-          Pasamos de object-contain con padding-gigante (que dejaba al producto
-          flotando aislado y ridículo) a un layout editorial:
-          • La imagen ocupa el contenedor con object-cover, crop centrado.
-          • Encima, gradientes oscuros top→bottom para legibilidad del título.
-          • El título queda en la parte inferior izquierda con safe-area que
-            evita choque con la card de catálogo (que está en bottom -left). */}
-      <div className="absolute inset-y-0 right-0 w-[92%] sm:w-[80%] rounded-[28px] overflow-hidden ld-card shadow-[0_30px_80px_-30px_rgba(2,6,23,0.45)]">
+      {/* ═════════ PIEZA HERO — imagen principal (editorial) ═════════
+          El contenedor de IMAGEN ocupa SOLO la parte superior. El título ya
+          NO vive encima de la foto (evitamos que el contenedor lo tape o
+          que la foto compita con el texto). El título tiene su propia
+          card glass abajo, con jerarquía tipográfica clara y legible. */}
+      <div className="absolute top-0 right-0 left-0 sm:left-[20%] h-[68%] rounded-[28px] overflow-hidden ld-card shadow-[0_30px_80px_-30px_rgba(2,6,23,0.45)]">
         {(() => {
           const heroSrc = hero && !imgFailed ? getProductImage(hero) : HERO_FALLBACK_IMG;
           return (
@@ -162,69 +160,92 @@ export default function ShopHeroCollage({ productos = [] }) {
           </div>
         </div>
 
-        {/* Pieza editorial inferior — título del hero product.
-            Lo movemos a la DERECHA dentro del contenedor para que la card
-            "Catálogo 61" (que vive en bottom-left, fuera de este contenedor
-            pero se superpone visualmente) NO tape el título. */}
-        {hero && (
-          <div className="absolute bottom-5 right-5 left-[40%] sm:left-[38%] z-10 text-white drop-shadow-lg">
-            <p className="text-[10px] font-bold tracking-[0.22em] uppercase opacity-95 mb-1.5">
-              Destacado · {hero.categoria}
-            </p>
-            <p className="ld-display text-lg sm:text-xl lg:text-2xl leading-[1.05] line-clamp-2">
-              {hero.nombre}
-            </p>
-          </div>
-        )}
-
-        {/* Dots indicator del carrusel — abajo a la izquierda dentro del
-            contenedor hero, en el espacio que dejó libre el título. */}
-        {pool.length > 1 && (
-          <div className="absolute bottom-6 left-5 z-10 flex items-center gap-1.5">
-            {pool.slice(0, 8).map((_, i) => (
-              <button
-                key={i}
-                onClick={() => { setActiveIdx(i); setImgFailed(false); }}
-                className="transition-all duration-300"
-                aria-label={`Producto ${i + 1}`}
-              >
-                <span
-                  className={`block rounded-full transition-all duration-300 ${
-                    i === activeIdx ? 'w-6 h-1.5 bg-white' : 'w-1.5 h-1.5 bg-white/40 hover:bg-white/70'
-                  }`}
-                />
-              </button>
-            ))}
-          </div>
-        )}
       </div>
 
-      {/* ═════════ COLLAGE SECUNDARIO LATERAL ═════════
-          Pila de cards uniforme — cada una un mini-producto destacado.
-          Hover lift sutil para sensación interactiva premium. */}
-      <div className="absolute top-4 lg:-left-3 left-0 hidden md:flex flex-col gap-2.5 z-10 max-w-[230px]">
-        {/* Card "Plástico recuperado" — abre la pila con el value-prop */}
-        <SidecardValueProp />
+      {/* ═════════ TÍTULO EDITORIAL — card propia, debajo de la imagen ═════════
+          Jerarquía visual clara:
+          1. Kicker (categoría) — small caps, color action firma
+          2. Título (display Fraunces) — protagonista absoluto
+          3. Dots indicator — alineados a la derecha, balance visual
 
-        {/* Cards de producto */}
-        {secundarios.slice(0, 3).map((p) => (
+          Vive en su propia card glass para que SIEMPRE sea legible,
+          sin depender del crop de la foto ni de gradientes oscuros. */}
+      {hero && (
+        <div
+          className="absolute bottom-0 right-0 left-0 sm:left-[20%] ld-glass-strong rounded-[24px] px-5 sm:px-7 py-4 sm:py-5 shadow-lg flex items-center gap-4"
+          style={{ minHeight: '88px' }}
+        >
+          <div key={hero.id} className="flex-1 min-w-0" style={{ animation: 'peyuTitleSlideIn 600ms ease-out' }}>
+            <p
+              className="text-[10px] sm:text-[11px] font-bold uppercase tracking-[0.22em] leading-none mb-2"
+              style={{ color: 'var(--ld-action)' }}
+            >
+              Destacado · {hero.categoria}
+            </p>
+            <p className="ld-display text-xl sm:text-2xl lg:text-[28px] leading-[1.08] text-ld-fg line-clamp-2">
+              {hero.nombre.split('|')[0].trim()}
+            </p>
+          </div>
+
+          {/* Dots indicator — alineado a la derecha de la card */}
+          {pool.length > 1 && (
+            <div className="hidden sm:flex items-center gap-1.5 flex-shrink-0">
+              {pool.slice(0, 8).map((_, i) => (
+                <button
+                  key={i}
+                  onClick={() => { setActiveIdx(i); setImgFailed(false); }}
+                  className="transition-all duration-300"
+                  aria-label={`Producto ${i + 1}`}
+                >
+                  <span
+                    className={`block rounded-full transition-all duration-300 ${
+                      i === activeIdx
+                        ? 'w-6 h-1.5'
+                        : 'w-1.5 h-1.5 hover:scale-125'
+                    }`}
+                    style={{
+                      background: i === activeIdx ? 'var(--ld-action)' : 'var(--ld-border-strong)',
+                    }}
+                  />
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* Keyframes para el slide-in del título al cambiar producto */}
+          <style>{`
+            @keyframes peyuTitleSlideIn {
+              from { opacity: 0; transform: translateY(8px); }
+              to   { opacity: 1; transform: translateY(0); }
+            }
+          `}</style>
+        </div>
+      )}
+
+      {/* ═════════ COLLAGE SECUNDARIO LATERAL ═════════
+          Pila de cards uniforme. Vive a la izquierda del hero, sobre la zona
+          que el contenedor de imagen ahora deja libre (left:0 → sm:left:20%). */}
+      <div className="absolute top-2 left-0 lg:-left-3 hidden md:flex flex-col gap-2.5 z-10 max-w-[210px]">
+        <SidecardValueProp />
+        {secundarios.slice(0, 2).map((p) => (
           <SidecardProduct key={p.id} producto={p} />
         ))}
       </div>
 
-      {/* ═════════ Card catálogo (bottom-left) — mismo lenguaje ═════════ */}
-      <div className="absolute bottom-5 left-0 lg:-left-3 hidden sm:block z-10">
-        <div className="ld-glass-strong rounded-2xl p-3.5 w-44 shadow-lg">
+      {/* ═════════ Card catálogo — vive a la izquierda, debajo de las cards
+          de producto y POR ENCIMA de la card-título inferior. */}
+      <div className="absolute bottom-[110px] sm:bottom-[120px] left-0 lg:-left-3 hidden sm:block z-10">
+        <div className="ld-glass-strong rounded-2xl p-3 w-40 shadow-lg">
           <p
-            className="text-[9.5px] font-bold uppercase tracking-[0.22em] mb-1.5"
+            className="text-[9.5px] font-bold uppercase tracking-[0.22em] mb-1"
             style={{ color: 'var(--ld-action)' }}
           >
             Catálogo
           </p>
-          <p className="ld-display text-[34px] text-ld-fg leading-none">
+          <p className="ld-display text-[30px] text-ld-fg leading-none">
             {totalActivos || '50+'}
           </p>
-          <p className="text-[11px] text-ld-fg-muted mt-1.5 leading-snug">
+          <p className="text-[10.5px] text-ld-fg-muted mt-1 leading-snug">
             productos sostenibles activos
           </p>
         </div>
