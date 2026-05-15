@@ -7,7 +7,6 @@ import MobileChatPreview from './MobileChatPreview';
 import MobileTrustBand from './MobileTrustBand';
 import MobileChatModal from './MobileChatModal';
 import CelebrationBanner from '@/components/landing/CelebrationBanner';
-import WhatsAppFloat from '@/components/WhatsAppFloat';
 import ChatHistoryPanel from '@/components/chat/ChatHistoryPanel';
 import { Link } from 'react-router-dom';
 import { Lock } from 'lucide-react';
@@ -120,8 +119,8 @@ export default function MobileShopLanding({
         </footer>
       </div>
 
-      {/* WhatsApp flotante (igual que en desktop) */}
-      <WhatsAppFloat />
+      {/* WhatsApp flotante: en mobile el chat Peyu ya ocupa la esquina inferior,
+          no agregamos un segundo botón flotante que compita visualmente. */}
 
       {/* Chat modal */}
       <MobileChatModal
