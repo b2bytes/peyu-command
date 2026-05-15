@@ -263,6 +263,9 @@ export default function Carrito() {
         const mp = await base44.functions.invoke('mpCreatePreference', { pedido_id: pedido.id });
         const initUrl = mp?.data?.init_point || mp?.data?.sandbox_init_point;
         if (initUrl) {
+          // Guardamos snapshot del carrito en localStorage *antes* de redirigir.
+          // Si MP falla y el cliente vuelve con ?mp=failure, podemos restaurar.
+          try { sessionStorage.setItem('peyu_mp_init_url', initUrl); } catch {}
           // Vaciamos el carrito local antes de salir (ya está persistido como pedido)
           localStorage.removeItem('carrito');
           trackPurchase({ transactionId: numero, total, shipping: envio, cart: carrito });
@@ -282,7 +285,11 @@ export default function Carrito() {
         return;
       } catch (e) {
         console.error('Error MP:', e);
-        setErrorPago(`Error al iniciar Mercado Pago${e?.message ? `: ${e.message}` : ''}. Probá nuevamente o usá transferencia.`);
+        // Mensaje más amigable: extraemos solo la parte útil del error
+        const errorMsg = e?.message?.includes('NetworkError') || e?.message?.includes('Failed to fetch')
+          ? 'Sin conexión a Mercado Pago. Revisá tu internet o probá con transferencia bancaria.'
+          : `No pudimos iniciar Mercado Pago. Probá nuevamente o usá transferencia bancaria.`;
+        setErrorPago(errorMsg);
         setCreando(false);
         return;
       }
@@ -315,7 +322,10 @@ export default function Carrito() {
   };
 
   // ── VACÍO ──────────────────────────────────────────────────────────
-  if (carrito.length === 0) {
+  // Excepción: si el usuario vuelve con ?mp=failure (pago fallido) NO mostramos
+  // "carrito vacío" — tiene un pedido pendiente al que puede reintentarle el
+  // pago desde el panel de seguimiento o WhatsApp. Lo redirigimos a soporte.
+  if (carrito.length === 0 && !mpFailure) {
     return (
       <div className="min-h-full bg-[#FAFAF8] font-inter flex items-center justify-center p-4 py-16">
         <div className="text-center space-y-5 max-w-sm">
@@ -326,9 +336,53 @@ export default function Carrito() {
             <p className="text-2xl font-poppins font-bold text-gray-900">Tu carrito está vacío</p>
             <p className="text-sm text-gray-500 mt-2">Descubre productos 100% sostenibles con personalización láser gratis.</p>
           </div>
-          <Button onClick={() => navigate('/shop')} className="gap-2 rounded-2xl bg-gray-900 hover:bg-gray-800 px-8 h-12">
+          {/* Botón principal con gradiente verde-esmeralda (la firma PEYU del checkout).
+              Antes era bg-gray-900 sólido — visualmente correcto pero menos legible en algunos
+              dispositivos y rompía la identidad de la marca. */}
+          <Button
+            onClick={() => navigate('/shop')}
+            className="gap-2 rounded-2xl bg-gradient-to-br from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 text-white px-8 h-12 shadow-lg"
+          >
             Explorar tienda <ChevronRight className="w-4 h-4" />
           </Button>
+        </div>
+      </div>
+    );
+  }
+
+  // ── PAGO FALLIDO SIN CARRITO ──────────────────────────────────────
+  // El usuario vuelve de MercadoPago tras una falla, pero ya borramos el carrito
+  // al iniciar el checkout. Mostramos un mensaje claro con opciones para reintentar.
+  if (carrito.length === 0 && mpFailure) {
+    const pedidoNumero = typeof window !== 'undefined' ? sessionStorage.getItem('peyu_pending_order_numero') : null;
+    return (
+      <div className="min-h-full bg-[#FAFAF8] font-inter flex items-center justify-center p-4 py-16">
+        <div className="text-center space-y-5 max-w-md">
+          <div className="w-24 h-24 bg-red-50 rounded-3xl flex items-center justify-center mx-auto shadow-sm border border-red-100">
+            <AlertCircle className="w-10 h-10 text-red-500" />
+          </div>
+          <div>
+            <p className="text-2xl font-poppins font-bold text-gray-900">El pago no se completó</p>
+            <p className="text-sm text-gray-600 mt-2">
+              Tu pedido {pedidoNumero ? <strong>{pedidoNumero}</strong> : 'sigue registrado'} pero no se confirmó el pago. Podés reintentarlo o cambiar de medio.
+            </p>
+          </div>
+          <div className="flex flex-col sm:flex-row gap-2 justify-center">
+            <Button
+              onClick={() => navigate('/shop')}
+              className="gap-2 rounded-2xl bg-gradient-to-br from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 text-white px-6 h-12 shadow-lg"
+            >
+              Volver a la tienda <ChevronRight className="w-4 h-4" />
+            </Button>
+            <a
+              href={`https://wa.me/56935040242?text=${encodeURIComponent(`Hola, tuve un problema al pagar mi pedido ${pedidoNumero || ''} en peyuchile.cl`)}`}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center justify-center gap-2 rounded-2xl bg-white border-2 border-gray-200 hover:border-gray-300 text-gray-900 font-bold px-6 h-12 text-sm"
+            >
+              💬 Hablar por WhatsApp
+            </a>
+          </div>
         </div>
       </div>
     );
@@ -346,7 +400,8 @@ export default function Carrito() {
       <nav className="sticky top-0 z-40 bg-white/90 backdrop-blur-xl border-b border-gray-200/70 shadow-sm">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-3.5 flex items-center justify-between gap-4">
           <button onClick={() => navigate('/shop')} className="flex items-center gap-3 text-gray-700 hover:text-gray-900 transition-colors group">
-            <div className="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center group-hover:bg-gray-900 group-hover:text-white transition-all shadow-sm">
+            {/* Hover usa verde PEYU en vez de negro — coherente con el resto del checkout */}
+            <div className="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center group-hover:bg-teal-600 group-hover:text-white transition-all shadow-sm">
               <ArrowLeft className="w-4 h-4" />
             </div>
             <div className="text-left">
@@ -481,7 +536,8 @@ export default function Carrito() {
                 {/* 1 · Datos de envío */}
                 <div className="bg-white border border-gray-100 rounded-3xl p-5 sm:p-7 shadow-sm">
                   <div className="flex items-center gap-3 mb-5 pb-4 border-b border-gray-100">
-                    <div className="w-9 h-9 rounded-xl bg-gray-900 text-white flex items-center justify-center font-poppins font-bold text-sm">1</div>
+                    {/* Pill numerado con gradiente teal-emerald (firma del checkout PEYU) */}
+                    <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-teal-600 to-emerald-600 text-white flex items-center justify-center font-poppins font-bold text-sm shadow-sm">1</div>
                     <div>
                       <h3 className="font-poppins font-bold text-gray-900 text-base">Información de envío</h3>
                       <p className="text-xs text-gray-500 mt-0.5">Validamos tu dirección para asegurar la entrega</p>
@@ -498,7 +554,7 @@ export default function Carrito() {
                 {/* 2 · Cotización envío Bluex en tiempo real (auto-cotiza con la comuna del form) */}
                 <div className="bg-white border border-gray-100 rounded-3xl p-5 sm:p-7 shadow-sm">
                   <div className="flex items-center gap-3 mb-5 pb-4 border-b border-gray-100">
-                    <div className="w-9 h-9 rounded-xl bg-gray-900 text-white flex items-center justify-center font-poppins font-bold text-sm">2</div>
+                    <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-teal-600 to-emerald-600 text-white flex items-center justify-center font-poppins font-bold text-sm shadow-sm">2</div>
                     <div>
                       <h3 className="font-poppins font-bold text-gray-900 text-base">Forma de envío</h3>
                       <p className="text-xs text-gray-500 mt-0.5">Tarifa real BlueExpress según tu comuna</p>
@@ -520,7 +576,7 @@ export default function Carrito() {
                 {/* 3 · Método de pago */}
                 <div className="bg-white border border-gray-100 rounded-3xl p-5 sm:p-7 shadow-sm">
                   <div className="flex items-center gap-3 mb-5 pb-4 border-b border-gray-100">
-                    <div className="w-9 h-9 rounded-xl bg-gray-900 text-white flex items-center justify-center font-poppins font-bold text-sm">3</div>
+                    <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-teal-600 to-emerald-600 text-white flex items-center justify-center font-poppins font-bold text-sm shadow-sm">3</div>
                     <div>
                       <h3 className="font-poppins font-bold text-gray-900 text-base">Método de pago</h3>
                       <p className="text-xs text-gray-500 mt-0.5">Pago seguro · cifrado SSL</p>

@@ -212,6 +212,18 @@ export const buildProductSchema = (p = {}) => {
 
   // Google Merchant Center: identifier_exists=false si no tenemos GTIN/MPN real
   // pero usamos SKU como mpn para que Google entienda que es producto único.
+  // 2026: agregamos google_product_category (taxonomy oficial de Google Shopping)
+  // y inProductGroupWithID (para variantes color). Esto sube el ranking en Shopping.
+  const googleCategoryMap = {
+    'Escritorio':      'Office Supplies > Office Equipment',
+    'Hogar':           'Home & Garden > Decor',
+    'Entretenimiento': 'Toys & Games > Games',
+    'Corporativo':     'Business & Industrial > Advertising & Marketing > Trade Show Counters',
+    'Carcasas B2C':    'Electronics > Communications > Telephony > Mobile Phone Accessories > Mobile Phone Cases',
+    'Gift Card':       'Arts & Entertainment > Party & Celebration > Gift Giving > Gift Cards & Certificates',
+  };
+  const googleCategory = googleCategoryMap[p.categoria] || 'Home & Garden';
+
   return {
     '@context': 'https://schema.org',
     '@type': 'Product',
@@ -220,12 +232,20 @@ export const buildProductSchema = (p = {}) => {
     sku: p.sku,
     mpn: p.sku,
     productID: `peyu:${p.sku}`,
+    // inProductGroupWithID: agrupa variantes (mismo modelo, distinto color).
+    // Usamos categoría como product group → Google entiende que son variantes.
+    inProductGroupWithID: `peyu-${(p.categoria || 'general').toLowerCase().replace(/\s+/g, '-')}`,
     description: cleanDescription,
     image: images,
     url: productUrl,
     brand: { '@type': 'Brand', name: 'PEYU', logo: LOGO_URL },
     manufacturer: { '@type': 'Organization', name: 'PEYU Chile', url: SITE_URL },
-    category: p.categoria,
+    category: googleCategory,
+    // Mantenemos también la categoría interna como property para no perder señal
+    additionalProperty: [
+      ...(p.categoria ? [{ '@type': 'PropertyValue', name: 'category_interna', value: p.categoria }] : []),
+      ...(additionalProperty || []),
+    ],
     material: p.material,
     countryOfOrigin: 'CL',
     // Google Shopping requiere itemCondition a nivel producto también
@@ -240,7 +260,6 @@ export const buildProductSchema = (p = {}) => {
     ...(p.peso_gr ? {
       weight: { '@type': 'QuantitativeValue', value: p.peso_gr, unitCode: 'GRM' },
     } : {}),
-    ...(additionalProperty.length > 0 ? { additionalProperty } : {}),
     ...(aggregateRating ? { aggregateRating } : {}),
     ...(review ? { review } : {}),
     ...(allOffers ? { offers: allOffers } : {}),
