@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Recycle, Shield, Truck, Check } from 'lucide-react';
+import { Recycle } from 'lucide-react';
 import { getProductImage } from '@/utils/productImages';
 
 // Fallback editorial: imagen real de producto PEYU en el CDN base44, siempre
@@ -8,29 +8,25 @@ import { getProductImage } from '@/utils/productImages';
 const HERO_FALLBACK_IMG = 'https://media.base44.com/images/public/69d99b9d61f699701129c103/5d536f7a4_generated_image.png';
 
 /**
- * ShopHeroCollage — Hero editorial Liquid Dual del Shop.
+ * ShopHeroCollage — Hero editorial Liquid Dual del Shop (v2 · premium).
  *
- * Construye un collage REAL con las imágenes de los productos más vendibles
- * del catálogo (no fotos genéricas inventadas). La pieza grande es el "hero
- * product" (el de mayor stock con imagen propia), y se acompaña por 3 piezas
- * secundarias que muestran la diversidad de categorías PEYU.
- *
- * Si no hay productos cargados todavía, muestra un placeholder elegante con
- * los colores firma (sin recurrir a stock photos externas).
+ * Mejoras v2 (mayo 2026):
+ * • Cards del carrusel lateral con tratamiento uniforme y aire premium.
+ * • Thumbs de productos más grandes (56px) con bordes refinados.
+ * • Hover lift sutil en cada card secundaria.
+ * • Card "Plástico recuperado" y "Catálogo 61" rediseñadas para que pertenezcan
+ *   al mismo sistema de las cards de productos (consistencia visual).
+ * • Badge "Hecho en Santiago" con marker verde más editorial.
+ * • Foto destacada: ratio refinado + sombra direccional + mejor breathing.
  */
 export default function ShopHeroCollage({ productos = [] }) {
   // Si la imagen del producto seleccionado falla (CDN caído / 404), cambiamos
   // a la imagen fallback editorial. Evita el contenedor blanco del bug visual.
   const [imgFailed, setImgFailed] = useState(false);
-  // Selección curada: tomamos representantes de distintas categorías para que
-  // el collage refleje el catálogo real (no un solo SKU repetido). Aceptamos
-  // CUALQUIER imagen disponible (peyuchile.cl, base44, Drive, Woo) — antes
-  // filtrábamos solo por peyuchile.cl y eso dejaba el hero vacío cuando las
-  // URLs venían de otro CDN. getProductImage() ya garantiza un fallback útil.
+
+  // Selección curada: representantes de distintas categorías para máxima diversidad.
   const seleccion = useMemo(() => {
     const conImagen = productos.filter(p => !!getProductImage(p));
-
-    // Priorizamos categorías clave: una por familia para máxima diversidad.
     const ordenCategorias = ['Escritorio', 'Hogar', 'Corporativo', 'Entretenimiento', 'Carcasas B2C'];
     const elegidos = [];
     const usados = new Set();
@@ -44,7 +40,6 @@ export default function ShopHeroCollage({ productos = [] }) {
       if (elegidos.length === 4) break;
     }
 
-    // Rellenar si quedaron huecos
     if (elegidos.length < 4) {
       for (const p of conImagen) {
         if (usados.has(p.id)) continue;
@@ -61,137 +56,183 @@ export default function ShopHeroCollage({ productos = [] }) {
   const totalActivos = productos.length;
 
   return (
-    <div className="relative h-[320px] sm:h-[420px] lg:h-[520px]">
-      {/* Glows ambient */}
+    <div className="relative h-[340px] sm:h-[440px] lg:h-[540px]">
+      {/* Glows ambient — refinados, menos saturados */}
       <div
         aria-hidden
-        className="absolute -top-10 -right-10 w-72 h-72 rounded-full blur-3xl pointer-events-none"
-        style={{ background: 'var(--ld-action-soft)', opacity: 0.6 }}
+        className="absolute -top-16 -right-16 w-80 h-80 rounded-full blur-3xl pointer-events-none"
+        style={{ background: 'var(--ld-action-soft)', opacity: 0.45 }}
       />
       <div
         aria-hidden
-        className="absolute -bottom-10 -left-10 w-72 h-72 rounded-full blur-3xl pointer-events-none"
-        style={{ background: 'var(--ld-highlight-soft)', opacity: 0.5 }}
+        className="absolute -bottom-16 -left-16 w-80 h-80 rounded-full blur-3xl pointer-events-none"
+        style={{ background: 'var(--ld-highlight-soft)', opacity: 0.35 }}
       />
 
-      {/* PIEZA HERO — producto principal con imagen real difuminada + gradiente.
-          Tres capas: blur ambient + gradiente firma + imagen nítida al frente.
-          Si falla la carga de la imagen del producto, hacemos fallback a una
-          imagen editorial fija del CDN base44 para que NUNCA se vea vacío. */}
-      <div className="absolute inset-y-0 right-0 w-[88%] sm:w-[78%] rounded-3xl overflow-hidden ld-card shadow-2xl">
+      {/* ═════════ PIEZA HERO — producto principal ═════════
+          Capas: blur ambient + gradiente firma + imagen nítida + viñetas
+          editoriales. Ratio refinado: el contenedor crece hacia la derecha
+          dejando aire a la izquierda para las cards secundarias. */}
+      <div className="absolute inset-y-0 right-0 w-[92%] sm:w-[80%] rounded-[28px] overflow-hidden ld-card shadow-[0_30px_80px_-30px_rgba(2,6,23,0.45)]">
         {(() => {
           const heroSrc = hero && !imgFailed ? getProductImage(hero) : HERO_FALLBACK_IMG;
           return (
             <>
-              {/* Capa 1 — imagen AMPLIADA y difuminada como ambient background.
-                  Llena el contenedor con color real del producto, sin huecos. */}
+              {/* Capa 1 — imagen ampliada y difuminada de fondo (ambient) */}
               <img
                 src={heroSrc}
                 alt=""
                 aria-hidden
-                className="absolute inset-0 w-full h-full object-cover scale-125 blur-2xl opacity-80"
+                className="absolute inset-0 w-full h-full object-cover scale-125 blur-2xl opacity-75"
                 loading="eager"
                 onError={() => setImgFailed(true)}
               />
-              {/* Capa 2 — gradiente firma PEYU sobre el blur para fundir colores */}
+              {/* Capa 2 — gradiente firma sobre el blur */}
               <div
                 aria-hidden
                 className="absolute inset-0 mix-blend-soft-light"
                 style={{
-                  background: 'linear-gradient(135deg, var(--ld-action-soft) 0%, transparent 45%, var(--ld-highlight-soft) 100%)',
+                  background:
+                    'linear-gradient(135deg, var(--ld-action-soft) 0%, transparent 50%, var(--ld-highlight-soft) 100%)',
                 }}
               />
-              {/* Capa 3 — degradado de profundidad bottom→top para legibilidad */}
+              {/* Capa 3 — viñeta editorial para enfocar al centro y dar legibilidad
+                  a las etiquetas. Top y bottom oscurecidos sutilmente. */}
               <div
                 aria-hidden
                 className="absolute inset-0"
                 style={{
-                  background: 'linear-gradient(180deg, rgba(255,255,255,0.05) 0%, transparent 35%, rgba(2,6,23,0.35) 100%)',
+                  background:
+                    'linear-gradient(180deg, rgba(2,6,23,0.18) 0%, transparent 22%, transparent 70%, rgba(2,6,23,0.42) 100%)',
                 }}
               />
-              {/* Capa 4 — imagen REAL nítida del producto, centrada */}
+              {/* Capa 4 — imagen real del producto, nítida y centrada con drop-shadow */}
               <img
                 src={heroSrc}
                 alt={hero ? `${hero.nombre} · PEYU Chile` : 'Catálogo PEYU Chile'}
-                className="relative w-full h-full object-contain p-6 sm:p-10 drop-shadow-2xl"
+                className="relative w-full h-full object-contain p-8 sm:p-12 lg:p-14"
                 loading="eager"
                 fetchpriority="high"
+                style={{ filter: 'drop-shadow(0 18px 40px rgba(0,0,0,0.35))' }}
               />
             </>
           );
         })()}
 
-        {/* Etiqueta flotante de procedencia (siempre visible) */}
-        <div className="absolute top-4 right-4 ld-glass-strong rounded-full px-3 py-1.5 flex items-center gap-1.5 z-10">
-          <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: 'var(--ld-action)' }} />
-          <span className="text-[10px] font-bold text-ld-fg tracking-wider uppercase">Hecho en Santiago</span>
+        {/* Badge "Hecho en Santiago" — marker editorial refinado */}
+        <div className="absolute top-5 right-5 z-10">
+          <div className="ld-glass-strong rounded-full pl-2 pr-3.5 py-1.5 flex items-center gap-2 shadow-lg">
+            <span className="relative flex items-center justify-center w-2 h-2">
+              <span
+                className="absolute inset-0 rounded-full animate-ping opacity-60"
+                style={{ background: 'var(--ld-action)' }}
+              />
+              <span
+                className="relative w-2 h-2 rounded-full"
+                style={{ background: 'var(--ld-action)' }}
+              />
+            </span>
+            <span className="text-[10px] font-bold text-ld-fg tracking-[0.16em] uppercase">
+              Hecho en Santiago
+            </span>
+          </div>
         </div>
 
-        {/* Pieza editorial inferior — referencia al producto real */}
+        {/* Pieza editorial inferior — nombre del hero product */}
         {hero && (
-          <div className="absolute bottom-4 left-4 right-4 text-white drop-shadow-lg z-10">
-            <p className="text-[10px] font-bold tracking-[0.18em] uppercase opacity-90">
+          <div className="absolute bottom-5 left-5 right-5 z-10 text-white drop-shadow-lg">
+            <p className="text-[10px] font-bold tracking-[0.22em] uppercase opacity-95 mb-1.5">
               Destacado · {hero.categoria}
             </p>
-            <p className="ld-display text-lg sm:text-xl mt-1 leading-tight line-clamp-2 max-w-[85%]">
+            <p className="ld-display text-xl sm:text-2xl leading-[1.05] line-clamp-2 max-w-[88%]">
               {hero.nombre}
             </p>
           </div>
         )}
       </div>
 
-      {/* COLLAGE SECUNDARIO — 3 mini-cards con productos reales (solo desktop/tablet) */}
-      {secundarios.length > 0 && (
-        <div className="absolute top-1/2 -translate-y-1/2 left-0 lg:-left-2 hidden md:flex flex-col gap-2.5 z-10">
-          {secundarios.slice(0, 3).map((p) => (
-            <div
-              key={p.id}
-              className="ld-glass-strong rounded-2xl p-2 flex items-center gap-2.5 max-w-[210px] shadow-lg"
-            >
-              <div className="w-12 h-12 rounded-xl overflow-hidden flex-shrink-0 bg-white">
-                <img
-                  src={getProductImage(p)}
-                  alt={p.nombre}
-                  className="w-full h-full object-cover"
-                  loading="lazy"
-                />
-              </div>
-              <div className="min-w-0">
-                <p className="text-[10px] font-bold uppercase tracking-[0.14em]" style={{ color: 'var(--ld-action)' }}>
-                  {p.categoria}
-                </p>
-                <p className="text-xs font-semibold text-ld-fg leading-tight line-clamp-2">
-                  {p.nombre.split('|')[0].trim()}
-                </p>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
+      {/* ═════════ COLLAGE SECUNDARIO LATERAL ═════════
+          Pila de cards uniforme — cada una un mini-producto destacado.
+          Hover lift sutil para sensación interactiva premium. */}
+      <div className="absolute top-4 lg:-left-3 left-0 hidden md:flex flex-col gap-2.5 z-10 max-w-[230px]">
+        {/* Card "Plástico recuperado" — abre la pila con el value-prop */}
+        <SidecardValueProp />
 
-      {/* Card flotante — número real de productos */}
-      <div className="absolute bottom-6 left-0 lg:-left-4 ld-glass-strong rounded-2xl p-4 w-44 hidden sm:block">
-        <p className="text-[10px] font-bold uppercase tracking-[0.18em]" style={{ color: 'var(--ld-action)' }}>
-          Catálogo
-        </p>
-        <p className="ld-display text-3xl text-ld-fg leading-none mt-1">
-          {totalActivos || '50+'}
-        </p>
-        <p className="text-xs text-ld-fg-muted mt-1">productos sostenibles activos</p>
+        {/* Cards de producto */}
+        {secundarios.slice(0, 3).map((p) => (
+          <SidecardProduct key={p.id} producto={p} />
+        ))}
       </div>
 
-      {/* Card terciaria — material */}
-      <div className="absolute top-6 left-0 lg:-left-2 ld-glass-strong rounded-2xl p-3 hidden md:flex items-center gap-2.5 max-w-[200px]">
-        <div
-          className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
-          style={{ background: 'var(--ld-grad-action)' }}
+      {/* ═════════ Card catálogo (bottom-left) — mismo lenguaje ═════════ */}
+      <div className="absolute bottom-5 left-0 lg:-left-3 hidden sm:block z-10">
+        <div className="ld-glass-strong rounded-2xl p-3.5 w-44 shadow-lg">
+          <p
+            className="text-[9.5px] font-bold uppercase tracking-[0.22em] mb-1.5"
+            style={{ color: 'var(--ld-action)' }}
+          >
+            Catálogo
+          </p>
+          <p className="ld-display text-[34px] text-ld-fg leading-none">
+            {totalActivos || '50+'}
+          </p>
+          <p className="text-[11px] text-ld-fg-muted mt-1.5 leading-snug">
+            productos sostenibles activos
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Sub-components ────────────────────────────────────────────────────
+
+/** Card "Plástico recuperado" — value-prop con el mismo formato que las
+ *  cards de producto: icono cuadrado verde + título + sub. Uniformidad total. */
+function SidecardValueProp() {
+  return (
+    <div className="ld-glass-strong rounded-2xl p-2 pr-3 flex items-center gap-2.5 shadow-lg">
+      <div
+        className="w-[52px] h-[52px] rounded-xl flex items-center justify-center flex-shrink-0"
+        style={{ background: 'var(--ld-grad-action)' }}
+      >
+        <Recycle className="w-5 h-5 text-white" strokeWidth={2.2} />
+      </div>
+      <div className="min-w-0 py-0.5">
+        <p className="text-[12.5px] font-bold text-ld-fg leading-tight">
+          Plástico recuperado
+        </p>
+        <p className="text-[10.5px] text-ld-fg-muted leading-snug mt-0.5">
+          de océanos y rellenos
+        </p>
+      </div>
+    </div>
+  );
+}
+
+/** Card de producto secundario — thumb + categoría + nombre limpio.
+ *  Hover lift suave para sensación premium e invitar a la interacción. */
+function SidecardProduct({ producto: p }) {
+  return (
+    <div className="ld-glass-strong rounded-2xl p-2 pr-3 flex items-center gap-2.5 shadow-lg transition-all duration-300 hover:-translate-y-0.5 hover:shadow-xl group">
+      <div className="w-[52px] h-[52px] rounded-xl overflow-hidden flex-shrink-0 bg-white/95 ring-1 ring-ld-border">
+        <img
+          src={getProductImage(p)}
+          alt={p.nombre}
+          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+          loading="lazy"
+        />
+      </div>
+      <div className="min-w-0 py-0.5">
+        <p
+          className="text-[9.5px] font-bold uppercase tracking-[0.18em] leading-none"
+          style={{ color: 'var(--ld-action)' }}
         >
-          <Recycle className="w-4 h-4 text-white" />
-        </div>
-        <div className="min-w-0">
-          <p className="text-xs font-bold text-ld-fg leading-tight">Plástico recuperado</p>
-          <p className="text-[10px] text-ld-fg-muted leading-tight">de océanos y rellenos</p>
-        </div>
+          {p.categoria}
+        </p>
+        <p className="text-[12.5px] font-bold text-ld-fg leading-tight mt-1 line-clamp-2">
+          {p.nombre.split('|')[0].trim()}
+        </p>
       </div>
     </div>
   );
