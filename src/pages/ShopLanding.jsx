@@ -50,6 +50,9 @@ const OCASIONES = [
 ];
 
 const STORAGE_KEY = 'peyu_chat_conversation_id';
+
+// Saludo base (anónimo). Si el usuario está logueado, se personaliza con su
+// nombre al montar el componente (efecto useEffect que reemplaza el welcome).
 const WELCOME_MSG = {
   role: 'assistant',
   content: [
@@ -59,6 +62,20 @@ const WELCOME_MSG = {
     '',
     '¿Buscas un regalo personal o para tu empresa?',
   ].join('\n'),
+};
+
+const buildPersonalizedWelcome = (fullName) => {
+  // Primer nombre solamente — más cálido que el nombre completo.
+  const firstName = (fullName || '').trim().split(/\s+/)[0];
+  if (!firstName) return WELCOME_MSG;
+  return {
+    role: 'assistant',
+    content: [
+      `Hola ${firstName}, qué bueno verte de nuevo 🐢`,
+      '',
+      '¿En qué te ayudo hoy? Puedo recomendarte regalos personales o armar un pack para tu equipo.',
+    ].join('\n'),
+  };
 };
 
 export default function ShopLanding() {
@@ -92,6 +109,25 @@ export default function ShopLanding() {
         setLiquidPreference('day');
       }
     } catch { /* noop */ }
+  }, []);
+
+  // 👋 Saludo personalizado: si el usuario está logueado, reemplazamos el
+  // welcome anónimo por uno con su nombre. Sólo cuando arrancamos limpio
+  // (sin conversación previa pendiente de recuperar).
+  useEffect(() => {
+    if (conversationId && !freshSession) return; // recuperando conv → no tocar
+    let alive = true;
+    (async () => {
+      try {
+        const authed = await base44.auth.isAuthenticated();
+        if (!authed) return;
+        const user = await base44.auth.me();
+        if (!alive || !user?.full_name) return;
+        setMessages([buildPersonalizedWelcome(user.full_name)]);
+      } catch { /* anónimo, dejar welcome por defecto */ }
+    })();
+    return () => { alive = false; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Mantener el badge del carrito sincronizado cuando el chat agrega items

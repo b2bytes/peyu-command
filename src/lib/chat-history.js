@@ -55,13 +55,27 @@ export function removeFromHistory(id) {
   localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
 }
 
-// Marca la sesión como viva. NO archiva la conversación activa: queremos que el
-// chat widget mantenga el hilo con el usuario entre pestañas y visitas, igual
-// que WhatsApp. El usuario puede archivar manualmente con "Nuevo chat".
-// Retorna true si es la primera vez en esta sesión (útil para telemetría).
+// Marca la sesión como viva y ARCHIVA la conversación activa al historial si
+// existe una de una sesión anterior. Filosofía: cada visita nueva = chat nuevo
+// (como abrir Cursor o ChatGPT en una pestaña nueva). Las conversaciones
+// pasadas quedan accesibles desde el botón de historial.
+// Retorna true si es una sesión recién iniciada (primera carga / nuevo tab).
 export function ensureFreshSession() {
   const alive = sessionStorage.getItem(SESSION_KEY);
   if (alive) return false;
   sessionStorage.setItem(SESSION_KEY, '1');
+  // Archivar la conversación activa heredada de la sesión anterior.
+  // Buscamos el primer user message guardado en historial para usarlo como título,
+  // y si no hay, dejamos un título genérico. Luego limpiamos el ACTIVE_KEY para
+  // que el chat arranque desde cero.
+  try {
+    const activeId = localStorage.getItem(ACTIVE_KEY);
+    if (activeId) {
+      const history = readHistory();
+      const existing = history.find((h) => h.id === activeId);
+      const title = existing?.title || 'Conversación con Peyu';
+      archiveActiveConversation(title);
+    }
+  } catch { /* no-op */ }
   return true;
 }

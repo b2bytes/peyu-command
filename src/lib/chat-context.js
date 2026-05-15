@@ -198,12 +198,19 @@ export function serializeContext(ctx) {
 // que no tener Brain es esperar 30s para que aparezca el agente).
 async function brainLookup(userMessage, userEmail) {
   try {
+    // 🚫 IMPORTANTE: NO incluimos namespace 'conversations' aquí. Si lo
+    // inyectáramos, el agente recordaría chats pasados del usuario y los
+    // continuaría como si fueran la sesión actual ("retomemos lo de Navidad…"),
+    // rompiendo la sensación de chat nuevo. La memoria de chat se queda
+    // archivada en el historial, accesible desde el botón. 'customers' sí
+    // entra cuando el usuario está logueado para personalizar (nombre,
+    // empresa, historial de compras) sin contaminar con conversaciones.
     const brainPromise = base44.functions.invoke('askPeyuBrain', {
       query: userMessage,
       top_k: 4,
       format: 'context',
       namespaces: userEmail
-        ? ['products', 'policies_faq', 'sustainability', 'conversations', 'customers']
+        ? ['products', 'policies_faq', 'sustainability', 'customers']
         : ['products', 'policies_faq', 'sustainability'],
     });
     const timeoutPromise = new Promise((_, reject) =>
