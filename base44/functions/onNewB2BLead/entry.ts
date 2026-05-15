@@ -94,11 +94,25 @@ Deno.serve(async (req) => {
     let proposalId = null;
     if (qualifiesForProposal) {
       try {
-        // Buscar producto exacto para precios
-        const prods = await base44.asServiceRole.entities.Producto.filter({
+        // Buscar producto: primero match exacto, luego contains case-insensitive.
+        // Esto soporta casos donde el chat capturó "macetero" pero el producto se
+        // llama "Macetero Cerro Manquehue" — antes caía a precio default $5000.
+        let prod = null;
+        const exact = await base44.asServiceRole.entities.Producto.filter({
           nombre: lead.product_interest
         });
-        const prod = prods?.[0];
+        if (exact?.[0]) {
+          prod = exact[0];
+        } else {
+          const all = await base44.asServiceRole.entities.Producto.list();
+          const needle = String(lead.product_interest || '').toLowerCase().trim();
+          if (needle.length >= 3) {
+            prod = all.find(p =>
+              p.activo !== false &&
+              (p.nombre || '').toLowerCase().includes(needle)
+            ) || null;
+          }
+        }
         const basePrice = prod?.precio_base_b2b || prod?.precio_b2c || 5000;
 
         const items = [{

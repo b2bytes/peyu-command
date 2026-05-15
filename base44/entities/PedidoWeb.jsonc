@@ -85,7 +85,8 @@
         "D\u00e9bito",
         "Cr\u00e9dito",
         "MercadoPago",
-        "Efectivo"
+        "Efectivo",
+        "GiftCard"
       ]
     },
     "estado": {
