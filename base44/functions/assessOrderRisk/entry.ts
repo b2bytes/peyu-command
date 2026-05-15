@@ -23,12 +23,24 @@ const TEST_NAME_PATTERNS = /\b(test|prueba|testing|demo|qa|fake)\b/i;
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const { pedido_id } = await req.json();
-    if (!pedido_id) {
+    const body = await req.json().catch(() => ({}));
+
+    // Acepta ambos formatos:
+    //  1) Llamada manual: { pedido_id }
+    //  2) Automation entity (create PedidoWeb): { event, data, payload_too_large }
+    let pedido_id = body?.pedido_id || null;
+    let pedido = body?.data && !body?.payload_too_large ? body.data : null;
+
+    if (!pedido && !pedido_id) {
+      pedido_id = body?.event?.entity_id || null;
+    }
+    if (!pedido_id && !pedido) {
       return Response.json({ error: 'pedido_id requerido' }, { status: 400 });
     }
 
-    const pedido = await base44.asServiceRole.entities.PedidoWeb.get(pedido_id);
+    if (!pedido) {
+      pedido = await base44.asServiceRole.entities.PedidoWeb.get(pedido_id);
+    }
     if (!pedido) {
       return Response.json({ error: 'Pedido no encontrado' }, { status: 404 });
     }
@@ -160,7 +172,8 @@ Deno.serve(async (req) => {
               'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-              from: 'PEYU Alertas <ti@peyuchile.cl>',
+              from: 'PEYU Alertas <onboarding@resend.dev>',
+              reply_to: 'ventas@peyuchile.cl',
               to: [ADMIN_EMAIL],
               subject: `⚠️ Pedido sospechoso · ${pedido.numero_pedido} · Score ${score}`,
               html,

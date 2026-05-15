@@ -156,7 +156,8 @@ Deno.serve(async (req) => {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            from: 'PEYU Chile <ti@peyuchile.cl>',
+            from: 'PEYU Chile <onboarding@resend.dev>',
+            reply_to: 'ventas@peyuchile.cl',
             to: [pedido.cliente_email],
             subject: `✅ Pago confirmado · Pedido ${pedido.numero_pedido}`,
             html,
