@@ -6,6 +6,7 @@ import { Search, SlidersHorizontal, X, Recycle, Truck, Shield, Check, Building2,
 import CategoryTabs from '@/components/shop/CategoryTabs';
 import ProductCard from '@/components/shop/ProductCard.jsx';
 import ShopHeroCollage from '@/components/shop/ShopHeroCollage';
+import CartBubble from '@/components/shop/CartBubble';
 import { getProductImage } from '@/utils/productImages';
 import PublicSEO from '@/components/PublicSEO';
 import { SITE_URL } from '@/lib/seo-catalog';
@@ -180,6 +181,13 @@ export default function Shop() {
   };
 
   const hasActiveFilters = search || selectedCategory !== 'Todos' || selectedPrice !== 'all';
+
+  // Resumen del carrito para la CartBubble flotante
+  const cartSummary = useMemo(() => {
+    const cantidad = carrito.reduce((acc, it) => acc + (it.cantidad || 1), 0);
+    const total = carrito.reduce((acc, it) => acc + ((it.precio || 0) * (it.cantidad || 1)), 0);
+    return { cantidad, total };
+  }, [carrito]);
 
   // ItemList schema para Google Shopping/Search — listas de productos enriquecidas.
   // Se construye con los productos visibles (max 24 para no inflar el HTML).
@@ -447,6 +455,9 @@ export default function Shop() {
           </div>
         </div>
       </div>
+
+      {/* CartBubble flotante — solo visible cuando hay items */}
+      <CartBubble cantidad={cartSummary.cantidad} total={cartSummary.total} />
     </div>
   );
 }
