@@ -24,17 +24,21 @@ export default function LeadForm({ utm = {} }) {
     setSending(true);
     setError(null);
     try {
-      await base44.entities.Lead.create({
-        empresa: form.empresa,
-        contacto: form.contacto,
+      // 🎯 Unificado: escribe en B2BLead (mismo pipeline que /b2b/contacto).
+      // Ya no usamos la entidad Lead legacy para que el equipo comercial vea
+      // todo en un solo panel /admin/pipeline.
+      await base44.entities.B2BLead.create({
+        company_name: form.empresa,
+        contact_name: form.contacto,
         email: form.email,
-        telefono: form.telefono,
-        canal: 'Web',
-        estado: 'Nuevo',
-        tipo: 'B2B Corporativo',
-        cantidad_estimada: Number(form.cantidad_estimada) || undefined,
-        notas: `[Origen: /lanzamiento] ${utm.utm_campaign ? `Campaña: ${utm.utm_campaign}. ` : ''}${form.notas || ''}`,
-        calidad_lead: 'Tibio',
+        phone: form.telefono,
+        qty_estimate: Number(form.cantidad_estimada) || 0,
+        delivery_date: form.fecha_evento || '',
+        source: 'Formulario Web',
+        status: 'Nuevo',
+        urgency: 'Normal',
+        notes: `[Origen: /lanzamiento] ${utm.utm_campaign ? `Campaña: ${utm.utm_campaign}. ` : ''}${form.notas || ''}`,
+        utm_source: utm.utm_source || 'google_ads_landing',
       });
       setDone(true);
     } catch (err) {

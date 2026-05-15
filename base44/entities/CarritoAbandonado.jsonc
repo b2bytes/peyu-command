@@ -1,7 +1,7 @@
 {
   "name": "CarritoAbandonado",
   "type": "object",
-  "description": "Captura de carritos en proceso de checkout. Si en 1 hora no se concreta el pedido, se env\u00eda un recordatorio por email autom\u00e1ticamente.",
+  "description": "Captura de carritos en proceso de checkout. Si en 1 hora no se concreta el pedido, se env\u00eda un recordatorio por email autom\u00e1ticamente. Enriquecido con cliente_conocido_id y chat_lead_id si el email coincide con un Cliente o ChatLead existente.",
   "properties": {
     "description": {
       "type": "string",
@@ -81,6 +81,16 @@
     "pedido_id": {
       "type": "string",
       "title": "ID del pedido (si convirti\u00f3)"
+    },
+    "cliente_conocido_id": {
+      "type": "string",
+      "title": "Cliente existente (ID)",
+      "description": "Si el email coincide con un Cliente existente, link a su ficha 360\u00b0."
+    },
+    "chat_lead_id": {
+      "type": "string",
+      "title": "ChatLead asociado (ID)",
+      "description": "Si el visitante interactu\u00f3 con el chat antes, link al ChatLead."
     }
   },
   "required": [

@@ -11,6 +11,10 @@
       "type": "string",
       "title": "Nombre / Empresa"
     },
+    "email": {
+      "type": "string",
+      "title": "Email del contacto"
+    },
     "telefono": {
       "type": "string",
       "title": "Tel\u00e9fono WhatsApp"
@@ -85,6 +89,16 @@
     "convertido_lead": {
       "type": "boolean",
       "title": "Convertido a Lead"
+    },
+    "cliente_conocido_id": {
+      "type": "string",
+      "title": "Cliente existente (ID)",
+      "description": "Si el email coincide con un Cliente existente, link a su ficha 360\u00b0."
+    },
+    "chat_lead_id": {
+      "type": "string",
+      "title": "ChatLead asociado (ID)",
+      "description": "Si el contacto interactu\u00f3 con el chat antes, link al ChatLead."
     },
     "notas": {
       "type": "string",

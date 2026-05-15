@@ -40,6 +40,19 @@ Deno.serve(async (req) => {
       personalizacion: String(i.personalizacion || ''),
     }));
 
+    // 🔗 Enriquecer: cruzar email con Cliente y ChatLead existentes
+    // para tener visión 360° del prospecto en el panel admin.
+    let clienteConocidoId = null;
+    let chatLeadId = null;
+    try {
+      const clientes = await base44.asServiceRole.entities.Cliente.filter({ email });
+      if (clientes?.[0]) clienteConocidoId = clientes[0].id;
+    } catch {}
+    try {
+      const chatLeads = await base44.asServiceRole.entities.ChatLead.filter({ email });
+      if (chatLeads?.[0]) chatLeadId = chatLeads[0].id;
+    } catch {}
+
     const payload = {
       email,
       nombre: nombre || '',
@@ -49,6 +62,8 @@ Deno.serve(async (req) => {
       total: Number(total) || 0,
       estado: 'Pendiente',
       captured_at: now,
+      cliente_conocido_id: clienteConocidoId,
+      chat_lead_id: chatLeadId,
     };
 
     let record;

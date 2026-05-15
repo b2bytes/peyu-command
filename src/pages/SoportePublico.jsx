@@ -90,7 +90,7 @@ export default function SoportePublico() {
   const enviarTicket = async () => {
     if (!ticketForm.nombre || !ticketForm.email || !ticketForm.mensaje) { alert('Completa todos los campos'); return; }
     setEnviando(true);
-    await base44.entities.Consulta.create({ nombre: ticketForm.nombre, mensaje: ticketForm.mensaje, tipo: ticketForm.tipo, estado: 'Sin responder', canal: 'Web', telefono: '' });
+    await base44.entities.Consulta.create({ nombre: ticketForm.nombre, email: ticketForm.email, mensaje: ticketForm.mensaje, tipo: ticketForm.tipo, estado: 'Sin responder', canal: 'Web', telefono: '' });
     await base44.integrations.Core.SendEmail({ to: 'ventas@peyuchile.cl', from_name: 'Soporte Web Peyu', subject: `Nueva consulta web: ${ticketForm.tipo} — ${ticketForm.nombre}`, body: `Nombre: ${ticketForm.nombre}\nEmail: ${ticketForm.email}\nTipo: ${ticketForm.tipo}\n\nMensaje:\n${ticketForm.mensaje}` });
     setEnviado(true);
     setEnviando(false);
