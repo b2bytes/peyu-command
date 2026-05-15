@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Recycle } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Recycle, ArrowUpRight } from 'lucide-react';
 import { getProductImage } from '@/utils/productImages';
 
 // Fallback editorial: imagen real de producto PEYU en el CDN base44, siempre
@@ -76,7 +77,8 @@ export default function ShopHeroCollage({ productos = [] }) {
   const totalActivos = productos.length;
 
   return (
-    <div className="relative h-[340px] sm:h-[440px] lg:h-[540px]">
+    <div>
+    <div className="relative h-[320px] sm:h-[440px] lg:h-[540px]">
       {/* Glows ambient — refinados, menos saturados */}
       <div
         aria-hidden
@@ -92,8 +94,13 @@ export default function ShopHeroCollage({ productos = [] }) {
       {/* ═════════ PIEZA HERO — imagen principal (editorial) ═════════
           La foto ocupa toda la altura disponible a la derecha. El título
           flota como overlay en la esquina inferior derecha de la propia
-          foto (card blanca sólida con contraste garantizado). */}
-      <div className="absolute inset-y-0 right-0 left-0 sm:left-[20%] rounded-[28px] overflow-hidden ld-card shadow-[0_30px_80px_-30px_rgba(2,6,23,0.45)]">
+          foto (card blanca sólida con contraste garantizado).
+          TODO el contenedor es clickeable → va al detalle del producto activo. */}
+      <Link
+        to={hero ? `/producto/${hero.id}` : '/shop'}
+        aria-label={hero ? `Ver ${hero.nombre}` : 'Ver catálogo'}
+        className="absolute inset-y-0 right-0 left-0 sm:left-[20%] rounded-[28px] overflow-hidden ld-card shadow-[0_30px_80px_-30px_rgba(2,6,23,0.45)] block group/hero"
+      >
         {(() => {
           const heroSrc = hero && !imgFailed ? getProductImage(hero) : HERO_FALLBACK_IMG;
           return (
@@ -183,19 +190,26 @@ export default function ShopHeroCollage({ productos = [] }) {
                 {hero.nombre.split('|')[0].trim()}
               </p>
 
-              {/* Dots indicator — debajo del título, dentro de la misma card */}
+              {/* Dots indicator — debajo del título, dentro de la misma card.
+                  stopPropagation + preventDefault porque ahora vivimos dentro
+                  del Link de hero — sin esto, tocar un dot navegaría al detalle. */}
               {pool.length > 1 && (
-                <div className="flex items-center gap-1">
+                <div className="flex items-center gap-1.5 sm:gap-1">
                   {pool.slice(0, 8).map((_, i) => (
                     <button
                       key={i}
-                      onClick={() => { setActiveIdx(i); setImgFailed(false); }}
-                      className="transition-all duration-300"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        setActiveIdx(i);
+                        setImgFailed(false);
+                      }}
+                      className="transition-all duration-300 py-1 -my-1"
                       aria-label={`Producto ${i + 1}`}
                     >
                       <span
                         className={`block rounded-full transition-all duration-300 ${
-                          i === activeIdx ? 'w-4 h-1' : 'w-1 h-1 hover:scale-125'
+                          i === activeIdx ? 'w-4 h-1' : 'w-1.5 h-1.5 sm:w-1 sm:h-1 hover:scale-125'
                         }`}
                         style={{
                           background: i === activeIdx ? 'var(--ld-action)' : 'var(--ld-border-strong)',
@@ -215,7 +229,17 @@ export default function ShopHeroCollage({ productos = [] }) {
             `}</style>
           </div>
         )}
-      </div>
+
+        {/* Affordance "ver detalle" — flecha sutil arriba a la izquierda
+            que aparece en hover. Refuerza que la card entera es clickeable. */}
+        <div
+          aria-hidden
+          className="absolute top-5 left-5 z-10 w-9 h-9 rounded-full flex items-center justify-center opacity-0 group-hover/hero:opacity-100 transition-opacity duration-300"
+          style={{ background: 'var(--ld-bg-elevated)', boxShadow: '0 8px 20px -8px rgba(2,6,23,0.4)' }}
+        >
+          <ArrowUpRight className="w-4 h-4 text-ld-fg" strokeWidth={2.4} />
+        </div>
+      </Link>
 
       {/* ═════════ COLLAGE SECUNDARIO LATERAL ═════════
           Pila de cards uniforme. Vive a la izquierda del hero, sobre la zona
@@ -244,6 +268,48 @@ export default function ShopHeroCollage({ productos = [] }) {
           </p>
         </div>
       </div>
+    </div>
+
+    {/* ═════════ MOBILE THUMB STRIP — debajo del hero, solo mobile ═════════
+        En desktop las sidecards laterales cumplen este rol. En mobile NO
+        hay forma de explorar otros productos del carrusel → agregamos un
+        scroll horizontal de thumbs grandes, táctiles (60px) y clickeables.
+        Cada thumb navega directo al detalle. El thumb activo tiene anillo
+        verde para indicar cuál es el que se está mostrando en el hero. */}
+    {pool.length > 1 && (
+      <div className="sm:hidden mt-3 -mx-4 px-4 overflow-x-auto scrollbar-hide">
+        <div className="flex gap-2.5 pb-1">
+          {pool.map((p, i) => (
+            <Link
+              key={p.id}
+              to={`/producto/${p.id}`}
+              onMouseEnter={() => { setActiveIdx(i); setImgFailed(false); }}
+              className="flex-shrink-0 relative"
+              aria-label={`Ver ${p.nombre}`}
+            >
+              <div
+                className={`w-[60px] h-[60px] rounded-xl overflow-hidden bg-white ring-2 transition-all duration-300 ${
+                  i === activeIdx ? 'ring-[var(--ld-action)] scale-105' : 'ring-ld-border'
+                }`}
+              >
+                <img
+                  src={getProductImage(p)}
+                  alt={p.nombre}
+                  className="w-full h-full object-cover"
+                  loading="lazy"
+                />
+              </div>
+              {i === activeIdx && (
+                <span
+                  className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full"
+                  style={{ background: 'var(--ld-action)' }}
+                />
+              )}
+            </Link>
+          ))}
+        </div>
+      </div>
+    )}
     </div>
   );
 }
@@ -274,10 +340,15 @@ function SidecardValueProp() {
 }
 
 /** Card de producto secundario — thumb + categoría + nombre limpio.
- *  Hover lift suave para sensación premium e invitar a la interacción. */
+ *  Hover lift suave para sensación premium e invitar a la interacción.
+ *  Clickeable → navega al detalle del producto. */
 function SidecardProduct({ producto: p }) {
   return (
-    <div className="ld-glass-strong rounded-2xl p-2 pr-3 flex items-center gap-2.5 shadow-lg transition-all duration-300 hover:-translate-y-0.5 hover:shadow-xl group">
+    <Link
+      to={`/producto/${p.id}`}
+      aria-label={`Ver ${p.nombre}`}
+      className="ld-glass-strong rounded-2xl p-2 pr-3 flex items-center gap-2.5 shadow-lg transition-all duration-300 hover:-translate-y-0.5 hover:shadow-xl group"
+    >
       <div className="w-[52px] h-[52px] rounded-xl overflow-hidden flex-shrink-0 bg-white/95 ring-1 ring-ld-border">
         <img
           src={getProductImage(p)}
@@ -286,7 +357,7 @@ function SidecardProduct({ producto: p }) {
           loading="lazy"
         />
       </div>
-      <div className="min-w-0 py-0.5">
+      <div className="min-w-0 py-0.5 flex-1">
         <p
           className="text-[9.5px] font-bold uppercase tracking-[0.18em] leading-none"
           style={{ color: 'var(--ld-action)' }}
@@ -297,6 +368,6 @@ function SidecardProduct({ producto: p }) {
           {p.nombre.split('|')[0].trim()}
         </p>
       </div>
-    </div>
+    </Link>
   );
 }
