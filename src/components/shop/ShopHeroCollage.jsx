@@ -162,18 +162,26 @@ export default function ShopHeroCollage({ productos = [] }) {
 
       </div>
 
-      {/* ═════════ TÍTULO EDITORIAL — card propia, debajo de la imagen ═════════
-          Jerarquía visual clara:
-          1. Kicker (categoría) — small caps, color action firma
-          2. Título (display Fraunces) — protagonista absoluto
-          3. Dots indicator — alineados a la derecha, balance visual
+      {/* ═════════ TÍTULO EDITORIAL — card BLANCA sólida con contraste garantizado ═════════
+          Solución al bug de contraste: en lugar de glass semi-transparente
+          (que dejaba el texto ilegible cuando la foto era oscura), usamos
+          un fondo sólido blanco/elevated. El contenedor es DEPENDIENTE
+          del tema (día = blanco, noche = bg-elevated oscuro) para mantener
+          siempre máximo contraste con su propio texto.
 
-          Vive en su propia card glass para que SIEMPRE sea legible,
-          sin depender del crop de la foto ni de gradientes oscuros. */}
+          Jerarquía visual:
+          1. Kicker (categoría) — small caps, color action firma
+          2. Título (display Fraunces) — protagonista, sobre fondo sólido
+          3. Dots indicator — alineados a la derecha, balance visual */}
       {hero && (
         <div
-          className="absolute bottom-0 right-0 left-0 sm:left-[20%] ld-glass-strong rounded-[24px] px-5 sm:px-7 py-4 sm:py-5 shadow-lg flex items-center gap-4"
-          style={{ minHeight: '88px' }}
+          className="absolute bottom-0 right-0 left-0 sm:left-[20%] rounded-[24px] px-5 sm:px-7 py-4 sm:py-5 flex items-center gap-4 border"
+          style={{
+            minHeight: '88px',
+            background: 'var(--ld-bg-elevated)',
+            borderColor: 'var(--ld-border)',
+            boxShadow: '0 -8px 30px -10px rgba(2,6,23,0.18), 0 12px 32px -16px rgba(2,6,23,0.22)',
+          }}
         >
           <div key={hero.id} className="flex-1 min-w-0" style={{ animation: 'peyuTitleSlideIn 600ms ease-out' }}>
             <p
