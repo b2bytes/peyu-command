@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Recycle } from 'lucide-react';
 import { getProductImage } from '@/utils/productImages';
 
@@ -20,39 +20,59 @@ const HERO_FALLBACK_IMG = 'https://media.base44.com/images/public/69d99b9d61f699
  * • Foto destacada: ratio refinado + sombra direccional + mejor breathing.
  */
 export default function ShopHeroCollage({ productos = [] }) {
-  // Si la imagen del producto seleccionado falla (CDN caído / 404), cambiamos
-  // a la imagen fallback editorial. Evita el contenedor blanco del bug visual.
   const [imgFailed, setImgFailed] = useState(false);
+  const [activeIdx, setActiveIdx] = useState(0);
 
-  // Selección curada: representantes de distintas categorías para máxima diversidad.
-  const seleccion = useMemo(() => {
+  // Selección curada: una rotación más larga (8) para que el carrusel tenga
+  // recorrido visual. Diversificada por categoría para que se sienta amplio.
+  const pool = useMemo(() => {
     const conImagen = productos.filter(p => !!getProductImage(p));
     const ordenCategorias = ['Escritorio', 'Hogar', 'Corporativo', 'Entretenimiento', 'Carcasas B2C'];
     const elegidos = [];
     const usados = new Set();
 
-    for (const cat of ordenCategorias) {
-      const candidato = conImagen.find(p => p.categoria === cat && !usados.has(p.id));
-      if (candidato) {
-        elegidos.push(candidato);
-        usados.add(candidato.id);
+    // Round-robin por categoría para máxima diversidad
+    let safetyPass = 0;
+    while (elegidos.length < 8 && safetyPass < 4) {
+      for (const cat of ordenCategorias) {
+        const candidato = conImagen.find(
+          p => p.categoria === cat && !usados.has(p.id)
+        );
+        if (candidato) {
+          elegidos.push(candidato);
+          usados.add(candidato.id);
+          if (elegidos.length >= 8) break;
+        }
       }
-      if (elegidos.length === 4) break;
+      safetyPass++;
     }
-
-    if (elegidos.length < 4) {
+    if (elegidos.length < 8) {
       for (const p of conImagen) {
         if (usados.has(p.id)) continue;
         elegidos.push(p);
         usados.add(p.id);
-        if (elegidos.length === 4) break;
+        if (elegidos.length >= 8) break;
       }
     }
-
     return elegidos;
   }, [productos]);
 
-  const [hero, ...secundarios] = seleccion;
+  // Auto-rotación cada 3s. Solo si hay 2+ items.
+  useEffect(() => {
+    if (pool.length < 2) return;
+    const id = setInterval(() => {
+      setActiveIdx(i => (i + 1) % pool.length);
+      setImgFailed(false);
+    }, 3000);
+    return () => clearInterval(id);
+  }, [pool.length]);
+
+  // Hero rota; las 3 cards laterales son los próximos 3 productos.
+  const hero = pool[activeIdx];
+  const secundarios = useMemo(() => {
+    if (pool.length < 2) return [];
+    return [1, 2, 3].map(o => pool[(activeIdx + o) % pool.length]).filter(Boolean);
+  }, [pool, activeIdx]);
   const totalActivos = productos.length;
 
   return (
@@ -69,52 +89,56 @@ export default function ShopHeroCollage({ productos = [] }) {
         style={{ background: 'var(--ld-highlight-soft)', opacity: 0.35 }}
       />
 
-      {/* ═════════ PIEZA HERO — producto principal ═════════
-          Capas: blur ambient + gradiente firma + imagen nítida + viñetas
-          editoriales. Ratio refinado: el contenedor crece hacia la derecha
-          dejando aire a la izquierda para las cards secundarias. */}
+      {/* ═════════ PIEZA HERO — producto principal (editorial, sin padding feo) ═════════
+          Pasamos de object-contain con padding-gigante (que dejaba al producto
+          flotando aislado y ridículo) a un layout editorial:
+          • La imagen ocupa el contenedor con object-cover, crop centrado.
+          • Encima, gradientes oscuros top→bottom para legibilidad del título.
+          • El título queda en la parte inferior izquierda con safe-area que
+            evita choque con la card de catálogo (que está en bottom -left). */}
       <div className="absolute inset-y-0 right-0 w-[92%] sm:w-[80%] rounded-[28px] overflow-hidden ld-card shadow-[0_30px_80px_-30px_rgba(2,6,23,0.45)]">
         {(() => {
           const heroSrc = hero && !imgFailed ? getProductImage(hero) : HERO_FALLBACK_IMG;
           return (
             <>
-              {/* Capa 1 — imagen ampliada y difuminada de fondo (ambient) */}
+              {/* Capa única — imagen real cubriendo todo el contenedor.
+                  Transición suave al cambiar de producto cada 3s. */}
               <img
+                key={hero?.id || 'fallback'}
                 src={heroSrc}
-                alt=""
-                aria-hidden
-                className="absolute inset-0 w-full h-full object-cover scale-125 blur-2xl opacity-75"
+                alt={hero ? `${hero.nombre} · PEYU Chile` : 'Catálogo PEYU Chile'}
+                className="absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ease-out"
                 loading="eager"
+                fetchpriority="high"
                 onError={() => setImgFailed(true)}
+                style={{ animation: 'peyuHeroFadeIn 700ms ease-out' }}
               />
-              {/* Capa 2 — gradiente firma sobre el blur */}
-              <div
-                aria-hidden
-                className="absolute inset-0 mix-blend-soft-light"
-                style={{
-                  background:
-                    'linear-gradient(135deg, var(--ld-action-soft) 0%, transparent 50%, var(--ld-highlight-soft) 100%)',
-                }}
-              />
-              {/* Capa 3 — viñeta editorial para enfocar al centro y dar legibilidad
-                  a las etiquetas. Top y bottom oscurecidos sutilmente. */}
+              {/* Gradiente editorial — oscurece bordes para enmarcar el producto
+                  y dar legibilidad al título inferior. Más oscuro abajo. */}
               <div
                 aria-hidden
                 className="absolute inset-0"
                 style={{
                   background:
-                    'linear-gradient(180deg, rgba(2,6,23,0.18) 0%, transparent 22%, transparent 70%, rgba(2,6,23,0.42) 100%)',
+                    'linear-gradient(180deg, rgba(2,6,23,0.25) 0%, transparent 28%, transparent 55%, rgba(2,6,23,0.78) 100%)',
                 }}
               />
-              {/* Capa 4 — imagen real del producto, nítida y centrada con drop-shadow */}
-              <img
-                src={heroSrc}
-                alt={hero ? `${hero.nombre} · PEYU Chile` : 'Catálogo PEYU Chile'}
-                className="relative w-full h-full object-contain p-8 sm:p-12 lg:p-14"
-                loading="eager"
-                fetchpriority="high"
-                style={{ filter: 'drop-shadow(0 18px 40px rgba(0,0,0,0.35))' }}
+              {/* Highlight verde sutil arriba para dar firma de marca */}
+              <div
+                aria-hidden
+                className="absolute inset-0 mix-blend-soft-light pointer-events-none"
+                style={{
+                  background:
+                    'linear-gradient(135deg, var(--ld-action-soft) 0%, transparent 35%)',
+                }}
               />
+              {/* Keyframes locales para el fade-in al rotar producto */}
+              <style>{`
+                @keyframes peyuHeroFadeIn {
+                  from { opacity: 0; transform: scale(1.04); }
+                  to   { opacity: 1; transform: scale(1); }
+                }
+              `}</style>
             </>
           );
         })()}
@@ -138,15 +162,39 @@ export default function ShopHeroCollage({ productos = [] }) {
           </div>
         </div>
 
-        {/* Pieza editorial inferior — nombre del hero product */}
+        {/* Pieza editorial inferior — título del hero product.
+            Lo movemos a la DERECHA dentro del contenedor para que la card
+            "Catálogo 61" (que vive en bottom-left, fuera de este contenedor
+            pero se superpone visualmente) NO tape el título. */}
         {hero && (
-          <div className="absolute bottom-5 left-5 right-5 z-10 text-white drop-shadow-lg">
+          <div className="absolute bottom-5 right-5 left-[40%] sm:left-[38%] z-10 text-white drop-shadow-lg">
             <p className="text-[10px] font-bold tracking-[0.22em] uppercase opacity-95 mb-1.5">
               Destacado · {hero.categoria}
             </p>
-            <p className="ld-display text-xl sm:text-2xl leading-[1.05] line-clamp-2 max-w-[88%]">
+            <p className="ld-display text-lg sm:text-xl lg:text-2xl leading-[1.05] line-clamp-2">
               {hero.nombre}
             </p>
+          </div>
+        )}
+
+        {/* Dots indicator del carrusel — abajo a la izquierda dentro del
+            contenedor hero, en el espacio que dejó libre el título. */}
+        {pool.length > 1 && (
+          <div className="absolute bottom-6 left-5 z-10 flex items-center gap-1.5">
+            {pool.slice(0, 8).map((_, i) => (
+              <button
+                key={i}
+                onClick={() => { setActiveIdx(i); setImgFailed(false); }}
+                className="transition-all duration-300"
+                aria-label={`Producto ${i + 1}`}
+              >
+                <span
+                  className={`block rounded-full transition-all duration-300 ${
+                    i === activeIdx ? 'w-6 h-1.5 bg-white' : 'w-1.5 h-1.5 bg-white/40 hover:bg-white/70'
+                  }`}
+                />
+              </button>
+            ))}
           </div>
         )}
       </div>
