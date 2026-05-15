@@ -4,6 +4,9 @@ export default function WhatsAppFloat() {
   const { pathname } = useLocation();
   // Ocultar en checkout (Amazon/Shopify best practice — sin distracciones del CTA)
   if (pathname.startsWith('/cart') || pathname.startsWith('/gracias')) return null;
+  // Ocultar en la home: el chat Peyu (esquina inferior derecha) ya es el canal
+  // principal y el WhatsApp queda visualmente tapado por la card del chat.
+  if (pathname === '/') return null;
 
   return (
     <a

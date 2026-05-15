@@ -76,7 +76,7 @@ export default function ShopHeroCollage({ productos = [] }) {
   const totalActivos = productos.length;
 
   return (
-    <div className="relative h-[380px] sm:h-[480px] lg:h-[580px]">
+    <div className="relative h-[340px] sm:h-[440px] lg:h-[540px]">
       {/* Glows ambient — refinados, menos saturados */}
       <div
         aria-hidden
@@ -90,11 +90,10 @@ export default function ShopHeroCollage({ productos = [] }) {
       />
 
       {/* ═════════ PIEZA HERO — imagen principal (editorial) ═════════
-          El contenedor de IMAGEN ocupa SOLO la parte superior. El título ya
-          NO vive encima de la foto (evitamos que el contenedor lo tape o
-          que la foto compita con el texto). El título tiene su propia
-          card glass abajo, con jerarquía tipográfica clara y legible. */}
-      <div className="absolute top-0 right-0 left-0 sm:left-[20%] h-[68%] rounded-[28px] overflow-hidden ld-card shadow-[0_30px_80px_-30px_rgba(2,6,23,0.45)]">
+          La foto ocupa toda la altura disponible a la derecha. El título
+          flota como overlay en la esquina inferior derecha de la propia
+          foto (card blanca sólida con contraste garantizado). */}
+      <div className="absolute inset-y-0 right-0 left-0 sm:left-[20%] rounded-[28px] overflow-hidden ld-card shadow-[0_30px_80px_-30px_rgba(2,6,23,0.45)]">
         {(() => {
           const heroSrc = hero && !imgFailed ? getProductImage(hero) : HERO_FALLBACK_IMG;
           return (
@@ -160,75 +159,63 @@ export default function ShopHeroCollage({ productos = [] }) {
           </div>
         </div>
 
-      </div>
+        {/* ═════════ TÍTULO EDITORIAL — card flotante DENTRO de la foto ═════════
+            Ubicación: esquina inferior derecha del contenedor de la imagen.
+            Fondo sólido (bg-elevated) para máximo contraste sobre cualquier
+            foto, sin importar si es oscura o clara. Compact, editorial. */}
+        {hero && (
+          <div
+            className="absolute bottom-4 right-4 sm:bottom-5 sm:right-5 z-10 rounded-2xl px-4 sm:px-5 py-3 sm:py-4 border max-w-[78%] sm:max-w-[60%]"
+            style={{
+              background: 'var(--ld-bg-elevated)',
+              borderColor: 'var(--ld-border)',
+              boxShadow: '0 18px 40px -16px rgba(2,6,23,0.35), 0 4px 12px -4px rgba(2,6,23,0.15)',
+            }}
+          >
+            <div key={hero.id} style={{ animation: 'peyuTitleSlideIn 600ms ease-out' }}>
+              <p
+                className="text-[9.5px] sm:text-[10.5px] font-bold uppercase tracking-[0.22em] leading-none mb-1.5"
+                style={{ color: 'var(--ld-action)' }}
+              >
+                Destacado · {hero.categoria}
+              </p>
+              <p className="ld-display text-base sm:text-lg lg:text-xl leading-[1.1] text-ld-fg line-clamp-2 mb-2">
+                {hero.nombre.split('|')[0].trim()}
+              </p>
 
-      {/* ═════════ TÍTULO EDITORIAL — card BLANCA sólida con contraste garantizado ═════════
-          Solución al bug de contraste: en lugar de glass semi-transparente
-          (que dejaba el texto ilegible cuando la foto era oscura), usamos
-          un fondo sólido blanco/elevated. El contenedor es DEPENDIENTE
-          del tema (día = blanco, noche = bg-elevated oscuro) para mantener
-          siempre máximo contraste con su propio texto.
-
-          Jerarquía visual:
-          1. Kicker (categoría) — small caps, color action firma
-          2. Título (display Fraunces) — protagonista, sobre fondo sólido
-          3. Dots indicator — alineados a la derecha, balance visual */}
-      {hero && (
-        <div
-          className="absolute bottom-0 right-0 left-0 sm:left-[20%] rounded-[24px] px-5 sm:px-7 py-4 sm:py-5 flex items-center gap-4 border"
-          style={{
-            minHeight: '88px',
-            background: 'var(--ld-bg-elevated)',
-            borderColor: 'var(--ld-border)',
-            boxShadow: '0 -8px 30px -10px rgba(2,6,23,0.18), 0 12px 32px -16px rgba(2,6,23,0.22)',
-          }}
-        >
-          <div key={hero.id} className="flex-1 min-w-0" style={{ animation: 'peyuTitleSlideIn 600ms ease-out' }}>
-            <p
-              className="text-[10px] sm:text-[11px] font-bold uppercase tracking-[0.22em] leading-none mb-2"
-              style={{ color: 'var(--ld-action)' }}
-            >
-              Destacado · {hero.categoria}
-            </p>
-            <p className="ld-display text-xl sm:text-2xl lg:text-[28px] leading-[1.08] text-ld-fg line-clamp-2">
-              {hero.nombre.split('|')[0].trim()}
-            </p>
-          </div>
-
-          {/* Dots indicator — alineado a la derecha de la card */}
-          {pool.length > 1 && (
-            <div className="hidden sm:flex items-center gap-1.5 flex-shrink-0">
-              {pool.slice(0, 8).map((_, i) => (
-                <button
-                  key={i}
-                  onClick={() => { setActiveIdx(i); setImgFailed(false); }}
-                  className="transition-all duration-300"
-                  aria-label={`Producto ${i + 1}`}
-                >
-                  <span
-                    className={`block rounded-full transition-all duration-300 ${
-                      i === activeIdx
-                        ? 'w-6 h-1.5'
-                        : 'w-1.5 h-1.5 hover:scale-125'
-                    }`}
-                    style={{
-                      background: i === activeIdx ? 'var(--ld-action)' : 'var(--ld-border-strong)',
-                    }}
-                  />
-                </button>
-              ))}
+              {/* Dots indicator — debajo del título, dentro de la misma card */}
+              {pool.length > 1 && (
+                <div className="flex items-center gap-1">
+                  {pool.slice(0, 8).map((_, i) => (
+                    <button
+                      key={i}
+                      onClick={() => { setActiveIdx(i); setImgFailed(false); }}
+                      className="transition-all duration-300"
+                      aria-label={`Producto ${i + 1}`}
+                    >
+                      <span
+                        className={`block rounded-full transition-all duration-300 ${
+                          i === activeIdx ? 'w-4 h-1' : 'w-1 h-1 hover:scale-125'
+                        }`}
+                        style={{
+                          background: i === activeIdx ? 'var(--ld-action)' : 'var(--ld-border-strong)',
+                        }}
+                      />
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
-          )}
 
-          {/* Keyframes para el slide-in del título al cambiar producto */}
-          <style>{`
-            @keyframes peyuTitleSlideIn {
-              from { opacity: 0; transform: translateY(8px); }
-              to   { opacity: 1; transform: translateY(0); }
-            }
-          `}</style>
-        </div>
-      )}
+            <style>{`
+              @keyframes peyuTitleSlideIn {
+                from { opacity: 0; transform: translateY(8px); }
+                to   { opacity: 1; transform: translateY(0); }
+              }
+            `}</style>
+          </div>
+        )}
+      </div>
 
       {/* ═════════ COLLAGE SECUNDARIO LATERAL ═════════
           Pila de cards uniforme. Vive a la izquierda del hero, sobre la zona
@@ -240,9 +227,8 @@ export default function ShopHeroCollage({ productos = [] }) {
         ))}
       </div>
 
-      {/* ═════════ Card catálogo — vive a la izquierda, debajo de las cards
-          de producto y POR ENCIMA de la card-título inferior. */}
-      <div className="absolute bottom-[110px] sm:bottom-[120px] left-0 lg:-left-3 hidden sm:block z-10">
+      {/* ═════════ Card catálogo — esquina inferior izquierda ═════════ */}
+      <div className="absolute bottom-5 left-0 lg:-left-3 hidden sm:block z-10">
         <div className="ld-glass-strong rounded-2xl p-3 w-40 shadow-lg">
           <p
             className="text-[9.5px] font-bold uppercase tracking-[0.22em] mb-1"
