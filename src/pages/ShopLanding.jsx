@@ -56,11 +56,11 @@ const STORAGE_KEY = 'peyu_chat_conversation_id';
 const WELCOME_MSG = {
   role: 'assistant',
   content: [
-    'Hola, soy Peyu.',
+    '¡Hola! 🐢 Soy Peyu, tu asistente para encontrar el regalo perfecto.',
     '',
-    'Diseño regalos en plástico 100% reciclado, hechos en Chile, con grabado láser y garantía de 10 años.',
+    'En PEYU diseñamos regalos únicos en plástico 100% reciclado chileno, con grabado láser personalizable y garantía de 10 años. Cada pieza rescata plástico del océano 🌊',
     '',
-    '¿Buscas un regalo personal o para tu empresa?',
+    '¿Para quién buscas algo lindo hoy? ¿Es para una persona especial 🎁 o para tu equipo/empresa 💼?',
   ].join('\n'),
 };
 
@@ -71,9 +71,11 @@ const buildPersonalizedWelcome = (fullName) => {
   return {
     role: 'assistant',
     content: [
-      `Hola ${firstName}, qué bueno verte de nuevo 🐢`,
+      `¡Hola ${firstName}! Qué bueno verte de nuevo 🐢`,
       '',
-      '¿En qué te ayudo hoy? Puedo recomendarte regalos personales o armar un pack para tu equipo.',
+      'Tengo ideas frescas — drops nuevos, packs corporativos y algunos best-sellers que se están yendo rápido. ✨',
+      '',
+      '¿Vienes por algo personal 🎁 o para tu equipo 💼?',
     ].join('\n'),
   };
 };
