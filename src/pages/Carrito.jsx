@@ -14,6 +14,7 @@ import ImpactoAmbiental from '@/components/cart/ImpactoAmbiental';
 import OneClickBuyButton from '@/components/cart/OneClickBuyButton';
 import CartBundleToggle from '@/components/cart/CartBundleToggle';
 import { saveOneClickProfile } from '@/lib/one-click-profile';
+import { computeVolumeDiscount, getNextVolumeTeaser } from '@/lib/volume-discount';
 
 const DESCUENTO_TRANSFERENCIA_PCT = 5;
 
@@ -84,12 +85,17 @@ export default function Carrito() {
   const envio = cupon?.libera_envio ? 0 : envioBase;
   // Descuento por cupón (solo si NO es envio_gratis, ese ya redujo el envío)
   const descuentoCupon = cupon && !cupon.libera_envio ? (cupon.descuento_clp || 0) : 0;
+  // 🆕 Descuento por volumen B2C (replica web anterior): 2u → 10% · 3+u → 15%
+  // NO se acumula con cupones. Sí se acumula con transferencia y giftcard.
+  const volumeDiscount = computeVolumeDiscount({ carrito, subtotal, hasCupon: !!cupon });
+  const descuentoVolumen = volumeDiscount.clp;
+  const volumeTeaser = getNextVolumeTeaser(volumeDiscount.unidades);
   // Descuento por método de pago (transferencia 5% sobre subtotal)
   const descuentoTransferencia = medioPago === 'Transferencia'
     ? Math.floor(subtotal * (DESCUENTO_TRANSFERENCIA_PCT / 100))
     : 0;
 
-  const totalAntesGC = Math.max(0, subtotal + envio - descuentoCupon - descuentoTransferencia);
+  const totalAntesGC = Math.max(0, subtotal + envio - descuentoCupon - descuentoVolumen - descuentoTransferencia);
   const carritoTieneGC = carrito.some(i =>
     String(i.sku || '').startsWith('GC-PEYU') ||
     String(i.nombre || '').toLowerCase().includes('gift card')
@@ -177,13 +183,14 @@ export default function Carrito() {
       referenciaTrim ? `📍 Depto/Oficina/Ref: ${referenciaTrim}` : null,
       gcDescuento > 0 ? `GiftCard ${giftCard.codigo} -$${gcDescuento.toLocaleString('es-CL')}` : null,
       cupon ? `Cupón ${cupon.codigo} -$${(cupon.descuento_clp || 0).toLocaleString('es-CL')}` : null,
+      descuentoVolumen > 0 ? `Dscto volumen ${volumeDiscount.pct}% (${volumeDiscount.unidades}u) -$${descuentoVolumen.toLocaleString('es-CL')}` : null,
       descuentoTransferencia > 0 ? `Dscto transferencia -$${descuentoTransferencia.toLocaleString('es-CL')}` : null,
       cliente.codigo_postal ? `CP ${cliente.codigo_postal}` : null,
       cliente.region ? `Región ${cliente.region}` : null,
       envioBluex ? `Bluex ${envioBluex.servicio} (${envioBluex.peso_kg}kg) → $${envioBluex.costo_real.toLocaleString('es-CL')}` : null,
     ].filter(Boolean).join(' | ');
 
-    const descuentoTotal = descuentoCupon + descuentoTransferencia + gcDescuento;
+    const descuentoTotal = descuentoCupon + descuentoVolumen + descuentoTransferencia + gcDescuento;
 
     let pedido;
     const datosPedido = {
@@ -619,6 +626,31 @@ export default function Carrito() {
                   <div className="flex justify-between text-emerald-700">
                     <span className="flex items-center gap-1">🎟️ Cupón {cupon.codigo}</span>
                     <span className="font-bold">−${descuentoCupon.toLocaleString('es-CL')}</span>
+                  </div>
+                )}
+
+                {descuentoVolumen > 0 && (
+                  <div className="flex justify-between text-emerald-700">
+                    <span className="flex items-center gap-1">📦 Descuento por volumen ({volumeDiscount.pct}%)</span>
+                    <span className="font-bold">−${descuentoVolumen.toLocaleString('es-CL')}</span>
+                  </div>
+                )}
+
+                {/* Teaser motivador: invita a agregar 1 más para subir de escalón */}
+                {!cupon && volumeTeaser.necesita > 0 && volumeDiscount.unidades >= 1 && (
+                  <div className="bg-emerald-50 border border-emerald-100 rounded-xl p-3 mt-1">
+                    <p className="text-xs text-emerald-900 font-medium">
+                      ✨ Agrega <strong>{volumeTeaser.necesita} unidad{volumeTeaser.necesita > 1 ? 'es' : ''}</strong> más y obtén <strong>{volumeTeaser.pctSiguiente}% off</strong> automático
+                    </p>
+                  </div>
+                )}
+
+                {/* Aviso si el cupón está bloqueando el descuento por volumen */}
+                {cupon && volumeDiscount.unidades >= 2 && (
+                  <div className="bg-amber-50 border border-amber-100 rounded-xl p-3 mt-1">
+                    <p className="text-xs text-amber-900 font-medium">
+                      ℹ️ El cupón <strong>{cupon.codigo}</strong> reemplaza al descuento por volumen ({getNextVolumeTeaser(volumeDiscount.unidades - 1).pctSiguiente}%). Si quieres el descuento automático, remueve el cupón.
+                    </p>
                   </div>
                 )}
 
