@@ -104,8 +104,8 @@ export default function ShopHeroCollage({ productos = [] }) {
   const totalActivos = productos.length;
 
   return (
-    <div>
-    <div className="relative h-[320px] sm:h-[440px] lg:h-[540px]">
+    <div className="min-w-0 w-full">
+    <div className="relative h-[320px] sm:h-[440px] lg:h-[540px] overflow-hidden sm:overflow-visible rounded-[28px]">
       {/* Glows ambient — refinados, menos saturados */}
       <div
         aria-hidden

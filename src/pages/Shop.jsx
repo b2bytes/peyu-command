@@ -205,7 +205,7 @@ export default function Shop() {
   } : null;
 
   return (
-    <div className="flex-1 overflow-auto font-inter">
+    <div className="flex-1 overflow-x-hidden overflow-y-auto font-inter">
       <PublicSEO
         pageKey="shop"
         breadcrumbs={[
@@ -216,14 +216,14 @@ export default function Shop() {
       />
       {/* HERO Liquid Dual — split editorial con imagen */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 pt-6 sm:pt-10 pb-6 sm:pb-10">
-        <div className="grid lg:grid-cols-[1.1fr_1fr] gap-6 lg:gap-10 items-stretch">
+        <div className="grid lg:grid-cols-[1.1fr_1fr] gap-6 lg:gap-10 items-stretch min-w-0">
           {/* IZQUIERDA — Texto + trust */}
-          <div className="flex flex-col justify-center space-y-5 lg:py-6">
+          <div className="flex flex-col justify-center space-y-5 lg:py-6 min-w-0">
             <div className="inline-flex items-center gap-1.5 text-[11px] font-bold tracking-[0.22em] uppercase self-start" style={{ color: 'var(--ld-action)' }}>
               <Recycle className="w-3 h-3" />
               <span>100% Plástico Reciclado · Chile</span>
             </div>
-            <h1 className="ld-display text-4xl sm:text-5xl md:text-6xl lg:text-7xl text-ld-fg leading-[0.95]">
+            <h1 className="ld-display text-4xl sm:text-5xl md:text-6xl lg:text-7xl text-ld-fg leading-[0.95] break-words">
               Tienda PEYU.{' '}
               <span className="ld-display-italic" style={{ color: 'var(--ld-highlight)' }}>
                 Regalos sostenibles.
