@@ -58,14 +58,41 @@ export default function ShopHeroCollage({ productos = [] }) {
     return elegidos;
   }, [productos]);
 
+  // Precarga de imágenes del pool: cuando rota cada 3s, la imagen nueva ya
+  // está en cache del browser → sin flash, sin shimmer, sin layout shift.
+  useEffect(() => {
+    pool.forEach(p => {
+      const src = getProductImage(p);
+      if (!src) return;
+      const img = new Image();
+      img.src = src;
+    });
+  }, [pool]);
+
   // Auto-rotación cada 3s. Solo si hay 2+ items.
+  // Pausa cuando la pestaña está oculta para no acumular rotaciones (y ahorrar batería).
   useEffect(() => {
     if (pool.length < 2) return;
-    const id = setInterval(() => {
-      setActiveIdx(i => (i + 1) % pool.length);
-      setImgFailed(false);
-    }, 3000);
-    return () => clearInterval(id);
+    let id = null;
+    const start = () => {
+      stop();
+      id = setInterval(() => {
+        setActiveIdx(i => (i + 1) % pool.length);
+        setImgFailed(false);
+      }, 3000);
+    };
+    const stop = () => {
+      if (id) { clearInterval(id); id = null; }
+    };
+    const onVisibility = () => {
+      if (document.hidden) stop(); else start();
+    };
+    start();
+    document.addEventListener('visibilitychange', onVisibility);
+    return () => {
+      stop();
+      document.removeEventListener('visibilitychange', onVisibility);
+    };
   }, [pool.length]);
 
   // Hero rota; las 3 cards laterales son los próximos 3 productos.
@@ -114,7 +141,9 @@ export default function ShopHeroCollage({ productos = [] }) {
                 className="absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ease-out"
                 loading="eager"
                 fetchpriority="high"
-                onError={() => setImgFailed(true)}
+                decoding="async"
+                referrerPolicy="no-referrer"
+                onError={() => { if (!imgFailed) setImgFailed(true); }}
                 style={{ animation: 'peyuHeroFadeIn 700ms ease-out' }}
               />
               {/* Gradiente editorial — oscurece bordes para enmarcar el producto
@@ -297,6 +326,8 @@ export default function ShopHeroCollage({ productos = [] }) {
                   alt={p.nombre}
                   className="w-full h-full object-cover"
                   loading="lazy"
+                  decoding="async"
+                  referrerPolicy="no-referrer"
                 />
               </div>
               {i === activeIdx && (
@@ -355,6 +386,8 @@ function SidecardProduct({ producto: p }) {
           alt={p.nombre}
           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
           loading="lazy"
+          decoding="async"
+          referrerPolicy="no-referrer"
         />
       </div>
       <div className="min-w-0 py-0.5 flex-1">

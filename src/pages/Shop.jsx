@@ -44,7 +44,11 @@ export default function Shop() {
   const [selectedPrice, setSelectedPrice] = useState('all');
   const [sortBy, setSortBy] = useState('popular');
   const [filtersOpen, setFiltersOpen] = useState(false);
-  const [carrito, setCarrito] = useState(JSON.parse(localStorage.getItem('carrito') || '[]'));
+  const [carrito, setCarrito] = useState(() => {
+    // Lectura defensiva: si el localStorage está corrupto no debe crashear la página.
+    try { return JSON.parse(localStorage.getItem('carrito') || '[]') || []; }
+    catch { return []; }
+  });
   const [agregandoId, setAgregandoId] = useState(null);
 
   // Paginación progresiva
@@ -53,9 +57,20 @@ export default function Shop() {
   const gridTopRef = useRef(null);
 
   useEffect(() => {
+    let alive = true;
     base44.entities.Producto.filter({ activo: true })
-      .then(data => setProductos(data.filter(p => p.canal !== 'B2B Exclusivo')))
-      .finally(() => setLoading(false));
+      .then(data => {
+        if (!alive) return;
+        setProductos((data || []).filter(p => p.canal !== 'B2B Exclusivo'));
+      })
+      .catch(err => {
+        // Si la BD falla, no dejamos la tienda en "loading" eterno: mostramos
+        // vacío y dejamos que el usuario reintente recargando. Evita pantalla muerta.
+        console.error('[Shop] Error cargando productos:', err);
+        if (alive) setProductos([]);
+      })
+      .finally(() => { if (alive) setLoading(false); });
+    return () => { alive = false; };
   }, []);
 
   // Productos filtrados (sin paginar)
@@ -261,7 +276,7 @@ export default function Shop() {
 
         {/* Sub-controls bar (sort + filtros) — conteo oculto en mobile para reducir scroll */}
         <div className="flex items-center justify-between gap-3 mt-3 sm:mt-4 mb-3 sm:mb-4 flex-wrap">
-          <p className="hidden sm:block text-sm text-ld-fg-muted" ref={gridTopRef}>
+          <p className="hidden sm:block text-sm text-ld-fg-muted">
             {loading ? (
               'Cargando...'
             ) : (
@@ -272,7 +287,9 @@ export default function Shop() {
               </>
             )}
           </p>
-          <span ref={gridTopRef} className="sm:hidden block w-full h-0" />
+          {/* Un único anchor para scrollIntoView. React no acepta el mismo ref
+              duplicado, así que lo dejamos sólo aquí (un sentinel invisible). */}
+          <span ref={gridTopRef} className="block w-full h-0" aria-hidden="true" />
           <div className="flex items-center gap-2 flex-shrink-0 ml-auto">
             <select
               value={sortBy}

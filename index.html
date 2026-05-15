@@ -18,6 +18,10 @@
     <link rel="preconnect" href="https://i0.wp.com" crossorigin />
     <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin />
+    <!-- gstatic sirve los .woff2 reales — sin preconnect, las fuentes
+         empiezan a descargar ~150ms tarde y el LCP del hero se ve "saltado". -->
+    <link rel="dns-prefetch" href="https://fonts.gstatic.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
     <meta name="author" content="PEYU Chile SpA" />
     <!-- GEO local Chile (panel de conocimiento Google + Bing local search) -->

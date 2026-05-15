@@ -132,7 +132,11 @@ export default function ProductoDetalle() {
   const [colorSeleccionado, setColorSeleccionado] = useState(null);
   const [coloresPack, setColoresPack] = useState([]); // multi-color para packs
   const [personalizacion, setPersonalizacion] = useState('');
-  const [carrito, setCarrito] = useState(JSON.parse(localStorage.getItem('carrito') || '[]'));
+  const [carrito, setCarrito] = useState(() => {
+    // Lectura defensiva: si el localStorage está corrupto no debe crashear la página.
+    try { return JSON.parse(localStorage.getItem('carrito') || '[]') || []; }
+    catch { return []; }
+  });
   const [agregado, setAgregado] = useState(false);
   const [vistaActiva, setVistaActiva] = useState(0);
   const [showStickyBar, setShowStickyBar] = useState(false);
@@ -158,17 +162,20 @@ export default function ProductoDetalle() {
     }
 
     setNotFound(false);
-    // Carga directa por ID (rápido) — sin descargar el catálogo entero
+    // Carga directa por ID (rápido) — sin descargar el catálogo entero.
+    // Guard `alive` evita setStates si el usuario navega antes de que resuelva.
+    let alive = true;
     base44.entities.Producto.get(id).then(prod => {
+      if (!alive) return;
       if (!prod) {
         setNotFound(true);
         return;
       }
       setProducto(prod);
       // Trazabilidad 360°: registrar product view
-      track.productView(prod);
-      const colores = getColores(prod);
-      const firstId = colores[0]?.id || null;
+      try { track.productView(prod); } catch (_) { /* trazabilidad no debe romper UI */ }
+      const cols = getColores(prod);
+      const firstId = cols[0]?.id || null;
       setColorSeleccionado(firstId);
       // Si es pack, inicializamos array con N copias del primer color
       const packN = getPackSize(prod);
@@ -179,10 +186,12 @@ export default function ProductoDetalle() {
       }
       // Relacionados: filtramos sólo por categoría (server-side), trae 5 y excluimos el actual
       base44.entities.Producto.filter({ categoria: prod.categoria }, '-updated_date', 8).then(rel => {
-        setRelacionados(rel.filter(p => p.id !== id && p.canal !== 'B2B Exclusivo').slice(0, 4));
-      }).catch(() => setRelacionados([]));
-    }).catch(() => setNotFound(true));
-  }, [id]);
+        if (!alive) return;
+        setRelacionados((rel || []).filter(p => p.id !== id && p.canal !== 'B2B Exclusivo').slice(0, 4));
+      }).catch(() => { if (alive) setRelacionados([]); });
+    }).catch(() => { if (alive) setNotFound(true); });
+    return () => { alive = false; };
+  }, [id, navigate]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -396,7 +405,7 @@ export default function ProductoDetalle() {
           <div className="ld-glass-strong border-b border-ld-border shadow-2xl">
             <div className="max-w-5xl mx-auto px-5 py-3 flex items-center justify-between gap-4">
               <div className="flex items-center gap-3 min-w-0">
-                <img src={imgPrincipal} alt="" className="w-10 h-10 rounded-xl object-cover flex-shrink-0 border border-ld-border" />
+                <img src={imgPrincipal} alt="" loading="lazy" decoding="async" referrerPolicy="no-referrer" className="w-10 h-10 rounded-xl object-cover flex-shrink-0 border border-ld-border" />
                 <p className="font-semibold text-sm text-ld-fg truncate">{producto.nombre}</p>
               </div>
               <div className="flex items-center gap-3 flex-shrink-0">
@@ -478,11 +487,16 @@ export default function ProductoDetalle() {
                   loading="eager"
                   fetchpriority="high"
                   decoding="async"
+                  referrerPolicy="no-referrer"
                   className="w-full h-full object-cover transition-transform duration-500"
                   onError={e => {
-                    if (e.target.src !== imgPrincipal && imgPrincipal) {
+                    // Guard anti-loop: marcamos en data-attr el nivel de fallback ya probado.
+                    const tried = e.target.dataset.fallbackTried || '';
+                    if (!tried && imgPrincipal && e.target.src !== imgPrincipal) {
+                      e.target.dataset.fallbackTried = 'main';
                       e.target.src = imgPrincipal;
-                    } else {
+                    } else if (tried !== 'final') {
+                      e.target.dataset.fallbackTried = 'final';
                       e.target.src = 'https://i0.wp.com/peyuchile.cl/wp-content/uploads/2025/04/carcasas-500x500-1.webp?fit=600%2C600&ssl=1';
                     }
                   }}
@@ -535,8 +549,15 @@ export default function ProductoDetalle() {
                       height="150"
                       loading="lazy"
                       decoding="async"
+                      referrerPolicy="no-referrer"
                       className="w-full h-full object-cover"
-                      onError={e => { if (e.target.src !== imgPrincipal && imgPrincipal) e.target.src = imgPrincipal; }}
+                      onError={e => {
+                        if (e.target.dataset.fallbackTried) return;
+                        if (imgPrincipal && e.target.src !== imgPrincipal) {
+                          e.target.dataset.fallbackTried = '1';
+                          e.target.src = imgPrincipal;
+                        }
+                      }}
                     />
                   </button>
                 ))}
@@ -1090,8 +1111,13 @@ export default function ProductoDetalle() {
                           height="300"
                           loading="lazy"
                           decoding="async"
+                          referrerPolicy="no-referrer"
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                          onError={e => { e.target.src = 'https://i0.wp.com/peyuchile.cl/wp-content/uploads/2025/04/carcasas-500x500-1.webp?fit=600%2C600&ssl=1'; }}
+                          onError={e => {
+                            if (e.target.dataset.fallbackTried) return;
+                            e.target.dataset.fallbackTried = '1';
+                            e.target.src = 'https://i0.wp.com/peyuchile.cl/wp-content/uploads/2025/04/carcasas-500x500-1.webp?fit=600%2C600&ssl=1';
+                          }}
                         />
                       </div>
                       <div className="p-3">

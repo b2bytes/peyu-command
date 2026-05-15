@@ -41,8 +41,19 @@ function ProductCard({ producto, onAddToCart, agregandoId, index = 0 }) {
           loading={index < 4 ? 'eager' : 'lazy'}
           fetchpriority={index < 2 ? 'high' : 'auto'}
           decoding="async"
+          referrerPolicy="no-referrer"
           onLoad={() => setImgLoaded(true)}
-          onError={(e) => { e.target.src = 'https://images.unsplash.com/photo-1578432291840-8d3a3a016e4d?w=600&h=600&fit=crop'; setImgLoaded(true); }}
+          onError={(e) => {
+            // Guard anti-loop: si el fallback también falla, NO seguimos cambiando src
+            // (evita el "infinite error" cuando Unsplash u otro CDN está caído).
+            if (e.target.dataset.fallbackTried === '1') {
+              setImgLoaded(true);
+              return;
+            }
+            e.target.dataset.fallbackTried = '1';
+            e.target.src = 'https://images.unsplash.com/photo-1578432291840-8d3a3a016e4d?w=600&h=600&fit=crop';
+            setImgLoaded(true);
+          }}
         />
         {/* Floating badges glass */}
         <div className="absolute top-3 left-3 flex flex-col gap-1.5">

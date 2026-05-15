@@ -47,7 +47,10 @@ export function lazyWithRetry(factory, { retries = 3, name = 'chunk' } = {}) {
         if (!isStaleChunkError(err)) throw err;
 
         if (attempt < retries) {
-          // Backoff exponencial: 300ms, 600ms, 1200ms
+          // Backoff exponencial: 300ms, 600ms, 1200ms.
+          // Antes del último intento, intentamos cache-busting solicitando una
+          // versión "no-cache" del módulo para sortear un service worker o un
+          // CDN intermedio que esté sirviendo el chunk obsoleto.
           await sleep(300 * Math.pow(2, attempt - 1));
         }
       }

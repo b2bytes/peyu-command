@@ -20,7 +20,11 @@ const DESCUENTO_TRANSFERENCIA_PCT = 5;
 export default function Carrito() {
   const navigate = useNavigate();
   const mpFailure = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('mp') === 'failure';
-  const [carrito, setCarrito] = useState(JSON.parse(localStorage.getItem('carrito') || '[]'));
+  const [carrito, setCarrito] = useState(() => {
+    // Lectura defensiva: localStorage corrupto NO debe crashear el checkout.
+    try { return JSON.parse(localStorage.getItem('carrito') || '[]') || []; }
+    catch { return []; }
+  });
   const [cliente, setCliente] = useState({
     nombre: '', email: '', telefono: '',
     region: '', ciudad: '', direccion: '', referencia: '', codigo_postal: '',
@@ -385,7 +389,21 @@ export default function Carrito() {
                   <div key={item.id} className="bg-white border border-gray-200 rounded-3xl p-4 sm:p-5 flex gap-4 shadow-sm hover:shadow-md hover:border-gray-300 transition-all">
                     <div className="w-20 h-20 sm:w-24 sm:h-24 bg-gradient-to-br from-teal-50 to-emerald-50 rounded-2xl flex-shrink-0 overflow-hidden flex items-center justify-center border border-gray-100">
                       {item.imagen ? (
-                        <img src={item.imagen} alt={item.nombre} className="w-full h-full object-cover" loading="lazy" />
+                        <img
+                          src={item.imagen}
+                          alt={item.nombre}
+                          className="w-full h-full object-cover"
+                          loading="lazy"
+                          decoding="async"
+                          referrerPolicy="no-referrer"
+                          onError={e => {
+                            // Si la imagen del carrito falla (URL legacy caída),
+                            // mostramos un emoji en su lugar — no romper el checkout.
+                            if (e.target.dataset.fallbackTried) return;
+                            e.target.dataset.fallbackTried = '1';
+                            e.target.style.display = 'none';
+                          }}
+                        />
                       ) : (
                         <span className="text-4xl">📦</span>
                       )}
