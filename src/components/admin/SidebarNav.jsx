@@ -13,6 +13,7 @@ import {
   CalendarDays, PieChart, Settings, AlertTriangle, Building2, ClipboardList, Zap,
   Radar, Crosshair, Map as MapIcon, Sparkles, Leaf, Banknote, TrendingUp,
   ChevronDown, Cpu, Wand2, Globe, Wallet, Factory, Receipt, BookOpen, Brain, Activity, Eye,
+  Rocket,
 } from 'lucide-react';
 
 // ─── Sidebar compacto · solo lo esencial visible ────────────────────────────
@@ -26,6 +27,7 @@ export const NAV_GROUPS = [
     defaultOpen: true,
     items: [
       { path: '/admin/',              label: 'Centro de Comando',  icon: LayoutDashboard },
+      { path: '/admin/launch-roadmap', label: 'Plan de Lanzamiento', icon: Rocket },
       { path: '/admin/alertas',       label: 'Alertas',            icon: AlertTriangle },
       { path: '/admin/plan',          label: 'Plan de Acción',     icon: ListChecks },
     ],
