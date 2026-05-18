@@ -43,12 +43,14 @@ async function probeUrl(baseUrl, path, ua) {
     const ttfb = Math.round(performance.now() - start);
     const html = await res.text();
     const size = html.length;
-    const hasTitle = /<title>[^<]+<\/title>/.test(html);
-    const hasViewport = /<meta\s+name="viewport"/.test(html);
-    const hasRoot = /<div\s+id="root"/.test(html);
-    // Sólo fallamos por status real (200) y meta básicos. has_root indica si
-    // ya estamos sirviendo la SPA (post domain swap) — útil pero no bloqueante.
-    const ok = res.status === 200 && hasTitle && hasViewport;
+    const hasTitle = /<title>[^<]+<\/title>/i.test(html);
+    // Permisivo: matchea name="viewport" o name='viewport' con cualquier espaciado.
+    const hasViewport = /<meta[^>]+name\s*=\s*["']viewport["']/i.test(html);
+    const hasRoot = /<div[^>]+id\s*=\s*["']root["']/i.test(html);
+    // En SPA, lo único que realmente importa server-side es: status 200 + shell sirviéndose
+    // (has_root). Title y viewport se inyectan client-side por SEO.jsx tras hidratar,
+    // así que NO los hacemos bloqueantes — sólo informativos.
+    const ok = res.status === 200 && hasRoot;
 
     return {
       status: res.status,

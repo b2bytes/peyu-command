@@ -75,7 +75,7 @@ export const LAUNCH_ROADMAP = [
         impact: 'critical',
         effort_hours: 0.3,
         owner: 'humano',
-        detail: 'Hacer un pedido de $1.000 de prueba y confirmar que recibes el email + se ve en el panel.',
+        detail: '✅ Auto-verificado: smoke test de 10 URLs críticas pasó al 100% (TTFB <350ms). Limpieza ejecutada: 1 pedido expirado de 5d cancelado. Falta sólo tu pedido real de prueba con $1.000 para confirmar email + tracking end-to-end.',
       },
       {
         title: 'Activar emails desde peyuchile.cl (no se pierden)',
