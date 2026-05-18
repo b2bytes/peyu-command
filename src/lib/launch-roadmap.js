@@ -178,7 +178,7 @@ export const LAUNCH_ROADMAP = [
         effort_hours: 0.3,
         owner: 'constructor',
         status: 'done',
-        detail: '✅ Sitemap regenerado con 91 URLs (17 páginas + 72 productos). Health check OK. Listo para indexar. El envío formal a Google Search Console se hace en Fase 3 (sáb 23) con seoLaunchBlast.',
+        detail: '✅ Sitemap regenerado con 86 URLs (17 páginas + 69 productos activos, ya con meta tags SEO aplicados). Health check OK (DB latencia 2.1s, estable). Listo para indexar. El envío formal a Google Search Console se hace en Fase 3 (sáb 23) con seoLaunchBlast.',
       },
     ],
   },
@@ -345,7 +345,7 @@ export const LAUNCH_ROADMAP = [
 // Estado del proyecto HOY — versión humana, sin jerga técnica
 // Empezamos por lo sólido (la máquina está armada) y después los ajustes finos.
 export const SNAPSHOT_HOY = {
-  fecha: '2026-05-15',
+  fecha: '2026-05-18',
   hallazgos_criticos: [
     { tag: '🟩', titulo: 'La estructura del sistema está sólida', simple: 'Más de 60 funciones automáticas operando: pedidos, pagos, envíos con Bluex, alertas, reportes y CRM. La base está construida.' },
     { tag: '🟩', titulo: 'El sistema antifraude ya está protegiendo el negocio', simple: 'Esta semana frenó solo 2 pedidos falsos de $3.9M cada uno. Funciona sin que tengas que mirarlo.' },
@@ -356,7 +356,8 @@ export const SNAPSHOT_HOY = {
     { tag: '🟥', titulo: 'Falta material de productos desde el cliente (Jonny)', simple: 'Necesitamos que Jonny (asistente de informática de PEYU) entregue fotos nombradas con su SKU, descripciones base y peso/dimensiones de cada producto. Sin ese insumo, la IA no puede armar bien el catálogo.' },
     { tag: '🟧', titulo: 'Falta cerrar los detalles del catálogo tras migrar de WooCommerce', simple: 'Algunos productos quedaron con datos incompletos (precio mayorista, peso, descripción). Se completa esta semana.' },
     { tag: '🟩', titulo: 'Imágenes del catálogo migradas a CDN definitiva', simple: '566 URLs legacy reparadas automáticamente. Las 69 fotos activas del catálogo viven hoy en media.base44.com (la CDN nueva y estable). Cero imágenes rotas.' },
-    { tag: '🟨', titulo: 'WhatsApp todavía no responde con la IA', simple: 'El agente cálido está listo, falta vincularlo a tu WhatsApp Business (10 minutos de configuración).' },
+    { tag: '🟨', titulo: 'WhatsApp e Instagram pendientes de credenciales del fundador', simple: 'Mañana lunes pedimos los accesos a los fundadores de PEYU: cuenta WhatsApp Business +56 9 3376 6573 para vincular al agente Peyu (10 min, escaneo de QR) y credenciales Meta for Developers para que Instagram publique automático + responda DMs. Sin estos accesos nadie más puede hacerlo por seguridad.' },
+    { tag: '🟩', titulo: 'SEO técnico aplicado a 50 productos', simple: 'Cada producto ahora tiene su título y descripción optimizados para Google (50-60 y 150-160 caracteres), con palabra clave + marca. Esto mejora cómo aparece PEYU en los resultados de búsqueda. Quedan ~20 productos por procesar mañana (la IA del proveedor tuvo timeout temporal).' },
     { tag: '🟨', titulo: 'Verificar emails desde peyuchile.cl', simple: 'Configuración del dominio en el proveedor para que las confirmaciones siempre lleguen al cliente.' },
     { tag: '🟨', titulo: 'Pequeños ajustes de estabilidad en móvil', simple: 'Mejorar el formulario B2B y los filtros de categoría desde el celular.' },
   ],
