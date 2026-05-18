@@ -158,14 +158,15 @@ export const LAUNCH_ROADMAP = [
         impact: 'medium',
         effort_hours: 0.3,
         owner: 'constructor',
-        detail: 'La IA detecta combinaciones reales del historial y propone 5-8 packs.',
+        status: 'done',
+        detail: '✅ 3 bundles activos curados (Pack Cachos Ultimate, Combo Hogar Sustentable, Duo Mesa Eco) ya mostrándose en tienda. Cuando haya historial real de pedidos, el CRON detectará nuevas combinaciones.',
       },
       {
         title: 'Lun 18 · SEO para Google (títulos y descripciones)',
         impact: 'medium',
         effort_hours: 0.5,
-        owner: 'constructor',
-        detail: 'Optimizar cómo aparecen los productos en buscadores. Por lote.',
+        owner: 'constructor + humano',
+        detail: '✨ 50 productos con propuestas SEO IA generadas (títulos 45-58 chars, meta desc 153-164 chars). Pendiente revisar y aprobar en /admin/seo-meta-bulk antes de aplicar al sitio público.',
       },
       {
         title: 'Mar 19 · Revisión final + enviar sitemap a Google',
