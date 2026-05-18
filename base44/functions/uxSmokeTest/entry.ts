@@ -1,5 +1,5 @@
 // ============================================================================
-// PEYU · uxSmokeTest — verifica que las páginas críticas respondan rápido
+// PEYU · uxSmokeTest — verifica que las páginas críticas respondan rápido (v2)
 // ----------------------------------------------------------------------------
 // Pingea las URLs públicas más importantes y mide:
 //  - Status HTTP (debe ser 200)

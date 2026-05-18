@@ -62,7 +62,7 @@ export const LAUNCH_ROADMAP = [
         effort_hours: 1,
         owner: 'constructor',
         status: 'done',
-        detail: '✅ Auditoría live ejecutada: 72/72 imágenes vivas (0 rotas). Catálogo en perfecto estado visual.',
+        detail: '✅ Reparadas 566 URLs legacy (base44.app/api/...) en 74 productos → migradas a media.base44.com. Auditoría confirma: 0 imágenes rotas, 0 problemas de precio/descripción, sitemap regenerado con 86 URLs.',
       },
       {
         title: 'Ocultar temporalmente productos sin foto buena',
@@ -355,7 +355,7 @@ export const SNAPSHOT_HOY = {
     { tag: '🟥', titulo: 'Falta la clave productiva de BlueExpress', simple: 'La integración con Bluex está lista y probada, pero BlueExpress aún no nos entregó la credencial definitiva. Sin esto no podemos generar etiquetas reales. Hay que apurar al ejecutivo.' },
     { tag: '🟥', titulo: 'Falta material de productos desde el cliente (Jonny)', simple: 'Necesitamos que Jonny (asistente de informática de PEYU) entregue fotos nombradas con su SKU, descripciones base y peso/dimensiones de cada producto. Sin ese insumo, la IA no puede armar bien el catálogo.' },
     { tag: '🟧', titulo: 'Falta cerrar los detalles del catálogo tras migrar de WooCommerce', simple: 'Algunos productos quedaron con datos incompletos (precio mayorista, peso, descripción). Se completa esta semana.' },
-    { tag: '🟧', titulo: 'Algunas fotos quedaron rotas tras la sincronización', simple: 'La importación desde WooCommerce desordenó la galería. Limpieza programada para sábado-domingo.' },
+    { tag: '🟩', titulo: 'Imágenes del catálogo migradas a CDN definitiva', simple: '566 URLs legacy reparadas automáticamente. Las 69 fotos activas del catálogo viven hoy en media.base44.com (la CDN nueva y estable). Cero imágenes rotas.' },
     { tag: '🟨', titulo: 'WhatsApp todavía no responde con la IA', simple: 'El agente cálido está listo, falta vincularlo a tu WhatsApp Business (10 minutos de configuración).' },
     { tag: '🟨', titulo: 'Verificar emails desde peyuchile.cl', simple: 'Configuración del dominio en el proveedor para que las confirmaciones siempre lleguen al cliente.' },
     { tag: '🟨', titulo: 'Pequeños ajustes de estabilidad en móvil', simple: 'Mejorar el formulario B2B y los filtros de categoría desde el celular.' },

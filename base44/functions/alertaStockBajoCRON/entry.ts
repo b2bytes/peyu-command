@@ -95,12 +95,35 @@ Deno.serve(async (req) => {
   </div>
 </div></body></html>`;
 
-    await base44.integrations.Core.SendEmail({
-      from_name: 'PEYU Inventario',
-      to: 'ti@peyuchile.cl',
-      subject: `📦 Stock Alert · ${criticos.length} críticos · ${bajos.length} bajos`,
-      body: html,
-    });
+    // SendEmail solo permite enviar a usuarios DEL APP (no a emails arbitrarios).
+    // Buscamos los admins registrados y les enviamos la alerta a cada uno.
+    const admins = await base44.asServiceRole.entities.User.filter({ role: 'admin' });
+    const destinatarios = admins.filter(a => a.email).map(a => a.email);
+
+    if (destinatarios.length === 0) {
+      return Response.json({
+        ok: true,
+        warning: 'No hay admins registrados para recibir la alerta',
+        criticos: criticos.length,
+        bajos: bajos.length,
+      });
+    }
+
+    const enviados = [];
+    for (const email of destinatarios) {
+      try {
+        await base44.integrations.Core.SendEmail({
+          from_name: 'PEYU Inventario',
+          to: email,
+          subject: `📦 Stock Alert · ${criticos.length} críticos · ${bajos.length} bajos`,
+          body: html,
+        });
+        enviados.push(email);
+      } catch (err) {
+        // Continúa con los demás admins aunque uno falle
+        console.warn(`No se pudo enviar a ${email}:`, err.message);
+      }
+    }
 
     return Response.json({
       ok: true,
@@ -108,6 +131,7 @@ Deno.serve(async (req) => {
       bajos: bajos.length,
       total_alertas: criticos.length + bajos.length,
       skus_criticos: criticos.map(p => p.sku),
+      destinatarios: enviados,
     });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
