@@ -152,12 +152,15 @@ export default function LaunchMap() {
         <CardContent>
           <ol className="text-xs space-y-1.5 text-slate-700">
             <li>✅ <strong>Landing /lanzamiento</strong> deployada con Schema.org + FAQs</li>
-            <li>⏳ <strong>Verificar peyuchile.cl</strong> en Search Console (DNS TXT o meta-tag)</li>
-            <li>⏳ <strong>Enviar sitemap.xml</strong> desde /admin/indexacion a ambos dominios</li>
-            <li>⏳ <strong>Generar key IndexNow</strong> y subir <code>{'{key}.txt'}</code> a la raíz</li>
-            <li>⏳ <strong>Revisar campaña OP_TEST_01</strong> → importar CSV a Google Ads Editor → Published</li>
-            <li>⏳ <strong>Conectar GA4 Property ID</strong> para ver tráfico en /admin/ga-realtime</li>
-            <li>⏳ <strong>Primer lead</strong> llega a /lanzamiento → aparece aquí arriba</li>
+            <li>✅ <strong>peyuchile.cl verificado</strong> en Search Console como <code>sc-domain:peyuchile.cl</code> (siteOwner)</li>
+            <li>✅ <strong>Sitemap.xml enviado</strong> a GSC (HTTP 204) — última submisión: hoy</li>
+            <li>✅ <strong>Sitemaps legacy eliminados</strong> (6 obsoletos del WP viejo con errores)</li>
+            <li>✅ <strong>Gmail conectado</strong> + webhook ingest activo + Auto-Vendedor B2B cada 15 min</li>
+            <li>✅ <strong>Health Google</strong>: 7/7 servicios operativos (Gmail, Calendar, Drive, Docs, Sheets, GA, GSC)</li>
+            <li>⏳ <strong>Subir <code>{'{key}.txt'}</code> de IndexNow</strong> a la raíz del dominio (acción humana)</li>
+            <li>⏳ <strong>Importar CSV de Ads</strong> desde /admin/ads-command a Google Ads Editor</li>
+            <li>⏳ <strong>Configurar GA4 Property ID</strong> en /admin/ga-realtime para ver tráfico vivo</li>
+            <li>📊 <strong>Datos actuales GSC 28d</strong>: 198 clicks · 2.912 impresiones · CTR 6.8% · pos 8.6</li>
           </ol>
         </CardContent>
       </Card>
