@@ -54,7 +54,10 @@ export default function SEOKeywords() {
   useEffect(() => { load(); /* eslint-disable-next-line */ }, [days, searchType]);
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100">
+    <div
+      data-liquid-mode="night"
+      style={{ backgroundColor: '#020617', color: '#F1F5F9', minHeight: '100vh' }}
+    >
       <div className="max-w-7xl mx-auto p-4 md:p-8 space-y-6">
 
         {/* ─── Header ─── */}
