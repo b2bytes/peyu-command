@@ -19,6 +19,7 @@ import AITokenUsageChart from '@/components/monitoreo-ia/AITokenUsageChart';
 import AILiveConsole from '@/components/monitoreo-ia/AILiveConsole';
 import AIAuditDrawer from '@/components/monitoreo-ia/AIAuditDrawer';
 import AIRetrainQueuePanel from '@/components/monitoreo-ia/AIRetrainQueuePanel';
+import ChatFunnelPanel from '@/components/monitoreo-ia/ChatFunnelPanel';
 
 const WINDOWS = [
   { label: '24h', days: 1 },
@@ -149,6 +150,9 @@ export default function MonitoreoIA() {
 
       {/* KPIs */}
       <AIStatsHeader stats={stats} loading={loading} />
+
+      {/* 🆕 ¿El chat lleva a la compra? Funnel cruzado ChatLead × Carrito × Pedido */}
+      <ChatFunnelPanel windowDays={windowDays} key={`funnel-${refreshKey}`} />
 
       {/* Modelos */}
       <section>
