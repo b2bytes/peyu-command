@@ -60,10 +60,10 @@ export default function SEOKeywords() {
         <header className="space-y-4">
           <div className="flex items-start gap-3">
             <div className="w-11 h-11 md:w-12 md:h-12 rounded-2xl bg-gradient-to-br from-teal-500 to-cyan-500 flex items-center justify-center shadow-lg shadow-teal-500/30 flex-shrink-0">
-              <Search className="w-5 h-5 md:w-6 md:h-6 text-white" strokeWidth={2.2} />
+              <Search className="w-5 h-5 md:w-6 md:h-6 text-slate-50" strokeWidth={2.2} />
             </div>
             <div className="min-w-0">
-              <h1 className="font-jakarta font-extrabold text-white text-xl md:text-2xl tracking-tight leading-tight">
+              <h1 className="font-jakarta font-extrabold text-slate-50 text-xl md:text-2xl tracking-tight leading-tight">
                 Palabras clave indexadas
               </h1>
               <p className="text-[13px] md:text-sm text-slate-400 font-inter mt-1 leading-relaxed">
@@ -86,7 +86,7 @@ export default function SEOKeywords() {
                     className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[12px] font-bold font-jakarta whitespace-nowrap transition-all ${
                       active
                         ? 'bg-cyan-500/20 text-cyan-200 border border-cyan-400/40'
-                        : 'text-slate-400 hover:text-white border border-transparent'
+                        : 'text-slate-300 hover:text-slate-50 border border-transparent'
                     }`}
                   >
                     <Icon className="w-3.5 h-3.5" />
@@ -106,7 +106,7 @@ export default function SEOKeywords() {
                     className={`px-3 py-1.5 rounded-md text-[12px] font-bold font-jakarta transition-all ${
                       days === w.days
                         ? 'bg-teal-500/20 text-teal-200 border border-teal-400/40'
-                        : 'text-slate-400 hover:text-white border border-transparent'
+                        : 'text-slate-300 hover:text-slate-50 border border-transparent'
                     }`}
                   >
                     {w.label}
@@ -118,7 +118,7 @@ export default function SEOKeywords() {
                 variant="ghost"
                 onClick={load}
                 disabled={loading}
-                className="h-9 w-9 p-0 text-slate-400 hover:text-white hover:bg-slate-800 border border-slate-800"
+                className="h-9 w-9 p-0 text-slate-300 hover:text-slate-50 hover:bg-slate-800 border border-slate-800"
               >
                 <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
               </Button>
@@ -206,7 +206,7 @@ function Card({ icon: Icon, label, value, tone }) {
         <Icon className={`w-3.5 h-3.5 ${t.icon}`} />
       </div>
       <p className="text-[10px] uppercase tracking-wider font-bold text-slate-500 mb-1 font-jakarta">{label}</p>
-      <p className="font-jakarta font-extrabold text-xl md:text-2xl tracking-tight leading-none text-white">{value}</p>
+      <p className="font-jakarta font-extrabold text-xl md:text-2xl tracking-tight leading-none text-slate-50">{value}</p>
     </div>
   );
 }
