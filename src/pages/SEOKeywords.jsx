@@ -11,6 +11,7 @@ import { Search, RefreshCw, Loader2, TrendingUp, Eye, MousePointerClick } from '
 import { Button } from '@/components/ui/button';
 import KeywordBucketSummary from '@/components/seo-keywords/KeywordBucketSummary';
 import KeywordsTable from '@/components/seo-keywords/KeywordsTable';
+import OptimizeMetaTagsButton from '@/components/seo-keywords/OptimizeMetaTagsButton';
 
 const WINDOWS = [
   { label: '7 días',  days: 7 },
@@ -113,14 +114,15 @@ export default function SEOKeywords() {
           {/* Resumen por bucket */}
           <KeywordBucketSummary summary={data.summary} total={data.total_queries} />
 
-          {/* Banda de insight rápido */}
+          {/* Banda de insight rápido + acción */}
           {data.summary.top20 > 0 && (
-            <div className="bg-amber-500/10 border border-amber-400/25 rounded-xl p-4">
-              <p className="text-[13px] text-amber-100/90 leading-relaxed font-inter">
+            <div className="bg-amber-500/10 border border-amber-400/25 rounded-xl p-4 flex items-center justify-between gap-4 flex-wrap">
+              <p className="text-[13px] text-amber-100/90 leading-relaxed font-inter flex-1 min-w-[260px]">
                 💡 <strong className="text-amber-200">Oportunidad rápida:</strong> tienes{' '}
                 <strong>{data.summary.top20} queries en página 2 (posición 11-20)</strong>. Optimizar contenido y meta tags
                 para esas queries puede empujarlas a página 1 con poco esfuerzo.
               </p>
+              <OptimizeMetaTagsButton days={days} onDone={load} />
             </div>
           )}
 
