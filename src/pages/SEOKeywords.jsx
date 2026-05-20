@@ -14,6 +14,7 @@ import { Button } from '@/components/ui/button';
 import KeywordBucketSummary from '@/components/seo-keywords/KeywordBucketSummary';
 import KeywordsTable from '@/components/seo-keywords/KeywordsTable';
 import OptimizeMetaTagsButton from '@/components/seo-keywords/OptimizeMetaTagsButton';
+import KeywordExplorer from '@/components/seo-keywords/KeywordExplorer';
 
 const WINDOWS = [
   { label: '7d',  days: 7 },
@@ -178,6 +179,9 @@ export default function SEOKeywords() {
 
             {/* Tabla / cards */}
             <KeywordsTable keywords={data.keywords} />
+
+            {/* Explorador de oportunidades (semillas + IA + GSC) */}
+            <KeywordExplorer />
 
             {/* Footer */}
             <p className="text-[11px] text-slate-500 font-inter text-center pt-2">
