@@ -31,8 +31,8 @@ const SORT_OPTIONS = [
 ];
 
 export default function KeywordsTable({ keywords }) {
-  const [sortBy, setSortBy] = useState('impressions');
-  const [filter, setFilter] = useState('all');
+  const [sortBy, setSortBy] = useState('position');
+  const [filter, setFilter] = useState('top3');
   const [search, setSearch] = useState('');
 
   const filtered = useMemo(() => {
