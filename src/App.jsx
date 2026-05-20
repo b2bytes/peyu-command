@@ -109,6 +109,7 @@ const ChatLeads = lazyWithRetry(() => import('./pages/ChatLeads'), { name: 'Chat
 const LaunchRoadmap = lazyWithRetry(() => import('./pages/LaunchRoadmap'), { name: 'LaunchRoadmap' });
 const MobileCockpit = lazyWithRetry(() => import('./pages/MobileCockpit'), { name: 'MobileCockpit' });
 const ContratoImpulsia = lazyWithRetry(() => import('./pages/ContratoImpulsia'), { name: 'ContratoImpulsia' });
+const SEOKeywords = lazyWithRetry(() => import('./pages/SEOKeywords'), { name: 'SEOKeywords' });
 
 const AdminLoader = () => (
   <div className="fixed inset-0 flex items-center justify-center bg-background">
@@ -211,6 +212,7 @@ const AuthenticatedApp = () => {
           <Route path="launch-roadmap" element={<LaunchRoadmap />} />
           <Route path="movil" element={<MobileCockpit />} />
           <Route path="contrato-impulsia" element={<ContratoImpulsia />} />
+          <Route path="seo-keywords" element={<SEOKeywords />} />
         </Route>
         <Route path="*" element={<PageNotFound />} />
       </Routes>

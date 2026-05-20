@@ -13,7 +13,7 @@ import {
   CalendarDays, PieChart, Settings, AlertTriangle, Building2, ClipboardList, Zap,
   Radar, Crosshair, Map as MapIcon, Sparkles, Leaf, Banknote, TrendingUp,
   ChevronDown, Cpu, Wand2, Globe, Wallet, Factory, Receipt, BookOpen, Brain, Activity, Eye,
-  Rocket,
+  Rocket, Search,
 } from 'lucide-react';
 
 // ─── Sidebar compacto · solo lo esencial visible ────────────────────────────
@@ -83,6 +83,7 @@ export const NAV_GROUPS = [
       { path: '/admin/admin-products',label: 'Productos IA',       icon: Wand2 },
       { path: '/admin/imagenes',      label: 'Galería Maestra',    icon: Package },
       { path: '/admin/auditoria-visual', label: 'Auditoría Visual', icon: Eye },
+      { path: '/admin/seo-keywords',  label: 'Palabras Clave SEO', icon: Search },
       { path: '/admin/indexacion',    label: 'SEO & Indexación',   icon: Radar },
       { path: '/admin/ga-realtime',   label: 'GA4 Realtime',       icon: BarChart3 },
     ],
