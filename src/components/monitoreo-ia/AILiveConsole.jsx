@@ -6,9 +6,19 @@
 // ============================================================================
 import { useEffect, useState, useMemo } from 'react';
 import { base44 } from '@/api/base44Client';
-import { CheckCircle2, AlertCircle, Clock, Search, Filter, RefreshCw, Pause, Play, GraduationCap, Flag } from 'lucide-react';
+import { CheckCircle2, AlertCircle, Clock, Search, Filter, RefreshCw, Pause, Play, GraduationCap, Flag, MessagesSquare } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+
+// Limpia el user_message quitando el bloque [CONTEXTO] page=/... top_skus="..."
+// que el frontend del chat envía como prefijo técnico. Lo que queda es el
+// mensaje real del cliente.
+function cleanUserText(text) {
+  if (!text) return '';
+  let m = String(text);
+  m = m.replace(/^\[CONTEXTO\][^\n]*/g, '').trim();
+  return m;
+}
 
 const STATUS_ICON = {
   success:  { icon: CheckCircle2, color: 'text-emerald-300' },
@@ -62,10 +72,32 @@ export default function AILiveConsole({ onSelectLog }) {
 
   const agents = useMemo(() => Array.from(new Set(logs.map(l => l.agent_name).filter(Boolean))), [logs]);
 
-  const filtered = logs.filter(log => {
-    if (filterReview !== 'all' && log.auditor_review !== filterReview) return false;
-    if (filterAgent !== 'all' && log.agent_name !== filterAgent) return false;
-    if (search && !`${log.user_message} ${log.ai_response} ${log.agent_name}`.toLowerCase().includes(search.toLowerCase())) return false;
+  // Agrupa logs por conversation_id para mostrar conversaciones (no turnos
+  // sueltos). Cada grupo se representa por su log más reciente + un contador.
+  const conversations = useMemo(() => {
+    const map = new Map();
+    for (const log of logs) {
+      const key = log.conversation_id || log.id;
+      if (!map.has(key)) {
+        map.set(key, { latest: log, count: 1, logs: [log] });
+      } else {
+        const grp = map.get(key);
+        grp.count += 1;
+        grp.logs.push(log);
+        // logs vienen ordenados -created_date, así que el primero ya es el más reciente
+      }
+    }
+    return Array.from(map.values());
+  }, [logs]);
+
+  const filtered = conversations.filter(({ latest }) => {
+    if (filterReview !== 'all' && latest.auditor_review !== filterReview) return false;
+    if (filterAgent !== 'all' && latest.agent_name !== filterAgent) return false;
+    if (search) {
+      const cleanMsg = cleanUserText(latest.user_message);
+      const haystack = `${cleanMsg} ${latest.ai_response} ${latest.agent_name}`.toLowerCase();
+      if (!haystack.includes(search.toLowerCase())) return false;
+    }
     return true;
   });
 
@@ -75,8 +107,8 @@ export default function AILiveConsole({ onSelectLog }) {
       <div className="px-4 py-3 border-b border-white/10 flex items-center justify-between gap-3 flex-wrap">
         <div className="flex items-center gap-2">
           <div className={`w-2 h-2 rounded-full ${autoRefresh ? 'bg-emerald-400 animate-pulse' : 'bg-white/30'}`} />
-          <h3 className="font-jakarta font-bold text-white text-sm tracking-tight">Consola en vivo</h3>
-          <span className="text-[10px] text-white/40 font-inter">{filtered.length} de {logs.length}</span>
+          <h3 className="font-jakarta font-bold text-white text-sm tracking-tight">Conversaciones en vivo</h3>
+          <span className="text-[10px] text-white/40 font-inter">{filtered.length} convs · {logs.length} mensajes</span>
         </div>
         <div className="flex items-center gap-1.5">
           <Button size="sm" variant="ghost" onClick={() => setAutoRefresh(!autoRefresh)}
@@ -129,14 +161,16 @@ export default function AILiveConsole({ onSelectLog }) {
           </div>
         )}
 
-        {filtered.map(log => {
+        {filtered.map(({ latest: log, count }) => {
           const Status = (STATUS_ICON[log.status] || STATUS_ICON.success);
           const StatusIcon = Status.icon;
           const reviewMeta = REVIEW_BADGE[log.auditor_review] || REVIEW_BADGE.pending;
+          const cleanMsg = cleanUserText(log.user_message);
+          const noRealMessage = !cleanMsg;
 
           return (
             <button
-              key={log.id}
+              key={log.conversation_id || log.id}
               onClick={() => onSelectLog?.(log)}
               className="w-full text-left px-4 py-3 hover:bg-white/[0.04] transition-colors group"
             >
@@ -145,7 +179,11 @@ export default function AILiveConsole({ onSelectLog }) {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1 flex-wrap">
                     <span className="font-jakarta font-bold text-white text-xs tracking-tight">{log.agent_name || 'unknown'}</span>
-                    <span className="text-[10px] text-white/30 font-mono">{log.model || '—'}</span>
+                    {count > 1 && (
+                      <span className="flex items-center gap-1 text-[10px] font-bold text-cyan-200 bg-cyan-500/15 px-1.5 py-0.5 rounded border border-cyan-400/25">
+                        <MessagesSquare className="w-2.5 h-2.5" /> {count} turnos
+                      </span>
+                    )}
                     <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded border ${reviewMeta.cls}`}>
                       {reviewMeta.label}
                     </span>
@@ -161,16 +199,20 @@ export default function AILiveConsole({ onSelectLog }) {
                     )}
                     <span className="text-[10px] text-white/30 ml-auto">{timeAgo(log.created_date)}</span>
                   </div>
-                  <p className="text-xs text-white/70 line-clamp-1 font-inter">
-                    <span className="text-white/40">→</span> {log.user_message || '(sin mensaje)'}
-                  </p>
-                  <p className="text-[11px] text-white/50 line-clamp-1 font-inter mt-0.5">
-                    <span className="text-teal-300/70">←</span> {log.ai_response || '(sin respuesta)'}
-                  </p>
-                  <div className="flex items-center gap-3 mt-1.5 text-[10px] text-white/40 font-mono">
-                    <span>{log.tokens_total || 0} tk</span>
-                    {log.cost_usd > 0 && <span>${log.cost_usd.toFixed(4)}</span>}
-                    {log.latency_ms > 0 && <span>{log.latency_ms}ms</span>}
+
+                  {noRealMessage ? (
+                    <p className="text-xs text-amber-300/70 italic line-clamp-1 font-inter">
+                      🔇 El cliente abrió el chat pero aún no escribió nada · click para ver la conversación
+                    </p>
+                  ) : (
+                    <p className="text-xs text-white/85 line-clamp-2 font-inter font-medium">
+                      <span className="text-white/40">Cliente:</span> {cleanMsg}
+                    </p>
+                  )}
+
+                  <div className="flex items-center gap-2 mt-1.5 text-[10px] text-white/40">
+                    <MessagesSquare className="w-3 h-3" />
+                    <span className="text-teal-300/80 font-medium">Abrir conversación completa →</span>
                   </div>
                 </div>
               </div>

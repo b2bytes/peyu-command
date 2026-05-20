@@ -11,9 +11,18 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import {
   X, CheckCircle2, AlertTriangle, GraduationCap, MessageSquare, Cpu,
-  Coins, Zap, Clock, User, Sparkles, Save, Loader2, RotateCcw,
+  Coins, Zap, Clock, User, Sparkles, Save, Loader2, RotateCcw, MessagesSquare,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import ConversationThread from './ConversationThread';
+
+// Limpia el user_message quitando el prefijo [CONTEXTO] page=/... top_skus="..."
+function cleanUserMessage(content) {
+  if (!content) return '(sin mensaje)';
+  let m = String(content);
+  m = m.replace(/^\[CONTEXTO\][^\n]*/g, '').trim();
+  return m || '(solo contexto técnico — el usuario no envió mensaje real en este turno)';
+}
 
 const ACTIONS = [
   { id: 'approve', label: 'Aprobar', icon: CheckCircle2, color: 'emerald', desc: 'La respuesta fue correcta' },
@@ -91,10 +100,18 @@ export default function AIAuditDrawer({ log, onClose, onUpdated }) {
             <Metric icon={Cpu} label="Estado" value={log.status || 'success'} />
           </div>
 
-          {/* Conversación */}
-          <Section icon={User} title="Mensaje del usuario">
-            <p className="text-sm text-white/80 font-inter leading-relaxed whitespace-pre-wrap">
-              {log.user_message || '(sin mensaje)'}
+          {/* 🆕 Conversación completa (mensajes reales del cliente ↔ Peyu IA) */}
+          {log.conversation_id && (
+            <Section icon={MessagesSquare} title="Conversación completa">
+              <ConversationThread conversationId={log.conversation_id} />
+            </Section>
+          )}
+
+          {/* Mensaje específico de este registro (puede venir contaminado con
+              el bloque [CONTEXTO] que envía el frontend — lo limpiamos). */}
+          <Section icon={User} title="Mensaje registrado en este log" collapsible>
+            <p className="text-sm text-white/80 font-inter leading-relaxed whitespace-pre-wrap bg-white/[0.04] border border-white/10 rounded-lg p-3">
+              {cleanUserMessage(log.user_message)}
             </p>
           </Section>
 
@@ -106,10 +123,15 @@ export default function AIAuditDrawer({ log, onClose, onUpdated }) {
             </Section>
           )}
 
-          <Section icon={Sparkles} title="Respuesta del modelo">
+          <Section icon={Sparkles} title="Respuesta registrada" collapsible>
             <p className="text-sm text-teal-100 font-inter leading-relaxed whitespace-pre-wrap bg-teal-500/5 border border-teal-400/15 rounded-lg p-3">
               {log.ai_response || '(sin respuesta)'}
             </p>
+            {log.ai_response?.includes('esperando respuesta') && (
+              <p className="text-[11px] text-amber-200/80 mt-2 italic">
+                ℹ️ La respuesta real del agente vive en la conversación de arriba (que se carga desde el SDK). Este campo solo registra el momento del turno.
+              </p>
+            )}
           </Section>
 
           {log.error_message && (

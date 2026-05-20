@@ -187,13 +187,26 @@ Deno.serve(async (req) => {
       }
 
       // 🎯 Registrar en AILog para que aparezca en "Conversaciones en vivo"
+      // IMPORTANTE: extraemos el mensaje REAL del usuario (quitamos el bloque
+      // [CONTEXTO] page=/... top_skus="..." que envía el cliente como prefijo).
+      const cleanUserMessage = (() => {
+        let m = String(content || '');
+        // Quitar bloque [CONTEXTO] ... hasta el final si no hay mensaje real,
+        // o hasta el último " si hay mensaje del usuario después.
+        const ctxMatch = m.match(/^\[CONTEXTO\][^\n]*/);
+        if (ctxMatch) {
+          m = m.replace(ctxMatch[0], '').trim();
+        }
+        return m || '(solo contexto del sistema, sin mensaje del usuario)';
+      })();
+
       try {
         await base44.asServiceRole.entities.AILog.create({
           agent_name: AGENT_NAME,
           model: 'agent_sdk',
           task_type: 'chat',
-          user_message: String(content).slice(0, 500),
-          ai_response: '(esperando respuesta del agente…)',
+          user_message: cleanUserMessage.slice(0, 1000),
+          ai_response: '(respuesta del agente — abrir conversación para ver)',
           conversation_id,
           session_id: session_id || null,
           system_context: page_path ? `page=${page_path}` : null,
