@@ -104,6 +104,21 @@ export async function buildChatContext() {
     if (q) ctx.detected_qty = parseInt(q, 10);
   } catch { /* no-op */ }
 
+  // 🆕 Contador de turnos del cliente — el agente lo usa para decidir cuándo
+  // pedir email (turno 3-4) y cuándo forzar cierre (turno 5+).
+  try {
+    const t = parseInt(localStorage.getItem('peyu_chat_turn_count') || '0', 10);
+    ctx.turn_count = t;
+  } catch { /* no-op */ }
+
+  // 🆕 Email capturado durante la conversación (B2C o B2B). Si existe, el
+  // agente NO debe volver a pedirlo. Si NO existe y turn_count >= 3, el
+  // agente debe ofrecerlo cálidamente con incentivo (-10% bienvenida).
+  try {
+    const em = localStorage.getItem('peyu_chat_email');
+    if (em && em.includes('@')) ctx.email_captured = em;
+  } catch { /* no-op */ }
+
   // 🧠 SKUs ya mostrados en esta sesión — el agente DEBE rotar a otros
   // distintos cuando el usuario pide más opciones u otra ocasión.
   try {
@@ -260,7 +275,12 @@ function extractAndPersistB2BContact(msg) {
     let changed = false;
 
     const emailMatch = msg.match(EMAIL_REGEX);
-    if (emailMatch && !contact.email) { contact.email = emailMatch[1]; changed = true; }
+    if (emailMatch) {
+      // 🆕 Persistimos email a clave global SIEMPRE que aparece (B2C o B2B),
+      // para que el agente y el funnel sepan que ya capturamos.
+      try { localStorage.setItem('peyu_chat_email', emailMatch[1].toLowerCase()); } catch {}
+      if (!contact.email) { contact.email = emailMatch[1]; changed = true; }
+    }
 
     const phoneMatch = msg.match(PHONE_REGEX);
     if (phoneMatch && !contact.telefono) { contact.telefono = phoneMatch[1].replace(/\s+/g, ' ').trim(); changed = true; }
@@ -321,6 +341,15 @@ export async function withContext(userMessage) {
   // Extraemos datos B2B del mensaje (email, teléfono, empresa, fecha) para
   // poder emitir [[QUOTE_PDF]] cuando estén los datos mínimos.
   extractAndPersistB2BContact(userMessage);
+
+  // 🆕 Incrementamos turn_count en cada mensaje del usuario (no contar el
+  // primer mensaje automático sin contenido real).
+  try {
+    if (userMessage && userMessage.trim().length > 0) {
+      const t = parseInt(localStorage.getItem('peyu_chat_turn_count') || '0', 10);
+      localStorage.setItem('peyu_chat_turn_count', String(t + 1));
+    }
+  } catch { /* no-op */ }
 
   const ctx = await buildChatContext();
   const ctxLine = serializeContext(ctx);

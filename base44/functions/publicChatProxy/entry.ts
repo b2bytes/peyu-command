@@ -20,11 +20,31 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
 const AGENT_NAME = 'asistente_compras';
 
+// ─── Sanitización del mensaje del cliente ──────────────────────────
+// El frontend antepone bloques [CONTEXTO] y [BRAIN] con datos técnicos
+// (top_skus, page, chat_intent, etc.). Para extraer datos reales y guardar
+// el preview legible debemos quitarlos SIEMPRE antes de procesar.
+function stripContextBlocks(raw) {
+  if (!raw) return '';
+  let t = String(raw);
+  // Quitar bloque [CONTEXTO] ... hasta \n\n o fin
+  t = t.replace(/\[CONTEXTO\][\s\S]*?(?=\n\s*\[(?:CONTEXTO|BRAIN|PRODUCTOS|CATALOGO|MEMORIA)\]|\n\n|$)/gi, '');
+  // Quitar bloque [BRAIN] ...
+  t = t.replace(/\[BRAIN\][\s\S]*?(?=\n\s*\[(?:CONTEXTO|BRAIN|PRODUCTOS|CATALOGO|MEMORIA)\]|\n\n|$)/gi, '');
+  // Quitar líneas residuales tipo "[1] ..." del Brain
+  t = t.replace(/^\s*\[\d+\]\s.*$/gm, '');
+  // Colapsar saltos triples
+  t = t.replace(/\n{3,}/g, '\n\n').trim();
+  return t;
+}
+
 // ─── Regex de extracción progresiva ─────────────────────────────────
 const EMAIL_REGEX = /([a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,})/i;
 const PHONE_REGEX = /(\+?56\s?9[\s-]?\d{4}[\s-]?\d{4}|\b9\s?\d{4}\s?\d{4}\b|\b\d{9}\b)/;
 const NAME_REGEX = /\b(?:soy|me llamo|mi nombre es)\s+([A-ZÁÉÍÓÚÑ][a-záéíóúñ]+(?:\s+[A-ZÁÉÍÓÚÑ][a-záéíóúñ]+)?)/;
-const EMPRESA_REGEX = /\b(?:soy de|trabajo en|nuestra empresa|empresa[: ]|de la empresa|de )\s*([A-ZÁÉÍÓÚÑ][\w\s&.,'-]{2,40})/;
+// 🛡️ Solo aceptamos empresa si viene tras frase explícita ("soy de X", "trabajo en X").
+// Antes la regex tomaba cualquier "de Nombre" y guardaba basura como "de Cumpleaños".
+const EMPRESA_REGEX = /\b(?:soy de|trabajo en|nuestra empresa es|empresa[: ]+|de la empresa)\s+([A-ZÁÉÍÓÚÑ][\w\s&.,'-]{2,40})/i;
 const QTY_REGEX = /\b(\d{1,5})\s*(u\.?|unidades?|pcs|piezas|regalos|personas|empleados?|colaboradores?)\b/i;
 const DATE_REGEX = /\b(\d{1,2})\s?(?:de\s)?(enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|setiembre|octubre|noviembre|diciembre|ene|feb|mar|abr|may|jun|jul|ago|sep|oct|nov|dic)\b/i;
 const RUT_REGEX = /\b(\d{1,2}\.?\d{3}\.?\d{3}-?[\dkK])\b/;
@@ -32,13 +52,25 @@ const RUT_REGEX = /\b(\d{1,2}\.?\d{3}\.?\d{3}-?[\dkK])\b/;
 const B2B_KW = /\b(empresa|empleados?|equipo|colaboradores?|corporativo|oficina|rrhh|cliente[s]?|proveedor(es)?|evento|fin de a[ñn]o|logo|marca|branded|masivo|cotizaci[oó]n)\b/i;
 const B2C_KW = /\b(para m[ií]|uno solo|individual|mi (mam[áa]|pap[áa]|pareja|polola|pololo|amig[oa]|herman[oa]|hij[oa]|jefe|sobrin[oa])|cumplea[ñn]os|aniversario|regalo personal)\b/i;
 
-function extractData(msg) {
+// 🚫 Lista negra: palabras que NUNCA son nombre de empresa real.
+// Si la regex EMPRESA_REGEX caza "Cumpleaños" o "Escritorio Pro" (del [CONTEXTO]),
+// las descartamos. "Escritorio Pro" es un nombre de producto del catálogo.
+const EMPRESA_BLACKLIST = /^(cumplea[ñn]os|aniversario|regalo|escritorio pro|escritorio|hogar|entretenimiento|corporativo|pack|set|carcasas?)$/i;
+
+function extractData(rawMsg) {
+  // 🧹 Limpiar [CONTEXTO]/[BRAIN] ANTES de aplicar regex — esto evita que
+  // tokens como top_skus="...|cumpleaños|..." se interpreten como empresa.
+  const msg = stripContextBlocks(rawMsg);
   if (!msg) return {};
   const out = {};
   const m1 = msg.match(EMAIL_REGEX); if (m1) out.email = m1[1].toLowerCase();
   const m2 = msg.match(PHONE_REGEX); if (m2) out.telefono = m2[1].replace(/\s+/g, ' ').trim();
   const m3 = msg.match(NAME_REGEX); if (m3) out.nombre = m3[1].trim();
-  const m4 = msg.match(EMPRESA_REGEX); if (m4) out.empresa = m4[1].split(/[,.\n]/)[0].trim().slice(0, 50);
+  const m4 = msg.match(EMPRESA_REGEX);
+  if (m4) {
+    const empresa = m4[1].split(/[,.\n]/)[0].trim().slice(0, 50);
+    if (empresa && !EMPRESA_BLACKLIST.test(empresa)) out.empresa = empresa;
+  }
   const m5 = msg.match(QTY_REGEX);
   if (m5) {
     const n = parseInt(m5[1], 10);
@@ -72,8 +104,11 @@ function calcScore(lead) {
 // que haya. Si existe, completa SOLO los campos vacíos (nunca pisa datos).
 async function upsertChatLead(base44, { conversation_id, session_id, page_path, referrer, content }) {
   if (!conversation_id) return;
+  // 🧹 Limpiamos el mensaje ANTES de procesar para que el preview y la
+  // detección de tipo usen lo que el cliente REALMENTE escribió.
+  const cleanContent = stripContextBlocks(content);
   const extracted = extractData(content);
-  const tipoDetectado = detectTipo(content, extracted.cantidad_estimada);
+  const tipoDetectado = detectTipo(cleanContent, extracted.cantidad_estimada);
 
   let existing = null;
   try {
@@ -82,7 +117,11 @@ async function upsertChatLead(base44, { conversation_id, session_id, page_path, 
   } catch { /* ignore */ }
 
   const now = new Date().toISOString();
-  const preview = String(content || '').slice(0, 140);
+  // 📝 Preview = mensaje real del cliente (sin [CONTEXTO]). Si el cliente solo
+  // envió contexto (primer turno automático), guardamos marca explícita.
+  const preview = cleanContent
+    ? cleanContent.slice(0, 140)
+    : '(solo apertura del chat — sin mensaje del cliente todavía)';
 
   if (!existing) {
     // Crear SIEMPRE — incluso si no extrajimos nada. La conversación es el lead.
@@ -186,26 +225,18 @@ Deno.serve(async (req) => {
         } catch {}
       }
 
-      // 🎯 Registrar en AILog para que aparezca en "Conversaciones en vivo"
-      // IMPORTANTE: extraemos el mensaje REAL del usuario (quitamos el bloque
-      // [CONTEXTO] page=/... top_skus="..." que envía el cliente como prefijo).
-      const cleanUserMessage = (() => {
-        let m = String(content || '');
-        // Quitar bloque [CONTEXTO] ... hasta el final si no hay mensaje real,
-        // o hasta el último " si hay mensaje del usuario después.
-        const ctxMatch = m.match(/^\[CONTEXTO\][^\n]*/);
-        if (ctxMatch) {
-          m = m.replace(ctxMatch[0], '').trim();
-        }
-        return m || '(solo contexto del sistema, sin mensaje del usuario)';
-      })();
+      // 🎯 Registrar en AILog con el mensaje REAL del cliente (sin [CONTEXTO]/[BRAIN]).
+      // El bloque técnico va aparte en system_context para auditoría.
+      const cleanedForLog = stripContextBlocks(content);
+      const userMessageForLog = cleanedForLog
+        || '(solo apertura del chat — sin mensaje del cliente todavía)';
 
       try {
         await base44.asServiceRole.entities.AILog.create({
           agent_name: AGENT_NAME,
           model: 'agent_sdk',
           task_type: 'chat',
-          user_message: cleanUserMessage.slice(0, 1000),
+          user_message: userMessageForLog.slice(0, 1000),
           ai_response: '(respuesta del agente — abrir conversación para ver)',
           conversation_id,
           session_id: session_id || null,
