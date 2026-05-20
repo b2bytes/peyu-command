@@ -2,7 +2,7 @@
 // KeywordsTable · Tabla ordenable de queries con filtro por bucket
 // ============================================================================
 import { useState, useMemo } from 'react';
-import { ExternalLink, ArrowUpDown } from 'lucide-react';
+import { ExternalLink, ArrowUpDown, Search as SearchIcon, X } from 'lucide-react';
 
 const BUCKET_BADGE = {
   top3:  'bg-emerald-500/15 text-emerald-200 border-emerald-400/25',
@@ -16,16 +16,21 @@ const BUCKET_LABEL = { top3: 'TOP 3', top10: 'P1', top20: 'P2', top50: '21-50', 
 export default function KeywordsTable({ keywords }) {
   const [sortBy, setSortBy] = useState('impressions');
   const [filter, setFilter] = useState('all');
+  const [search, setSearch] = useState('');
 
   const filtered = useMemo(() => {
     let list = keywords || [];
     if (filter !== 'all') list = list.filter(k => k.bucket === filter);
+    if (search.trim()) {
+      const q = search.trim().toLowerCase();
+      list = list.filter(k => k.query.toLowerCase().includes(q));
+    }
     list = [...list].sort((a, b) => {
       if (sortBy === 'position') return a.position - b.position;
       return (b[sortBy] || 0) - (a[sortBy] || 0);
     });
     return list;
-  }, [keywords, sortBy, filter]);
+  }, [keywords, sortBy, filter, search]);
 
   const buildSearchUrl = q => `https://www.google.cl/search?q=${encodeURIComponent(q)}&gl=cl&hl=es`;
 
@@ -53,6 +58,30 @@ export default function KeywordsTable({ keywords }) {
               {f.l}
             </button>
           ))}
+          {/* Buscador inline */}
+          <div className="relative ml-2">
+            <SearchIcon className="absolute left-2 top-1/2 -translate-y-1/2 w-3 h-3 text-white/30" />
+            <input
+              type="text"
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              placeholder="Buscar query…"
+              className="bg-white/5 border border-white/10 rounded-md pl-7 pr-7 py-1 text-[12px] text-white placeholder:text-white/30 font-inter w-44 focus:outline-none focus:border-teal-400/40"
+            />
+            {search && (
+              <button
+                onClick={() => setSearch('')}
+                className="absolute right-1.5 top-1/2 -translate-y-1/2 text-white/40 hover:text-white"
+              >
+                <X className="w-3 h-3" />
+              </button>
+            )}
+          </div>
+          {(search || filter !== 'all') && (
+            <span className="text-[10px] font-jakarta font-bold text-white/40 ml-1">
+              {filtered.length} resultado{filtered.length === 1 ? '' : 's'}
+            </span>
+          )}
         </div>
         <div className="flex items-center gap-1.5 text-[10px] text-white/40 font-jakarta">
           <ArrowUpDown className="w-3 h-3" /> Ordenar:

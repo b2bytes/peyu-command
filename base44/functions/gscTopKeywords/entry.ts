@@ -24,9 +24,11 @@ Deno.serve(async (req) => {
     let body = {};
     try { body = await req.json(); } catch {}
     const days = Math.min(Math.max(parseInt(body.days || 28, 10), 1), 90);
-    const limit = Math.min(Math.max(parseInt(body.limit || 50, 10), 5), 500);
+    const limit = Math.min(Math.max(parseInt(body.limit || 500, 10), 5), 5000);
     const country = (body.country || 'chl').toLowerCase(); // ISO-3166 alpha-3
     const site = body.site || 'sc-domain:peyuchile.cl';
+    // searchType: 'web' (default), 'image', 'video', 'news', 'discover', 'googleNews'
+    const searchType = body.searchType || 'web';
 
     // Ventana de fechas (formato YYYY-MM-DD que pide GSC)
     const endDate = new Date();
@@ -36,38 +38,43 @@ Deno.serve(async (req) => {
     // Obtener token de GSC (shared connector)
     const { accessToken } = await base44.asServiceRole.connectors.getConnection('google_search_console');
 
-    // Llamada a Search Analytics API
+    // Llamada a Search Analytics API con paginación (GSC tiene cap ~25k rows
+    // por request, pero pedimos en bloques de 5000 para no saturar memoria).
     const url = `https://www.googleapis.com/webmasters/v3/sites/${encodeURIComponent(site)}/searchAnalytics/query`;
-    const queryBody = {
-      startDate: fmt(startDate),
-      endDate: fmt(endDate),
-      dimensions: ['query'],
-      rowLimit: limit,
-      dataState: 'all',
-    };
-    if (country && country !== 'all') {
-      queryBody.dimensionFilterGroups = [{
-        filters: [{ dimension: 'country', operator: 'equals', expression: country }],
-      }];
+    const baseFilters = country && country !== 'all'
+      ? [{ filters: [{ dimension: 'country', operator: 'equals', expression: country }] }]
+      : undefined;
+
+    const allRows = [];
+    const PAGE = Math.min(limit, 5000);
+    for (let startRow = 0; startRow < limit; startRow += PAGE) {
+      const queryBody = {
+        startDate: fmt(startDate),
+        endDate: fmt(endDate),
+        dimensions: ['query'],
+        rowLimit: Math.min(PAGE, limit - startRow),
+        startRow,
+        dataState: 'all',
+        type: searchType, // 'web' | 'image' | 'video' | 'news' | 'discover' | 'googleNews'
+      };
+      if (baseFilters) queryBody.dimensionFilterGroups = baseFilters;
+
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify(queryBody),
+      });
+      if (!res.ok) {
+        const errText = await res.text();
+        console.error('GSC error', res.status, errText);
+        return Response.json({ error: `GSC API ${res.status}: ${errText}` }, { status: 500 });
+      }
+      const gscData = await res.json();
+      const rows = gscData.rows || [];
+      allRows.push(...rows);
+      if (rows.length < PAGE) break; // no hay más páginas
     }
-
-    const res = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${accessToken}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(queryBody),
-    });
-
-    if (!res.ok) {
-      const errText = await res.text();
-      console.error('GSC error', res.status, errText);
-      return Response.json({ error: `GSC API ${res.status}: ${errText}` }, { status: 500 });
-    }
-
-    const gscData = await res.json();
-    const rows = gscData.rows || [];
+    const rows = allRows;
 
     // Normalizar + clasificar por posición
     const keywords = rows.map(r => {
@@ -108,6 +115,7 @@ Deno.serve(async (req) => {
       ok: true,
       site,
       country,
+      search_type: searchType,
       window_days: days,
       start_date: fmt(startDate),
       end_date: fmt(endDate),

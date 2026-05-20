@@ -19,17 +19,27 @@ const WINDOWS = [
   { label: '90 días', days: 90 },
 ];
 
+const SEARCH_TYPES = [
+  { label: 'Web',       value: 'web' },
+  { label: 'Imágenes',  value: 'image' },
+  { label: 'Discover',  value: 'discover' },
+  { label: 'Noticias',  value: 'news' },
+];
+
 export default function SEOKeywords() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [days, setDays] = useState(28);
+  const [searchType, setSearchType] = useState('web');
 
   const load = async () => {
     setLoading(true);
     setError(null);
     try {
-      const res = await base44.functions.invoke('gscTopKeywords', { days, limit: 50, country: 'chl' });
+      const res = await base44.functions.invoke('gscTopKeywords', {
+        days, limit: 1000, country: 'chl', searchType,
+      });
       if (res?.data?.ok) setData(res.data);
       else setError(res?.data?.error || 'Error desconocido');
     } catch (e) {
@@ -38,7 +48,7 @@ export default function SEOKeywords() {
     setLoading(false);
   };
 
-  useEffect(() => { load(); /* eslint-disable-next-line */ }, [days]);
+  useEffect(() => { load(); /* eslint-disable-next-line */ }, [days, searchType]);
 
   return (
     <div className="min-h-screen p-5 md:p-8 space-y-6">
@@ -59,7 +69,24 @@ export default function SEOKeywords() {
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
+          {/* Selector tipo de búsqueda */}
+          <div className="flex items-center gap-1 bg-white/5 border border-white/10 rounded-lg p-1">
+            {SEARCH_TYPES.map(t => (
+              <button
+                key={t.value}
+                onClick={() => setSearchType(t.value)}
+                className={`px-3 py-1 rounded-md text-xs font-bold font-jakarta transition-all ${
+                  searchType === t.value
+                    ? 'bg-cyan-500/20 text-cyan-200 border border-cyan-400/30'
+                    : 'text-white/50 hover:text-white'
+                }`}
+              >
+                {t.label}
+              </button>
+            ))}
+          </div>
+          {/* Ventana de tiempo */}
           <div className="flex items-center gap-1 bg-white/5 border border-white/10 rounded-lg p-1">
             {WINDOWS.map(w => (
               <button
