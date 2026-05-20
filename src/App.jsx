@@ -108,6 +108,7 @@ const SEOMetaBulk = lazyWithRetry(() => import('./pages/SEOMetaBulk'), { name: '
 const ChatLeads = lazyWithRetry(() => import('./pages/ChatLeads'), { name: 'ChatLeads' });
 const LaunchRoadmap = lazyWithRetry(() => import('./pages/LaunchRoadmap'), { name: 'LaunchRoadmap' });
 const MobileCockpit = lazyWithRetry(() => import('./pages/MobileCockpit'), { name: 'MobileCockpit' });
+const ContratoImpulsia = lazyWithRetry(() => import('./pages/ContratoImpulsia'), { name: 'ContratoImpulsia' });
 
 const AdminLoader = () => (
   <div className="fixed inset-0 flex items-center justify-center bg-background">
@@ -209,6 +210,7 @@ const AuthenticatedApp = () => {
           <Route path="chat-leads" element={<ChatLeads />} />
           <Route path="launch-roadmap" element={<LaunchRoadmap />} />
           <Route path="movil" element={<MobileCockpit />} />
+          <Route path="contrato-impulsia" element={<ContratoImpulsia />} />
         </Route>
         <Route path="*" element={<PageNotFound />} />
       </Routes>

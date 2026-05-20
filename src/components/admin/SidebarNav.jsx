@@ -28,6 +28,7 @@ export const NAV_GROUPS = [
     items: [
       { path: '/admin/',              label: 'Centro de Comando',  icon: LayoutDashboard },
       { path: '/admin/launch-roadmap', label: 'Plan de Lanzamiento', icon: Rocket },
+      { path: '/admin/contrato-impulsia', label: 'Contrato IMPULSIA', icon: AlertTriangle },
       { path: '/admin/alertas',       label: 'Alertas',            icon: AlertTriangle },
       { path: '/admin/plan',          label: 'Plan de Acción',     icon: ListChecks },
     ],
