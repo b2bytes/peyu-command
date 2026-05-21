@@ -58,7 +58,11 @@ export const absUrl = (path = '/') => {
 export const KEYWORD_CLUSTERS = {
   // ── Core B2B — intención comercial ALTA (gerentes/decisores)
   // (sept-2026: keywords confirmadas en SERP Chile de Qactus/Boxi/Merchi)
+  // (may-2026: 9 keywords prioritarias incorporadas al inicio del cluster)
   coreB2B: [
+    'regalos corporativos reciclados',                    // PRIORITARIA may-2026
+    'merchandising sustentable',                          // PRIORITARIA may-2026
+    'productos reciclados oficina',                       // PRIORITARIA may-2026
     'regalos corporativos Chile',
     'regalos corporativos personalizados con logo',
     'regalos corporativos sustentables',
@@ -117,7 +121,11 @@ export const KEYWORD_CLUSTERS = {
 
   // ── ESG / Sostenibilidad — decisor sustainability/CEO
   // (sept-2026: combatimos directo a Qactus, Tiendarevivir, Cambia Studio)
+  // (may-2026: keywords prioritarias agregadas al inicio)
   esg: [
+    'regalos sustentables',                               // PRIORITARIA may-2026
+    'regalos ecológicos chile',                           // PRIORITARIA may-2026
+    'merchandising sustentable',                          // PRIORITARIA may-2026
     'merchandising sustentable Chile',
     'regalos ecológicos plástico reciclado',
     'productos plástico 100% reciclado',
@@ -207,7 +215,14 @@ export const KEYWORD_CLUSTERS = {
   ],
 
   // ── B2C / Tienda — intención de compra individual
+  // (may-2026: 4 keywords prioritarias B2C incorporadas)
   b2c: [
+    'regalos sustentables',                               // PRIORITARIA may-2026
+    'organizador escritorio sustentable',                 // PRIORITARIA may-2026
+    'carcasas iphone recicladas',                         // PRIORITARIA may-2026
+    'macetero reciclado',                                 // PRIORITARIA may-2026
+    'bandeja plástico reciclado',                         // PRIORITARIA may-2026
+    'productos reciclados oficina',                       // PRIORITARIA may-2026
     'productos sostenibles Chile',
     'regalos ecológicos personalizados',
     'productos diseño chileno',
@@ -223,9 +238,11 @@ export const KEYWORD_CLUSTERS = {
     'juegos sustentables niños Chile',
     'set escritorio plástico reciclado',
     'lapiceros reciclados Chile',
-    'organizador escritorio sustentable',
     'porta lápices ecológico personalizado',
     'carcasas celular plástico reciclado',
+    'maceteros reciclados Chile',
+    'bandejas reutilizables hogar',
+    'productos hogar reciclados',
     'regalos originales hechos en Chile',
     'comprar productos eco online Chile',
   ],
@@ -264,13 +281,16 @@ export const ALL_KEYWORDS_FLAT = Object.values(KEYWORD_CLUSTERS).flat();
 export const PUBLIC_PAGES = {
   home: {
     path: '/',
-    title: 'Regalos Corporativos Sustentables Chile · Plástico 100% Reciclado | PEYU',
+    title: 'Regalos Sustentables Chile · Plástico 100% Reciclado | PEYU',
     description: PEYU_PITCH_ONE_LINER,
     keywords: [
+      'regalos sustentables',
+      'regalos corporativos reciclados',
+      'regalos ecológicos chile',
+      'merchandising sustentable',
       'regalos corporativos Chile',
       'regalos corporativos sustentables',
       'regalos personalizados con logo',
-      'merchandising sustentable Chile',
       'plástico 100% reciclado',
     ],
     priority: 1.0,
@@ -279,9 +299,15 @@ export const PUBLIC_PAGES = {
 
   shop: {
     path: '/shop',
-    title: 'Tienda PEYU · Productos Sostenibles con Despacho a Todo Chile',
-    description: 'Compra online productos sostenibles de plástico 100% reciclado: escritorio, hogar, regalos. Personalización láser, garantía 10 años, envío 24-72h.',
+    title: 'Tienda Productos Sustentables · Reciclados de Oficina y Hogar | PEYU',
+    description: 'Compra online regalos sustentables y productos reciclados de oficina: organizadores de escritorio, carcasas iPhone recicladas, maceteros y bandejas. Plástico 100% reciclado, envío 24-72h.',
     keywords: [
+      'regalos sustentables',
+      'productos reciclados oficina',
+      'organizador escritorio sustentable',
+      'carcasas iphone recicladas',
+      'macetero reciclado',
+      'bandeja plástico reciclado',
       'tienda productos sostenibles Chile',
       'comprar productos plástico reciclado',
       'regalos ecológicos online Chile',
@@ -294,9 +320,14 @@ export const PUBLIC_PAGES = {
 
   catalogoVisual: {
     path: '/catalogo-visual',
-    title: 'Catálogo Completo PEYU · Regalos y Productos Plástico Reciclado',
-    description: 'Catálogo visual de regalos corporativos, escritorio, hogar y entretenimiento. Plástico 100% reciclado, fibra de trigo compostable. Hecho en Chile.',
+    title: 'Catálogo Productos Sustentables · Oficina, Hogar y Regalos | PEYU',
+    description: 'Catálogo visual de productos reciclados de oficina, organizadores de escritorio, carcasas iPhone recicladas, maceteros y bandejas. Plástico 100% reciclado, fibra de trigo compostable. Hecho en Chile.',
     keywords: [
+      'productos reciclados oficina',
+      'organizador escritorio sustentable',
+      'carcasas iphone recicladas',
+      'macetero reciclado',
+      'bandeja plástico reciclado',
       'catálogo regalos corporativos Chile',
       'catálogo merchandising sustentable',
       'productos plástico reciclado catálogo',

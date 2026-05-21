@@ -27,7 +27,7 @@ export const PEYU_PITCH_B2B =
 
 // ── PITCH B2C (~155 car.) — para shop, producto, carrito
 export const PEYU_PITCH_B2C =
-  'Productos de diseño chileno fabricados con plástico 100% reciclado: escritorio, hogar y regalos. Personalización láser, garantía 10 años, envío a todo Chile.';
+  'Regalos sustentables y productos reciclados de oficina hechos en Chile: organizadores de escritorio, carcasas iPhone recicladas, maceteros y bandejas. Personalización láser, garantía 10 años.';
 
 // ── PITCH ESG / SOSTENIBILIDAD (~158 car.) — landings impacto
 export const PEYU_PITCH_ESG =
@@ -63,6 +63,14 @@ export const PEYU_BRAND_TERMS = [
   'PEYU', 'PEYU Chile', 'peyuchile.cl', 'PEYU SpA',
   'fabricante chileno plástico reciclado',
   'regalos corporativos sostenibles Chile',
+  'regalos sustentables Chile',
+  'regalos ecológicos Chile',
+  'merchandising sustentable',
+  'productos reciclados oficina',
+  'organizador escritorio sustentable',
+  'carcasas iPhone recicladas',
+  'macetero reciclado',
+  'bandeja plástico reciclado',
 ];
 
 // ── Helper: descripción según contexto de página
