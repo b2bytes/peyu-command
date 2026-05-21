@@ -67,9 +67,9 @@ export default function PropuestaValorPeyu() {
             transition={{ duration: 0.6, delay: 0.2 }}
             className="mt-6 md:mt-8 text-lg md:text-xl text-slate-400 font-inter leading-relaxed max-w-2xl mx-auto"
           >
-            En 7 capítulos, sin atajos. Mostramos qué se hizo, cuánto vale en el mercado,
-            cuánto cuesta mantenerlo prendido y cómo desde el mes 3 esta plataforma
-            empieza a pagarse sola.
+            En 7 capítulos, sin atajos. Mostramos qué se construyó en estos 2 meses,
+            cuánto vale en el mercado, cuánto cuesta mantenerlo prendido y cómo a partir
+            del mes 4 esta plataforma empieza a pagarse sola.
           </motion.p>
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -97,7 +97,7 @@ export default function PropuestaValorPeyu() {
           num="1"
           kicker="Punto de partida"
           title="Cobramos mal al principio. Punto."
-          subtitle="Acordamos $250.000/mes, ustedes pagaron los primeros 3 meses, y desde entonces pasaron 2 meses más sin pago en los que nosotros seguimos construyendo. Lo que ven HOY —esta misma plataforma con la que conversan— es el resultado de 5 meses de trabajo continuo. Antes de pedirles nada, queremos mostrarles transparentemente qué tienen en sus manos y por qué el valor real es otro."
+          subtitle="Acordamos $250.000/mes y ustedes pagaron $750.000 por adelantado, cubriendo 3 meses. Llevamos 2 meses desde ese pago y todavía queda 1 mes cubierto. En estos 2 meses construimos TODA la plataforma con la que están conversando ahora mismo. Esta propuesta existe para definir juntos qué pasa en el mes 4 en adelante — porque el valor real de lo que tienen en sus manos no se sostiene a $250K/mes."
         >
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
             <KPICard
@@ -109,13 +109,13 @@ export default function PropuestaValorPeyu() {
             <KPICard
               label="Pagado por PEYU"
               value={fmtCLP(CONTEXT.pagado_hasta_ahora_clp)}
-              sub={`${CONTEXT.meses_pagados} meses cumplidos`}
+              sub={`${CONTEXT.meses_pagados} meses por adelantado`}
               tone="emerald"
             />
             <KPICard
-              label="Meses sin facturar"
-              value={`${CONTEXT.meses_sin_pago} meses`}
-              sub="seguimos construyendo igual"
+              label="Tiempo transcurrido"
+              value={`${CONTEXT.meses_transcurridos} meses`}
+              sub={`Queda ${CONTEXT.meses_restantes_pagados} mes cubierto`}
               tone="amber"
             />
             <KPICard
@@ -128,11 +128,11 @@ export default function PropuestaValorPeyu() {
           </div>
           <div className="mt-8 bg-amber-950/30 border border-amber-500/30 rounded-2xl p-5 md:p-6">
             <p className="text-amber-100 font-inter text-[14px] md:text-base leading-relaxed">
-              <strong className="font-jakarta">Nuestro compromiso:</strong> los 3 meses ya facturados quedan
-              firmes a $250K, sin cambios retroactivos. Los <strong>2 meses recientes</strong> que pasaron sin
-              pago tampoco se los vamos a cobrar — los tomamos como nuestra inversión para
-              que vieran que el sistema rinde de verdad. Lo único que queremos definir juntos es
-              <strong> cómo seguimos a partir del mes 6</strong>, con un valor justo para ambos lados.
+              <strong className="font-jakarta">Nuestro compromiso:</strong> los 3 meses pagados quedan
+              firmes a $250K, sin cambios retroactivos. Todavía queda 1 mes cubierto por el pago original,
+              así que esta conversación no es urgente — es <strong>preventiva y honesta</strong>. Queremos
+              definir con ustedes <strong>cómo seguimos a partir del mes 4</strong>, con un valor justo
+              para ambos lados.
             </p>
           </div>
         </JourneyChapter>
@@ -141,9 +141,9 @@ export default function PropuestaValorPeyu() {
       {/* ═══ CAPÍTULO 2 — Línea de tiempo ═══ */}
       <JourneyChapter
         num="2"
-        kicker="5 meses, mes a mes"
-        title="Lo que construimos, con honestidad total."
-        subtitle="No es una sola página web. Es una plataforma operativa completa: tienda, B2B, CRM, agentes IA, logística Bluex y SEO técnico. Marcamos en verde los meses pagados y en ámbar los meses sin pago — pero la construcción nunca paró."
+        kicker="2 meses de construcción"
+        title="Lo que construimos con los $750K que pagaron."
+        subtitle="No es una sola página web. En 2 meses levantamos una plataforma operativa completa: tienda B2C, panel B2B, CRM, 6 agentes IA, logística Bluex y SEO técnico con campañas listas. Los 3 meses pagados están todos cubiertos — todavía queda 1 mes más por delante."
       >
         <div className="mt-6">
           {TIMELINE.map((entry, i) => (
@@ -266,9 +266,9 @@ export default function PropuestaValorPeyu() {
       {/* ═══ CAPÍTULO 5 — ROI proyección ═══ */}
       <JourneyChapter
         num="5"
-        kicker="Desde el mes 3 en adelante"
+        kicker="Del mes 4 en adelante"
         title="Cómo esta plataforma empieza a pagarse sola."
-        subtitle="Con Google Ads gestionado por agentes IA + indexación masiva + automatizaciones, la proyección conservadora muestra ROI positivo desde el mes 3. Estos son los números."
+        subtitle="Con Google Ads gestionado por agentes IA + indexación masiva + automatizaciones, la proyección conservadora muestra ROI positivo a partir del mes 4. Estos son los números."
       >
         <ROITable />
 

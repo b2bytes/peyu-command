@@ -14,94 +14,73 @@
 
 export const CONTEXT = {
   cliente: 'PEYU Chile',
-  pagado_hasta_ahora_clp: 750_000,
+  pagado_hasta_ahora_clp: 750_000,    // 3 meses por adelantado de una vez
   cobro_inicial_mensual_clp: 250_000,
-  meses_pagados: 3,
-  meses_sin_pago: 2,
-  meses_totales: 5,
+  meses_pagados: 3,                   // pagaron 3 meses upfront
+  meses_transcurridos: 2,             // desde el pago, solo han pasado 2 meses reales
+  meses_restantes_pagados: 1,         // todavía queda 1 mes cubierto por el pago original
   fecha_propuesta: 'Mayo 2026',
 };
 
 // ── 1. Línea de tiempo del proyecto ─────────────────────────────────────────
-// Importante: TODO lo que se ve hoy es resultado de 5 meses de trabajo continuo.
-// PEYU pagó 3 meses, no hubo pago en los meses 4 y 5, pero la construcción NUNCA paró.
-// Lo que están viendo y usando HOY se construyó a lo largo de los 5 meses completos.
+// Realidad: PEYU pagó $750K por adelantado (3 meses x $250K) al iniciar.
+// Desde ese pago han pasado solo 2 meses. Todavía queda 1 mes cubierto.
+// En esos 2 meses construimos TODO lo que están viendo y usando hoy.
 export const TIMELINE = [
   {
     mes: 'Mes 1',
-    titulo: 'Fundación · Pagado',
-    descripcion: 'Levantamiento, arquitectura base, modelo de entidades, identidad visual Liquid Dual.',
+    titulo: 'Fundación + Tienda + B2B',
+    descripcion: 'Arquitectura, identidad visual y storefront público completo en operación.',
     pagado: true,
     entregables: [
-      'Sistema de diseño completo (Liquid Dual día/noche)',
-      'Modelo de datos: 40+ entidades (Productos, Pedidos, Leads, Clientes, etc.)',
-      'Identidad de marca refinada (Fraunces + Hanken Grotesk)',
-      'Hosting + dominio + SSL configurado',
-    ],
-  },
-  {
-    mes: 'Mes 2',
-    titulo: 'Tienda + B2B · Pagado',
-    descripcion: 'Storefront público B2C, flujo de carrito, panel B2B self-service, propuestas corporativas.',
-    pagado: true,
-    entregables: [
-      'Tienda B2C completa (catálogo, ficha producto, carrito, checkout)',
-      'Integración MercadoPago + WebPay con webhooks',
-      'Panel B2B self-service con cotizador automático',
+      'Sistema de diseño Liquid Dual (día/noche, mobile-first)',
+      'Modelo de datos: 40+ entidades (Productos, Pedidos, Leads, Clientes)',
+      'Tienda B2C completa: catálogo, ficha producto, carrito, checkout',
+      'Integración MercadoPago + WebPay + webhooks',
+      'Panel B2B self-service con cotizador automático y descuentos por volumen',
       'Generador de propuestas corporativas con PDF',
-      'Integración WooCommerce (sync bidireccional)',
+      'Integración WooCommerce (sync bidireccional con catálogo histórico)',
+      'Hosting + dominio + SSL + backups configurados',
     ],
   },
   {
-    mes: 'Mes 3',
-    titulo: 'Inteligencia · Pagado',
-    descripcion: 'Agentes IA, automatizaciones, SEO técnico, integraciones Google completas.',
+    mes: 'Mes 2 (este mes)',
+    titulo: 'Inteligencia + Logística + SEO + Ads',
+    descripcion: 'Capa completa de IA, automatizaciones, integración Google y maquinaria de crecimiento. Esto es lo que está corriendo HOY en producción.',
     pagado: true,
     entregables: [
       '6 agentes IA conversacionales (Peyu, Ads Commander, Asistente Compras, etc.)',
-      'Cerebro vectorial Pinecone con búsqueda semántica',
+      'Cerebro vectorial Pinecone con búsqueda semántica sobre productos/clientes',
       'Integración Google Search Console + Analytics 4 en vivo',
-      'Sitemap automático + IndexNow blast (Bing/Yandex/Seznam)',
-      'Optimizador SEO de meta tags con IA',
-      'Pipeline B2B/B2C automático',
-      'Centro logístico Bluex (etiquetas, tracking, secuencias)',
-    ],
-  },
-  {
-    mes: 'Mes 4',
-    titulo: 'Logística + Cockpit · Sin pago',
-    descripcion: 'Seguimos construyendo igual. Operativa logística completa con Bluex y cockpit ejecutivo móvil para que ustedes pudieran ver el negocio desde el celular.',
-    pagado: false,
-    entregables: [
-      'Centro logístico Bluex en producción (OT automática, tracking en vivo)',
-      'Secuencias de notificación al cliente por email/WhatsApp',
-      'Análisis IA de envíos con detección de incidencias',
+      'Propagación SEO masiva: 100 productos con 9 keywords prioritarias chilenas',
+      'Indexación completa: 107 URLs enviadas a Bing/Yandex/Seznam vía IndexNow',
+      'Sitemap registrado en Google Search Console (237 clicks · 3.328 imp · CTR 7.12%)',
+      'Optimizador automático meta tags página 2 → página 1',
+      'Centro logístico Bluex (OT automática, tracking, secuencias notificación)',
+      'Generador de campañas Google Ads 2026 (PMax + Search + Demand Gen)',
+      'Forecaster IA pre-publicación: predice ROAS y CAC antes de gastar',
       'Cockpit ejecutivo móvil + briefing diario IA',
-      'Centro de costos reales + prorrateo de costos fantasma',
-      'Sugerencias de precio IA con aprobación humana',
+      'Centro de costos reales + sugerencias de precio IA',
       'Monitoreo IA con auditoría y queue de re-entrenamiento',
     ],
   },
   {
-    mes: 'Mes 5 (este mes)',
-    titulo: 'SEO + Ads + Indexación · Sin pago',
-    descripcion: 'Cerramos la maquinaria de crecimiento. Esto es lo que hicimos justo antes de tener esta conversación con ustedes.',
-    pagado: false,
+    mes: 'Mes 3 (próximo)',
+    titulo: 'Aún cubierto por el pago inicial',
+    descripcion: 'El pago de $750K incluye un mes más. Lo usamos para encender campañas pagadas, afinar conversiones y cerrar las primeras ventas atribuibles al sistema.',
+    pagado: true,
     entregables: [
-      'Propagación SEO masiva: 100 productos con 9 keywords prioritarias chilenas',
-      'Indexación completa: 107 URLs enviadas a Bing/Yandex/Seznam vía IndexNow',
-      'Sitemap registrado en Google Search Console (237 clicks · 3.328 imp · CTR 7.12%)',
-      'Generador de campañas Google Ads 2026 (PMax + Search + Demand Gen)',
-      'Forecaster IA pre-publicación: predice ROAS, CAC y conversiones antes de gastar',
-      'Auditoría visual completa del catálogo (carcasas, packs, mockups)',
-      'Auditoría Google Shopping compliance para Merchant Center',
-      'Optimizador automático de páginas posición 11-20 (página 2 → 1)',
+      'Encendido de campañas Google Ads (PMax + Search Defense)',
+      'Afinamiento del funnel B2C según tráfico real',
+      'Primeras propuestas B2B automáticas desde tráfico orgánico',
+      'Recuperación de carritos abandonados activa',
+      'Reporte ejecutivo de cierre del trimestre pagado',
     ],
   },
   {
-    mes: 'Mes 6 en adelante',
-    titulo: 'Crecimiento · Lo que viene',
-    descripcion: 'La plataforma está lista. Falta encenderla con campañas pagadas e ir cerrando los loops de retención. Esto es lo que activamos si seguimos juntos.',
+    mes: 'Mes 4 en adelante',
+    titulo: 'Aquí empieza la conversación que tenemos hoy',
+    descripcion: 'Una vez agotado el pago inicial de $750K, necesitamos acordar cómo seguimos. La plataforma vale mucho más de $250K/mes — esta propuesta existe para encontrar un valor justo para ambos lados.',
     pagado: null,
     es_futuro: true,
     entregables: [
@@ -111,6 +90,7 @@ export const TIMELINE = [
       'NPS trimestral B2B + reactivación de leads fríos',
       'Cross-sell post-compra + bundles dinámicos',
       'Detección de oportunidades de upsell B2B con IA',
+      'Nuevas integraciones (Instagram Shopping, Mercado Libre)',
     ],
   },
 ];
