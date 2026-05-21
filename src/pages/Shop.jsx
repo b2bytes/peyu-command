@@ -93,7 +93,18 @@ export default function Shop() {
       case 'price_asc': result.sort((a, b) => (a.precio_b2c || 0) - (b.precio_b2c || 0)); break;
       case 'price_desc': result.sort((a, b) => (b.precio_b2c || 0) - (a.precio_b2c || 0)); break;
       case 'name': result.sort((a, b) => (a.nombre || '').localeCompare(b.nombre || '')); break;
-      default: break;
+      default:
+        // "Más populares" en categoría "Todos": empujar carcasas al final.
+        // Solicitud cliente: son muchas carcasas y tapaban productos estrella
+        // de plástico. En categorías específicas mantenemos el orden natural.
+        if (selectedCategory === 'Todos') {
+          result.sort((a, b) => {
+            const aCarcasa = a.categoria === 'Carcasas B2C' ? 1 : 0;
+            const bCarcasa = b.categoria === 'Carcasas B2C' ? 1 : 0;
+            return aCarcasa - bCarcasa;
+          });
+        }
+        break;
     }
     return result;
   }, [productos, search, selectedCategory, selectedPrice, sortBy]);
@@ -446,7 +457,7 @@ export default function Shop() {
                   Cotizar ahora
                 </Button>
               </Link>
-              <a href="https://wa.me/56933766573" target="_blank" rel="noreferrer" className="flex-1 sm:flex-initial">
+              <a href="https://wa.me/56935040242" target="_blank" rel="noreferrer" className="flex-1 sm:flex-initial">
                 <Button className="ld-btn-ghost w-full sm:w-auto rounded-full text-ld-fg font-semibold px-6 h-11">
                   💬 WhatsApp
                 </Button>
