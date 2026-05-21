@@ -34,12 +34,35 @@ const REVIEWS_MOCK = [
   { autor: 'Carolina V.', ciudad: 'Ñuñoa', rating: 4, txt: 'Muy buen producto. Llegó antes de lo esperado y en embalaje impecable.', fecha: 'Hace 2 semanas', verificado: true },
 ];
 
-const GARANTIAS = [
-  { icon: Shield, label: 'Garantía 10 años', sub: 'En plástico reciclado', color: '#2dd4bf' },
+// Garantías base — la primera tarjeta se calcula dinámicamente según material
+// del producto en `getGarantias()` más abajo. Las carcasas compostables y
+// productos de fibra de trigo no tienen "10 años": tienen vida útil distinta.
+const GARANTIAS_FIJAS = [
   { icon: Truck, label: 'Envío a todo Chile', sub: 'Gratis sobre $40.000', color: '#60a5fa' },
   { icon: RotateCcw, label: '30 días devolución', sub: 'Sin preguntas', color: '#fb923c' },
   { icon: BadgeCheck, label: 'Hecho en Chile', sub: 'Fábrica Santiago', color: '#34d399' },
 ];
+
+// Devuelve la garantía adecuada según el tipo de producto.
+// - Carcasas (Carcasas B2C): compostables en 2-3 años industrial → no aplica "10 años"
+// - Fibra de trigo: producto compostable
+// - Plástico reciclado: garantía 10 años contra defectos
+function getGarantiaPorMaterial(producto) {
+  if (!producto) return { icon: Shield, label: 'Garantía PEYU', sub: 'Calidad respaldada' };
+  const esCarcasa = producto.categoria === 'Carcasas B2C';
+  const esFibra = producto.material?.includes('Trigo') || producto.material?.includes('Compostable');
+  const anios = producto.garantia_anios;
+
+  if (esCarcasa) {
+    return { icon: Recycle, label: 'Compostable', sub: '2-3 años industrial' };
+  }
+  if (esFibra) {
+    return { icon: Recycle, label: 'Compostable', sub: 'Fibra de trigo' };
+  }
+  // Plástico reciclado convencional
+  const aniosLabel = anios && anios > 0 ? `Garantía ${anios} años` : 'Garantía PEYU';
+  return { icon: Shield, label: aniosLabel, sub: 'Plástico reciclado' };
+}
 
 const SKU_IMAGES_ALT = {
   'CARC-AIRP-12':  'https://i0.wp.com/peyuchile.cl/wp-content/uploads/2025/06/amarillo.webp?fit=600%2C600&ssl=1',
@@ -373,7 +396,7 @@ export default function ProductoDetalle() {
     : '';
   const seoDescriptionRaw = descripcionLimpia
     ? `${descripcionLimpia.slice(0, 90)}. ${materialCorto}, hecho en Chile. ${stockHint}${personalizacionHint}Envío gratis sobre $40.000.`
-    : `${producto.nombre}: ${materialCorto.toLowerCase()}, fabricado en Chile. Desde $${precioFinal.toLocaleString('es-CL')}. ${personalizacionHint}${stockHint}Garantía ${producto.garantia_anios || 10} años. Envío a todo el país.`;
+    : `${producto.nombre}: ${materialCorto.toLowerCase()}, fabricado en Chile. Desde $${precioFinal.toLocaleString('es-CL')}. ${personalizacionHint}${stockHint}Envío a todo el país.`;
   const seoDescription = seoDescriptionRaw.replace(/\s+/g, ' ').trim().slice(0, 160);
 
   return (
@@ -913,7 +936,7 @@ export default function ProductoDetalle() {
                         <Building2 className="w-3.5 h-3.5" /> Cotizar B2B
                       </Button>
                     </Link>
-                    <a href={`https://wa.me/56933766573?text=${encodeURIComponent(`Hola, me interesa cotizar el producto: ${producto.nombre} (SKU: ${producto.sku}) para mi empresa`)}`}
+                    <a href={`https://wa.me/56935040242?text=${encodeURIComponent(`Hola, me interesa cotizar el producto: ${producto.nombre} (SKU: ${producto.sku}) para mi empresa`)}`}
                       target="_blank" rel="noreferrer" className="block">
                       <Button size="sm" className="ld-btn-ghost w-full font-bold gap-1.5 rounded-xl text-ld-fg h-10 text-xs">
                         💬 WhatsApp B2B
@@ -933,10 +956,10 @@ export default function ProductoDetalle() {
                 )}
               </div>
 
-              {/* Garantías */}
+              {/* Garantías — primera tarjeta dinámica por material/categoría */}
               <div className="grid grid-cols-4 gap-1.5">
-                {GARANTIAS.map((g, i) => (
-                  <div key={i} className="ld-card flex flex-col items-center gap-1 p-2 text-center">
+                {[getGarantiaPorMaterial(producto), ...GARANTIAS_FIJAS].map((g, i) => (
+                  <div key={i} className="ld-card flex flex-col items-center gap-1 p-2 text-center" title={g.sub}>
                     <div className="w-6 h-6 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: 'var(--ld-action-soft)' }}>
                       <g.icon className="w-3 h-3" style={{ color: 'var(--ld-action)' }} />
                     </div>
@@ -976,10 +999,15 @@ export default function ProductoDetalle() {
                   <ul className="space-y-2">
                     {[
                       `Material: ${producto.material}`,
-                      `Garantía: ${producto.garantia_anios || 10} años`,
+                      // Garantía contextual: carcasas/fibra son compostables, plástico reciclado lleva años.
+                      producto.categoria === 'Carcasas B2C'
+                        ? 'Compostable industrial: 2-3 años'
+                        : producto.material?.includes('Trigo') || producto.material?.includes('Compostable')
+                          ? 'Material compostable (fibra de trigo)'
+                          : `Garantía: ${producto.garantia_anios || 10} años contra defectos`,
                       producto.area_laser_mm && `Área grabado láser: ${producto.area_laser_mm}`,
                       'Fabricado en Santiago, Chile',
-                      'Compatible con personalización UV',
+                      producto.moq_personalizacion && 'Compatible con personalización UV',
                     ].filter(Boolean).map((f, i) => (
                       <li key={i} className="flex items-start gap-2 text-sm text-ld-fg-soft">
                         <Check className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: 'var(--ld-action)' }} />
@@ -1000,7 +1028,13 @@ export default function ProductoDetalle() {
                     ['Categoría', producto.categoria],
                     ['SKU', producto.sku],
                     ['Canal', producto.canal],
-                    ['Garantía', `${producto.garantia_anios || 10} años`],
+                    ['Garantía',
+                      producto.categoria === 'Carcasas B2C'
+                        ? 'Compostable 2-3 años (industrial)'
+                        : (producto.material?.includes('Trigo') || producto.material?.includes('Compostable'))
+                          ? 'Material compostable'
+                          : `${producto.garantia_anios || 10} años contra defectos`,
+                    ],
                     ['Lead time s/personalización', `${producto.lead_time_sin_personal || 7} días hábiles`],
                     ['Lead time c/personalización', `${producto.lead_time_con_personal || 9} días hábiles`],
                     producto.area_laser_mm && ['Área grabado UV', producto.area_laser_mm],
@@ -1022,7 +1056,11 @@ export default function ProductoDetalle() {
                   ['¿Cuánto demora el despacho?', `Sin personalización: ${producto.lead_time_sin_personal || 7} días hábiles. Con grabado láser UV: ${producto.lead_time_con_personal || 9} días hábiles. Todo Chile vía Starken, Chilexpress o BlueExpress.`],
                   ['¿Puedo personalizar con mi logo?', `Sí. Ofrecemos grabado láser UV permanente en área de ${producto.area_laser_mm || '40×25mm'}. Gratis desde ${producto.moq_personalizacion || 10} unidades.`],
                   ['¿El color marmolado es exactamente igual al de la foto?', 'El marmolado es un proceso artesanal, por lo que cada pieza tiene variaciones únicas. Los colores base son los mismos pero el patrón nunca se repite.'],
-                  ['¿Qué pasa si el producto llega dañado?', 'Ofrecemos 30 días de devolución sin preguntas. Además, todos nuestros productos tienen garantía de 10 años contra defectos de fabricación.'],
+                  ['¿Qué pasa si el producto llega dañado?',
+                    producto.categoria === 'Carcasas B2C'
+                      ? 'Ofrecemos 30 días de devolución sin preguntas. Las carcasas tienen garantía contra defectos de fabricación durante toda su vida útil esperada (2-3 años de uso normal antes de iniciar su compostaje industrial).'
+                      : 'Ofrecemos 30 días de devolución sin preguntas. Además, los productos de plástico reciclado tienen garantía de 10 años contra defectos de fabricación.',
+                  ],
                   ['¿Tienen precios especiales para empresas?', `Sí. Desde ${producto.moq_personalizacion || 10} unidades accedes a precios B2B. Desde 50 unidades, descuento adicional.`],
                 ].map(([q, a], i) => (
                   <details key={i} className="group ld-card overflow-hidden">
