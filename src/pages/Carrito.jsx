@@ -163,7 +163,12 @@ export default function Carrito() {
       const partes = [`${i.nombre} x${i.cantidad}`];
       if (i.color) partes.push(`Color: ${i.color}`);
       if (i.pack_resumen) partes.push(`Pack: ${i.pack_resumen}`);
-      if (i.personalizacion) partes.push(`Grabado: "${i.personalizacion}"`);
+      if (i.personalizacion) {
+        const grabado = i.posicion_grabado
+          ? `Grabado (${i.posicion_grabado}): "${i.personalizacion}"`
+          : `Grabado: "${i.personalizacion}"`;
+        partes.push(grabado);
+      }
       if (i.sku) partes.push(`SKU ${i.sku}`);
       partes.push(`$${(i.precio || 0).toLocaleString('es-CL')}/u`);
       return partes.join(' · ');
@@ -474,7 +479,16 @@ export default function Carrito() {
                       <div>
                         <h3 className="font-poppins font-semibold text-gray-900 leading-snug line-clamp-2 text-[15px]">{item.nombre}</h3>
                         {item.personalizacion && (
-                          <p className="text-xs text-purple-700 mt-1.5 font-semibold flex items-center gap-1 bg-purple-50 inline-flex px-2 py-0.5 rounded-md">✨ Grabado: "{item.personalizacion}"</p>
+                          <div className="mt-1.5 flex flex-wrap gap-1">
+                            <span className="text-xs text-purple-700 font-semibold inline-flex items-center gap-1 bg-purple-50 px-2 py-0.5 rounded-md">
+                              ✨ Grabado: "{item.personalizacion}"
+                            </span>
+                            {item.posicion_grabado && (
+                              <span className="text-[11px] text-purple-700 font-semibold inline-flex items-center gap-1 bg-purple-50 px-2 py-0.5 rounded-md capitalize">
+                                📍 {item.posicion_grabado}
+                              </span>
+                            )}
+                          </div>
                         )}
                         {item.pack_resumen && (
                           <p className="text-xs text-teal-800 mt-1.5 font-semibold bg-teal-50 inline-flex px-2 py-0.5 rounded-md">🎨 Pack: {item.pack_resumen}</p>
@@ -515,7 +529,16 @@ export default function Carrito() {
 
                 <div className="grid grid-cols-3 gap-2 sm:gap-3 pt-2">
                   {[
-                    { icon: Shield, text: 'Garantía 10 años', sub: 'Plástico reciclado', color: 'text-teal-700', bg: 'bg-teal-50' },
+                    // Badge contextual: si el carrito SOLO tiene carcasas/compostables, mostramos
+                    // "Compostable" en vez de "Garantía 10 años" (que solo aplica a plástico reciclado).
+                    (() => {
+                      const soloCompostables = carrito.length > 0 && carrito.every(it =>
+                        /carcasa|compostable|trigo/i.test(`${it.nombre || ''} ${it.sku || ''}`)
+                      );
+                      return soloCompostables
+                        ? { icon: Recycle, text: 'Compostable', sub: '2-3 años industrial', color: 'text-emerald-700', bg: 'bg-emerald-50' }
+                        : { icon: Shield, text: 'Garantía 10 años', sub: 'Plástico reciclado', color: 'text-teal-700', bg: 'bg-teal-50' };
+                    })(),
                     { icon: Truck, text: 'Envío gratis', sub: 'Sobre $40.000', color: 'text-blue-700', bg: 'bg-blue-50' },
                     { icon: Recycle, text: '100% reciclado', sub: 'Hecho en Chile', color: 'text-emerald-700', bg: 'bg-emerald-50' },
                   ].map((b, i) => (
