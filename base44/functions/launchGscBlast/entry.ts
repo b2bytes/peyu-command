@@ -42,13 +42,8 @@ Deno.serve(async (req) => {
       detail: submitRes.ok ? 'Sitemap registrado en GSC' : await submitRes.text(),
     });
 
-    // ── 2) Ping legacy a Google (redundante pero gratis) ───────────────────
-    const pingRes = await fetch(`https://www.google.com/ping?sitemap=${smEnc}`).catch(e => ({ status: 0, error: e.message }));
-    steps.push({
-      step: 'google_ping',
-      ok: pingRes.status === 200,
-      http: pingRes.status,
-    });
+    // ── 2) (El ping legacy a Google /ping?sitemap= fue deprecado en jun-2023.
+    //        Search Console + sitemap submission ya basta. Skip.) ──────────────
 
     // ── 3) Audit GSC 28d ───────────────────────────────────────────────────
     const today = new Date();
@@ -86,14 +81,19 @@ Deno.serve(async (req) => {
       })),
     });
 
-    // ── 5) IndexNow blast a Bing/Yandex (usa función existente) ────────────
+    // ── 5) IndexNow blast a Bing/Yandex/Seznam (usa función existente) ─────
     try {
-      const indexNowRes = await base44.functions.invoke('autoIndexNowBlast', {});
+      const indexNowRes = await base44.functions.invoke('autoIndexNowBlast', {
+        host: 'peyuchile.cl',
+        key: 'peyu-indexnow-key-2026',
+      });
+      const d = indexNowRes?.data || {};
       steps.push({
         step: 'indexnow_blast',
-        ok: !!indexNowRes?.data?.ok,
-        urls_submitted: indexNowRes?.data?.urls_submitted || 0,
-        engines: indexNowRes?.data?.engines || [],
+        ok: !!d.success,
+        urls_submitted: d.sent || 0,
+        urls_failed: d.failed || 0,
+        breakdown: d.breakdown || null,
       });
     } catch (e) {
       steps.push({ step: 'indexnow_blast', ok: false, error: e.message });
