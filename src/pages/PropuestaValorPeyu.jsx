@@ -127,14 +127,23 @@ export default function PropuestaValorPeyu() {
               highlight
             />
           </div>
-          <div className="mt-8 bg-amber-950/30 border border-amber-500/30 rounded-2xl p-5 md:p-6">
+          <div className="mt-8 bg-amber-950/30 border border-amber-500/30 rounded-2xl p-5 md:p-6 space-y-3">
             <p className="text-amber-100 font-inter text-[14px] md:text-base leading-relaxed">
               <strong className="font-jakarta">La verdad sin vueltas:</strong> los $250K/mes que cobramos
-              al inicio no alcanzaron para cubrir lo que estábamos construyendo. Para terminar el setup
-              inicial nos pasamos del presupuesto — y por eso necesitamos <strong>recotizar honestamente</strong> antes
-              de seguir. Los $750K que pagaron <strong>no se pierden</strong>: se acreditan completos al setup
-              inicial de la plataforma. Lo que proponemos abajo es un acuerdo justo que les dé la
-              plataforma <strong>en propiedad</strong> pagando en cuotas, y desde ahí encender las campañas.
+              al inicio no alcanzaron ni de cerca para cubrir lo que estábamos construyendo. Por dos meses
+              <strong className="text-amber-50"> aguantamos la pérdida nosotros</strong> y seguimos invirtiendo
+              tiempo y plata para terminar el Ferrari que prometimos.
+            </p>
+            <p className="text-amber-100 font-inter text-[14px] md:text-base leading-relaxed">
+              Pero ya no da para más. <strong className="text-amber-50">Este 3er mes
+              (el último cubierto por los $750K) tenemos que emparejarlo al valor real</strong> — si
+              no, el proyecto no se sostiene y ustedes se quedan con una plataforma a medio terminar.
+              No es un castigo, es la única forma de que esto siga vivo.
+            </p>
+            <p className="text-amber-100 font-inter text-[14px] md:text-base leading-relaxed">
+              Los $750K que pagaron <strong>no se pierden</strong>: se acreditan completos al setup inicial.
+              Lo que proponemos abajo es un acuerdo justo que les deja la plataforma <strong>en
+              propiedad</strong> pagando en cuotas, y desde ahí encendemos las campañas.
             </p>
           </div>
         </JourneyChapter>
@@ -302,9 +311,9 @@ export default function PropuestaValorPeyu() {
       {/* ═══ CAPÍTULO 6 — Modelo económico Setup + Mantenimiento ═══ */}
       <JourneyChapter
         num="6"
-        kicker="El nuevo acuerdo"
-        title="Setup + mantenimiento. Y la plataforma queda suya."
-        subtitle="Nosotros adelantamos el costo de construcción. PEYU lo paga en cuotas mensuales que se suman al mantenimiento. Cuando se termina de pagar, la plataforma es 100% propiedad de PEYU."
+        kicker="El nuevo acuerdo · desde el mes 3"
+        title="Aguantamos 2 meses. Este 3er mes hay que emparejar."
+        subtitle="Por 2 meses absorbimos nosotros la diferencia entre los $250K que cobramos y lo que realmente cuesta operar y construir esto. No da para un tercer mes igual: si no emparejamos al valor real desde ya, el proyecto se cae. La buena noticia: con el nuevo acuerdo, la plataforma queda en propiedad de PEYU en 18 meses."
       >
         <SetupBreakdownPanel />
       </JourneyChapter>
