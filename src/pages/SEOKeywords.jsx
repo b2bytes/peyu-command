@@ -15,6 +15,7 @@ import KeywordBucketSummary from '@/components/seo-keywords/KeywordBucketSummary
 import KeywordsTable from '@/components/seo-keywords/KeywordsTable';
 import OptimizeMetaTagsButton from '@/components/seo-keywords/OptimizeMetaTagsButton';
 import KeywordExplorer from '@/components/seo-keywords/KeywordExplorer';
+import QuickSerpAnalyzer from '@/components/seo-keywords/QuickSerpAnalyzer';
 
 const WINDOWS = [
   { label: '7d',  days: 7 },
@@ -129,6 +130,9 @@ export default function SEOKeywords() {
             </div>
           </div>
         </header>
+
+        {/* ─── Quick SERP Analyzer (botón destacado al inicio) ─── */}
+        <QuickSerpAnalyzer />
 
         {/* ─── Loading / Error ─── */}
         {loading && !data && (
