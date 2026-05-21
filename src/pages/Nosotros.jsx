@@ -23,8 +23,8 @@ const HITOS = [
 ];
 
 const TEAM = [
-  { nombre: 'Joaquín Donoso', rol: 'Co-founder & CEO', desc: 'Ingeniero industrial. Obsesionado con cerrar el ciclo del plástico. Ex-consultor de Supply Chain que apostó por la economía circular cuando nadie lo hacía.', emoji: '👷' },
-  { nombre: 'Carlos Morales', rol: 'Co-founder & Head of Sales', desc: 'El vendedor de los regalos sostenibles. Convierte cada cotización corporativa en una historia de impacto. Responde WhatsApps más rápido que cualquier bot.', emoji: '📞' },
+  { nombre: 'Joaquín Nilo', rol: 'Co-founder & CEO', desc: 'Ingeniero industrial. Obsesionado con cerrar el ciclo del plástico. Ex-consultor de Supply Chain que apostó por la economía circular cuando nadie lo hacía.', emoji: '👷' },
+  { nombre: 'Carlos Moscoso', rol: 'Co-founder & Head of Sales', desc: 'El vendedor de los regalos sostenibles. Convierte cada cotización corporativa en una historia de impacto. Responde WhatsApps más rápido que cualquier bot.', emoji: '📞' },
 ];
 
 const IMPACTO = [
@@ -79,10 +79,10 @@ export default function Nosotros() {
         <div className="ld-card p-7 md:p-10 space-y-6">
           <div className="space-y-3 text-ld-fg-soft text-sm leading-relaxed">
             <p>
-              Todo comenzó en 2019, cuando Joaquín empezó a fundir botellas plásticas de su barrio en la terraza. El primer prototipo era feo. Pero la idea era perfecta: <strong className="text-ld-fg">el plástico que ya existe es la mejor materia prima del mundo</strong>.
+              Todo comenzó en 2019, cuando Joaquín Nilo empezó a fundir botellas plásticas de su barrio en la terraza. El primer prototipo era feo. Pero la idea era perfecta: <strong className="text-ld-fg">el plástico que ya existe es la mejor materia prima del mundo</strong>.
             </p>
             <p>
-              Carlos se sumó con su visión comercial: empresas chilenas necesitan regalos corporativos con propósito ESG. Juntos crearon Peyu — la tortuga marina que navega lento pero llega siempre.
+              Carlos Moscoso se sumó con su visión comercial: empresas chilenas necesitan regalos corporativos con propósito ESG. Juntos crearon Peyu — la tortuga marina que navega lento pero llega siempre.
             </p>
           </div>
 

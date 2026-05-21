@@ -1,6 +1,6 @@
 import { memo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Star, ShoppingCart, Check, Leaf, Recycle, Zap, ArrowRight } from 'lucide-react';
+import { ShoppingCart, Check, Leaf, Recycle, Zap, ArrowRight } from 'lucide-react';
 import { getProductImage } from '@/utils/productImages';
 
 /**
@@ -80,16 +80,13 @@ function ProductCard({ producto, onAddToCart, agregandoId, index = 0 }) {
           }}
         />
 
-        {/* ─── Badges esquina superior izquierda ─── */}
+        {/* ─── Badge categoría (esquina sup. izq.) ─── */}
+        {/* El badge "Compostable" se movió debajo del título (sobre el precio)
+            para no tapar la foto del producto — corrección solicitada por cliente. */}
         <div className="absolute top-3 left-3 flex flex-col gap-1.5 z-10">
           <span className="ld-glass-strong text-ld-fg text-[10px] font-bold px-2.5 py-1 rounded-full shadow-sm">
             {p.categoria}
           </span>
-          {esCompostable && (
-            <span className="text-white text-[10px] font-bold px-2.5 py-1 rounded-full shadow-sm flex items-center gap-1" style={{ background: 'var(--ld-action)' }}>
-              <Leaf className="w-2.5 h-2.5" /> Compostable
-            </span>
-          )}
         </div>
 
         {/* ─── Stock bajo: indicador editorial urgencia (esquina sup. derecha) ─── */}
@@ -150,17 +147,23 @@ function ProductCard({ producto, onAddToCart, agregandoId, index = 0 }) {
 
       {/* ═════════ INFO ═════════ */}
       <div className="p-4">
-        <div className="flex items-center gap-1 mb-1.5">
-          <div className="flex gap-0.5">
-            {[...Array(5)].map((_, i) => (
-              <Star key={i} className="w-3 h-3 fill-yellow-400 text-yellow-400" />
-            ))}
-          </div>
-          <span className="text-[10px] text-ld-fg-muted font-medium hidden sm:inline">(4.9)</span>
-        </div>
         <h3 className="font-semibold text-sm text-ld-fg line-clamp-2 leading-snug transition-colors min-h-[40px] group-hover:text-[color:var(--ld-action)]">
           {p.nombre}
         </h3>
+
+        {/* Badge "Compostable" reubicado: debajo del título, sobre el precio.
+            Antes estaba como overlay verde tapando la foto del producto. */}
+        {esCompostable && (
+          <div className="mt-2">
+            <span
+              className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full"
+              style={{ background: 'var(--ld-action-soft)', color: 'var(--ld-action)' }}
+            >
+              <Leaf className="w-2.5 h-2.5" /> Compostable
+            </span>
+          </div>
+        )}
+
         <div className="flex items-baseline justify-between mt-3">
           <p className="font-jakarta font-bold text-lg text-ld-fg leading-none">
             ${precio.toLocaleString('es-CL')}

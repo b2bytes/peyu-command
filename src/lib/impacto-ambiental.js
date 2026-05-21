@@ -45,7 +45,7 @@ export const IMPACTO_POR_UNIDAD = {
     co2_quema_evitado_kg: 0.3,     // CO₂ que NO se emite porque la paja no se quema en campo
     agua_ahorrada_l: 6,            // vs producción virgen (4-7 L/kg bioplásticos)
     petroleo_evitado_g: 50,        // ~50 g petróleo crudo no usado
-    biodegradacion_dias: 180,      // compostaje industrial (90-180 días)
+    biodegradacion_anios: '2-3',   // compostaje industrial real PEYU (2 a 3 años)
     microplasticos: 0,             // CERO
   },
   reciclado: {
@@ -91,7 +91,7 @@ export function buildImpactoUnidad(producto) {
       eol: {
         titulo: 'Final de vida útil',
         items: [
-          { e: '♻️', t: `Compostable industrial en ${data.biodegradacion_dias} días` },
+          { e: '♻️', t: `Compostable industrial en ${data.biodegradacion_anios} años` },
           { e: '🚫', t: 'Cero microplásticos al degradarse' },
           { e: '🌍', t: 'Sin huella tóxica permanente' },
         ],
