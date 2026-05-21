@@ -25,6 +25,7 @@ import TimelineMonth from '@/components/value-journey/TimelineMonth';
 import ROITable from '@/components/value-journey/ROITable';
 import PlanCard from '@/components/value-journey/PlanCard';
 import SetupBreakdownPanel from '@/components/value-journey/SetupBreakdownPanel';
+import PrivateGuard from '@/components/value-journey/PrivateGuard';
 
 const CATEGORY_ICONS = {
   ShoppingBag, Users, Sparkles, Search, Truck, Brain, Code,
@@ -32,6 +33,7 @@ const CATEGORY_ICONS = {
 
 export default function PropuestaValorPeyu() {
   return (
+    <PrivateGuard>
     <div
       data-liquid-mode="night"
       className="min-h-screen"
@@ -384,6 +386,7 @@ export default function PropuestaValorPeyu() {
         </p>
       </footer>
     </div>
+    </PrivateGuard>
   );
 }
 
