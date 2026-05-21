@@ -41,6 +41,7 @@ import Envios from './pages/Envios';
 import FAQ from './pages/FAQ';
 import Contacto from './pages/Contacto';
 import Lanzamiento from './pages/Lanzamiento';
+import PropuestaValorPeyu from './pages/PropuestaValorPeyu';
 import Canjear from './pages/Canjear';
 import RegalarGiftCard from './pages/RegalarGiftCard';
 import Gracias from './pages/Gracias';
@@ -235,6 +236,9 @@ function App() {
 
               {/* /lanzamiento - Pure conversion landing (standalone, sin PublicLayout) */}
               <Route path="/lanzamiento" element={<Lanzamiento />} />
+
+              {/* /propuesta-valor-peyu - Viaje pedagógico de valor (compartible al cliente PEYU) */}
+              <Route path="/propuesta-valor-peyu" element={<PropuestaValorPeyu />} />
 
               {/* Public Routes */}
               <Route element={<PublicLayout />}>
