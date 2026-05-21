@@ -88,7 +88,10 @@ Deno.serve(async (req) => {
     const body = await req.json().catch(() => ({}));
     const dryRun = body.dry_run !== false; // default true por seguridad
     const onlyMissing = body.only_missing === true; // solo productos sin meta_title
+    const onlyNotPriority = body.only_not_priority === true; // solo los que aún NO tienen una keyword prioritaria
     const limit = Math.min(parseInt(body.limit, 10) || 100, 200);
+
+    const PRIORITY_KEYWORDS = new Set(KEYWORD_MAP.map(m => m.keyword));
 
     const productos = await base44.asServiceRole.entities.Producto.list();
     const targets = [];
@@ -96,6 +99,7 @@ Deno.serve(async (req) => {
     for (const p of productos) {
       if (!p.activo) continue;
       if (onlyMissing && p.seo_meta_title) continue;
+      if (onlyNotPriority && p.seo_focus_keyword && PRIORITY_KEYWORDS.has(p.seo_focus_keyword)) continue;
       const match = findKeywordForProduct(p);
       if (!match) continue;
       targets.push({ producto: p, match });
@@ -105,9 +109,13 @@ Deno.serve(async (req) => {
     const results = [];
     const errors = [];
 
-    for (const t of targets) {
-      const { producto, match } = t;
-      try {
+    // Procesa en batches paralelos de 3 con pausa de 1s para evitar rate-limit del LLM
+    const BATCH_SIZE = 3;
+    for (let i = 0; i < targets.length; i += BATCH_SIZE) {
+      if (i > 0) await new Promise(r => setTimeout(r, 1000));
+      const batch = targets.slice(i, i + BATCH_SIZE);
+      const batchResults = await Promise.allSettled(batch.map(async (t) => {
+        const { producto, match } = t;
         const prompt = `
 Eres SEO senior de PEYU Chile (regalos sustentables de plástico 100% reciclado).
 
@@ -179,10 +187,16 @@ Tono: profesional pero cercano, chileno (no español-españa). Evita "comprar" r
           change.applied = true;
         }
 
-        results.push(change);
-      } catch (e) {
-        errors.push({ sku: producto.sku, error: e.message });
-      }
+        return change;
+      }));
+
+      batchResults.forEach((r, idx) => {
+        if (r.status === 'fulfilled') {
+          results.push(r.value);
+        } else {
+          errors.push({ sku: batch[idx].producto.sku, error: r.reason?.message || String(r.reason) });
+        }
+      });
     }
 
     // Agrupar por keyword para reporte
