@@ -97,7 +97,7 @@ export default function PropuestaValorPeyu() {
           num="1"
           kicker="Punto de partida"
           title="Cobramos mal al principio. Punto."
-          subtitle="No queremos esquivar la conversación. Acordamos $250.000/mes, ustedes pagaron $750.000 por los primeros 3 meses, y desde entonces pasaron 2 meses más en los que seguimos construyendo, optimizando e indexando sin facturar. Antes de pedirles nada, queremos mostrarles transparentemente qué reciben hoy y por qué el valor real es otro."
+          subtitle="Acordamos $250.000/mes, ustedes pagaron los primeros 3 meses, y desde entonces pasaron 2 meses más sin pago en los que nosotros seguimos construyendo. Lo que ven HOY —esta misma plataforma con la que conversan— es el resultado de 5 meses de trabajo continuo. Antes de pedirles nada, queremos mostrarles transparentemente qué tienen en sus manos y por qué el valor real es otro."
         >
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
             <KPICard
@@ -129,10 +129,10 @@ export default function PropuestaValorPeyu() {
           <div className="mt-8 bg-amber-950/30 border border-amber-500/30 rounded-2xl p-5 md:p-6">
             <p className="text-amber-100 font-inter text-[14px] md:text-base leading-relaxed">
               <strong className="font-jakarta">Nuestro compromiso:</strong> los 3 meses ya facturados quedan
-              firmes a $250K, sin cambios retroactivos. Los <strong>2 meses adicionales</strong> que pasaron sin
-              pago tampoco se los vamos a cobrar retroactivamente — los tomamos como nuestra inversión
-              en demostrarles que el sistema funciona. Esta propuesta es solo para definir
-              juntos cómo seguimos a partir del <strong>mes 6 en adelante</strong>.
+              firmes a $250K, sin cambios retroactivos. Los <strong>2 meses recientes</strong> que pasaron sin
+              pago tampoco se los vamos a cobrar — los tomamos como nuestra inversión para
+              que vieran que el sistema rinde de verdad. Lo único que queremos definir juntos es
+              <strong> cómo seguimos a partir del mes 6</strong>, con un valor justo para ambos lados.
             </p>
           </div>
         </JourneyChapter>
@@ -141,9 +141,9 @@ export default function PropuestaValorPeyu() {
       {/* ═══ CAPÍTULO 2 — Línea de tiempo ═══ */}
       <JourneyChapter
         num="2"
-        kicker="Lo construido"
-        title="Esto es lo que hicimos en estos meses."
-        subtitle="No es una sola página web. Es una plataforma de operación integral con tienda, B2B, CRM, agentes IA, logística y SEO técnico. Acá la línea de tiempo real."
+        kicker="5 meses, mes a mes"
+        title="Lo que construimos, con honestidad total."
+        subtitle="No es una sola página web. Es una plataforma operativa completa: tienda, B2B, CRM, agentes IA, logística Bluex y SEO técnico. Marcamos en verde los meses pagados y en ámbar los meses sin pago — pero la construcción nunca paró."
       >
         <div className="mt-6">
           {TIMELINE.map((entry, i) => (

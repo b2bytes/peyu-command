@@ -23,11 +23,15 @@ export const CONTEXT = {
 };
 
 // ── 1. Línea de tiempo del proyecto ─────────────────────────────────────────
+// Importante: TODO lo que se ve hoy es resultado de 5 meses de trabajo continuo.
+// PEYU pagó 3 meses, no hubo pago en los meses 4 y 5, pero la construcción NUNCA paró.
+// Lo que están viendo y usando HOY se construyó a lo largo de los 5 meses completos.
 export const TIMELINE = [
   {
     mes: 'Mes 1',
-    titulo: 'Fundación',
+    titulo: 'Fundación · Pagado',
     descripcion: 'Levantamiento, arquitectura base, modelo de entidades, identidad visual Liquid Dual.',
+    pagado: true,
     entregables: [
       'Sistema de diseño completo (Liquid Dual día/noche)',
       'Modelo de datos: 40+ entidades (Productos, Pedidos, Leads, Clientes, etc.)',
@@ -37,8 +41,9 @@ export const TIMELINE = [
   },
   {
     mes: 'Mes 2',
-    titulo: 'Tienda + B2B',
+    titulo: 'Tienda + B2B · Pagado',
     descripcion: 'Storefront público B2C, flujo de carrito, panel B2B self-service, propuestas corporativas.',
+    pagado: true,
     entregables: [
       'Tienda B2C completa (catálogo, ficha producto, carrito, checkout)',
       'Integración MercadoPago + WebPay con webhooks',
@@ -49,8 +54,9 @@ export const TIMELINE = [
   },
   {
     mes: 'Mes 3',
-    titulo: 'Inteligencia',
+    titulo: 'Inteligencia · Pagado',
     descripcion: 'Agentes IA, automatizaciones, SEO técnico, integraciones Google completas.',
+    pagado: true,
     entregables: [
       '6 agentes IA conversacionales (Peyu, Ads Commander, Asistente Compras, etc.)',
       'Cerebro vectorial Pinecone con búsqueda semántica',
@@ -59,36 +65,53 @@ export const TIMELINE = [
       'Optimizador SEO de meta tags con IA',
       'Pipeline B2B/B2C automático',
       'Centro logístico Bluex (etiquetas, tracking, secuencias)',
-      'Cockpit ejecutivo móvil + monitoreo IA',
     ],
   },
   {
-    mes: 'Meses 4-5',
-    titulo: 'Lo que hicimos sin facturar',
-    descripcion: 'Aunque ya no estaban pagando, seguimos construyendo. Estos 2 meses fueron una inversión nuestra para que vieran que el sistema funciona en serio.',
+    mes: 'Mes 4',
+    titulo: 'Logística + Cockpit · Sin pago',
+    descripcion: 'Seguimos construyendo igual. Operativa logística completa con Bluex y cockpit ejecutivo móvil para que ustedes pudieran ver el negocio desde el celular.',
+    pagado: false,
     entregables: [
-      'Propagación SEO masiva a 100 productos con 9 keywords prioritarias',
-      'Indexación completa: 107 URLs enviadas a Bing/Yandex/Seznam',
-      'Sitemap registrado en Google Search Console',
-      'Centro de costos reales + sugerencias de precio IA',
-      'Auditoría visual completa del catálogo',
-      'Generador de campañas Google Ads 2026 (PMax + Demand Gen)',
-      'Forecaster IA pre-publicación de campañas',
-      'Cockpit ejecutivo móvil refinado',
+      'Centro logístico Bluex en producción (OT automática, tracking en vivo)',
+      'Secuencias de notificación al cliente por email/WhatsApp',
+      'Análisis IA de envíos con detección de incidencias',
+      'Cockpit ejecutivo móvil + briefing diario IA',
+      'Centro de costos reales + prorrateo de costos fantasma',
+      'Sugerencias de precio IA con aprobación humana',
+      'Monitoreo IA con auditoría y queue de re-entrenamiento',
     ],
   },
   {
-    mes: 'Hoy (Mes 6 en adelante)',
-    titulo: 'Crecimiento',
-    descripcion: 'Lo que viene: campañas pagadas, indexación masiva, escalamiento de ventas.',
+    mes: 'Mes 5 (este mes)',
+    titulo: 'SEO + Ads + Indexación · Sin pago',
+    descripcion: 'Cerramos la maquinaria de crecimiento. Esto es lo que hicimos justo antes de tener esta conversación con ustedes.',
+    pagado: false,
     entregables: [
-      'Google Ads + Performance Max gestionado por IA',
-      'Indexación completa en Google/Bing (100+ URLs ya enviadas)',
-      'Predicción de demanda con IA',
-      'Recuperación de carritos abandonados automatizada',
-      'NPS trimestral + reactivación de leads',
+      'Propagación SEO masiva: 100 productos con 9 keywords prioritarias chilenas',
+      'Indexación completa: 107 URLs enviadas a Bing/Yandex/Seznam vía IndexNow',
+      'Sitemap registrado en Google Search Console (237 clicks · 3.328 imp · CTR 7.12%)',
+      'Generador de campañas Google Ads 2026 (PMax + Search + Demand Gen)',
+      'Forecaster IA pre-publicación: predice ROAS, CAC y conversiones antes de gastar',
+      'Auditoría visual completa del catálogo (carcasas, packs, mockups)',
+      'Auditoría Google Shopping compliance para Merchant Center',
+      'Optimizador automático de páginas posición 11-20 (página 2 → 1)',
     ],
+  },
+  {
+    mes: 'Mes 6 en adelante',
+    titulo: 'Crecimiento · Lo que viene',
+    descripcion: 'La plataforma está lista. Falta encenderla con campañas pagadas e ir cerrando los loops de retención. Esto es lo que activamos si seguimos juntos.',
+    pagado: null,
     es_futuro: true,
+    entregables: [
+      'Google Ads + Performance Max gestionado por agente IA Commander',
+      'Predicción de demanda con IA + alertas de stock anticipadas',
+      'Recuperación automática de carritos abandonados (15% conv esperada)',
+      'NPS trimestral B2B + reactivación de leads fríos',
+      'Cross-sell post-compra + bundles dinámicos',
+      'Detección de oportunidades de upsell B2B con IA',
+    ],
   },
 ];
 
