@@ -22,6 +22,34 @@ export const CONTEXT = {
   fecha_propuesta: 'Mayo 2026',
 };
 
+// ── Setup inicial (one-time) y mantenimiento mensual ───────────────────────
+// El setup es lo que costó CONSTRUIR la plataforma desde cero (one-time).
+// Lo cubrimos nosotros por adelantado y PEYU lo paga en cuotas que se suman
+// a la mensualidad de mantenimiento. Cuando se termina de pagar, la plataforma
+// queda 100% de PEYU.
+export const ECONOMIA = {
+  // Setup inicial total (lo que vale construir esta plataforma)
+  setup_inicial_clp: 18_000_000,        // $18M CLP — costo real de construcción
+  setup_descuento_clp: 6_000_000,       // descuento por ser clientes fundadores
+  setup_a_pagar_clp: 12_000_000,        // $12M CLP — lo que PEYU realmente paga
+  // Lo que ya pagaron se abona al setup
+  ya_abonado_al_setup_clp: 750_000,     // los $750K iniciales se acreditan al setup
+  setup_restante_clp: 11_250_000,       // $12M - $750K = $11.25M restantes
+
+  // Mantenimiento mensual (operación + soporte + evolución)
+  mantenimiento_mensual_clp: 650_000,   // lo que cuesta tener PEYU prendido + mejorando
+
+  // Cuota del setup en 18 meses
+  cuotas_setup: 18,
+  cuota_setup_mensual_clp: 625_000,     // $11.25M / 18 ≈ $625K
+
+  // Total mensual durante los 18 meses de pago del setup
+  total_mensual_periodo_setup_clp: 1_275_000,  // 650K mantenimiento + 625K cuota
+
+  // Después de 18 meses, plataforma queda de PEYU y solo paga mantenimiento
+  total_mensual_post_setup_clp: 650_000,
+};
+
 // ── 1. Línea de tiempo del proyecto ─────────────────────────────────────────
 // Realidad: PEYU pagó $750K por adelantado (3 meses x $250K) al iniciar.
 // Desde ese pago han pasado solo 2 meses. Todavía queda 1 mes cubierto.
@@ -426,47 +454,58 @@ export const ROI_PROYECCION = [
 ];
 
 // ── 5. Propuesta de continuidad ────────────────────────────────────────────
+// Estructura nueva: Setup (one-time pagado en cuotas) + Mantenimiento mensual.
+// El setup se cubre en 18 cuotas de $625K que se suman al mantenimiento.
+// Después del mes 18, la plataforma queda 100% de PEYU y solo pagan mantenimiento.
 export const PLANES_PROPUESTOS = [
   {
-    nombre: 'Plan Esencial',
-    precio_clp: 450_000,
-    descripcion: 'Plataforma operando, mantención mínima, sin features nuevas.',
+    nombre: 'Solo Mantenimiento',
+    precio_clp: 650_000,
+    sub: 'Si prefieren no comprar la plataforma',
+    descripcion: 'Nosotros somos los dueños del software. PEYU lo usa con licencia mensual. Sin compromiso de compra.',
     incluye: [
-      'Hosting + infra + backups',
-      'LLMs base (agentes activos)',
-      'Bugfixes críticos',
-      'Soporte por email (48h)',
+      'Plataforma 100% operativa 24/7',
+      'Hosting + infra + backups + SSL',
+      'LLMs + agentes IA activos',
+      'Bugfixes y mantención evolutiva',
+      'Soporte prioritario WhatsApp',
+      'Reportes ejecutivos mensuales',
     ],
-    no_incluye: ['Nuevas features', 'Optimización campañas Ads', 'Reportes ejecutivos'],
+    no_incluye: [
+      'La plataforma sigue siendo de Impulsia',
+      'Si cancelan, pierden acceso',
+    ],
     recomendado: false,
   },
   {
-    nombre: 'Plan Crecimiento',
-    precio_clp: 750_000,
-    descripcion: 'Lo que necesitan para que la plataforma genere ROI real.',
+    nombre: 'Setup + Mantenimiento',
+    precio_clp: 1_275_000,
+    sub: 'Plataforma será 100% suya en 18 meses',
+    descripcion: '$650K mantenimiento + $625K cuota del setup. Tras 18 meses, la plataforma queda de PEYU y solo pagan los $650K de mantenimiento.',
     incluye: [
-      'Todo lo del Esencial',
-      'Optimización SEO continua + meta tags IA',
+      'Todo el mantenimiento del plan anterior',
+      'Cuota mensual del setup ($625K × 18 meses)',
+      'Tras mes 18: plataforma 100% de PEYU',
+      'Después solo pagan $650K mantenimiento',
+      'Acceso al código fuente al terminar el setup',
       'Gestión Google Ads con agente IA Commander',
       'Generación de contenido social semanal',
-      'Reportes ejecutivos mensuales',
-      'Soporte prioritario WhatsApp (24h)',
-      '4h/mes de nuevas features',
     ],
     no_incluye: [],
     recomendado: true,
   },
   {
-    nombre: 'Plan Escala',
-    precio_clp: 1_200_000,
-    descripcion: 'Para cuando la operación crece y necesita más músculo.',
+    nombre: 'Setup Adelantado',
+    precio_clp: 650_000,
+    sub: 'Pagan el setup de una sola vez',
+    descripcion: 'Pagan los $11.25M restantes del setup al firmar y desde el mes 1 pagan solo $650K de mantenimiento. La plataforma es de PEYU desde el día uno.',
     incluye: [
-      'Todo lo del Crecimiento',
-      '12h/mes de desarrollo dedicado',
-      'Account manager dedicado',
-      'Análisis competencia mensual',
-      'Setup de nuevas integraciones (Instagram, Mercado Libre)',
-      'Capacitación equipo PEYU 2h/mes',
+      'Pago único de $11.250.000 al firmar',
+      'Plataforma 100% de PEYU desde el día 1',
+      'Mensualidad solo $650K (mantenimiento)',
+      'Ahorro de $11.25M vs plan en cuotas',
+      'Todo el mantenimiento incluido',
+      'Acceso al código fuente desde el día 1',
     ],
     no_incluye: [],
     recomendado: false,

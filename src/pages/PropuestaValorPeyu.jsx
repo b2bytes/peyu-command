@@ -16,7 +16,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
-  CONTEXT, TIMELINE, MODULOS_COMPARATIVA, TOTAL_MERCADO_CLP,
+  CONTEXT, ECONOMIA, TIMELINE, MODULOS_COMPARATIVA, TOTAL_MERCADO_CLP,
   COSTOS_OPERATIVOS, TOTAL_OPERATIVO_CLP, PLANES_PROPUESTOS, fmtCLP,
 } from '@/lib/peyu-value-journey';
 import JourneyChapter from '@/components/value-journey/JourneyChapter';
@@ -24,6 +24,7 @@ import ModuleCompareCard from '@/components/value-journey/ModuleCompareCard';
 import TimelineMonth from '@/components/value-journey/TimelineMonth';
 import ROITable from '@/components/value-journey/ROITable';
 import PlanCard from '@/components/value-journey/PlanCard';
+import SetupBreakdownPanel from '@/components/value-journey/SetupBreakdownPanel';
 
 const CATEGORY_ICONS = {
   ShoppingBag, Users, Sparkles, Search, Truck, Brain, Code,
@@ -67,9 +68,9 @@ export default function PropuestaValorPeyu() {
             transition={{ duration: 0.6, delay: 0.2 }}
             className="mt-6 md:mt-8 text-lg md:text-xl text-slate-400 font-inter leading-relaxed max-w-2xl mx-auto"
           >
-            En 7 capítulos, sin atajos. Mostramos qué se construyó en estos 2 meses,
-            cuánto vale en el mercado, cuánto cuesta mantenerlo prendido y cómo a partir
-            del mes 4 esta plataforma empieza a pagarse sola.
+            En 8 capítulos, sin atajos. Mostramos qué se construyó, cuánto vale en el mercado,
+            cuánto costó realmente el setup inicial y cómo PEYU puede <strong className="text-teal-300">quedarse
+            con la plataforma en propiedad</strong> pagándola en cuotas mientras la usa.
           </motion.p>
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -128,11 +129,12 @@ export default function PropuestaValorPeyu() {
           </div>
           <div className="mt-8 bg-amber-950/30 border border-amber-500/30 rounded-2xl p-5 md:p-6">
             <p className="text-amber-100 font-inter text-[14px] md:text-base leading-relaxed">
-              <strong className="font-jakarta">Nuestro compromiso:</strong> los 3 meses pagados quedan
-              firmes a $250K, sin cambios retroactivos. Todavía queda 1 mes cubierto por el pago original,
-              así que esta conversación no es urgente — es <strong>preventiva y honesta</strong>. Queremos
-              definir con ustedes <strong>cómo seguimos a partir del mes 4</strong>, con un valor justo
-              para ambos lados.
+              <strong className="font-jakarta">La verdad sin vueltas:</strong> los $250K/mes que cobramos
+              al inicio no alcanzaron para cubrir lo que estábamos construyendo. Para terminar el setup
+              inicial nos pasamos del presupuesto — y por eso necesitamos <strong>recotizar honestamente</strong> antes
+              de seguir. Los $750K que pagaron <strong>no se pierden</strong>: se acreditan completos al setup
+              inicial de la plataforma. Lo que proponemos abajo es un acuerdo justo que les dé la
+              plataforma <strong>en propiedad</strong> pagando en cuotas, y desde ahí encender las campañas.
             </p>
           </div>
         </JourneyChapter>
@@ -297,12 +299,22 @@ export default function PropuestaValorPeyu() {
         </div>
       </JourneyChapter>
 
-      {/* ═══ CAPÍTULO 6 — Planes ═══ */}
+      {/* ═══ CAPÍTULO 6 — Modelo económico Setup + Mantenimiento ═══ */}
       <JourneyChapter
         num="6"
-        kicker="Continuemos juntos"
-        title="Tres caminos para los próximos meses."
-        subtitle="No vamos a imponerles nada. Acá están las tres opciones, con lo que cada una incluye y lo que no. Elijan el que les haga más sentido. El que nosotros recomendamos está marcado."
+        kicker="El nuevo acuerdo"
+        title="Setup + mantenimiento. Y la plataforma queda suya."
+        subtitle="Nosotros adelantamos el costo de construcción. PEYU lo paga en cuotas mensuales que se suman al mantenimiento. Cuando se termina de pagar, la plataforma es 100% propiedad de PEYU."
+      >
+        <SetupBreakdownPanel />
+      </JourneyChapter>
+
+      {/* ═══ CAPÍTULO 7 — Tres caminos para elegir ═══ */}
+      <JourneyChapter
+        num="7"
+        kicker="Tres caminos"
+        title="Elijan el que les haga más sentido."
+        subtitle="No vamos a imponerles nada. Acá están las tres opciones con sus ventajas y costos. El que nosotros recomendamos está marcado."
       >
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-5">
           {PLANES_PROPUESTOS.map((plan) => (
@@ -310,26 +322,27 @@ export default function PropuestaValorPeyu() {
           ))}
         </div>
         <p className="mt-6 text-center text-[12px] text-slate-500 font-inter italic">
-          Todos los planes son sin permanencia. Pueden cambiar o cancelar con aviso de 30 días.
+          Todos los planes son sin permanencia. Pueden cambiar de plan con aviso de 30 días.
         </p>
       </JourneyChapter>
 
-      {/* ═══ CAPÍTULO 7 — Cierre ═══ */}
+      {/* ═══ CAPÍTULO 8 — Cierre ═══ */}
       <JourneyChapter
-        num="7"
+        num="8"
         kicker="El cierre"
-        title="Lo que más queremos es que esto les funcione."
-        subtitle="Construimos esto creyendo en el proyecto PEYU. Reciclar plástico chileno y convertirlo en productos hermosos es una historia que merece la plataforma correcta para escalar."
+        title="Construimos un Ferrari. Falta encenderlo."
+        subtitle="La plataforma está lista. SEO indexado, agentes corriendo, logística conectada, campañas listas para lanzar. Lo único que falta es el acuerdo justo entre los dos para empezar a apretar el acelerador y que esto rinda en serio."
       >
         <div className="bg-gradient-to-br from-teal-950/60 via-slate-900 to-cyan-950/40 border border-teal-400/30 rounded-3xl p-6 md:p-10">
           <Handshake className="w-10 h-10 text-teal-300 mb-4" />
           <h3 className="font-fraunces text-2xl md:text-3xl font-medium text-slate-50 tracking-tight mb-3">
-            Propongamos una reunión esta semana.
+            Cerremos el acuerdo y encendemos el motor esta semana.
           </h3>
           <p className="text-slate-300 font-inter text-base md:text-lg leading-relaxed mb-6">
-            Si algo de lo que mostramos no cuadra, lo conversamos. Si quieren cambiar el plan
-            recomendado, lo cambiamos. Si quieren empezar con el Esencial y subir cuando vean
-            ROI, también. Lo único que pedimos es seguir construyendo esto juntos.
+            Lo cobramos mal al inicio. Lo reconocemos. Pero lo que está construido es real, está
+            corriendo, y vale lo que decimos que vale. Con el acuerdo correcto, desde el mes que
+            viene encendemos Google Ads, abrimos los embudos al máximo y empieza a llegar el ROI
+            que proyectamos. <strong className="text-teal-200">El Ferrari está listo — solo necesita combustible.</strong>
           </p>
           <div className="flex flex-col sm:flex-row gap-3">
             <Button
