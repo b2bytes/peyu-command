@@ -7,10 +7,11 @@ import { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import {
   Lightbulb, Loader2, Plus, X, Trophy, AlertCircle, Sparkles,
-  TrendingUp, ExternalLink, Target, Search as SearchIcon,
+  TrendingUp, ExternalLink, Target, Search as SearchIcon, Globe,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
+import KeywordSerpAnalysisModal from '@/components/seo-keywords/KeywordSerpAnalysisModal';
 
 const SEED_SUGGESTIONS = [
   'regalos sustentables',
@@ -50,6 +51,7 @@ export default function KeywordExplorer() {
   const [busy, setBusy] = useState(false);
   const [result, setResult] = useState(null);
   const [filter, setFilter] = useState('all');
+  const [analyzingKeyword, setAnalyzingKeyword] = useState(null);
 
   const addSeed = (s) => {
     const v = (s || input).trim().toLowerCase();
@@ -302,15 +304,25 @@ export default function KeywordExplorer() {
                         </span>
                       )}
                     </div>
-                    <a
-                      href={buildSearchUrl(k.keyword)}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center justify-center w-7 h-7 rounded-md bg-slate-800 hover:bg-violet-500/20 hover:text-violet-300 text-slate-300 transition-colors flex-shrink-0"
-                      title="Probar en Google.cl"
-                    >
-                      <ExternalLink className="w-3.5 h-3.5" />
-                    </a>
+                    <div className="flex items-center gap-1 flex-shrink-0">
+                      <button
+                        onClick={() => setAnalyzingKeyword(k.keyword)}
+                        className="inline-flex items-center gap-1 px-2 h-7 rounded-md bg-violet-500/15 hover:bg-violet-500/30 text-violet-200 border border-violet-400/30 transition-colors text-[11px] font-bold font-jakarta"
+                        title="Analizar SERP de Google.cl en vivo con IA"
+                      >
+                        <Globe className="w-3 h-3" />
+                        Analizar SERP
+                      </button>
+                      <a
+                        href={buildSearchUrl(k.keyword)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center justify-center w-7 h-7 rounded-md bg-slate-800 hover:bg-violet-500/20 hover:text-violet-300 text-slate-300 transition-colors"
+                        title="Abrir en Google.cl"
+                      >
+                        <ExternalLink className="w-3.5 h-3.5" />
+                      </a>
+                    </div>
                   </div>
                 </div>
               );
@@ -326,6 +338,13 @@ export default function KeywordExplorer() {
             Ventana: últimos {result.window_days} días · País: Chile · Fuente: Google Search Console
           </p>
         </div>
+      )}
+
+      {analyzingKeyword && (
+        <KeywordSerpAnalysisModal
+          keyword={analyzingKeyword}
+          onClose={() => setAnalyzingKeyword(null)}
+        />
       )}
     </div>
   );
