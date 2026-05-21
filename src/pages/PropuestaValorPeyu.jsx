@@ -277,9 +277,9 @@ export default function PropuestaValorPeyu() {
       {/* ═══ CAPÍTULO 5 — ROI proyección ═══ */}
       <JourneyChapter
         num="5"
-        kicker="Del mes 4 en adelante"
+        kicker="Del mes 3 en adelante"
         title="Cómo esta plataforma empieza a pagarse sola."
-        subtitle="Con Google Ads gestionado por agentes IA + indexación masiva + automatizaciones, la proyección conservadora muestra ROI positivo a partir del mes 4. Estos son los números."
+        subtitle="Con Google Ads gestionado por agentes IA + indexación masiva + automatizaciones, la proyección conservadora muestra ROI positivo desde el mes 3, cuando encendamos las campañas. Estos son los números."
       >
         <ROITable />
 
