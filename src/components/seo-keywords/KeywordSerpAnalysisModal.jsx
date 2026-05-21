@@ -43,15 +43,19 @@ export default function KeywordSerpAnalysisModal({ keyword, onClose }) {
   return (
     <div
       data-liquid-mode="night"
-      className="fixed inset-0 z-50 flex items-center justify-center p-3 md:p-6"
-      style={{ backgroundColor: 'rgba(0,0,0,0.7)' }}
+      className="fixed inset-0 z-50 flex items-end md:items-center justify-center md:p-6"
+      style={{ backgroundColor: 'rgba(0,0,0,0.75)' }}
       onClick={onClose}
     >
       <div
-        className="w-full max-w-3xl max-h-[92vh] overflow-y-auto rounded-2xl border"
-        style={{ backgroundColor: '#0F172A', borderColor: '#1E293B', color: '#F1F5F9' }}
+        className="w-full max-w-3xl h-[92vh] md:h-auto md:max-h-[92vh] overflow-y-auto rounded-t-2xl md:rounded-2xl border-t md:border"
+        style={{ backgroundColor: '#0F172A', borderColor: '#1E293B', color: '#F1F5F9', paddingBottom: 'env(safe-area-inset-bottom, 0)' }}
         onClick={e => e.stopPropagation()}
       >
+        {/* Drag handle (mobile bottom sheet feel) */}
+        <div className="md:hidden flex justify-center pt-2 pb-1">
+          <div className="w-10 h-1 rounded-full bg-slate-700" />
+        </div>
         {/* Header */}
         <div
           className="sticky top-0 z-10 px-4 md:px-5 py-3.5 border-b flex items-start justify-between gap-3"

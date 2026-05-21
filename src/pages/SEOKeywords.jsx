@@ -59,7 +59,7 @@ export default function SEOKeywords() {
       data-liquid-mode="night"
       style={{ backgroundColor: '#020617', color: '#F1F5F9', minHeight: '100vh' }}
     >
-      <div className="max-w-7xl mx-auto p-4 md:p-8 space-y-6">
+      <div className="max-w-7xl mx-auto px-3 py-4 md:p-8 space-y-5 md:space-y-6 pb-safe">
 
         {/* ─── Header ─── */}
         <header className="space-y-4">
@@ -77,10 +77,10 @@ export default function SEOKeywords() {
             </div>
           </div>
 
-          {/* Controles · stack en mobile, fila en desktop */}
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5">
-            {/* Tipo de búsqueda */}
-            <div className="flex items-center gap-1 bg-slate-900 border border-slate-800 rounded-lg p-1 overflow-x-auto scrollbar-hide">
+          {/* Controles · grid mobile (tipo full + ventana/refresh debajo), fila en desktop */}
+          <div className="space-y-2 sm:space-y-0 sm:flex sm:items-center sm:justify-between sm:gap-2.5">
+            {/* Tipo de búsqueda · scrollable horizontal en mobile */}
+            <div className="flex items-center gap-1 bg-slate-900 border border-slate-800 rounded-xl p-1 overflow-x-auto scrollbar-hide -mx-1 px-1 sm:mx-0">
               {SEARCH_TYPES.map(t => {
                 const Icon = t.icon;
                 const active = searchType === t.value;
@@ -88,7 +88,7 @@ export default function SEOKeywords() {
                   <button
                     key={t.value}
                     onClick={() => setSearchType(t.value)}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[12px] font-bold font-jakarta whitespace-nowrap transition-all ${
+                    className={`flex items-center gap-1.5 px-3 h-9 rounded-lg text-[12px] font-bold font-jakarta whitespace-nowrap transition-all flex-shrink-0 ${
                       active
                         ? 'bg-cyan-500/20 text-cyan-200 border border-cyan-400/40'
                         : 'text-slate-300 hover:text-slate-50 border border-transparent'
@@ -101,14 +101,14 @@ export default function SEOKeywords() {
               })}
             </div>
 
-            {/* Ventana + refresh */}
+            {/* Ventana + refresh · justo en mobile */}
             <div className="flex items-center gap-2">
-              <div className="flex items-center gap-1 bg-slate-900 border border-slate-800 rounded-lg p-1">
+              <div className="flex items-center gap-1 bg-slate-900 border border-slate-800 rounded-xl p-1 flex-1 sm:flex-initial">
                 {WINDOWS.map(w => (
                   <button
                     key={w.days}
                     onClick={() => setDays(w.days)}
-                    className={`px-3 py-1.5 rounded-md text-[12px] font-bold font-jakarta transition-all ${
+                    className={`flex-1 sm:flex-initial px-3 h-9 rounded-lg text-[12px] font-bold font-jakarta transition-all ${
                       days === w.days
                         ? 'bg-teal-500/20 text-teal-200 border border-teal-400/40'
                         : 'text-slate-300 hover:text-slate-50 border border-transparent'
@@ -123,7 +123,7 @@ export default function SEOKeywords() {
                 variant="ghost"
                 onClick={load}
                 disabled={loading}
-                className="h-9 w-9 p-0 text-slate-300 hover:text-slate-50 hover:bg-slate-800 border border-slate-800"
+                className="h-11 w-11 sm:h-9 sm:w-9 p-0 text-slate-300 hover:text-slate-50 hover:bg-slate-800 border border-slate-800 rounded-xl flex-shrink-0"
               >
                 <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
               </Button>

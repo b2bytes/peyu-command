@@ -85,9 +85,9 @@ export default function QuickSerpAnalyzer() {
               <button
                 key={kw}
                 onClick={() => handleAnalyze(kw)}
-                className="text-[11px] px-2.5 py-1 rounded-md bg-slate-900 hover:bg-violet-500/20 hover:text-violet-200 text-slate-300 border border-slate-700 hover:border-violet-400/40 transition-all font-inter inline-flex items-center gap-1"
+                className="text-[12px] px-3 h-8 rounded-lg bg-slate-900 hover:bg-violet-500/20 active:bg-violet-500/30 hover:text-violet-200 text-slate-300 border border-slate-700 hover:border-violet-400/40 transition-all font-inter inline-flex items-center gap-1.5"
               >
-                <Globe className="w-2.5 h-2.5 opacity-70" />
+                <Globe className="w-3 h-3 opacity-70" />
                 {kw}
               </button>
             ))}
