@@ -14,6 +14,7 @@ import { saveMockupDraft } from '@/lib/mockup-draft';
 import { getColoresProducto } from '@/lib/color-parser';
 import { getPackSize } from '@/lib/pack-parser';
 import PackColorPicker from '@/components/producto/PackColorPicker';
+import EngravingPositionPicker from '@/components/producto/EngravingPositionPicker';
 import GiftCardVisual from '@/components/giftcard/GiftCardVisual';
 import ImpactoAmbientalProducto from '@/components/producto/ImpactoAmbientalProducto';
 import FrequentlyBoughtTogether from '@/components/bundles/FrequentlyBoughtTogether';
@@ -155,6 +156,7 @@ export default function ProductoDetalle() {
   const [colorSeleccionado, setColorSeleccionado] = useState(null);
   const [coloresPack, setColoresPack] = useState([]); // multi-color para packs
   const [personalizacion, setPersonalizacion] = useState('');
+  const [posicionGrabado, setPosicionGrabado] = useState('centro');
   const [carrito, setCarrito] = useState(() => {
     // Lectura defensiva: si el localStorage está corrupto no debe crashear la página.
     try { return JSON.parse(localStorage.getItem('carrito') || '[]') || []; }
@@ -259,6 +261,7 @@ export default function ProductoDetalle() {
       colores_pack: packSize ? coloresPack : null,
       pack_resumen: packSummary,
       personalizacion: personalizacion || null,
+      posicion_grabado: personalizacion ? posicionGrabado : null,
       imagen: getProductImage(producto),
     };
     const nuevo = [...carrito, item];
@@ -852,10 +855,17 @@ export default function ProductoDetalle() {
                     </div>
                   </div>
                   {personalizacion && (
-                    <div className="rounded-xl px-4 py-2 text-center bg-slate-900 border border-yellow-500/40">
-                      <p className="font-bold tracking-[0.2em] text-sm text-yellow-400" style={{ fontFamily: 'monospace' }}>{personalizacion.toUpperCase()}</p>
-                      <p className="text-white/40 text-[9px] mt-0.5">Preview del grabado láser</p>
-                    </div>
+                    <>
+                      <div className="rounded-xl px-4 py-2 text-center bg-slate-900 border border-yellow-500/40">
+                        <p className="font-bold tracking-[0.2em] text-sm text-yellow-400" style={{ fontFamily: 'monospace' }}>{personalizacion.toUpperCase()}</p>
+                        <p className="text-white/40 text-[9px] mt-0.5">Preview del grabado láser</p>
+                      </div>
+                      <EngravingPositionPicker
+                        value={posicionGrabado}
+                        onChange={setPosicionGrabado}
+                        areaLaser={producto.area_laser_mm || '40×25mm'}
+                      />
+                    </>
                   )}
 
                   {/* Mockup IA real */}
