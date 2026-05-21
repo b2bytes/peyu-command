@@ -97,25 +97,31 @@ export default function PropuestaValorPeyu() {
           num="1"
           kicker="Punto de partida"
           title="Cobramos mal al principio. Punto."
-          subtitle="No queremos esquivar la conversación. Acordamos $250.000/mes y ustedes ya nos pagaron $750.000 por 3 meses cumplidos. Antes de pedirles nada distinto, queremos mostrarles transparentemente qué reciben hoy y por qué el valor real es otro."
+          subtitle="No queremos esquivar la conversación. Acordamos $250.000/mes, ustedes pagaron $750.000 por los primeros 3 meses, y desde entonces pasaron 2 meses más en los que seguimos construyendo, optimizando e indexando sin facturar. Antes de pedirles nada, queremos mostrarles transparentemente qué reciben hoy y por qué el valor real es otro."
         >
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
             <KPICard
               label="Acuerdo inicial"
               value={fmtCLP(CONTEXT.cobro_inicial_mensual_clp)}
-              sub="/ mes · facturado al cliente"
+              sub="/ mes · facturado"
               tone="slate"
             />
             <KPICard
-              label="Ya pagado por PEYU"
+              label="Pagado por PEYU"
               value={fmtCLP(CONTEXT.pagado_hasta_ahora_clp)}
               sub={`${CONTEXT.meses_pagados} meses cumplidos`}
               tone="emerald"
             />
             <KPICard
-              label="Valor del mercado equivalente"
+              label="Meses sin facturar"
+              value={`${CONTEXT.meses_sin_pago} meses`}
+              sub="seguimos construyendo igual"
+              tone="amber"
+            />
+            <KPICard
+              label="Valor del mercado"
               value={fmtCLP(TOTAL_MERCADO_CLP)}
-              sub="/ mes · si lo armaran con SaaS sueltos"
+              sub="/ mes equivalente en SaaS"
               tone="teal"
               highlight
             />
@@ -123,8 +129,10 @@ export default function PropuestaValorPeyu() {
           <div className="mt-8 bg-amber-950/30 border border-amber-500/30 rounded-2xl p-5 md:p-6">
             <p className="text-amber-100 font-inter text-[14px] md:text-base leading-relaxed">
               <strong className="font-jakarta">Nuestro compromiso:</strong> los 3 meses ya facturados quedan
-              firmes a $250K, sin cambios retroactivos. Esta propuesta es solo para definir
-              juntos cómo seguimos a partir del <strong>mes 4 en adelante</strong>.
+              firmes a $250K, sin cambios retroactivos. Los <strong>2 meses adicionales</strong> que pasaron sin
+              pago tampoco se los vamos a cobrar retroactivamente — los tomamos como nuestra inversión
+              en demostrarles que el sistema funciona. Esta propuesta es solo para definir
+              juntos cómo seguimos a partir del <strong>mes 6 en adelante</strong>.
             </p>
           </div>
         </JourneyChapter>

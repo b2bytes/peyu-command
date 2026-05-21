@@ -17,6 +17,8 @@ export const CONTEXT = {
   pagado_hasta_ahora_clp: 750_000,
   cobro_inicial_mensual_clp: 250_000,
   meses_pagados: 3,
+  meses_sin_pago: 2,
+  meses_totales: 5,
   fecha_propuesta: 'Mayo 2026',
 };
 
@@ -61,7 +63,22 @@ export const TIMELINE = [
     ],
   },
   {
-    mes: 'Hoy (Mes 4 en adelante)',
+    mes: 'Meses 4-5',
+    titulo: 'Lo que hicimos sin facturar',
+    descripcion: 'Aunque ya no estaban pagando, seguimos construyendo. Estos 2 meses fueron una inversión nuestra para que vieran que el sistema funciona en serio.',
+    entregables: [
+      'Propagación SEO masiva a 100 productos con 9 keywords prioritarias',
+      'Indexación completa: 107 URLs enviadas a Bing/Yandex/Seznam',
+      'Sitemap registrado en Google Search Console',
+      'Centro de costos reales + sugerencias de precio IA',
+      'Auditoría visual completa del catálogo',
+      'Generador de campañas Google Ads 2026 (PMax + Demand Gen)',
+      'Forecaster IA pre-publicación de campañas',
+      'Cockpit ejecutivo móvil refinado',
+    ],
+  },
+  {
+    mes: 'Hoy (Mes 6 en adelante)',
     titulo: 'Crecimiento',
     descripcion: 'Lo que viene: campañas pagadas, indexación masiva, escalamiento de ventas.',
     entregables: [
