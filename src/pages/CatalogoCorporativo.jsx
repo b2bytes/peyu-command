@@ -279,7 +279,11 @@ export default function CatalogoCorporativo() {
                         </div>
                         <div className="bg-[#0F8B6C]/5 rounded-lg p-2 space-y-1">
                           <div className="text-[10px] font-bold text-[#0F8B6C]">Descuentos por volumen</div>
-                          <div className="text-[10px] text-gray-600">• 100+ u. = −8% • 500+ u. = −25%</div>
+                          <div className="text-[10px] text-gray-600 leading-tight">
+                            • 50+ u. = −8%<br/>
+                            • 200+ u. = −15%<br/>
+                            • 500+ u. = −25%
+                          </div>
                         </div>
                         <button
                           onClick={() => setSelectedProduct(kit)}
