@@ -13,6 +13,7 @@ import GoogleShoppingAuditPanel from '@/components/admin-products/GoogleShopping
 import BulkImageGeneratorPanel from '@/components/admin-products/BulkImageGeneratorPanel';
 import LaunchReadinessPanel from '@/components/admin-products/LaunchReadinessPanel';
 import DuplicateMergePanel from '@/components/admin-products/DuplicateMergePanel';
+import MerchantCenterSyncCard from '@/components/admin-products/MerchantCenterSyncCard';
 import { Button } from '@/components/ui/button';
 
 /**
@@ -125,6 +126,9 @@ export default function AdminProducts() {
           <button onClick={() => setSyncResult(null)} className="text-white/50 hover:text-white"><X className="w-3 h-3" /></button>
         </div>
       )}
+
+      {/* Google Merchant Center · empuja todos los productos a Shopping con un click */}
+      <MerchantCenterSyncCard />
 
       {/* Pre-Launch Audit — duplicados / precios / descripciones / imágenes */}
       <LaunchReadinessPanel
