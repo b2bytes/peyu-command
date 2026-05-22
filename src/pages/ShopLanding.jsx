@@ -26,6 +26,7 @@ import DesktopHeroSplit from '@/components/landing/desktop/DesktopHeroSplit';
 import DesktopCategorySection from '@/components/landing/desktop/DesktopCategorySection';
 import DesktopTopSellers from '@/components/landing/desktop/DesktopTopSellers';
 import DesktopTrustFooter from '@/components/landing/desktop/DesktopTrustFooter';
+import DesktopChatWelcomeChips from '@/components/landing/desktop/DesktopChatWelcomeChips';
 
 // Limpia los bloques [CONTEXTO] y [BRAIN] inyectados al agente — no deben
 // verse en la UI. Usamos sanitizeUserMessage (que ya conoce todos los patrones)
@@ -609,6 +610,17 @@ export default function ShopLanding() {
                       </div>
                     </div>
                   )}
+
+                  {/* Welcome chips desktop — solo cuando el chat arranca vacío
+                      (un único mensaje del assistant = WELCOME). Replica la energía
+                      visual del modal mobile y del modal de referencia. */}
+                  {messages.length <= 1 && !loading && (
+                    <DesktopChatWelcomeChips
+                      onPick={(prompt) => sendMessage(prompt)}
+                      disabled={loading}
+                    />
+                  )}
+
                   <div ref={messagesEndRef} />
                 </div>
 
