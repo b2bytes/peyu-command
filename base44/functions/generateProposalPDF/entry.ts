@@ -56,6 +56,19 @@ Deno.serve(async (req) => {
     const p = list[0];
 
     const items = (() => { try { return p.items_json ? JSON.parse(p.items_json) : []; } catch { return []; } })();
+
+    // ─── Garantía contextual: si la propuesta es solo carcasas/compostables, no
+    // aplicamos el discurso "10 años" (incorrecto para esos materiales).
+    const esSoloCompostable = items.length > 0 && items.every(it => {
+      const txt = `${it?.nombre || it?.name || ''} ${it?.sku || ''} ${it?.material || ''} ${it?.categoria || ''}`.toLowerCase();
+      return /carcasa|compostable|trigo|fibra/.test(txt);
+    });
+    const garantiaLabel = esSoloCompostable
+      ? 'Material compostable industrial'
+      : 'Garantia 10 anos';
+    const garantiaTermino = esSoloCompostable
+      ? 'Material compostable industrial. Carcasas se composta en 2-3 anos al fin de su vida util.'
+      : 'Garantia de 10 anos contra defectos de fabricacion en plastico reciclado.';
     const fechaEnvio = p.fecha_envio || new Date().toISOString().split('T')[0];
     const fechaVenc = p.fecha_vencimiento || '';
 
@@ -270,10 +283,10 @@ Deno.serve(async (req) => {
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(8);
       const esgLines = [
-        '> 100% plastico reciclado',
+        esSoloCompostable ? '> Fibra de trigo / compostable' : '> 100% plastico reciclado',
         '> Hecho en Chile',
         '> Energia renovable',
-        '> Garantia 10 anos',
+        `> ${garantiaLabel}`,
         '> Reduce huella corporativa',
       ];
       esgLines.forEach((l, i) => {
@@ -452,7 +465,7 @@ Deno.serve(async (req) => {
     const conds = [
       `Anticipo ${p.anticipo_pct || 50}% para iniciar produccion. Saldo contra despacho.`,
       `Entrega en ${p.lead_time_dias || 7} dias habiles desde anticipo y aprobacion de mockup.`,
-      'Garantia de 10 anos contra defectos de fabricacion en plastico reciclado.',
+      garantiaTermino,
       'Grabado laser UV gratis desde 10 unidades. Area estandar 40x25mm.',
       'Despacho a todo Chile via Starken/Chilexpress/BlueExpress.',
       `Propuesta valida por ${p.validity_days || 15} dias desde la emision.`,

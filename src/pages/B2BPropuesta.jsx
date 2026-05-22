@@ -147,6 +147,26 @@ export default function B2BPropuesta() {
   const yaRespondida = ['Aceptada', 'Rechazada', 'Vencida'].includes(propuesta.status);
   const descuento = propuesta.descuento_pct > 0 ? Math.round((propuesta.subtotal || 0) * propuesta.descuento_pct / 100) : 0;
 
+  // Garantía contextual: si TODOS los items son carcasas/compostables, no
+  // aplicamos el discurso "10 años" (queda inconsistente con producto/carrito).
+  const esSoloCompostable = items.length > 0 && items.every(it => {
+    const txt = `${it?.nombre || it?.name || ''} ${it?.sku || ''} ${it?.material || ''} ${it?.categoria || ''}`.toLowerCase();
+    return /carcasa|compostable|trigo|fibra/.test(txt);
+  });
+  const garantiaTitulo = esSoloCompostable ? 'Material compostable' : 'Garantía 10 años';
+  const garantiaDesc = esSoloCompostable
+    ? 'Carcasas y productos de fibra de trigo: compostables industriales en 2-3 años al fin de su vida útil.'
+    : 'Cobertura total contra defectos de fabricación en plástico reciclado.';
+  const garantiaTerminoLista = esSoloCompostable
+    ? 'Material compostable industrial. Carcasas y productos de fibra de trigo se compostan en 2-3 años al fin de su vida útil.'
+    : 'Garantía de 10 años contra defectos de fabricación en plástico 100% reciclado.';
+  const esgGarantiaItem = esSoloCompostable
+    ? ['🌱', 'Material compostable industrial']
+    : ['🛡️', 'Garantía de 10 años'];
+  const esgMaterialItem = esSoloCompostable
+    ? ['🌾', 'Fibra de trigo / material compostable']
+    : ['♻️', 'Plástico 100% reciclado post-consumo'];
+
   return (
     <div className="min-h-screen bg-[#FAFAF8] font-inter">
       <SEO
@@ -286,10 +306,10 @@ export default function B2BPropuesta() {
               </p>
               <ul className="space-y-2 text-xs">
                 {[
-                  ['♻️', 'Plástico 100% reciclado post-consumo'],
+                  esgMaterialItem,
                   ['🏭', 'Fabricación local en Santiago, Chile'],
                   ['🔋', 'Proceso con energía renovable'],
-                  ['🛡️', 'Garantía de 10 años'],
+                  esgGarantiaItem,
                 ].map(([e, l], i) => (
                   <li key={i} className="flex items-center gap-2">
                     <span>{e}</span>
@@ -396,7 +416,7 @@ export default function B2BPropuesta() {
         {/* CONDICIONES GRID */}
         <div className="grid md:grid-cols-3 gap-3">
           {[
-            { icon: Shield, title: 'Garantía 10 años', desc: 'Cobertura total contra defectos de fabricación en plástico reciclado.', color: 'teal' },
+            { icon: Shield, title: garantiaTitulo, desc: garantiaDesc, color: 'teal' },
             { icon: Truck, title: 'Despacho a todo Chile', desc: 'Vía Starken, Chilexpress o BlueExpress. Costo calculado según destino.', color: 'blue' },
             { icon: Building2, title: `Anticipo ${propuesta.anticipo_pct || 50}%`, desc: `El saldo se paga contra despacho o 30 días con factura.`, color: 'purple' },
           ].map((c, i) => {
@@ -427,7 +447,7 @@ export default function B2BPropuesta() {
               `Anticipo ${propuesta.anticipo_pct || 50}% para iniciar producción. Saldo contra despacho o 30 días con factura.`,
               `Entrega en ${propuesta.lead_time_dias || 7} días hábiles desde pago de anticipo y aprobación de mockup.`,
               'Grabado láser UV incluido gratis desde 10 unidades (área estándar 40×25mm).',
-              'Garantía de 10 años contra defectos de fabricación en plástico 100% reciclado.',
+              garantiaTerminoLista,
               'Fabricación 100% local en Santiago, Chile.',
               `Propuesta válida por ${propuesta.validity_days || 15} días corridos desde la emisión.`,
             ].map((l, i) => (
