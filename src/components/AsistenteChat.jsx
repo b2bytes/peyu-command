@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Send, X, History, Sparkles, Gift, Building2, Leaf } from 'lucide-react';
 import ChatProductContentLight from '@/components/chat/ChatMessageContentLight';
 import ChatHistoryPanel from '@/components/chat/ChatHistoryPanel';
+import FloatingActionDock from '@/components/FloatingActionDock';
 import { ensureFreshSession, addToHistory } from '@/lib/chat-history';
 import { withContext } from '@/lib/chat-context';
 import { sanitizeUserMessage } from '@/lib/chat-sanitize';
@@ -218,44 +219,15 @@ export default function AsistenteChat() {
 
   return (
     <>
-      {/* FAB Premium estilo Intercom — pill con texto + avatar.
-          En mobile: pill compacto sobre el bottom nav (sin tapar contenido).
-          En desktop: pill expandido para invitar al diálogo. */}
+      {/* Dock flotante unificado (trend 2030 · vidrio líquido) — agrupa
+          Peyu IA + WhatsApp en una sola pieza arquitectónica para evitar
+          el solapamiento que tenían los dos floats separados. */}
       {!open && (
-        <div
-          className="fixed right-4 sm:right-6 z-40"
-          style={{ bottom: 'calc(env(safe-area-inset-bottom) + 5.5rem)' }}
-        >
-          <button
-            onClick={handleOpen}
-            className="group relative flex items-center gap-2.5 pl-2 pr-4 py-2 bg-white rounded-full shadow-[0_8px_32px_-8px_rgba(15,139,108,0.4)] hover:shadow-[0_12px_40px_-8px_rgba(15,139,108,0.5)] border border-teal-100/80 hover:scale-[1.02] active:scale-[0.98] transition-all"
-            aria-label="Abrir chat con Peyu"
-          >
-            {/* Avatar circular con gradiente firma */}
-            <span className="relative flex items-center justify-center w-9 h-9 rounded-full bg-gradient-to-br from-teal-500 to-cyan-600 text-lg shadow-inner">
-              🐢
-              {/* Status dot vivo */}
-              <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-400 border-2 border-white rounded-full" />
-            </span>
-            {/* Copy comercial */}
-            <span className="flex flex-col items-start leading-tight">
-              <span className="text-[13px] font-bold text-slate-900 flex items-center gap-1">
-                {hasHistory ? 'Sigue tu chat' : 'Habla con Peyu'}
-                <Sparkles className="w-3 h-3 text-amber-500" />
-              </span>
-              <span className="text-[10px] text-teal-700 font-medium flex items-center gap-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                {hasHistory ? `${messages.filter(m => m.role === 'assistant').length} mensajes` : 'Te respondo al toque'}
-              </span>
-            </span>
-            {/* Badge contador (solo si historia) */}
-            {hasHistory && (
-              <span className="absolute -top-1.5 -right-1.5 min-w-[20px] h-5 px-1.5 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-white shadow-sm">
-                {messages.filter(m => m.role === 'assistant').length}
-              </span>
-            )}
-          </button>
-        </div>
+        <FloatingActionDock
+          onOpenChat={handleOpen}
+          hasUnread={hasHistory}
+          unreadCount={messages.filter(m => m.role === 'assistant').length}
+        />
       )}
 
       {/* Chat Window — en móvil ocupa ancho completo y respeta bottom nav.

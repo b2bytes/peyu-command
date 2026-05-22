@@ -7,6 +7,20 @@ export default function WhatsAppFloat() {
   // Ocultar en la home: el chat Peyu (esquina inferior derecha) ya es el canal
   // principal y el WhatsApp queda visualmente tapado por la card del chat.
   if (pathname === '/') return null;
+  // 🎯 Rutas públicas con AsistenteChat: el dock unificado (FloatingActionDock)
+  // ya integra WhatsApp + Peyu IA en una sola pieza. Ocultamos este float
+  // standalone para evitar el solapamiento de dos botones flotantes.
+  const isPublicWithDock = (
+    pathname.startsWith('/shop') ||
+    pathname.startsWith('/producto') ||
+    pathname.startsWith('/b2b') ||
+    pathname.startsWith('/catalogo-visual') ||
+    pathname.startsWith('/nosotros') ||
+    pathname.startsWith('/soporte') ||
+    pathname.startsWith('/seguimiento') ||
+    pathname.startsWith('/personalizar')
+  );
+  if (isPublicWithDock) return null;
 
   return (
     <a
