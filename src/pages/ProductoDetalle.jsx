@@ -12,6 +12,7 @@ import {
 import MockupGenerator from '@/components/MockupGenerator';
 import { saveMockupDraft } from '@/lib/mockup-draft';
 import { getColoresProducto } from '@/lib/color-parser';
+import { findColorImageMatch } from '@/lib/color-image-matcher';
 import { getPackSize } from '@/lib/pack-parser';
 import PackColorPicker from '@/components/producto/PackColorPicker';
 import EngravingPositionPicker from '@/components/producto/EngravingPositionPicker';
@@ -164,6 +165,9 @@ export default function ProductoDetalle() {
   });
   const [agregado, setAgregado] = useState(false);
   const [vistaActiva, setVistaActiva] = useState(0);
+  const [colorMatchFeedback, setColorMatchFeedback] = useState(null); // { label, key } para badge "Mostrando en X"
+  const [imageFading, setImageFading] = useState(false); // fade-in/out al cambiar imagen por color
+  const userInteractedRef = useRef(false); // si el usuario tocó thumbnails manualmente, no auto-saltamos
   const [showStickyBar, setShowStickyBar] = useState(false);
   const [wishlist, setWishlist] = useState(false);
   const [shareMsg, setShareMsg] = useState('');
@@ -298,23 +302,41 @@ export default function ProductoDetalle() {
       ].filter(Boolean)))
     : [];
 
-  // 🎨 Cuando el cliente elige un color, intentamos mostrar la imagen de ese color.
-  // Match heurístico: buscamos en TODA la galería un URL que contenga el alias
-  // del color seleccionado (turquesa, azul, rosa, negro, etc.). Si encontramos,
-  // saltamos a esa imagen automáticamente.
+  // 🎨 UX 2026 — Sync inteligente color ↔ imagen
+  // Cuando el cliente cambia el color, buscamos en la galería la imagen que
+  // mejor representa ese color usando matching scored (no solo substring) con
+  // aliases en español. Cambio con micro-fade + badge contextual.
+  // Respeta la navegación manual: si el usuario tocó thumbnails, no forzamos.
   useEffect(() => {
     if (!colorSeleccionado || !producto || galeria.length === 0) return;
-    const colores = getColores(producto);
-    const color = colores.find(c => c.id === colorSeleccionado);
+    const coloresLista = getColores(producto);
+    const color = coloresLista.find(c => c.id === colorSeleccionado);
     if (!color) return;
-    // Lista de aliases para buscar en el URL (sin tildes, lowercase)
-    const aliases = [color.id, color.label.toLowerCase().split(' ')[0]]
-      .map(a => a.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase());
-    const idx = galeria.findIndex(url => {
-      const u = url.toLowerCase();
-      return aliases.some(a => u.includes(a));
-    });
-    if (idx >= 0 && idx !== vistaActiva) setVistaActiva(idx);
+
+    const match = findColorImageMatch(galeria, color);
+    if (!match) {
+      // Sin imagen específica → limpiamos feedback antiguo
+      setColorMatchFeedback(null);
+      return;
+    }
+
+    if (match.index !== vistaActiva) {
+      // Fade-out → cambio → fade-in
+      setImageFading(true);
+      const t = setTimeout(() => {
+        setVistaActiva(match.index);
+        setImageFading(false);
+      }, 180);
+      // Badge contextual desaparece a los 2.5s
+      setColorMatchFeedback({ label: color.label, key: Date.now() });
+      const tBadge = setTimeout(() => setColorMatchFeedback(null), 2500);
+      return () => { clearTimeout(t); clearTimeout(tBadge); };
+    } else {
+      // Ya estaba en la imagen correcta → solo flash sutil del badge
+      setColorMatchFeedback({ label: color.label, key: Date.now() });
+      const tBadge = setTimeout(() => setColorMatchFeedback(null), 1800);
+      return () => clearTimeout(tBadge);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [colorSeleccionado, producto?.id]);
 
@@ -506,6 +528,7 @@ export default function ProductoDetalle() {
               ) : (
               <div className="relative ld-card overflow-hidden shadow-xl mx-auto w-full max-w-[460px] lg:max-w-none bg-white" style={{ aspectRatio: '1' }}>
                 <img
+                  key={galeria[vistaActiva] || imgPrincipal}
                   src={galeria[vistaActiva] || imgPrincipal}
                   alt={`${producto.nombre} · ${producto.material || 'Plástico reciclado'} · ${producto.categoria} · PEYU Chile`}
                   width="600"
@@ -514,7 +537,7 @@ export default function ProductoDetalle() {
                   fetchpriority="high"
                   decoding="async"
                   referrerPolicy="no-referrer"
-                  className="w-full h-full object-cover transition-transform duration-500"
+                  className={`w-full h-full object-cover transition-all duration-300 ease-out ${imageFading ? 'opacity-0 scale-[0.98]' : 'opacity-100 scale-100'}`}
                   onError={e => {
                     // Guard anti-loop: marcamos en data-attr el nivel de fallback ya probado.
                     const tried = e.target.dataset.fallbackTried || '';
@@ -558,15 +581,39 @@ export default function ProductoDetalle() {
                     <Copy className="w-3 h-3" /> {shareMsg}
                   </div>
                 )}
+                {/* Badge contextual UI 2026: feedback sutil "Mostrando en X" cuando el color sincronizó la galería */}
+                {colorMatchFeedback && (
+                  <div
+                    key={colorMatchFeedback.key}
+                    className="absolute bottom-4 left-4 ld-glass-strong text-ld-fg text-[11px] font-semibold pl-2 pr-3 py-1.5 rounded-full shadow-lg flex items-center gap-2 animate-in fade-in slide-in-from-bottom-2 duration-300"
+                  >
+                    <span
+                      className="w-3.5 h-3.5 rounded-full border border-white/40 shadow-inner flex-shrink-0"
+                      style={{ backgroundColor: colores.find(c => c.id === colorSeleccionado)?.hex || '#ccc' }}
+                      aria-hidden
+                    />
+                    <span className="text-ld-fg-muted">Mostrando en</span>
+                    <span className="text-ld-fg">{colorMatchFeedback.label}</span>
+                  </div>
+                )}
               </div>
               )}
 
-              {/* Thumbnails */}
+              {/* Thumbnails — con indicador sutil del color activo cuando hubo match */}
               {!isGiftCard && galeria.length > 1 && (
               <div className="grid grid-cols-4 gap-2">
-                {galeria.slice(0, 4).map((img, i) => (
-                  <button key={`${img}-${i}`} onClick={() => setVistaActiva(i)}
-                    className={`aspect-square rounded-2xl overflow-hidden border-2 transition-all bg-white ${vistaActiva === i ? 'shadow-lg scale-[1.03]' : 'opacity-70 hover:opacity-100'}`}
+                {galeria.slice(0, 4).map((img, i) => {
+                  const colorMatchActivo = colorMatchFeedback && vistaActiva === i;
+                  const activeHex = colores.find(c => c.id === colorSeleccionado)?.hex;
+                  return (
+                  <button
+                    key={`${img}-${i}`}
+                    onClick={() => {
+                      userInteractedRef.current = true;
+                      setVistaActiva(i);
+                      setColorMatchFeedback(null);
+                    }}
+                    className={`relative aspect-square rounded-2xl overflow-hidden border-2 transition-all bg-white ${vistaActiva === i ? 'shadow-lg scale-[1.03]' : 'opacity-70 hover:opacity-100'}`}
                     style={{ borderColor: vistaActiva === i ? 'var(--ld-action)' : 'var(--ld-border)' }}>
                     <img
                       src={img}
@@ -585,8 +632,17 @@ export default function ProductoDetalle() {
                         }
                       }}
                     />
+                    {/* Dot 2026: muestra el color que corresponde a este thumbnail tras match */}
+                    {colorMatchActivo && activeHex && (
+                      <span
+                        className="absolute top-1.5 right-1.5 w-3.5 h-3.5 rounded-full border-2 border-white shadow-md animate-in zoom-in-50 duration-300"
+                        style={{ backgroundColor: activeHex }}
+                        aria-hidden
+                      />
+                    )}
                   </button>
-                ))}
+                  );
+                })}
               </div>
               )}
 
