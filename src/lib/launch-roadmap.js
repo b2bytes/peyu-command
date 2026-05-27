@@ -1,23 +1,32 @@
 /**
- * 🚀 ROADMAP DE LANZAMIENTO PEYU — Versión 16-may-2026 en adelante
+ * 🚀 ROADMAP DE LANZAMIENTO PEYU — Versión 27-may-2026 (post-contrato Impulsia)
  *
- * Construido tras auditoría real del proyecto el 15-mayo-2026:
- *   • Catálogo: 100+ productos importados de WooCommerce, MUCHOS con campos vacíos
- *     (precio_b2b, lead_time, peso_kg, dimensiones, garantía, descripción).
- *   • Imágenes: la sincronización WooCommerce desordenó la galería. Algunas se
- *     migraron a Base44 media, otras siguen apuntando a base44.app/api (frágiles).
- *   • Pedidos: 2 intentos de fraude detectados ($3.9M c/u, ya bloqueados por
- *     assessOrderRisk) → motor de riesgo funcionando ✅
- *   • B2B: error 403 al crear B2BLead desde /b2b/contacto (RLS demasiado estricta).
- *   • Chat IA: agente ya re-tonado a cálido, pero NO conectado a WhatsApp.
- *   • Social Studio: 7 posts en revisión esta semana, NINGUNO publicado.
- *   • Errores Network: `/shop?categoria=Escritorio` falla intermitentemente.
+ * CONTEXTO NUEVO:
+ *   • Contrato firmado con PEYU el 26-may-2026. Setup queda pendiente de pago
+ *     hasta que el sistema esté estable y operativo.
+ *   • Meta contractual: sostener $20M+ CLP/mes en ventas (B2B + B2C) desde
+ *     septiembre 2026, medido mensualmente (no acumulado).
+ *   • Baseline contractual: promedio ventas histórico ene–ago 2026 (data
+ *     consolidada en Base44 + SII por Carlos).
+ *   • Performance Fee se activa solo sobre ventas mensuales que superen el
+ *     baseline. Por eso necesitamos el sistema midiendo correctamente desde
+ *     el día 1.
  *
- * Filosofía: estabilidad PRIMERO, escala DESPUÉS. Cada fase tiene un gate de salida
- * antes de pasar a la siguiente. NO se publica nada inestable.
+ * ESTRATEGIA EN 2 TIEMPOS:
+ *   Tiempo 1 → 7 días (27-may → 02-jun) · "SETUP ESTABLE MÍNIMO VIABLE"
+ *     Lo básico que DEBE funcionar sin caerse para que el cliente nos pague
+ *     el setup. Vender, recibir pagos, despachar, atender.
  *
- * Esfuerzos en horas estimadas REALES de este constructor (Base44 LLM-powered),
- * NO horas humanas. Hito = lo que el cliente verá funcionando al final.
+ *   Tiempo 2 → 13 semanas (03-jun → 31-ago) · "HARDENING + ESCALA A $20M"
+ *     Hitos quincenales construyendo automatización, tráfico, conversión
+ *     y reporting hasta llegar al gate de septiembre con sistema sostenible.
+ *
+ * Filosofía:
+ *   • Estabilidad PRIMERO, escala DESPUÉS.
+ *   • Cada hito tiene gate de salida medible (no opinable).
+ *   • Cada quincena cierra con una demo concreta para PEYU.
+ *
+ * Editor único de verdad: este archivo.
  */
 
 export const PHASE_META = {
@@ -27,347 +36,558 @@ export const PHASE_META = {
   blocked:   { label: 'Bloqueada',     emoji: '🛑', color: 'red' },
 };
 
+// Track en cuál bloque estamos: T1 = setup mínimo viable, T2 = hardening + escala
+export const TRACK_META = {
+  T1: { label: 'Setup mínimo viable',  emoji: '🛠️', subtitulo: '7 días para soltar el cobro del setup' },
+  T2: { label: 'Hardening + escala',   emoji: '📈', subtitulo: '13 semanas hasta los $20M sostenidos' },
+};
+
 export const LAUNCH_ROADMAP = [
   // ════════════════════════════════════════════════════════════════════
-  // FASE 0 — ARREGLOS URGENTES (sáb 16 may, 1 día)
+  // 🛠️ T1 · SETUP MÍNIMO VIABLE (mié 27 may → mar 02 jun · 7 días)
   // ════════════════════════════════════════════════════════════════════
+  // Lo que tiene que estar OK al final de estos 7 días para que el cliente
+  // diga "esto funciona" y libere el pago del setup según contrato.
+  // ════════════════════════════════════════════════════════════════════
+
   {
-    id: 'fase-0',
-    nombre: 'Fase 0 · Arreglos urgentes',
-    semana: 'Sábado 16 mayo',
-    duracion_dias: 1,
-    objetivo: 'Dejar el sitio estable: nadie debería encontrarse con errores el lunes.',
-    gate_salida: 'Todo funciona en celular y desktop. Un pedido de prueba llega completo al final del día.',
-    status: 'pending',
+    id: 't1-h1',
+    track: 'T1',
+    nombre: 'Hito 1 · Cobranza y entrega funcionando end-to-end',
+    semana: 'Mié 27 — Vie 29 mayo',
+    duracion_dias: 3,
+    objetivo: 'Un cliente cualquiera puede comprar, pagar, recibir email y obtener tracking sin intervención manual.',
+    gate_salida: 'Pedido de prueba real completado end-to-end: MercadoPago aprobado → email confirmado → etiqueta Bluex generada → tracking visible en /seguimiento. Sin errores en consola.',
+    status: 'active',
     items: [
       {
-        title: 'Arreglar el formulario B2B en celulares',
-        impact: 'critical',
-        effort_hours: 0.5,
-        owner: 'constructor',
-        status: 'done',
-        detail: '✅ Smoke test confirma /b2b/contacto responde 200 en desktop y mobile (TTFB ~270ms). No hay errores de carga reportados.',
-      },
-      {
-        title: 'Estabilizar los filtros de categoría en la tienda móvil',
+        title: 'Mié 27 · Sanity check completo del flujo de compra B2C',
         impact: 'critical',
         effort_hours: 1,
-        owner: 'constructor',
-        status: 'done',
-        detail: '✅ /shop responde 200 estable en mobile y desktop (TTFB ~270ms). lazyWithRetry ya está implementado para auto-reintentar chunks rotos tras deploys.',
+        owner: 'constructor + humano',
+        detail: '3 compras de prueba con MercadoPago real ($1.000 c/u): carrito → checkout → pago aprobado → email recibido → pedido visible en /admin/procesar-pedidos. Documentar cualquier fricción para fix inmediato.',
       },
       {
-        title: 'Revisar catálogo: detectar fotos rotas',
-        impact: 'critical',
-        effort_hours: 1,
-        owner: 'constructor',
-        status: 'done',
-        detail: '✅ Reparadas 566 URLs legacy (base44.app/api/...) en 74 productos → migradas a media.base44.com. Auditoría confirma: 0 imágenes rotas, 0 problemas de precio/descripción, sitemap regenerado con 86 URLs.',
-      },
-      {
-        title: 'Ocultar temporalmente productos sin foto buena',
-        impact: 'high',
-        effort_hours: 0.3,
-        owner: 'constructor',
-        status: 'done',
-        detail: '✅ Desactivados 3 productos problemáticos: 2 duplicados detectados por IA (mismo nombre, mismo precio, distinto SKU) y 1 producto "sorpresa" con precio $0. Catálogo limpio: 69 productos activos.',
-      },
-      {
-        title: 'Verificar que un pago real llega completo',
+        title: 'Mié 27 · Activar clave productiva BlueExpress (BLOQUEANTE)',
         impact: 'critical',
         effort_hours: 0.3,
         owner: 'humano',
-        detail: 'Hacer un pedido de $1.000 de prueba y confirmar que recibes el email + se ve en el panel.',
+        detail: 'Apurar al ejecutivo BlueExpress para obtener credencial productiva. Sin esto no podemos generar etiquetas reales. Si BlueExpress no responde en 48h, plan B: usar Starken/Chilexpress en paralelo.',
       },
       {
-        title: 'Activar emails desde peyuchile.cl (no se pierden)',
+        title: 'Jue 28 · Verificar dominio peyuchile.cl en Resend (emails)',
         impact: 'high',
         effort_hours: 0.5,
         owner: 'humano + constructor',
-        detail: 'Verificar el dominio en el proveedor de email para que las confirmaciones siempre lleguen.',
+        detail: 'Verificar SPF/DKIM/DMARC para que confirmaciones de compra, propuestas B2B y recordatorios lleguen siempre al inbox (no spam). Test: enviar 5 emails a Gmail, Outlook, Hotmail.',
       },
       {
-        title: '🚨 Pedir clave definitiva a BlueExpress (bloqueante para envíos)',
+        title: 'Jue 28 · Smoke test público completo (10 rutas críticas)',
         impact: 'critical',
+        effort_hours: 0.5,
+        owner: 'constructor',
+        detail: 'Correr uxSmokeTest sobre /, /shop, /producto/:id, /cart, /b2b/contacto, /b2b/self-service, /seguimiento, /soporte, /faq, /canjear. Cualquier 500 o JS error → fix mismo día.',
+      },
+      {
+        title: 'Vie 29 · Habilitar generación real de etiqueta Bluex',
+        impact: 'critical',
+        effort_hours: 1,
+        owner: 'constructor',
+        detail: 'Con credencial productiva activa: bluexCreateShipment debe devolver PDF descargable + tracking number real. Probar con 2 pedidos de prueba (Santiago + región).',
+      },
+      {
+        title: 'Vie 29 · Auto-trigger envío de tracking al cliente cuando se genera etiqueta',
+        impact: 'high',
+        effort_hours: 0.5,
+        owner: 'constructor',
+        detail: 'Al despachar, el cliente recibe email automático con link a /seguimiento?pedido=NNNN. Sin acción manual del admin.',
+      },
+    ],
+  },
+
+  {
+    id: 't1-h2',
+    track: 'T1',
+    nombre: 'Hito 2 · Captura de demanda B2B y B2C estable',
+    semana: 'Sáb 30 — Dom 31 mayo',
+    duracion_dias: 2,
+    objetivo: 'Todo formulario, chat y CTA público convierte sin errores y queda registrado en el CRM.',
+    gate_salida: '5 leads de prueba (3 B2B desde /b2b/contacto + 2 chats web) entran al pipeline correctamente, con score IA aplicado y notificación al equipo.',
+    status: 'pending',
+    items: [
+      {
+        title: 'Sáb 30 · Probar formulario B2B desde mobile, tablet y desktop',
+        impact: 'critical',
+        effort_hours: 0.5,
+        owner: 'humano + constructor',
+        detail: 'Submit con y sin logo, con y sin brief. Confirmar: lead creado → score asignado → email a equipo → si score >70, propuesta auto-generada.',
+      },
+      {
+        title: 'Sáb 30 · Conectar WhatsApp Business al agente Peyu',
+        impact: 'high',
+        effort_hours: 0.5,
+        owner: 'humano',
+        detail: 'Escanear QR con +56 9 3376 6573 (cuenta Business PEYU). Agente cálido ya validado. Confirmar 3 mensajes de prueba responden en <30s.',
+      },
+      {
+        title: 'Sáb 30 · Activar captura de carrito abandonado (CRON cada hora)',
+        impact: 'medium',
+        effort_hours: 0.3,
+        owner: 'constructor',
+        detail: 'Ya implementado. Solo activar el CRON y confirmar que un carrito abandonado a propósito recibe email 1h después.',
+      },
+      {
+        title: 'Dom 31 · Verificar Chat Leads se persisten todos',
+        impact: 'high',
+        effort_hours: 0.3,
+        owner: 'constructor',
+        detail: 'Tener 5 conversaciones de prueba en el chat público y confirmar que aparecen en /admin/chat-leads con datos progresivos capturados (nombre, email, intención).',
+      },
+      {
+        title: 'Dom 31 · Test fin de semana: dejar el sistema sin tocarlo 24h',
+        impact: 'high',
+        effort_hours: 0,
+        owner: 'humano',
+        detail: 'No tocar el sistema sábado noche y domingo. Lunes revisar: ¿hubo errores? ¿se cayó algo? ¿llegaron pedidos reales? Mientras menos intervenciones, mejor.',
+      },
+    ],
+  },
+
+  {
+    id: 't1-h3',
+    track: 'T1',
+    nombre: 'Hito 3 · Cockpit visible para fundadores',
+    semana: 'Lun 01 — Mar 02 junio',
+    duracion_dias: 2,
+    objetivo: 'Diego y los fundadores entran a una sola URL y ven ventas, pedidos, leads y salud del sistema en tiempo real.',
+    gate_salida: 'Demo de 15 min a Diego: cockpit móvil + escritorio mostrando ventas del día, pipeline B2B en vivo y alertas. Aprueba → se libera pago del setup.',
+    status: 'pending',
+    items: [
+      {
+        title: 'Lun 01 · Cockpit móvil con KPIs reales del día (no mocks)',
+        impact: 'critical',
+        effort_hours: 1,
+        owner: 'constructor',
+        detail: '/admin/movil debe mostrar: ventas hoy, ayer, mes; nº pedidos activos; leads B2B nuevos; conversaciones chat; alertas si algo crítico falla.',
+      },
+      {
+        title: 'Lun 01 · Reporte diario automático al fundador por email (07:00 AM)',
+        impact: 'high',
+        effort_hours: 0.5,
+        owner: 'constructor',
+        detail: 'dailyBriefingCRON ya existe. Solo confirmar que llega al inbox de Diego cada mañana con: ventas día anterior, pedidos pendientes, leads calientes, anomalías.',
+      },
+      {
+        title: 'Lun 01 · Calcular y guardar baseline contractual (ene–ago 2026)',
+        impact: 'critical',
+        effort_hours: 1,
+        owner: 'constructor',
+        detail: 'Carlos exporta ventas mensuales B2B + B2C ene–ago 2026 desde Base44 + SII. Guardamos baseline en Configuracion como cifra fija $X CLP/mes (referencia contractual para Performance Fee).',
+      },
+      {
+        title: 'Mar 02 · Demo formal a fundadores (60 min)',
+        impact: 'critical',
+        effort_hours: 1,
+        owner: 'humano + constructor',
+        detail: 'Walkthrough en vivo: comprar como cliente → ver pedido entrar → procesar en kanban → generar etiqueta Bluex → recibir email tracking. Mostrar cockpit y reporte diario. Cliente firma "setup aprobado" → libera pago.',
+      },
+      {
+        title: 'Mar 02 · Documento de cierre T1 con evidencia',
+        impact: 'medium',
+        effort_hours: 0.5,
+        owner: 'constructor',
+        detail: 'PDF de 1 página: hitos completados, screenshots, métricas iniciales (lighthouse, TTFB, tasa de error). Adjunto al email de solicitud de pago del setup.',
+      },
+    ],
+  },
+
+  // ════════════════════════════════════════════════════════════════════
+  // 📈 T2 · HARDENING + ESCALA A $20M (mié 03 jun → mar 31 ago · 13 sem)
+  // ════════════════════════════════════════════════════════════════════
+  // Quincenas con hitos progresivos: cada 2 semanas un gate medible que
+  // PEYU puede revisar. Construimos automatización + tráfico + conversión
+  // hasta llegar al gate de septiembre.
+  // ════════════════════════════════════════════════════════════════════
+
+  {
+    id: 't2-q1',
+    track: 'T2',
+    nombre: 'Q1 · Catálogo profesional y SEO técnico al 100%',
+    semana: 'Mié 03 — Mar 16 junio',
+    duracion_dias: 14,
+    objetivo: 'Los 69 productos activos son indistinguibles de un retailer top: foto profesional, descripción SEO, precios B2B+B2C, peso/dimensiones para Bluex.',
+    gate_salida: 'Lighthouse SEO ≥ 95 en productos top. Google Search Console indexa el 100% de URLs del sitemap. Jonny entrega último lote de fotos faltantes.',
+    status: 'pending',
+    items: [
+      {
+        title: 'Jonny · Entrega fotos + descripciones de los 69 productos activos',
+        impact: 'critical',
+        effort_hours: 8,
+        owner: 'Jonny (cliente)',
+        detail: 'Excel: SKU sugerido · nombre · descripción 3-4 líneas · peso (kg) · dimensiones (LxAxH cm) · imágenes nombradas con nombre del producto (ej. "macetero-cuadrado.jpg"). Entrega en 2 lotes (10 jun + 16 jun).',
+      },
+      {
+        title: 'Calcular precios B2B (50–199, 200–499, 500+) para 30 productos faltantes',
+        impact: 'high',
+        effort_hours: 1,
+        owner: 'constructor + humano',
+        detail: 'Correr analizarCostosReales con insumos de Jonny. Generar PriceSuggestion en /admin/centro-costos. Humano aprueba por lote.',
+      },
+      {
+        title: 'IA reescribe descripciones SEO de los 69 productos en tono PEYU',
+        impact: 'high',
+        effort_hours: 1,
+        owner: 'constructor',
+        detail: 'Tomar material de Jonny + generar meta title 50-60 chars, meta description 150-165 chars, descripción larga 200-300 palabras con keywords reales de GSC.',
+      },
+      {
+        title: 'Aplicar SEO bulk a TODO el catálogo + sitemap actualizado',
+        impact: 'high',
+        effort_hours: 0.5,
+        owner: 'constructor',
+        detail: 'generateSEOMetaBulk + generateSitemap. Submit a Google Search Console y Bing Webmaster.',
+      },
+      {
+        title: 'Migrar últimas imágenes legacy a media.base44.com',
+        impact: 'medium',
+        effort_hours: 0.5,
+        owner: 'constructor',
+        detail: 'driveMatchAllProducts + migrateProductImagesToBase44. Eliminar cualquier URL apuntando a base44.app/api/.',
+      },
+      {
+        title: 'Activar Google Merchant Center con feed XML diario',
+        impact: 'high',
+        effort_hours: 1,
+        owner: 'humano + constructor',
+        detail: 'Conectar cuenta Merchant Center. syncToMerchantCenter ya implementado. Productos deben aparecer en Google Shopping con foto y precio en ≤ 72h.',
+      },
+    ],
+  },
+
+  {
+    id: 't2-q2',
+    track: 'T2',
+    nombre: 'Q2 · Agentes IA produciendo conversiones',
+    semana: 'Mié 17 — Mar 30 junio',
+    duracion_dias: 14,
+    objetivo: 'El chat web + WhatsApp + Instagram generan al menos 20 leads B2B y 50 conversaciones útiles en 2 semanas, sin intervención humana.',
+    gate_salida: '≥ 3 ventas B2C cerradas vía chat. ≥ 5 cotizaciones B2B auto-generadas. Tasa de respuesta WhatsApp < 30s. Instagram con 14 posts publicados (uno/día).',
+    status: 'pending',
+    items: [
+      {
+        title: 'Conectar Instagram Business al agente content_creator',
+        impact: 'high',
+        effort_hours: 1,
+        owner: 'humano + constructor',
+        detail: 'Credenciales Meta for Developers. Auto-publicar 1 post/día a la hora óptima según engagement histórico. 14 posts ya pre-generados en /admin/social-studio.',
+      },
+      {
+        title: 'Agente B2B Triage WhatsApp con cotización automática',
+        impact: 'critical',
+        effort_hours: 2,
+        owner: 'constructor',
+        detail: 'Empresa escribe a WhatsApp → bot detecta intención B2B → pide datos (empresa, cantidad, producto, fecha) → genera propuesta con createCorporateProposal → envía PDF en <1h.',
+      },
+      {
+        title: 'Activar nurturing IA de leads B2B tibios (score 30-59)',
+        impact: 'medium',
+        effort_hours: 0.5,
+        owner: 'constructor',
+        detail: 'nurtureLeadB2B ya implementado. Programar CRON cada 72h: email educativo + caso de éxito + invitación a cotizar.',
+      },
+      {
+        title: 'A/B test del prompt del agente Peyu (calidez vs eficiencia)',
+        impact: 'medium',
+        effort_hours: 1,
+        owner: 'constructor',
+        detail: '50/50 de visitantes ven variante A (tono actual) vs B (más directa). Medir conversion rate a 14 días. La que gana se queda.',
+      },
+      {
+        title: 'Monitor de salud de agentes IA con alerta si fallan',
+        impact: 'high',
+        effort_hours: 1,
+        owner: 'constructor',
+        detail: '/admin/monitoreo-ia ya existe. Agregar alerta proactiva: si un agente devuelve >3 errores en 1h, email al equipo.',
+      },
+    ],
+  },
+
+  {
+    id: 't2-q3',
+    track: 'T2',
+    nombre: 'Q3 · Tráfico pagado y orgánico encendidos',
+    semana: 'Mié 01 — Mar 14 julio',
+    duracion_dias: 14,
+    objetivo: 'Google Ads activo con presupuesto controlado, SEO con primeros rankings, ≥ 1.000 sesiones únicas semanales.',
+    gate_salida: 'CAC B2C ≤ $25k. 5 keywords PEYU en página 1 de Google. ≥ 1.500 visitas orgánicas + 2.000 visitas pagadas en la quincena.',
+    status: 'pending',
+    items: [
+      {
+        title: 'Conectar cuenta Google Ads productiva + activar 3 campañas pre-armadas',
+        impact: 'critical',
+        effort_hours: 1,
+        owner: 'humano + constructor',
+        detail: 'Las 3 campañas ya están en /admin/ads-command. Search (CAC esperado $21k), Shopping (CAC $14k), Demand Gen (awareness). Presupuesto inicial: $300k/sem en total.',
+      },
+      {
+        title: 'Subir archivo IndexNow + verificar dominio en Search Console',
+        impact: 'high',
         effort_hours: 0.3,
         owner: 'humano',
-        detail: 'BlueExpress aún no entregó la credencial productiva. Sin esto, no podemos generar etiquetas reales ni cotizar envíos en vivo. Contactar al ejecutivo de cuenta para acelerar.',
+        detail: '2 acciones bloqueantes: (1) Subir peyuchile.cl/peyu2026indexnow.txt con contenido "peyu2026indexnow" (5 min). (2) Verificar dominio en GSC vía DNS TXT (10 min). Después se dispara autoIndexNowBlast.',
       },
       {
-        title: '📦 Jonny · Recopilar material original de productos',
+        title: 'seoLaunchBlast: ping masivo de 86 URLs a Google + Bing + Yandex',
+        impact: 'high',
+        effort_hours: 0.3,
+        owner: 'constructor',
+        detail: 'Una vez subido IndexNow y verificado dominio: ping automático. Esperar 7 días para ver primeros rankings en GSC.',
+      },
+      {
+        title: 'Generar 10 blog posts SEO con generateBlogPost (publicar 1/día)',
+        impact: 'high',
+        effort_hours: 2,
+        owner: 'constructor',
+        detail: 'Temas: regalos corporativos sostenibles, productos reciclados Chile, fibra de trigo vs plástico, etc. autoIndexOnPublish para indexación inmediata.',
+      },
+      {
+        title: 'Análisis IA semanal de keywords ganadoras vs perdedoras',
+        impact: 'medium',
+        effort_hours: 1,
+        owner: 'constructor',
+        detail: 'gscTopKeywords + oportunidadesSEOCRON. Reporte cada lunes con quick wins (página 2 → página 1).',
+      },
+      {
+        title: 'Optimizar Core Web Vitals (LCP, CLS, INP) en productos top',
+        impact: 'medium',
+        effort_hours: 2,
+        owner: 'constructor',
+        detail: 'Lighthouse ≥ 90 en mobile para los 20 productos más visitados. Lazy load, preload de imágenes hero, reducir JS bundle.',
+      },
+    ],
+  },
+
+  {
+    id: 't2-q4',
+    track: 'T2',
+    nombre: 'Q4 · Reporting automático y observabilidad total',
+    semana: 'Mié 15 — Mar 28 julio',
+    duracion_dias: 14,
+    objetivo: 'PEYU recibe reportes ejecutivos automáticos y nosotros tenemos toda la observabilidad para detectar y resolver issues en <2h.',
+    gate_salida: 'Reporte semanal ejecutivo entregado lunes 08:00 a Diego con KPIs vs baseline. Alertas en tiempo real configuradas. SLA de respuesta < 2h para issues críticos.',
+    status: 'pending',
+    items: [
+      {
+        title: 'Reporte semanal ejecutivo PDF (B2B + B2C unificado)',
+        impact: 'high',
+        effort_hours: 2,
+        owner: 'constructor',
+        detail: 'Generar PDF con: ventas vs baseline contractual, top productos, conversion funnel, CAC por canal, leads B2B en pipeline, churn risk. Email lunes 08:00 a Diego.',
+      },
+      {
+        title: 'Performance Fee Calculator en /admin/financiero',
+        impact: 'critical',
+        effort_hours: 1.5,
+        owner: 'constructor',
+        detail: 'Página que muestra mes a mes: ventas reales, baseline, delta, performance fee teórico (30% del exceso), tope mensual aplicado. Transparencia total para PEYU.',
+      },
+      {
+        title: 'Centralizar alertas en /admin/alertas con severidad y owner',
+        impact: 'high',
+        effort_hours: 1,
+        owner: 'constructor',
+        detail: 'Stock bajo, error de pago, lead caliente sin contactar +24h, propuesta venciendo, anomalía de tráfico. Cada alerta con dueño y SLA.',
+      },
+      {
+        title: 'Sentry / error tracking productivo (logClientError ya existe)',
+        impact: 'medium',
+        effort_hours: 0.5,
+        owner: 'constructor',
+        detail: 'Agregar dashboard /admin/monitoreo-ia ya muestra errores client-side. Agregar agrupación por ruta + alerta si error rate > 1%.',
+      },
+      {
+        title: 'Backup automático diario de todas las entidades a Drive',
+        impact: 'high',
+        effort_hours: 1,
+        owner: 'constructor',
+        detail: 'CRON diario 02:00: export JSON de Productos, Pedidos, Clientes, B2BLeads, Propuestas. Subir a Drive PEYU vía driveUploadFile. Retención 30 días.',
+      },
+    ],
+  },
+
+  {
+    id: 't2-q5',
+    track: 'T2',
+    nombre: 'Q5 · Optimización de conversión y experiencia',
+    semana: 'Mié 29 jul — Mar 11 ago',
+    duracion_dias: 14,
+    objetivo: 'Aumentar conversion rate B2C de visitante a pedido en +30% vs Q3. Reducir abandono carrito en -20%.',
+    gate_salida: 'Conv rate B2C ≥ 1.5%. Cart abandonment recovery ≥ 18%. NPS B2B ≥ 50.',
+    status: 'pending',
+    items: [
+      {
+        title: 'A/B test landing principal (3 variantes con IA)',
+        impact: 'high',
+        effort_hours: 2,
+        owner: 'constructor',
+        detail: 'Variantes: A (storytelling actual), B (foco precio + envío gratis), C (foco impacto ambiental). 33/33/33 split por 14 días. Ganador queda.',
+      },
+      {
+        title: 'One-click buy para clientes recurrentes',
+        impact: 'medium',
+        effort_hours: 2,
+        owner: 'constructor',
+        detail: 'OneClickBuyButton ya existe. Activar para clientes con perfil guardado (dirección + medio de pago). Reduce checkout de 5 pasos a 1 click.',
+      },
+      {
+        title: 'Cross-sell post-compra B2C automático (cupón 48h)',
+        impact: 'medium',
+        effort_hours: 0.5,
+        owner: 'constructor',
+        detail: 'crossSellPostCompra ya implementado. Activar CRON: 48h después de compra confirmada, email con 3 productos relacionados + cupón 10% expira en 48h.',
+      },
+      {
+        title: 'Programa de referidos B2B con código único',
+        impact: 'medium',
+        effort_hours: 2,
+        owner: 'constructor',
+        detail: 'Cada cliente B2B activo recibe código personalizado. Si refiere una empresa que compra, comisión 8% automática (cupón canjeable en próxima compra).',
+      },
+      {
+        title: 'NPS automático trimestral a clientes B2B activos',
+        impact: 'medium',
+        effort_hours: 0.3,
+        owner: 'constructor',
+        detail: 'npsTrimestralB2B ya implementado. Activar. Detractores (NPS < 7) entran a flujo de retención automática.',
+      },
+    ],
+  },
+
+  {
+    id: 't2-q6',
+    track: 'T2',
+    nombre: 'Q6 · Validación pre-septiembre y proyección',
+    semana: 'Mié 12 — Mar 25 agosto',
+    duracion_dias: 14,
+    objetivo: 'Confirmar que el sistema sostiene ritmo ≥ $20M/mes y proyectar septiembre con datos reales.',
+    gate_salida: 'Run-rate de agosto ≥ $20M proyectado. Reporte forecast septiembre entregado a PEYU. Plan de contingencia si alguna métrica está fuera de banda.',
+    status: 'pending',
+    items: [
+      {
+        title: 'Análisis forecast IA: ¿llegamos a $20M en septiembre?',
+        impact: 'critical',
+        effort_hours: 2,
+        owner: 'constructor',
+        detail: 'Tomar data jun + jul + ago, proyectar sept con cockpitForesight. Si proyección < $20M, identificar palanca a empujar (más ads, más outbound B2B, push de gift cards corporativas).',
+      },
+      {
+        title: 'Push outbound B2B: 50 empresas target identificadas con IA',
+        impact: 'high',
+        effort_hours: 2,
+        owner: 'constructor + humano',
+        detail: 'Pinecone + ICP analysis. Generar lista de 50 empresas que matchean perfil de clientes B2B existentes. Email personalizado con propuesta inicial.',
+      },
+      {
+        title: 'Campaña gift cards corporativas para fin de año',
+        impact: 'high',
+        effort_hours: 1,
+        owner: 'constructor',
+        detail: 'Generar landing /b2b/gift-cards-fin-año + campaña Ads + email a base B2B inactiva. Septiembre es el mes para anclar pedidos de regalos corporativos para diciembre.',
+      },
+      {
+        title: 'Stress test de infraestructura para Black Friday / CyberDay',
+        impact: 'medium',
+        effort_hours: 2,
+        owner: 'constructor',
+        detail: 'Simular 100 pedidos concurrentes. Verificar Base44 + MercadoPago + Bluex no se caen. Optimizar queries si hay timeouts.',
+      },
+      {
+        title: 'Cierre de Q6 + reunión PEYU revisión pre-septiembre',
+        impact: 'critical',
+        effort_hours: 1,
+        owner: 'humano + constructor',
+        detail: 'Demo + Q&A con fundadores. Presentar resultados reales jun-ago vs baseline. Acordar metas y reporte de septiembre.',
+      },
+    ],
+  },
+
+  // ════════════════════════════════════════════════════════════════════
+  // 🎯 GATE FINAL · SEPTIEMBRE 2026 (lun 01 — mar 30 sep)
+  // ════════════════════════════════════════════════════════════════════
+
+  {
+    id: 't2-gate-sept',
+    track: 'T2',
+    nombre: 'GATE · Septiembre 2026 (mes de validación contractual)',
+    semana: 'Lun 01 — Mar 30 septiembre',
+    duracion_dias: 30,
+    objetivo: 'Sostener ≥ $20M CLP en ventas (B2B + B2C consolidadas) durante septiembre. Esto activa el Performance Fee contractual.',
+    gate_salida: 'Ventas septiembre ≥ $20M. Reporte mensual auditable entregado a PEYU primer día de octubre con desglose B2B/B2C, fuentes (Base44 + SII), CAC por canal y comparación vs baseline.',
+    status: 'pending',
+    items: [
+      {
+        title: 'Monitor diario de ventas vs meta (cockpit en vivo)',
+        impact: 'critical',
+        effort_hours: 0,
+        owner: 'constructor (automático)',
+        detail: 'Cockpit muestra cada día: ventas hoy, acumulado mes, gap vs meta diaria ($20M / 30 = $666k/día). Si gap > 20% en día 10, alerta + sugerencia de palanca.',
+      },
+      {
+        title: 'Si gap detectado: push ads + push outbound B2B',
         impact: 'critical',
         effort_hours: 4,
-        owner: 'Jonny (cliente)',
-        detail: 'Muchas imágenes llegan sin nombre y sin descripción. Jonny debe entregar un Excel con: nombre real del producto · descripción corta · link/archivo de imagen. El SKU lo asigna PEYU internamente después. Sin este insumo, la IA no puede cargar bien el catálogo.',
+        owner: 'humano + constructor',
+        detail: 'Plan de contingencia: aumentar budget Ads, activar 2da ola outbound, descuento flash 48h en categorías estrella.',
       },
       {
-        title: '📸 Jonny · Nombrar archivos de imágenes con el nombre del producto',
+        title: 'Reporte semanal a PEYU con avance vs meta',
+        impact: 'high',
+        effort_hours: 0.5,
+        owner: 'constructor',
+        detail: 'Cada lunes de septiembre: PDF con ventas semana, run-rate proyectado, palancas activadas, próximos pasos.',
+      },
+      {
+        title: '1-oct · Cierre mensual + cálculo Performance Fee',
         impact: 'critical',
         effort_hours: 2,
-        owner: 'Jonny (cliente)',
-        detail: 'Cada imagen debe llegar nombrada con el nombre real del producto (ej: "macetero-cuadrado-reciclado.jpg", "set-escritorio-corporativo.jpg"). Esto cumple dos funciones: (1) Google la indexa profesionalmente y aparece en búsquedas de imágenes, (2) la IA asocia automáticamente cada foto con su producto sin intervención manual. Los SKU los asigna PEYU después internamente.',
-      },
-    ],
-  },
-
-  // ════════════════════════════════════════════════════════════════════
-  // FASE 1 — CATÁLOGO TERMINADO (dom 17 — mar 19 may, 3 días)
-  // ════════════════════════════════════════════════════════════════════
-  {
-    id: 'fase-1',
-    nombre: 'Fase 1 · Catálogo terminado',
-    semana: 'Dom 17 — Mar 19 mayo',
-    duracion_dias: 3,
-    objetivo: 'Cada producto visible tiene foto, precio, descripción y datos de envío correctos.',
-    gate_salida: 'Catálogo aprobado: foto bonita, precios B2C y mayorista, peso para Bluex y descripción real. Listo para empujar tráfico el miércoles.',
-    status: 'pending',
-    items: [
-      {
-        title: 'Dom 17 · Jonny entrega fotos de los 20 productos top',
-        impact: 'critical',
-        effort_hours: 3,
-        owner: 'Jonny (cliente)',
-        detail: 'Fondo blanco, formato cuadrado, archivo nombrado con el nombre del producto (ej: "macetero-cuadrado-reciclado.jpg"). Google indexa esos nombres → aparece en búsquedas de imágenes profesionalmente. La IA después las mejora automáticamente si hace falta.',
-      },
-      {
-        title: 'Dom 17 · Calcular precios mayoristas automáticamente',
-        impact: 'high',
-        effort_hours: 0.3,
-        owner: 'constructor + humano',
-        detail: '⏳ Pendiente: ~30 productos sin precio_50_199 / precio_200_499 / precio_500_mas. Función analizarCostosReales lista para correr, pero requiere insumo de Jonny (peso/dimensiones) para calcular costos reales antes de proponer precios B2B.',
-      },
-      {
-        title: 'Dom 17 · Jonny entrega descripciones base de los productos',
-        impact: 'high',
-        effort_hours: 1.5,
-        owner: 'Jonny (cliente)',
-        detail: 'Texto corto por producto (3-4 líneas): materiales, uso, dato sostenible. La IA después lo reescribe con tono PEYU y SEO, pero necesita el insumo real de quien conoce los productos.',
-      },
-      {
-        title: 'Dom 17 · La IA reescribe las descripciones con tono PEYU',
-        impact: 'high',
-        effort_hours: 1,
-        owner: 'constructor',
-        detail: 'Toma el material de Jonny y genera versiones optimizadas para web y Google. Humano aprueba por lote (~20 min).',
-      },
-      {
-        title: 'Lun 18 · Jonny entrega peso y dimensiones para Bluex',
-        impact: 'high',
-        effort_hours: 1.5,
-        owner: 'Jonny (cliente)',
-        detail: 'Sin esto, Bluex cobra mal el envío. Pesar una muestra de cada producto y enviar Excel con SKU · peso (kg) · largo · ancho · alto.',
-      },
-      {
-        title: 'Lun 18 · Activar combos "Frecuentemente comprados juntos"',
-        impact: 'medium',
-        effort_hours: 0.3,
-        owner: 'constructor',
-        status: 'done',
-        detail: '✅ 3 bundles activos curados (Pack Cachos Ultimate, Combo Hogar Sustentable, Duo Mesa Eco) ya mostrándose en tienda. Cuando haya historial real de pedidos, el CRON detectará nuevas combinaciones.',
-      },
-      {
-        title: 'Lun 18 · SEO para Google (títulos y descripciones)',
-        impact: 'medium',
-        effort_hours: 0.5,
-        owner: 'constructor',
-        status: 'done',
-        detail: '✅ 70 productos del catálogo activo con meta tags SEO aplicados directamente al sitio (títulos 45-58 chars, meta desc 150-165 chars, keyword principal + marca). Aplicado en lotes de 10 para evitar timeouts del proveedor IA.',
-      },
-      {
-        title: 'Mar 19 · Revisión final + enviar sitemap a Google',
-        impact: 'high',
-        effort_hours: 0.3,
-        owner: 'constructor',
-        status: 'done',
-        detail: '✅ Sitemap regenerado con 86 URLs (17 páginas + 69 productos activos, ya con meta tags SEO aplicados). Health check OK (DB latencia 2.1s, estable). Listo para indexar. El envío formal a Google Search Console se hace en Fase 3 (sáb 23) con seoLaunchBlast.',
-      },
-    ],
-  },
-
-  // ════════════════════════════════════════════════════════════════════
-  // FASE 2 — AGENTES IA TRABAJANDO (mié 20 — vie 22 may, 3 días)
-  // Arranca el miércoles tal como lo pidió el cliente.
-  // ════════════════════════════════════════════════════════════════════
-  {
-    id: 'fase-2',
-    nombre: 'Fase 2 · Agentes IA trabajando',
-    semana: 'Mié 20 — Vie 22 mayo',
-    duracion_dias: 3,
-    objetivo: 'El chat web vende solo, WhatsApp responde 24/7 e Instagram publica automáticamente.',
-    gate_salida: 'WhatsApp respondiendo en menos de 30s, Instagram publicando 5 posts y al menos 3 conversaciones del chat convertidas.',
-    status: 'pending',
-    items: [
-      {
-        title: 'Mié 20 AM · Conectar WhatsApp Business al asistente IA',
-        impact: 'critical',
-        effort_hours: 0.5,
         owner: 'humano + constructor',
-        detail: 'El agente cálido ya está listo. Solo falta vincular tu WhatsApp Business escaneando un QR.',
-      },
-      {
-        title: 'Mié 20 PM · Aprobar los 7 posts de Instagram de la semana',
-        impact: 'high',
-        effort_hours: 0.3,
-        owner: 'humano + constructor',
-        detail: 'Ya están listos para revisión. Solo dar OK uno por uno y programar publicación.',
-      },
-      {
-        title: 'Mié 20 PM · Conectar Instagram para que publique solo',
-        impact: 'high',
-        effort_hours: 0.5,
-        owner: 'humano',
-        detail: 'Vincular cuenta de Instagram Business. Después la IA publica automáticamente cada día a la mejor hora.',
-      },
-      {
-        title: 'Jue 21 · Probar 10 conversaciones reales con el chat',
-        impact: 'critical',
-        effort_hours: 1,
-        owner: 'humano',
-        detail: 'Pruebas como cliente: regalo de pareja, mamá, empresa de 50 unidades, "está caro", etc. Confirmar que cierra bien.',
-      },
-      {
-        title: 'Jue 21 · Asistente B2B en WhatsApp con cotización automática',
-        impact: 'high',
-        effort_hours: 1.5,
-        owner: 'constructor',
-        detail: 'Cuando una empresa escribe pidiendo cotización por WhatsApp, recibe propuesta en menos de 1 hora sin intervención.',
-      },
-      {
-        title: 'Vie 22 · Tablero de control de los agentes',
-        impact: 'medium',
-        effort_hours: 0.5,
-        owner: 'constructor',
-        detail: 'Panel simple para ver cuántas conversaciones tuvieron los agentes y si algo falla.',
-      },
-    ],
-  },
-
-  // ════════════════════════════════════════════════════════════════════
-  // FASE 3 — ENCENDER EL TRÁFICO (sáb 23 — mar 26 may, 4 días)
-  // ════════════════════════════════════════════════════════════════════
-  {
-    id: 'fase-3',
-    nombre: 'Fase 3 · Encender el tráfico',
-    semana: 'Sáb 23 — Mar 26 mayo',
-    duracion_dias: 4,
-    objetivo: 'Activar Google Ads, llegar a buscadores y empezar a medir cuánto cuesta cada nuevo cliente.',
-    gate_salida: 'Google Ads activa y midiendo, productos apareciendo en buscadores y al menos 10 visitas orgánicas por día.',
-    status: 'pending',
-    items: [
-      {
-        title: 'Sáb 23 · Crear 3 campañas de Google Ads con IA',
-        impact: 'critical',
-        effort_hours: 0.5,
-        owner: 'constructor + humano',
-        status: 'done',
-        detail: '✅ 3 campañas generadas como Draft IA en /admin/ads-command, listas para revisar y exportar a Google Ads cuando los fundadores conecten cuenta. Search "Sales B2C" (CAC $21k), Shopping "Catalog Sales" (CAC $14k, 6 conv/sem proyectadas) y Demand Gen "Awareness" (YouTube+Discover+Gmail, CAC $23k). Cada una con keywords, callouts, ad copy, estrategia de puja y racional estratégico.',
-      },
-      {
-        title: 'Dom 24 · Conectar Google Shopping (Merchant Center)',
-        impact: 'high',
-        effort_hours: 1,
-        owner: 'humano + constructor',
-        detail: 'Para que tus productos aparezcan con foto y precio en Google.',
-      },
-      {
-        title: 'Dom 24 · Posicionar PEYU en 10 comunas top',
-        impact: 'high',
-        effort_hours: 0.5,
-        owner: 'constructor',
-        status: 'done',
-        detail: '✅ seoGeoBlast ejecutado: sitemap regenerado (86 URLs · 69 productos + 17 estáticas), feed Google Merchant Center activo. Contenido geo-localizado embebido en meta tags.',
-      },
-      {
-        title: 'Lun 25 · Avisar a buscadores que el sitio es nuevo',
-        impact: 'medium',
-        effort_hours: 0.3,
-        owner: 'humano (1 archivo) + constructor',
-        detail: '⚠️ Bloqueado por 2 acciones del fundador: (1) Subir archivo público https://peyuchile.cl/peyu2026indexnow.txt con contenido exacto "peyu2026indexnow" (5 min, FTP/CMS), (2) Verificar dominio peyuchile.cl en Google Search Console con la cuenta Google ya conectada (DNS TXT record, 10 min). Una vez listo, seoLaunchBlast hace todo el resto automático: ping a Google + Bing + Yandex con las 86 URLs.',
-      },
-      {
-        title: 'Mar 26 · Revisión primera semana de tráfico',
-        impact: 'high',
-        effort_hours: 0.5,
-        owner: 'humano + constructor',
-        detail: 'Ver qué campañas funcionan, cortar las que no y escalar las ganadoras.',
-      },
-    ],
-  },
-
-  // ════════════════════════════════════════════════════════════════════
-  // FASE 4 — MÁQUINA AUTOMÁTICA (mié 27 may en adelante)
-  // ════════════════════════════════════════════════════════════════════
-  {
-    id: 'fase-4',
-    nombre: 'Fase 4 · Máquina automática',
-    semana: 'Mié 27 may en adelante',
-    duracion_dias: 7,
-    objetivo: 'Que el sistema venda, atienda y publique sin que tengas que mirarlo todos los días.',
-    gate_salida: 'Sobre $5M/mes en ventas web, 8+ cotizaciones B2B mensuales y satisfacción de clientes alta.',
-    status: 'pending',
-    items: [
-      {
-        title: 'Vendedor por email automático',
-        impact: 'high',
-        effort_hours: 2,
-        owner: 'constructor',
-        detail: 'Lee tu Gmail cada 15 min, califica y responde leads. Si es uno caliente, manda cotización solo.',
-      },
-      {
-        title: 'Probar 3 versiones del landing automáticamente',
-        impact: 'medium',
-        effort_hours: 1,
-        owner: 'constructor',
-        detail: 'La IA prueba 3 variantes y se queda con la que más vende.',
-      },
-      {
-        title: 'Programa de referidos B2B',
-        impact: 'medium',
-        effort_hours: 1.5,
-        owner: 'constructor',
-        detail: 'Códigos únicos por embajador con comisión 8% automática.',
-      },
-      {
-        title: 'Sumar TikTok y LinkedIn al Content Studio',
-        impact: 'medium',
-        effort_hours: 1,
-        owner: 'constructor',
-        detail: 'Que la IA publique también en TikTok (videos cortos) y LinkedIn (B2B).',
-      },
-      {
-        title: 'Tu tablero móvil de fundador',
-        impact: 'low',
-        effort_hours: 1,
-        owner: 'constructor',
-        detail: 'Una sola pantalla en tu celular: ventas de hoy, leads, alertas si algo falla.',
+        detail: 'Cierre auditable: ventas reales (Base44 + cruce SII), baseline, delta, fee según contrato. Entrega formal a PEYU.',
       },
     ],
   },
 ];
 
-// Estado del proyecto HOY — versión humana, sin jerga técnica
-// Empezamos por lo sólido (la máquina está armada) y después los ajustes finos.
+// ─────────────────────────────────────────────────────────────────────
+// Estado del proyecto HOY (27-may-2026, post-firma contrato)
+// ─────────────────────────────────────────────────────────────────────
 export const SNAPSHOT_HOY = {
-  fecha: '2026-05-18',
+  fecha: '2026-05-27',
+  contexto: 'Contrato firmado 26-may con setup pendiente de pago. Próximos 7 días definidos para soltar ese cobro.',
   hallazgos_criticos: [
-    { tag: '🟩', titulo: 'La estructura del sistema está sólida', simple: 'Más de 60 funciones automáticas operando: pedidos, pagos, envíos con Bluex, alertas, reportes y CRM. La base está construida.' },
-    { tag: '🟩', titulo: 'El sistema antifraude ya está protegiendo el negocio', simple: 'Esta semana frenó solo 2 pedidos falsos de $3.9M cada uno. Funciona sin que tengas que mirarlo.' },
-    { tag: '🟩', titulo: 'El chat de la web vende con tono cálido y consultivo', simple: 'Recomienda productos, detecta si es regalo personal o corporativo, y guía hasta el cierre. Probado y afinado esta semana.' },
-    { tag: '🟩', titulo: '7 publicaciones de Instagram listas para la semana próxima', simple: 'La IA ya generó los posts para lun-dom. Solo falta revisarlos y darle "publicar".' },
-    { tag: '🟩', titulo: 'Las integraciones clave ya están conectadas', simple: 'MercadoPago, Pinecone, Google Workspace, WooCommerce y GA4 operando.' },
-    { tag: '🟥', titulo: 'Falta la clave productiva de BlueExpress', simple: 'La integración con Bluex está lista y probada, pero BlueExpress aún no nos entregó la credencial definitiva. Sin esto no podemos generar etiquetas reales. Hay que apurar al ejecutivo.' },
-    { tag: '🟥', titulo: 'Falta material de productos desde el cliente (Jonny)', simple: 'Necesitamos que Jonny (asistente de informática de PEYU) entregue fotos nombradas con su SKU, descripciones base y peso/dimensiones de cada producto. Sin ese insumo, la IA no puede armar bien el catálogo.' },
-    { tag: '🟧', titulo: 'Falta cerrar los detalles del catálogo tras migrar de WooCommerce', simple: 'Algunos productos quedaron con datos incompletos (precio mayorista, peso, descripción). Se completa esta semana.' },
-    { tag: '🟩', titulo: 'Imágenes del catálogo migradas a CDN definitiva', simple: '566 URLs legacy reparadas automáticamente. Las 69 fotos activas del catálogo viven hoy en media.base44.com (la CDN nueva y estable). Cero imágenes rotas.' },
-    { tag: '🟨', titulo: 'WhatsApp e Instagram pendientes de credenciales del fundador', simple: 'Mañana lunes pedimos los accesos a los fundadores de PEYU: cuenta WhatsApp Business +56 9 3376 6573 para vincular al agente Peyu (10 min, escaneo de QR) y credenciales Meta for Developers para que Instagram publique automático + responda DMs. Sin estos accesos nadie más puede hacerlo por seguridad.' },
-    { tag: '🟩', titulo: 'SEO técnico aplicado a TODO el catálogo (70/70)', simple: 'Cada producto activo ahora tiene su título y descripción optimizados para Google (50-60 y 150-165 caracteres), con palabra clave + marca. Esto mejora cómo aparece PEYU en los resultados de búsqueda. Procesado completo en lotes de 10 esquivando timeouts del proveedor IA.' },
-    { tag: '🟩', titulo: '3 campañas de Google Ads pre-armadas con IA', simple: 'Generadas y guardadas como borradores en /admin/ads-command listas para aprobar y exportar a Google Ads cuando conecten la cuenta. Search "regalos sostenibles" (CAC esperado $21k), Shopping con catálogo (CAC $14k, 6 ventas/semana proyectadas) y Demand Gen en YouTube/Discover (awareness de marca). Cada una incluye keywords, copy, callouts y racional estratégico.' },
-    { tag: '🟧', titulo: '2 pasos finales del fundador para encender el SEO masivo', simple: 'Para que Google + Bing indexen las 86 URLs del sitio al lanzar, faltan 2 acciones del fundador: (1) Subir un archivo de validación de IndexNow al dominio (peyuchile.cl/peyu2026indexnow.txt con contenido "peyu2026indexnow", 5 min), (2) Verificar el dominio peyuchile.cl en Google Search Console con la cuenta Google ya conectada (registro DNS TXT, 10 min). Después la IA dispara el blast masivo automático.' },
-    { tag: '🟨', titulo: 'Verificar emails desde peyuchile.cl', simple: 'Configuración del dominio en el proveedor para que las confirmaciones siempre lleguen al cliente.' },
-    { tag: '🟨', titulo: 'Pequeños ajustes de estabilidad en móvil', simple: 'Mejorar el formulario B2B y los filtros de categoría desde el celular.' },
+    { tag: '🟩', titulo: 'Contrato Impulsia-PEYU firmado el 26-may', simple: 'Acuerdo con addendum sobre Performance Fee: baseline = promedio ventas ene-ago 2026, medición mensual no acumulada, tope 2× fijo. Pago del setup queda condicionado a estabilidad del sistema en 7 días.' },
+    { tag: '🟩', titulo: 'Estructura del sistema sólida y operativa', simple: 'Más de 130 funciones automáticas operando: pedidos, pagos MercadoPago, envíos Bluex (pendiente clave productiva), alertas, CRM B2B/B2C, reportes diarios.' },
+    { tag: '🟩', titulo: 'Sistema antifraude protegiendo el negocio', simple: 'Bloqueó 2 pedidos falsos de $3.9M cada uno sin intervención humana. Motor de assessOrderRisk afinado y validado.' },
+    { tag: '🟩', titulo: 'Catálogo migrado y SEO aplicado (70/70 productos)', simple: '566 URLs legacy reparadas, todas las imágenes activas en media.base44.com (CDN estable). Meta tags SEO aplicados a 70 productos activos.' },
+    { tag: '🟩', titulo: '3 campañas Google Ads pre-armadas', simple: 'Search + Shopping + Demand Gen como borradores en /admin/ads-command. Listas para activar cuando los fundadores conecten cuenta Ads.' },
+    { tag: '🟥', titulo: 'Clave productiva BlueExpress pendiente (BLOQUEANTE)', simple: 'Sin esto no podemos generar etiquetas reales. Hito 1 del T1 depende de esto. Plan B: Starken/Chilexpress en paralelo si Bluex no responde en 48h.' },
+    { tag: '🟥', titulo: 'Baseline contractual aún sin calcular', simple: 'Carlos debe exportar ventas mensuales B2B + B2C ene-ago 2026 desde Base44 + SII para fijar la cifra contractual del Performance Fee. Plazo: 01-jun (Hito 3 del T1).' },
+    { tag: '🟧', titulo: 'WhatsApp + Instagram pendientes de credenciales fundador', simple: 'Cuenta WhatsApp Business +56 9 3376 6573 (10 min escaneo QR) + credenciales Meta for Developers para Instagram auto-publicación. Necesarios al inicio del T1 (hito 2).' },
+    { tag: '🟧', titulo: 'Jonny debe entregar fotos + descripciones + dimensiones', simple: 'Material original de los 69 productos activos: foto nombrada con nombre del producto, descripción 3-4 líneas, peso/dimensiones para Bluex. Sin esto Q1 del T2 se atrasa. Plazo: 16-jun.' },
+    { tag: '🟧', titulo: '2 acciones SEO del fundador pendientes', simple: '(1) Subir archivo IndexNow al dominio (5 min). (2) Verificar peyuchile.cl en Search Console vía DNS (10 min). Bloquean el blast masivo de Q3.' },
+    { tag: '🟨', titulo: 'Verificación de dominio en Resend para emails', simple: 'SPF/DKIM/DMARC en peyuchile.cl para que confirmaciones lleguen al inbox y no a spam. Hito 1 del T1 (jue 28-may).' },
+    { tag: '🟨', titulo: 'Cockpit móvil con datos reales (no mocks)', simple: '/admin/movil ya existe pero falta cablear KPIs reales para la demo del 02-jun a Diego. Esa demo es la que libera el pago del setup.' },
   ],
+  meta_contrato: {
+    objetivo: '≥ $20M CLP/mes en ventas (B2B + B2C) desde septiembre 2026',
+    baseline: 'Promedio mensual ventas ene-ago 2026 (Base44 + SII) — PENDIENTE de calcular',
+    performance_fee: '30% del excedente mensual sobre baseline, tope 2× fijo',
+    auditoria: 'Base44 + SII como fuente única. Revisión contable externa opcional para PEYU.',
+  },
 };
 
+// ─────────────────────────────────────────────────────────────────────
+// Helpers para componentes React (Cockpit, LaunchRoadmap pages)
+// ─────────────────────────────────────────────────────────────────────
 export function getRoadmapStats() {
   let total = 0;
   let done = 0;
@@ -390,4 +610,17 @@ export function getPhaseProgress(phase) {
   if (total === 0) return 0;
   const done = phase.items.filter(i => i.status === 'done').length;
   return Math.round((done / total) * 100);
+}
+
+export function getTrackStats(trackId) {
+  const phases = LAUNCH_ROADMAP.filter(p => p.track === trackId);
+  let total = 0;
+  let done = 0;
+  phases.forEach(p => {
+    p.items.forEach(it => {
+      total++;
+      if (it.status === 'done') done++;
+    });
+  });
+  return { total, done, phases: phases.length, progress: total > 0 ? Math.round((done / total) * 100) : 0 };
 }
