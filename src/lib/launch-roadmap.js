@@ -562,15 +562,17 @@ export const LAUNCH_ROADMAP = [
 // ─────────────────────────────────────────────────────────────────────
 export const SNAPSHOT_HOY = {
   fecha: '2026-05-27',
-  contexto: 'Contrato firmado 26-may con setup pendiente de pago. Próximos 7 días definidos para soltar ese cobro.',
+  contexto: 'Contrato vigente como base. Avance pleno suspendido hasta septiembre 2026. Hasta entonces rige Acuerdo de Continuidad: $490.000 CLP/mes + setup diferido + performance fee sobre Fiestas Patrias.',
   hallazgos_criticos: [
-    { tag: '🟩', titulo: 'Contrato Impulsia-PEYU firmado el 26-may', simple: 'Acuerdo con addendum sobre Performance Fee: baseline = promedio ventas ene-ago 2026, medición mensual no acumulada, tope 2× fijo. Pago del setup queda condicionado a estabilidad del sistema en 7 días.' },
+    { tag: '🟩', titulo: 'Acuerdo de Continuidad firmado el 26-may', simple: 'Contrato base firme y vigente. Avance pleno suspendido hasta septiembre. Hasta entonces: operación mensual $490.000 CLP/mes activa desde la semana del 26-30 may.' },
+    { tag: '🟩', titulo: 'Performance Fee con baseline claro = $20M brutos/mes', simple: 'Fórmula: (ventas reales − $20.000.000) × 10%. Aplica sobre B2B + B2C combinados (SII + web). Tope mensual: $8M (sobre exceso de $80M). Se activa con resultados de Fiestas Patrias 2026.' },
+    { tag: '🟩', titulo: 'Setup de $13.080.024 CLP suspendido hasta septiembre', simple: 'Se autopaga con las cuotas mensuales de performance fee. Cuando la suma acumulada de fees iguale el setup, queda compensado e íntegramente saldado.' },
     { tag: '🟩', titulo: 'Estructura del sistema sólida y operativa', simple: 'Más de 130 funciones automáticas operando: pedidos, pagos MercadoPago, envíos Bluex (pendiente clave productiva), alertas, CRM B2B/B2C, reportes diarios.' },
     { tag: '🟩', titulo: 'Sistema antifraude protegiendo el negocio', simple: 'Bloqueó 2 pedidos falsos de $3.9M cada uno sin intervención humana. Motor de assessOrderRisk afinado y validado.' },
     { tag: '🟩', titulo: 'Catálogo migrado y SEO aplicado (70/70 productos)', simple: '566 URLs legacy reparadas, todas las imágenes activas en media.base44.com (CDN estable). Meta tags SEO aplicados a 70 productos activos.' },
     { tag: '🟩', titulo: '3 campañas Google Ads pre-armadas', simple: 'Search + Shopping + Demand Gen como borradores en /admin/ads-command. Listas para activar cuando los fundadores conecten cuenta Ads.' },
-    { tag: '🟥', titulo: 'Clave productiva BlueExpress pendiente (BLOQUEANTE)', simple: 'Sin esto no podemos generar etiquetas reales. Hito 1 del T1 depende de esto. Plan B: Starken/Chilexpress en paralelo si Bluex no responde en 48h.' },
-    { tag: '🟥', titulo: 'Baseline contractual aún sin calcular', simple: 'Carlos debe exportar ventas mensuales B2B + B2C ene-ago 2026 desde Base44 + SII para fijar la cifra contractual del Performance Fee. Plazo: 01-jun (Hito 3 del T1).' },
+    { tag: '🟥', titulo: 'Clave productiva BlueExpress pendiente (BLOQUEANTE)', simple: 'Sin esto no podemos generar etiquetas reales. Plan B: Starken/Chilexpress en paralelo si Bluex no responde en 48h.' },
+    { tag: '🟥', titulo: 'Anexo operativo de atribución pendiente (plazo: 30-jun-2026)', simple: 'Ambas partes deben acordar por escrito cómo se atribuyen las ventas B2B a la plataforma o agentes IA. Sin este anexo, el performance fee no puede calcularse correctamente en septiembre.' },
     { tag: '🟧', titulo: 'WhatsApp + Instagram pendientes de credenciales fundador', simple: 'Cuenta WhatsApp Business +56 9 3376 6573 (10 min escaneo QR) + credenciales Meta for Developers para Instagram auto-publicación. Necesarios al inicio del T1 (hito 2).' },
     { tag: '🟧', titulo: 'Jonny debe entregar fotos + descripciones + dimensiones', simple: 'Material original de los 69 productos activos: foto nombrada con nombre del producto, descripción 3-4 líneas, peso/dimensiones para Bluex. Sin esto Q1 del T2 se atrasa. Plazo: 16-jun.' },
     { tag: '🟧', titulo: '2 acciones SEO del fundador pendientes', simple: '(1) Subir archivo IndexNow al dominio (5 min). (2) Verificar peyuchile.cl en Search Console vía DNS (10 min). Bloquean el blast masivo de Q3.' },
@@ -578,10 +580,13 @@ export const SNAPSHOT_HOY = {
     { tag: '🟨', titulo: 'Cockpit móvil con datos reales (no mocks)', simple: '/admin/movil ya existe pero falta cablear KPIs reales para la demo del 02-jun a Diego. Esa demo es la que libera el pago del setup.' },
   ],
   meta_contrato: {
-    objetivo: '≥ $20M CLP/mes en ventas (B2B + B2C) desde septiembre 2026',
-    baseline: 'Promedio mensual ventas ene-ago 2026 (Base44 + SII) — PENDIENTE de calcular',
-    performance_fee: '30% del excedente mensual sobre baseline, tope 2× fijo',
-    auditoria: 'Base44 + SII como fuente única. Revisión contable externa opcional para PEYU.',
+    objetivo: 'Superar $20.000.000 CLP brutos/mes (B2B + B2C combinados) durante Fiestas Patrias 2026 (septiembre)',
+    baseline: '$20.000.000 CLP brutos mensuales — fijado en contrato, no requiere cálculo histórico',
+    performance_fee: '(ventas reales − $20M) × 10%. Tope mensual: $8M (sobre exceso de $80M)',
+    operacion_mensual: '$490.000 CLP/mes activa desde semana 26-30 may 2026',
+    setup_diferido: '$13.080.024 CLP IVA incluido · suspendido hasta sept · se autopaga vía performance fee acumulado',
+    auditoria: 'Facturación SII + ventas web B2C + ventas B2B atribuibles. Anexo operativo de atribución a firmar antes del 30-jun-2026.',
+    inversion_publicitaria_max: '$2.000.000 CLP/mes (todas las plataformas combinadas)',
   },
 };
 
