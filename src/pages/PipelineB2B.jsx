@@ -1,11 +1,13 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
-import { Plus, Search, Edit2, Trash2, MessageSquare, FileText, Users, Clock, AlertTriangle, TrendingUp, DollarSign, ChevronRight, Zap } from "lucide-react";
+import { Plus, Search, Edit2, Trash2, MessageSquare, FileText, Users, Clock, AlertTriangle, TrendingUp, DollarSign, Zap, Loader2, ExternalLink, Sparkles } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useToast } from "@/components/ui/use-toast";
 
 // SLA: días desde creación/última actualización
 function getDiasEnEtapa(lead) {
@@ -19,86 +21,114 @@ const SLA_LIMITS = { Nuevo: 1, Contactado: 2, Cotizado: 3, 'Muestra Enviada': 5,
 const ESTADOS_LEAD = ["Nuevo", "Contactado", "Cotizado", "Muestra Enviada", "Negociación", "Ganado", "Perdido"];
 const ESTADOS_COT = ["Borrador", "Enviada", "Aceptada", "Rechazada", "Vencida"];
 
+// Badges sólidos con buen contraste tanto en modo día como noche.
 const estadoColor = {
-  Nuevo: "bg-blue-100 text-blue-700",
-  Contactado: "bg-purple-100 text-purple-700",
-  Cotizado: "bg-amber-100 text-amber-700",
-  "Muestra Enviada": "bg-orange-100 text-orange-700",
-  Negociación: "bg-indigo-100 text-indigo-700",
-  Ganado: "bg-green-100 text-green-700",
-  Perdido: "bg-red-100 text-red-700",
-  Borrador: "bg-gray-100 text-gray-600",
-  Enviada: "bg-blue-100 text-blue-700",
-  Aceptada: "bg-green-100 text-green-700",
-  Rechazada: "bg-red-100 text-red-700",
-  Vencida: "bg-gray-100 text-gray-500",
+  Nuevo:            "bg-blue-100 text-blue-800 border border-blue-200",
+  Contactado:       "bg-purple-100 text-purple-800 border border-purple-200",
+  Cotizado:         "bg-amber-100 text-amber-800 border border-amber-200",
+  "Muestra Enviada":"bg-orange-100 text-orange-800 border border-orange-200",
+  Negociación:      "bg-indigo-100 text-indigo-800 border border-indigo-200",
+  Ganado:           "bg-emerald-100 text-emerald-800 border border-emerald-200",
+  Perdido:          "bg-red-100 text-red-800 border border-red-200",
+  Borrador:         "bg-slate-100 text-slate-700 border border-slate-200",
+  Enviada:          "bg-blue-100 text-blue-800 border border-blue-200",
+  Aceptada:         "bg-emerald-100 text-emerald-800 border border-emerald-200",
+  Rechazada:        "bg-red-100 text-red-800 border border-red-200",
+  Vencida:          "bg-slate-100 text-slate-600 border border-slate-200",
 };
 
 const calidadColor = {
-  Caliente: "bg-red-50 text-red-600 border border-red-200",
-  Tibio: "bg-amber-50 text-amber-600 border border-amber-200",
-  Frío: "bg-blue-50 text-blue-500 border border-blue-200",
-  "No Comercial": "bg-gray-50 text-gray-400 border border-gray-200",
+  Caliente:        "bg-red-100 text-red-800 border border-red-200",
+  Tibio:           "bg-amber-100 text-amber-800 border border-amber-200",
+  Frío:            "bg-sky-100 text-sky-800 border border-sky-200",
+  "No Comercial":  "bg-slate-100 text-slate-600 border border-slate-200",
 };
 
-function LeadCard({ lead, onEdit, onDelete, onCotizar }) {
+function LeadCard({ lead, onEdit, onDelete, onAutoCotizar, generating }) {
   const dias = getDiasEnEtapa(lead);
   const slaLimit = SLA_LIMITS[lead.estado];
   const slaVencido = slaLimit && dias > slaLimit;
   const slaProximo = slaLimit && dias === slaLimit;
+  const isGenerating = generating === lead.id;
+
+  const borderClass = slaVencido
+    ? 'border-red-400'
+    : slaProximo
+      ? 'border-amber-400'
+      : 'border-ld-border';
 
   return (
-    <div className={`bg-slate-800/60 rounded-xl p-4 shadow-lg border transition-shadow hover:shadow-md ${
-      slaVencido ? 'border-red-500/60' : slaProximo ? 'border-amber-500/60' : 'border-slate-700/60'
-    }`}>
-      <div className="flex items-start justify-between mb-2">
+    <div className={`ld-card p-4 transition-all hover:shadow-md ${borderClass}`} style={{ borderWidth: 1 }}>
+      <div className="flex items-start justify-between mb-2 gap-2">
         <div className="flex-1 min-w-0">
-          <p className="font-poppins font-semibold text-sm text-white truncate">{lead.empresa}</p>
-          <p className="text-xs text-gray-400">{lead.contacto}</p>
+          <p className="font-poppins font-semibold text-[15px] text-ld-fg truncate">{lead.empresa}</p>
+          <p className="text-xs text-ld-fg-muted truncate">{lead.contacto || 'Sin contacto'}</p>
         </div>
-        <div className="flex gap-1 ml-2 flex-shrink-0">
-          <button onClick={() => onEdit(lead)} className="p-1.5 hover:bg-muted rounded-lg transition-colors">
-            <Edit2 className="w-3.5 h-3.5 text-muted-foreground" />
+        <div className="flex gap-0.5 flex-shrink-0">
+          <button onClick={() => onEdit(lead)} className="p-1.5 hover:bg-ld-bg-soft rounded-lg transition-colors" title="Editar">
+            <Edit2 className="w-3.5 h-3.5 text-ld-fg-muted" />
           </button>
-          <button onClick={() => onDelete(lead.id)} className="p-1.5 hover:bg-red-50 rounded-lg transition-colors">
-            <Trash2 className="w-3.5 h-3.5 text-red-400" />
+          <button onClick={() => onDelete(lead.id)} className="p-1.5 hover:bg-red-50 rounded-lg transition-colors" title="Eliminar">
+            <Trash2 className="w-3.5 h-3.5 text-red-500" />
           </button>
         </div>
       </div>
+
       <div className="flex flex-wrap gap-1.5 mb-3">
-        <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${estadoColor[lead.estado]}`}>{lead.estado}</span>
-        {lead.calidad_lead && <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${calidadColor[lead.calidad_lead] || 'bg-gray-100 text-gray-600'}`}>{lead.calidad_lead}</span>}
+        <span className={`text-[11px] px-2 py-0.5 rounded-full font-semibold ${estadoColor[lead.estado]}`}>{lead.estado}</span>
+        {lead.calidad_lead && (
+          <span className={`text-[11px] px-2 py-0.5 rounded-full font-semibold ${calidadColor[lead.calidad_lead] || 'bg-slate-100 text-slate-600 border border-slate-200'}`}>
+            {lead.calidad_lead}
+          </span>
+        )}
         {slaVencido && (
-          <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-red-100 text-red-700 flex items-center gap-1">
+          <span className="text-[11px] px-2 py-0.5 rounded-full font-semibold bg-red-100 text-red-800 border border-red-200 flex items-center gap-1">
             <AlertTriangle className="w-3 h-3" />{dias}d — SLA vencido
           </span>
         )}
         {slaProximo && !slaVencido && (
-          <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-amber-100 text-amber-700 flex items-center gap-1">
+          <span className="text-[11px] px-2 py-0.5 rounded-full font-semibold bg-amber-100 text-amber-800 border border-amber-200 flex items-center gap-1">
             <Clock className="w-3 h-3" />{dias}d — Vence hoy
           </span>
         )}
       </div>
-      <div className="space-y-1 text-xs text-gray-400">
-        {lead.canal && <div className="flex items-center gap-1.5"><MessageSquare className="w-3 h-3" />{lead.canal}</div>}
-        {lead.cantidad_estimada && <div className="flex items-center gap-1.5"><FileText className="w-3 h-3" />{lead.cantidad_estimada.toLocaleString()} unidades</div>}
-        {lead.presupuesto_estimado && <div className="flex items-center gap-1.5"><span className="font-medium text-cyan-300">${lead.presupuesto_estimado.toLocaleString('es-CL')}</span></div>}
+
+      <div className="space-y-1 text-xs text-ld-fg-soft">
+        {lead.canal && <div className="flex items-center gap-1.5"><MessageSquare className="w-3 h-3 text-ld-fg-muted" />{lead.canal}</div>}
+        {lead.cantidad_estimada && <div className="flex items-center gap-1.5"><FileText className="w-3 h-3 text-ld-fg-muted" />{lead.cantidad_estimada.toLocaleString()} unidades</div>}
+        {lead.producto_interes && <div className="flex items-center gap-1.5 truncate"><Sparkles className="w-3 h-3 text-ld-fg-muted flex-shrink-0" /><span className="truncate">{lead.producto_interes}</span></div>}
+        {lead.presupuesto_estimado > 0 && (
+          <div className="flex items-center gap-1.5">
+            <DollarSign className="w-3 h-3 text-ld-fg-muted" />
+            <span className="font-semibold" style={{ color: 'var(--ld-action)' }}>${lead.presupuesto_estimado.toLocaleString('es-CL')}</span>
+          </div>
+        )}
       </div>
+
       {lead.next_action && (
-        <div className="mt-2 pt-2 border-t border-slate-700/60 text-xs">
-          <span className="font-medium text-cyan-300">→ </span>
-          <span className="text-gray-400">{lead.next_action}</span>
-          {lead.next_action_date && <span className="text-xs text-gray-500 ml-1">({lead.next_action_date})</span>}
+        <div className="mt-2 pt-2 border-t border-ld-border text-xs">
+          <span className="font-semibold" style={{ color: 'var(--ld-action)' }}>→ </span>
+          <span className="text-ld-fg-soft">{lead.next_action}</span>
+          {lead.next_action_date && <span className="text-ld-fg-muted ml-1">({lead.next_action_date})</span>}
         </div>
       )}
+
       {!['Ganado','Perdido'].includes(lead.estado) && (
-        <div className="mt-2 pt-2 border-t border-slate-700/60">
+        <div className="mt-3 pt-3 border-t border-ld-border">
           <button
-            onClick={() => onCotizar(lead)}
-            className="w-full text-xs font-bold py-1.5 rounded-lg bg-teal-500/20 hover:bg-teal-500/30 text-teal-300 border border-teal-500/30 flex items-center justify-center gap-1.5 transition-all"
+            onClick={() => onAutoCotizar(lead)}
+            disabled={isGenerating}
+            className="w-full text-xs font-bold py-2 rounded-lg ld-btn-primary flex items-center justify-center gap-1.5 disabled:opacity-60 disabled:cursor-wait"
           >
-            <Zap className="w-3 h-3" /> Generar Cotización
+            {isGenerating ? (
+              <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Generando propuesta…</>
+            ) : (
+              <><Zap className="w-3.5 h-3.5" /> Generar cotización automática</>
+            )}
           </button>
+          <p className="text-[10px] text-ld-fg-muted mt-1.5 text-center">
+            IA arma técnica + comercial · PDF listo en {'<'} 30s
+          </p>
         </div>
       )}
     </div>
@@ -108,34 +138,34 @@ function LeadCard({ lead, onEdit, onDelete, onCotizar }) {
 function CotizacionRow({ cot, onEdit, onDelete, onCrearOP }) {
   const total = cot.total || (cot.cantidad * cot.precio_unitario * (1 - (cot.descuento_pct || 0) / 100) + (cot.fee_personalizacion || 0) + (cot.fee_packaging || 0));
   return (
-    <div className="bg-slate-800/60 rounded-xl p-4 shadow-lg border border-slate-700/60 hover:shadow-lg transition-shadow flex items-center justify-between">
-      <div className="flex items-center gap-4">
-        <div>
-          <p className="font-poppins font-semibold text-sm text-white">{cot.empresa}</p>
-          <p className="text-xs text-gray-400">{cot.sku} • {(cot.cantidad || 0).toLocaleString()} u</p>
+    <div className="ld-card p-4 hover:shadow-md transition-all flex items-center justify-between gap-3">
+      <div className="flex items-center gap-3 min-w-0">
+        <div className="min-w-0">
+          <p className="font-poppins font-semibold text-sm text-ld-fg truncate">{cot.empresa}</p>
+          <p className="text-xs text-ld-fg-muted truncate">{cot.sku} · {(cot.cantidad || 0).toLocaleString()} u</p>
         </div>
-        <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${estadoColor[cot.estado] || 'bg-gray-100'}`}>{cot.estado}</span>
+        <span className={`text-[11px] px-2 py-0.5 rounded-full font-semibold flex-shrink-0 ${estadoColor[cot.estado] || 'bg-slate-100 text-slate-700 border border-slate-200'}`}>{cot.estado}</span>
       </div>
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-3 flex-shrink-0">
         <div className="text-right">
-          <p className="font-poppins font-bold text-sm text-cyan-300">${total.toLocaleString('es-CL')}</p>
-          <p className="text-xs text-gray-400">{cot.lead_time_dias || '?'} días hábiles</p>
+          <p className="font-poppins font-bold text-sm" style={{ color: 'var(--ld-action)' }}>${total.toLocaleString('es-CL')}</p>
+          <p className="text-[11px] text-ld-fg-muted">{cot.lead_time_dias || '?'} días hábiles</p>
         </div>
         <div className="flex gap-1 items-center">
           {cot.estado === 'Aceptada' && (
             <button
               onClick={() => onCrearOP(cot)}
               title="Crear Orden de Producción"
-              className="text-xs font-medium px-2 py-1 rounded-lg transition-colors hover:opacity-80 flex items-center gap-1"
-              style={{ background: '#f0faf7', color: '#0F8B6C' }}>
+              className="text-xs font-semibold px-2 py-1 rounded-lg ld-btn-ghost"
+            >
               + OP
             </button>
           )}
-          <button onClick={() => onEdit(cot)} className="p-1.5 hover:bg-muted rounded-lg transition-colors">
-            <Edit2 className="w-3.5 h-3.5 text-muted-foreground" />
+          <button onClick={() => onEdit(cot)} className="p-1.5 hover:bg-ld-bg-soft rounded-lg transition-colors">
+            <Edit2 className="w-3.5 h-3.5 text-ld-fg-muted" />
           </button>
           <button onClick={() => onDelete(cot.id)} className="p-1.5 hover:bg-red-50 rounded-lg transition-colors">
-            <Trash2 className="w-3.5 h-3.5 text-red-400" />
+            <Trash2 className="w-3.5 h-3.5 text-red-500" />
           </button>
         </div>
       </div>
@@ -147,6 +177,8 @@ const LEAD_DEFAULTS = { empresa: '', contacto: '', email: '', telefono: '', cana
 const COT_DEFAULTS = { empresa: '', sku: '', cantidad: 0, precio_unitario: 0, descuento_pct: 0, fee_personalizacion: 0, fee_packaging: 0, estado: 'Borrador', personalizacion_tipo: 'Láser UV', packaging: 'Estándar (stock)', lead_time_dias: 7 };
 
 export default function PipelineB2B() {
+  const navigate = useNavigate();
+  const { toast } = useToast();
   const [activeTab, setActiveTab] = useState('leads');
   const [leads, setLeads] = useState([]);
   const [cotizaciones, setCotizaciones] = useState([]);
@@ -156,6 +188,7 @@ export default function PipelineB2B() {
   const [showModal, setShowModal] = useState(false);
   const [editing, setEditing] = useState(null);
   const [form, setForm] = useState(LEAD_DEFAULTS);
+  const [generatingId, setGeneratingId] = useState(null); // ID del lead cuya propuesta se está generando
 
   // Mapea B2BLead (fuente real, viene del formulario web) al shape legacy
   // que usa esta página, para no reescribir todas las cards y kanban.
@@ -264,17 +297,46 @@ export default function PipelineB2B() {
     alert(`✅ Orden de Producción creada para ${cot.empresa} — ${cot.sku}`);
   };
 
-  const handleCotizarLead = async (lead) => {
-    setEditing(null);
-    setActiveTab('cotizaciones');
-    setForm({
-      ...COT_DEFAULTS,
-      empresa: lead.empresa,
-      contacto: lead.contacto,
-      email: lead.email,
-      cantidad: lead.cantidad_estimada || 50,
-    });
-    setShowModal(true);
+  // Genera cotización 100% automática vía IA llamando a createCorporateProposal.
+  // Arma items, pricing por volumen, lead time, mockups y términos comerciales.
+  // Al terminar abre la propuesta pública (técnica + comercial) ya con PDF disponible.
+  const handleAutoCotizar = async (lead) => {
+    if (generatingId) return;
+    setGeneratingId(lead.id);
+    try {
+      const item = {
+        sku: lead.producto_interes || 'PEYU-GEN',
+        nombre: lead.producto_interes || 'Producto Peyu',
+        qty: lead.cantidad_estimada || 50,
+        precio_base: 5000, // base — createCorporateProposal aplica volumen
+        personalizacion: !!(lead.personalizacion || lead.logo_recibido),
+      };
+      const resp = await base44.functions.invoke('createCorporateProposal', {
+        leadId: lead.id,
+        items: [item],
+        notes: lead.notas || '',
+      });
+      const data = resp?.data || resp;
+      if (data?.error) throw new Error(data.error);
+
+      toast({
+        title: '✨ Propuesta generada',
+        description: `${data.numero} · ${lead.empresa} · $${(data.total || 0).toLocaleString('es-CL')} CLP · ${data.lead_time_dias}d`,
+      });
+      await loadData();
+      // Abrir propuesta pública (técnica + comercial) en nueva pestaña
+      if (data?.proposal_url) {
+        window.open(data.proposal_url, '_blank', 'noopener');
+      }
+    } catch (err) {
+      toast({
+        title: 'No se pudo generar la propuesta',
+        description: err?.message || 'Error inesperado. Revisa los datos del lead.',
+        variant: 'destructive',
+      });
+    } finally {
+      setGeneratingId(null);
+    }
   };
 
   const filteredLeads = leads.filter(l =>
@@ -303,37 +365,40 @@ export default function PipelineB2B() {
   const tasaConversion = leads.length > 0 ? ((leads.filter(l => l.estado === 'Ganado').length / leads.length) * 100).toFixed(1) : 0;
 
   return (
-    <div className="p-6 space-y-5">
-      <div className="flex items-center justify-between">
+    <div className="p-6 space-y-5 ld-canvas min-h-screen">
+      <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
-          <h1 className="text-3xl font-poppins font-bold text-white">Pipeline B2B</h1>
-          <p className="text-teal-300/70 text-sm mt-1">{leads.length} leads • {cotizaciones.length} cotizaciones</p>
+          <h1 className="ld-display text-3xl text-ld-fg">Pipeline B2B</h1>
+          <p className="text-ld-fg-muted text-sm mt-1">{leads.length} leads · {cotizaciones.length} cotizaciones</p>
         </div>
-        <Button onClick={openNew} style={{ background: '#0F8B6C' }} className="text-white hover:opacity-90 gap-2">
+        <Button onClick={openNew} className="ld-btn-primary gap-2 rounded-full">
           <Plus className="w-4 h-4" />
           {isLead ? 'Nuevo Lead' : 'Nueva Cotización'}
         </Button>
       </div>
 
-      {/* Pipeline KPIs */}
+      {/* Pipeline KPIs — alto contraste, sin texto verde tenue */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         {[
-          { label: 'Leads Activos', value: leadsActivos.length, sub: `${leads.filter(l=>l.calidad_lead==='Caliente').length} calientes`, color: '#14b8a6', icon: Users },
-          { label: 'Valor Pipeline', value: valorPipeline > 0 ? `$${(valorPipeline/1000000).toFixed(1)}M` : '$—', sub: 'CLP estimado', color: '#14b8a6', icon: DollarSign },
-          { label: 'SLA Vencidos', value: slaVencidos, sub: 'requieren acción hoy', color: slaVencidos > 0 ? '#f97316' : '#14b8a6', icon: AlertTriangle },
-          { label: 'Tasa Conversión', value: `${tasaConversion}%`, sub: `Meta: 7% • ${leads.filter(l=>l.estado==='Ganado').length} ganados`, color: parseFloat(tasaConversion) >= 7 ? '#14b8a6' : '#f97316', icon: TrendingUp },
+          { label: 'Leads activos',    value: leadsActivos.length,                           sub: `${leads.filter(l=>l.calidad_lead==='Caliente').length} calientes`,                            icon: Users,         tone: 'action' },
+          { label: 'Valor pipeline',   value: valorPipeline > 0 ? `$${(valorPipeline/1000000).toFixed(1)}M` : '$—', sub: 'CLP estimado',                                                              icon: DollarSign,    tone: 'action' },
+          { label: 'SLA vencidos',     value: slaVencidos,                                   sub: 'requieren acción hoy',                                                                      icon: AlertTriangle, tone: slaVencidos > 0 ? 'warn' : 'action' },
+          { label: 'Tasa conversión',  value: `${tasaConversion}%`,                          sub: `Meta: 7% · ${leads.filter(l=>l.estado==='Ganado').length} ganados`,                          icon: TrendingUp,    tone: parseFloat(tasaConversion) >= 7 ? 'action' : 'warn' },
         ].map((kpi, i) => {
           const Icon = kpi.icon;
+          const tone = kpi.tone === 'warn'
+            ? { color: 'var(--ld-highlight)', bg: 'var(--ld-highlight-soft)' }
+            : { color: 'var(--ld-action)',    bg: 'var(--ld-action-soft)' };
           return (
-            <div key={i} className="bg-slate-800/60 rounded-xl p-4 border border-slate-700/60 shadow-lg">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs text-teal-300/70 uppercase tracking-wide">{kpi.label}</p>
-                  <p className="font-poppins font-bold text-xl mt-1 text-white" style={{ color: kpi.color }}>{kpi.value}</p>
-                  <p className="text-xs text-gray-400 mt-0.5">{kpi.sub}</p>
+            <div key={i} className="ld-card p-4">
+              <div className="flex items-center justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="text-[11px] text-ld-fg-muted uppercase tracking-wider font-semibold">{kpi.label}</p>
+                  <p className="font-poppins font-bold text-2xl mt-1" style={{ color: tone.color }}>{kpi.value}</p>
+                  <p className="text-xs text-ld-fg-soft mt-0.5">{kpi.sub}</p>
                 </div>
-                <div className="w-9 h-9 rounded-xl flex items-center justify-center bg-slate-700/40">
-                  <Icon className="w-4 h-4" style={{ color: kpi.color }} />
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: tone.bg }}>
+                  <Icon className="w-5 h-5" style={{ color: tone.color }} />
                 </div>
               </div>
             </div>
@@ -366,11 +431,20 @@ export default function PipelineB2B() {
         </div>
 
         <TabsContent value="leads" className="mt-4">
-          {loading ? <div className="text-center py-12 text-muted-foreground">Cargando leads...</div> : (
+          {loading ? <div className="text-center py-12 text-ld-fg-muted">Cargando leads…</div> : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-              {filteredLeads.map(l => <LeadCard key={l.id} lead={l} onEdit={openEdit} onDelete={handleDelete} onCotizar={handleCotizarLead} />)}
+              {filteredLeads.map(l => (
+                <LeadCard
+                  key={l.id}
+                  lead={l}
+                  onEdit={openEdit}
+                  onDelete={handleDelete}
+                  onAutoCotizar={handleAutoCotizar}
+                  generating={generatingId}
+                />
+              ))}
               {filteredLeads.length === 0 && (
-                <div className="col-span-3 text-center py-16 text-muted-foreground">
+                <div className="col-span-3 text-center py-16 text-ld-fg-muted">
                   <Users className="w-12 h-12 mx-auto mb-3 opacity-30" />
                   <p>No hay leads. Agrega el primero.</p>
                 </div>
@@ -380,13 +454,13 @@ export default function PipelineB2B() {
         </TabsContent>
 
         <TabsContent value="cotizaciones" className="mt-4 space-y-3">
-          {loading ? <div className="text-center py-12 text-muted-foreground">Cargando...</div> : (
+          {loading ? <div className="text-center py-12 text-ld-fg-muted">Cargando…</div> : (
             <>
               {filteredCots.map(c => <CotizacionRow key={c.id} cot={c} onEdit={openEdit} onDelete={handleDelete} onCrearOP={handleCrearOP} />)}
               {filteredCots.length === 0 && (
-                <div className="text-center py-16 text-muted-foreground">
+                <div className="text-center py-16 text-ld-fg-muted">
                   <FileText className="w-12 h-12 mx-auto mb-3 opacity-30" />
-                  <p>No hay cotizaciones. Crea la primera.</p>
+                  <p>No hay cotizaciones. Genera una desde un lead activo o crea una manual.</p>
                 </div>
               )}
             </>
@@ -395,7 +469,7 @@ export default function PipelineB2B() {
 
         <TabsContent value="kanban" className="mt-4">
           {slaVencidos > 0 && (
-            <div className="mb-3 flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium bg-red-950/50 text-red-200 border border-red-700/60">
+            <div className="mb-3 flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium bg-red-100 text-red-800 border border-red-200">
               <AlertTriangle className="w-4 h-4 flex-shrink-0" />
               {slaVencidos} lead(s) con SLA vencido — actuar ahora (SLA: Nuevo &lt;24h, Cotizado &lt;72h)
             </div>
@@ -408,12 +482,12 @@ export default function PipelineB2B() {
                 <div key={estado} className="flex-shrink-0 w-60">
                   <div className="flex items-center justify-between mb-2 px-1">
                     <div>
-                      <h3 className="font-medium text-sm text-white">{estado}</h3>
-                      {SLA_LIMITS[estado] && <p className="text-xs text-gray-400">SLA: &lt;{SLA_LIMITS[estado]}d</p>}
+                      <h3 className="font-semibold text-sm text-ld-fg">{estado}</h3>
+                      {SLA_LIMITS[estado] && <p className="text-xs text-ld-fg-muted">SLA: &lt;{SLA_LIMITS[estado]}d</p>}
                     </div>
                     <div className="flex items-center gap-1">
-                      {vencidos > 0 && <span className="text-xs bg-red-100 text-red-600 px-1.5 py-0.5 rounded-full font-medium">{vencidos}⚠</span>}
-                      <span className="text-xs bg-muted px-2 py-0.5 rounded-full text-muted-foreground">{items.length}</span>
+                      {vencidos > 0 && <span className="text-xs bg-red-100 text-red-800 border border-red-200 px-1.5 py-0.5 rounded-full font-bold">{vencidos}⚠</span>}
+                      <span className="text-xs bg-ld-bg-soft border border-ld-border px-2 py-0.5 rounded-full text-ld-fg-soft font-medium">{items.length}</span>
                     </div>
                   </div>
                   <div className="space-y-2 min-h-16">
@@ -424,33 +498,30 @@ export default function PipelineB2B() {
                         <div
                           key={l.id}
                           onClick={() => { setActiveTab('leads'); openEdit(l); }}
-                          className={`bg-slate-800/60 rounded-xl p-3 shadow-lg border text-sm cursor-pointer hover:shadow-lg transition-all ${
-                            slaV ? 'border-red-500/60 bg-red-950/20' : 'border-slate-700/60'
-                          }`}>
-                          <p className="font-semibold text-white text-xs leading-tight">{l.empresa}</p>
-                          <p className="text-xs text-gray-400">{l.contacto}</p>
-                          <div className="flex items-center justify-between mt-2">
+                          className={`ld-card p-3 text-sm cursor-pointer hover:shadow-md transition-all ${slaV ? 'border-red-300' : ''}`}
+                          style={slaV ? { borderColor: '#fca5a5' } : {}}
+                        >
+                          <p className="font-semibold text-ld-fg text-xs leading-tight">{l.empresa}</p>
+                          <p className="text-xs text-ld-fg-muted truncate">{l.contacto}</p>
+                          <div className="flex items-center justify-between mt-2 gap-1">
                             {l.calidad_lead && (
-                              <span className={`text-xs px-1.5 py-0.5 rounded-full font-medium ${
-                                l.calidad_lead === 'Caliente' ? 'bg-red-100 text-red-600' :
-                                l.calidad_lead === 'Tibio' ? 'bg-amber-100 text-amber-600' : 'bg-blue-100 text-blue-600'
-                              }`}>{l.calidad_lead}</span>
+                              <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-semibold ${calidadColor[l.calidad_lead]}`}>
+                                {l.calidad_lead}
+                              </span>
                             )}
-                            <span className={`text-xs font-medium flex items-center gap-1 ml-auto ${
-                              slaV ? 'text-red-600' : 'text-muted-foreground'
-                            }`}>
+                            <span className={`text-xs font-semibold flex items-center gap-1 ml-auto ${slaV ? 'text-red-700' : 'text-ld-fg-muted'}`}>
                               {slaV ? <AlertTriangle className="w-3 h-3" /> : <Clock className="w-3 h-3" />}
                               {dias}d
                             </span>
                           </div>
                           {l.presupuesto_estimado > 0 && (
-                            <p className="text-xs font-medium mt-1" style={{ color: '#0F8B6C' }}>${(l.presupuesto_estimado/1000).toFixed(0)}K</p>
+                            <p className="text-xs font-bold mt-1" style={{ color: 'var(--ld-action)' }}>${(l.presupuesto_estimado/1000).toFixed(0)}K</p>
                           )}
                         </div>
                       );
                     })}
                     {items.length === 0 && (
-                      <div className="border-2 border-dashed border-border rounded-xl p-4 text-center text-xs text-muted-foreground">Sin leads</div>
+                      <div className="border-2 border-dashed border-ld-border rounded-xl p-4 text-center text-xs text-ld-fg-muted">Sin leads</div>
                     )}
                   </div>
                 </div>
@@ -459,19 +530,18 @@ export default function PipelineB2B() {
             {/* Ganado / Perdido */}
             {['Ganado','Perdido'].map(estado => {
               const items = leads.filter(l => l.estado === estado);
+              const isWon = estado === 'Ganado';
               return (
                 <div key={estado} className="flex-shrink-0 w-48">
                   <div className="flex items-center justify-between mb-2 px-1">
-                    <h3 className={`font-medium text-sm ${estado === 'Ganado' ? 'text-green-700' : 'text-red-500'}`}>{estado}</h3>
-                    <span className="text-xs bg-muted px-2 py-0.5 rounded-full text-muted-foreground">{items.length}</span>
+                    <h3 className={`font-semibold text-sm ${isWon ? 'text-emerald-700' : 'text-red-600'}`}>{estado}</h3>
+                    <span className="text-xs bg-ld-bg-soft border border-ld-border px-2 py-0.5 rounded-full text-ld-fg-soft font-medium">{items.length}</span>
                   </div>
                   <div className="space-y-2">
                     {items.map(l => (
-                      <div key={l.id} className={`rounded-xl p-3 border text-xs ${
-                        estado === 'Ganado' ? 'bg-green-50 border-green-200' : 'bg-red-50/50 border-red-200'
-                      }`}>
-                        <p className="font-semibold">{l.empresa}</p>
-                        {l.presupuesto_estimado > 0 && <p className="text-muted-foreground mt-0.5">${(l.presupuesto_estimado/1000).toFixed(0)}K</p>}
+                      <div key={l.id} className={`rounded-xl p-3 border text-xs ${isWon ? 'bg-emerald-50 border-emerald-200' : 'bg-red-50 border-red-200'}`}>
+                        <p className="font-semibold text-ld-fg">{l.empresa}</p>
+                        {l.presupuesto_estimado > 0 && <p className="text-ld-fg-muted mt-0.5">${(l.presupuesto_estimado/1000).toFixed(0)}K</p>}
                       </div>
                     ))}
                   </div>
