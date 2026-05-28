@@ -34,8 +34,9 @@ export default function BacklinksInsightsPanel() {
   }
 
   return (
-    <div className="space-y-4">
-      <div className="grid grid-cols-3 gap-3">
+    <div className="h-full flex flex-col min-h-0">
+      <div className="flex-1 overflow-y-auto peyu-scrollbar-light pr-2 pb-6 space-y-4">
+        <div className="grid grid-cols-3 gap-3">
         <KPI label="Backlinks totales" value={stats.total} icon={ExternalLink} color="text-sky-300" />
         <KPI label="Alta autoridad (DA ≥ 50)" value={stats.altaAutoridad} icon={Award} color="text-amber-300" />
         <KPI label="DA promedio" value={stats.promedio_DA} icon={TrendingUp} color="text-emerald-300" />
@@ -70,6 +71,7 @@ export default function BacklinksInsightsPanel() {
             ))}
           </div>
         )}
+      </div>
       </div>
     </div>
   );

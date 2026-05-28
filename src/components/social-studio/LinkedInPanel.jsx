@@ -66,8 +66,9 @@ export default function LinkedInPanel({ onPublished }) {
   const { org, stats } = status;
 
   return (
-    <div className="h-full overflow-y-auto peyu-scrollbar-light bg-black/20 rounded-2xl border border-white/5 p-4">
-      <div className="space-y-5 max-w-4xl mx-auto">
+    <div className="h-full flex flex-col min-h-0 bg-black/20 rounded-2xl border border-white/5">
+      <div className="flex-1 overflow-y-auto peyu-scrollbar-light p-4 min-h-0">
+        <div className="space-y-5 max-w-4xl mx-auto pb-6">
 
         {/* Org Card */}
         <div className="rounded-2xl p-5 flex items-start gap-4" style={{ background: 'linear-gradient(135deg,rgba(10,102,194,0.2),rgba(10,102,194,0.08))', border: '1px solid rgba(10,102,194,0.4)' }}>
@@ -232,6 +233,7 @@ export default function LinkedInPanel({ onPublished }) {
           </div>
         </div>
 
+        </div>
       </div>
     </div>
   );

@@ -57,8 +57,9 @@ export default function WeeklyPlannerPanel({ onGenerated }) {
   };
 
   return (
-    <div className="h-full overflow-y-auto peyu-scrollbar-light pb-10 pr-2">
-      <div className="max-w-3xl mx-auto space-y-5">
+    <div className="h-full flex flex-col min-h-0">
+      <div className="flex-1 overflow-y-auto peyu-scrollbar-light pr-2 pb-6">
+        <div className="max-w-3xl mx-auto space-y-5">
         <div className="bg-gradient-to-br from-violet-500/10 to-pink-500/10 border border-violet-400/20 rounded-2xl p-5">
         <div className="flex items-start gap-3">
           <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-pink-500 flex items-center justify-center flex-shrink-0">
@@ -147,6 +148,7 @@ export default function WeeklyPlannerPanel({ onGenerated }) {
           {generating ? 'Generando 7 días de contenido…' : 'Generar plan semanal'}
         </Button>
       </div>
+        </div>
       </div>
     </div>
   );

@@ -177,8 +177,9 @@ export default function BulkGeneratorPanel({ onGenerated }) {
       </div>
 
       {/* ───────────────── Configuración ───────────────── */}
-      <div className="bg-white/[0.04] backdrop-blur-xl border border-white/10 rounded-2xl p-4 space-y-4 overflow-y-auto peyu-scrollbar-light">
-        <h3 className="font-poppins font-semibold text-white text-sm flex items-center gap-2">
+      <div className="bg-white/[0.04] backdrop-blur-xl border border-white/10 rounded-2xl flex flex-col min-h-0">
+        <div className="flex-1 overflow-y-auto peyu-scrollbar-light p-4 space-y-4 min-h-0">
+          <h3 className="font-poppins font-semibold text-white text-sm flex items-center gap-2">
           <Zap className="w-4 h-4 text-emerald-300" />
           Configuración del lote
         </h3>
@@ -360,6 +361,7 @@ export default function BulkGeneratorPanel({ onGenerated }) {
           {generating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
           {generating ? `Generando ${totalEstimado} posts…` : `Generar ${totalEstimado} variantes`}
         </Button>
+        </div>
       </div>
     </div>
   );
