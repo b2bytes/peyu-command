@@ -16,15 +16,25 @@
 // ============================================================================
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
-async function publishToInstagram(post) {
-  const token = Deno.env.get('META_PAGE_ACCESS_TOKEN');
-  const igUser = Deno.env.get('META_IG_USER_ID');
-  if (!token || !igUser) return { ok: false, reason: 'no_credentials' };
+async function publishToInstagram(post, base44) {
+  let token;
+  try {
+    const conn = await base44.asServiceRole.connectors.getConnection("instagram");
+    token = conn.accessToken;
+  } catch (e) {
+    return { ok: false, reason: 'no_credentials', detail: e.message };
+  }
+  if (!token) return { ok: false, reason: 'no_credentials' };
+
+  const meRes = await fetch(`https://graph.instagram.com/me?fields=id,username&access_token=${token}`);
+  const meData = await meRes.json();
+  if (!meData.id) return { ok: false, reason: 'no_user_id', detail: meData };
+  const igUser = meData.id;
 
   // Step 1: crear container
   const fullCaption = [post.copy, post.hashtags].filter(Boolean).join('\n\n');
   const containerRes = await fetch(
-    `https://graph.facebook.com/v18.0/${igUser}/media?image_url=${encodeURIComponent(post.imagen_url)}&caption=${encodeURIComponent(fullCaption)}&access_token=${token}`,
+    `https://graph.instagram.com/v21.0/${igUser}/media?image_url=${encodeURIComponent(post.imagen_url)}&caption=${encodeURIComponent(fullCaption)}&access_token=${token}`,
     { method: 'POST' }
   );
   const container = await containerRes.json();
@@ -32,7 +42,7 @@ async function publishToInstagram(post) {
 
   // Step 2: publicar
   const publishRes = await fetch(
-    `https://graph.facebook.com/v18.0/${igUser}/media_publish?creation_id=${container.id}&access_token=${token}`,
+    `https://graph.instagram.com/v21.0/${igUser}/media_publish?creation_id=${container.id}&access_token=${token}`,
     { method: 'POST' }
   );
   const published = await publishRes.json();
@@ -111,7 +121,7 @@ Deno.serve(async (req) => {
 
     let publishResult = { ok: false, reason: 'manual_mode' };
     if (modo === 'auto') {
-      if (post.red_social === 'Instagram') publishResult = await publishToInstagram(post);
+      if (post.red_social === 'Instagram') publishResult = await publishToInstagram(post, base44);
       else if (post.red_social === 'LinkedIn') publishResult = await publishToLinkedIn(post);
       else publishResult = { ok: false, reason: 'red_no_soportada' };
     }
