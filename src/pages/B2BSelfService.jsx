@@ -12,7 +12,7 @@ import ProposalDeliveryActions from '@/components/b2b/selfservice/ProposalDelive
 import SelfServiceProductCard from '@/components/b2b/selfservice/SelfServiceProductCard';
 import StepperProgress from '@/components/b2b/selfservice/StepperProgress';
 import PublicSEO from '@/components/PublicSEO';
-import { getProductImage } from '@/utils/productImages.js';
+import AnchorProductBanner from '@/components/b2b/selfservice/AnchorProductBanner';
 
 const STEPS = ['Productos', 'Empresa', 'Personalización', 'Propuesta'];
 
@@ -375,18 +375,8 @@ export default function B2BSelfService() {
                   {/* Confirmación del producto anclado — el cliente ve QUE su producto
                       no se perdió. Onboarding premium 360°. */}
                   {anchorProducto && (
-                    <div className="flex items-center gap-3 mb-4 p-3 rounded-2xl bg-white/[0.06] border border-teal-400/30 backdrop-blur-md">
-                      <div className="relative w-14 h-14 rounded-xl overflow-hidden bg-white/10 flex-shrink-0 ring-1 ring-white/15">
-                        <img src={getProductImage(anchorProducto)} alt={anchorProducto.nombre} className="w-full h-full object-cover" loading="lazy" />
-                        <div className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-teal-400 flex items-center justify-center shadow-lg ring-2 ring-slate-900">
-                          <CheckCircle className="w-3 h-3 text-slate-900" strokeWidth={3} />
-                        </div>
-                      </div>
-                      <div className="min-w-0">
-                        <p className="text-[10px] font-bold uppercase tracking-wider text-teal-300 leading-none">Cotizando</p>
-                        <p className="text-sm font-bold text-white truncate mt-1 leading-tight">{anchorProducto.nombre}</p>
-                        <p className="text-[11px] text-white/55 mt-0.5">{anchorProducto.categoria} · ya en tu pedido</p>
-                      </div>
+                    <div className="mb-4">
+                      <AnchorProductBanner producto={anchorProducto} cantidadTotal={cart.reduce((s, c) => s + c.cantidad, 0)} itemsCount={cart.length} />
                     </div>
                   )}
                   <div className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-cyan-300 bg-cyan-500/15 border border-cyan-400/30 px-2.5 py-1 rounded-full mb-3">
@@ -465,6 +455,9 @@ export default function B2BSelfService() {
         {step === 2 && (
           <div className="grid lg:grid-cols-[1fr_360px] xl:grid-cols-[1fr_400px] gap-5 lg:gap-6 items-start">
             <div className="space-y-5 max-w-2xl">
+              {anchorProducto && (
+                <AnchorProductBanner producto={anchorProducto} cantidadTotal={cart.reduce((s, c) => s + c.cantidad, 0)} itemsCount={cart.length} />
+              )}
               <div className="bg-gradient-to-br from-amber-500/15 via-yellow-500/10 to-transparent border border-white/10 rounded-3xl p-5 sm:p-6 backdrop-blur-sm relative overflow-hidden">
                 <div className="absolute -top-12 -right-12 w-48 h-48 rounded-full bg-amber-500/20 blur-3xl pointer-events-none" />
                 <div className="relative">
@@ -660,6 +653,10 @@ export default function B2BSelfService() {
                 </Button>
               </Link>
             </div>
+
+            {anchorProducto && (
+              <AnchorProductBanner producto={anchorProducto} cantidadTotal={cart.reduce((s, c) => s + c.cantidad, 0)} itemsCount={cart.length} />
+            )}
 
             {/* Envío multicanal: Email · WhatsApp · Ambos */}
             <ProposalDeliveryActions propuesta={propuesta} form={form} />
