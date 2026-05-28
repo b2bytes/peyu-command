@@ -1,10 +1,12 @@
 // ============================================================================
 // CreatorPanel · Generador de imágenes y videos IA para Social Studio
+// Persiste cada generación en ContentAsset para reutilizar en posts.
 // ============================================================================
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
-import { Image as ImageIcon, Video, Loader2, Download, Copy, Sparkles, RefreshCw, Check } from 'lucide-react';
+import { Image as ImageIcon, Video, Loader2, Download, Copy, Sparkles, RefreshCw, Check, FolderOpen } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import CreatorGallery from './CreatorGallery';
 
 const IMAGE_STYLES = [
   { id: 'product_hero', label: '📸 Hero producto', desc: 'Foto editorial clean sobre fondo sustentable' },
@@ -33,6 +35,42 @@ export default function CreatorPanel() {
   const [copied, setCopied] = useState(false);
   const [videoDuration, setVideoDuration] = useState(6);
   const [videoRatio, setVideoRatio] = useState('9:16');
+  const [view, setView] = useState('create'); // 'create' | 'gallery'
+  const [gallery, setGallery] = useState([]);
+  const [loadingGallery, setLoadingGallery] = useState(true);
+
+  // Cargar galería de assets IA
+  const loadGallery = async () => {
+    const assets = await base44.entities.ContentAsset.filter(
+      { generado_por_ia: true },
+      '-created_date',
+      50
+    );
+    setGallery(assets || []);
+    setLoadingGallery(false);
+  };
+
+  useEffect(() => { loadGallery(); }, []);
+
+  const saveToGallery = async (type, url, prompt) => {
+    const styleName = currentStyles.find(s => s.id === style)?.label || style;
+    const asset = await base44.entities.ContentAsset.create({
+      nombre: `${type === 'image' ? 'Imagen' : 'Video'} IA · ${styleName}`,
+      tipo: type === 'image' ? 'Imagen' : 'Video',
+      url,
+      generado_por_ia: true,
+      prompt_ia: prompt?.slice(0, 500),
+      categoria: style === 'lifestyle' ? 'Lifestyle' : style === 'behind_scenes' || style === 'process' ? 'Proceso productivo' : 'Producto',
+      formato: type === 'video' ? (videoRatio === '9:16' ? 'Reel 9:16' : 'Horizontal 16:9') : 'Cuadrado 1:1',
+      tags: ['ia-generado', mode, style],
+    });
+    setGallery(prev => [asset, ...prev]);
+  };
+
+  const handleDeleteAsset = async (id) => {
+    await base44.entities.ContentAsset.delete(id);
+    setGallery(prev => prev.filter(a => a.id !== id));
+  };
 
   const buildImagePrompt = () => {
     const base = `Promotional photo for PEYU Chile, a sustainable brand that makes products from 100% recycled ocean plastic and compostable wheat fiber. Made in Chile. Brand colors: green #0F8B6C, sand #E7D8C6, terracotta #D96B4D.`;
@@ -71,17 +109,19 @@ export default function CreatorPanel() {
 
     try {
       if (mode === 'image') {
-        const res = await base44.integrations.Core.GenerateImage({
-          prompt: buildImagePrompt(),
-        });
+        const prompt = buildImagePrompt();
+        const res = await base44.integrations.Core.GenerateImage({ prompt });
         setResult({ type: 'image', url: res.url });
+        await saveToGallery('image', res.url, prompt);
       } else {
+        const prompt = buildVideoPrompt();
         const res = await base44.integrations.Core.GenerateVideo({
-          prompt: buildVideoPrompt(),
+          prompt,
           duration: videoDuration,
           aspect_ratio: videoRatio,
         });
         setResult({ type: 'video', url: res.url });
+        await saveToGallery('video', res.url, prompt);
       }
     } catch (e) {
       setError(e.message || 'Error al generar');
@@ -105,7 +145,8 @@ export default function CreatorPanel() {
       <div className="flex-1 overflow-y-auto peyu-scrollbar-light p-4 min-h-0">
         <div className="max-w-3xl mx-auto space-y-4 pb-6">
 
-          {/* Mode toggle */}
+          {/* View toggle: Crear / Galería */}
+          <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-1 p-0.5 bg-white/5 rounded-xl w-fit">
             <button
               onClick={() => { setMode('image'); setStyle('product_hero'); setResult(null); }}
@@ -124,6 +165,33 @@ export default function CreatorPanel() {
               <Video className="w-3.5 h-3.5" /> Video IA
             </button>
           </div>
+
+            <button
+              onClick={() => setView(view === 'create' ? 'gallery' : 'create')}
+              className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition-all ${
+                view === 'gallery'
+                  ? 'bg-amber-500/20 text-amber-300 border border-amber-400/30'
+                  : 'bg-white/5 text-white/50 hover:text-white/80 border border-white/10'
+              }`}
+            >
+              <FolderOpen className="w-3.5 h-3.5" />
+              Galería ({gallery.length})
+            </button>
+          </div>
+
+          {/* Gallery view */}
+          {view === 'gallery' && (
+            loadingGallery ? (
+              <div className="flex items-center justify-center gap-2 py-10 text-white/40">
+                <Loader2 className="w-4 h-4 animate-spin" /> Cargando galería…
+              </div>
+            ) : (
+              <CreatorGallery assets={gallery} onDelete={handleDeleteAsset} />
+            )
+          )}
+
+          {/* Creator form — solo visible en modo crear */}
+          {view === 'create' && <>
 
           {/* Style grid */}
           <div>
@@ -248,6 +316,7 @@ export default function CreatorPanel() {
                 <p className="text-xs font-bold text-white flex items-center gap-1.5">
                   <Check className="w-3.5 h-3.5 text-green-400" />
                   {result.type === 'image' ? 'Imagen generada' : 'Video generado'}
+                  <span className="text-[10px] text-white/30 font-normal ml-1">· Guardado en galería</span>
                 </p>
                 <div className="flex items-center gap-1.5">
                   <button onClick={copyUrl} className="flex items-center gap-1 px-2 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-[10px] text-white/60 hover:text-white transition-colors">
@@ -274,6 +343,8 @@ export default function CreatorPanel() {
               </div>
             </div>
           )}
+
+          </>}
 
         </div>
       </div>
