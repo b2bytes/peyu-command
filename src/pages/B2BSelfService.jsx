@@ -13,6 +13,7 @@ import SelfServiceProductCard from '@/components/b2b/selfservice/SelfServiceProd
 import StepperProgress from '@/components/b2b/selfservice/StepperProgress';
 import PublicSEO from '@/components/PublicSEO';
 import AnchorProductBanner from '@/components/b2b/selfservice/AnchorProductBanner';
+import CrossSellCarousel from '@/components/b2b/selfservice/CrossSellCarousel';
 
 const STEPS = ['Productos', 'Empresa', 'Personalización', 'Propuesta'];
 
@@ -435,10 +436,15 @@ export default function B2BSelfService() {
                   </div>
                 </div>
               </div>
+
+              {/* Cross-sell estratégico — visible en móvil (el sidebar es solo desktop) */}
+              <div className="lg:hidden">
+                <CrossSellCarousel catalogo={catalogo} cart={cart} onAdd={addToCart} />
+              </div>
             </div>
 
-            {/* Resumen pedido (sticky desktop) */}
-            <div className="hidden lg:block sticky top-24 self-start">
+            {/* Resumen pedido + cross-sell estratégico (sticky desktop) */}
+            <div className="hidden lg:block sticky top-24 self-start space-y-4">
               <CartPanel
                 cart={cart}
                 calcPrice={calcPrice}
@@ -447,6 +453,7 @@ export default function B2BSelfService() {
                 removeFromCart={removeFromCart}
                 subtotalEstimado={subtotalEstimado}
               />
+              <CrossSellCarousel catalogo={catalogo} cart={cart} onAdd={addToCart} />
             </div>
           </div>
         )}
