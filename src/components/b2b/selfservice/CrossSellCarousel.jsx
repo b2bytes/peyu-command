@@ -1,14 +1,17 @@
 // ============================================================================
-// CrossSellCarousel · Carrusel de cross-sell B2B con SECUENCIA ESTRATÉGICA 2027.
+// CrossSellCarousel · Carrusel de cross-sell B2B con DESCENSO DE PRECIO RELATIVO.
 //
-// Estrategia de conversión (price-anchoring descendente):
-//   1º sugerencia → producto CARO   (> $10.000)  → ancla el ticket alto
-//   2º sugerencia → producto MEDIO  ($5.000–$10.000)
-//   3º sugerencia → producto BARATO (< $5.000)   → cierre fácil, "ya que estás"
-//   4º+ → resto del catálogo ordenado por precio desc.
+// Estrategia de conversión (anclada al producto elegido):
+//   El cliente ya escogió un producto (el ancla = el más caro de su carrito).
+//   A MAYOR valor del producto elegido → sugerimos productos de MENOR valor,
+//   ordenados de mayor a menor precio (descenso suave desde el ancla).
+//   Esto crea el efecto "ya que llevas lo caro, súmale estos complementos".
 //
-// Tras agregar un producto, avanza automáticamente al siguiente tier para
-// mantener el relato y no abrumar (un toque a la vez = más conversión).
+//   Si no hay ancla (carrito vacío), caemos a un orden por precio descendente
+//   del catálogo completo.
+//
+// Tras agregar un producto, avanza automáticamente al siguiente para mantener
+// el relato y no abrumar (un toque a la vez = más conversión).
 // ============================================================================
 import { useMemo, useState, useEffect } from 'react';
 import { Plus, Sparkles, TrendingUp, Check, ArrowRight } from 'lucide-react';
@@ -18,26 +21,32 @@ function precioRef(p) {
   return p?.precio_base_b2b || p?.precio_b2c || 0;
 }
 
-// Construye la secuencia estratégica: caro → medio → barato → resto desc.
-function buildSequence(disponibles) {
-  const caros   = disponibles.filter(p => precioRef(p) > 10000).sort((a, b) => precioRef(b) - precioRef(a));
-  const medios  = disponibles.filter(p => precioRef(p) >= 5000 && precioRef(p) <= 10000).sort((a, b) => precioRef(b) - precioRef(a));
-  const baratos = disponibles.filter(p => precioRef(p) < 5000 && precioRef(p) > 0).sort((a, b) => precioRef(b) - precioRef(a));
+// Construye la secuencia anclada al precio del producto elegido.
+// anchorPrecio = precio del producto MÁS CARO ya en el carrito.
+// Sugerimos primero los productos de menor valor que el ancla (desc),
+// y luego, si quedan, los de mayor valor (desc) como relleno.
+function buildSequence(disponibles, anchorPrecio) {
+  if (!anchorPrecio) {
+    // Sin ancla: catálogo completo por precio descendente
+    return [...disponibles].sort((a, b) => precioRef(b) - precioRef(a));
+  }
 
-  const seq = [];
-  if (caros[0]) seq.push(caros[0]);
-  if (medios[0]) seq.push(medios[0]);
-  if (baratos[0]) seq.push(baratos[0]);
+  // Menores o iguales al ancla → orden descendente (de mayor a menor valor)
+  const menores = disponibles
+    .filter(p => precioRef(p) <= anchorPrecio && precioRef(p) > 0)
+    .sort((a, b) => precioRef(b) - precioRef(a));
 
-  // Resto (sin repetir) ordenado por precio descendente
-  const usados = new Set(seq.map(p => p.id));
-  const resto = disponibles.filter(p => !usados.has(p.id)).sort((a, b) => precioRef(b) - precioRef(a));
-  return [...seq, ...resto];
+  // Mayores al ancla → relleno al final, también descendente
+  const mayores = disponibles
+    .filter(p => precioRef(p) > anchorPrecio)
+    .sort((a, b) => precioRef(b) - precioRef(a));
+
+  return [...menores, ...mayores];
 }
 
 const TIER_LABELS = [
-  { titulo: 'El favorito corporativo', sub: 'Máximo impacto de marca', icon: TrendingUp, color: 'amber' },
-  { titulo: 'Ideal para complementar', sub: 'Equilibrio perfecto', icon: Sparkles, color: 'cyan' },
+  { titulo: 'Complemento ideal', sub: 'Acompaña tu elección', icon: Sparkles, color: 'cyan' },
+  { titulo: 'Suma a tu pedido', sub: 'Mejor relación precio', icon: TrendingUp, color: 'teal' },
   { titulo: 'Súmalo ya que estás', sub: 'Detalle que suma', icon: Plus, color: 'teal' },
 ];
 
@@ -53,7 +62,14 @@ export default function CrossSellCarousel({ catalogo, cart, onAdd }) {
     return catalogo.filter(p => !enCarrito.has(p.id));
   }, [catalogo, cart]);
 
-  const secuencia = useMemo(() => buildSequence(disponibles), [disponibles]);
+  // Ancla = precio del producto MÁS CARO ya elegido por el cliente.
+  // A mayor valor del ancla, las sugerencias serán de menor valor (desc).
+  const anchorPrecio = useMemo(
+    () => cart.reduce((max, c) => Math.max(max, precioRef(c.producto)), 0),
+    [cart]
+  );
+
+  const secuencia = useMemo(() => buildSequence(disponibles, anchorPrecio), [disponibles, anchorPrecio]);
   const [index, setIndex] = useState(0);
   const [justAdded, setJustAdded] = useState(false);
 
