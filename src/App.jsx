@@ -112,6 +112,7 @@ const MobileCockpit = lazyWithRetry(() => import('./pages/MobileCockpit'), { nam
 const ContratoImpulsia = lazyWithRetry(() => import('./pages/ContratoImpulsia'), { name: 'ContratoImpulsia' });
 const SEOKeywords = lazyWithRetry(() => import('./pages/SEOKeywords'), { name: 'SEOKeywords' });
 const RecategorizarCatalogo = lazyWithRetry(() => import('./pages/RecategorizarCatalogo'), { name: 'RecategorizarCatalogo' });
+const AgenteCentral = lazyWithRetry(() => import('./pages/AgenteCentral'), { name: 'AgenteCentral' });
 
 const AdminLoader = () => (
   <div className="fixed inset-0 flex items-center justify-center bg-background">
@@ -216,6 +217,7 @@ const AuthenticatedApp = () => {
           <Route path="contrato-impulsia" element={<ContratoImpulsia />} />
           <Route path="seo-keywords" element={<SEOKeywords />} />
           <Route path="recategorizar" element={<RecategorizarCatalogo />} />
+          <Route path="agente" element={<AgenteCentral />} />
         </Route>
         <Route path="*" element={<PageNotFound />} />
       </Routes>
