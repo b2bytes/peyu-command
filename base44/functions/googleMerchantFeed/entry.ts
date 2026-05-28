@@ -62,17 +62,40 @@ const cleanImageUrl = (url) => {
   return u;
 };
 
-// Selecciona la mejor imagen disponible para el feed:
-// 1. galeria_urls[0] del CDN Base44 (más estable, sin Jetpack)
-// 2. imagen_promo_url del CDN Base44
-// 3. imagen_url (legacy WordPress, limpiada)
+// GMC SOLO acepta JPEG/PNG/GIF en image_link. Rechaza WebP, AVIF, SVG, BMP,
+// HEIC y URLs sin extensión clara (ej: endpoints API que sirven binarios).
+// También rechazamos el endpoint legacy base44.app/api/apps/... que sirve
+// archivos sin Content-Type estable.
+const VALID_IMG_EXT = /\.(jpe?g|png|gif)$/i;
+const BLOCKED_HOSTS = /(base44\.app\/api\/apps\/)/i;
+
+const isGmcValidImage = (url) => {
+  if (!url || typeof url !== 'string') return false;
+  const u = url.split('?')[0];
+  if (BLOCKED_HOSTS.test(u)) return false;
+  if (!VALID_IMG_EXT.test(u)) return false;
+  return true;
+};
+
+// Selecciona la mejor imagen disponible para el feed.
+// Prioriza CDN Base44 con extensión válida (.jpg/.png/.gif). Si nada cumple,
+// retorna null y el producto queda fuera del feed (mejor que enviar basura).
 const pickBestImage = (p) => {
   const galeria = Array.isArray(p.galeria_urls) ? p.galeria_urls : [];
-  const base44Imgs = galeria.filter(u => u && u.includes('media.base44.com'));
-  if (base44Imgs.length > 0) return base44Imgs[0];
-  if (p.imagen_promo_url && p.imagen_promo_url.includes('media.base44.com')) return p.imagen_promo_url;
-  if (galeria[0]) return cleanImageUrl(galeria[0]);
-  return cleanImageUrl(p.imagen_url);
+  // 1. Galería en CDN Base44 con extensión válida
+  const base44Valid = galeria.find(u => u && u.includes('media.base44.com') && isGmcValidImage(u));
+  if (base44Valid) return base44Valid;
+  // 2. Imagen promo (siempre Base44 CDN) con extensión válida
+  if (p.imagen_promo_url && isGmcValidImage(p.imagen_promo_url)) return p.imagen_promo_url;
+  // 3. Galería en cualquier host con extensión válida (Jetpack limpio)
+  for (const raw of galeria) {
+    const cleaned = cleanImageUrl(raw);
+    if (cleaned && isGmcValidImage(cleaned)) return cleaned;
+  }
+  // 4. imagen_url legacy (WordPress) — solo si tiene extensión válida tras limpiar
+  const fallback = cleanImageUrl(p.imagen_url);
+  if (fallback && isGmcValidImage(fallback)) return fallback;
+  return null;
 };
 
 function buildItem(p) {
@@ -81,14 +104,16 @@ function buildItem(p) {
   const description = cleanText(p.descripcion) ||
     `${p.nombre} · Hecho en Chile con ${p.material}. Personalización láser disponible.`;
   const link = `${SITE_URL}/producto/${p.id}`;
-  // Imagen principal: prefiere CDN Base44 (estable) > Jetpack limpio (legacy)
+  // Imagen principal: prefiere CDN Base44 con extensión válida JPEG/PNG/GIF
   const image = pickBestImage(p);
-  // Imagen promo: solo si difiere de la principal y es Base44 CDN
-  const promoImage = p.imagen_promo_url && p.imagen_promo_url !== image ? p.imagen_promo_url : null;
-  // Galería adicional limpia (solo Base44 CDN o WordPress sin params)
+  // Imagen promo: solo si difiere de la principal Y es formato válido GMC
+  const promoImage = p.imagen_promo_url && p.imagen_promo_url !== image && isGmcValidImage(p.imagen_promo_url)
+    ? p.imagen_promo_url
+    : null;
+  // Galería adicional: solo URLs con extensión JPEG/PNG/GIF válidas para GMC
   const galeria = (Array.isArray(p.galeria_urls) ? p.galeria_urls : [])
     .map(cleanImageUrl)
-    .filter(Boolean)
+    .filter(u => u && isGmcValidImage(u))
     .slice(0, 9);
   const price = Math.round(p.precio_b2c || 0);
   const stock = Number(p.stock_actual || 0);
