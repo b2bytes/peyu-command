@@ -71,8 +71,55 @@ async function mirrorToBase44(base44, url) {
   }
 }
 
+// ============================================================================
+// PASO 1 · ANÁLISIS DE VISIÓN — Detecta la zona grabable correcta del producto.
+// Un modelo de visión inspecciona la foto real del producto y devuelve, en
+// lenguaje natural, EXACTAMENTE dónde un láser grabaría el logo (la superficie
+// plana primaria visible). Este contexto se inyecta luego en el prompt de
+// generación para que el grabado caiga SIEMPRE en el lugar físicamente correcto.
+// Best practice 2026: pipeline visión→generación (grounding espacial).
+// ============================================================================
+async function analyzeEngravingZone(base44, productImageUrl, productName, productCategory) {
+  try {
+    const res = await base44.integrations.Core.InvokeLLM({
+      prompt: `You are a laser-engraving production expert. Look at this product photo: "${productName}"${productCategory ? ` (${productCategory})` : ''}, made of recycled plastic by Peyu Chile.
+
+Identify the SINGLE best surface where a UV laser would physically engrave a customer's logo. Real laser engraving only works on a flat (or gently curved) visible primary face — never floating in air, never on edges, never on the background.
+
+Return concise, production-accurate guidance.`,
+      file_urls: [productImageUrl],
+      response_json_schema: {
+        type: 'object',
+        properties: {
+          engraving_zone: { type: 'string', description: 'The exact surface to engrave, e.g. "the flat front face of the phone case, lower-center area"' },
+          zone_position: { type: 'string', description: 'Spatial position in the image: e.g. "center", "upper third", "front panel"' },
+          surface_curvature: { type: 'string', description: 'flat | gently curved | cylindrical' },
+          recommended_size: { type: 'string', description: 'e.g. "about 35% of the visible flat surface"' },
+          avoid_areas: { type: 'string', description: 'Areas where the logo must NOT appear (edges, camera holes, background, etc.)' },
+        },
+        required: ['engraving_zone', 'zone_position'],
+      },
+    });
+    return res || null;
+  } catch (e) {
+    console.warn('Vision zone analysis failed, continuing without it:', e?.message);
+    return null;
+  }
+}
+
+// Construye una instrucción de placement a partir del análisis de visión.
+function buildZoneInstruction(zone) {
+  if (!zone) return '';
+  return `\n\n🎯 EXACT ENGRAVING PLACEMENT (analyzed from the real product photo — OBEY STRICTLY): ` +
+    `Engrave ONLY on ${zone.engraving_zone}. Position: ${zone.zone_position}. ` +
+    (zone.surface_curvature ? `Surface is ${zone.surface_curvature}, so the engraving must follow that curvature. ` : '') +
+    (zone.recommended_size ? `Size: ${zone.recommended_size}. ` : '') +
+    (zone.avoid_areas ? `NEVER place the logo on: ${zone.avoid_areas}. ` : '') +
+    `The engraving must sit physically ON this surface — not floating, not on the background, not on edges.`;
+}
+
 // Construye el prompt según el tipo de mockup (logo/retrato/foto/jenga).
-function buildPromptByType({ mockupType, productName, productCategory, hasProductRef, hasArtRef, text, color }) {
+function buildPromptByType({ mockupType, productName, productCategory, hasProductRef, hasArtRef, text, color, zoneInstruction = '' }) {
   const base = hasProductRef
     ? `⚠️ ABSOLUTE CRITICAL RULE: The FIRST reference image IS the exact product the customer chose from our e-commerce. You MUST use it as the base. DO NOT generate a new product. DO NOT change the product shape, color, material, angle, lighting, background, or framing. Preserve the image EXACTLY as provided — only add the personalization on top. Product: "${productName}"${productCategory ? ` (category: ${productCategory})` : ''} — Peyu Chile, made in Chile from 100% recycled plastic. `
     : `Photorealistic product photograph of a Peyu Chile gift: "${productName}"${productCategory ? ` (${productCategory})` : ''}. Made from 100% recycled plastic with visible marbled texture, manufactured in Chile. Clean studio photography, soft neutral background, professional soft lighting, 3/4 view. ${color ? `Product color: ${color}. ` : ''}`;
@@ -129,13 +176,15 @@ function buildPromptByType({ mockupType, productName, productCategory, hasProduc
       `The engraving MUST look PHYSICALLY ENGRAVED into the recycled plastic: monochrome single tone (lasers engrave in one tone determined by the material), micro depth, subtle darkening or lighter etched tone, tiny shadow inside the strokes, follows curvature and marbled texture. NO floating stickers, NO flat overlay, NO glow, NO color fills. ` +
       `Keep the logo proportional (~30-40% of the visible flat surface), centered on the natural engraving zone, preserving aspect ratio. ` +
       (text && text.trim() ? `Engrave the tagline "${text}" in clean sans-serif below the logo, same engraved style, smaller size. Copy character-by-character. ` : '') +
-      `Final output: photorealistic, identical background/framing/angle/lighting to the first reference.`;
+      zoneInstruction +
+      `\nFinal output: photorealistic, identical background/framing/angle/lighting to the first reference.`;
   }
   if (text && text.trim()) {
     return base +
       `⚠️ The customer's text is "${text}". Engrave it LITERALLY, character-by-character, preserving letters, accents, spaces and punctuation EXACTLY. ` +
       `TASK: UV laser engraving of "${text}" onto the product surface. Clean sans-serif (Inter/Helvetica), micro depth, subtle darkening inside strokes, tiny shadow, follows curvature, blends with marbled recycled plastic. NO stickers, NO flat overlay, NO glow. Centered on the engraving zone. ` +
-      `Final output: photorealistic, identical to the first reference image with the engraving added physically.`;
+      zoneInstruction +
+      `\nFinal output: photorealistic, identical to the first reference image with the engraving added physically.`;
   }
   return base + `Show the product identical to the reference, no engraving added.`;
 }
@@ -159,6 +208,17 @@ Deno.serve(async (req) => {
     }
     const hasLogoRef = !!effectiveLogoUrl;
 
+    // PASO 1 · Visión: detectar zona grabable real ANTES de generar.
+    // Solo aplica a grabados de logo/texto sobre un producto real (no retrato/foto/jenga
+    // que ya tienen su propia lógica de superficie). Esto corrige el problema de
+    // posicionamiento: el grabado caerá siempre en la cara correcta del artículo.
+    let zoneInstruction = '';
+    const needsZone = hasProductRef && (mockupType === 'logo') && (hasLogoRef || (text && text.trim()));
+    if (needsZone) {
+      const zone = await analyzeEngravingZone(base44, productImageUrl, productName, productCategory);
+      zoneInstruction = buildZoneInstruction(zone);
+    }
+
     const prompt = buildPromptByType({
       mockupType,
       productName,
@@ -167,6 +227,7 @@ Deno.serve(async (req) => {
       hasArtRef: hasLogoRef,
       text,
       color,
+      zoneInstruction,
     });
 
     const references = [];

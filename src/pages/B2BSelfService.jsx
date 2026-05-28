@@ -14,8 +14,10 @@ import StepperProgress from '@/components/b2b/selfservice/StepperProgress';
 import PublicSEO from '@/components/PublicSEO';
 import AnchorProductBanner from '@/components/b2b/selfservice/AnchorProductBanner';
 import CrossSellCarousel from '@/components/b2b/selfservice/CrossSellCarousel';
+import PhoneCountryInput from '@/components/b2b/selfservice/PhoneCountryInput';
 
 const STEPS = ['Productos', 'Empresa', 'Personalización', 'Propuesta'];
+const PERSIST_KEY = 'peyu_b2b_flow';
 
 // Precio por volumen basado en la TABLA REAL del producto (misma que ProductoDetalle).
 // Fallback a descuentos genéricos solo si el producto no tiene precios de volumen configurados.
@@ -122,6 +124,56 @@ export default function B2BSelfService() {
       })
       .finally(() => setLoadingCat(false));
   }, []);
+
+  // ── Persistencia del flujo (cada paso es persistente) ──────────────────
+  // Restaura form, personalización, paso y carrito (rehidratado por SKU) si el
+  // usuario recarga o vuelve más tarde. Las vías de anchor/repeat tienen
+  // prioridad: si setearon un step, no lo pisamos.
+  const [restored, setRestored] = useState(false);
+  useEffect(() => {
+    if (loadingCat || restored) return;
+    try {
+      const raw = localStorage.getItem(PERSIST_KEY);
+      if (raw) {
+        const saved = JSON.parse(raw);
+        if (saved.form) setForm(f => ({ ...f, ...saved.form }));
+        if (typeof saved.personalizar === 'boolean') setPersonalizar(saved.personalizar);
+        // Rehidratar carrito solo si está vacío (no pisar anchor/repeat)
+        setCart(prev => {
+          if (prev.length > 0) return prev;
+          const rebuilt = (saved.cart || [])
+            .map(c => {
+              const producto = catalogo.find(p => p.sku === c.sku);
+              return producto ? { producto, cantidad: c.cantidad || 10 } : null;
+            })
+            .filter(Boolean);
+          return rebuilt.length > 0 ? rebuilt : prev;
+        });
+        // Restaurar paso solo si no estamos ya en uno avanzado por anchor/repeat
+        setStep(s => (s === 0 && typeof saved.step === 'number' && !propuesta) ? saved.step : s);
+      }
+    } catch { /* ignore */ }
+    setRestored(true);
+  }, [loadingCat, restored, catalogo, propuesta]);
+
+  // Guardar cada cambio relevante del flujo
+  useEffect(() => {
+    if (!restored || propuesta) return;
+    try {
+      localStorage.setItem(PERSIST_KEY, JSON.stringify({
+        step,
+        form,
+        personalizar,
+        cart: cart.map(c => ({ sku: c.producto.sku, cantidad: c.cantidad })),
+        savedAt: Date.now(),
+      }));
+    } catch { /* ignore */ }
+  }, [step, form, personalizar, cart, restored, propuesta]);
+
+  // Al completar la propuesta, limpiar el flujo persistido
+  useEffect(() => {
+    if (propuesta) { try { localStorage.removeItem(PERSIST_KEY); } catch { /* ignore */ } }
+  }, [propuesta]);
 
   const categorias = ['todos', ...Array.from(new Set(catalogo.map(p => p.categoria).filter(Boolean)))];
   const catalogoFiltrado = filtroCategoria === 'todos' ? catalogo : catalogo.filter(p => p.categoria === filtroCategoria);
@@ -406,7 +458,6 @@ export default function B2BSelfService() {
                     { k: 'contact_name', label: 'Nombre contacto', required: true, ph: 'Tu nombre completo' },
                     { k: 'company_name', label: 'Empresa', required: true, ph: 'Nombre empresa' },
                     { k: 'email', label: 'Email', required: true, ph: 'correo@empresa.cl', type: 'email' },
-                    { k: 'phone', label: 'Teléfono', ph: '+56 9 xxxx xxxx' },
                     { k: 'rut', label: 'RUT Empresa', ph: '12.345.678-9' },
                   ].map(f => (
                     <div key={f.k} className={f.k === 'rut' ? 'md:col-span-2' : ''}>
@@ -423,6 +474,16 @@ export default function B2BSelfService() {
                       />
                     </div>
                   ))}
+                  {/* Teléfono con selector de país LATAM (+56 fijo por defecto) */}
+                  <div>
+                    <label className="text-[10px] font-bold text-white/55 uppercase tracking-[0.1em] mb-1.5 block">
+                      Teléfono
+                    </label>
+                    <PhoneCountryInput
+                      value={form.phone}
+                      onChange={(val) => setForm({ ...form, phone: val })}
+                    />
+                  </div>
                   <div className="md:col-span-2">
                     <label className="text-[10px] font-bold text-white/55 uppercase tracking-[0.1em] mb-1.5 block">
                       Notas adicionales (opcional)
