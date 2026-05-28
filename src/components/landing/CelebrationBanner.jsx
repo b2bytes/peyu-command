@@ -1,6 +1,8 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Clock, Sparkles } from 'lucide-react';
 import { getActiveCelebration, getDaysToEvent, getDaysToDeadline } from '@/lib/celebration-moments';
+import FathersDayQuoteModal from '@/components/landing/FathersDayQuoteModal';
 
 /**
  * Banner inteligente de celebración corporativa.
@@ -15,11 +17,13 @@ import { getActiveCelebration, getDaysToEvent, getDaysToDeadline } from '@/lib/c
  */
 export default function CelebrationBanner({ onChatPrompt, compact = false }) {
   const moment = getActiveCelebration();
+  const [fdOpen, setFdOpen] = useState(false);
   if (!moment) return null;
 
   const daysToEvent = getDaysToEvent(moment);
   const daysToDeadline = getDaysToDeadline(moment);
   const { copy, palette, emoji, name } = moment;
+  const isFathersDay = moment.id === 'padre';
 
   const handleAskPeyu = () => {
     if (onChatPrompt) onChatPrompt(copy.ctaSecondary?.label ? moment.chatPrompt : moment.chatPrompt);
@@ -27,20 +31,14 @@ export default function CelebrationBanner({ onChatPrompt, compact = false }) {
 
   // VARIANTE ULTRA-COMPACTA: una sola línea tipo notification bar
   if (compact) {
-    // Compact pill — diseñado para el header desktop. Limitamos ancho con
-    // max-w para que el truncate del título funcione antes de que el chip
-    // del countdown y la flecha se salgan del contenedor padre.
-    return (
-      <Link
-        to={copy.ctaPrimary.href}
-        className="group hidden xl:inline-flex items-center gap-2 rounded-full pl-2.5 pr-3 py-1.5 relative overflow-hidden transition-all hover:scale-[1.02] max-w-[360px] min-w-0"
-        style={{
-          background: `linear-gradient(90deg, ${palette.tint} 0%, rgba(0,0,0,0.18) 100%)`,
-          border: `1px solid ${palette.accent}55`,
-          boxShadow: `0 4px 18px ${palette.glow}`,
-        }}
-        title={copy.title}
-      >
+    const pillClass = "group inline-flex w-full sm:w-auto items-center gap-2 rounded-full pl-2.5 pr-3 py-1.5 relative overflow-hidden transition-all hover:scale-[1.02] sm:max-w-[360px] min-w-0";
+    const pillStyle = {
+      background: `linear-gradient(90deg, ${palette.tint} 0%, rgba(0,0,0,0.18) 100%)`,
+      border: `1px solid ${palette.accent}55`,
+      boxShadow: `0 4px 18px ${palette.glow}`,
+    };
+    const pillInner = (
+      <>
         <span className="text-base leading-none flex-shrink-0">{emoji}</span>
         <span
           className="text-[10px] font-bold uppercase tracking-wider flex-shrink-0 hidden 2xl:inline"
@@ -58,6 +56,24 @@ export default function CelebrationBanner({ onChatPrompt, compact = false }) {
           </span>
         )}
         <ArrowRight className="w-3.5 h-3.5 text-white/80 flex-shrink-0 group-hover:translate-x-0.5 transition-transform" />
+      </>
+    );
+
+    // En Día del Padre: abre el modal de embudo en vez de navegar.
+    if (isFathersDay) {
+      return (
+        <>
+          <button onClick={() => setFdOpen(true)} className={pillClass} style={pillStyle} title={copy.title}>
+            {pillInner}
+          </button>
+          <FathersDayQuoteModal open={fdOpen} onClose={() => setFdOpen(false)} />
+        </>
+      );
+    }
+
+    return (
+      <Link to={copy.ctaPrimary.href} className={pillClass + ' hidden xl:inline-flex'} style={pillStyle} title={copy.title}>
+        {pillInner}
       </Link>
     );
   }
@@ -145,9 +161,10 @@ export default function CelebrationBanner({ onChatPrompt, compact = false }) {
 
         {/* Urgencia + CTAs */}
         <div className="flex flex-col sm:flex-row gap-2 items-stretch">
-          <Link to={copy.ctaPrimary.href} className="flex-1">
+          {isFathersDay ? (
             <button
-              className="w-full flex items-center justify-center gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-full font-bold text-xs sm:text-sm text-white shadow-lg active:scale-95 transition-all"
+              onClick={() => setFdOpen(true)}
+              className="flex-1 w-full flex items-center justify-center gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-full font-bold text-xs sm:text-sm text-white shadow-lg active:scale-95 transition-all"
               style={{
                 background: `linear-gradient(135deg, ${palette.accent} 0%, ${palette.accent}dd 100%)`,
                 boxShadow: `0 4px 20px ${palette.glow}`,
@@ -156,7 +173,20 @@ export default function CelebrationBanner({ onChatPrompt, compact = false }) {
               {copy.ctaPrimary.label}
               <ArrowRight className="w-3.5 h-3.5" />
             </button>
-          </Link>
+          ) : (
+            <Link to={copy.ctaPrimary.href} className="flex-1">
+              <button
+                className="w-full flex items-center justify-center gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-full font-bold text-xs sm:text-sm text-white shadow-lg active:scale-95 transition-all"
+                style={{
+                  background: `linear-gradient(135deg, ${palette.accent} 0%, ${palette.accent}dd 100%)`,
+                  boxShadow: `0 4px 20px ${palette.glow}`,
+                }}
+              >
+                {copy.ctaPrimary.label}
+                <ArrowRight className="w-3.5 h-3.5" />
+              </button>
+            </Link>
+          )}
 
           {onChatPrompt ? (
             <button
@@ -182,6 +212,8 @@ export default function CelebrationBanner({ onChatPrompt, compact = false }) {
           </div>
         )}
       </div>
+
+      <FathersDayQuoteModal open={fdOpen} onClose={() => setFdOpen(false)} />
     </div>
   );
 }

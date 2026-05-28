@@ -1,7 +1,9 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Sparkles, ArrowRight, Recycle, ShieldCheck, Award } from 'lucide-react';
 import HeroCelebrationStrip from './HeroCelebrationStrip';
 import { getActiveCelebration } from '@/lib/celebration-moments';
+import FathersDayQuoteModal from '@/components/landing/FathersDayQuoteModal';
 
 /**
  * Hero Liquid Dual — desktop.
@@ -11,6 +13,8 @@ import { getActiveCelebration } from '@/lib/celebration-moments';
  */
 export default function DesktopHeroSplit({ onOpenChat }) {
   const celebration = getActiveCelebration();
+  const isFathersDay = celebration?.id === 'padre';
+  const [fdOpen, setFdOpen] = useState(false);
   const headline = celebration?.copy?.title || 'Regalos';
   const highlight = celebration?.copy?.highlight || 'con propósito.';
   const paragraph =
@@ -79,12 +83,22 @@ export default function DesktopHeroSplit({ onOpenChat }) {
 
         {/* CTAs duales */}
         <div className="flex flex-wrap gap-3 mb-7">
-          <Link to={ctaPrimaryHref}>
-            <button className="ld-btn-primary rounded-2xl px-7 py-4 flex items-center gap-2 font-semibold text-[15px]">
+          {isFathersDay ? (
+            <button
+              onClick={() => setFdOpen(true)}
+              className="ld-btn-primary rounded-2xl px-7 py-4 flex items-center gap-2 font-semibold text-[15px]"
+            >
               <span>{ctaPrimaryLabel}</span>
               <ArrowRight className="w-4 h-4" />
             </button>
-          </Link>
+          ) : (
+            <Link to={ctaPrimaryHref}>
+              <button className="ld-btn-primary rounded-2xl px-7 py-4 flex items-center gap-2 font-semibold text-[15px]">
+                <span>{ctaPrimaryLabel}</span>
+                <ArrowRight className="w-4 h-4" />
+              </button>
+            </Link>
+          )}
           <button
             onClick={onOpenChat}
             className="ld-btn-ghost rounded-2xl px-6 py-4 flex items-center gap-2 font-semibold text-[15px] text-ld-fg"
@@ -101,6 +115,8 @@ export default function DesktopHeroSplit({ onOpenChat }) {
           <TrustItem icon={Award} label="Empresa B Chile" />
         </div>
       </div>
+
+      <FathersDayQuoteModal open={fdOpen} onClose={() => setFdOpen(false)} />
     </div>
   );
 }
