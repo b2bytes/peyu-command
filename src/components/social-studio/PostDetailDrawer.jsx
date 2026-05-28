@@ -35,11 +35,11 @@ export default function PostDetailDrawer({ post, onClose, onAction, actioning })
       {/* Backdrop */}
       <div
         onClick={onClose}
-        className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 animate-in fade-in"
+        className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] animate-in fade-in"
       />
 
       {/* Drawer */}
-      <div className="fixed inset-y-0 right-0 w-full max-w-4xl bg-ld-bg border-l border-ld-border z-50 overflow-hidden flex flex-col animate-in slide-in-from-right shadow-2xl">
+      <div className="fixed inset-y-0 right-0 w-full max-w-4xl bg-ld-bg border-l border-ld-border z-[60] overflow-hidden flex flex-col animate-in slide-in-from-right shadow-2xl">
         {/* Header */}
         <div className="flex-shrink-0 flex items-center justify-between px-5 py-3.5 border-b border-ld-border">
           <div className="flex items-center gap-3 min-w-0">

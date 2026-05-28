@@ -43,8 +43,8 @@ export default function FloatingActionDock({
 
   return (
     <div
-      className="fixed right-3 sm:right-5 z-40 flex flex-col items-end gap-2"
-      style={{ bottom: 'calc(env(safe-area-inset-bottom) + 5.5rem)' }}
+      className="fixed right-3 sm:right-4 z-40 flex flex-col items-end gap-2"
+      style={{ bottom: 'calc(env(safe-area-inset-bottom) + 4rem)' }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
@@ -136,7 +136,7 @@ function DockButton({
 
       {/* Botón circular — primary = gradient acción, secondary = color sólido */}
       <span
-        className="relative w-12 h-12 sm:w-[52px] sm:h-[52px] rounded-full flex items-center justify-center transition-transform duration-300 group-hover:scale-[1.06] group-active:scale-95 border"
+        className="relative w-10 h-10 sm:w-11 sm:h-11 rounded-full flex items-center justify-center transition-transform duration-300 group-hover:scale-[1.06] group-active:scale-95 border"
         style={{
           background: primary
             ? 'var(--ld-grad-action)'
