@@ -1,0 +1,271 @@
+// ============================================================================
+// InstagramPanel · Gestión Instagram Business conectado (OAuth connector)
+// ============================================================================
+import { useState, useEffect } from 'react';
+import { base44 } from '@/api/base44Client';
+import { Instagram, CheckCircle2, Loader2, ExternalLink, Send, RefreshCw, Users, Clock, AlertCircle, Image as ImageIcon, Grid3X3 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+
+export default function InstagramPanel({ onPublished }) {
+  const [status, setStatus] = useState(null);
+  const [approved, setApproved] = useState([]);
+  const [publishing, setPublishing] = useState(null);
+  const [publishResult, setPublishResult] = useState({});
+
+  const load = async () => {
+    setStatus(null);
+    const [statusRes, postsRes] = await Promise.all([
+      base44.functions.invoke('instagramStatus', {}),
+      base44.entities.ContentPost.filter({ red_social: 'Instagram', estado: 'Aprobado' }, '-created_date', 20),
+    ]);
+    setStatus(statusRes.data || { connected: false, error: 'Sin respuesta' });
+    setApproved(postsRes || []);
+  };
+
+  useEffect(() => { load(); }, []);
+
+  const handlePublish = async (postId) => {
+    setPublishing(postId);
+    try {
+      const res = await base44.functions.invoke('publishContentPost', { post_id: postId, modo: 'auto' });
+      setPublishResult(prev => ({ ...prev, [postId]: res.data }));
+      setApproved(prev => prev.filter(p => p.id !== postId));
+      onPublished?.();
+    } catch (e) {
+      setPublishResult(prev => ({ ...prev, [postId]: { ok: false, error: e.message } }));
+    }
+    setPublishing(null);
+  };
+
+  if (!status) {
+    return (
+      <div className="h-full flex items-center justify-center gap-3 text-white/40">
+        <Loader2 className="w-5 h-5 animate-spin" />
+        <span className="text-sm">Conectando con Instagram…</span>
+      </div>
+    );
+  }
+
+  if (!status.connected) {
+    return (
+      <div className="h-full flex items-center justify-center p-8">
+        <div className="text-center max-w-sm">
+          <div className="w-16 h-16 mx-auto mb-4 rounded-2xl flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #833AB4, #FD1D1D, #F77737)' }}>
+            <Instagram className="w-8 h-8 text-white" />
+          </div>
+          <h3 className="text-white font-bold text-lg mb-2">Instagram no conectado</h3>
+          <p className="text-white/50 text-sm mb-4">{status.error || 'La conexión OAuth no está activa.'}</p>
+          <button onClick={load} className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-pink-600 hover:bg-pink-500 text-white text-sm font-medium transition-colors">
+            <RefreshCw className="w-4 h-4" /> Reintentar
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  const { profile, stats: igStats, recent_media } = status;
+
+  return (
+    <div className="h-full flex flex-col min-h-0 bg-black/20 rounded-2xl border border-white/5">
+      <div className="flex-1 overflow-y-auto peyu-scrollbar-light p-4 min-h-0">
+        <div className="space-y-5 max-w-4xl mx-auto pb-6">
+
+          {/* Profile Card */}
+          <div className="rounded-2xl p-5 flex items-start gap-4" style={{ background: 'linear-gradient(135deg, rgba(131,58,180,0.2), rgba(253,29,29,0.1), rgba(247,119,55,0.1))', border: '1px solid rgba(131,58,180,0.4)' }}>
+            <div className="relative flex-shrink-0">
+              <div className="w-14 h-14 rounded-xl overflow-hidden flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #833AB4, #FD1D1D, #F77737)' }}>
+                {profile?.profile_picture_url
+                  ? <img src={profile.profile_picture_url} className="w-full h-full object-cover" />
+                  : <Instagram className="w-7 h-7 text-white" />
+                }
+              </div>
+              <div className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-green-500 border-2 border-slate-950 flex items-center justify-center">
+                <CheckCircle2 className="w-3 h-3 text-white" strokeWidth={3} />
+              </div>
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-start justify-between gap-3 flex-wrap">
+                <div>
+                  <h3 className="text-white font-bold text-lg leading-tight">{profile?.name || 'PEYU Chile'}</h3>
+                  <p className="text-white/50 text-xs mt-0.5">@{profile?.username || 'peyuchile'}</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-green-500/20 text-green-400 border border-green-500/30">✓ Conectado</span>
+                  <button onClick={load} className="text-white/30 hover:text-white p-1.5 rounded-lg hover:bg-white/10 transition-colors">
+                    <RefreshCw className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              </div>
+              <div className="flex items-center gap-5 mt-3 flex-wrap">
+                <div className="flex items-center gap-1.5">
+                  <Users className="w-3.5 h-3.5 text-pink-400" />
+                  <span className="text-sm font-bold text-white">{profile?.followers_count >= 1000 ? `${(profile.followers_count / 1000).toFixed(1)}k` : profile?.followers_count || 0}</span>
+                  <span className="text-[11px] text-white/40">seguidores</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <Grid3X3 className="w-3.5 h-3.5 text-violet-400" />
+                  <span className="text-sm font-bold text-white">{profile?.media_count || 0}</span>
+                  <span className="text-[11px] text-white/40">publicaciones</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <Send className="w-3.5 h-3.5 text-emerald-400" />
+                  <span className="text-sm font-bold text-white">{igStats?.publicados || 0}</span>
+                  <span className="text-[11px] text-white/40">desde PEYU</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <Clock className="w-3.5 h-3.5 text-amber-400" />
+                  <span className="text-sm font-bold text-white">{approved.length}</span>
+                  <span className="text-[11px] text-white/40">listos</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-5">
+            {/* Posts aprobados */}
+            <div>
+              <h4 className="text-sm font-bold text-white flex items-center gap-2 mb-3">
+                <Send className="w-4 h-4 text-pink-400" />
+                Listos para publicar
+                {approved.length > 0 && (
+                  <span className="px-1.5 py-0.5 rounded-full bg-pink-500/20 text-pink-300 text-[10px] font-bold border border-pink-500/30">{approved.length}</span>
+                )}
+              </h4>
+
+              {approved.length === 0 ? (
+                <div className="text-center py-10 rounded-2xl bg-white/[0.03] border border-white/10">
+                  <CheckCircle2 className="w-8 h-8 text-white/20 mx-auto mb-2" />
+                  <p className="text-white/50 text-sm">Sin posts aprobados pendientes</p>
+                  <p className="text-white/30 text-xs mt-1">Aprueba posts de Instagram en la Cola para publicarlos aquí</p>
+                </div>
+              ) : (
+                <div className="space-y-2.5">
+                  {approved.map(post => {
+                    const result = publishResult[post.id];
+                    return (
+                      <div key={post.id} className="flex items-center gap-3 p-3.5 rounded-xl bg-white/[0.04] border border-white/10 hover:border-white/20 transition-colors">
+                        <div className="w-11 h-11 rounded-lg overflow-hidden bg-black/30 flex-shrink-0">
+                          {post.imagen_url
+                            ? <img src={post.imagen_url} alt={post.titulo} className="w-full h-full object-cover" />
+                            : <div className="w-full h-full flex items-center justify-center bg-pink-900/30"><Instagram className="w-5 h-5 text-pink-400" /></div>
+                          }
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-semibold text-white truncate">{post.titulo}</p>
+                          <p className="text-xs text-white/40 truncate mt-0.5">{post.copy?.slice(0, 70)}…</p>
+                        </div>
+                        <div className="flex-shrink-0">
+                          {result?.ok ? (
+                            <div className="flex flex-col items-end gap-1">
+                              <span className="text-[11px] font-bold text-green-400 flex items-center gap-1"><CheckCircle2 className="w-3 h-3" /> Publicado</span>
+                              {result.link && <a href={result.link} target="_blank" rel="noreferrer" className="text-[10px] text-pink-400 hover:text-pink-300 flex items-center gap-0.5">Ver <ExternalLink className="w-2.5 h-2.5" /></a>}
+                            </div>
+                          ) : result?.ok === false ? (
+                            <div className="text-right">
+                              <span className="text-[11px] text-red-400 flex items-center gap-1"><AlertCircle className="w-3 h-3" /> Error</span>
+                              <p className="text-[9px] text-white/30 max-w-[100px] text-right">{result.error || result.reason}</p>
+                            </div>
+                          ) : (
+                            <Button
+                              onClick={() => handlePublish(post.id)}
+                              disabled={publishing === post.id}
+                              size="sm"
+                              className="h-8 px-3 text-xs gap-1.5 font-bold border-0"
+                              style={{ background: 'linear-gradient(135deg, #833AB4, #FD1D1D)' }}
+                            >
+                              {publishing === post.id ? <><Loader2 className="w-3 h-3 animate-spin" /> Publicando…</> : <><Send className="w-3 h-3" /> Publicar</>}
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
+            {/* Sidebar: Feed reciente + acciones */}
+            <div className="space-y-5">
+              {/* Acciones rápidas */}
+              <div>
+                <h4 className="text-sm font-bold text-white flex items-center gap-2 mb-3">
+                  <ImageIcon className="w-4 h-4 text-violet-400" /> Acciones rápidas
+                </h4>
+                <div className="flex flex-col gap-2">
+                  <a href="https://www.instagram.com/" target="_blank" rel="noreferrer"
+                     className="flex items-center gap-2.5 p-3 rounded-xl bg-pink-600/10 border border-pink-500/25 hover:bg-pink-600/20 transition-colors">
+                    <Send className="w-4 h-4 text-pink-400 flex-shrink-0" />
+                    <div>
+                      <p className="text-xs font-semibold text-white">Abrir Instagram</p>
+                      <p className="text-[10px] text-white/40">Publicar manualmente</p>
+                    </div>
+                  </a>
+                  <a href={`https://www.instagram.com/${profile?.username || 'peyuchile'}/`} target="_blank" rel="noreferrer"
+                     className="flex items-center gap-2.5 p-3 rounded-xl bg-violet-600/10 border border-violet-500/25 hover:bg-violet-600/20 transition-colors">
+                    <Grid3X3 className="w-4 h-4 text-violet-400 flex-shrink-0" />
+                    <div>
+                      <p className="text-xs font-semibold text-white">Ver perfil</p>
+                      <p className="text-[10px] text-white/40">@{profile?.username || 'peyuchile'}</p>
+                    </div>
+                  </a>
+                </div>
+              </div>
+
+              {/* Feed reciente desde IG API */}
+              {recent_media && recent_media.length > 0 && (
+                <div>
+                  <h4 className="text-sm font-bold text-white flex items-center gap-2 mb-3">
+                    <Grid3X3 className="w-4 h-4 text-pink-400" /> Feed reciente
+                  </h4>
+                  <div className="grid grid-cols-3 gap-1.5">
+                    {recent_media.map(m => (
+                      <a key={m.id} href={m.permalink} target="_blank" rel="noreferrer" className="block aspect-square rounded-lg overflow-hidden bg-black/30 hover:opacity-80 transition-opacity">
+                        {m.url ? (
+                          <img src={m.url} alt="" className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center">
+                            <ImageIcon className="w-4 h-4 text-white/20" />
+                          </div>
+                        )}
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Posts recientes publicados desde PEYU */}
+              {status.recent_posts?.filter(p => p.estado === 'Publicado').length > 0 && (
+                <div>
+                  <h4 className="text-sm font-bold text-white flex items-center gap-2 mb-3">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-400" /> Publicados desde PEYU
+                  </h4>
+                  <div className="space-y-2">
+                    {status.recent_posts.filter(p => p.estado === 'Publicado').slice(0, 4).map(post => (
+                      <div key={post.id} className="flex items-center gap-3 p-2.5 rounded-xl bg-white/[0.03] border border-white/[0.07]">
+                        <div className="w-8 h-8 rounded-md overflow-hidden bg-black/30 flex-shrink-0">
+                          {post.imagen_url ? <img src={post.imagen_url} className="w-full h-full object-cover" /> : <Instagram className="w-4 h-4 text-pink-400 m-auto" />}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-[11px] font-medium text-white/80 truncate">{post.titulo}</p>
+                          {post.fecha_publicacion && (
+                            <p className="text-[9px] text-white/30">{new Date(post.fecha_publicacion).toLocaleDateString('es-CL', { day: 'numeric', month: 'short' })}</p>
+                          )}
+                        </div>
+                        {post.link_publicado && (
+                          <a href={post.link_publicado} target="_blank" rel="noreferrer" className="text-pink-400 hover:text-pink-300 transition-colors">
+                            <ExternalLink className="w-3.5 h-3.5" />
+                          </a>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  );
+}

@@ -5,7 +5,7 @@
 // stat bar viva arriba, segmented control glassmorphic, imágenes grandes.
 // ============================================================================
 import { useState, useEffect } from 'react';
-import { Sparkles, Layers, CheckSquare, Calendar, Link2, Image as ImageIcon, Send, Clock, Bot, Linkedin } from 'lucide-react';
+import { Sparkles, Layers, CheckSquare, Calendar, Link2, Image as ImageIcon, Send, Clock, Bot, Linkedin, Instagram } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import BulkGeneratorPanel from '@/components/social-studio/BulkGeneratorPanel';
 import ApprovalQueuePanel from '@/components/social-studio/ApprovalQueuePanel';
@@ -15,10 +15,12 @@ import SocialStudioHero from '@/components/social-studio/SocialStudioHero';
 import LinkedInConnectBanner from '@/components/social-studio/LinkedInConnectBanner';
 import MarketingAgentPanel from '@/components/social-studio/MarketingAgentPanel';
 import LinkedInPanel from '@/components/social-studio/LinkedInPanel';
+import InstagramPanel from '@/components/social-studio/InstagramPanel';
 
 const TABS = [
   { id: 'queue',     label: 'Cola de aprobación', icon: CheckSquare, accent: 'from-amber-400 to-orange-500' },
   { id: 'agent',     label: 'Agente Marketing',   icon: Bot,         accent: 'from-violet-500 to-pink-500' },
+  { id: 'instagram', label: 'Instagram',          icon: Instagram,   accent: 'from-pink-500 to-purple-600' },
   { id: 'linkedin',  label: 'LinkedIn',           icon: Linkedin,    accent: 'from-sky-500 to-blue-600' },
   { id: 'bulk',      label: 'Generar lote',       icon: Layers,      accent: 'from-pink-500 to-violet-500' },
   { id: 'planner',   label: 'Plan semanal',       icon: Calendar,    accent: 'from-cyan-400 to-blue-500' },
@@ -102,6 +104,7 @@ export default function SocialStudio() {
         <div className="flex-1 min-h-0 rounded-2xl flex flex-col overflow-hidden">
           {tab === 'queue'     && <ApprovalQueuePanel refreshKey={refreshKey} onChange={triggerRefresh} />}
           {tab === 'agent'     && <MarketingAgentPanel posts={allPosts} />}
+          {tab === 'instagram' && <InstagramPanel onPublished={triggerRefresh} />}
           {tab === 'linkedin'  && <LinkedInPanel onPublished={triggerRefresh} />}
           {tab === 'bulk'      && <BulkGeneratorPanel onGenerated={triggerRefresh} />}
           {tab === 'planner'   && <WeeklyPlannerPanel onGenerated={triggerRefresh} />}
