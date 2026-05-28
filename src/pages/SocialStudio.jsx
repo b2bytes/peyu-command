@@ -12,6 +12,7 @@ import ApprovalQueuePanel from '@/components/social-studio/ApprovalQueuePanel';
 import WeeklyPlannerPanel from '@/components/social-studio/WeeklyPlannerPanel';
 import BacklinksInsightsPanel from '@/components/social-studio/BacklinksInsightsPanel';
 import SocialStudioHero from '@/components/social-studio/SocialStudioHero';
+import LinkedInConnectBanner from '@/components/social-studio/LinkedInConnectBanner';
 
 const TABS = [
   { id: 'queue',     label: 'Cola de aprobación', icon: CheckSquare, accent: 'from-amber-400 to-orange-500' },
@@ -53,6 +54,11 @@ export default function SocialStudio() {
       <div className="relative flex-1 flex flex-col min-h-0 p-3 lg:p-4 gap-3">
         {/* Hero · KPIs vivos */}
         <SocialStudioHero stats={stats} onPendientesClick={() => setTab('queue')} />
+
+        {/* Invitación a conectar LinkedIn oficial — el usuario decide cuándo */}
+        <LinkedInConnectBanner
+          onRequestConnect={() => alert('Para activar la conexión real con LinkedIn (página oficial PEYU Chile), pídele al asistente "conectar LinkedIn" y autoriza el flujo OAuth que aparecerá.')}
+        />
 
         {/* Segmented control glassmorphic compacto */}
         <div className="flex-shrink-0">

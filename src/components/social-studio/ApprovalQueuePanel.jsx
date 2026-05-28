@@ -86,13 +86,13 @@ export default function ApprovalQueuePanel({ refreshKey, onChange }) {
                 key={e.id}
                 onClick={() => setEstado(e.id)}
                 className={`relative px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${
-                  active ? 'text-white' : 'text-white/55 hover:text-white/85 bg-white/5 border border-white/10'
+                  active ? 'text-white' : 'text-ld-fg-soft hover:text-ld-fg ld-glass-soft'
                 }`}
               >
                 {active && <span className={`absolute inset-0 rounded-xl bg-gradient-to-br ${e.color} opacity-90`} />}
                 <span className="relative flex items-center gap-1.5">
                   {e.label}
-                  <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-black ${active ? 'bg-white/25 text-white' : 'bg-white/10 text-white/60'}`}>
+                  <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-black ${active ? 'bg-white/25 text-white' : 'bg-ld-bg-soft text-ld-fg-soft border border-ld-border'}`}>
                     {counts[e.id] || 0}
                   </span>
                 </span>
@@ -102,10 +102,10 @@ export default function ApprovalQueuePanel({ refreshKey, onChange }) {
         </div>
 
         {/* Divider */}
-        <div className="h-6 w-px bg-white/10" />
+        <div className="h-6 w-px bg-ld-border" />
 
         {/* Red social */}
-        <div className="flex gap-1 p-1 bg-white/5 border border-white/10 rounded-xl">
+        <div className="flex gap-1 p-1 ld-glass-soft rounded-xl">
           {REDES_FILTRO.map(r => {
             const Icon = r.icon;
             const active = redFiltro === r.id;
@@ -114,7 +114,7 @@ export default function ApprovalQueuePanel({ refreshKey, onChange }) {
                 key={r.id}
                 onClick={() => setRedFiltro(r.id)}
                 className={`flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-bold transition-all ${
-                  active ? 'bg-white/15 text-white' : 'text-white/50 hover:text-white/80'
+                  active ? 'bg-ld-bg-elevated text-ld-fg shadow-sm' : 'text-ld-fg-muted hover:text-ld-fg'
                 }`}
                 title={r.id}
               >
@@ -127,24 +127,24 @@ export default function ApprovalQueuePanel({ refreshKey, onChange }) {
 
         {/* Search */}
         <div className="relative flex-1 min-w-[180px] max-w-xs ml-auto">
-          <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-white/40" />
+          <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-ld-fg-muted" />
           <Input
             value={search}
             onChange={e => setSearch(e.target.value)}
             placeholder="Buscar copy o título…"
-            className="pl-8 h-8 bg-white/5 border-white/10 text-white placeholder:text-white/30 text-xs"
+            className="pl-8 h-8 ld-input text-xs text-ld-fg placeholder:text-ld-fg-muted"
           />
         </div>
 
-        <Button onClick={load} variant="ghost" size="sm" className="h-8 text-white/60 hover:text-white hover:bg-white/10 gap-1">
+        <Button onClick={load} variant="ghost" size="sm" className="h-8 text-ld-fg-muted hover:text-ld-fg hover:bg-ld-bg-soft gap-1">
           <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
         </Button>
       </div>
 
       {/* Grid de imágenes — protagonista absoluto */}
-      <div className="flex-1 overflow-y-auto peyu-scrollbar-light min-h-0 -mr-2 pr-2">
+      <div className="flex-1 overflow-y-auto peyu-scrollbar min-h-0 -mr-2 pr-2">
         {loading ? (
-          <div className="text-center py-16 text-white/40">
+          <div className="text-center py-16 text-ld-fg-muted">
             <Loader2 className="w-7 h-7 animate-spin mx-auto mb-3" />
             <p className="text-sm">Cargando cola…</p>
           </div>
@@ -283,12 +283,12 @@ function PostTile({ post, actioning, onAction, onOpen }) {
 function EmptyState({ estado }) {
   return (
     <div className="text-center py-20 max-w-md mx-auto">
-      <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-violet-500/20 to-pink-500/20 border border-white/10 flex items-center justify-center">
-        <Sparkles className="w-7 h-7 text-violet-300" />
+      <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-violet-500/20 to-pink-500/20 border border-ld-border flex items-center justify-center">
+        <Sparkles className="w-7 h-7" style={{ color: 'var(--ld-action)' }} />
       </div>
-      <p className="text-white/80 font-medium">Sin posts en "{estado}"</p>
-      <p className="text-xs text-white/40 mt-1">
-        Genera contenido desde el tab <span className="text-white/70 font-semibold">Generar lote</span> o <span className="text-white/70 font-semibold">Plan semanal</span>.
+      <p className="text-ld-fg font-semibold">Sin posts en "{estado}"</p>
+      <p className="text-xs text-ld-fg-muted mt-1">
+        Genera contenido desde el tab <span className="text-ld-fg font-semibold">Generar lote</span> o <span className="text-ld-fg font-semibold">Plan semanal</span>.
       </p>
     </div>
   );
