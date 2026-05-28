@@ -597,7 +597,10 @@ export default function AgenteCentral() {
   return (
     // Centro de comando autocontenido: fondo oscuro FIJO (no depende del modo
     // día/noche del Layout admin) para garantizar contraste y look "command center".
-    <div className="relative min-h-screen flex flex-col text-white overflow-hidden"
+    // data-liquid-mode="night" fuerza el modo noche LOCALMENTE, evitando que el
+    // compat-layer del modo día convierta los `text-white` / `bg-white/X` en
+    // colores oscuros (lo que producía texto oscuro sobre fondo oscuro).
+    <div data-liquid-mode="night" className="relative min-h-screen flex flex-col text-white overflow-hidden"
       style={{ background: 'radial-gradient(130% 90% at 100% 0%, #0B3A33 0%, #071018 45%, #04070D 100%)' }}>
       {/* Ambient glows */}
       <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
