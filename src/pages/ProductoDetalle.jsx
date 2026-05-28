@@ -983,8 +983,19 @@ export default function ProductoDetalle() {
                   </p>
                   <div className="relative grid grid-cols-2 gap-2">
                     <Link
-                      to={`/b2b/contacto?productoId=${producto.id}&nombre=${encodeURIComponent(producto.nombre || '')}${mockupGenerado ? '&mockup=1' : ''}${personalizacion ? `&texto=${encodeURIComponent(personalizacion)}` : ''}`}
+                      to="/b2b/self-service?anchor=1"
                       onClick={() => {
+                        // 🎯 Pre-anclamos el producto seleccionado al embudo conversacional B2B.
+                        // Así el cliente NO cae en una galería vacía: arranca con su producto
+                        // ya en el carrito, con la cantidad mínima B2B y su personalización.
+                        try {
+                          sessionStorage.setItem('peyu_b2b_anchor', JSON.stringify({
+                            sku: producto.sku,
+                            nombre: producto.nombre,
+                            cantidad: Math.max(10, cantidad),
+                            personalizar: !!personalizacion,
+                          }));
+                        } catch { /* ignore */ }
                         if (mockupGenerado || personalizacion) {
                           saveMockupDraft({
                             productoId: producto.id,

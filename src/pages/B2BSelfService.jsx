@@ -8,6 +8,7 @@ import {
   Sparkles, Download, CheckCircle, FileText, Loader2, Zap, Package, Wand2, ShoppingBag, X
 } from 'lucide-react';
 import CartPanel from '@/components/b2b/selfservice/CartPanel';
+import ProposalDeliveryActions from '@/components/b2b/selfservice/ProposalDeliveryActions';
 import SelfServiceProductCard from '@/components/b2b/selfservice/SelfServiceProductCard';
 import StepperProgress from '@/components/b2b/selfservice/StepperProgress';
 import PublicSEO from '@/components/PublicSEO';
@@ -64,6 +65,25 @@ export default function B2BSelfService() {
       .then(list => {
         const b2b = (list || []).filter(p => p.canal === 'B2B Exclusivo' || p.canal === 'B2B + B2C');
         setCatalogo(b2b);
+
+        // 🎯 Producto pre-anclado desde la página de producto ("Cotizar B2B").
+        // Arranca con el producto YA en el carrito → evita la galería vacía.
+        try {
+          const params = new URLSearchParams(window.location.search);
+          if (params.get('anchor') === '1') {
+            const raw = sessionStorage.getItem('peyu_b2b_anchor');
+            if (raw) {
+              const anchor = JSON.parse(raw);
+              const producto = b2b.find(p => p.sku === anchor.sku);
+              if (producto) {
+                setCart([{ producto, cantidad: Math.max(10, anchor.cantidad || 10) }]);
+                if (anchor.personalizar === false) setPersonalizar(false);
+                setStep(1); // saltar directo a "Empresa" — su producto ya está elegido
+              }
+              sessionStorage.removeItem('peyu_b2b_anchor');
+            }
+          }
+        } catch { /* ignore */ }
 
         // Repetir pedido: si venimos del panel "Mi cuenta" con sessionStorage cargado,
         // precargamos carrito y form, y saltamos directo al paso de Personalización.
@@ -606,25 +626,8 @@ export default function B2BSelfService() {
               </Link>
             </div>
 
-            {/* Email status */}
-            <div className={`rounded-2xl p-4 backdrop-blur-md text-center border ${
-              propuesta.email_sent
-                ? 'bg-gradient-to-r from-emerald-500/20 to-teal-500/15 border-emerald-400/40'
-                : 'bg-white/[0.04] border-white/15'
-            }`}>
-              {propuesta.email_sent ? (
-                <p className="text-xs sm:text-sm text-white/90 flex items-center justify-center gap-2 flex-wrap">
-                  <div className="w-7 h-7 rounded-full bg-emerald-400/20 border border-emerald-400/40 flex items-center justify-center flex-shrink-0">
-                    <CheckCircle className="w-3.5 h-3.5 text-emerald-300" />
-                  </div>
-                  <span>Enviada a <span className="font-bold text-emerald-200">{propuesta.email_to || form.email}</span></span>
-                </p>
-              ) : (
-                <p className="text-xs sm:text-sm text-white/70">
-                  Propuesta lista para <span className="font-bold text-white">{form.email}</span>. Nuestro equipo se contactará en menos de 24h.
-                </p>
-              )}
-            </div>
+            {/* Envío multicanal: Email · WhatsApp · Ambos */}
+            <ProposalDeliveryActions propuesta={propuesta} form={form} />
 
             <Link to="/shop">
               <Button variant="ghost" className="w-full text-white/55 hover:text-white hover:bg-white/5 rounded-xl">
