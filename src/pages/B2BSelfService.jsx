@@ -12,6 +12,7 @@ import ProposalDeliveryActions from '@/components/b2b/selfservice/ProposalDelive
 import SelfServiceProductCard from '@/components/b2b/selfservice/SelfServiceProductCard';
 import StepperProgress from '@/components/b2b/selfservice/StepperProgress';
 import PublicSEO from '@/components/PublicSEO';
+import { getProductImage } from '@/utils/productImages.js';
 
 const STEPS = ['Productos', 'Empresa', 'Personalización', 'Propuesta'];
 
@@ -41,6 +42,8 @@ export default function B2BSelfService() {
   // Carrito: { producto, cantidad }
   const [cart, setCart] = useState([]);
   const [filtroCategoria, setFiltroCategoria] = useState('todos');
+  // Producto con el que el cliente llegó desde "Cotizar B2B" (para hero del onboarding)
+  const [anchorProducto, setAnchorProducto] = useState(null);
 
   // Empresa
   const [form, setForm] = useState({
@@ -66,22 +69,29 @@ export default function B2BSelfService() {
         const b2b = (list || []).filter(p => p.canal === 'B2B Exclusivo' || p.canal === 'B2B + B2C');
         setCatalogo(b2b);
 
-        // 🎯 Producto pre-anclado desde la página de producto ("Cotizar B2B").
-        // Arranca con el producto YA en el carrito → evita la galería vacía.
+        // 🎯 Producto pre-anclado al embudo B2B ("Cotizar B2B").
+        // Dos vías soportadas:
+        //   1. ?sku=XXX en la URL → robusto, sobrevive a recargas y links compartidos.
+        //   2. sessionStorage 'peyu_b2b_anchor' → trae además cantidad/personalización
+        //      cuando se ancla desde la página de detalle del producto.
+        // En ambos casos: producto YA en el carrito + salto al paso "Empresa".
+        // Esto elimina la "galería vacía" que hacía perder el producto seleccionado.
         try {
           const params = new URLSearchParams(window.location.search);
-          if (params.get('anchor') === '1') {
-            const raw = sessionStorage.getItem('peyu_b2b_anchor');
-            if (raw) {
-              const anchor = JSON.parse(raw);
-              const producto = b2b.find(p => p.sku === anchor.sku);
-              if (producto) {
-                setCart([{ producto, cantidad: Math.max(10, anchor.cantidad || 10) }]);
-                if (anchor.personalizar === false) setPersonalizar(false);
-                setStep(1); // saltar directo a "Empresa" — su producto ya está elegido
-              }
-              sessionStorage.removeItem('peyu_b2b_anchor');
+          const skuParam = params.get('sku');
+          const anchorRaw = sessionStorage.getItem('peyu_b2b_anchor');
+          const anchor = anchorRaw ? JSON.parse(anchorRaw) : null;
+          const targetSku = anchor?.sku || skuParam;
+
+          if (targetSku) {
+            const producto = b2b.find(p => p.sku === targetSku);
+            if (producto) {
+              setCart([{ producto, cantidad: Math.max(10, anchor?.cantidad || 10) }]);
+              setAnchorProducto(producto); // mostrarlo en el hero del paso Empresa
+              if (anchor?.personalizar === false) setPersonalizar(false);
+              setStep(1); // saltar directo a "Empresa" — su producto ya está elegido
             }
+            sessionStorage.removeItem('peyu_b2b_anchor');
           }
         } catch { /* ignore */ }
 
@@ -362,6 +372,23 @@ export default function B2BSelfService() {
               <div className="bg-gradient-to-br from-teal-500/15 via-cyan-500/10 to-transparent border border-white/10 rounded-3xl p-5 sm:p-6 backdrop-blur-sm relative overflow-hidden">
                 <div className="absolute -top-12 -right-12 w-48 h-48 rounded-full bg-cyan-500/20 blur-3xl pointer-events-none" />
                 <div className="relative">
+                  {/* Confirmación del producto anclado — el cliente ve QUE su producto
+                      no se perdió. Onboarding premium 360°. */}
+                  {anchorProducto && (
+                    <div className="flex items-center gap-3 mb-4 p-3 rounded-2xl bg-white/[0.06] border border-teal-400/30 backdrop-blur-md">
+                      <div className="relative w-14 h-14 rounded-xl overflow-hidden bg-white/10 flex-shrink-0 ring-1 ring-white/15">
+                        <img src={getProductImage(anchorProducto)} alt={anchorProducto.nombre} className="w-full h-full object-cover" loading="lazy" />
+                        <div className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-teal-400 flex items-center justify-center shadow-lg ring-2 ring-slate-900">
+                          <CheckCircle className="w-3 h-3 text-slate-900" strokeWidth={3} />
+                        </div>
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-[10px] font-bold uppercase tracking-wider text-teal-300 leading-none">Cotizando</p>
+                        <p className="text-sm font-bold text-white truncate mt-1 leading-tight">{anchorProducto.nombre}</p>
+                        <p className="text-[11px] text-white/55 mt-0.5">{anchorProducto.categoria} · ya en tu pedido</p>
+                      </div>
+                    </div>
+                  )}
                   <div className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-cyan-300 bg-cyan-500/15 border border-cyan-400/30 px-2.5 py-1 rounded-full mb-3">
                     <Building2 className="w-3 h-3" /> Datos de la empresa
                   </div>
@@ -371,6 +398,14 @@ export default function B2BSelfService() {
                   <p className="text-white/65 text-sm mt-1.5 leading-relaxed">
                     Los necesitamos para emitir la propuesta oficial y la factura electrónica.
                   </p>
+                  {anchorProducto && (
+                    <button
+                      onClick={() => setStep(0)}
+                      className="text-xs font-bold text-teal-300 hover:text-teal-200 mt-3 inline-flex items-center gap-1 transition"
+                    >
+                      <Plus className="w-3.5 h-3.5" /> Agregar más productos
+                    </button>
+                  )}
                 </div>
               </div>
 
