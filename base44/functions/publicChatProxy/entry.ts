@@ -41,11 +41,24 @@ function stripContextBlocks(raw) {
 // ─── Regex de extracción progresiva ─────────────────────────────────
 const EMAIL_REGEX = /([a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,})/i;
 const PHONE_REGEX = /(\+?56\s?9[\s-]?\d{4}[\s-]?\d{4}|\b9\s?\d{4}\s?\d{4}\b|\b\d{9}\b)/;
-const NAME_REGEX = /\b(?:soy|me llamo|mi nombre es)\s+([A-ZÁÉÍÓÚÑ][a-záéíóúñ]+(?:\s+[A-ZÁÉÍÓÚÑ][a-záéíóúñ]+)?)/;
+// Nombre tras frase introductoria explícita ("Soy Juan", "Me llamo Pedro").
+// Case-insensitive en la frase introductoria, pero exige que el nombre
+// empiece en mayúscula. Soporta nombre simple o compuesto (hasta 3 palabras).
+const NAME_REGEX = /\b(?:soy|me\s+llamo|mi\s+nombre\s+es|aqu[íi]\s+habla|habla)\s+([A-ZÁÉÍÓÚÑ][a-záéíóúñ]+(?:\s+[A-ZÁÉÍÓÚÑ][a-záéíóúñ]+){0,2})/i;
+// 🆕 Nombre suelto cuando el cliente responde "Juan" o "Juan Pérez" como
+// respuesta corta (1-2 palabras capitalizadas en mensaje muy breve). Solo
+// se aplica si el mensaje tiene <= 4 palabras para evitar falsos positivos.
+const NAME_SHORT_REGEX = /^([A-ZÁÉÍÓÚÑ][a-záéíóúñ]{1,20}(?:\s+[A-ZÁÉÍÓÚÑ][a-záéíóúñ]{1,20})?)[\s.!?¿¡]*$/;
+// Palabras comunes que NO son nombres aunque vengan capitalizadas.
+const NAME_BLACKLIST = /^(hola|holi|holaa|buenas|gracias|listo|dale|ok|sí|no|tal|vez|claro|perfecto|excelente|santiago|chile|navidad|cumpleaños|aniversario|regalo|pack|set)$/i;
 // 🛡️ Solo aceptamos empresa si viene tras frase explícita ("soy de X", "trabajo en X").
-// Antes la regex tomaba cualquier "de Nombre" y guardaba basura como "de Cumpleaños".
-const EMPRESA_REGEX = /\b(?:soy de|trabajo en|nuestra empresa es|empresa[: ]+|de la empresa)\s+([A-ZÁÉÍÓÚÑ][\w\s&.,'-]{2,40})/i;
-const QTY_REGEX = /\b(\d{1,5})\s*(u\.?|unidades?|pcs|piezas|regalos|personas|empleados?|colaboradores?)\b/i;
+// Capturamos máximo 5 palabras tras la frase y cortamos en " y ", " para ", " que ", " con "
+// para evitar pegar el resto de la frase. Ej: "trabajo en Microsoft Chile y necesito 50…"
+// → empresa = "Microsoft Chile".
+const EMPRESA_REGEX = /\b(?:soy de|trabajo en|nuestra empresa es|empresa[: ]+|de la empresa)\s+([A-ZÁÉÍÓÚÑ][A-Za-z0-9\s&.'-]{1,40}?)(?=\s+(?:y|para|que|con|porque|necesit|busc|quier|cotiz|tenemos)\b|[,.\n]|$)/i;
+// QTY ahora detecta también palabras de producto como "cachos", "carcasas", "lámparas",
+// "maceteros", "kits" — para que "50 cachos" / "200 carcasas" gatille B2B.
+const QTY_REGEX = /\b(\d{1,5})\s*(u\.?|unidades?|pcs|piezas|regalos|personas|empleados?|colaboradores?|cachos?|carcasas?|l[áa]mparas?|maceteros?|kits?|sets?|paneras?|productos?|art[íi]culos?|items?)\b/i;
 const DATE_REGEX = /\b(\d{1,2})\s?(?:de\s)?(enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|setiembre|octubre|noviembre|diciembre|ene|feb|mar|abr|may|jun|jul|ago|sep|oct|nov|dic)\b/i;
 const RUT_REGEX = /\b(\d{1,2}\.?\d{3}\.?\d{3}-?[\dkK])\b/;
 
@@ -65,7 +78,23 @@ function extractData(rawMsg) {
   const out = {};
   const m1 = msg.match(EMAIL_REGEX); if (m1) out.email = m1[1].toLowerCase();
   const m2 = msg.match(PHONE_REGEX); if (m2) out.telefono = m2[1].replace(/\s+/g, ' ').trim();
-  const m3 = msg.match(NAME_REGEX); if (m3) out.nombre = m3[1].trim();
+  const m3 = msg.match(NAME_REGEX);
+  if (m3) {
+    const candidato = m3[1].trim();
+    if (!NAME_BLACKLIST.test(candidato.split(' ')[0])) out.nombre = candidato;
+  } else {
+    // Si el mensaje es corto (1-4 palabras) y parece un nombre suelto.
+    // Casos: "Juan", "Carolina Pérez", "Soy María".
+    const words = msg.trim().split(/\s+/);
+    if (words.length >= 1 && words.length <= 4) {
+      const m3b = msg.trim().match(NAME_SHORT_REGEX);
+      if (m3b) {
+        const candidato = m3b[1].trim();
+        const primera = candidato.split(' ')[0];
+        if (!NAME_BLACKLIST.test(primera)) out.nombre = candidato;
+      }
+    }
+  }
   const m4 = msg.match(EMPRESA_REGEX);
   if (m4) {
     const empresa = m4[1].split(/[,.\n]/)[0].trim().slice(0, 50);

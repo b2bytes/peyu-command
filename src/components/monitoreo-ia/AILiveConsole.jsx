@@ -21,18 +21,18 @@ function cleanUserText(text) {
 }
 
 const STATUS_ICON = {
-  success:  { icon: CheckCircle2, color: 'text-emerald-300' },
-  error:    { icon: AlertCircle,  color: 'text-rose-400' },
-  timeout:  { icon: Clock,        color: 'text-amber-300' },
-  filtered: { icon: AlertCircle,  color: 'text-violet-300' },
-  fallback: { icon: AlertCircle,  color: 'text-yellow-300' },
+  success:  { icon: CheckCircle2, color: 'text-emerald-600' },
+  error:    { icon: AlertCircle,  color: 'text-red-600' },
+  timeout:  { icon: Clock,        color: 'text-amber-600' },
+  filtered: { icon: AlertCircle,  color: 'text-violet-600' },
+  fallback: { icon: AlertCircle,  color: 'text-yellow-600' },
 };
 
 const REVIEW_BADGE = {
-  pending:           { label: 'Pendiente',  cls: 'bg-amber-500/15 text-amber-300 border-amber-400/25' },
-  approved:          { label: 'Aprobada',   cls: 'bg-emerald-500/15 text-emerald-300 border-emerald-400/25' },
-  flagged:           { label: 'Flagged',    cls: 'bg-rose-500/15 text-rose-300 border-rose-400/25' },
-  needs_retraining:  { label: 'Re-train',   cls: 'bg-violet-500/15 text-violet-300 border-violet-400/25' },
+  pending:           { label: 'Pendiente',  cls: 'bg-amber-100 text-amber-800 border-amber-200' },
+  approved:          { label: 'Aprobada',   cls: 'bg-emerald-100 text-emerald-800 border-emerald-200' },
+  flagged:           { label: 'Flagged',    cls: 'bg-red-100 text-red-800 border-red-200' },
+  needs_retraining:  { label: 'Re-train',   cls: 'bg-violet-100 text-violet-800 border-violet-200' },
 };
 
 function timeAgo(date) {
@@ -102,40 +102,40 @@ export default function AILiveConsole({ onSelectLog }) {
   });
 
   return (
-    <div className="bg-white/[0.04] border border-white/10 rounded-2xl flex flex-col h-[600px] overflow-hidden">
+    <div className="ld-card flex flex-col h-[600px] overflow-hidden">
       {/* Header */}
-      <div className="px-4 py-3 border-b border-white/10 flex items-center justify-between gap-3 flex-wrap">
+      <div className="px-4 py-3 border-b border-ld-border flex items-center justify-between gap-3 flex-wrap">
         <div className="flex items-center gap-2">
-          <div className={`w-2 h-2 rounded-full ${autoRefresh ? 'bg-emerald-400 animate-pulse' : 'bg-white/30'}`} />
-          <h3 className="font-jakarta font-bold text-white text-sm tracking-tight">Conversaciones en vivo</h3>
-          <span className="text-[10px] text-white/40 font-inter">{filtered.length} convs · {logs.length} mensajes</span>
+          <div className={`w-2 h-2 rounded-full ${autoRefresh ? 'animate-pulse' : ''}`} style={{ background: autoRefresh ? 'var(--ld-action)' : 'var(--ld-fg-muted)' }} />
+          <h3 className="font-jakarta font-bold text-ld-fg text-sm tracking-tight">Conversaciones en vivo</h3>
+          <span className="text-[10px] text-ld-fg-muted">{filtered.length} convs · {logs.length} mensajes</span>
         </div>
         <div className="flex items-center gap-1.5">
           <Button size="sm" variant="ghost" onClick={() => setAutoRefresh(!autoRefresh)}
-            className="h-8 text-white/60 hover:text-white hover:bg-white/5 gap-1.5">
+            className="h-8 text-ld-fg-muted hover:text-ld-fg hover:bg-ld-bg-soft gap-1.5">
             {autoRefresh ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
             <span className="text-xs">{autoRefresh ? 'Pausar' : 'Reanudar'}</span>
           </Button>
           <Button size="sm" variant="ghost" onClick={load}
-            className="h-8 text-white/60 hover:text-white hover:bg-white/5">
+            className="h-8 text-ld-fg-muted hover:text-ld-fg hover:bg-ld-bg-soft">
             <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
           </Button>
         </div>
       </div>
 
       {/* Filtros */}
-      <div className="px-4 py-2.5 border-b border-white/10 flex items-center gap-2 flex-wrap">
+      <div className="px-4 py-2.5 border-b border-ld-border flex items-center gap-2 flex-wrap">
         <div className="relative flex-1 min-w-[180px]">
-          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white/30" />
+          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-ld-fg-muted" />
           <Input
             value={search}
             onChange={e => setSearch(e.target.value)}
             placeholder="Buscar mensaje, respuesta, agente..."
-            className="pl-8 h-8 text-xs bg-white/5 border-white/10 text-white placeholder:text-white/30"
+            className="pl-8 h-8 text-xs ld-input text-ld-fg placeholder:text-ld-fg-muted"
           />
         </div>
         <select value={filterReview} onChange={e => setFilterReview(e.target.value)}
-          className="h-8 text-xs bg-white/5 border border-white/10 rounded-md px-2 text-white">
+          className="h-8 text-xs ld-card border border-ld-border rounded-md px-2 text-ld-fg font-medium bg-ld-bg-elevated">
           <option value="all">Todas</option>
           <option value="pending">Pendientes</option>
           <option value="approved">Aprobadas</option>
@@ -143,21 +143,21 @@ export default function AILiveConsole({ onSelectLog }) {
           <option value="needs_retraining">Re-train</option>
         </select>
         <select value={filterAgent} onChange={e => setFilterAgent(e.target.value)}
-          className="h-8 text-xs bg-white/5 border border-white/10 rounded-md px-2 text-white">
+          className="h-8 text-xs ld-card border border-ld-border rounded-md px-2 text-ld-fg font-medium bg-ld-bg-elevated">
           <option value="all">Todos los agentes</option>
           {agents.map(a => <option key={a} value={a}>{a}</option>)}
         </select>
       </div>
 
       {/* Lista */}
-      <div className="flex-1 overflow-y-auto peyu-scrollbar-light divide-y divide-white/5">
+      <div className="flex-1 overflow-y-auto peyu-scrollbar divide-y divide-ld-border">
         {loading && logs.length === 0 && (
-          <div className="p-6 text-center text-white/40 text-sm font-inter">Cargando...</div>
+          <div className="p-6 text-center text-ld-fg-muted text-sm">Cargando...</div>
         )}
         {!loading && filtered.length === 0 && (
           <div className="p-10 text-center">
-            <Filter className="w-8 h-8 text-white/20 mx-auto mb-3" />
-            <p className="text-white/50 text-sm font-inter">No hay registros con esos filtros.</p>
+            <Filter className="w-8 h-8 text-ld-fg-muted mx-auto mb-3 opacity-40" />
+            <p className="text-ld-fg-muted text-sm">No hay registros con esos filtros.</p>
           </div>
         )}
 
@@ -172,15 +172,15 @@ export default function AILiveConsole({ onSelectLog }) {
             <button
               key={log.conversation_id || log.id}
               onClick={() => onSelectLog?.(log)}
-              className="w-full text-left px-4 py-3 hover:bg-white/[0.04] transition-colors group"
+              className="w-full text-left px-4 py-3 hover:bg-ld-bg-soft transition-colors group"
             >
               <div className="flex items-start gap-3">
                 <StatusIcon className={`w-4 h-4 ${Status.color} flex-shrink-0 mt-0.5`} />
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1 flex-wrap">
-                    <span className="font-jakarta font-bold text-white text-xs tracking-tight">{log.agent_name || 'unknown'}</span>
+                    <span className="font-jakarta font-bold text-ld-fg text-xs tracking-tight">{log.agent_name || 'unknown'}</span>
                     {count > 1 && (
-                      <span className="flex items-center gap-1 text-[10px] font-bold text-cyan-200 bg-cyan-500/15 px-1.5 py-0.5 rounded border border-cyan-400/25">
+                      <span className="flex items-center gap-1 text-[10px] font-bold text-cyan-800 bg-cyan-100 px-1.5 py-0.5 rounded border border-cyan-200">
                         <MessagesSquare className="w-2.5 h-2.5" /> {count} turnos
                       </span>
                     )}
@@ -188,31 +188,31 @@ export default function AILiveConsole({ onSelectLog }) {
                       {reviewMeta.label}
                     </span>
                     {log.marked_for_retraining && (
-                      <span className="flex items-center gap-1 text-[10px] font-bold text-violet-300 bg-violet-500/15 px-1.5 py-0.5 rounded border border-violet-400/25">
+                      <span className="flex items-center gap-1 text-[10px] font-bold text-violet-800 bg-violet-100 px-1.5 py-0.5 rounded border border-violet-200">
                         <GraduationCap className="w-2.5 h-2.5" /> Cola
                       </span>
                     )}
                     {log.user_feedback === 'negative' && (
-                      <span className="flex items-center gap-1 text-[10px] font-bold text-rose-300 bg-rose-500/15 px-1.5 py-0.5 rounded border border-rose-400/25">
+                      <span className="flex items-center gap-1 text-[10px] font-bold text-red-800 bg-red-100 px-1.5 py-0.5 rounded border border-red-200">
                         <Flag className="w-2.5 h-2.5" /> Negative
                       </span>
                     )}
-                    <span className="text-[10px] text-white/30 ml-auto">{timeAgo(log.created_date)}</span>
+                    <span className="text-[10px] text-ld-fg-muted ml-auto">{timeAgo(log.created_date)}</span>
                   </div>
 
                   {noRealMessage ? (
-                    <p className="text-xs text-amber-300/70 italic line-clamp-1 font-inter">
+                    <p className="text-xs italic line-clamp-1" style={{ color: 'var(--ld-highlight)' }}>
                       🔇 El cliente abrió el chat pero aún no escribió nada · click para ver la conversación
                     </p>
                   ) : (
-                    <p className="text-xs text-white/85 line-clamp-2 font-inter font-medium">
-                      <span className="text-white/40">Cliente:</span> {cleanMsg}
+                    <p className="text-xs text-ld-fg line-clamp-2 font-medium">
+                      <span className="text-ld-fg-muted">Cliente:</span> {cleanMsg}
                     </p>
                   )}
 
-                  <div className="flex items-center gap-2 mt-1.5 text-[10px] text-white/40">
+                  <div className="flex items-center gap-2 mt-1.5 text-[10px] text-ld-fg-muted">
                     <MessagesSquare className="w-3 h-3" />
-                    <span className="text-teal-300/80 font-medium">Abrir conversación completa →</span>
+                    <span className="font-semibold" style={{ color: 'var(--ld-action)' }}>Abrir conversación completa →</span>
                   </div>
                 </div>
               </div>

@@ -91,7 +91,7 @@ export default function MonitoreoIA() {
   };
 
   return (
-    <div className="min-h-screen p-5 md:p-8 space-y-6">
+    <div className="min-h-screen p-5 md:p-8 space-y-6 ld-canvas">
       {/* Header */}
       <header className="flex items-start justify-between gap-4 flex-wrap">
         <div className="flex items-center gap-3">
@@ -99,10 +99,10 @@ export default function MonitoreoIA() {
             <Brain className="w-5 h-5 text-white" />
           </div>
           <div>
-            <h1 className="font-jakarta font-extrabold text-white text-2xl tracking-tight leading-none">
+            <h1 className="ld-display text-2xl text-ld-fg tracking-tight leading-none">
               Monitoreo IA
             </h1>
-            <p className="text-sm text-white/50 font-inter mt-1">
+            <p className="text-sm text-ld-fg-muted mt-1">
               Estado de modelos · uso de tokens · consola y auditoría en vivo
             </p>
           </div>
@@ -110,17 +110,18 @@ export default function MonitoreoIA() {
 
         <div className="flex items-center gap-2">
           {/* Selector de ventana */}
-          <div className="flex items-center gap-1 bg-white/5 border border-white/10 rounded-lg p-1">
-            <Calendar className="w-3.5 h-3.5 text-white/40 ml-2" />
+          <div className="flex items-center gap-1 ld-glass-soft rounded-lg p-1">
+            <Calendar className="w-3.5 h-3.5 text-ld-fg-muted ml-2" />
             {WINDOWS.map(w => (
               <button
                 key={w.days}
                 onClick={() => setWindowDays(w.days)}
-                className={`px-3 py-1 rounded-md text-xs font-bold font-jakarta transition-all ${
+                className={`px-3 py-1 rounded-md text-xs font-bold transition-all ${
                   windowDays === w.days
-                    ? 'bg-teal-500/20 text-teal-200 border border-teal-400/30'
-                    : 'text-white/50 hover:text-white'
+                    ? 'text-white shadow-sm'
+                    : 'text-ld-fg-muted hover:text-ld-fg'
                 }`}
+                style={windowDays === w.days ? { background: 'var(--ld-grad-action)' } : {}}
               >
                 {w.label}
               </button>
@@ -131,7 +132,7 @@ export default function MonitoreoIA() {
             size="sm"
             onClick={handleBulkApprove}
             disabled={bulkBusy || (stats?.pending_review || 0) === 0}
-            className="h-9 bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-200 border border-emerald-400/30 gap-1.5 text-xs"
+            className="ld-btn-primary gap-1.5 text-xs h-9"
           >
             <CheckCheck className={`w-3.5 h-3.5 ${bulkBusy ? 'animate-pulse' : ''}`} />
             Aprobar pendientes {(stats?.pending_review || 0) > 0 && `(${stats.pending_review})`}
@@ -141,7 +142,7 @@ export default function MonitoreoIA() {
             size="sm"
             variant="ghost"
             onClick={() => setRefreshKey(k => k + 1)}
-            className="h-9 text-white/60 hover:text-white hover:bg-white/5"
+            className="h-9 text-ld-fg-muted hover:text-ld-fg hover:bg-ld-bg-soft"
           >
             <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
           </Button>
@@ -156,7 +157,7 @@ export default function MonitoreoIA() {
 
       {/* Modelos */}
       <section>
-        <h2 className="font-jakarta font-bold text-white text-base tracking-tight mb-3">
+        <h2 className="font-jakarta font-bold text-ld-fg text-base tracking-tight mb-3">
           Estado de modelos
         </h2>
         <AIModelStatusGrid stats={stats} />
@@ -168,27 +169,27 @@ export default function MonitoreoIA() {
           <AITokenUsageChart stats={stats} />
 
           {/* Distribución por agente */}
-          <div className="bg-white/[0.04] border border-white/10 rounded-2xl p-5">
-            <h3 className="font-jakarta font-bold text-white text-sm tracking-tight mb-3">Por agente</h3>
+          <div className="ld-card p-5">
+            <h3 className="font-jakarta font-bold text-ld-fg text-sm tracking-tight mb-3">Por agente</h3>
             <div className="space-y-2">
               {Object.entries(stats?.by_agent || {}).sort((a, b) => b[1].count - a[1].count).slice(0, 8).map(([name, data]) => {
                 const total = stats?.total_calls || 1;
                 const pct = (data.count / total) * 100;
                 return (
                   <div key={name}>
-                    <div className="flex items-center justify-between mb-1 text-xs font-inter">
-                      <span className="text-white/80 font-medium truncate">{name}</span>
-                      <span className="text-white/40 font-mono">{data.count} · {data.tokens} tk</span>
+                    <div className="flex items-center justify-between mb-1 text-xs">
+                      <span className="text-ld-fg font-semibold truncate">{name}</span>
+                      <span className="text-ld-fg-muted font-mono">{data.count} · {data.tokens} tk</span>
                     </div>
-                    <div className="h-1.5 bg-white/5 rounded-full overflow-hidden">
-                      <div className="h-full bg-gradient-to-r from-teal-400 to-cyan-400 rounded-full transition-all duration-500"
-                        style={{ width: `${pct}%` }} />
+                    <div className="h-1.5 bg-ld-bg-soft rounded-full overflow-hidden">
+                      <div className="h-full rounded-full transition-all duration-500"
+                        style={{ width: `${pct}%`, background: 'var(--ld-grad-action)' }} />
                     </div>
                   </div>
                 );
               })}
               {Object.keys(stats?.by_agent || {}).length === 0 && (
-                <p className="text-xs text-white/40 font-inter">Sin datos en esta ventana.</p>
+                <p className="text-xs text-ld-fg-muted">Sin datos en esta ventana.</p>
               )}
             </div>
           </div>

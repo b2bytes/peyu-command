@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import ConversationThread from './ConversationThread';
+import ConversationCustomerData from './ConversationCustomerData';
 
 // Limpia el user_message quitando el prefijo [CONTEXTO] page=/... top_skus="..."
 function cleanUserMessage(content) {
@@ -74,24 +75,24 @@ export default function AIAuditDrawer({ log, onClose, onUpdated }) {
       />
 
       {/* Drawer */}
-      <aside className="fixed top-0 right-0 bottom-0 w-full max-w-2xl bg-slate-900 border-l border-white/10 z-50 flex flex-col shadow-2xl animate-in slide-in-from-right duration-300">
+      <aside className="fixed top-0 right-0 bottom-0 w-full max-w-2xl bg-ld-bg border-l border-ld-border z-50 flex flex-col shadow-2xl animate-in slide-in-from-right duration-300">
         {/* Header */}
-        <div className="px-5 py-4 border-b border-white/10 flex items-start justify-between gap-3">
+        <div className="px-5 py-4 border-b border-ld-border flex items-start justify-between gap-3">
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2 mb-1">
-              <Sparkles className="w-4 h-4 text-teal-300" />
-              <h2 className="font-jakarta font-bold text-white text-base tracking-tight">Auditoría IA</h2>
+              <Sparkles className="w-4 h-4" style={{ color: 'var(--ld-action)' }} />
+              <h2 className="font-jakarta font-bold text-ld-fg text-base tracking-tight">Auditoría IA</h2>
             </div>
-            <p className="text-xs text-white/50 font-inter">{log.agent_name} · {log.model || 'modelo desconocido'} · {new Date(log.created_date).toLocaleString('es-CL')}</p>
+            <p className="text-xs text-ld-fg-muted">{log.agent_name} · {log.model || 'modelo desconocido'} · {new Date(log.created_date).toLocaleString('es-CL')}</p>
           </div>
           <button onClick={onClose}
-            className="w-8 h-8 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 flex items-center justify-center text-white/60 hover:text-white transition-colors">
+            className="w-8 h-8 rounded-lg bg-ld-bg-soft hover:bg-ld-bg-elevated border border-ld-border flex items-center justify-center text-ld-fg-muted hover:text-ld-fg transition-colors">
             <X className="w-4 h-4" />
           </button>
         </div>
 
         {/* Content */}
-        <div className="flex-1 overflow-y-auto peyu-scrollbar-light px-5 py-4 space-y-5">
+        <div className="flex-1 overflow-y-auto peyu-scrollbar px-5 py-4 space-y-5">
           {/* Métricas rápidas */}
           <div className="grid grid-cols-4 gap-2">
             <Metric icon={Zap} label="Tokens" value={log.tokens_total || 0} />
@@ -99,6 +100,11 @@ export default function AIAuditDrawer({ log, onClose, onUpdated }) {
             <Metric icon={Clock} label="Latencia" value={`${log.latency_ms || 0}ms`} />
             <Metric icon={Cpu} label="Estado" value={log.status || 'success'} />
           </div>
+
+          {/* 🆕 Datos del cliente capturados durante la conversación */}
+          {log.conversation_id && (
+            <ConversationCustomerData conversationId={log.conversation_id} />
+          )}
 
           {/* 🆕 Conversación completa (mensajes reales del cliente ↔ Peyu IA) */}
           {log.conversation_id && (
@@ -110,25 +116,25 @@ export default function AIAuditDrawer({ log, onClose, onUpdated }) {
           {/* Mensaje específico de este registro (puede venir contaminado con
               el bloque [CONTEXTO] que envía el frontend — lo limpiamos). */}
           <Section icon={User} title="Mensaje registrado en este log" collapsible>
-            <p className="text-sm text-white/80 font-inter leading-relaxed whitespace-pre-wrap bg-white/[0.04] border border-white/10 rounded-lg p-3">
+            <p className="text-sm text-ld-fg leading-relaxed whitespace-pre-wrap ld-glass-soft rounded-lg p-3">
               {cleanUserMessage(log.user_message)}
             </p>
           </Section>
 
           {log.system_context && (
             <Section icon={MessageSquare} title="Contexto / sistema" collapsible>
-              <pre className="text-[11px] text-white/60 font-mono whitespace-pre-wrap bg-black/30 rounded-lg p-3 max-h-40 overflow-y-auto peyu-scrollbar-light">
+              <pre className="text-[11px] text-ld-fg-muted font-mono whitespace-pre-wrap ld-glass-soft rounded-lg p-3 max-h-40 overflow-y-auto peyu-scrollbar">
                 {log.system_context}
               </pre>
             </Section>
           )}
 
           <Section icon={Sparkles} title="Respuesta registrada" collapsible>
-            <p className="text-sm text-teal-100 font-inter leading-relaxed whitespace-pre-wrap bg-teal-500/5 border border-teal-400/15 rounded-lg p-3">
+            <p className="text-sm text-ld-fg leading-relaxed whitespace-pre-wrap rounded-lg p-3 border" style={{ background: 'var(--ld-action-soft)', borderColor: 'var(--ld-action)', borderLeftWidth: '3px' }}>
               {log.ai_response || '(sin respuesta)'}
             </p>
             {log.ai_response?.includes('esperando respuesta') && (
-              <p className="text-[11px] text-amber-200/80 mt-2 italic">
+              <p className="text-[11px] mt-2 italic" style={{ color: 'var(--ld-highlight)' }}>
                 ℹ️ La respuesta real del agente vive en la conversación de arriba (que se carga desde el SDK). Este campo solo registra el momento del turno.
               </p>
             )}
@@ -136,44 +142,44 @@ export default function AIAuditDrawer({ log, onClose, onUpdated }) {
 
           {log.error_message && (
             <Section icon={AlertTriangle} title="Error">
-              <p className="text-sm text-rose-300 font-mono bg-rose-500/10 border border-rose-400/20 rounded-lg p-3">
+              <p className="text-sm text-red-700 font-mono bg-red-50 border border-red-200 rounded-lg p-3">
                 {log.error_message}
               </p>
             </Section>
           )}
 
           {/* Auditor */}
-          <div className="border-t border-white/10 pt-5 space-y-4">
-            <h3 className="font-jakarta font-bold text-white text-sm tracking-tight flex items-center gap-2">
-              <CheckCircle2 className="w-4 h-4 text-emerald-300" />
+          <div className="border-t border-ld-border pt-5 space-y-4">
+            <h3 className="font-jakarta font-bold text-ld-fg text-sm tracking-tight flex items-center gap-2">
+              <CheckCircle2 className="w-4 h-4" style={{ color: 'var(--ld-action)' }} />
               Acciones del auditor
             </h3>
 
             <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-white/50 mb-2">
+              <label className="block text-xs font-bold uppercase tracking-wider text-ld-fg-muted mb-2">
                 Notas (opcional)
               </label>
               <Textarea
                 value={notes}
                 onChange={e => setNotes(e.target.value)}
                 placeholder="Por qué la respuesta es correcta / incorrecta..."
-                className="min-h-[60px] text-xs bg-white/5 border-white/10 text-white placeholder:text-white/30 font-inter"
+                className="min-h-[60px] text-xs ld-input text-ld-fg placeholder:text-ld-fg-muted"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-white/50 mb-2">
+              <label className="block text-xs font-bold uppercase tracking-wider text-ld-fg-muted mb-2">
                 Respuesta corregida (gold standard para re-train)
               </label>
               <Textarea
                 value={correctedResponse}
                 onChange={e => setCorrectedResponse(e.target.value)}
                 placeholder="Escribe aquí la respuesta ideal que debió dar el modelo..."
-                className="min-h-[120px] text-sm bg-white/5 border-white/10 text-white placeholder:text-white/30 font-inter"
+                className="min-h-[120px] text-sm ld-input text-ld-fg placeholder:text-ld-fg-muted"
               />
               <button
                 onClick={() => setCorrectedResponse(log.ai_response || '')}
-                className="text-[10px] text-white/40 hover:text-white/70 mt-1 flex items-center gap-1"
+                className="text-[10px] text-ld-fg-muted hover:text-ld-fg mt-1 flex items-center gap-1"
               >
                 <RotateCcw className="w-2.5 h-2.5" /> Restaurar respuesta original
               </button>
@@ -224,10 +230,10 @@ export default function AIAuditDrawer({ log, onClose, onUpdated }) {
 
 function Metric({ icon: Icon, label, value }) {
   return (
-    <div className="bg-white/5 border border-white/10 rounded-lg p-2.5 text-center">
-      <Icon className="w-3 h-3 mx-auto text-white/40 mb-1" />
-      <p className="text-[9px] uppercase tracking-wider text-white/40 mb-0.5 font-jakarta font-bold">{label}</p>
-      <p className="text-xs font-bold text-white font-jakarta">{value}</p>
+    <div className="ld-card p-2.5 text-center">
+      <Icon className="w-3 h-3 mx-auto text-ld-fg-muted mb-1" />
+      <p className="text-[9px] uppercase tracking-wider text-ld-fg-muted mb-0.5 font-jakarta font-bold">{label}</p>
+      <p className="text-xs font-bold text-ld-fg font-jakarta">{value}</p>
     </div>
   );
 }
@@ -241,9 +247,9 @@ function Section({ icon: Icon, title, children, collapsible }) {
         onClick={() => collapsible && setOpen(!open)}
         className={`w-full flex items-center gap-2 mb-2 ${collapsible ? 'cursor-pointer hover:opacity-80' : 'cursor-default'}`}
       >
-        <Icon className="w-3.5 h-3.5 text-white/50" />
-        <h3 className="text-xs font-bold uppercase tracking-wider text-white/50 font-jakarta">{title}</h3>
-        {collapsible && <span className="text-[10px] text-white/30 ml-auto">{open ? '−' : '+'}</span>}
+        <Icon className="w-3.5 h-3.5 text-ld-fg-muted" />
+        <h3 className="text-xs font-bold uppercase tracking-wider text-ld-fg-muted font-jakarta">{title}</h3>
+        {collapsible && <span className="text-[10px] text-ld-fg-muted ml-auto">{open ? '−' : '+'}</span>}
       </button>
       {open && children}
     </div>
