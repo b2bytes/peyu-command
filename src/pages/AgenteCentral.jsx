@@ -16,42 +16,17 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import {
-  RefreshCw, Send, MessageSquare, Users, FileText, Package,
-  Zap, TrendingUp, DollarSign, ShoppingCart, Target, Percent,
+  RefreshCw, Send, Users, FileText, Package,
+  DollarSign, Target, Percent,
   AlertTriangle, CheckCircle, Clock, Phone, Mail, ExternalLink,
-  X, ChevronRight, Loader2, Bot, User as UserIcon,
+  X, ChevronRight, Loader2, Bot, User as UserIcon, Sparkles,
 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
+import KPIStrip from '@/components/agente/KPIStrip';
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 const fmtCLP = (n) => n != null ? `$${Number(n).toLocaleString('es-CL')}` : '—';
 const fmtNum = (n) => n != null ? Number(n).toLocaleString('es-CL') : '0';
-
-// ─── Componente KPI Card ─────────────────────────────────────────────────────
-function KPICard({ label, value, sub, icon: Icon, color = 'teal', loading }) {
-  const colors = {
-    teal:   'from-teal-500/20 to-teal-600/10 border-teal-500/30 text-teal-300',
-    green:  'from-green-500/20 to-green-600/10 border-green-500/30 text-green-300',
-    blue:   'from-blue-500/20 to-blue-600/10 border-blue-500/30 text-blue-300',
-    amber:  'from-amber-500/20 to-amber-600/10 border-amber-500/30 text-amber-300',
-    purple: 'from-purple-500/20 to-purple-600/10 border-purple-500/30 text-purple-300',
-    red:    'from-red-500/20 to-red-600/10 border-red-500/30 text-red-300',
-  };
-  return (
-    <div className={`bg-gradient-to-br ${colors[color]} border rounded-xl p-4 flex flex-col gap-1 min-w-0`}>
-      <div className="flex items-center justify-between">
-        <span className="text-xs text-white/50 font-medium uppercase tracking-wide truncate">{label}</span>
-        {Icon && <Icon className={`w-4 h-4 flex-shrink-0 ${colors[color].split(' ')[3]}`} />}
-      </div>
-      {loading ? (
-        <div className="h-7 w-16 bg-white/10 rounded animate-pulse mt-1" />
-      ) : (
-        <span className="text-2xl font-bold text-white leading-none">{value}</span>
-      )}
-      {sub && <span className="text-xs text-white/40 truncate">{sub}</span>}
-    </div>
-  );
-}
 
 // ─── Mensaje del chat ────────────────────────────────────────────────────────
 function ChatMessage({ msg }) {
@@ -173,20 +148,27 @@ Eres un agente de comando interno del equipo PEYU Chile. Responde en español, s
       </div>
 
       {/* Input */}
-      <div className="p-4 border-t border-white/10">
-        <div className="flex gap-2">
-          <Input
+      <div className="p-4 border-t border-white/10 bg-white/[0.02]">
+        <div className="flex items-center gap-2 rounded-2xl bg-white/[0.05] border border-white/12 focus-within:border-teal-400/50 transition-colors p-1.5 pl-4">
+          <input
             value={input}
             onChange={e => setInput(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && !e.shiftKey && sendMessage()}
             placeholder="Pregunta al agente sobre leads, cotizaciones, pedidos..."
-            className="bg-white/5 border-white/15 text-white placeholder:text-white/30 focus:border-teal-500/50"
+            className="flex-1 bg-transparent border-0 outline-none text-sm text-white placeholder:text-white/30 min-w-0"
           />
-          <Button onClick={sendMessage} disabled={loading || !input.trim()} className="bg-teal-600 hover:bg-teal-500 px-3">
+          <button
+            onClick={sendMessage}
+            disabled={loading || !input.trim()}
+            className="w-9 h-9 rounded-xl bg-gradient-to-br from-teal-400 to-emerald-500 hover:from-teal-300 hover:to-emerald-400 flex items-center justify-center text-white shadow-lg shadow-teal-500/30 transition-all disabled:opacity-40 disabled:shadow-none flex-shrink-0"
+            aria-label="Enviar"
+          >
             {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
-          </Button>
+          </button>
         </div>
-        <p className="text-xs text-white/25 mt-1.5 text-center">Modelo: Claude Sonnet · Contexto CRM completo · Solo admin</p>
+        <p className="text-[11px] text-white/25 mt-2 text-center flex items-center justify-center gap-1.5">
+          <Sparkles className="w-3 h-3" /> Claude Sonnet · Contexto CRM completo · Solo admin
+        </p>
       </div>
     </div>
   );
@@ -610,60 +592,67 @@ export default function AgenteCentral() {
     { id: 'acciones', label: '⚡ Acciones' },
   ];
 
+  const kpis = { leadsActivos, cotAbiertas, pedidosEnCurso, leadsNuevos, ventasMes, tasaCierre };
+
   return (
-    <div className="min-h-screen bg-slate-950 text-white flex flex-col">
+    // Centro de comando autocontenido: fondo oscuro FIJO (no depende del modo
+    // día/noche del Layout admin) para garantizar contraste y look "command center".
+    <div className="relative min-h-screen flex flex-col text-white overflow-hidden"
+      style={{ background: 'radial-gradient(130% 90% at 100% 0%, #0B3A33 0%, #071018 45%, #04070D 100%)' }}>
+      {/* Ambient glows */}
+      <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
+        <div className="absolute -top-32 right-0 w-[28rem] h-[28rem] rounded-full bg-teal-500/10 blur-[120px]" />
+        <div className="absolute bottom-0 -left-20 w-96 h-96 rounded-full bg-violet-600/8 blur-[120px]" />
+      </div>
+
       {/* Header */}
-      <div className="bg-gradient-to-r from-teal-900/60 to-slate-900 border-b border-white/10 px-6 py-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-teal-500/20 border border-teal-500/30 flex items-center justify-center text-xl">
+      <div className="relative border-b border-white/10 px-4 sm:px-6 py-4 bg-white/[0.02] backdrop-blur-sm">
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-teal-400/30 to-emerald-500/20 border border-teal-400/30 flex items-center justify-center text-xl shadow-lg shadow-teal-500/20 flex-shrink-0">
               🐢
             </div>
-            <div>
-              <h1 className="text-lg font-bold text-white font-jakarta">Centro de Comando Admin</h1>
-              <p className="text-xs text-white/40">Agente IA · CRM en tiempo real · Acciones directas</p>
+            <div className="min-w-0">
+              <h1 className="text-base sm:text-lg font-extrabold text-white font-jakarta leading-tight truncate">Centro de Comando</h1>
+              <p className="text-[11px] text-white/45 leading-none mt-0.5 truncate">Agente IA · CRM en tiempo real · Acciones directas</p>
             </div>
           </div>
-          <div className="flex items-center gap-3">
-            <Badge className="bg-red-500/20 text-red-300 border-red-500/30 text-xs">🔒 Admin Only</Badge>
-            <Button
+          <div className="flex items-center gap-2 flex-shrink-0">
+            <span className="hidden sm:inline-flex items-center gap-1.5 text-[11px] font-bold text-rose-300 bg-rose-500/15 border border-rose-400/25 px-2.5 py-1 rounded-full">
+              🔒 Admin Only
+            </span>
+            <button
               onClick={() => loadData(true)}
-              variant="ghost"
-              size="icon"
-              className="text-white/40 hover:text-white w-8 h-8"
               disabled={refreshing}
+              className="w-9 h-9 rounded-xl bg-white/[0.06] border border-white/10 hover:bg-white/[0.12] flex items-center justify-center text-white/60 hover:text-white transition disabled:opacity-50"
+              aria-label="Refrescar"
             >
               <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
-            </Button>
+            </button>
           </div>
         </div>
       </div>
 
       {/* KPI Strip */}
-      <div className="grid grid-cols-3 md:grid-cols-6 gap-3 px-6 py-4 border-b border-white/10 bg-slate-900/40">
-        <KPICard label="Pipeline B2B" value={fmtNum(leadsActivos)} sub="leads activos" icon={Users} color="teal" loading={loading} />
-        <KPICard label="Cotizaciones" value={fmtNum(cotAbiertas)} sub="enviadas abiertas" icon={FileText} color="purple" loading={loading} />
-        <KPICard label="Pedidos" value={fmtNum(pedidosEnCurso)} sub="en curso" icon={Package} color="blue" loading={loading} />
-        <KPICard label="Leads nuevos" value={fmtNum(leadsNuevos)} sub="sin contactar" icon={Target} color={leadsNuevos > 0 ? 'amber' : 'green'} loading={loading} />
-        <KPICard label="Ventas mes" value={fmtCLP(ventasMes)} sub={new Date().toLocaleString('es-CL', { month: 'long' })} icon={DollarSign} color="green" loading={loading} />
-        <KPICard label="Tasa cierre" value={`${tasaCierre}%`} sub="B2B histórico" icon={Percent} color="teal" loading={loading} />
+      <div className="relative border-b border-white/10">
+        <KPIStrip k={kpis} loading={loading} />
       </div>
 
       {/* Tabs nav */}
-      <div className="flex items-center gap-1 px-6 py-3 border-b border-white/10 bg-slate-900/20 overflow-x-auto scrollbar-hide">
+      <div className="relative flex items-center gap-1.5 px-4 sm:px-6 py-3 border-b border-white/10 overflow-x-auto scrollbar-hide">
         {TABS.map(tab => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            className={`relative flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${
+            className={`relative flex items-center gap-2 px-3.5 py-2 rounded-xl text-sm font-semibold transition-all whitespace-nowrap ${
               activeTab === tab.id
-                ? 'bg-teal-600/20 border border-teal-500/30 text-teal-300'
-                : 'text-white/50 hover:text-white hover:bg-white/[0.04] border border-transparent'
+                ? 'bg-teal-500/20 border border-teal-400/40 text-teal-200 shadow-lg shadow-teal-500/10'
+                : 'text-white/50 hover:text-white hover:bg-white/[0.05] border border-transparent'
             }`}
           >
             {tab.label}
             {tab.badge > 0 && (
-              <span className="w-4 h-4 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center">
+              <span className="min-w-[18px] h-[18px] px-1 rounded-full bg-rose-500 text-white text-[10px] font-bold flex items-center justify-center">
                 {tab.badge}
               </span>
             )}
@@ -672,7 +661,7 @@ export default function AgenteCentral() {
       </div>
 
       {/* Tab content */}
-      <div className="flex-1 overflow-hidden" style={{ height: 'calc(100vh - 280px)' }}>
+      <div className="relative flex-1 overflow-hidden" style={{ height: 'calc(100vh - 290px)' }}>
         {loading ? (
           <div className="flex items-center justify-center h-full gap-3 text-white/30">
             <Loader2 className="w-5 h-5 animate-spin" />
