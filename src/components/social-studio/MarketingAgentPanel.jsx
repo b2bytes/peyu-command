@@ -126,7 +126,7 @@ Agente Marketing PEYU:`;
 
     const response = await base44.integrations.Core.InvokeLLM({
       prompt: contextPrompt,
-      model: 'claude_sonnet_4_6',
+      model: 'gemini_3_flash',
       add_context_from_internet: true,
     });
 
@@ -161,19 +161,19 @@ Agente Marketing PEYU:`;
 
       {/* Quick prompts — solo si hay pocos mensajes */}
       {messages.length <= 1 && (
-        <div className="flex-shrink-0 p-3 border-b border-white/[0.06]">
-          <p className="text-[10px] text-white/30 uppercase tracking-wider mb-2 px-1">Acciones rápidas</p>
-          <div className="grid grid-cols-2 lg:grid-cols-3 gap-1.5">
+        <div className="flex-shrink-0 px-3 py-2 border-b border-white/[0.06]">
+          <p className="text-[9px] text-white/30 uppercase tracking-wider mb-1.5 px-1">Acciones rápidas</p>
+          <div className="grid grid-cols-2 lg:grid-cols-3 gap-1">
             {QUICK_PROMPTS.map((qp) => {
               const Icon = qp.icon;
               return (
                 <button
                   key={qp.label}
                   onClick={() => sendMessage(qp.prompt)}
-                  className="flex items-center gap-2 p-2.5 rounded-xl bg-white/[0.04] border border-white/10 hover:bg-white/[0.08] hover:border-white/20 transition-all text-left group"
+                  className="flex items-center gap-1.5 p-2 rounded-lg bg-white/[0.04] border border-white/10 hover:bg-white/[0.08] hover:border-white/20 transition-all text-left group"
                 >
-                  <Icon className="w-3.5 h-3.5 text-violet-400 flex-shrink-0 group-hover:text-violet-300" />
-                  <span className="text-[11px] text-white/70 group-hover:text-white leading-tight">{qp.label}</span>
+                  <Icon className="w-3 h-3 text-violet-400 flex-shrink-0 group-hover:text-violet-300" />
+                  <span className="text-[10px] text-white/70 group-hover:text-white leading-tight">{qp.label}</span>
                 </button>
               );
             })}
@@ -201,21 +201,19 @@ Agente Marketing PEYU:`;
       </div>
 
       {/* Input */}
-      <div className="flex-shrink-0 p-3 border-t border-white/10 bg-black/20">
-        <div className="flex gap-2 items-end">
-          <textarea
-            ref={textareaRef}
+      <div className="flex-shrink-0 px-3 py-2 border-t border-white/10 bg-black/20">
+        <div className="flex gap-2 items-center">
+          <input
             value={input}
             onChange={e => setInput(e.target.value)}
             onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } }}
-            placeholder="Pregunta sobre tendencias, campañas, copy, estrategia… (Enter para enviar)"
-            rows={2}
-            className="flex-1 bg-white/[0.06] border border-white/15 text-white placeholder:text-white/25 rounded-xl px-3.5 py-2.5 text-sm resize-none focus:outline-none focus:border-violet-500/50 focus:ring-1 focus:ring-violet-500/30 transition-all"
+            placeholder="Tendencias, campañas, copy, estrategia…"
+            className="flex-1 bg-white/[0.06] border border-white/15 text-white placeholder:text-white/25 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-violet-500/50 transition-all"
           />
           <button
             onClick={() => sendMessage()}
             disabled={loading || !input.trim()}
-            className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-pink-600 hover:from-violet-400 hover:to-pink-500 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center flex-shrink-0 transition-all shadow-lg shadow-violet-500/20"
+            className="w-9 h-9 rounded-xl bg-gradient-to-br from-violet-500 to-pink-600 hover:from-violet-400 hover:to-pink-500 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center flex-shrink-0 transition-all shadow-lg shadow-violet-500/20"
           >
             {loading ? <Loader2 className="w-4 h-4 text-white animate-spin" /> : <Send className="w-4 h-4 text-white" />}
           </button>

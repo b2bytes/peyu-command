@@ -1,118 +1,65 @@
 // ============================================================================
-// SocialStudioHero · KPIs vivos al estilo 2027
-// Big numbers, sparkline mood, glassmorphic cards
+// SocialStudioHero · Ultra-compact KPI strip (2027 trend)
+// Una sola fila: título izq + 4 KPIs inline + CTA derecha
 // ============================================================================
 import { Sparkles, Clock, Check, Send, Image as ImageIcon, ArrowRight } from 'lucide-react';
 
 export default function SocialStudioHero({ stats, onPendientesClick }) {
   return (
-    <div className="flex-shrink-0">
-      {/* Título + KPIs en una sola fila — más fluido, menos vertical */}
-      <div className="flex items-center justify-between gap-4 flex-wrap mb-3">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-lg shadow-emerald-500/30">
-            <Sparkles className="w-5 h-5 text-white" />
-          </div>
-          <div>
-            <div className="flex items-center gap-1.5">
-              <h1 className="ld-display text-xl lg:text-2xl text-ld-fg tracking-tight leading-none">
-                Social Studio
-              </h1>
-              <span className="text-[9px] text-ld-fg-muted font-mono">v2027.05</span>
-            </div>
-            <p className="text-ld-fg-muted text-xs mt-1 leading-tight">
-              Genera, aprueba y publica para IG · LI · FB · TikTok
-            </p>
-          </div>
+    <div className="flex-shrink-0 flex items-center justify-between gap-3 flex-wrap">
+      {/* Brand */}
+      <div className="flex items-center gap-2.5">
+        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-lg shadow-emerald-500/20">
+          <Sparkles className="w-4 h-4 text-white" />
         </div>
-
-        {/* CTA inteligente — solo aparece si hay cola */}
-        {stats.pendientes > 0 && (
-          <button
-            onClick={onPendientesClick}
-            className="group relative flex items-center gap-2 pl-2 pr-3 py-1.5 rounded-xl bg-gradient-to-br from-amber-400/15 to-orange-500/15 border border-amber-300/30 hover:border-amber-300/60 transition-all"
-          >
-            <span className="relative flex w-7 h-7 rounded-lg bg-gradient-to-br from-amber-400 to-orange-500 items-center justify-center shadow-md shadow-amber-500/30">
-              <Clock className="w-3.5 h-3.5 text-white" />
-              <span className="absolute -top-1 -right-1 px-1 py-px rounded-full text-[9px] font-black bg-white text-orange-600 leading-none">
-                {stats.pendientes}
-              </span>
-            </span>
-            <div className="text-left">
-              <p className="text-[9px] uppercase tracking-wider text-amber-200/70 font-bold leading-none">Esperando aprobación</p>
-              <p className="text-xs font-bold text-white leading-tight mt-0.5">Revisar cola →</p>
-            </div>
-            <ArrowRight className="w-3.5 h-3.5 text-amber-200 group-hover:translate-x-1 transition-transform" />
-          </button>
-        )}
+        <div>
+          <h1 className="ld-display text-base lg:text-lg text-ld-fg tracking-tight leading-none">
+            Social Studio
+          </h1>
+          <p className="text-ld-fg-muted text-[10px] mt-0.5 leading-none hidden sm:block">
+            IG · LI · FB · TikTok
+          </p>
+        </div>
       </div>
 
-      {/* Stat bar · 4 KPIs compactos */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
-        <StatCard
-          label="En revisión"
-          value={stats.pendientes}
-          icon={Clock}
-          accent="from-amber-400 to-orange-500"
-          glow="amber"
-          urgent={stats.pendientes > 5}
-        />
-        <StatCard
-          label="Aprobados · listos"
-          value={stats.aprobados}
-          icon={Check}
-          accent="from-emerald-400 to-teal-500"
-          glow="emerald"
-        />
-        <StatCard
-          label="Publicados hoy"
-          value={stats.publicados_hoy}
-          icon={Send}
-          accent="from-orange-400 to-rose-500"
-          glow="pink"
-        />
-        <StatCard
-          label="Total piezas"
-          value={stats.total}
-          icon={ImageIcon}
-          accent="from-cyan-400 to-blue-500"
-          glow="cyan"
-          subtitle="Histórico"
-        />
+      {/* KPI strip inline */}
+      <div className="flex items-center gap-1.5 sm:gap-2">
+        <KPIPill value={stats.pendientes} label="Revisión" color="amber" icon={Clock} urgent={stats.pendientes > 5} />
+        <KPIPill value={stats.aprobados} label="Listos" color="emerald" icon={Check} />
+        <KPIPill value={stats.publicados_hoy} label="Hoy" color="rose" icon={Send} />
+        <KPIPill value={stats.total} label="Total" color="cyan" icon={ImageIcon} />
       </div>
+
+      {/* CTA compacto */}
+      {stats.pendientes > 0 && (
+        <button
+          onClick={onPendientesClick}
+          className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-bold bg-amber-500/15 border border-amber-400/30 hover:border-amber-400/60 text-amber-200 transition-all"
+        >
+          <span className="relative flex w-5 h-5 rounded-md bg-gradient-to-br from-amber-400 to-orange-500 items-center justify-center">
+            <span className="text-[9px] font-black text-white leading-none">{stats.pendientes}</span>
+          </span>
+          Revisar
+          <ArrowRight className="w-3 h-3" />
+        </button>
+      )}
     </div>
   );
 }
 
-function StatCard({ label, value, icon: Icon, accent, glow, urgent, subtitle }) {
-  const glows = {
-    amber:   'shadow-amber-500/20',
-    emerald: 'shadow-emerald-500/20',
-    pink:    'shadow-pink-500/20',
-    cyan:    'shadow-cyan-500/20',
+function KPIPill({ value, label, color, icon: Icon, urgent }) {
+  const colors = {
+    amber:   { bg: 'bg-amber-500/10', text: 'text-amber-300', border: 'border-amber-500/20', icon: 'text-amber-400' },
+    emerald: { bg: 'bg-emerald-500/10', text: 'text-emerald-300', border: 'border-emerald-500/20', icon: 'text-emerald-400' },
+    rose:    { bg: 'bg-rose-500/10', text: 'text-rose-300', border: 'border-rose-500/20', icon: 'text-rose-400' },
+    cyan:    { bg: 'bg-cyan-500/10', text: 'text-cyan-300', border: 'border-cyan-500/20', icon: 'text-cyan-400' },
   };
+  const c = colors[color];
   return (
-    <div className={`group relative ld-card px-3 py-2.5 overflow-hidden transition-all ${urgent ? 'ring-1 ring-amber-400/50' : ''}`}>
-      <div className={`absolute -top-10 -right-10 w-24 h-24 rounded-full bg-gradient-to-br ${accent} opacity-10 blur-2xl group-hover:opacity-20 transition-opacity`} />
-
-      <div className="relative flex items-center justify-between gap-2">
-        <div className="flex-1 min-w-0">
-          <p className="text-[10px] uppercase tracking-wider text-ld-fg-muted font-bold leading-none mb-1.5">{label}</p>
-          <p className={`text-2xl font-poppins font-black bg-gradient-to-br ${accent} bg-clip-text text-transparent leading-none`}>
-            {value}
-          </p>
-          {subtitle && <p className="text-[10px] text-ld-fg-muted mt-1 leading-none">{subtitle}</p>}
-          {urgent && (
-            <p className="text-[10px] mt-1 font-semibold flex items-center gap-1 leading-none" style={{ color: 'var(--ld-highlight)' }}>
-              <span className="w-1 h-1 rounded-full animate-pulse" style={{ background: 'var(--ld-highlight)' }} />
-              Atención
-            </p>
-          )}
-        </div>
-        <div className={`w-7 h-7 rounded-lg bg-gradient-to-br ${accent} flex items-center justify-center shadow-md ${glows[glow]} flex-shrink-0`}>
-          <Icon className="w-3.5 h-3.5 text-white" />
-        </div>
-      </div>
+    <div className={`flex items-center gap-1.5 px-2 py-1 rounded-lg ${c.bg} border ${c.border} ${urgent ? 'ring-1 ring-amber-400/40' : ''}`}>
+      <Icon className={`w-3 h-3 ${c.icon} flex-shrink-0`} />
+      <span className={`text-sm font-bold ${c.text} leading-none`}>{value}</span>
+      <span className="text-[9px] text-white/40 leading-none hidden lg:inline">{label}</span>
     </div>
   );
 }
