@@ -79,6 +79,41 @@
         "type": "string"
       }
     },
+    "logo_url": {
+      "type": "string",
+      "title": "URL Logo del cliente",
+      "description": "Logo subido por el cliente, usado para regenerar mockups."
+    },
+    "posicion_grabado": {
+      "type": "string",
+      "title": "Posici\u00f3n del grabado",
+      "enum": [
+        "arriba",
+        "centro",
+        "abajo"
+      ],
+      "default": "centro",
+      "description": "D\u00f3nde va el logo grabado sobre el producto. Se usa al generar/regenerar el mockup."
+    },
+    "metodo_entrega": {
+      "type": "string",
+      "title": "M\u00e9todo de entrega",
+      "enum": [
+        "Retiro en tienda",
+        "Despacho a domicilio"
+      ],
+      "default": "Despacho a domicilio",
+      "description": "Si el cliente retira en tienda o requiere despacho."
+    },
+    "direccion_entrega": {
+      "type": "string",
+      "title": "Direcci\u00f3n de despacho / lugar de entrega",
+      "description": "Direcci\u00f3n completa de despacho, o nota del lugar de retiro."
+    },
+    "comuna_entrega": {
+      "type": "string",
+      "title": "Comuna de entrega"
+    },
     "pdf_url": {
       "type": "string",
       "title": "URL PDF Propuesta"

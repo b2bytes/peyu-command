@@ -15,6 +15,8 @@ import PublicSEO from '@/components/PublicSEO';
 import AnchorProductBanner from '@/components/b2b/selfservice/AnchorProductBanner';
 import CrossSellCarousel from '@/components/b2b/selfservice/CrossSellCarousel';
 import PhoneCountryInput from '@/components/b2b/selfservice/PhoneCountryInput';
+import EngravingPositionPicker from '@/components/producto/EngravingPositionPicker';
+import DeliveryMethodPicker from '@/components/b2b/selfservice/DeliveryMethodPicker';
 
 const STEPS = ['Productos', 'Empresa', 'Personalización', 'Propuesta'];
 const PERSIST_KEY = 'peyu_b2b_flow';
@@ -56,12 +58,20 @@ export default function B2BSelfService() {
   // Personalización
   const [personalizar, setPersonalizar] = useState(true);
   const [archivo, setArchivo] = useState(null);
+  const [posicionGrabado, setPosicionGrabado] = useState('centro');
+
+  // Entrega: retiro en tienda o despacho a domicilio
+  const [entrega, setEntrega] = useState({ metodo: 'Despacho a domicilio', direccion: '', comuna: '' });
 
   // Resultado
   const [generando, setGenerando] = useState(false);
   const [propuesta, setPropuesta] = useState(null);
   const [error, setError] = useState('');
   const [descargando, setDescargando] = useState(false);
+
+  // Regenerar mockup (posición del logo)
+  const [regenerando, setRegenerando] = useState(false);
+  const [mockupActual, setMockupActual] = useState(null);
 
   // Drawer del carrito (solo móvil)
   const [cartOpen, setCartOpen] = useState(false);
@@ -236,12 +246,17 @@ export default function B2BSelfService() {
         items,
         logoUrl,
         notes: form.notes,
+        posicion_grabado: posicionGrabado,
+        metodo_entrega: entrega.metodo,
+        direccion_entrega: entrega.direccion,
+        comuna_entrega: entrega.comuna,
       });
 
       if (res?.data?.error) throw new Error(res.data.error);
       if (!res?.data?.proposal_id) throw new Error('No se pudo generar la propuesta');
 
       setPropuesta(res.data);
+      setMockupActual(res.data.mockup_urls?.[0] || null);
       setStep(3);
     } catch (e) {
       setError(e.message || 'Error generando la propuesta');
@@ -270,6 +285,27 @@ export default function B2BSelfService() {
       alert('No se pudo descargar el PDF. Revisa la propuesta online.');
     } finally {
       setDescargando(false);
+    }
+  };
+
+  // Regenera el mockup con la posición del logo elegida (cuando quedó mal ubicado)
+  const handleRegenerarMockup = async (nuevaPosicion) => {
+    if (!propuesta?.proposal_id || regenerando) return;
+    setRegenerando(true);
+    try {
+      const res = await base44.functions.invoke('regenerateProposalMockup', {
+        proposalId: propuesta.proposal_id,
+        posicion: nuevaPosicion,
+      });
+      if (res?.data?.mockup_url) {
+        setMockupActual(res.data.mockup_url);
+        setPosicionGrabado(nuevaPosicion);
+        setPropuesta(p => ({ ...p, mockup_urls: res.data.mockup_urls }));
+      }
+    } catch {
+      alert('No se pudo regenerar el mockup. Intenta de nuevo.');
+    } finally {
+      setRegenerando(false);
     }
   };
 
@@ -615,6 +651,33 @@ export default function B2BSelfService() {
                 </div>
               )}
 
+              {/* Posición del grabado — clave para que el logo no quede donde no es */}
+              {personalizar && (
+                <div className="bg-white/[0.04] border border-white/10 rounded-3xl p-5 backdrop-blur-sm">
+                  <EngravingPositionPicker
+                    value={posicionGrabado}
+                    onChange={setPosicionGrabado}
+                    areaLaser={cart[0]?.producto?.area_laser_mm}
+                  />
+                  <p className="text-[10px] text-white/40 mt-2.5">
+                    Dónde irá tu logo grabado sobre el producto. Podrás ajustarlo y regenerar el mockup después.
+                  </p>
+                </div>
+              )}
+
+              {/* Método de entrega: retiro o despacho */}
+              <div className="bg-white/[0.04] border border-white/10 rounded-3xl p-5 sm:p-6 backdrop-blur-sm">
+                <div className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-cyan-300 bg-cyan-500/15 border border-cyan-400/30 px-2.5 py-1 rounded-full mb-4">
+                  <Package className="w-3 h-3" /> ¿Cómo recibes tu pedido?
+                </div>
+                <DeliveryMethodPicker
+                  metodo={entrega.metodo}
+                  direccion={entrega.direccion}
+                  comuna={entrega.comuna}
+                  onChange={setEntrega}
+                />
+              </div>
+
               {/* Benefits — visualmente premium */}
               <div className="bg-gradient-to-br from-teal-500/15 via-cyan-500/10 to-transparent border border-teal-400/25 rounded-3xl p-5 backdrop-blur-sm">
                 <div className="flex items-center gap-2.5 mb-3">
@@ -690,12 +753,48 @@ export default function B2BSelfService() {
                   ))}
                 </div>
 
-                {propuesta.mockup_urls?.length > 0 && (
-                  <div className="mt-6 rounded-2xl overflow-hidden border border-white/25 max-w-sm mx-auto shadow-xl">
-                    <img src={propuesta.mockup_urls[0]} alt="Mockup propuesta" className="w-full h-auto block" />
-                    <p className="text-[10px] text-white/70 py-2 bg-white/[0.06] border-t border-white/10 font-medium">
-                      ✨ Mockup generado con IA
-                    </p>
+                {(mockupActual || propuesta.mockup_urls?.length > 0) && (
+                  <div className="mt-6 max-w-sm mx-auto">
+                    <div className="relative rounded-2xl overflow-hidden border border-white/25 shadow-xl">
+                      <img src={mockupActual || propuesta.mockup_urls[0]} alt="Mockup propuesta" className="w-full h-auto block" />
+                      {regenerando && (
+                        <div className="absolute inset-0 bg-slate-950/70 backdrop-blur-sm flex flex-col items-center justify-center gap-2">
+                          <Loader2 className="w-7 h-7 text-teal-300 animate-spin" />
+                          <p className="text-xs text-white/80 font-semibold">Regenerando mockup…</p>
+                        </div>
+                      )}
+                      <p className="text-[10px] text-white/70 py-2 bg-white/[0.06] border-t border-white/10 font-medium">
+                        ✨ Mockup generado con IA
+                      </p>
+                    </div>
+
+                    {/* Regenerar: el logo quedó donde no es → reposicionar */}
+                    <div className="mt-3 bg-white/[0.06] border border-white/15 rounded-2xl p-3">
+                      <p className="text-[11px] text-white/70 font-semibold mb-2 flex items-center gap-1.5">
+                        <Wand2 className="w-3.5 h-3.5 text-amber-300" />
+                        ¿El logo quedó mal ubicado? Reposiciónalo:
+                      </p>
+                      <div className="grid grid-cols-3 gap-1.5">
+                        {[
+                          { id: 'arriba', label: 'Arriba' },
+                          { id: 'centro', label: 'Centro' },
+                          { id: 'abajo', label: 'Abajo' },
+                        ].map(opt => (
+                          <button
+                            key={opt.id}
+                            disabled={regenerando}
+                            onClick={() => handleRegenerarMockup(opt.id)}
+                            className={`text-[11px] font-bold py-2 rounded-xl border transition-all disabled:opacity-40 ${
+                              posicionGrabado === opt.id
+                                ? 'border-teal-400 bg-teal-500/20 text-teal-200'
+                                : 'border-white/15 bg-white/[0.04] text-white/70 hover:bg-white/10'
+                            }`}
+                          >
+                            {opt.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
                   </div>
                 )}
               </div>

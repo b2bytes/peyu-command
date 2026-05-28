@@ -1,5 +1,56 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
+// === Construcción del prompt del mockup con POSICIÓN del grabado ===
+// posicion: 'arriba' | 'centro' | 'abajo'. Es clave para que el logo NO quede
+// donde no es. Se describe explícitamente la ubicación sobre la superficie.
+function buildMockupPrompt({ productName, productCategory, productImageUrl, logoUrl, engraveText, posicion }) {
+  const isRaster = (u) => !!u && /\.(png|jpg|jpeg|webp)(\?|$)/i.test(u);
+  const isSvg = (u) => !!u && /\.svg(\?|$)/i.test(u);
+  const svgToPng = (u) => {
+    try {
+      const url = new URL(u);
+      return `https://images.weserv.nl/?url=${encodeURIComponent(url.hostname + url.pathname)}&output=png&w=1024`;
+    } catch { return null; }
+  };
+
+  const hasProductRef = isRaster(productImageUrl);
+  let effectiveLogoUrl = null;
+  if (isRaster(logoUrl)) effectiveLogoUrl = logoUrl;
+  else if (isSvg(logoUrl)) effectiveLogoUrl = svgToPng(logoUrl) || logoUrl;
+  const hasLogoRef = !!effectiveLogoUrl;
+
+  const posMap = {
+    arriba: 'in the UPPER third / top area of the main flat front surface of the product',
+    centro: 'perfectly CENTERED on the main flat front surface of the product',
+    abajo: 'in the LOWER third / bottom area of the main flat front surface of the product',
+  };
+  const placement = posMap[posicion] || posMap.centro;
+
+  let prompt = '';
+  if (hasProductRef) {
+    prompt += `⚠️ ABSOLUTE CRITICAL RULE: The FIRST reference image IS the exact product the customer chose. You MUST use it as the base. DO NOT generate a new product. DO NOT change shape, color, material, angle, lighting, background, or framing. You are ONLY allowed to add a laser engraving on top of it. `;
+    prompt += `Product: "${productName}"${productCategory ? ` (${productCategory})` : ''} — Peyu Chile, made in Chile from 100% recycled plastic. `;
+    prompt += `⚠️ PLACEMENT RULE: The engraving MUST be placed ${placement}. Do NOT place it anywhere else. It must be well-centered horizontally and clearly readable, respecting the natural engraving area of this specific product. `;
+    if (hasLogoRef) {
+      prompt += `⚠️ LOGO RULE: The SECOND reference image IS the customer's EXACT logo. Reproduce it LITERALLY — same shapes, letters, proportions. DO NOT invent, redesign, simplify or substitute. If it contains text, copy character-by-character. `;
+      prompt += `TASK: Add a UV laser engraving that is a 1:1 reproduction of the SECOND image onto the product surface, ${placement}. Physically engraved look: monochrome single tone, micro depth, subtle darkening, follows curvature. NO stickers, NO overlay, NO glow. Proportional to engraving area (30-40% of flat surface). Preserve aspect ratio. `;
+    } else if (engraveText) {
+      prompt += `TASK: Engrave the text "${engraveText}" onto the product, ${placement}, clean sans-serif typography, physically engraved look, micro depth, subtle shadow, follows curvature. NO stickers, NO overlay. Copy character-by-character. `;
+    }
+    prompt += `Output: photorealistic, identical background/angle/lighting to the reference, sharp focus, high detail.`;
+  } else {
+    prompt += `Photorealistic product photograph of a Peyu Chile corporate gift: "${productName}". 100% recycled plastic, marbled texture, made in Chile. Studio photography, soft neutral background, 3/4 view. `;
+    if (engraveText) prompt += `UV laser engraved text "${engraveText}" placed ${placement}. `;
+    if (hasLogoRef) prompt += `UV laser engraved corporate logo (reference image) placed ${placement}. `;
+  }
+
+  const references = [];
+  if (hasProductRef) references.push(productImageUrl);
+  if (hasLogoRef) references.push(effectiveLogoUrl);
+
+  return { prompt, references };
+}
+
 // === Pricing usando la TABLA REAL del producto (misma lógica que ProductoDetalle.jsx) ===
 function calcUnitPrice(item) {
   const qty = item.qty || item.cantidad || 0;
@@ -53,7 +104,13 @@ function calcLeadTime(items) {
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const { contact_name, company_name, email, phone, rut, items, logoUrl, notes } = await req.json();
+    const {
+      contact_name, company_name, email, phone, rut, items, logoUrl, notes,
+      posicion_grabado = 'centro',
+      metodo_entrega = 'Despacho a domicilio',
+      direccion_entrega = '',
+      comuna_entrega = '',
+    } = await req.json();
 
     if (!contact_name || !company_name || !email) {
       return Response.json({ error: 'contact_name, company_name y email son requeridos' }, { status: 400 });
@@ -104,43 +161,13 @@ Deno.serve(async (req) => {
         const productName = firstItem.nombre || firstItem.name || 'Producto Peyu';
         const productCategory = firstItem.categoria || '';
         const productImageUrl = firstItem.imagen_url || '';
-
-        const isRaster = (u) => !!u && /\.(png|jpg|jpeg|webp)(\?|$)/i.test(u);
-        const isSvg = (u) => !!u && /\.svg(\?|$)/i.test(u);
-        const svgToPng = (u) => {
-          try {
-            const url = new URL(u);
-            return `https://images.weserv.nl/?url=${encodeURIComponent(url.hostname + url.pathname)}&output=png&w=1024`;
-          } catch { return null; }
-        };
-
-        const hasProductRef = isRaster(productImageUrl);
-        let effectiveLogoUrl = null;
-        if (isRaster(logoUrl)) effectiveLogoUrl = logoUrl;
-        else if (isSvg(logoUrl)) effectiveLogoUrl = svgToPng(logoUrl) || logoUrl;
-        const hasLogoRef = !!effectiveLogoUrl;
+        const hasLogoRef = /\.(png|jpg|jpeg|webp|svg)(\?|$)/i.test(logoUrl || '');
         const engraveText = hasLogoRef ? '' : company_name;
 
-        let prompt = '';
-        if (hasProductRef) {
-          prompt += `⚠️ ABSOLUTE CRITICAL RULE: The FIRST reference image IS the exact product the customer chose. You MUST use it as the base. DO NOT generate a new product. DO NOT change shape, color, material, angle, lighting, background, or framing. You are ONLY allowed to add a laser engraving on top of it. `;
-          prompt += `Product: "${productName}"${productCategory ? ` (${productCategory})` : ''} — Peyu Chile, made in Chile from 100% recycled plastic. `;
-          if (hasLogoRef) {
-            prompt += `⚠️ SECOND CRITICAL RULE: The SECOND reference image IS the customer's EXACT logo. Reproduce it LITERALLY — same shapes, letters, proportions. DO NOT invent, redesign, simplify or substitute. If it contains text, copy character-by-character. `;
-            prompt += `TASK: Add a UV laser engraving that is a 1:1 reproduction of the SECOND image onto the product surface. Physically engraved look: monochrome single tone, micro depth, subtle darkening, follows curvature. NO stickers, NO overlay, NO glow. Proportional to engraving area (30-40% of flat surface). Preserve aspect ratio. `;
-          } else if (engraveText) {
-            prompt += `TASK: Engrave the text "${engraveText}" onto the product, clean sans-serif typography, physically engraved look, micro depth, subtle shadow, follows curvature. NO stickers, NO overlay. Copy character-by-character. `;
-          }
-          prompt += `Output: photorealistic, identical background/angle/lighting to the reference, sharp focus, high detail.`;
-        } else {
-          prompt += `Photorealistic product photograph of a Peyu Chile corporate gift: "${productName}". 100% recycled plastic, marbled texture, made in Chile. Studio photography, soft neutral background, 3/4 view. `;
-          if (engraveText) prompt += `UV laser engraved text "${engraveText}" on the surface. `;
-          if (hasLogoRef) prompt += `UV laser engraved corporate logo (reference image) on the surface. `;
-        }
-
-        const references = [];
-        if (hasProductRef) references.push(productImageUrl);
-        if (hasLogoRef) references.push(effectiveLogoUrl);
+        const { prompt, references } = buildMockupPrompt({
+          productName, productCategory, productImageUrl, logoUrl,
+          engraveText, posicion: posicion_grabado,
+        });
 
         let imgRes;
         if (references.length > 0) {
@@ -175,8 +202,13 @@ Deno.serve(async (req) => {
       status: 'Enviada',
       auto_generated: true,
       mockup_urls: mockupUrls,
+      logo_url: logoUrl || '',
+      posicion_grabado,
+      metodo_entrega,
+      direccion_entrega,
+      comuna_entrega,
       terms: 'Anticipo 50% para iniciar produccion. Saldo contra despacho. Garantia 10 anos en plastico reciclado. Fabricacion 100% en Chile.',
-      production_notes: `Pedido self-service de ${company_name}. ${hasPersonalization ? 'Requiere personalizacion laser UV.' : ''} Lead time: ${leadTime} dias habiles.`,
+      production_notes: `Pedido self-service de ${company_name}. ${hasPersonalization ? `Requiere personalizacion laser UV (grabado ${posicion_grabado}).` : ''} Entrega: ${metodo_entrega}${direccion_entrega ? ` - ${direccion_entrega}${comuna_entrega ? ', ' + comuna_entrega : ''}` : ''}. Lead time: ${leadTime} dias habiles.`,
       fecha_envio: new Date().toISOString().split('T')[0],
       fecha_vencimiento: expiryDate.toISOString().split('T')[0],
     });

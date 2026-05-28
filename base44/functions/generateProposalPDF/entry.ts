@@ -57,6 +57,30 @@ Deno.serve(async (req) => {
 
     const items = (() => { try { return p.items_json ? JSON.parse(p.items_json) : []; } catch { return []; } })();
 
+    // Helper: descarga una imagen y la devuelve en base64 (para incrustar en el PDF)
+    async function fetchImageAsBase64(url) {
+      const resp = await fetch(url);
+      if (!resp.ok) throw new Error('fetch failed');
+      const buf = new Uint8Array(await resp.arrayBuffer());
+      let bin = '';
+      const CHUNK = 0x8000;
+      for (let i = 0; i < buf.length; i += CHUNK) {
+        bin += String.fromCharCode.apply(null, buf.subarray(i, i + CHUNK));
+      }
+      const b64 = btoa(bin);
+      const ct = (resp.headers.get('content-type') || '').toLowerCase();
+      const fmt = ct.includes('png') || url.toLowerCase().includes('.png') ? 'PNG' : 'JPEG';
+      return { b64, fmt };
+    }
+    // Precarga las imágenes de producto de cada ítem (para la tabla técnica)
+    const itemImages = {};
+    await Promise.all(items.map(async (it, idx) => {
+      const u = it.imagen_url || '';
+      if (/^https?:\/\//i.test(u)) {
+        try { itemImages[idx] = await fetchImageAsBase64(u); } catch { /* sin imagen */ }
+      }
+    }));
+
     // ─── Garantía contextual: si la propuesta es solo carcasas/compostables, no
     // aplicamos el discurso "10 años" (incorrecto para esos materiales).
     const esSoloCompostable = items.length > 0 && items.every(it => {
@@ -228,22 +252,6 @@ Deno.serve(async (req) => {
       doc.setCharSpace(0);
       y += 6;
 
-      // Mockup column
-      async function fetchImageAsBase64(url) {
-        const resp = await fetch(url);
-        if (!resp.ok) throw new Error('fetch failed');
-        const buf = new Uint8Array(await resp.arrayBuffer());
-        let bin = '';
-        const CHUNK = 0x8000;
-        for (let i = 0; i < buf.length; i += CHUNK) {
-          bin += String.fromCharCode.apply(null, buf.subarray(i, i + CHUNK));
-        }
-        const b64 = btoa(bin);
-        const ct = (resp.headers.get('content-type') || '').toLowerCase();
-        const fmt = ct.includes('png') || url.toLowerCase().includes('.png') ? 'PNG' : 'JPEG';
-        return { b64, fmt };
-      }
-
       try {
         const { b64, fmt } = await fetchImageAsBase64(p.mockup_urls[0]);
         // Frame
@@ -318,7 +326,7 @@ Deno.serve(async (req) => {
     doc.setFontSize(7.5);
     doc.setFont('helvetica', 'bold');
     doc.setCharSpace(0.5);
-    doc.text(safeTxt('PRODUCTO'), 20, y + 6.5);
+    doc.text(safeTxt('PRODUCTO'), 38, y + 6.5);
     doc.text(safeTxt('CANT.'), 117, y + 6.5, { align: 'center' });
     doc.text(safeTxt('UNITARIO'), 142, y + 6.5, { align: 'right' });
     doc.text(safeTxt('DESC.'), 162, y + 6.5, { align: 'center' });
@@ -326,51 +334,70 @@ Deno.serve(async (req) => {
     doc.setCharSpace(0);
     y += 13;
 
-    // Filas
+    // Filas con THUMBNAIL del producto elegido (diseño técnico completo)
     items.forEach((it, i) => {
-      const rowH = it.personalizacion ? 12 : 9;
-      if (y + rowH > ph - 40) { doc.addPage(); y = 20; }
+      const rowH = 18; // alto fijo para acomodar la miniatura
+      if (y - 5 + rowH > ph - 40) { doc.addPage(); y = 20; }
 
       // zebra suave
       if (i % 2 === 0) {
         doc.setFillColor(...MIST);
-        doc.roundedRect(15, y - 5, pw - 30, rowH, 1, 1, 'F');
+        doc.roundedRect(15, y - 5, pw - 30, rowH, 1.5, 1.5, 'F');
       }
 
-      // Producto
+      // Thumbnail del producto
+      const imgX = 18, imgY = y - 3, imgS = 14;
+      doc.setFillColor(...SAND);
+      doc.roundedRect(imgX, imgY, imgS, imgS, 2, 2, 'F');
+      const img = itemImages[i];
+      if (img) {
+        try {
+          doc.addImage(`data:image/${img.fmt.toLowerCase()};base64,${img.b64}`, img.fmt, imgX + 0.8, imgY + 0.8, imgS - 1.6, imgS - 1.6);
+        } catch { /* fallback al frame vacío */ }
+      }
+
+      const textY = y + 3;
+      // Producto (nombre + SKU)
       doc.setTextColor(...INK);
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(9.5);
-      const name = safeTxt(it.nombre || it.name || it.producto || '-').substring(0, 42);
-      doc.text(name, 20, y);
+      const name = safeTxt(it.nombre || it.name || it.producto || '-').substring(0, 36);
+      doc.text(name, 38, textY - 1);
+
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(6.5);
+      doc.setTextColor(...SLATE2);
+      const meta = [it.sku ? `SKU ${it.sku}` : '', it.categoria || '', it.tier ? `Tramo ${it.tier}` : ''].filter(Boolean).join('  -  ');
+      if (meta) doc.text(safeTxt(meta).substring(0, 50), 38, textY + 3);
 
       if (it.personalizacion) {
-        doc.setFont('helvetica', 'normal');
-        doc.setFontSize(7);
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(6.5);
         doc.setTextColor(...TEAL);
-        doc.text(safeTxt('+ Personalizacion laser UV'), 20, y + 4);
+        doc.text(safeTxt('+ Grabado laser UV incluido'), 38, textY + 6.5);
       }
 
       // Cant. (centrado)
       doc.setTextColor(...SLATE);
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(9.5);
-      doc.text(`${it.cantidad || it.qty || 0}`, 117, y, { align: 'center' });
+      doc.text(`${it.cantidad || it.qty || 0}`, 117, textY, { align: 'center' });
 
       // Unitario
-      doc.text(safeTxt(fmtCLP(it.precio_unitario)), 142, y, { align: 'right' });
+      doc.setTextColor(...INK);
+      doc.text(safeTxt(fmtCLP(it.precio_unitario)), 142, textY, { align: 'right' });
 
       // Descuento
       doc.setTextColor(...TEAL);
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(8.5);
-      doc.text(it.descuento_pct ? `-${it.descuento_pct}%` : '-', 162, y, { align: 'center' });
+      doc.text(it.descuento_pct ? `-${it.descuento_pct}%` : '-', 162, textY, { align: 'center' });
 
       // Subtotal
       doc.setTextColor(...INK);
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(9.5);
-      doc.text(safeTxt(fmtCLP(it.line_total || (it.precio_unitario * (it.cantidad || it.qty)))), pw - 20, y, { align: 'right' });
+      doc.text(safeTxt(fmtCLP(it.line_total || (it.precio_unitario * (it.cantidad || it.qty)))), pw - 20, textY, { align: 'right' });
 
       y += rowH - 2;
     });
@@ -447,6 +474,40 @@ Deno.serve(async (req) => {
     y += 36;
 
     // ═══════════════════════════════════════════════════
+    //  MÉTODO DE ENTREGA
+    // ═══════════════════════════════════════════════════
+    if (y > ph - 40) { doc.addPage(); y = 20; }
+
+    const esRetiro = (p.metodo_entrega || '').toLowerCase().includes('retiro');
+    doc.setFillColor(...MIST);
+    doc.roundedRect(15, y, pw - 30, 24, 3, 3, 'F');
+    doc.setDrawColor(...TEAL);
+    doc.setLineWidth(0.6);
+    doc.line(15, y, 15, y + 24);
+
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(7);
+    doc.setTextColor(...SLATE2);
+    doc.setCharSpace(1.2);
+    doc.text(safeTxt('METODO DE ENTREGA'), 22, y + 7);
+    doc.setCharSpace(0);
+
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(11);
+    doc.setTextColor(...INK);
+    doc.text(safeTxt(esRetiro ? 'Retiro en tienda' : 'Despacho a domicilio'), 22, y + 14);
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8);
+    doc.setTextColor(...SLATE);
+    const lugar = esRetiro
+      ? 'Av. Quilin 3340, Macul - Santiago (con cita previa)'
+      : `${p.direccion_entrega || 'Direccion a confirmar'}${p.comuna_entrega ? ', ' + p.comuna_entrega : ''}`;
+    doc.text(safeTxt(lugar).substring(0, 90), 22, y + 20);
+
+    y += 32;
+
+    // ═══════════════════════════════════════════════════
     //  CONDICIONES
     // ═══════════════════════════════════════════════════
 
@@ -467,7 +528,9 @@ Deno.serve(async (req) => {
       `Entrega en ${p.lead_time_dias || 7} dias habiles desde anticipo y aprobacion de mockup.`,
       garantiaTermino,
       'Grabado laser UV gratis desde 10 unidades. Area estandar 40x25mm.',
-      'Despacho a todo Chile via Starken/Chilexpress/BlueExpress.',
+      esRetiro
+        ? 'Retiro en tienda sin costo, coordinado por email cuando el pedido este listo.'
+        : 'Despacho a todo Chile via Starken/Chilexpress/BlueExpress.',
       `Propuesta valida por ${p.validity_days || 15} dias desde la emision.`,
     ];
     doc.setFont('helvetica', 'normal');
