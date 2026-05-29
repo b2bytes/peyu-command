@@ -4,6 +4,7 @@
 // ============================================================================
 import { Send, Loader2 } from 'lucide-react';
 import { SUB_AGENTES } from './helpers';
+import TemplatePicker from './TemplatePicker';
 
 export default function Composer({ value, onChange, onSend, loading }) {
   return (
@@ -22,6 +23,8 @@ export default function Composer({ value, onChange, onSend, loading }) {
               </span>
             ))}
           </div>
+
+          <TemplatePicker onPick={(prompt) => onChange(value ? `${value}\n${prompt}` : prompt)} />
 
           <textarea
             value={value}
