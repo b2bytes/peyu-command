@@ -17,6 +17,7 @@ import { base44 } from '@/api/base44Client';
 import { RefreshCw, Loader2 } from 'lucide-react';
 import AgentRail from '@/components/agente/os/AgentRail';
 import Composer from '@/components/agente/os/Composer';
+import QuickActionsBar from '@/components/agente/os/QuickActionsBar';
 import MessageStream from '@/components/agente/os/MessageStream';
 import { detectIntent } from '@/components/agente/os/intent';
 import { fmtCLP, diasParaVencer, TEAM_PHONES } from '@/components/agente/os/helpers';
@@ -199,6 +200,9 @@ Cuando el usuario pida datos, responde con UNA o DOS frases cálidas (la pantall
             </div>
           </div>
         </header>
+
+        {/* Acciones rápidas sobre el chat */}
+        <QuickActionsBar onAction={(p) => sendMessage(p)} disabled={loading || thinking} />
 
         {/* Conversación */}
         {loading ? (
