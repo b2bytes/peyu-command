@@ -27,7 +27,15 @@ Deno.serve(async (req) => {
     const actualizados = [];
     const no_encontrados = [];
     const errores = [];
-    const registros = [];
+    const verificacion = [];
+
+    const CAMPOS_VERIF = [
+      'sku', 'nombre', 'precio_b2c',
+      'precio_unitario_oficial_clp', 'precio_10_49_clp', 'precio_50_99_clp',
+      'precio_100_249_clp', 'precio_250_499_clp', 'precio_500_999_clp',
+      'precio_1000_1999_clp', 'precio_2000_mas_clp',
+      'tapitas_aprox', 'catalogo_oficial_verificado',
+    ];
 
     for (const item of items) {
       const sku = item?.sku;
@@ -54,15 +62,20 @@ Deno.serve(async (req) => {
         await base44.asServiceRole.entities.Producto.update(producto.id, campos);
         actualizados.push(sku);
 
-        // Releer el registro completo tal como quedó DESPUÉS del update
+        // Releer el producto tras el update y devolver SOLO los campos de verificación
         const releidos = await base44.asServiceRole.entities.Producto.filter({ sku });
-        if (releidos?.[0]) registros.push(releidos[0]);
+        if (releidos?.[0]) {
+          const p = releidos[0];
+          const compacto = {};
+          for (const campo of CAMPOS_VERIF) compacto[campo] = p[campo];
+          verificacion.push(compacto);
+        }
       } catch (err) {
         errores.push({ sku, error: err?.message || String(err) });
       }
     }
 
-    return Response.json({ ok: true, actualizados, no_encontrados, errores, registros });
+    return Response.json({ ok: true, actualizados, no_encontrados, errores, verificacion });
   } catch (error) {
     return Response.json({ ok: false, error: error.message }, { status: 500 });
   }
