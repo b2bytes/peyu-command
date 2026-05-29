@@ -14,8 +14,9 @@
 // ============================================================================
 import { useState, useEffect, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
-import { RefreshCw, Loader2 } from 'lucide-react';
+import { RefreshCw, Loader2, MessageSquare, Columns3 } from 'lucide-react';
 import AgentRail from '@/components/agente/os/AgentRail';
+import LeadKanban from '@/components/agente/os/kanban/LeadKanban';
 import Composer from '@/components/agente/os/Composer';
 import MessageStream from '@/components/agente/os/MessageStream';
 import QuickActionBar from '@/components/agente/os/QuickActionBar';
@@ -38,6 +39,7 @@ export default function AgenteCentral() {
   const [input, setInput] = useState('');
   const [thinking, setThinking] = useState(false);
   const [busyId, setBusyId] = useState(null);
+  const [vista, setVista] = useState('chat'); // 'chat' | 'pipeline'
   const bottomRef = useRef(null);
 
   // ── Carga de datos del CRM ────────────────────────────────────────────
@@ -233,6 +235,24 @@ Cuando el usuario pida datos, responde con UNA o DOS frases cálidas (la pantall
               <p className="text-[11px] text-[#6f7d77] mt-0.5 truncate italic">Hasta que el plástico deje de ser basura</p>
             </div>
             <div className="flex items-center gap-2 flex-shrink-0">
+              <div className="flex items-center gap-0.5 bg-white border border-[#ece4d8] rounded-xl p-0.5">
+                <button
+                  onClick={() => setVista('chat')}
+                  className={`flex items-center gap-1.5 text-xs font-medium px-2.5 py-1.5 rounded-lg transition-colors ${
+                    vista === 'chat' ? 'bg-[#0F8B6C] text-white' : 'text-[#6f7d77] hover:text-[#22302c]'
+                  }`}
+                >
+                  <MessageSquare className="w-3.5 h-3.5" /> Chat
+                </button>
+                <button
+                  onClick={() => setVista('pipeline')}
+                  className={`flex items-center gap-1.5 text-xs font-medium px-2.5 py-1.5 rounded-lg transition-colors ${
+                    vista === 'pipeline' ? 'bg-[#0F8B6C] text-white' : 'text-[#6f7d77] hover:text-[#22302c]'
+                  }`}
+                >
+                  <Columns3 className="w-3.5 h-3.5" /> Pipeline
+                </button>
+              </div>
               <span className="hidden sm:inline-flex items-center gap-1.5 text-[11px] font-medium text-[#D96B4D] bg-[#D96B4D]/10 px-2.5 py-1 rounded-full">
                 🔒 Admin
               </span>
@@ -248,6 +268,17 @@ Cuando el usuario pida datos, responde con UNA o DOS frases cálidas (la pantall
           </div>
         </header>
 
+        {vista === 'pipeline' ? (
+          loading ? (
+            <div className="flex-1 flex items-center justify-center gap-3 text-[#9aa6a0]">
+              <Loader2 className="w-5 h-5 animate-spin" />
+              <span className="text-sm">Cargando pipeline…</span>
+            </div>
+          ) : (
+            <LeadKanban leads={crm.leads} onRefresh={() => loadData(true)} />
+          )
+        ) : (
+        <>
         {/* Barra de acciones rápidas */}
         {!loading && (
           <QuickActionBar
@@ -299,6 +330,8 @@ Cuando el usuario pida datos, responde con UNA o DOS frases cálidas (la pantall
 
         {/* Composer flotante */}
         <Composer value={input} onChange={setInput} onSend={() => sendMessage()} loading={thinking} />
+        </>
+        )}
       </div>
     </div>
   );
