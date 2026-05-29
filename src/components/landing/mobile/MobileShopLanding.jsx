@@ -43,6 +43,7 @@ export default function MobileShopLanding({
   showHistory,
   onCloseHistory,
   onResumeFromHistory,
+  onNewChat,
 }) {
   const [chatOpen, setChatOpen] = useState(false);
 
@@ -134,6 +135,7 @@ export default function MobileShopLanding({
         onOccasionClick={onOccasionClick}
         historyCount={historyCount}
         onShowHistory={onShowHistory}
+        onNewChat={onNewChat}
       />
 
       {/* Panel historial overlay (controlado desde el padre) */}

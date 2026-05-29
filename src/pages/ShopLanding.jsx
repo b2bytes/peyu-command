@@ -13,7 +13,7 @@ import { ensureFreshSession, addToHistory, readHistory } from '@/lib/chat-histor
 import { withContext } from '@/lib/chat-context';
 import { sanitizeUserMessage } from '@/lib/chat-sanitize';
 import { syncShownSkusFromMessages, buildOccasionPrompt, clearShownSkus } from '@/lib/chat-recommendations';
-import { History } from 'lucide-react';
+import { History, RotateCcw } from 'lucide-react';
 import { useAppBackground, getBackgroundById, buildBackgroundImageCSS, BG_OVERLAY, THEME_OVERLAY } from '@/lib/background';
 import BackgroundSwitcher from '@/components/BackgroundSwitcher';
 import LiquidDualToggle from '@/components/LiquidDualToggle';
@@ -96,6 +96,10 @@ export default function ShopLanding() {
         localStorage.removeItem('peyu_chat_intent');
         localStorage.removeItem('peyu_chat_last_qty');
         localStorage.removeItem('peyu_chat_last_product');
+        localStorage.removeItem('peyu_chat_turn_count');
+        // El email capturado SÍ se conserva entre sesiones (es dato persistente
+        // del visitante), pero el resto de la memoria efímera se limpia para que
+        // la conversación nueva no arrastre sesgos de la sesión anterior.
       } catch { /* noop */ }
     }
     return fresh;
@@ -404,6 +408,30 @@ export default function ShopLanding() {
     }
   };
 
+  // 🔄 Nuevo chat: archiva la conversación actual al historial y arranca limpio.
+  // Resuelve el "se queda pegado en la conversación pasada" de forma explícita,
+  // sin depender de cerrar la pestaña. Limpia toda la memoria efímera de la sesión.
+  const handleNewChat = () => {
+    const currentId = conversationId;
+    if (currentId) {
+      const firstUser = messages.find(m => m.role === 'user')?.content || '';
+      addToHistory(currentId, sanitizeUserMessage(firstUser));
+    }
+    try {
+      localStorage.removeItem(STORAGE_KEY);
+      localStorage.removeItem('peyu_chat_b2b_contact');
+      localStorage.removeItem('peyu_chat_intent');
+      localStorage.removeItem('peyu_chat_last_qty');
+      localStorage.removeItem('peyu_chat_last_product');
+      localStorage.removeItem('peyu_chat_turn_count');
+    } catch { /* noop */ }
+    clearShownSkus();
+    setConversationId(null);
+    setMessages([WELCOME_MSG]);
+    setShowHistory(false);
+    setHistoryCount(readHistory().length);
+  };
+
   const handleOccasionClick = async (ocasion) => {
     // Genera un prompt inteligente: pide productos DISTINTOS si ya hubo
     // recomendaciones previas, o cambia el set si cambió la ocasión.
@@ -436,6 +464,7 @@ export default function ShopLanding() {
         showHistory={showHistory}
         onCloseHistory={() => setShowHistory(false)}
         onResumeFromHistory={handleResumeFromHistory}
+        onNewChat={handleNewChat}
       />
     </div>
 
@@ -567,6 +596,14 @@ export default function ShopLanding() {
                     <p className="font-bold text-sm leading-tight text-ld-fg">Peyu IA</p>
                     <p className="text-[10px] text-ld-fg-muted">Asistente de Gifting · en línea</p>
                   </div>
+                  <button
+                    onClick={handleNewChat}
+                    title="Nuevo chat"
+                    className="ld-btn-ghost flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-semibold flex-shrink-0"
+                  >
+                    <RotateCcw className="w-3 h-3" />
+                    <span className="hidden xl:inline">Nuevo</span>
+                  </button>
                   {historyCount > 0 && (
                     <button
                       onClick={() => setShowHistory(true)}

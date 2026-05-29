@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { X, Send, History, Sparkles } from 'lucide-react';
+import { X, Send, History, Sparkles, RotateCcw } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import ChatMessageContent from '@/components/chat/ChatMessageContent';
@@ -39,6 +39,7 @@ export default function MobileChatModal({
   onOccasionClick,
   historyCount,
   onShowHistory,
+  onNewChat,
 }) {
   const endRef = useRef(null);
 
@@ -107,6 +108,16 @@ export default function MobileChatModal({
             </div>
           </div>
 
+          {onNewChat && (
+            <button
+              onClick={onNewChat}
+              className="ld-btn-ghost w-9 h-9 rounded-full flex items-center justify-center text-ld-fg-soft active:scale-95 transition flex-shrink-0"
+              aria-label="Nuevo chat"
+              title="Nuevo chat"
+            >
+              <RotateCcw className="w-4 h-4" />
+            </button>
+          )}
           {historyCount > 0 && (
             <button
               onClick={onShowHistory}

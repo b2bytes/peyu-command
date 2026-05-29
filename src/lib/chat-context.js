@@ -5,6 +5,7 @@
 // El agente lo parsea según las instrucciones en agents/asistente_compras.json.
 
 import { base44 } from '@/api/base44Client';
+import { matchProducts } from '@/lib/product-matcher';
 
 // Cache en memoria del top de productos para no golpear la API en cada mensaje.
 let _productCache = null;
@@ -25,34 +26,6 @@ async function loadTopProducts() {
   }
 }
 
-// Selecciona un subset diverso de productos para inyectar en el contexto.
-// Preferimos productos populares/destacados y cubrimos distintas categorías.
-function pickTopSkus(all, { excludeSku = null, maxItems = 12 } = {}) {
-  if (!all?.length) return [];
-
-  // Agrupar por categoría y tomar hasta 3 por categoría para diversidad
-  const byCat = new Map();
-  for (const p of all) {
-    if (!p.sku || !p.nombre) continue;
-    if (excludeSku && p.sku === excludeSku) continue;
-    const cat = p.categoria || 'Otros';
-    if (!byCat.has(cat)) byCat.set(cat, []);
-    if (byCat.get(cat).length < 3) byCat.get(cat).push(p);
-  }
-
-  // Aplanar intercalando categorías (round-robin) para diversidad
-  const result = [];
-  const arrays = [...byCat.values()];
-  let idx = 0;
-  while (result.length < maxItems && arrays.some(a => a.length > 0)) {
-    const arr = arrays[idx % arrays.length];
-    if (arr.length > 0) result.push(arr.shift());
-    idx++;
-    if (idx > 200) break; // safety
-  }
-  return result;
-}
-
 function formatSkuLine(p) {
   const precio = p.precio_b2c || p.precio_base_b2b || 0;
   // SKU|nombre|categoria|precio — nombre sin | ni comas para no romper el parsing
@@ -61,7 +34,7 @@ function formatSkuLine(p) {
   return `${p.sku}|${nombre}|${cat}|${precio}`;
 }
 
-export async function buildChatContext() {
+export async function buildChatContext(userMessage = '') {
   const ctx = {};
 
   // Ruta actual
@@ -176,12 +149,25 @@ export async function buildChatContext() {
     }
   } catch { /* anónimo, ignore */ }
 
-  // 🎯 Top SKUs reales disponibles — la línea más importante:
-  // garantiza que el agente SOLO use SKUs que existen y pueda mostrarlos con [[PRODUCTO:sku]]
-  // 6 SKUs es suficiente para tener variedad sin sobrecargar el system prompt
-  // (antes 12 generaba respuestas largas porque el agente se distraía leyéndolos).
+  // 🎯 SKUs RELEVANTES al mensaje del usuario — la línea más importante.
+  // Antes esto era un round-robin de categorías que NO miraba lo que pedía el
+  // cliente, así que el agente mostraba "cualquier producto" cuando el Brain
+  // fallaba. Ahora rankeamos el catálogo localmente según el mensaje (ocasión,
+  // destinatario, categoría, keywords) y excluimos los ya mostrados, para que
+  // el agente SIEMPRE reciba productos pertinentes — sin depender de Pinecone.
   try {
-    const picks = pickTopSkus(allProducts, { excludeSku: ctx.viewing_sku, maxItems: 6 });
+    // SKUs ya mostrados en la sesión → no los volvemos a ofrecer.
+    const excludeSkus = new Set();
+    try {
+      const shown = JSON.parse(localStorage.getItem('peyu_chat_shown_skus') || '[]');
+      if (Array.isArray(shown)) shown.forEach((s) => excludeSkus.add(s));
+    } catch { /* no-op */ }
+
+    const picks = matchProducts(allProducts, userMessage, {
+      excludeSkus,
+      viewingCategory: ctx.viewing_category || null,
+      maxItems: 6,
+    });
     if (picks.length) {
       ctx.top_skus = picks.map(formatSkuLine).join(', ');
     }
@@ -229,7 +215,7 @@ async function brainLookup(userMessage, userEmail) {
         : ['products', 'policies_faq', 'sustainability'],
     });
     const timeoutPromise = new Promise((_, reject) =>
-      setTimeout(() => reject(new Error('brain_timeout')), 4000)
+      setTimeout(() => reject(new Error('brain_timeout')), 3000)
     );
     const res = await Promise.race([brainPromise, timeoutPromise]);
     return res?.data?.context || '';
@@ -351,7 +337,7 @@ export async function withContext(userMessage) {
     }
   } catch { /* no-op */ }
 
-  const ctx = await buildChatContext();
+  const ctx = await buildChatContext(userMessage);
   const ctxLine = serializeContext(ctx);
 
   // 🧠 Brain lookup — solo cuando hay intención real (no en saludos).
