@@ -17,8 +17,8 @@ import { base44 } from '@/api/base44Client';
 import { RefreshCw, Loader2 } from 'lucide-react';
 import AgentRail from '@/components/agente/os/AgentRail';
 import Composer from '@/components/agente/os/Composer';
-import QuickActionsBar from '@/components/agente/os/QuickActionsBar';
 import MessageStream from '@/components/agente/os/MessageStream';
+import QuickActionBar from '@/components/agente/os/QuickActionBar';
 import { detectIntent } from '@/components/agente/os/intent';
 import { fmtCLP, diasParaVencer, TEAM_PHONES } from '@/components/agente/os/helpers';
 
@@ -163,6 +163,53 @@ Cuando el usuario pida datos, responde con UNA o DOS frases cálidas (la pantall
     }
   };
 
+  // ── Acciones rápidas: cotización y orden de producción (1 clic) ───────
+  const handleCreateQuote = async ({ empresa, contacto, email, sku, cantidad }) => {
+    const producto = crm.productos.find((p) => p.sku === sku);
+    const res = await base44.functions.invoke('createSelfServiceProposal', {
+      company_name: empresa,
+      contact_name: contacto || empresa,
+      email: email || '',
+      items: [{
+        sku,
+        nombre: producto?.nombre || sku,
+        qty: cantidad,
+        cantidad,
+        precio_b2c: producto?.precio_b2c,
+        precio_base_b2b: producto?.precio_base_b2b,
+        precio_50_199: producto?.precio_50_199,
+        precio_200_499: producto?.precio_200_499,
+        precio_500_mas: producto?.precio_500_mas,
+        imagen_url: producto?.imagen_url || '',
+        categoria: producto?.categoria,
+        personalizacion: false,
+      }],
+    });
+    await loadData(true);
+    const numero = res?.data?.numero ? ` (${res.data.numero})` : '';
+    setMessages((prev) => [...prev, {
+      role: 'assistant',
+      content: `Generé la cotización para **${empresa}**${numero}: ${cantidad} u de ${producto?.nombre || sku}${res?.data?.total ? ` por ${fmtCLP(res.data.total)}` : ''}. ✅`,
+    }]);
+  };
+
+  const handleCreateOP = async ({ empresa, sku, cantidad, prioridad }) => {
+    const producto = crm.productos.find((p) => p.sku === sku);
+    await base44.entities.OrdenProduccion.create({
+      empresa,
+      sku,
+      cantidad,
+      prioridad,
+      estado: 'Pendiente',
+      personalizacion: false,
+    });
+    await loadData(true);
+    setMessages((prev) => [...prev, {
+      role: 'assistant',
+      content: `Creé la orden de producción para **${empresa}**: ${cantidad} u de ${producto?.nombre || sku} · prioridad ${prioridad}. 🏭`,
+    }]);
+  };
+
   const toggleAgente = (id) =>
     setActivos((prev) => (prev.includes(id) ? prev.filter((a) => a !== id) : [...prev, id]));
 
@@ -201,8 +248,14 @@ Cuando el usuario pida datos, responde con UNA o DOS frases cálidas (la pantall
           </div>
         </header>
 
-        {/* Acciones rápidas sobre el chat */}
-        <QuickActionsBar onAction={(p) => sendMessage(p)} disabled={loading || thinking} />
+        {/* Barra de acciones rápidas */}
+        {!loading && (
+          <QuickActionBar
+            productos={crm.productos}
+            onCreateQuote={handleCreateQuote}
+            onCreateOP={handleCreateOP}
+          />
+        )}
 
         {/* Conversación */}
         {loading ? (
