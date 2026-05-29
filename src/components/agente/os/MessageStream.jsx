@@ -10,8 +10,9 @@ import ProductBlock from './blocks/ProductBlock';
 import ProductionBlock from './blocks/ProductionBlock';
 import AccionBlock from './blocks/AccionBlock';
 import MensajeBlock from './blocks/MensajeBlock';
+import HerramientaBlock from './blocks/HerramientaBlock';
 
-function Blocks({ blocks, crm, kpis, onAction, busyId, onEjecutarAccion, onEnviarMensaje }) {
+function Blocks({ blocks, crm, kpis, onAction, busyId, onEjecutarAccion, onEnviarMensaje, onEjecutarHerramienta }) {
   if (!blocks?.length) return null;
   return (
     <div className="space-y-3 mt-2">
@@ -23,13 +24,14 @@ function Blocks({ blocks, crm, kpis, onAction, busyId, onEjecutarAccion, onEnvia
         if (b.type === 'product') return <ProductBlock key={i} producto={b.product} />;
         if (b.type === 'accion') return <AccionBlock key={i} accion={b.accion} onEjecutar={onEjecutarAccion} />;
         if (b.type === 'mensaje') return <MensajeBlock key={i} mensaje={b.mensaje} onEnviar={onEnviarMensaje} />;
+        if (b.type === 'herramienta') return <HerramientaBlock key={i} herramienta={b.herramienta} onEjecutar={onEjecutarHerramienta} />;
         return null;
       })}
     </div>
   );
 }
 
-export default function MessageStream({ messages, crm, kpis, onAction, busyId, loading, bottomRef, onEjecutarAccion, onEnviarMensaje }) {
+export default function MessageStream({ messages, crm, kpis, onAction, busyId, loading, bottomRef, onEjecutarAccion, onEnviarMensaje, onEjecutarHerramienta }) {
   return (
     <div className="flex-1 overflow-y-auto peyu-scrollbar px-3 sm:px-6 py-6">
       <div className="max-w-[880px] mx-auto space-y-5">
@@ -41,6 +43,10 @@ export default function MessageStream({ messages, crm, kpis, onAction, busyId, l
               </div>
             )}
             <div className={`min-w-0 ${m.role === 'user' ? 'max-w-[80%]' : 'flex-1'}`}>
+              {/* Solo renderizamos la burbuja si hay texto. Antes, una respuesta
+                  con mensaje vacío (ej: solo acciones) pintaba una burbuja blanca
+                  vacía y daba sensación de "no respondió". */}
+              {(m.role === 'user' || (m.content && m.content.trim())) && (
               <div
                 className={`rounded-2xl px-4 py-2.5 text-sm ${
                   m.role === 'user'
@@ -65,8 +71,9 @@ export default function MessageStream({ messages, crm, kpis, onAction, busyId, l
                   </ReactMarkdown>
                 )}
               </div>
+              )}
               {m.role === 'assistant' && (
-                <Blocks blocks={m.blocks} crm={crm} kpis={kpis} onAction={onAction} busyId={busyId} onEjecutarAccion={onEjecutarAccion} onEnviarMensaje={onEnviarMensaje} />
+                <Blocks blocks={m.blocks} crm={crm} kpis={kpis} onAction={onAction} busyId={busyId} onEjecutarAccion={onEjecutarAccion} onEnviarMensaje={onEnviarMensaje} onEjecutarHerramienta={onEjecutarHerramienta} />
               )}
             </div>
           </div>

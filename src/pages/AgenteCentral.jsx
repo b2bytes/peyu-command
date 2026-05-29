@@ -33,7 +33,7 @@ const SUGERENCIAS = [
 export default function AgenteCentral() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [crm, setCrm] = useState({ leads: [], cotizaciones: [], pedidos: [], productos: [] });
+  const [crm, setCrm] = useState({ leads: [], cotizaciones: [], pedidos: [], productos: [], clientes: [], consultas: [], envios: [] });
   const [activos, setActivos] = useState(['ventas', 'datos']); // sub-agentes activos
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
@@ -45,13 +45,19 @@ export default function AgenteCentral() {
   // ── Carga de datos del CRM ────────────────────────────────────────────
   const loadData = async (isRefresh = false) => {
     isRefresh ? setRefreshing(true) : setLoading(true);
-    const [leads, cotizaciones, pedidos, productos] = await Promise.all([
+    const [leads, cotizaciones, pedidos, productos, clientes, consultas, envios] = await Promise.all([
       base44.entities.B2BLead.list('-created_date', 100),
       base44.entities.CorporateProposal.list('-created_date', 50),
       base44.entities.PedidoWeb.list('-created_date', 50),
-      base44.entities.Producto.filter({ activo: true }, '-updated_date', 80),
+      base44.entities.Producto.filter({ activo: true }, '-updated_date', 120),
+      base44.entities.Cliente.list('-updated_date', 80).catch(() => []),
+      base44.entities.Consulta.list('-created_date', 40).catch(() => []),
+      base44.entities.Envio.list('-created_date', 40).catch(() => []),
     ]);
-    setCrm({ leads: leads || [], cotizaciones: cotizaciones || [], pedidos: pedidos || [], productos: productos || [] });
+    setCrm({
+      leads: leads || [], cotizaciones: cotizaciones || [], pedidos: pedidos || [], productos: productos || [],
+      clientes: clientes || [], consultas: consultas || [], envios: envios || [],
+    });
     setLoading(false);
     setRefreshing(false);
   };
@@ -89,13 +95,25 @@ PEDIDOS activos: ${crm.pedidos.filter((p) => !['Entregado', 'Cancelado'].include
 Cotizaciones que vencen pronto:
 ${crm.cotizaciones.filter((c) => { const d = diasParaVencer(c.fecha_vencimiento); return d != null && d >= 0 && d <= 5; }).slice(0, 5).map((c) => `• ${c.empresa} · ${fmtCLP(c.total)} · vence en ${diasParaVencer(c.fecha_vencimiento)}d`).join('\n') || '• ninguna'}
 
-Cuando el usuario pida datos, responde con UNA o DOS frases cálidas (la pantalla mostrará los bloques de datos automáticamente, NO los listes en texto largo). Si pregunta algo general, sé útil y conciso.
+CLIENTES (${crm.clientes.length}): ${crm.clientes.slice(0, 8).map((c) => `${c.empresa || c.contacto} [${c.id}] · ${c.estado || ''}`).join(' | ') || 'sin datos'}
+CONSULTAS sin responder: ${crm.consultas.filter((c) => c.estado === 'Sin responder').length} de ${crm.consultas.length}
+ENVÍOS recientes: ${crm.envios.slice(0, 6).map((e) => `${e.numero_pedido || e.id} → ${e.estado}`).join(' | ') || 'sin datos'}
 
-=== ACCIONES REALES ===
-Puedes proponer cambios reales en la base. Cuando el usuario pida modificar algo (cambiar el estado de un lead, marcar una cotización, actualizar stock o estado de un pedido, etc.), declara una o más acciones en el campo "acciones". Cada acción debe usar IDs REALES tomados del contexto de arriba (jamás inventes un id). Estructura de cada acción:
-{ "entidad": "Lead" | "Cotizacion" | "Pedido" | "Producto", "registro_id": "<id real del contexto>", "cambios": { campo: nuevoValor }, "etiqueta": "texto corto del botón", "detalle": "qué hará en una frase" }
-Campos válidos por entidad: Lead → status (Nuevo, Contactado, En revisión, Propuesta enviada, Aceptado, Perdido); Cotizacion → status (Borrador, Enviada, Aceptada, Rechazada, Vencida); Pedido → estado (Nuevo, Confirmado, En Producción, Listo para Despacho, Despachado, Entregado, Cancelado); Producto → stock_actual, activo.
-Si NO estás seguro del id real, NO declares la acción: pídele al usuario que aclare. Si no hay ninguna acción, devuelve "acciones": [].
+CATÁLOGO (sample, usa el SKU exacto): ${crm.productos.slice(0, 25).map((p) => `${p.sku}=${p.nombre}`).join(' | ')}
+
+Cuando el usuario pida datos, responde con UNA o DOS frases cálidas (la pantalla mostrará los bloques de datos automáticamente, NO los listes en texto largo). Si pregunta algo general, sé útil y conciso. SIEMPRE devuelve un "mensaje" con texto, aunque también declares acciones (di qué vas a hacer en una frase).
+
+=== ACCIONES REALES (modificar / crear) ===
+Puedes proponer cambios reales en la base. El usuario debe confirmar con un botón. Cada acción usa IDs REALES del contexto (jamás inventes un id). Estructura:
+{ "operacion": "update" | "create", "entidad": "Lead" | "Cotizacion" | "Pedido" | "Producto" | "Cliente", "registro_id": "<id real, solo para update>", "cambios": { campo: valor }, "etiqueta": "texto corto del botón", "detalle": "qué hará en una frase" }
+- update: requiere registro_id real. Campos válidos: Lead → status (Nuevo, Contactado, En revisión, Propuesta enviada, Aceptado, Perdido); Cotizacion → status (Borrador, Enviada, Aceptada, Rechazada, Vencida); Pedido → estado (Nuevo, Confirmado, En Producción, Listo para Despacho, Despachado, Entregado, Cancelado); Producto → stock_actual, activo, precio_b2c; Cliente → estado, notas.
+- create: para AGREGAR un producto nuevo al catálogo cuando el usuario lo pida, usa entidad "Producto" con cambios que incluyan al menos { sku, nombre, categoria, material, canal }. categoria ∈ (Escritorio, Hogar, Entretenimiento, Corporativo, Carcasas B2C); material ∈ (Plástico 100% Reciclado, Fibra de Trigo (Compostable)); canal ∈ (B2B + B2C, B2C Exclusivo, B2B Exclusivo). Pide al usuario los datos que falten antes de declarar el create.
+Si falta info o el id no es seguro, NO declares la acción: pregunta. Si no hay acciones, devuelve "acciones": [].
+
+=== EJECUTAR HERRAMIENTAS BACKEND ===
+Puedes proponer ejecutar tareas del sistema declarándolas en el campo "herramientas". Cada una:
+{ "fn": "<nombre exacto>", "etiqueta": "texto del botón", "detalle": "qué hace" }
+Herramientas permitidas: auditoriaCatalogoCRON (audita catálogo), alertaStockBajoCRON (alerta stock <10u), analizarCostosReales (recalcula costos por SKU), bluexTrackingPollerCRON (refresca tracking de envíos), bluexAnalyzeShipments (analiza envíos), carritoAbandonadoCRON (recordatorios de carrito), recordarPropuestasPendientesCRON (reenvía propuestas), checkExpiringProposals (marca propuestas vencidas), leadReactivationCRON (reactiva leads fríos), dailyBriefingCRON (briefing del día). Solo declara una herramienta si el usuario pide explícitamente esa tarea. Si no, devuelve "herramientas": [].
 
 === MENSAJES AL CLIENTE ===
 Cuando el usuario pida escribirle o contactar a un cliente, redacta el mensaje y declálalo en el campo "mensajes". Cada mensaje:
@@ -146,13 +164,26 @@ Stock bajo (<10u): ${m.stock_bajo} SKUs`;
             items: {
               type: 'object',
               properties: {
-                entidad: { type: 'string', enum: ['Lead', 'Cotizacion', 'Pedido', 'Producto'] },
+                operacion: { type: 'string', enum: ['update', 'create'] },
+                entidad: { type: 'string', enum: ['Lead', 'Cotizacion', 'Pedido', 'Producto', 'Cliente'] },
                 registro_id: { type: 'string' },
                 cambios: { type: 'object', additionalProperties: true },
                 etiqueta: { type: 'string' },
                 detalle: { type: 'string' },
               },
-              required: ['entidad', 'registro_id', 'cambios'],
+              required: ['entidad', 'cambios'],
+            },
+          },
+          herramientas: {
+            type: 'array',
+            items: {
+              type: 'object',
+              properties: {
+                fn: { type: 'string' },
+                etiqueta: { type: 'string' },
+                detalle: { type: 'string' },
+              },
+              required: ['fn'],
             },
           },
           mensajes: {
@@ -174,14 +205,23 @@ Stock bajo (<10u): ${m.stock_bajo} SKUs`;
       },
     });
 
-    const mensaje = typeof response === 'string' ? response : (response?.mensaje || '');
+    let mensaje = typeof response === 'string' ? response : (response?.mensaje || '');
     const acciones = (typeof response === 'object' && Array.isArray(response?.acciones)) ? response.acciones : [];
     const mensajes = (typeof response === 'object' && Array.isArray(response?.mensajes)) ? response.mensajes : [];
+    const herramientas = (typeof response === 'object' && Array.isArray(response?.herramientas)) ? response.herramientas : [];
 
-    // Adjuntar bloques hidratados según intención + bloques de acción/mensaje declarados por el LLM
+    // Nunca dejar al usuario con una respuesta totalmente vacía.
+    if (!mensaje.trim()) {
+      mensaje = (acciones.length || mensajes.length || herramientas.length)
+        ? 'Listo, dejé las acciones abajo para que confirmes 👇'
+        : '¿Me das un poco más de detalle para ayudarte mejor? 🐢';
+    }
+
+    // Adjuntar bloques hidratados según intención + bloques de acción/mensaje/herramienta declarados por el LLM
     const blocks = intent.blocks.map((type) => ({ type, product: type === 'product' ? intent.product : undefined }));
     acciones.forEach((accion) => blocks.push({ type: 'accion', accion }));
     mensajes.forEach((msg) => blocks.push({ type: 'mensaje', mensaje: msg }));
+    herramientas.forEach((herramienta) => blocks.push({ type: 'herramienta', herramienta }));
 
     setMessages((prev) => [...prev, { role: 'assistant', content: mensaje, blocks }]);
     setThinking(false);
@@ -197,7 +237,25 @@ Stock bajo (<10u): ${m.stock_bajo} SKUs`;
   const ejecutarAccion = async (accion) => {
     const entityName = ENTIDAD_MAP[accion.entidad];
     if (!entityName) throw new Error(`Entidad no soportada: ${accion.entidad}`);
-    await base44.entities[entityName].update(accion.registro_id, accion.cambios);
+    if (accion.operacion === 'create') {
+      await base44.entities[entityName].create(accion.cambios);
+    } else {
+      if (!accion.registro_id) throw new Error('Falta el id del registro');
+      await base44.entities[entityName].update(accion.registro_id, accion.cambios);
+    }
+    await loadData(true);
+  };
+
+  // ── Ejecutar herramienta backend declarada por el LLM ─────────────────
+  const HERRAMIENTAS_OK = new Set([
+    'auditoriaCatalogoCRON', 'alertaStockBajoCRON', 'analizarCostosReales',
+    'bluexTrackingPollerCRON', 'bluexAnalyzeShipments', 'carritoAbandonadoCRON',
+    'recordarPropuestasPendientesCRON', 'checkExpiringProposals',
+    'leadReactivationCRON', 'dailyBriefingCRON',
+  ]);
+  const ejecutarHerramienta = async (herramienta) => {
+    if (!HERRAMIENTAS_OK.has(herramienta.fn)) throw new Error(`Herramienta no permitida: ${herramienta.fn}`);
+    await base44.functions.invoke(herramienta.fn, {});
     await loadData(true);
   };
 
@@ -432,6 +490,7 @@ Stock bajo (<10u): ${m.stock_bajo} SKUs`;
             bottomRef={bottomRef}
             onEjecutarAccion={ejecutarAccion}
             onEnviarMensaje={enviarMensaje}
+            onEjecutarHerramienta={ejecutarHerramienta}
           />
         )}
 
