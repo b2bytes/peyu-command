@@ -43,10 +43,16 @@ Deno.serve(async (req) => {
     }
 
     const audioBuffer = await resp.arrayBuffer();
-    return new Response(audioBuffer, {
-      status: 200,
-      headers: { 'Content-Type': 'audio/mpeg' },
-    });
+    // Devolvemos base64 en JSON para que el SDK (axios) lo entregue de forma
+    // confiable al frontend sin ambigüedad de blob/stream.
+    const bytes = new Uint8Array(audioBuffer);
+    let binary = '';
+    const chunk = 8192;
+    for (let i = 0; i < bytes.length; i += chunk) {
+      binary += String.fromCharCode.apply(null, bytes.subarray(i, i + chunk));
+    }
+    const base64 = btoa(binary);
+    return Response.json({ audio: base64, mime: 'audio/mpeg' });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
   }

@@ -43,16 +43,13 @@ export default function useVoz() {
 
     setCargandoId(id);
     try {
-      const resp = await base44.functions.invoke(
-        'elevenLabsTTS',
-        { text: clean },
-        { responseType: 'blob' }
-      );
-      const blob = resp.data instanceof Blob ? resp.data : new Blob([resp.data], { type: 'audio/mpeg' });
-      const url = URL.createObjectURL(blob);
+      const resp = await base44.functions.invoke('elevenLabsTTS', { text: clean });
+      const b64 = resp?.data?.audio;
+      if (!b64) throw new Error('Sin audio');
+      const url = `data:audio/mpeg;base64,${b64}`;
       const audio = new Audio(url);
       audioRef.current = audio;
-      audio.onended = () => { setHablandoId(null); URL.revokeObjectURL(url); };
+      audio.onended = () => { setHablandoId(null); };
       audio.onerror = () => { setHablandoId(null); setCargandoId(null); };
       await audio.play();
       setCargandoId(null);

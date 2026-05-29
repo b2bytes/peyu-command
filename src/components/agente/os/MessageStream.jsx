@@ -4,7 +4,6 @@
 // ============================================================================
 import ReactMarkdown from 'react-markdown';
 import { Volume2, VolumeX, Loader2 } from 'lucide-react';
-import useVoz from './useVoz';
 import KpiBlock from './blocks/KpiBlock';
 import QuotesBlock from './blocks/QuotesBlock';
 import UrgentAlertBlock from './blocks/UrgentAlertBlock';
@@ -33,8 +32,8 @@ function Blocks({ blocks, crm, kpis, onAction, busyId, onEjecutarAccion, onEnvia
   );
 }
 
-export default function MessageStream({ messages, crm, kpis, onAction, busyId, loading, bottomRef, onEjecutarAccion, onEnviarMensaje, onEjecutarHerramienta }) {
-  const { hablar, hablandoId, cargandoId } = useVoz();
+export default function MessageStream({ messages, crm, kpis, onAction, busyId, loading, bottomRef, onEjecutarAccion, onEnviarMensaje, onEjecutarHerramienta, voz }) {
+  const { hablar, hablandoId, cargandoId } = voz;
   return (
     <div className="flex-1 overflow-y-auto peyu-scrollbar px-3 sm:px-6 py-6">
       <div className="max-w-[880px] mx-auto space-y-5">

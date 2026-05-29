@@ -14,7 +14,8 @@
 // ============================================================================
 import { useState, useEffect, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
-import { RefreshCw, Loader2, MessageSquare, Columns3 } from 'lucide-react';
+import { RefreshCw, Loader2, MessageSquare, Columns3, Volume2, VolumeX } from 'lucide-react';
+import useVoz from '@/components/agente/os/useVoz';
 import AgentRail from '@/components/agente/os/AgentRail';
 import LeadKanban from '@/components/agente/os/kanban/LeadKanban';
 import Composer from '@/components/agente/os/Composer';
@@ -40,6 +41,8 @@ export default function AgenteCentral() {
   const [thinking, setThinking] = useState(false);
   const [busyId, setBusyId] = useState(null);
   const [vista, setVista] = useState('chat'); // 'chat' | 'pipeline'
+  const [autoVoz, setAutoVoz] = useState(false); // lectura automática de respuestas
+  const voz = useVoz();
   const bottomRef = useRef(null);
 
   // ── Carga de datos del CRM ────────────────────────────────────────────
@@ -67,6 +70,17 @@ export default function AgenteCentral() {
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, thinking]);
+
+  // Lectura automática: cuando termina de pensar y la última respuesta es del
+  // agente, reproducimos su voz si el modo auto-voz está activo.
+  useEffect(() => {
+    if (!autoVoz || thinking) return;
+    const last = messages[messages.length - 1];
+    if (last?.role === 'assistant' && last.content?.trim()) {
+      voz.hablar(messages.length - 1, last.content);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [messages.length, thinking]);
 
   // ── KPIs reales ───────────────────────────────────────────────────────
   const cotActivas = crm.cotizaciones.filter((c) => !['Aceptada', 'Rechazada'].includes(c.status));
@@ -416,6 +430,18 @@ Stock bajo (<10u): ${m.stock_bajo} SKUs`;
                   <Columns3 className="w-3.5 h-3.5" /> Pipeline
                 </button>
               </div>
+              <button
+                onClick={() => { setAutoVoz((v) => { if (v) voz.detener(); return !v; }); }}
+                className={`flex items-center gap-1.5 text-xs font-medium px-2.5 py-1.5 rounded-xl border transition-colors ${
+                  autoVoz
+                    ? 'bg-[#0F8B6C] text-white border-[#0F8B6C]'
+                    : 'bg-white text-[#6f7d77] border-[#ece4d8] hover:text-[#22302c]'
+                }`}
+                title={autoVoz ? 'Voz automática activada' : 'Activar voz automática'}
+              >
+                {autoVoz ? <Volume2 className="w-3.5 h-3.5" /> : <VolumeX className="w-3.5 h-3.5" />}
+                <span className="hidden sm:inline">Voz</span>
+              </button>
               <span className="hidden sm:inline-flex items-center gap-1.5 text-[11px] font-medium text-[#D96B4D] bg-[#D96B4D]/10 px-2.5 py-1 rounded-full">
                 🔒 Admin
               </span>
@@ -491,6 +517,7 @@ Stock bajo (<10u): ${m.stock_bajo} SKUs`;
             onEjecutarAccion={ejecutarAccion}
             onEnviarMensaje={enviarMensaje}
             onEjecutarHerramienta={ejecutarHerramienta}
+            voz={voz}
           />
         )}
 
