@@ -27,6 +27,7 @@ Deno.serve(async (req) => {
     const actualizados = [];
     const no_encontrados = [];
     const errores = [];
+    const registros = [];
 
     for (const item of items) {
       const sku = item?.sku;
@@ -52,12 +53,16 @@ Deno.serve(async (req) => {
 
         await base44.asServiceRole.entities.Producto.update(producto.id, campos);
         actualizados.push(sku);
+
+        // Releer el registro completo tal como quedó DESPUÉS del update
+        const releidos = await base44.asServiceRole.entities.Producto.filter({ sku });
+        if (releidos?.[0]) registros.push(releidos[0]);
       } catch (err) {
         errores.push({ sku, error: err?.message || String(err) });
       }
     }
 
-    return Response.json({ ok: true, actualizados, no_encontrados, errores });
+    return Response.json({ ok: true, actualizados, no_encontrados, errores, registros });
   } catch (error) {
     return Response.json({ ok: false, error: error.message }, { status: 500 });
   }
