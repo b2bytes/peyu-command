@@ -95,7 +95,12 @@ Cuando el usuario pida datos, responde con UNA o DOS frases cálidas (la pantall
 Puedes proponer cambios reales en la base. Cuando el usuario pida modificar algo (cambiar el estado de un lead, marcar una cotización, actualizar stock o estado de un pedido, etc.), declara una o más acciones en el campo "acciones". Cada acción debe usar IDs REALES tomados del contexto de arriba (jamás inventes un id). Estructura de cada acción:
 { "entidad": "Lead" | "Cotizacion" | "Pedido" | "Producto", "registro_id": "<id real del contexto>", "cambios": { campo: nuevoValor }, "etiqueta": "texto corto del botón", "detalle": "qué hará en una frase" }
 Campos válidos por entidad: Lead → status (Nuevo, Contactado, En revisión, Propuesta enviada, Aceptado, Perdido); Cotizacion → status (Borrador, Enviada, Aceptada, Rechazada, Vencida); Pedido → estado (Nuevo, Confirmado, En Producción, Listo para Despacho, Despachado, Entregado, Cancelado); Producto → stock_actual, activo.
-Si NO estás seguro del id real, NO declares la acción: pídele al usuario que aclare. Si no hay ninguna acción, devuelve "acciones": [].`;
+Si NO estás seguro del id real, NO declares la acción: pídele al usuario que aclare. Si no hay ninguna acción, devuelve "acciones": [].
+
+=== MENSAJES AL CLIENTE ===
+Cuando el usuario pida escribirle o contactar a un cliente, redacta el mensaje y declálalo en el campo "mensajes". Cada mensaje:
+{ "canal": "whatsapp" | "email", "destino": "<teléfono con código país para whatsapp, o email>", "asunto": "<solo para email>", "cuerpo": "<texto del mensaje, cálido y al grano>", "etiqueta": "texto corto del botón" }
+Usa datos REALES del contexto (email/teléfono del lead o cotización). Si no tienes el dato de contacto, no declares el mensaje: pídeselo al usuario. Si no hay mensajes, devuelve "mensajes": [].`;
   };
 
   // ── Enviar mensaje ────────────────────────────────────────────────────
@@ -150,6 +155,20 @@ Stock bajo (<10u): ${m.stock_bajo} SKUs`;
               required: ['entidad', 'registro_id', 'cambios'],
             },
           },
+          mensajes: {
+            type: 'array',
+            items: {
+              type: 'object',
+              properties: {
+                canal: { type: 'string', enum: ['whatsapp', 'email'] },
+                destino: { type: 'string' },
+                asunto: { type: 'string' },
+                cuerpo: { type: 'string' },
+                etiqueta: { type: 'string' },
+              },
+              required: ['canal', 'destino', 'cuerpo'],
+            },
+          },
         },
         required: ['mensaje'],
       },
@@ -157,10 +176,12 @@ Stock bajo (<10u): ${m.stock_bajo} SKUs`;
 
     const mensaje = typeof response === 'string' ? response : (response?.mensaje || '');
     const acciones = (typeof response === 'object' && Array.isArray(response?.acciones)) ? response.acciones : [];
+    const mensajes = (typeof response === 'object' && Array.isArray(response?.mensajes)) ? response.mensajes : [];
 
-    // Adjuntar bloques hidratados según intención + bloques de acción declarados por el LLM
+    // Adjuntar bloques hidratados según intención + bloques de acción/mensaje declarados por el LLM
     const blocks = intent.blocks.map((type) => ({ type, product: type === 'product' ? intent.product : undefined }));
     acciones.forEach((accion) => blocks.push({ type: 'accion', accion }));
+    mensajes.forEach((msg) => blocks.push({ type: 'mensaje', mensaje: msg }));
 
     setMessages((prev) => [...prev, { role: 'assistant', content: mensaje, blocks }]);
     setThinking(false);
@@ -178,6 +199,25 @@ Stock bajo (<10u): ${m.stock_bajo} SKUs`;
     if (!entityName) throw new Error(`Entidad no soportada: ${accion.entidad}`);
     await base44.entities[entityName].update(accion.registro_id, accion.cambios);
     await loadData(true);
+  };
+
+  // ── Enviar mensaje real al cliente (WhatsApp / Email) ─────────────────
+  const enviarMensaje = async (msg) => {
+    if (msg.canal === 'whatsapp') {
+      const tel = String(msg.destino || '').replace(/[^\d]/g, '');
+      if (!tel) throw new Error('Teléfono inválido');
+      window.open(`https://wa.me/${tel}?text=${encodeURIComponent(msg.cuerpo)}`, '_blank');
+      return;
+    }
+    if (msg.canal === 'email') {
+      await base44.integrations.Core.SendEmail({
+        to: msg.destino,
+        subject: msg.asunto || 'Mensaje de PEYU',
+        body: msg.cuerpo,
+      });
+      return;
+    }
+    throw new Error(`Canal no soportado: ${msg.canal}`);
   };
 
   // ── Acciones reales sobre cotizaciones ────────────────────────────────
@@ -391,6 +431,7 @@ Stock bajo (<10u): ${m.stock_bajo} SKUs`;
             loading={thinking}
             bottomRef={bottomRef}
             onEjecutarAccion={ejecutarAccion}
+            onEnviarMensaje={enviarMensaje}
           />
         )}
 

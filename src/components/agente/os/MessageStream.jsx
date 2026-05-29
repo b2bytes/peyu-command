@@ -9,8 +9,9 @@ import UrgentAlertBlock from './blocks/UrgentAlertBlock';
 import ProductBlock from './blocks/ProductBlock';
 import ProductionBlock from './blocks/ProductionBlock';
 import AccionBlock from './blocks/AccionBlock';
+import MensajeBlock from './blocks/MensajeBlock';
 
-function Blocks({ blocks, crm, kpis, onAction, busyId, onEjecutarAccion }) {
+function Blocks({ blocks, crm, kpis, onAction, busyId, onEjecutarAccion, onEnviarMensaje }) {
   if (!blocks?.length) return null;
   return (
     <div className="space-y-3 mt-2">
@@ -21,13 +22,14 @@ function Blocks({ blocks, crm, kpis, onAction, busyId, onEjecutarAccion }) {
         if (b.type === 'production') return <ProductionBlock key={i} pedidos={crm.pedidos} />;
         if (b.type === 'product') return <ProductBlock key={i} producto={b.product} />;
         if (b.type === 'accion') return <AccionBlock key={i} accion={b.accion} onEjecutar={onEjecutarAccion} />;
+        if (b.type === 'mensaje') return <MensajeBlock key={i} mensaje={b.mensaje} onEnviar={onEnviarMensaje} />;
         return null;
       })}
     </div>
   );
 }
 
-export default function MessageStream({ messages, crm, kpis, onAction, busyId, loading, bottomRef, onEjecutarAccion }) {
+export default function MessageStream({ messages, crm, kpis, onAction, busyId, loading, bottomRef, onEjecutarAccion, onEnviarMensaje }) {
   return (
     <div className="flex-1 overflow-y-auto peyu-scrollbar px-3 sm:px-6 py-6">
       <div className="max-w-[880px] mx-auto space-y-5">
@@ -64,7 +66,7 @@ export default function MessageStream({ messages, crm, kpis, onAction, busyId, l
                 )}
               </div>
               {m.role === 'assistant' && (
-                <Blocks blocks={m.blocks} crm={crm} kpis={kpis} onAction={onAction} busyId={busyId} onEjecutarAccion={onEjecutarAccion} />
+                <Blocks blocks={m.blocks} crm={crm} kpis={kpis} onAction={onAction} busyId={busyId} onEjecutarAccion={onEjecutarAccion} onEnviarMensaje={onEnviarMensaje} />
               )}
             </div>
           </div>
