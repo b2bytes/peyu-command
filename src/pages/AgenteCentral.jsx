@@ -1,567 +1,53 @@
 // ============================================================================
-// AgenteCentral · Centro de Comando Admin — PEYU Chile
+// AgenteCentral · "PEYU OS" — Interfaz conversacional agéntica (solo admin)
 // ─────────────────────────────────────────────────────────────────────────────
-// SOLO para administradores internos del equipo PEYU (Joaquín, Carlos, equipo).
-// Incluye:
-//   • Strip de 6 KPIs en tiempo real
-//   • 5 tabs: Agente IA | Leads | Cotizaciones | Pedidos | Acciones
-//   • Chat IA con contexto completo de CRM via InvokeLLM
-//   • Acciones directas: WhatsApp, email, alertas
+// El chat ES la pantalla. CRM + ERP + analítica en una sola superficie:
+// el usuario habla y la pantalla se arma sola con bloques hidratados (KPIs,
+// cotizaciones, alertas, ficha de producto, carga de producción) que traen
+// acciones reales (WhatsApp, generar/enviar propuesta, archivar).
+//
+// Estética: minimal cálido fiel a Peyu — papel #fbfaf7, verde tierra #0F8B6C,
+// terracota #D96B4D para lo urgente, arena #f6f1ea. Sin neón, sin glow.
+//
+// Mantiene: InvokeLLM con contexto del CRM, lectura de B2BLead/CorporateProposal/
+// PedidoWeb/Producto, y las integraciones reales ya existentes.
 // ============================================================================
-
 import { useState, useEffect, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import {
-  RefreshCw, Send, Users, FileText, Package,
-  DollarSign, Target, Percent,
-  AlertTriangle, CheckCircle, Clock, Phone, Mail, ExternalLink,
-  X, ChevronRight, Loader2, Bot, User as UserIcon, Sparkles,
-} from 'lucide-react';
-import ReactMarkdown from 'react-markdown';
-import KPIStrip from '@/components/agente/KPIStrip';
+import { RefreshCw, Loader2 } from 'lucide-react';
+import AgentRail from '@/components/agente/os/AgentRail';
+import Composer from '@/components/agente/os/Composer';
+import MessageStream from '@/components/agente/os/MessageStream';
+import { detectIntent } from '@/components/agente/os/intent';
+import { fmtCLP, diasParaVencer, TEAM_PHONES } from '@/components/agente/os/helpers';
 
-// ─── Helpers ────────────────────────────────────────────────────────────────
-const fmtCLP = (n) => n != null ? `$${Number(n).toLocaleString('es-CL')}` : '—';
-const fmtNum = (n) => n != null ? Number(n).toLocaleString('es-CL') : '0';
+const SUGERENCIAS = [
+  'Muéstrame las cotizaciones',
+  '¿Cómo vamos esta semana?',
+  '¿Qué vence pronto?',
+  'Estado de producción',
+];
 
-// ─── Mensaje del chat ────────────────────────────────────────────────────────
-function ChatMessage({ msg }) {
-  const isUser = msg.role === 'user';
-  return (
-    <div className={`flex gap-3 ${isUser ? 'flex-row-reverse' : ''}`}>
-      <div className={`w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 ${
-        isUser ? 'bg-teal-600' : 'bg-slate-700'
-      }`}>
-        {isUser ? <UserIcon className="w-3.5 h-3.5 text-white" /> : <Bot className="w-3.5 h-3.5 text-teal-300" />}
-      </div>
-      <div className={`max-w-[80%] rounded-2xl px-4 py-2.5 text-sm ${
-        isUser
-          ? 'bg-teal-600/30 text-white rounded-tr-sm'
-          : 'bg-white/5 border border-white/10 text-white/90 rounded-tl-sm'
-      }`}>
-        {isUser ? (
-          <p className="leading-relaxed">{msg.content}</p>
-        ) : (
-          <ReactMarkdown
-            className="prose prose-sm prose-invert max-w-none [&>*:first-child]:mt-0 [&>*:last-child]:mb-0"
-            components={{
-              p: ({ children }) => <p className="my-1 leading-relaxed">{children}</p>,
-              ul: ({ children }) => <ul className="my-1 ml-4 list-disc">{children}</ul>,
-              li: ({ children }) => <li className="my-0.5">{children}</li>,
-              strong: ({ children }) => <strong className="text-teal-300">{children}</strong>,
-              code: ({ children }) => <code className="px-1 py-0.5 rounded bg-white/10 text-xs">{children}</code>,
-            }}
-          >
-            {msg.content}
-          </ReactMarkdown>
-        )}
-      </div>
-    </div>
-  );
-}
-
-// ─── Tab Agente IA ───────────────────────────────────────────────────────────
-function TabAgente({ crm }) {
-  const [messages, setMessages] = useState([
-    {
-      role: 'assistant',
-      content: `👋 Hola equipo PEYU. Soy tu agente de comando con acceso completo al CRM.\n\nTengo visibilidad de:\n- **${crm.leads?.length || 0} leads B2B** activos\n- **${crm.cotizaciones?.length || 0} cotizaciones** en curso\n- **${crm.pedidos?.length || 0} pedidos** recientes\n- Productos, clientes, y KPIs en tiempo real\n\n¿En qué te ayudo hoy?`
-    }
-  ]);
-  const [input, setInput] = useState('');
-  const [loading, setLoading] = useState(false);
-  const bottomRef = useRef(null);
-
-  useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
-
-  const buildContext = () => {
-    const leadsHot = (crm.leads || []).filter(l => l.urgencia === 'Alta' || l.calidad_lead === 'Caliente' || l.lead_score >= 70);
-    const cotPendientes = (crm.cotizaciones || []).filter(c => c.status === 'Enviada' || c.status === 'Borrador');
-    const pedidosActivos = (crm.pedidos || []).filter(p => !['Entregado','Cancelado','Reembolsado'].includes(p.estado));
-    return `CONTEXTO COMPLETO DEL CRM PEYU CHILE (${new Date().toLocaleDateString('es-CL')}):
-
-=== LEADS B2B (${crm.leads?.length || 0} total) ===
-Leads calientes/alta urgencia: ${leadsHot.length}
-${leadsHot.slice(0,5).map(l => `• ${l.company_name} | ${l.contact_name} | ${l.status} | Score: ${l.lead_score || '-'} | ${l.email || ''}`).join('\n')}
-
-=== COTIZACIONES (${crm.cotizaciones?.length || 0} total) ===
-Pendientes de respuesta: ${cotPendientes.length}
-${cotPendientes.slice(0,5).map(c => `• ${c.empresa} | ${c.status} | Total: ${fmtCLP(c.total)} | Vence: ${c.fecha_vencimiento || 'sin fecha'}`).join('\n')}
-
-=== PEDIDOS ACTIVOS (${pedidosActivos.length}) ===
-${pedidosActivos.slice(0,5).map(p => `• #${p.numero_pedido || p.id?.slice(-6)} | ${p.cliente_nombre} | ${p.estado} | ${fmtCLP(p.total)}`).join('\n')}
-
-=== KPIs ===
-Pipeline leads activos: ${crm.leads?.filter(l => !['Aceptado','Perdido'].includes(l.status))?.length || 0}
-Cotizaciones abiertas: ${cotPendientes.length}
-Pedidos en curso: ${pedidosActivos.length}
-
-Eres un agente de comando interno del equipo PEYU Chile. Responde en español, sé directo y útil. Usa datos reales del contexto cuando sea relevante.`;
-  };
-
-  const sendMessage = async () => {
-    if (!input.trim() || loading) return;
-    const userMsg = { role: 'user', content: input.trim() };
-    setMessages(prev => [...prev, userMsg]);
-    setInput('');
-    setLoading(true);
-
-    const history = [...messages, userMsg]
-      .map(m => `${m.role === 'user' ? 'Usuario' : 'Agente'}: ${m.content}`)
-      .join('\n\n');
-
-    const response = await base44.integrations.Core.InvokeLLM({
-      prompt: `${buildContext()}\n\n=== HISTORIAL DE CONVERSACIÓN ===\n${history}\n\nAgente:`,
-      model: 'claude_sonnet_4_6',
-    });
-
-    setMessages(prev => [...prev, { role: 'assistant', content: response }]);
-    setLoading(false);
-  };
-
-  return (
-    <div className="flex flex-col h-full">
-      {/* Messages */}
-      <div className="flex-1 overflow-y-auto space-y-4 p-4 peyu-scrollbar">
-        {messages.map((m, i) => <ChatMessage key={i} msg={m} />)}
-        {loading && (
-          <div className="flex gap-3">
-            <div className="w-7 h-7 rounded-full bg-slate-700 flex items-center justify-center">
-              <Bot className="w-3.5 h-3.5 text-teal-300" />
-            </div>
-            <div className="bg-white/5 border border-white/10 rounded-2xl rounded-tl-sm px-4 py-3">
-              <div className="flex gap-1">
-                {[0,1,2].map(i => (
-                  <div key={i} className="w-1.5 h-1.5 rounded-full bg-teal-400 animate-bounce" style={{ animationDelay: `${i * 0.15}s` }} />
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
-        <div ref={bottomRef} />
-      </div>
-
-      {/* Input */}
-      <div className="p-4 border-t border-white/10 bg-white/[0.02]">
-        <div className="flex items-center gap-2 rounded-2xl bg-white/[0.05] border border-white/12 focus-within:border-teal-400/50 transition-colors p-1.5 pl-4">
-          <input
-            value={input}
-            onChange={e => setInput(e.target.value)}
-            onKeyDown={e => e.key === 'Enter' && !e.shiftKey && sendMessage()}
-            placeholder="Pregunta al agente sobre leads, cotizaciones, pedidos..."
-            className="flex-1 bg-transparent border-0 outline-none text-sm text-white placeholder:text-white/30 min-w-0"
-          />
-          <button
-            onClick={sendMessage}
-            disabled={loading || !input.trim()}
-            className="w-9 h-9 rounded-xl bg-gradient-to-br from-teal-400 to-emerald-500 hover:from-teal-300 hover:to-emerald-400 flex items-center justify-center text-white shadow-lg shadow-teal-500/30 transition-all disabled:opacity-40 disabled:shadow-none flex-shrink-0"
-            aria-label="Enviar"
-          >
-            {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
-          </button>
-        </div>
-        <p className="text-[11px] text-white/25 mt-2 text-center flex items-center justify-center gap-1.5">
-          <Sparkles className="w-3 h-3" /> Claude Sonnet · Contexto CRM completo · Solo admin
-        </p>
-      </div>
-    </div>
-  );
-}
-
-// ─── Tab Leads ───────────────────────────────────────────────────────────────
-function TabLeads({ leads, onSelectLead }) {
-  const [filter, setFilter] = useState('all');
-
-  const filtered = leads.filter(l => {
-    if (filter === 'hot') return l.urgencia === 'Alta' || l.lead_score >= 70;
-    if (filter === 'sin_seguimiento') return l.status === 'Nuevo';
-    return true;
-  });
-
-  const statusColor = {
-    'Nuevo': 'bg-blue-500/20 text-blue-300 border-blue-500/30',
-    'Contactado': 'bg-teal-500/20 text-teal-300 border-teal-500/30',
-    'En revisión': 'bg-amber-500/20 text-amber-300 border-amber-500/30',
-    'Propuesta enviada': 'bg-purple-500/20 text-purple-300 border-purple-500/30',
-    'Aceptado': 'bg-green-500/20 text-green-300 border-green-500/30',
-    'Perdido': 'bg-red-500/20 text-red-300 border-red-500/30',
-  };
-
-  return (
-    <div className="flex flex-col h-full">
-      {/* Filtros */}
-      <div className="flex gap-2 p-4 border-b border-white/10 flex-wrap">
-        {[['all','Todos'], ['hot','🔥 Calientes'], ['sin_seguimiento','⏰ Sin seguimiento']].map(([k,l]) => (
-          <button
-            key={k}
-            onClick={() => setFilter(k)}
-            className={`text-xs px-3 py-1.5 rounded-full border transition-colors ${
-              filter === k ? 'bg-teal-600 border-teal-500 text-white' : 'border-white/15 text-white/50 hover:text-white hover:border-white/30'
-            }`}
-          >
-            {l}
-          </button>
-        ))}
-        <span className="ml-auto text-xs text-white/30 self-center">{filtered.length} leads</span>
-      </div>
-
-      {/* Lista */}
-      <div className="flex-1 overflow-y-auto peyu-scrollbar divide-y divide-white/5">
-        {filtered.length === 0 && (
-          <div className="flex items-center justify-center h-32 text-white/30 text-sm">No hay leads con ese filtro</div>
-        )}
-        {filtered.map(lead => (
-          <div
-            key={lead.id}
-            onClick={() => onSelectLead(lead)}
-            className="flex items-center gap-3 p-4 hover:bg-white/[0.03] cursor-pointer transition-colors"
-          >
-            <div className="w-9 h-9 rounded-lg bg-teal-500/15 flex items-center justify-center flex-shrink-0">
-              <span className="text-sm font-bold text-teal-300">
-                {(lead.company_name || lead.contact_name || '?')[0].toUpperCase()}
-              </span>
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2">
-                <span className="text-sm font-medium text-white truncate">{lead.company_name || lead.contact_name}</span>
-                {lead.urgencia === 'Alta' && <span className="text-xs">🔥</span>}
-              </div>
-              <div className="flex items-center gap-2 mt-0.5">
-                <span className="text-xs text-white/40 truncate">{lead.contact_name}</span>
-                {lead.lead_score && <span className="text-xs text-amber-400">Score {lead.lead_score}</span>}
-              </div>
-            </div>
-            <div className="flex flex-col items-end gap-1">
-              <span className={`text-xs px-2 py-0.5 rounded-full border ${statusColor[lead.status] || 'bg-white/10 text-white/50 border-white/20'}`}>
-                {lead.status}
-              </span>
-              {lead.qty_estimate && <span className="text-xs text-white/30">{fmtNum(lead.qty_estimate)} u</span>}
-            </div>
-            <ChevronRight className="w-4 h-4 text-white/20 flex-shrink-0" />
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-// ─── Tab Cotizaciones ────────────────────────────────────────────────────────
-function TabCotizaciones({ cotizaciones }) {
-  const statusColor = {
-    'Borrador': 'bg-slate-500/20 text-slate-300 border-slate-500/30',
-    'Enviada': 'bg-blue-500/20 text-blue-300 border-blue-500/30',
-    'Aceptada': 'bg-green-500/20 text-green-300 border-green-500/30',
-    'Rechazada': 'bg-red-500/20 text-red-300 border-red-500/30',
-    'Vencida': 'bg-amber-500/20 text-amber-300 border-amber-500/30',
-  };
-
-  const today = new Date();
-  const isUrgent = (c) => {
-    if (!c.fecha_vencimiento) return false;
-    const diff = (new Date(c.fecha_vencimiento) - today) / 86400000;
-    return diff >= 0 && diff <= 3;
-  };
-
-  return (
-    <div className="flex flex-col h-full">
-      <div className="p-4 border-b border-white/10 flex items-center justify-between">
-        <span className="text-sm text-white/50">{cotizaciones.length} cotizaciones</span>
-        {cotizaciones.filter(isUrgent).length > 0 && (
-          <Badge className="bg-amber-500/20 text-amber-300 border-amber-500/30">
-            {cotizaciones.filter(isUrgent).length} vencen pronto
-          </Badge>
-        )}
-      </div>
-      <div className="flex-1 overflow-y-auto peyu-scrollbar divide-y divide-white/5">
-        {cotizaciones.length === 0 && (
-          <div className="flex items-center justify-center h-32 text-white/30 text-sm">Sin cotizaciones</div>
-        )}
-        {cotizaciones.map(c => (
-          <div key={c.id} className="p-4 hover:bg-white/[0.03] transition-colors">
-            <div className="flex items-start justify-between gap-3">
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2">
-                  {isUrgent(c) && <AlertTriangle className="w-3.5 h-3.5 text-amber-400 flex-shrink-0" />}
-                  <span className="text-sm font-medium text-white truncate">{c.empresa}</span>
-                </div>
-                <div className="text-xs text-white/40 mt-0.5 truncate">{c.contacto} · {c.numero || c.id?.slice(-6)}</div>
-                {c.fecha_vencimiento && (
-                  <div className="text-xs text-white/30 mt-0.5">
-                    Vence: {new Date(c.fecha_vencimiento).toLocaleDateString('es-CL')}
-                  </div>
-                )}
-              </div>
-              <div className="flex flex-col items-end gap-1">
-                <span className={`text-xs px-2 py-0.5 rounded-full border ${statusColor[c.status] || 'bg-white/10 text-white/50 border-white/20'}`}>
-                  {c.status}
-                </span>
-                <span className="text-sm font-semibold text-teal-300">{fmtCLP(c.total)}</span>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-// ─── Tab Pedidos ─────────────────────────────────────────────────────────────
-function TabPedidos({ pedidos }) {
-  const estadoColor = {
-    'Nuevo': 'bg-blue-500/20 text-blue-300',
-    'Confirmado': 'bg-teal-500/20 text-teal-300',
-    'En Producción': 'bg-purple-500/20 text-purple-300',
-    'Listo para Despacho': 'bg-amber-500/20 text-amber-300',
-    'Despachado': 'bg-cyan-500/20 text-cyan-300',
-    'Entregado': 'bg-green-500/20 text-green-300',
-    'Cancelado': 'bg-red-500/20 text-red-300',
-  };
-
-  return (
-    <div className="flex flex-col h-full">
-      <div className="p-4 border-b border-white/10">
-        <span className="text-sm text-white/50">{pedidos.length} pedidos recientes</span>
-      </div>
-      <div className="flex-1 overflow-y-auto peyu-scrollbar divide-y divide-white/5">
-        {pedidos.length === 0 && (
-          <div className="flex items-center justify-center h-32 text-white/30 text-sm">Sin pedidos</div>
-        )}
-        {pedidos.map(p => (
-          <div key={p.id} className="p-4 hover:bg-white/[0.03] transition-colors">
-            <div className="flex items-center gap-3">
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2">
-                  <span className="text-sm font-medium text-white truncate">{p.cliente_nombre}</span>
-                  <span className="text-xs text-white/30">#{p.numero_pedido || p.id?.slice(-6)}</span>
-                </div>
-                <div className="text-xs text-white/40 mt-0.5 truncate">{p.descripcion_items || p.sku || '—'}</div>
-                <div className="text-xs text-white/30 mt-0.5">{p.fecha ? new Date(p.fecha).toLocaleDateString('es-CL') : '—'}</div>
-              </div>
-              <div className="flex flex-col items-end gap-1">
-                <span className={`text-xs px-2 py-0.5 rounded-full ${estadoColor[p.estado] || 'bg-white/10 text-white/50'}`}>
-                  {p.estado}
-                </span>
-                <span className="text-sm font-semibold text-teal-300">{fmtCLP(p.total)}</span>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-// ─── Tab Acciones ────────────────────────────────────────────────────────────
-function TabAcciones({ crm }) {
-  const [emailTo, setEmailTo] = useState('');
-  const [emailMsg, setEmailMsg] = useState('');
-  const [sending, setSending] = useState(false);
-  const [sent, setSent] = useState(false);
-
-  const leadsUrgentesSinSeguimiento = (crm.leads || []).filter(l => l.status === 'Nuevo');
-  const cotPorVencer = (crm.cotizaciones || []).filter(c => {
-    if (!c.fecha_vencimiento) return false;
-    const diff = (new Date(c.fecha_vencimiento) - new Date()) / 86400000;
-    return diff >= 0 && diff <= 5;
-  });
-
-  const sendWA = (to) => {
-    const msg = encodeURIComponent(`Hola ${to}, te escribo desde el Centro de Comando PEYU. Hay ${leadsUrgentesSinSeguimiento.length} leads nuevos y ${cotPorVencer.length} cotizaciones por vencer esta semana.`);
-    const phones = { joaquin: '56935040242', carlos: '56935040242' };
-    window.open(`https://wa.me/${phones[to]}?text=${msg}`, '_blank');
-  };
-
-  const sendEmail = async () => {
-    if (!emailTo || !emailMsg) return;
-    setSending(true);
-    await base44.integrations.Core.SendEmail({
-      to: emailTo,
-      subject: `[PEYU Admin] Mensaje desde Centro de Comando`,
-      body: emailMsg,
-    });
-    setSent(true);
-    setSending(false);
-    setTimeout(() => setSent(false), 3000);
-    setEmailTo('');
-    setEmailMsg('');
-  };
-
-  return (
-    <div className="flex flex-col gap-6 p-4 overflow-y-auto peyu-scrollbar h-full">
-      {/* Alertas */}
-      <section>
-        <h3 className="text-xs font-bold uppercase tracking-wider text-white/40 mb-3">Alertas del Sistema</h3>
-        <div className="space-y-2">
-          {leadsUrgentesSinSeguimiento.length > 0 ? (
-            <div className="flex items-center gap-3 p-3 rounded-xl bg-amber-500/10 border border-amber-500/20">
-              <AlertTriangle className="w-4 h-4 text-amber-400 flex-shrink-0" />
-              <div className="flex-1 min-w-0">
-                <p className="text-sm text-amber-200 font-medium">{leadsUrgentesSinSeguimiento.length} leads sin contactar</p>
-                <p className="text-xs text-amber-300/60">
-                  {leadsUrgentesSinSeguimiento.slice(0, 2).map(l => l.company_name || l.contact_name).join(', ')}
-                  {leadsUrgentesSinSeguimiento.length > 2 ? ` y ${leadsUrgentesSinSeguimiento.length - 2} más` : ''}
-                </p>
-              </div>
-            </div>
-          ) : (
-            <div className="flex items-center gap-3 p-3 rounded-xl bg-green-500/10 border border-green-500/20">
-              <CheckCircle className="w-4 h-4 text-green-400 flex-shrink-0" />
-              <p className="text-sm text-green-200">Sin leads nuevos sin contactar</p>
-            </div>
-          )}
-          {cotPorVencer.length > 0 && (
-            <div className="flex items-center gap-3 p-3 rounded-xl bg-red-500/10 border border-red-500/20">
-              <Clock className="w-4 h-4 text-red-400 flex-shrink-0" />
-              <div>
-                <p className="text-sm text-red-200 font-medium">{cotPorVencer.length} cotizaciones vencen en ≤5 días</p>
-                <p className="text-xs text-red-300/60">{cotPorVencer.slice(0,2).map(c => c.empresa).join(', ')}</p>
-              </div>
-            </div>
-          )}
-        </div>
-      </section>
-
-      {/* WhatsApp rápido */}
-      <section>
-        <h3 className="text-xs font-bold uppercase tracking-wider text-white/40 mb-3">WhatsApp Directo al Equipo</h3>
-        <div className="grid grid-cols-2 gap-3">
-          <button
-            onClick={() => sendWA('joaquin')}
-            className="flex items-center gap-2.5 p-3 rounded-xl bg-green-600/15 border border-green-500/25 hover:bg-green-600/25 transition-colors text-left"
-          >
-            <Phone className="w-4 h-4 text-green-400 flex-shrink-0" />
-            <div>
-              <p className="text-sm font-medium text-white">Joaquín</p>
-              <p className="text-xs text-white/40">Abrir WhatsApp</p>
-            </div>
-            <ExternalLink className="w-3 h-3 text-white/20 ml-auto" />
-          </button>
-          <button
-            onClick={() => sendWA('carlos')}
-            className="flex items-center gap-2.5 p-3 rounded-xl bg-green-600/15 border border-green-500/25 hover:bg-green-600/25 transition-colors text-left"
-          >
-            <Phone className="w-4 h-4 text-green-400 flex-shrink-0" />
-            <div>
-              <p className="text-sm font-medium text-white">Carlos</p>
-              <p className="text-xs text-white/40">Abrir WhatsApp</p>
-            </div>
-            <ExternalLink className="w-3 h-3 text-white/20 ml-auto" />
-          </button>
-        </div>
-      </section>
-
-      {/* Email rápido */}
-      <section>
-        <h3 className="text-xs font-bold uppercase tracking-wider text-white/40 mb-3">Enviar Email Interno</h3>
-        <div className="space-y-2">
-          <Input
-            value={emailTo}
-            onChange={e => setEmailTo(e.target.value)}
-            placeholder="destinatario@peyuchile.cl"
-            className="bg-white/5 border-white/15 text-white placeholder:text-white/30"
-          />
-          <Textarea
-            value={emailMsg}
-            onChange={e => setEmailMsg(e.target.value)}
-            placeholder="Mensaje..."
-            rows={3}
-            className="bg-white/5 border-white/15 text-white placeholder:text-white/30 resize-none"
-          />
-          <Button
-            onClick={sendEmail}
-            disabled={!emailTo || !emailMsg || sending}
-            className="w-full bg-teal-600 hover:bg-teal-500"
-          >
-            {sending ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Mail className="w-4 h-4 mr-2" />}
-            {sent ? '¡Enviado!' : 'Enviar Email'}
-          </Button>
-        </div>
-      </section>
-    </div>
-  );
-}
-
-// ─── Modal detalle Lead ──────────────────────────────────────────────────────
-function LeadModal({ lead, onClose }) {
-  if (!lead) return null;
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-      <div className="bg-slate-900 border border-white/15 rounded-2xl w-full max-w-md shadow-2xl">
-        <div className="flex items-center justify-between p-5 border-b border-white/10">
-          <div>
-            <h3 className="text-base font-bold text-white">{lead.company_name || lead.contact_name}</h3>
-            <p className="text-xs text-white/40 mt-0.5">{lead.source} · {lead.status}</p>
-          </div>
-          <button onClick={onClose} className="text-white/30 hover:text-white transition-colors">
-            <X className="w-5 h-5" />
-          </button>
-        </div>
-        <div className="p-5 space-y-3">
-          {[
-            ['Contacto', lead.contact_name],
-            ['Email', lead.email],
-            ['Teléfono', lead.phone],
-            ['Producto', lead.product_interest],
-            ['Cantidad', lead.qty_estimate ? `${fmtNum(lead.qty_estimate)} u` : null],
-            ['Fecha requerida', lead.delivery_date],
-            ['Lead Score', lead.lead_score ? `${lead.lead_score}/100` : null],
-            ['Notas', lead.notes],
-          ].filter(([, v]) => v).map(([k, v]) => (
-            <div key={k} className="flex justify-between gap-3">
-              <span className="text-xs text-white/40 flex-shrink-0">{k}</span>
-              <span className="text-xs text-white/80 text-right">{v}</span>
-            </div>
-          ))}
-        </div>
-        <div className="p-5 border-t border-white/10 flex gap-2">
-          {lead.email && (
-            <a href={`mailto:${lead.email}`} className="flex-1">
-              <Button variant="outline" className="w-full border-white/15 text-white/70 hover:text-white text-xs">
-                <Mail className="w-3.5 h-3.5 mr-1.5" /> Email
-              </Button>
-            </a>
-          )}
-          {lead.phone && (
-            <a href={`https://wa.me/${lead.phone?.replace(/\D/g,'')}`} target="_blank" rel="noreferrer" className="flex-1">
-              <Button className="w-full bg-green-600 hover:bg-green-500 text-xs">
-                <Phone className="w-3.5 h-3.5 mr-1.5" /> WhatsApp
-              </Button>
-            </a>
-          )}
-          <Button onClick={onClose} variant="ghost" className="text-white/40 hover:text-white px-3">
-            <X className="w-4 h-4" />
-          </Button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ─── Página principal ────────────────────────────────────────────────────────
 export default function AgenteCentral() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [crm, setCrm] = useState({ leads: [], cotizaciones: [], pedidos: [], productos: [] });
-  const [activeTab, setActiveTab] = useState('agente');
-  const [selectedLead, setSelectedLead] = useState(null);
+  const [activos, setActivos] = useState(['ventas', 'datos']); // sub-agentes activos
+  const [messages, setMessages] = useState([]);
+  const [input, setInput] = useState('');
+  const [thinking, setThinking] = useState(false);
+  const [busyId, setBusyId] = useState(null);
+  const bottomRef = useRef(null);
 
+  // ── Carga de datos del CRM ────────────────────────────────────────────
   const loadData = async (isRefresh = false) => {
-    if (isRefresh) setRefreshing(true);
-    else setLoading(true);
-
+    isRefresh ? setRefreshing(true) : setLoading(true);
     const [leads, cotizaciones, pedidos, productos] = await Promise.all([
       base44.entities.B2BLead.list('-created_date', 100),
       base44.entities.CorporateProposal.list('-created_date', 50),
       base44.entities.PedidoWeb.list('-created_date', 50),
-      base44.entities.Producto.filter({ activo: true }, '-updated_date', 50),
+      base44.entities.Producto.filter({ activo: true }, '-updated_date', 80),
     ]);
-
     setCrm({ leads: leads || [], cotizaciones: cotizaciones || [], pedidos: pedidos || [], productos: productos || [] });
     setLoading(false);
     setRefreshing(false);
@@ -569,120 +55,183 @@ export default function AgenteCentral() {
 
   useEffect(() => { loadData(); }, []);
 
-  // KPIs calculados
-  const leadsActivos = crm.leads.filter(l => !['Aceptado','Perdido'].includes(l.status)).length;
-  const cotAbiertas = crm.cotizaciones.filter(c => c.status === 'Enviada').length;
-  const pedidosEnCurso = crm.pedidos.filter(p => !['Entregado','Cancelado'].includes(p.estado)).length;
-  const leadsNuevos = crm.leads.filter(l => l.status === 'Nuevo').length;
-  const ventasMes = crm.pedidos
-    .filter(p => {
-      const f = new Date(p.fecha || p.created_date);
-      return f.getMonth() === new Date().getMonth() && f.getFullYear() === new Date().getFullYear();
-    })
-    .reduce((s, p) => s + (p.total || 0), 0);
-  const tasaCierre = crm.leads.length > 0
-    ? Math.round((crm.leads.filter(l => l.status === 'Aceptado').length / crm.leads.length) * 100)
-    : 0;
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages, thinking]);
 
-  const TABS = [
-    { id: 'agente', label: '🐢 Agente', icon: Bot },
-    { id: 'leads', label: '🎯 Leads', badge: leadsNuevos || null },
-    { id: 'cotizaciones', label: '📄 Cotizaciones', badge: cotAbiertas || null },
-    { id: 'pedidos', label: '📦 Pedidos', badge: pedidosEnCurso || null },
-    { id: 'acciones', label: '⚡ Acciones' },
-  ];
+  // ── KPIs reales ───────────────────────────────────────────────────────
+  const cotActivas = crm.cotizaciones.filter((c) => !['Aceptada', 'Rechazada'].includes(c.status));
+  const cotEnviadas = crm.cotizaciones.filter((c) => c.status === 'Enviada');
+  const porVencer = crm.cotizaciones.filter((c) => {
+    const d = diasParaVencer(c.fecha_vencimiento);
+    return d != null && d >= 0 && d <= 3 && !['Aceptada', 'Rechazada'].includes(c.status);
+  }).length;
+  const totalCot = cotActivas.reduce((s, c) => s + (c.total || 0), 0);
+  const kpis = {
+    pipelineB2B: crm.leads.filter((l) => !['Aceptado', 'Perdido'].includes(l.status)).length,
+    cotizaciones: cotEnviadas.length,
+    ticketPromedio: cotActivas.length ? Math.round(totalCot / cotActivas.length) : 0,
+    porVencer,
+  };
 
-  const kpis = { leadsActivos, cotAbiertas, pedidosEnCurso, leadsNuevos, ventasMes, tasaCierre };
+  // ── Contexto para el LLM ──────────────────────────────────────────────
+  const buildContext = () => {
+    const leadsHot = crm.leads.filter((l) => l.urgencia === 'Alta' || l.lead_score >= 70);
+    return `Eres Peyu, el agente de comando interno de PEYU Chile (marca artesanal sustentable: "Hasta que el plástico deje de ser basura"). Hablas en español, cálido pero directo, breve. Datos REALES de hoy ${new Date().toLocaleDateString('es-CL')}:
+
+LEADS B2B activos: ${kpis.pipelineB2B} (calientes: ${leadsHot.length})
+COTIZACIONES enviadas abiertas: ${kpis.cotizaciones} · por vencer ≤3d: ${porVencer} · ticket promedio: ${fmtCLP(kpis.ticketPromedio)}
+PEDIDOS activos: ${crm.pedidos.filter((p) => !['Entregado', 'Cancelado'].includes(p.estado)).length}
+
+Cotizaciones que vencen pronto:
+${crm.cotizaciones.filter((c) => { const d = diasParaVencer(c.fecha_vencimiento); return d != null && d >= 0 && d <= 5; }).slice(0, 5).map((c) => `• ${c.empresa} · ${fmtCLP(c.total)} · vence en ${diasParaVencer(c.fecha_vencimiento)}d`).join('\n') || '• ninguna'}
+
+Cuando el usuario pida datos, responde con UNA o DOS frases cálidas (la pantalla mostrará los bloques de datos automáticamente, NO los listes en texto largo). Si pregunta algo general, sé útil y conciso.`;
+  };
+
+  // ── Enviar mensaje ────────────────────────────────────────────────────
+  const sendMessage = async (text) => {
+    const content = (text ?? input).trim();
+    if (!content || thinking) return;
+    const userMsg = { role: 'user', content };
+    setMessages((prev) => [...prev, userMsg]);
+    setInput('');
+    setThinking(true);
+
+    const intent = detectIntent(content, crm.productos);
+    const history = [...messages, userMsg].map((m) => `${m.role === 'user' ? 'Usuario' : 'Peyu'}: ${m.content}`).join('\n\n');
+
+    const response = await base44.integrations.Core.InvokeLLM({
+      prompt: `${buildContext()}\n\n=== CONVERSACIÓN ===\n${history}\n\nPeyu:`,
+      model: 'claude_sonnet_4_6',
+    });
+
+    // Adjuntar bloques hidratados según intención
+    const blocks = intent.blocks.map((type) => ({ type, product: type === 'product' ? intent.product : undefined }));
+    setMessages((prev) => [...prev, { role: 'assistant', content: response, blocks }]);
+    setThinking(false);
+  };
+
+  // ── Acciones reales sobre cotizaciones ────────────────────────────────
+  const handleAction = async (action, cot) => {
+    if (action === 'whatsapp') {
+      const tel = (cot.email && TEAM_PHONES.joaquin) || TEAM_PHONES.joaquin;
+      const msg = encodeURIComponent(
+        `Hola ${cot.contacto || cot.empresa}, te escribo desde PEYU sobre tu cotización ${cot.numero || ''} por ${fmtCLP(cot.total)}. ¿Conversamos para avanzar?`
+      );
+      window.open(`https://wa.me/${tel}?text=${msg}`, '_blank');
+      return;
+    }
+
+    if (action === 'archivar') {
+      setBusyId(cot.id);
+      await base44.entities.CorporateProposal.update(cot.id, { status: 'Vencida' });
+      await loadData(true);
+      setBusyId(null);
+      setMessages((prev) => [...prev, { role: 'assistant', content: `Listo, archivé la cotización de **${cot.empresa}** como vencida.` }]);
+      return;
+    }
+
+    if (action === 'propuesta') {
+      setBusyId(cot.id);
+      // Reusar funciones reales existentes: generar PDF + enviar por email
+      await base44.functions.invoke('generateProposalPDF', { proposalId: cot.id });
+      if (cot.email) {
+        await base44.functions.invoke('sendProposalEmail', { proposalId: cot.id });
+      }
+      await loadData(true);
+      setBusyId(null);
+      setMessages((prev) => [...prev, {
+        role: 'assistant',
+        content: cot.email
+          ? `Generé la propuesta de **${cot.empresa}** y la envié a ${cot.email}. ✅`
+          : `Generé la propuesta de **${cot.empresa}**. No tiene email registrado, así que quedó lista para descargar.`,
+      }]);
+      return;
+    }
+  };
+
+  const toggleAgente = (id) =>
+    setActivos((prev) => (prev.includes(id) ? prev.filter((a) => a !== id) : [...prev, id]));
 
   return (
-    // Centro de comando autocontenido: fondo oscuro FIJO (no depende del modo
-    // día/noche del Layout admin) para garantizar contraste y look "command center".
-    // data-liquid-mode="night" fuerza el modo noche LOCALMENTE, evitando que el
-    // compat-layer del modo día convierta los `text-white` / `bg-white/X` en
-    // colores oscuros (lo que producía texto oscuro sobre fondo oscuro).
-    <div data-liquid-mode="night" className="relative min-h-screen flex flex-col text-white overflow-hidden"
-      style={{ background: 'radial-gradient(130% 90% at 100% 0%, #0B3A33 0%, #071018 45%, #04070D 100%)' }}>
-      {/* Ambient glows */}
-      <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div className="absolute -top-32 right-0 w-[28rem] h-[28rem] rounded-full bg-teal-500/10 blur-[120px]" />
-        <div className="absolute bottom-0 -left-20 w-96 h-96 rounded-full bg-violet-600/8 blur-[120px]" />
-      </div>
+    <div className="flex h-screen bg-[#fbfaf7] text-[#22302c] font-inter overflow-hidden">
+      {/* Riel izquierdo */}
+      <AgentRail activos={activos} onToggle={toggleAgente} />
 
-      {/* Header */}
-      <div className="relative border-b border-white/10 px-4 sm:px-6 py-4 bg-white/[0.02] backdrop-blur-sm">
-        <div className="flex items-center justify-between gap-3">
-          <div className="flex items-center gap-3 min-w-0">
-            <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-teal-400/30 to-emerald-500/20 border border-teal-400/30 flex items-center justify-center text-xl shadow-lg shadow-teal-500/20 flex-shrink-0">
+      {/* Canvas central */}
+      <div className="flex-1 flex flex-col min-w-0">
+        {/* Topbar */}
+        <header className="flex-shrink-0 border-b border-[#ece4d8] bg-[#fbfaf7]/90 backdrop-blur-sm">
+          <div className="max-w-[880px] mx-auto px-4 sm:px-6 py-3 flex items-center justify-between gap-3">
+            <div className="min-w-0">
+              <div className="flex items-center gap-2">
+                <h1 className="text-lg font-poppins font-bold text-[#22302c] leading-none">PEYU OS</h1>
+                <span className="hidden sm:inline-flex items-center text-[11px] font-medium text-[#0F8B6C] bg-[#0F8B6C]/10 px-2 py-0.5 rounded-full">
+                  {activos.length} agentes
+                </span>
+              </div>
+              <p className="text-[11px] text-[#6f7d77] mt-0.5 truncate italic">Hasta que el plástico deje de ser basura</p>
+            </div>
+            <div className="flex items-center gap-2 flex-shrink-0">
+              <span className="hidden sm:inline-flex items-center gap-1.5 text-[11px] font-medium text-[#D96B4D] bg-[#D96B4D]/10 px-2.5 py-1 rounded-full">
+                🔒 Admin
+              </span>
+              <button
+                onClick={() => loadData(true)}
+                disabled={refreshing}
+                className="w-9 h-9 rounded-xl bg-white border border-[#ece4d8] hover:border-[#0F8B6C]/40 flex items-center justify-center text-[#6f7d77] hover:text-[#22302c] transition disabled:opacity-50"
+                aria-label="Refrescar"
+              >
+                <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
+              </button>
+            </div>
+          </div>
+        </header>
+
+        {/* Conversación */}
+        {loading ? (
+          <div className="flex-1 flex items-center justify-center gap-3 text-[#9aa6a0]">
+            <Loader2 className="w-5 h-5 animate-spin" />
+            <span className="text-sm">Cargando tu negocio…</span>
+          </div>
+        ) : messages.length === 0 ? (
+          <div className="flex-1 flex flex-col items-center justify-center px-6 text-center">
+            <div className="w-16 h-16 rounded-3xl bg-white border border-[#e7d8c6] flex items-center justify-center text-3xl shadow-sm mb-4">
               🐢
             </div>
-            <div className="min-w-0">
-              <h1 className="text-base sm:text-lg font-extrabold text-white font-jakarta leading-tight truncate">Centro de Comando</h1>
-              <p className="text-[11px] text-white/45 leading-none mt-0.5 truncate">Agente IA · CRM en tiempo real · Acciones directas</p>
+            <h2 className="text-2xl font-poppins font-bold text-[#22302c]">Hola equipo PEYU 👋</h2>
+            <p className="text-sm text-[#6f7d77] mt-2 max-w-md leading-relaxed">
+              Soy Peyu. Pregúntame por las cotizaciones, qué vence pronto, cómo va la producción o un producto del catálogo.
+              La pantalla se arma sola con los datos reales.
+            </p>
+            <div className="flex flex-wrap items-center justify-center gap-2 mt-6 max-w-lg">
+              {SUGERENCIAS.map((s) => (
+                <button
+                  key={s}
+                  onClick={() => sendMessage(s)}
+                  className="text-sm px-3.5 py-2 rounded-full bg-white border border-[#e7d8c6] text-[#6f7d77] hover:text-[#22302c] hover:border-[#0F8B6C]/40 transition-colors"
+                >
+                  {s}
+                </button>
+              ))}
             </div>
           </div>
-          <div className="flex items-center gap-2 flex-shrink-0">
-            <span className="hidden sm:inline-flex items-center gap-1.5 text-[11px] font-bold text-rose-300 bg-rose-500/15 border border-rose-400/25 px-2.5 py-1 rounded-full">
-              🔒 Admin Only
-            </span>
-            <button
-              onClick={() => loadData(true)}
-              disabled={refreshing}
-              className="w-9 h-9 rounded-xl bg-white/[0.06] border border-white/10 hover:bg-white/[0.12] flex items-center justify-center text-white/60 hover:text-white transition disabled:opacity-50"
-              aria-label="Refrescar"
-            >
-              <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* KPI Strip */}
-      <div className="relative border-b border-white/10">
-        <KPIStrip k={kpis} loading={loading} />
-      </div>
-
-      {/* Tabs nav */}
-      <div className="relative flex items-center gap-1.5 px-4 sm:px-6 py-3 border-b border-white/10 overflow-x-auto scrollbar-hide">
-        {TABS.map(tab => (
-          <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
-            className={`relative flex items-center gap-2 px-3.5 py-2 rounded-xl text-sm font-semibold transition-all whitespace-nowrap ${
-              activeTab === tab.id
-                ? 'bg-teal-500/20 border border-teal-400/40 text-teal-200 shadow-lg shadow-teal-500/10'
-                : 'text-white/50 hover:text-white hover:bg-white/[0.05] border border-transparent'
-            }`}
-          >
-            {tab.label}
-            {tab.badge > 0 && (
-              <span className="min-w-[18px] h-[18px] px-1 rounded-full bg-rose-500 text-white text-[10px] font-bold flex items-center justify-center">
-                {tab.badge}
-              </span>
-            )}
-          </button>
-        ))}
-      </div>
-
-      {/* Tab content */}
-      <div className="relative flex-1 overflow-hidden" style={{ height: 'calc(100vh - 290px)' }}>
-        {loading ? (
-          <div className="flex items-center justify-center h-full gap-3 text-white/30">
-            <Loader2 className="w-5 h-5 animate-spin" />
-            <span className="text-sm">Cargando datos del CRM...</span>
-          </div>
         ) : (
-          <>
-            {activeTab === 'agente' && <TabAgente crm={crm} />}
-            {activeTab === 'leads' && <TabLeads leads={crm.leads} onSelectLead={setSelectedLead} />}
-            {activeTab === 'cotizaciones' && <TabCotizaciones cotizaciones={crm.cotizaciones} />}
-            {activeTab === 'pedidos' && <TabPedidos pedidos={crm.pedidos} />}
-            {activeTab === 'acciones' && <TabAcciones crm={crm} />}
-          </>
+          <MessageStream
+            messages={messages}
+            crm={crm}
+            kpis={kpis}
+            onAction={handleAction}
+            busyId={busyId}
+            loading={thinking}
+            bottomRef={bottomRef}
+          />
         )}
-      </div>
 
-      {/* Modal detalle lead */}
-      {selectedLead && <LeadModal lead={selectedLead} onClose={() => setSelectedLead(null)} />}
+        {/* Composer flotante */}
+        <Composer value={input} onChange={setInput} onSend={() => sendMessage()} loading={thinking} />
+      </div>
     </div>
   );
 }
