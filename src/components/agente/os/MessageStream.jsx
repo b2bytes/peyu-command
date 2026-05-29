@@ -3,6 +3,8 @@
 // Renderiza burbujas de texto + los bloques hidratados que el agente adjunta.
 // ============================================================================
 import ReactMarkdown from 'react-markdown';
+import { Volume2, VolumeX, Loader2 } from 'lucide-react';
+import useVoz from './useVoz';
 import KpiBlock from './blocks/KpiBlock';
 import QuotesBlock from './blocks/QuotesBlock';
 import UrgentAlertBlock from './blocks/UrgentAlertBlock';
@@ -32,6 +34,7 @@ function Blocks({ blocks, crm, kpis, onAction, busyId, onEjecutarAccion, onEnvia
 }
 
 export default function MessageStream({ messages, crm, kpis, onAction, busyId, loading, bottomRef, onEjecutarAccion, onEnviarMensaje, onEjecutarHerramienta }) {
+  const { hablar, hablandoId, cargandoId } = useVoz();
   return (
     <div className="flex-1 overflow-y-auto peyu-scrollbar px-3 sm:px-6 py-6">
       <div className="max-w-[880px] mx-auto space-y-5">
@@ -71,6 +74,20 @@ export default function MessageStream({ messages, crm, kpis, onAction, busyId, l
                   </ReactMarkdown>
                 )}
               </div>
+              )}
+              {m.role === 'assistant' && m.content && m.content.trim() && (
+                <button
+                  onClick={() => hablar(i, m.content)}
+                  className="mt-1.5 inline-flex items-center gap-1.5 text-[11px] font-medium text-[#6f7d77] hover:text-[#0F8B6C] transition-colors"
+                >
+                  {cargandoId === i ? (
+                    <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Generando voz…</>
+                  ) : hablandoId === i ? (
+                    <><VolumeX className="w-3.5 h-3.5" /> Detener</>
+                  ) : (
+                    <><Volume2 className="w-3.5 h-3.5" /> Escuchar</>
+                  )}
+                </button>
               )}
               {m.role === 'assistant' && (
                 <Blocks blocks={m.blocks} crm={crm} kpis={kpis} onAction={onAction} busyId={busyId} onEjecutarAccion={onEjecutarAccion} onEnviarMensaje={onEnviarMensaje} onEjecutarHerramienta={onEjecutarHerramienta} />
