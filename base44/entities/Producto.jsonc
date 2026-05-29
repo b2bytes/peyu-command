@@ -58,6 +58,58 @@
       "type": "number",
       "title": "Precio 500+ u (CLP)"
     },
+    "precio_unitario_oficial_clp": {
+      "type": "number",
+      "title": "Precio unitario oficial (CLP, sin IVA)"
+    },
+    "precio_10_49_clp": {
+      "type": "number",
+      "title": "Precio 10-49 u (CLP, sin IVA)"
+    },
+    "precio_50_99_clp": {
+      "type": "number",
+      "title": "Precio 50-99 u (CLP, sin IVA)"
+    },
+    "precio_100_249_clp": {
+      "type": "number",
+      "title": "Precio 100-249 u (CLP, sin IVA)"
+    },
+    "precio_250_499_clp": {
+      "type": "number",
+      "title": "Precio 250-499 u (CLP, sin IVA)"
+    },
+    "precio_500_999_clp": {
+      "type": "number",
+      "title": "Precio 500-999 u (CLP, sin IVA)"
+    },
+    "precio_1000_1999_clp": {
+      "type": "number",
+      "title": "Precio 1000-1999 u (CLP, sin IVA)"
+    },
+    "precio_2000_mas_clp": {
+      "type": "number",
+      "title": "Precio 2000+ u (CLP, sin IVA)"
+    },
+    "incluye": {
+      "type": "string",
+      "title": "Incluye",
+      "description": "Qu\u00e9 trae el producto"
+    },
+    "dimensiones": {
+      "type": "string",
+      "title": "Dimensiones",
+      "description": "Medidas y peso"
+    },
+    "tapitas_aprox": {
+      "type": "number",
+      "title": "Tapitas aprox.",
+      "description": "Tapitas pl\u00e1sticas aprox usadas"
+    },
+    "catalogo_oficial_verificado": {
+      "type": "boolean",
+      "title": "Cat\u00e1logo oficial verificado",
+      "description": "Marca si el producto ya fue validado contra el cat\u00e1logo PDF oficial"
+    },
     "moq_personalizacion": {
       "type": "number",
       "title": "MOQ Personalizaci\u00f3n (u)",
@@ -66,7 +118,8 @@
     "personalizacion_gratis_desde": {
       "type": "number",
       "title": "Personalizaci\u00f3n gratis desde (u)",
-      "default": 10
+      "default": 10,
+      "description": "Unidades m\u00ednimas para logo l\u00e1ser gratis"
     },
     "area_laser_mm": {
       "type": "string",
