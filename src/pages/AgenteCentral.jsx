@@ -134,18 +134,29 @@ Cuando el usuario pida datos, responde con UNA o DOS frases cálidas (la pantall
 
     if (action === 'propuesta') {
       setBusyId(cot.id);
-      // Reusar funciones reales existentes: generar PDF + enviar por email
-      await base44.functions.invoke('generateProposalPDF', { proposalId: cot.id });
-      if (cot.email) {
-        await base44.functions.invoke('sendProposalEmail', { proposalId: cot.id });
+      // Reusar funciones reales existentes: generar PDF + enviar por email.
+      // El PDF siempre se genera; el envío de email puede fallar (p. ej. el
+      // correo del cliente está fuera de la app) sin romper toda la acción.
+      let emailOk = false;
+      let emailMsg = '';
+      try {
+        await base44.functions.invoke('generateProposalPDF', { proposalId: cot.id });
+        if (cot.email) {
+          await base44.functions.invoke('sendProposalEmail', { proposalId: cot.id });
+          emailOk = true;
+        }
+      } catch (e) {
+        emailMsg = e?.response?.data?.error || e?.message || 'no se pudo enviar el email';
       }
       await loadData(true);
       setBusyId(null);
       setMessages((prev) => [...prev, {
         role: 'assistant',
-        content: cot.email
-          ? `Generé la propuesta de **${cot.empresa}** y la envié a ${cot.email}. ✅`
-          : `Generé la propuesta de **${cot.empresa}**. No tiene email registrado, así que quedó lista para descargar.`,
+        content: !cot.email
+          ? `Generé la propuesta de **${cot.empresa}**. No tiene email registrado, así que quedó lista para descargar.`
+          : emailOk
+            ? `Generé la propuesta de **${cot.empresa}** y la envié a ${cot.email}. ✅`
+            : `Generé la propuesta de **${cot.empresa}**, pero el envío por email no salió (${emailMsg}). Quedó lista para descargar o enviar por WhatsApp.`,
       }]);
       return;
     }
