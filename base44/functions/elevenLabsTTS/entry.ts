@@ -31,8 +31,15 @@ Deno.serve(async (req) => {
         },
         body: JSON.stringify({
           text: clean,
-          model_id: 'eleven_multilingual_v2',
-          voice_settings: { stability: 0.5, similarity_boost: 0.75, style: 0.2 },
+          // turbo v2.5: baja latencia para conversación voz-a-voz fluida,
+          // manteniendo soporte multilingüe (español natural).
+          model_id: 'eleven_turbo_v2_5',
+          voice_settings: {
+            stability: 0.45,
+            similarity_boost: 0.8,
+            style: 0.35,
+            use_speaker_boost: true,
+          },
         }),
       }
     );

@@ -16,6 +16,8 @@ import { useState, useEffect, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
 import { RefreshCw, Loader2, MessageSquare, Columns3, Volume2, VolumeX } from 'lucide-react';
 import useVoz from '@/components/agente/os/useVoz';
+import useGrabacion from '@/components/agente/os/useGrabacion';
+import { PEYU_ADN } from '@/components/agente/os/peyu-brain';
 import AgentRail from '@/components/agente/os/AgentRail';
 import LeadKanban from '@/components/agente/os/kanban/LeadKanban';
 import Composer from '@/components/agente/os/Composer';
@@ -44,6 +46,14 @@ export default function AgenteCentral() {
   const [autoVoz, setAutoVoz] = useState(false); // lectura automática de respuestas
   const voz = useVoz();
   const bottomRef = useRef(null);
+  // Marca que el último turno entró por voz → forzamos respuesta hablada
+  // aunque el modo auto-voz global esté apagado (conversación voz-a-voz).
+  const vozTurnoRef = useRef(false);
+
+  // Grabación de audio → transcripción → enviar como mensaje (voz-a-voz).
+  const { grabando, procesando, iniciar: iniciarGrab, detener: detenerGrab } = useGrabacion({
+    onTranscrito: (texto) => { vozTurnoRef.current = true; sendMessage(texto); },
+  });
 
   // ── Carga de datos del CRM ────────────────────────────────────────────
   const loadData = async (isRefresh = false) => {
@@ -74,11 +84,14 @@ export default function AgenteCentral() {
   // Lectura automática: cuando termina de pensar y la última respuesta es del
   // agente, reproducimos su voz si el modo auto-voz está activo.
   useEffect(() => {
-    if (!autoVoz || thinking) return;
+    if (thinking) return;
     const last = messages[messages.length - 1];
-    if (last?.role === 'assistant' && last.content?.trim()) {
-      voz.hablar(messages.length - 1, last.content);
-    }
+    if (last?.role !== 'assistant' || !last.content?.trim()) return;
+    // Habla si: el modo auto-voz está activo, O el último turno entró por voz
+    // (conversación voz-a-voz fluida aunque el toggle global esté apagado).
+    const debeHablar = autoVoz || vozTurnoRef.current;
+    vozTurnoRef.current = false;
+    if (debeHablar) voz.hablar(messages.length - 1, last.content);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [messages.length, thinking]);
 
@@ -100,7 +113,9 @@ export default function AgenteCentral() {
   // ── Contexto para el LLM ──────────────────────────────────────────────
   const buildContext = () => {
     const leadsHot = crm.leads.filter((l) => l.urgencia === 'Alta' || l.lead_score >= 70);
-    return `Eres Peyu — el MISMO Superagent que opera el negocio de PEYU Chile (marca artesanal sustentable: "Hasta que el plástico deje de ser basura"), con la misma memoria, personalidad y criterio que en el resto del sistema. No eres un asistente distinto: eres el agente interno de comando que ya conoce el negocio. Hablas en español, cálido pero directo, breve. Cuando recibas la sección "DATOS OPERATIVOS EN VIVO", trátala como la fuente de verdad por sobre cualquier otra cifra. Datos REALES de hoy ${new Date().toLocaleDateString('es-CL')}:
+    return `${PEYU_ADN}
+
+Eres Peyu — el MISMO Superagent que opera el negocio de PEYU Chile (marca artesanal sustentable: "Hasta que el plástico deje de ser basura"), con la misma memoria, personalidad y criterio que en el resto del sistema. No eres un asistente distinto: eres el agente interno de comando que ya conoce el negocio. Hablas en español, cálido pero directo, breve. Cuando recibas la sección "DATOS OPERATIVOS EN VIVO", trátala como la fuente de verdad por sobre cualquier otra cifra. Datos REALES de hoy ${new Date().toLocaleDateString('es-CL')}:
 
 LEADS B2B activos: ${kpis.pipelineB2B} (calientes: ${leadsHot.length})
 COTIZACIONES enviadas abiertas: ${kpis.cotizaciones} · por vencer ≤3d: ${porVencer} · ticket promedio: ${fmtCLP(kpis.ticketPromedio)}
@@ -522,7 +537,16 @@ Stock bajo (<10u): ${m.stock_bajo} SKUs`;
         )}
 
         {/* Composer flotante */}
-        <Composer value={input} onChange={setInput} onSend={() => sendMessage()} loading={thinking} />
+        <Composer
+          value={input}
+          onChange={setInput}
+          onSend={() => sendMessage()}
+          loading={thinking}
+          grabando={grabando}
+          procesando={procesando}
+          onMicStart={() => { voz.detener(); iniciarGrab(); }}
+          onMicStop={detenerGrab}
+        />
         </>
         )}
       </div>
