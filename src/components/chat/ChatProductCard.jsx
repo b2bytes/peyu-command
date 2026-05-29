@@ -2,6 +2,7 @@ import { useEffect, useState, memo } from 'react';
 import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { getProductImage } from '@/utils/productImages';
+import { getCatalogPriceForQty, getUnitBasePrice } from '@/lib/catalog-pricing';
 import {
   ShoppingCart, Building2, Sparkles, Package, Check, Recycle,
   Star, Zap, Truck, TrendingDown,
@@ -32,7 +33,8 @@ function markAgentNavigation() {
 
 function addToCart(producto, cantidad) {
   const carrito = JSON.parse(localStorage.getItem('carrito') || '[]');
-  const precio = Math.floor((producto.precio_b2c || 9990) * 0.85);
+  // Precio unitario oficial según cantidad (sin descuentos fabricados).
+  const precio = getCatalogPriceForQty(producto, cantidad || 1).precio || getUnitBasePrice(producto);
   const nuevoItem = {
     id: Math.random(),
     productoId: producto.id,
@@ -46,17 +48,6 @@ function addToCart(producto, cantidad) {
   carrito.push(nuevoItem);
   localStorage.setItem('carrito', JSON.stringify(carrito));
   window.dispatchEvent(new CustomEvent('peyu:cart-added', { detail: nuevoItem }));
-}
-
-// Precio según cantidad — espejo de las reglas del agente
-function getPriceForQty(p, qty) {
-  if (!p) return { precio: 0, label: '', descuento: null };
-  if (qty >= 500 && p.precio_500_mas) return { precio: p.precio_500_mas, label: 'Precio 500+ u', tier: 'maxvol' };
-  if (qty >= 200 && p.precio_200_499) return { precio: p.precio_200_499, label: 'Precio 200-499 u', tier: 'vol' };
-  if (qty >= 50 && p.precio_50_199) return { precio: p.precio_50_199, label: 'Precio 50-199 u', tier: 'vol' };
-  if (qty >= 10 && p.precio_base_b2b) return { precio: p.precio_base_b2b, label: 'Precio B2B', tier: 'b2b' };
-  const online = Math.floor((p.precio_b2c || 9990) * 0.85);
-  return { precio: online, label: '-15% online', tier: 'b2c' };
 }
 
 // Mini-historia contextual del producto (muy breve, 1 frase)
@@ -138,8 +129,8 @@ function ChatProductCard({ sku, variant = 'dark' }) {
   if (!producto) return null;
 
   const img = getProductImage(producto);
-  const { precio, label: priceLabel, tier } = getPriceForQty(producto, qtyHint || 1);
-  const precioOnlineB2C = Math.floor((producto.precio_b2c || 9990) * 0.85);
+  const { precio, label: priceLabel, baseUnit, ahorroPct } = getCatalogPriceForQty(producto, qtyHint || 1);
+  const precioUnitario = getUnitBasePrice(producto);
   const story = buildStory(producto, isB2B, qtyHint || 1);
 
   const b2bUrl = `/b2b/contacto?productoId=${producto.id}&nombre=${encodeURIComponent(producto.nombre || '')}${qtyHint ? `&qty=${qtyHint}` : ''}${producto.moq_personalizacion ? '&personalizacion=1' : ''}&from=chat&notas=${encodeURIComponent('Solicitud iniciada desde chat Peyu. Producto: ' + producto.nombre + (qtyHint ? ` · Cantidad sugerida: ${qtyHint}u.` : ''))}`;
@@ -207,6 +198,11 @@ function ChatProductCard({ sku, variant = 'dark' }) {
               ${precio.toLocaleString('es-CL')}
             </span>
             <span className={`text-[9.5px] ${mutedColor}`}>· {priceLabel}</span>
+            {ahorroPct > 0 && (
+              <span className={`text-[9px] font-bold px-1 py-0.5 rounded ${dark ? 'bg-emerald-500/20 text-emerald-200' : 'bg-emerald-50 text-emerald-700'}`}>
+                −{ahorroPct}% por volumen
+              </span>
+            )}
             {isB2B && qtyHint && (
               <span className={`text-[9.5px] font-bold ${accentColor} flex items-center gap-0.5 ml-auto`}>
                 <TrendingDown className="w-2.5 h-2.5" /> ${(precio * qtyHint).toLocaleString('es-CL')}
@@ -255,7 +251,7 @@ function ChatProductCard({ sku, variant = 'dark' }) {
             >
               {added
                 ? <><Check className="w-3 h-3" /> Agregado</>
-                : <><ShoppingCart className="w-3 h-3" /> Agregar ${precioOnlineB2C.toLocaleString('es-CL')}</>}
+                : <><ShoppingCart className="w-3 h-3" /> Agregar ${precioUnitario.toLocaleString('es-CL')}</>}
             </button>
             <Link to={`/producto/${producto.id}`} onClick={markAgentNavigation}>
               <button className={`flex items-center justify-center gap-1 text-[11px] font-semibold rounded-lg py-2 px-2.5 transition-all border ${dark ? 'bg-white/10 hover:bg-white/20 border-white/20 text-white/80' : 'bg-gray-50 hover:bg-gray-100 border-gray-200 text-gray-700'}`}>

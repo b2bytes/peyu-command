@@ -9,6 +9,7 @@
 import { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { FileDown, Loader2, CheckCircle2, AlertCircle, Sparkles } from 'lucide-react';
+import { getCatalogPriceForQty } from '@/lib/catalog-pricing';
 
 // Lee los datos capturados del chat desde localStorage (los pobla el agente
 // vía CONTEXTO al ir conversando).
@@ -245,12 +246,8 @@ export default function ChatQuoteCard({ spec = '', variant = 'dark' }) {
   );
 }
 
-// Estima precio según las mismas escalas que usa el backend.
+// Estima precio según los tramos oficiales del catálogo.
 function estimaPrecio(producto, qty) {
-  let precio = producto.precio_b2c || 9990;
-  if (qty >= 500 && producto.precio_500_mas) precio = producto.precio_500_mas;
-  else if (qty >= 200 && producto.precio_200_499) precio = producto.precio_200_499;
-  else if (qty >= 50 && producto.precio_50_199) precio = producto.precio_50_199;
-  else if (qty >= 10 && producto.precio_base_b2b) precio = producto.precio_base_b2b;
+  const { precio } = getCatalogPriceForQty(producto, qty);
   return precio * qty;
 }
