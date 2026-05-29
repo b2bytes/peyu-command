@@ -8,8 +8,9 @@ import QuotesBlock from './blocks/QuotesBlock';
 import UrgentAlertBlock from './blocks/UrgentAlertBlock';
 import ProductBlock from './blocks/ProductBlock';
 import ProductionBlock from './blocks/ProductionBlock';
+import AccionBlock from './blocks/AccionBlock';
 
-function Blocks({ blocks, crm, kpis, onAction, busyId }) {
+function Blocks({ blocks, crm, kpis, onAction, busyId, onEjecutarAccion }) {
   if (!blocks?.length) return null;
   return (
     <div className="space-y-3 mt-2">
@@ -19,13 +20,14 @@ function Blocks({ blocks, crm, kpis, onAction, busyId }) {
         if (b.type === 'quotes') return <QuotesBlock key={i} cotizaciones={crm.cotizaciones} onAction={onAction} busyId={busyId} />;
         if (b.type === 'production') return <ProductionBlock key={i} pedidos={crm.pedidos} />;
         if (b.type === 'product') return <ProductBlock key={i} producto={b.product} />;
+        if (b.type === 'accion') return <AccionBlock key={i} accion={b.accion} onEjecutar={onEjecutarAccion} />;
         return null;
       })}
     </div>
   );
 }
 
-export default function MessageStream({ messages, crm, kpis, onAction, busyId, loading, bottomRef }) {
+export default function MessageStream({ messages, crm, kpis, onAction, busyId, loading, bottomRef, onEjecutarAccion }) {
   return (
     <div className="flex-1 overflow-y-auto peyu-scrollbar px-3 sm:px-6 py-6">
       <div className="max-w-[880px] mx-auto space-y-5">
@@ -62,7 +64,7 @@ export default function MessageStream({ messages, crm, kpis, onAction, busyId, l
                 )}
               </div>
               {m.role === 'assistant' && (
-                <Blocks blocks={m.blocks} crm={crm} kpis={kpis} onAction={onAction} busyId={busyId} />
+                <Blocks blocks={m.blocks} crm={crm} kpis={kpis} onAction={onAction} busyId={busyId} onEjecutarAccion={onEjecutarAccion} />
               )}
             </div>
           </div>

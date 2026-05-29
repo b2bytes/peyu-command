@@ -89,7 +89,13 @@ PEDIDOS activos: ${crm.pedidos.filter((p) => !['Entregado', 'Cancelado'].include
 Cotizaciones que vencen pronto:
 ${crm.cotizaciones.filter((c) => { const d = diasParaVencer(c.fecha_vencimiento); return d != null && d >= 0 && d <= 5; }).slice(0, 5).map((c) => `• ${c.empresa} · ${fmtCLP(c.total)} · vence en ${diasParaVencer(c.fecha_vencimiento)}d`).join('\n') || '• ninguna'}
 
-Cuando el usuario pida datos, responde con UNA o DOS frases cálidas (la pantalla mostrará los bloques de datos automáticamente, NO los listes en texto largo). Si pregunta algo general, sé útil y conciso.`;
+Cuando el usuario pida datos, responde con UNA o DOS frases cálidas (la pantalla mostrará los bloques de datos automáticamente, NO los listes en texto largo). Si pregunta algo general, sé útil y conciso.
+
+=== ACCIONES REALES ===
+Puedes proponer cambios reales en la base. Cuando el usuario pida modificar algo (cambiar el estado de un lead, marcar una cotización, actualizar stock o estado de un pedido, etc.), declara una o más acciones en el campo "acciones". Cada acción debe usar IDs REALES tomados del contexto de arriba (jamás inventes un id). Estructura de cada acción:
+{ "entidad": "Lead" | "Cotizacion" | "Pedido" | "Producto", "registro_id": "<id real del contexto>", "cambios": { campo: nuevoValor }, "etiqueta": "texto corto del botón", "detalle": "qué hará en una frase" }
+Campos válidos por entidad: Lead → status (Nuevo, Contactado, En revisión, Propuesta enviada, Aceptado, Perdido); Cotizacion → status (Borrador, Enviada, Aceptada, Rechazada, Vencida); Pedido → estado (Nuevo, Confirmado, En Producción, Listo para Despacho, Despachado, Entregado, Cancelado); Producto → stock_actual, activo.
+Si NO estás seguro del id real, NO declares la acción: pídele al usuario que aclare. Si no hay ninguna acción, devuelve "acciones": [].`;
   };
 
   // ── Enviar mensaje ────────────────────────────────────────────────────
@@ -126,12 +132,52 @@ Stock bajo (<10u): ${m.stock_bajo} SKUs`;
     const response = await base44.integrations.Core.InvokeLLM({
       prompt: `${buildContext()}${liveOps}\n\n=== CONVERSACIÓN ===\n${history}\n\nPeyu:`,
       model: 'claude_sonnet_4_6',
+      response_json_schema: {
+        type: 'object',
+        properties: {
+          mensaje: { type: 'string', description: 'Respuesta cálida y breve para el usuario' },
+          acciones: {
+            type: 'array',
+            items: {
+              type: 'object',
+              properties: {
+                entidad: { type: 'string', enum: ['Lead', 'Cotizacion', 'Pedido', 'Producto'] },
+                registro_id: { type: 'string' },
+                cambios: { type: 'object', additionalProperties: true },
+                etiqueta: { type: 'string' },
+                detalle: { type: 'string' },
+              },
+              required: ['entidad', 'registro_id', 'cambios'],
+            },
+          },
+        },
+        required: ['mensaje'],
+      },
     });
 
-    // Adjuntar bloques hidratados según intención
+    const mensaje = typeof response === 'string' ? response : (response?.mensaje || '');
+    const acciones = (typeof response === 'object' && Array.isArray(response?.acciones)) ? response.acciones : [];
+
+    // Adjuntar bloques hidratados según intención + bloques de acción declarados por el LLM
     const blocks = intent.blocks.map((type) => ({ type, product: type === 'product' ? intent.product : undefined }));
-    setMessages((prev) => [...prev, { role: 'assistant', content: response, blocks }]);
+    acciones.forEach((accion) => blocks.push({ type: 'accion', accion }));
+
+    setMessages((prev) => [...prev, { role: 'assistant', content: mensaje, blocks }]);
     setThinking(false);
+  };
+
+  // ── Ejecutar acción real declarada por el LLM ─────────────────────────
+  const ENTIDAD_MAP = {
+    Lead: 'B2BLead',
+    Cotizacion: 'CorporateProposal',
+    Pedido: 'PedidoWeb',
+    Producto: 'Producto',
+  };
+  const ejecutarAccion = async (accion) => {
+    const entityName = ENTIDAD_MAP[accion.entidad];
+    if (!entityName) throw new Error(`Entidad no soportada: ${accion.entidad}`);
+    await base44.entities[entityName].update(accion.registro_id, accion.cambios);
+    await loadData(true);
   };
 
   // ── Acciones reales sobre cotizaciones ────────────────────────────────
@@ -344,6 +390,7 @@ Stock bajo (<10u): ${m.stock_bajo} SKUs`;
             busyId={busyId}
             loading={thinking}
             bottomRef={bottomRef}
+            onEjecutarAccion={ejecutarAccion}
           />
         )}
 
