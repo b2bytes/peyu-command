@@ -80,7 +80,7 @@ export default function AgenteCentral() {
   // ── Contexto para el LLM ──────────────────────────────────────────────
   const buildContext = () => {
     const leadsHot = crm.leads.filter((l) => l.urgencia === 'Alta' || l.lead_score >= 70);
-    return `Eres Peyu, el agente de comando interno de PEYU Chile (marca artesanal sustentable: "Hasta que el plástico deje de ser basura"). Hablas en español, cálido pero directo, breve. Datos REALES de hoy ${new Date().toLocaleDateString('es-CL')}:
+    return `Eres Peyu — el MISMO Superagent que opera el negocio de PEYU Chile (marca artesanal sustentable: "Hasta que el plástico deje de ser basura"), con la misma memoria, personalidad y criterio que en el resto del sistema. No eres un asistente distinto: eres el agente interno de comando que ya conoce el negocio. Hablas en español, cálido pero directo, breve. Cuando recibas la sección "DATOS OPERATIVOS EN VIVO", trátala como la fuente de verdad por sobre cualquier otra cifra. Datos REALES de hoy ${new Date().toLocaleDateString('es-CL')}:
 
 LEADS B2B activos: ${kpis.pipelineB2B} (calientes: ${leadsHot.length})
 COTIZACIONES enviadas abiertas: ${kpis.cotizaciones} · por vencer ≤3d: ${porVencer} · ticket promedio: ${fmtCLP(kpis.ticketPromedio)}
@@ -104,8 +104,27 @@ Cuando el usuario pida datos, responde con UNA o DOS frases cálidas (la pantall
     const intent = detectIntent(content, crm.productos);
     const history = [...messages, userMsg].map((m) => `${m.role === 'user' ? 'Usuario' : 'Peyu'}: ${m.content}`).join('\n\n');
 
+    // Datos operativos EN VIVO desde el cerebro operacional (fuente de verdad).
+    // No rompe el flujo si falla: el LLM igual responde con el contexto CRM.
+    let liveOps = '';
+    try {
+      const brain = await base44.functions.invoke('peyuBrainOps', { query: content });
+      const m = brain?.data?.metrics;
+      if (m) {
+        liveOps = `\n\n=== DATOS OPERATIVOS EN VIVO (fuente de verdad, ${new Date().toLocaleString('es-CL')}) ===
+Pedidos hoy: ${m.pedidos_hoy} · pagados: ${m.pedidos_pagados_hoy} · en producción: ${m.pedidos_en_produccion} · listos despacho: ${m.pedidos_listos}
+Ingresos hoy: ${fmtCLP(m.ingresos_hoy)} · últimos 7d: ${fmtCLP(m.ingresos_7d)}
+Leads B2B hoy: ${m.leads_hoy} · calientes: ${m.leads_calientes} · activos: ${m.leads_activos}
+Propuestas pendientes: ${m.propuestas_pendientes} · aceptadas hoy: ${m.propuestas_aceptadas_hoy}
+Consultas hoy: ${m.consultas_hoy} · sin responder: ${m.consultas_sin_responder}
+Conversaciones con Peyu hoy: ${m.conversaciones_hoy}
+Envíos en tránsito: ${m.envios_en_transito} · con excepción: ${m.envios_con_excepcion} · entregados hoy: ${m.envios_entregados_hoy}
+Stock bajo (<10u): ${m.stock_bajo} SKUs`;
+      }
+    } catch (_) { /* sin datos en vivo, seguimos con contexto CRM */ }
+
     const response = await base44.integrations.Core.InvokeLLM({
-      prompt: `${buildContext()}\n\n=== CONVERSACIÓN ===\n${history}\n\nPeyu:`,
+      prompt: `${buildContext()}${liveOps}\n\n=== CONVERSACIÓN ===\n${history}\n\nPeyu:`,
       model: 'claude_sonnet_4_6',
     });
 
