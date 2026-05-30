@@ -38,7 +38,12 @@ export default function DailyBriefing({ onAsk }) {
     let alive = true;
     (async () => {
       try {
-        const res = await base44.functions.invoke('peyuBrainOps', { query: 'resumen del día' });
+        // Timeout de 8s: si el backend tarda (red móvil lenta), no dejamos el
+        // spinner girando para siempre — la bienvenida queda usable igual.
+        const res = await Promise.race([
+          base44.functions.invoke('peyuBrainOps', { query: 'resumen del día' }),
+          new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 8000)),
+        ]);
         if (alive) setM(res?.data?.metrics || null);
       } catch (_) { /* silencioso: la bienvenida sigue funcionando sin briefing */ }
       if (alive) setLoading(false);

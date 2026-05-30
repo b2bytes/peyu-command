@@ -63,11 +63,13 @@ export default function AgenteCentral() {
   // ── Carga de datos del CRM ────────────────────────────────────────────
   const loadData = async (isRefresh = false) => {
     isRefresh ? setRefreshing(true) : setLoading(true);
+    // Cada entidad con su propio catch: si una falla (red lenta en móvil,
+    // permisos, timeout), la pantalla NO queda colgada — carga con lo que tenga.
     const [leads, cotizaciones, pedidos, productos, clientes, consultas, envios] = await Promise.all([
-      base44.entities.B2BLead.list('-created_date', 100),
-      base44.entities.CorporateProposal.list('-created_date', 50),
-      base44.entities.PedidoWeb.list('-created_date', 50),
-      base44.entities.Producto.filter({ activo: true }, '-updated_date', 120),
+      base44.entities.B2BLead.list('-created_date', 100).catch(() => []),
+      base44.entities.CorporateProposal.list('-created_date', 50).catch(() => []),
+      base44.entities.PedidoWeb.list('-created_date', 50).catch(() => []),
+      base44.entities.Producto.filter({ activo: true }, '-updated_date', 120).catch(() => []),
       base44.entities.Cliente.list('-updated_date', 80).catch(() => []),
       base44.entities.Consulta.list('-created_date', 40).catch(() => []),
       base44.entities.Envio.list('-created_date', 40).catch(() => []),
@@ -413,7 +415,7 @@ Stock bajo (<10u): ${m.stock_bajo} SKUs`;
     setActivos((prev) => (prev.includes(id) ? prev.filter((a) => a !== id) : [...prev, id]));
 
   return (
-    <div className="flex h-screen bg-[#fbfaf7] text-[#22302c] font-inter overflow-hidden">
+    <div className="flex h-[100dvh] bg-[#fbfaf7] text-[#22302c] font-inter overflow-hidden">
       {/* Riel izquierdo */}
       <AgentRail activos={activos} onToggle={toggleAgente} onOpenMemory={() => setMemoryOpen(true)} />
 
