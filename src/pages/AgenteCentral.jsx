@@ -19,6 +19,7 @@ import useVoz from '@/components/agente/os/useVoz';
 import useGrabacion from '@/components/agente/os/useGrabacion';
 import { PEYU_ADN } from '@/components/agente/os/peyu-brain';
 import AgentRail from '@/components/agente/os/AgentRail';
+import MobileAgentBar from '@/components/agente/os/MobileAgentBar';
 import LeadKanban from '@/components/agente/os/kanban/LeadKanban';
 import Composer from '@/components/agente/os/Composer';
 import MessageStream from '@/components/agente/os/MessageStream';
@@ -549,6 +550,10 @@ Stock bajo (<10u): ${m.stock_bajo} SKUs`;
         />
         </>
         )}
+
+        {/* Barra inferior móvil: sub-agentes + memoria/ajustes (el AgentRail
+            lateral está oculto en celular). Solo visible en móvil. */}
+        <MobileAgentBar activos={activos} onToggle={toggleAgente} />
       </div>
     </div>
   );
