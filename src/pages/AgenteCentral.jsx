@@ -26,6 +26,7 @@ import Composer from '@/components/agente/os/Composer';
 import MessageStream from '@/components/agente/os/MessageStream';
 import QuickActionBar from '@/components/agente/os/QuickActionBar';
 import DailyBriefing from '@/components/agente/os/DailyBriefing';
+import VoiceCommandBar from '@/components/agente/os/VoiceCommandBar';
 import { detectIntent } from '@/components/agente/os/intent';
 import { fmtCLP, diasParaVencer, TEAM_PHONES } from '@/components/agente/os/helpers';
 
@@ -526,6 +527,10 @@ Stock bajo (<10u): ${m.stock_bajo} SKUs`;
                 </button>
               ))}
             </div>
+
+            {/* Comandos rápidos por voz: dictan una instrucción al agente y
+                fuerzan respuesta hablada para ese turno. */}
+            <VoiceCommandBar onCommand={(q) => { vozTurnoRef.current = true; sendMessage(q); }} />
 
             {/* Briefing del día: resumen en vivo con métricas clickeables */}
             <DailyBriefing onAsk={(q) => sendMessage(q)} />
