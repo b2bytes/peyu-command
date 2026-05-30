@@ -20,6 +20,7 @@ import useGrabacion from '@/components/agente/os/useGrabacion';
 import { PEYU_ADN } from '@/components/agente/os/peyu-brain';
 import AgentRail from '@/components/agente/os/AgentRail';
 import MobileAgentBar from '@/components/agente/os/MobileAgentBar';
+import MemoryPanel from '@/components/agente/os/MemoryPanel';
 import LeadKanban from '@/components/agente/os/kanban/LeadKanban';
 import Composer from '@/components/agente/os/Composer';
 import MessageStream from '@/components/agente/os/MessageStream';
@@ -45,6 +46,7 @@ export default function AgenteCentral() {
   const [busyId, setBusyId] = useState(null);
   const [vista, setVista] = useState('chat'); // 'chat' | 'pipeline'
   const [autoVoz, setAutoVoz] = useState(false); // lectura automática de respuestas
+  const [memoryOpen, setMemoryOpen] = useState(false); // panel de memoria (Pinecone)
   const voz = useVoz();
   const bottomRef = useRef(null);
   // Marca que el último turno entró por voz → forzamos respuesta hablada
@@ -411,7 +413,10 @@ Stock bajo (<10u): ${m.stock_bajo} SKUs`;
   return (
     <div className="flex h-screen bg-[#fbfaf7] text-[#22302c] font-inter overflow-hidden">
       {/* Riel izquierdo */}
-      <AgentRail activos={activos} onToggle={toggleAgente} />
+      <AgentRail activos={activos} onToggle={toggleAgente} onOpenMemory={() => setMemoryOpen(true)} />
+
+      {/* Panel de memoria (cerebro Pinecone) */}
+      <MemoryPanel open={memoryOpen} onClose={() => setMemoryOpen(false)} />
 
       {/* Canvas central */}
       <div className="flex-1 flex flex-col min-w-0">
@@ -553,7 +558,7 @@ Stock bajo (<10u): ${m.stock_bajo} SKUs`;
 
         {/* Barra inferior móvil: sub-agentes + memoria/ajustes (el AgentRail
             lateral está oculto en celular). Solo visible en móvil. */}
-        <MobileAgentBar activos={activos} onToggle={toggleAgente} />
+        <MobileAgentBar activos={activos} onToggle={toggleAgente} onOpenMemory={() => setMemoryOpen(true)} />
       </div>
     </div>
   );

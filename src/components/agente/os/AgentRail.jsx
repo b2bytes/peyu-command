@@ -6,7 +6,7 @@
 import { Brain, Settings } from 'lucide-react';
 import { SUB_AGENTES } from './helpers';
 
-export default function AgentRail({ activos = [], onToggle }) {
+export default function AgentRail({ activos = [], onToggle, onOpenMemory }) {
   return (
     <aside className="hidden md:flex w-16 flex-shrink-0 flex-col items-center py-4 border-r border-[#ece4d8] bg-[#f6f1ea]">
       {/* Logo tortuga */}
@@ -42,7 +42,7 @@ export default function AgentRail({ activos = [], onToggle }) {
 
       {/* Memoria + Ajustes */}
       <div className="flex flex-col gap-2.5 mt-3">
-        <button title="Memoria" className="w-11 h-11 rounded-2xl bg-white border border-[#ece4d8] flex items-center justify-center text-[#6f7d77] hover:text-[#22302c] hover:border-[#0F8B6C]/40 transition-colors">
+        <button onClick={onOpenMemory} title="Memoria" className="w-11 h-11 rounded-2xl bg-white border border-[#ece4d8] flex items-center justify-center text-[#6f7d77] hover:text-[#0F8B6C] hover:border-[#0F8B6C]/40 transition-colors">
           <Brain className="w-4.5 h-4.5" />
         </button>
         <button title="Ajustes" className="w-11 h-11 rounded-2xl bg-white border border-[#ece4d8] flex items-center justify-center text-[#6f7d77] hover:text-[#22302c] hover:border-[#0F8B6C]/40 transition-colors">

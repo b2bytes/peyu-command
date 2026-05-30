@@ -9,7 +9,7 @@
 import { Brain, Settings } from 'lucide-react';
 import { SUB_AGENTES } from './helpers';
 
-export default function MobileAgentBar({ activos = [], onToggle }) {
+export default function MobileAgentBar({ activos = [], onToggle, onOpenMemory }) {
   return (
     <nav className="md:hidden flex-shrink-0 border-t border-[#ece4d8] bg-[#f6f1ea]/95 backdrop-blur-sm pb-safe">
       <div className="flex items-center justify-around px-2 py-1.5">
@@ -43,7 +43,7 @@ export default function MobileAgentBar({ activos = [], onToggle }) {
 
         <div className="w-px h-8 bg-[#e7d8c6] mx-0.5" />
 
-        <button title="Memoria" className="flex flex-col items-center gap-0.5 px-1.5 py-1">
+        <button onClick={onOpenMemory} title="Memoria" className="flex flex-col items-center gap-0.5 px-1.5 py-1">
           <span className="w-9 h-9 rounded-2xl bg-white border border-[#ece4d8] flex items-center justify-center text-[#6f7d77]">
             <Brain className="w-4 h-4" />
           </span>
