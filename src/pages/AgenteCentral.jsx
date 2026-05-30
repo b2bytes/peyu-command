@@ -25,6 +25,7 @@ import LeadKanban from '@/components/agente/os/kanban/LeadKanban';
 import Composer from '@/components/agente/os/Composer';
 import MessageStream from '@/components/agente/os/MessageStream';
 import QuickActionBar from '@/components/agente/os/QuickActionBar';
+import DailyBriefing from '@/components/agente/os/DailyBriefing';
 import { detectIntent } from '@/components/agente/os/intent';
 import { fmtCLP, diasParaVencer, TEAM_PHONES } from '@/components/agente/os/helpers';
 
@@ -525,6 +526,9 @@ Stock bajo (<10u): ${m.stock_bajo} SKUs`;
                 </button>
               ))}
             </div>
+
+            {/* Briefing del día: resumen en vivo con métricas clickeables */}
+            <DailyBriefing onAsk={(q) => sendMessage(q)} />
           </div>
         ) : (
           <MessageStream
