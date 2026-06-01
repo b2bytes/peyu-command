@@ -20,8 +20,8 @@ export default function CardProductGrid({ data, perfil, onPick, onAddCart }) {
   };
 
   return (
-    <div className="v2-fade-up w-full max-w-[560px]">
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+    <div className="v2-fade-up w-full max-w-[760px]">
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
         {shown.map((p) => {
           const tramos = p.precio_b2b_tramos || {};
           const desdeB2B = tramos.t2000_mas || tramos.t1000_1999 || tramos.unitario;
@@ -45,13 +45,13 @@ export default function CardProductGrid({ data, perfil, onPick, onAddCart }) {
                   </span>
                 )}
               </div>
-              <div className="p-2 flex-1 flex flex-col">
-                <h4 className="text-[11px] font-semibold leading-tight line-clamp-2" style={{ color: 'var(--v2-fg)' }}>{p.nombre}</h4>
-                <div className="flex items-center gap-1 mt-1">
-                  <span title="Grabado láser"><Sparkles className="w-2.5 h-2.5" style={{ color: 'var(--v2-gold)' }} /></span>
-                  <span title="Garantía 10 años"><ShieldCheck className="w-2.5 h-2.5" style={{ color: 'var(--v2-teal)' }} /></span>
+              <div className="p-2.5 flex-1 flex flex-col">
+                <h4 className="text-xs font-semibold leading-tight line-clamp-2" style={{ color: 'var(--v2-fg)' }}>{p.nombre}</h4>
+                <div className="flex items-center gap-1.5 mt-1.5">
+                  <span title="Grabado láser"><Sparkles className="w-3 h-3" style={{ color: 'var(--v2-gold)' }} /></span>
+                  <span title="Garantía 10 años"><ShieldCheck className="w-3 h-3" style={{ color: 'var(--v2-teal)' }} /></span>
                 </div>
-                <p className="text-xs font-bold mt-auto pt-1" style={{ color: perfil === 'b2b' ? 'var(--v2-teal)' : 'var(--v2-gold)' }}>
+                <p className="text-sm font-bold mt-auto pt-1.5" style={{ color: perfil === 'b2b' ? 'var(--v2-teal)' : 'var(--v2-gold)' }}>
                   {perfil === 'b2b' ? `Desde ${formatCLP(desdeB2B)}` : formatCLP(p.precio_b2c)}
                 </p>
               </div>

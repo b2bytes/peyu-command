@@ -21,57 +21,57 @@ export default function CardProduct({ data, perfil, onAddCart, onQuote }) {
   };
 
   return (
-    <div className="v2-card v2-fade-up overflow-hidden w-full max-w-[300px]">
-      <div className="relative aspect-square overflow-hidden" style={{ background: 'var(--v2-surface-2)' }}>
+    <div className="v2-card v2-fade-up overflow-hidden w-full max-w-[440px] flex sm:flex-row flex-col">
+      <div className="relative sm:w-[190px] w-full sm:aspect-auto aspect-square flex-shrink-0 overflow-hidden" style={{ background: 'var(--v2-surface-2)' }}>
         {p.imagen_url
           ? <img src={p.imagen_url} alt={p.nombre} loading="lazy" decoding="async" className="w-full h-full object-cover" style={{ backfaceVisibility: 'hidden' }} />
-          : <div className="w-full h-full flex items-center justify-center text-4xl">🐢</div>}
-        <span className="v2-badge-eco absolute top-2 left-2 flex items-center gap-1 px-2 py-0.5 text-[9px] font-semibold">
-          <Leaf className="w-2.5 h-2.5" /> 100% reciclado
+          : <div className="w-full h-full flex items-center justify-center text-5xl">🐢</div>}
+        <span className="v2-badge-eco absolute top-2.5 left-2.5 flex items-center gap-1 px-2.5 py-1 text-[10px] font-semibold">
+          <Leaf className="w-3 h-3" /> 100% reciclado
         </span>
       </div>
 
-      <div className="p-3.5">
-        <h3 className="text-sm font-semibold leading-snug line-clamp-2" style={{ color: 'var(--v2-fg)' }}>
+      <div className="p-4 flex-1 min-w-0 flex flex-col">
+        <h3 className="text-[15px] font-semibold leading-snug line-clamp-2 v2-display" style={{ color: 'var(--v2-fg)' }}>
           {p.nombre}
         </h3>
         {p.incluye_v2 && (
-          <p className="text-[11px] mt-1 line-clamp-2" style={{ color: 'var(--v2-fg-muted)' }}>{p.incluye_v2}</p>
+          <p className="text-xs mt-1.5 line-clamp-2 leading-relaxed" style={{ color: 'var(--v2-fg-muted)' }}>{p.incluye_v2}</p>
         )}
 
         {/* Colores */}
-        <div className="flex flex-wrap gap-1.5 mt-2.5">
+        <div className="flex flex-wrap gap-1.5 mt-3">
           {colores.map((c) => (
-            <button key={c} onClick={() => setColor(c)} data-active={color === c} className="v2-chip px-2.5 py-1 text-[10px]">
+            <button key={c} onClick={() => setColor(c)} data-active={color === c} className="v2-chip px-3 py-1.5 text-[11px]">
               {c}
             </button>
           ))}
         </div>
 
-        <div className="mt-3 pt-2.5" style={{ borderTop: '1px solid var(--v2-border)' }}>
+        <div className="mt-auto pt-3.5 mt-3.5" style={{ borderTop: '1px solid var(--v2-border)' }}>
           {perfil === 'b2b' ? (
-            <div className="mb-2.5">
-              <span className="text-[10px]" style={{ color: 'var(--v2-fg-muted)' }}>Desde</span>
-              <span className="text-lg font-bold ml-1" style={{ color: 'var(--v2-teal)' }}>{formatCLP(desdeB2B)}</span>
-              <span className="text-[10px] ml-1" style={{ color: 'var(--v2-fg-subtle)' }}>c/u · sin IVA</span>
+            <div className="mb-3">
+              <span className="text-[11px]" style={{ color: 'var(--v2-fg-muted)' }}>Desde</span>
+              <span className="text-xl font-bold ml-1.5" style={{ color: 'var(--v2-teal)' }}>{formatCLP(desdeB2B)}</span>
+              <span className="text-[11px] ml-1.5" style={{ color: 'var(--v2-fg-subtle)' }}>c/u · sin IVA</span>
               {p.personalizacion_v2 && (
-                <p className="text-[10px] mt-1" style={{ color: 'var(--v2-fg-soft)' }}>✦ {p.personalizacion_v2}</p>
+                <p className="text-[11px] mt-1.5" style={{ color: 'var(--v2-fg-soft)' }}>✦ {p.personalizacion_v2}</p>
               )}
             </div>
           ) : (
-            <div className="mb-2.5">
-              <span className="text-lg font-bold" style={{ color: 'var(--v2-gold)' }}>{formatCLP(p.precio_b2c)}</span>
-              <span className="text-[10px] ml-1" style={{ color: 'var(--v2-fg-subtle)' }}>IVA incl.</span>
+            <div className="mb-3">
+              <span className="text-xl font-bold" style={{ color: 'var(--v2-gold)' }}>{formatCLP(p.precio_b2c)}</span>
+              <span className="text-[11px] ml-1.5" style={{ color: 'var(--v2-fg-subtle)' }}>IVA incl.</span>
             </div>
           )}
 
           {perfil === 'b2b' ? (
-            <button onClick={() => onQuote?.(p)} className="v2-btn-gold w-full h-10 flex items-center justify-center gap-2 text-xs">
-              <MessageCircle className="w-3.5 h-3.5" /> Cotizar / Pedir por volumen
+            <button onClick={() => onQuote?.(p)} className="v2-btn-gold w-full h-11 flex items-center justify-center gap-2 text-[13px]">
+              <MessageCircle className="w-4 h-4" /> Cotizar / Pedir por volumen
             </button>
           ) : (
-            <button onClick={handleAdd} className="v2-btn-primary w-full h-10 flex items-center justify-center gap-2 text-xs">
-              {added ? <><Check className="w-3.5 h-3.5" /> Agregado</> : <><ShoppingCart className="w-3.5 h-3.5" /> Agregar al carro</>}
+            <button onClick={handleAdd} className="v2-btn-primary w-full h-11 flex items-center justify-center gap-2 text-[13px]">
+              {added ? <><Check className="w-4 h-4" /> Agregado</> : <><ShoppingCart className="w-4 h-4" /> Agregar al carro</>}
             </button>
           )}
         </div>
