@@ -149,12 +149,20 @@ Si falta info o el id no es seguro, NO declares la acción: pregunta. Si no hay 
 === EJECUTAR HERRAMIENTAS BACKEND ===
 Puedes proponer ejecutar tareas del sistema declarándolas en el campo "herramientas". Cada una:
 { "fn": "<nombre exacto>", "etiqueta": "texto del botón", "detalle": "qué hace" }
-Herramientas permitidas: auditoriaCatalogoCRON (audita catálogo), alertaStockBajoCRON (alerta stock <10u), analizarCostosReales (recalcula costos por SKU), bluexTrackingPollerCRON (refresca tracking de envíos), bluexAnalyzeShipments (analiza envíos), carritoAbandonadoCRON (recordatorios de carrito), recordarPropuestasPendientesCRON (reenvía propuestas), checkExpiringProposals (marca propuestas vencidas), leadReactivationCRON (reactiva leads fríos), dailyBriefingCRON (briefing del día). Solo declara una herramienta si el usuario pide explícitamente esa tarea. Si no, devuelve "herramientas": [].
+Herramientas permitidas: auditoriaCatalogoCRON (audita catálogo), alertaStockBajoCRON (alerta stock <10u), analizarCostosReales (recalcula costos por SKU), bluexTrackingPollerCRON (refresca tracking de envíos), bluexAnalyzeShipments (analiza envíos), carritoAbandonadoCRON (recordatorios de carrito), recordarPropuestasPendientesCRON (reenvía propuestas), checkExpiringProposals (marca propuestas vencidas), leadReactivationCRON (reactiva leads fríos), dailyBriefingCRON (briefing del día), generateWeeklyContentPlan (genera plan de contenido semanal de redes), insightsSemanalesIA (insights semanales del negocio), reporteSemanalB2B (reporte semanal B2B), oportunidadesSEOCRON (detecta oportunidades SEO), optimizeProductSEOCRON (optimiza meta tags de productos), prediccionDemandaCRON (predice demanda y stock), solicitarResenaCRON (pide reseñas a clientes), generarFAQsDesdeConsultas (genera FAQs desde consultas), autoQuoteHotB2BLeads (cotiza automáticamente leads B2B calientes). Solo declara una herramienta si el usuario pide explícitamente esa tarea. Si no, devuelve "herramientas": [].
 
 === MENSAJES AL CLIENTE ===
 Cuando el usuario pida escribirle o contactar a un cliente, redacta el mensaje y declálalo en el campo "mensajes". Cada mensaje:
 { "canal": "whatsapp" | "email", "destino": "<teléfono con código país para whatsapp, o email>", "asunto": "<solo para email>", "cuerpo": "<texto del mensaje, cálido y al grano>", "etiqueta": "texto corto del botón" }
-Usa datos REALES del contexto (email/teléfono del lead o cotización). Si no tienes el dato de contacto, no declares el mensaje: pídeselo al usuario. Si no hay mensajes, devuelve "mensajes": [].`;
+Usa datos REALES del contexto (email/teléfono del lead o cotización). Si no tienes el dato de contacto, no declares el mensaje: pídeselo al usuario. Si no hay mensajes, devuelve "mensajes": [].
+
+=== EMAILS LIBRES ===
+Puedes escribir un email a CUALQUIER destinatario (no solo del CRM). Para email usa el canal "email" en el campo "mensajes": redacta asunto y cuerpo (puedes usar HTML simple). El email se envía REALMENTE desde ti@peyuchile.cl vía Gmail, tras confirmación del usuario con el botón. Pide siempre el correo destino si no lo tienes.
+
+=== MARKETING DE CONTENIDO / REDES SOCIALES (orquestación del agente de marketing) ===
+Cuando el usuario pida crear contenido, posteos, campañas de redes, Instagram, LinkedIn, o "publicar algo", actúas como orquestador e invocas al agente de marketing dentro de este chat declarando el contenido en el campo "contenido". Cada item:
+{ "red_social": "Instagram" | "LinkedIn" | "Facebook" | "TikTok", "tipo_post": "Post Imagen" | "Reel" | "Carrusel" | "Story", "pilar": "Producto" | "Sostenibilidad/ESG" | "Educativo" | "Detrás de escena" | "Testimonios" | "Promoción" | "Comunidad" | "Branding", "objetivo": "Awareness" | "Engagement" | "Tráfico web" | "Leads B2B" | "Conversión B2C" | "Fidelización", "tema": "<idea concreta del posteo>", "producto_sku": "<sku si aplica, opcional>", "fecha_publicacion": "<YYYY-MM-DD si quiere programarlo, opcional>", "etiqueta": "<texto corto del bloque>" }
+El bloque generará el borrador (texto + imagen IA), lo guardará como borrador y dará un botón para publicar directo a Instagram/LinkedIn. SIEMPRE acompaña con una frase cálida en "mensaje" diciendo qué vas a crear. Si el usuario no especifica red o pilar, elige lo más razonable según el tema. Si no hay contenido que crear, devuelve "contenido": [].`;
   };
 
   // ── Enviar mensaje ────────────────────────────────────────────────────
@@ -236,6 +244,23 @@ Stock bajo (<10u): ${m.stock_bajo} SKUs`;
               required: ['canal', 'destino', 'cuerpo'],
             },
           },
+          contenido: {
+            type: 'array',
+            items: {
+              type: 'object',
+              properties: {
+                red_social: { type: 'string' },
+                tipo_post: { type: 'string' },
+                pilar: { type: 'string' },
+                objetivo: { type: 'string' },
+                tema: { type: 'string' },
+                producto_sku: { type: 'string' },
+                fecha_publicacion: { type: 'string' },
+                etiqueta: { type: 'string' },
+              },
+              required: ['tema'],
+            },
+          },
         },
         required: ['mensaje'],
       },
@@ -245,10 +270,11 @@ Stock bajo (<10u): ${m.stock_bajo} SKUs`;
     const acciones = (typeof response === 'object' && Array.isArray(response?.acciones)) ? response.acciones : [];
     const mensajes = (typeof response === 'object' && Array.isArray(response?.mensajes)) ? response.mensajes : [];
     const herramientas = (typeof response === 'object' && Array.isArray(response?.herramientas)) ? response.herramientas : [];
+    const contenido = (typeof response === 'object' && Array.isArray(response?.contenido)) ? response.contenido : [];
 
     // Nunca dejar al usuario con una respuesta totalmente vacía.
     if (!mensaje.trim()) {
-      mensaje = (acciones.length || mensajes.length || herramientas.length)
+      mensaje = (acciones.length || mensajes.length || herramientas.length || contenido.length)
         ? 'Listo, dejé las acciones abajo para que confirmes 👇'
         : '¿Me das un poco más de detalle para ayudarte mejor? 🐢';
     }
@@ -258,6 +284,7 @@ Stock bajo (<10u): ${m.stock_bajo} SKUs`;
     acciones.forEach((accion) => blocks.push({ type: 'accion', accion }));
     mensajes.forEach((msg) => blocks.push({ type: 'mensaje', mensaje: msg }));
     herramientas.forEach((herramienta) => blocks.push({ type: 'herramienta', herramienta }));
+    contenido.forEach((c) => blocks.push({ type: 'contenido', contenido: c }));
 
     setMessages((prev) => [...prev, { role: 'assistant', content: mensaje, blocks }]);
     setThinking(false);
@@ -288,6 +315,9 @@ Stock bajo (<10u): ${m.stock_bajo} SKUs`;
     'bluexTrackingPollerCRON', 'bluexAnalyzeShipments', 'carritoAbandonadoCRON',
     'recordarPropuestasPendientesCRON', 'checkExpiringProposals',
     'leadReactivationCRON', 'dailyBriefingCRON',
+    'generateWeeklyContentPlan', 'insightsSemanalesIA', 'reporteSemanalB2B',
+    'oportunidadesSEOCRON', 'optimizeProductSEOCRON', 'prediccionDemandaCRON',
+    'solicitarResenaCRON', 'generarFAQsDesdeConsultas', 'autoQuoteHotB2BLeads',
   ]);
   const ejecutarHerramienta = async (herramienta) => {
     if (!HERRAMIENTAS_OK.has(herramienta.fn)) throw new Error(`Herramienta no permitida: ${herramienta.fn}`);
@@ -304,11 +334,23 @@ Stock bajo (<10u): ${m.stock_bajo} SKUs`;
       return;
     }
     if (msg.canal === 'email') {
-      await base44.integrations.Core.SendEmail({
-        to: msg.destino,
-        subject: msg.asunto || 'Mensaje de PEYU',
-        body: msg.cuerpo,
-      });
+      // Email real desde ti@peyuchile.cl vía Gmail. Si Gmail falla, caemos
+      // al envío básico de la plataforma para no dejar al usuario sin enviar.
+      const html = `<div style="font-family:system-ui,sans-serif;font-size:15px;line-height:1.6;color:#22302c;white-space:pre-wrap">${msg.cuerpo}</div>`;
+      try {
+        const res = await base44.functions.invoke('sendGmailEmail', {
+          to: msg.destino,
+          subject: msg.asunto || 'Mensaje de PEYU',
+          html,
+        });
+        if (!res?.data?.ok) throw new Error(res?.data?.error || 'Gmail no confirmó el envío');
+      } catch (_) {
+        await base44.integrations.Core.SendEmail({
+          to: msg.destino,
+          subject: msg.asunto || 'Mensaje de PEYU',
+          body: msg.cuerpo,
+        });
+      }
       return;
     }
     throw new Error(`Canal no soportado: ${msg.canal}`);

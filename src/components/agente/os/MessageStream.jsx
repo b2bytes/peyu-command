@@ -12,6 +12,7 @@ import ProductionBlock from './blocks/ProductionBlock';
 import AccionBlock from './blocks/AccionBlock';
 import MensajeBlock from './blocks/MensajeBlock';
 import HerramientaBlock from './blocks/HerramientaBlock';
+import ContenidoBlock from './blocks/ContenidoBlock';
 
 function Blocks({ blocks, crm, kpis, onAction, busyId, onEjecutarAccion, onEnviarMensaje, onEjecutarHerramienta }) {
   if (!blocks?.length) return null;
@@ -26,6 +27,7 @@ function Blocks({ blocks, crm, kpis, onAction, busyId, onEjecutarAccion, onEnvia
         if (b.type === 'accion') return <AccionBlock key={i} accion={b.accion} onEjecutar={onEjecutarAccion} />;
         if (b.type === 'mensaje') return <MensajeBlock key={i} mensaje={b.mensaje} onEnviar={onEnviarMensaje} />;
         if (b.type === 'herramienta') return <HerramientaBlock key={i} herramienta={b.herramienta} onEjecutar={onEjecutarHerramienta} />;
+        if (b.type === 'contenido') return <ContenidoBlock key={i} contenido={b.contenido} />;
         return null;
       })}
     </div>
