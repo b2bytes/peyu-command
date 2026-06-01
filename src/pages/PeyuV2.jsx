@@ -7,9 +7,11 @@ import V2CardDispatcher from '@/components/v2/V2CardDispatcher';
 import V2NavPanel from '@/components/v2/panels/V2NavPanel';
 import V2ContextPanel from '@/components/v2/panels/V2ContextPanel';
 import V2ChatSkeleton from '@/components/v2/V2ChatSkeleton';
+import V2ConversacionesPanel from '@/components/v2/conversaciones/V2ConversacionesPanel';
 import { fetchV2Catalog } from '@/lib/v2-catalog';
 import { getRecentViews, pushRecentView } from '@/lib/v2-recent';
-import { Send, ShoppingCart, Sparkles, SlidersHorizontal } from 'lucide-react';
+import { isV2Founder } from '@/lib/v2-founders';
+import { Send, ShoppingCart, Sparkles, SlidersHorizontal, MessagesSquare, ArrowLeft } from 'lucide-react';
 
 const PEYU_LOGO = 'https://media.base44.com/images/public/6a1a158951bc398e16add415/86a2b4b89_image.png';
 
@@ -61,6 +63,10 @@ export default function PeyuV2() {
   const [navOpen, setNavOpen] = useState(false);
   const [ctxOpen, setCtxOpen] = useState(false);
 
+  // Espacio activo + gating founders (panel Conversaciones, solo lectura).
+  const [space, setSpace] = useState('chat'); // 'chat' | 'conversaciones'
+  const [isFounder, setIsFounder] = useState(false);
+
   const endRef = useRef(null);
 
   useEffect(() => {
@@ -69,6 +75,14 @@ export default function PeyuV2() {
 
   // Cargar catálogo madre para los paneles laterales (destacados/best-sellers).
   useEffect(() => { fetchV2Catalog().then(setCatalog); }, []);
+
+  // Resolver si el usuario logueado es founder (gating del panel Conversaciones).
+  useEffect(() => {
+    base44.auth.me().then((u) => setIsFounder(isV2Founder(u?.email))).catch(() => setIsFounder(false));
+  }, []);
+
+  // Si un no-founder fuerza el espacio, lo devolvemos al chat (seguridad).
+  useEffect(() => { if (space === 'conversaciones' && !isFounder) setSpace('chat'); }, [space, isFounder]);
 
   // Retomar conversación previa: si el hilo ya tiene historial, lo reconstruimos
   // con un saludo "welcome-back" según el perfil inferido la última vez.
@@ -125,10 +139,16 @@ export default function PeyuV2() {
       });
       const d = res.data || {};
       if (d.perfil && d.perfil !== mode) setMode(d.perfil);
+      // Inyectamos los IDs del hilo en las cards de captura B2B para vincular el ChatLead.
+      const cards = (Array.isArray(d.cards) ? d.cards : []).map((c) =>
+        c?.type === 'b2b_quote'
+          ? { ...c, data: { ...(c.data || {}), conversation_id: convIdRef.current, session_id: sessionIdRef.current } }
+          : c
+      );
       setMessages((p) => [...p, {
         role: 'assistant',
         reply_text: d.reply_text || 'Listo 🐢',
-        cards: Array.isArray(d.cards) ? d.cards : [],
+        cards,
       }]);
     } catch {
       setMessages((p) => [...p, {
@@ -162,7 +182,7 @@ export default function PeyuV2() {
     setMessages((prev) => [...prev, {
       role: 'assistant',
       reply_text: 'Armemos tu cotización por volumen 🐢 Precios por unidad, excluyen IVA. El grabado de tu logo va gratis desde 10 unidades.',
-      cards: [{ type: 'b2b_quote', data: { producto: p } }],
+      cards: [{ type: 'b2b_quote', data: { producto: p, conversation_id: convIdRef.current, session_id: sessionIdRef.current } }],
     }]);
   };
 
@@ -245,6 +265,18 @@ export default function PeyuV2() {
         </div>
 
         <div className="flex items-center gap-2 flex-shrink-0">
+          {/* Acceso discreto al panel Conversaciones — SOLO founders */}
+          {isFounder && (
+            <button
+              onClick={() => setSpace(space === 'conversaciones' ? 'chat' : 'conversaciones')}
+              data-active={space === 'conversaciones'}
+              className="v2-btn-ghost h-9 px-3 flex items-center gap-1.5 text-xs"
+              title="Conversaciones (founders)"
+            >
+              {space === 'conversaciones' ? <ArrowLeft className="w-3.5 h-3.5" /> : <MessagesSquare className="w-3.5 h-3.5" />}
+              <span className="hidden sm:inline">{space === 'conversaciones' ? 'Volver al chat' : 'Conversaciones'}</span>
+            </button>
+          )}
           <V2ModeToggle mode={mode} onChange={setMode} />
           {/* Carrito: en desktop vive en panel der; aquí badge + drawer en móvil */}
           <button onClick={() => setCtxOpen(true)} className="lg:hidden relative v2-btn-ghost w-9 h-9 flex items-center justify-center">
@@ -270,8 +302,12 @@ export default function PeyuV2() {
           />
         </aside>
 
-        {/* COLUMNA CENTRAL — río de chat */}
+        {/* COLUMNA CENTRAL — río de chat / panel Conversaciones (founders) */}
         <main className="flex-1 min-w-0 flex flex-col overflow-hidden">
+          {space === 'conversaciones' && isFounder ? (
+            <V2ConversacionesPanel />
+          ) : (
+          <>
           <div className="flex-1 overflow-y-auto overflow-x-hidden v2-scroll">
             <div className="max-w-[920px] w-full mx-auto px-6 py-6">
               {renderStream()}
@@ -305,6 +341,8 @@ export default function PeyuV2() {
               </div>
             </div>
           </div>
+          </>
+          )}
         </main>
 
         {/* COLUMNA DERECHA (desktop) */}

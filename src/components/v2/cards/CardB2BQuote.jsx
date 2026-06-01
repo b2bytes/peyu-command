@@ -7,7 +7,9 @@ import V2B2BPriceTable from '../V2B2BPriceTable';
 // del producto (si hay) y captura empresa + cantidad + logo como B2BLead.
 export default function CardB2BQuote({ data }) {
   const producto = data?.producto || null;
-  const [form, setForm] = useState({ empresa: '', contacto: '', email: '', cantidad: '' });
+  const convId = data?.conversation_id || null;
+  const sessId = data?.session_id || null;
+  const [form, setForm] = useState({ empresa: '', contacto: '', email: '', telefono: '', cantidad: '' });
   const [logoUrl, setLogoUrl] = useState('');
   const [uploading, setUploading] = useState(false);
   const [sending, setSending] = useState(false);
@@ -30,17 +32,17 @@ export default function CardB2BQuote({ data }) {
     if (!form.empresa || !form.contacto || !form.email) return;
     setSending(true);
     try {
-      await base44.entities.B2BLead.create({
-        source: 'Formulario Web',
+      // Backend idempotente: crea/actualiza B2BLead y vincula el ChatLead del hilo.
+      await base44.functions.invoke('captureB2BLeadV2', {
+        conversation_id: convId,
+        session_id: sessId,
         contact_name: form.contacto,
         company_name: form.empresa,
         email: form.email,
+        phone: form.telefono || undefined,
         qty_estimate: form.cantidad ? Number(form.cantidad) : undefined,
         product_interest: producto?.nombre || 'Cotización /v2',
-        personalization_needs: true,
         logo_url: logoUrl || undefined,
-        status: 'Nuevo',
-        notes: 'Lead generado desde el chat /v2 (Peyu Commerce OS).',
       });
       setDone(true);
     } catch { /* noop */ }
@@ -86,6 +88,7 @@ export default function CardB2BQuote({ data }) {
         <input value={form.empresa} onChange={set('empresa')} placeholder="Empresa *" className="v2-input px-3 h-10 text-xs" style={{ color: 'var(--v2-fg)' }} />
         <input value={form.contacto} onChange={set('contacto')} placeholder="Tu nombre *" className="v2-input px-3 h-10 text-xs" style={{ color: 'var(--v2-fg)' }} />
         <input value={form.email} onChange={set('email')} type="email" placeholder="Email *" className="v2-input px-3 h-10 text-xs" style={{ color: 'var(--v2-fg)' }} />
+        <input value={form.telefono} onChange={set('telefono')} type="tel" placeholder="Teléfono (opcional)" className="v2-input px-3 h-10 text-xs" style={{ color: 'var(--v2-fg)' }} />
         <input value={form.cantidad} onChange={set('cantidad')} type="number" placeholder="Cantidad estimada" className="v2-input px-3 h-10 text-xs" style={{ color: 'var(--v2-fg)' }} />
 
         <label className="v2-btn-ghost h-10 flex items-center justify-center gap-2 text-xs cursor-pointer">
