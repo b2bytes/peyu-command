@@ -27,6 +27,11 @@ export default function CatalogoB2BOficial() {
 
   const visibles = filtroCat === 'Todas' ? items : items.filter((i) => i.categoria === filtroCat);
 
+  // Agrupar por categoría respetando el orden de CATS, para mostrar secciones.
+  const grupos = CATS
+    .map((cat) => ({ cat, productos: visibles.filter((i) => i.categoria === cat).sort((a, b) => (a.orden || 0) - (b.orden || 0)) }))
+    .filter((g) => g.productos.length > 0);
+
   return (
     <div className="min-h-screen bg-[#fbfaf7] p-4 sm:p-6">
       <div className="max-w-5xl mx-auto">
@@ -59,9 +64,22 @@ export default function CatalogoB2BOficial() {
           <div className="flex items-center justify-center gap-2 py-20 text-slate-400">
             <Loader2 className="w-5 h-5 animate-spin" /><span className="text-sm">Cargando catálogo oficial…</span>
           </div>
+        ) : grupos.length === 0 ? (
+          <p className="text-sm text-slate-400 py-20 text-center">No hay productos en esta categoría.</p>
         ) : (
-          <div className="grid sm:grid-cols-2 gap-4">
-            {visibles.map((item) => <B2BOficialCard key={item.slug} item={item} />)}
+          <div className="space-y-8">
+            {grupos.map(({ cat, productos }) => (
+              <section key={cat}>
+                <div className="flex items-center gap-2 mb-3">
+                  <h2 className="text-sm font-bold text-slate-700 uppercase tracking-wide">{cat}</h2>
+                  <span className="text-[10px] font-semibold text-[#0F8B6C] bg-[#0F8B6C]/10 px-2 py-0.5 rounded-full">{productos.length}</span>
+                  <div className="flex-1 h-px bg-slate-200" />
+                </div>
+                <div className="grid sm:grid-cols-2 gap-4">
+                  {productos.map((item) => <B2BOficialCard key={item.slug} item={item} />)}
+                </div>
+              </section>
+            ))}
           </div>
         )}
       </div>
