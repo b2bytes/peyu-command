@@ -457,7 +457,10 @@ Stock bajo (<10u): ${m.stock_bajo} SKUs`;
     setActivos((prev) => (prev.includes(id) ? prev.filter((a) => a !== id) : [...prev, id]));
 
   return (
-    <div className="flex h-[100dvh] bg-[#fbfaf7] text-[#22302c] font-inter overflow-hidden">
+    <div
+      className="flex h-[100dvh] text-[#eaf5f0] font-inter overflow-hidden"
+      style={{ background: 'radial-gradient(130% 100% at 0% 0%, #11352b 0%, #0a1813 45%, #081210 100%)' }}
+    >
       {/* Riel izquierdo */}
       <AgentRail activos={activos} onToggle={toggleAgente} onOpenMemory={() => setMemoryOpen(true)} />
 
@@ -467,23 +470,24 @@ Stock bajo (<10u): ${m.stock_bajo} SKUs`;
       {/* Canvas central */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Topbar */}
-        <header className="flex-shrink-0 border-b border-[#ece4d8] bg-[#fbfaf7]/90 backdrop-blur-sm">
+        <header className="flex-shrink-0 border-b border-[#1f3a31] bg-[#0a1813]/80 backdrop-blur-xl">
           <div className="max-w-[880px] mx-auto px-4 sm:px-6 py-3 flex items-center justify-between gap-3">
             <div className="min-w-0">
               <div className="flex items-center gap-2">
-                <h1 className="text-lg font-poppins font-bold text-[#22302c] leading-none">PEYU OS</h1>
-                <span className="hidden sm:inline-flex items-center text-[11px] font-medium text-[#0F8B6C] bg-[#0F8B6C]/10 px-2 py-0.5 rounded-full">
-                  {activos.length} agentes
+                <h1 className="text-lg font-poppins font-bold text-[#eaf5f0] leading-none">PEYU OS</h1>
+                <span className="hidden sm:inline-flex items-center gap-1 text-[11px] font-medium text-[#3dd9b0] bg-[#0F8B6C]/15 border border-[#0F8B6C]/25 px-2 py-0.5 rounded-full">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#3dd9b0] animate-pulse" />
+                  {activos.length} agentes operativos
                 </span>
               </div>
-              <p className="text-[11px] text-[#6f7d77] mt-0.5 truncate italic">Hasta que el plástico deje de ser basura</p>
+              <p className="text-[11px] text-[#7fa295] mt-0.5 truncate italic">Hasta que el plástico deje de ser basura</p>
             </div>
             <div className="flex items-center gap-2 flex-shrink-0">
-              <div className="flex items-center gap-0.5 bg-white border border-[#ece4d8] rounded-xl p-0.5">
+              <div className="flex items-center gap-0.5 bg-[#10231d] border border-[#2a4a40] rounded-xl p-0.5">
                 <button
                   onClick={() => setVista('chat')}
                   className={`flex items-center gap-1.5 text-xs font-medium px-2.5 py-1.5 rounded-lg transition-colors ${
-                    vista === 'chat' ? 'bg-[#0F8B6C] text-white' : 'text-[#6f7d77] hover:text-[#22302c]'
+                    vista === 'chat' ? 'bg-[#0F8B6C] text-white' : 'text-[#7fa295] hover:text-[#eaf5f0]'
                   }`}
                 >
                   <MessageSquare className="w-3.5 h-3.5" /> Chat
@@ -491,7 +495,7 @@ Stock bajo (<10u): ${m.stock_bajo} SKUs`;
                 <button
                   onClick={() => setVista('pipeline')}
                   className={`flex items-center gap-1.5 text-xs font-medium px-2.5 py-1.5 rounded-lg transition-colors ${
-                    vista === 'pipeline' ? 'bg-[#0F8B6C] text-white' : 'text-[#6f7d77] hover:text-[#22302c]'
+                    vista === 'pipeline' ? 'bg-[#0F8B6C] text-white' : 'text-[#7fa295] hover:text-[#eaf5f0]'
                   }`}
                 >
                   <Columns3 className="w-3.5 h-3.5" /> Pipeline
@@ -502,20 +506,20 @@ Stock bajo (<10u): ${m.stock_bajo} SKUs`;
                 className={`flex items-center gap-1.5 text-xs font-medium px-2.5 py-1.5 rounded-xl border transition-colors ${
                   autoVoz
                     ? 'bg-[#0F8B6C] text-white border-[#0F8B6C]'
-                    : 'bg-white text-[#6f7d77] border-[#ece4d8] hover:text-[#22302c]'
+                    : 'bg-[#10231d] text-[#7fa295] border-[#2a4a40] hover:text-[#eaf5f0]'
                 }`}
                 title={autoVoz ? 'Voz automática activada' : 'Activar voz automática'}
               >
                 {autoVoz ? <Volume2 className="w-3.5 h-3.5" /> : <VolumeX className="w-3.5 h-3.5" />}
                 <span className="hidden sm:inline">Voz</span>
               </button>
-              <span className="hidden sm:inline-flex items-center gap-1.5 text-[11px] font-medium text-[#D96B4D] bg-[#D96B4D]/10 px-2.5 py-1 rounded-full">
+              <span className="hidden sm:inline-flex items-center gap-1.5 text-[11px] font-medium text-[#f0a085] bg-[#D96B4D]/15 border border-[#D96B4D]/25 px-2.5 py-1 rounded-full">
                 🔒 Admin
               </span>
               <button
                 onClick={() => loadData(true)}
                 disabled={refreshing}
-                className="w-9 h-9 rounded-xl bg-white border border-[#ece4d8] hover:border-[#0F8B6C]/40 flex items-center justify-center text-[#6f7d77] hover:text-[#22302c] transition disabled:opacity-50"
+                className="w-9 h-9 rounded-xl bg-[#10231d] border border-[#2a4a40] hover:border-[#0F8B6C]/50 flex items-center justify-center text-[#7fa295] hover:text-[#eaf5f0] transition disabled:opacity-50"
                 aria-label="Refrescar"
               >
                 <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
@@ -526,7 +530,7 @@ Stock bajo (<10u): ${m.stock_bajo} SKUs`;
 
         {vista === 'pipeline' ? (
           loading ? (
-            <div className="flex-1 flex items-center justify-center gap-3 text-[#9aa6a0]">
+            <div className="flex-1 flex items-center justify-center gap-3 text-[#7fa295]">
               <Loader2 className="w-5 h-5 animate-spin" />
               <span className="text-sm">Cargando pipeline…</span>
             </div>
@@ -546,26 +550,35 @@ Stock bajo (<10u): ${m.stock_bajo} SKUs`;
 
         {/* Conversación */}
         {loading ? (
-          <div className="flex-1 flex items-center justify-center gap-3 text-[#9aa6a0]">
+          <div className="flex-1 flex items-center justify-center gap-3 text-[#7fa295]">
             <Loader2 className="w-5 h-5 animate-spin" />
             <span className="text-sm">Cargando tu negocio…</span>
           </div>
         ) : messages.length === 0 ? (
-          <div className="flex-1 flex flex-col items-center justify-center px-6 text-center">
-            <div className="w-16 h-16 rounded-3xl bg-white border border-[#e7d8c6] flex items-center justify-center text-3xl shadow-sm mb-4">
+          <div className="flex-1 overflow-y-auto peyu-scrollbar flex flex-col items-center justify-center px-6 text-center py-8">
+            {/* Orbe luminoso */}
+            <div
+              className="w-20 h-20 rounded-full flex items-center justify-center text-3xl mb-5 shadow-[0_0_60px_-10px_rgba(15,139,108,0.6)]"
+              style={{ background: 'radial-gradient(circle at 35% 30%, #3dd9b0 0%, #0F8B6C 45%, #0a4a3a 100%)' }}
+            >
               🐢
             </div>
-            <h2 className="text-2xl font-poppins font-bold text-[#22302c]">Hola equipo PEYU 👋</h2>
-            <p className="text-sm text-[#6f7d77] mt-2 max-w-md leading-relaxed">
-              Soy Peyu. Pregúntame por las cotizaciones, qué vence pronto, cómo va la producción o un producto del catálogo.
-              La pantalla se arma sola con los datos reales.
+            <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-[#3dd9b0] bg-[#0F8B6C]/15 border border-[#0F8B6C]/25 px-3 py-1 rounded-full mb-4 uppercase tracking-wide">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#3dd9b0] animate-pulse" /> AI Native · Agéntico
+            </span>
+            <h2 className="text-3xl sm:text-4xl font-poppins font-bold text-[#eaf5f0]">
+              Hola equipo <span className="text-[#3dd9b0]">PEYU</span> 👋
+            </h2>
+            <p className="text-sm text-[#7fa295] mt-3 max-w-md leading-relaxed">
+              Tu negocio, conversando. Pregúntame por las cotizaciones, qué vence pronto, cómo va la producción
+              o un producto del catálogo — la pantalla se arma sola con los datos reales.
             </p>
             <div className="flex flex-wrap items-center justify-center gap-2 mt-6 max-w-lg">
               {SUGERENCIAS.map((s) => (
                 <button
                   key={s}
                   onClick={() => sendMessage(s)}
-                  className="text-sm px-3.5 py-2 rounded-full bg-white border border-[#e7d8c6] text-[#6f7d77] hover:text-[#22302c] hover:border-[#0F8B6C]/40 transition-colors"
+                  className="text-sm px-3.5 py-2 rounded-full bg-[#10231d] border border-[#2a4a40] text-[#9fc7b8] hover:text-[#eaf5f0] hover:border-[#0F8B6C]/50 transition-colors"
                 >
                   {s}
                 </button>

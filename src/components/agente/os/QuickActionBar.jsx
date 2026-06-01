@@ -71,23 +71,23 @@ export default function QuickActionBar({ productos = [], onCreateQuote, onCreate
   return (
     <>
       {/* Barra de acciones rápidas */}
-      <div className="flex-shrink-0 border-b border-[#ece7df] bg-[#fbfaf7]">
+      <div className="flex-shrink-0 border-b border-[#1f3a31] bg-[#0a1813]">
         <div className="max-w-[880px] mx-auto px-4 sm:px-6 py-2.5 flex items-center gap-2 overflow-x-auto scrollbar-hide">
-          <span className="hidden sm:inline-flex items-center gap-1 text-[11px] font-semibold text-[#9aa6a0] uppercase tracking-wide flex-shrink-0">
-            <Zap className="w-3.5 h-3.5 text-[#0F8B6C]" /> Acciones
+          <span className="hidden sm:inline-flex items-center gap-1 text-[11px] font-semibold text-[#7fa295] uppercase tracking-wide flex-shrink-0">
+            <Zap className="w-3.5 h-3.5 text-[#3dd9b0]" /> Acciones
           </span>
           <button
             onClick={() => setOpen('quote')}
-            className="flex items-center gap-1.5 text-sm font-medium text-[#22302c] bg-white border border-[#e7d8c6] hover:border-[#0F8B6C]/50 hover:bg-[#e9f3ef] px-3.5 py-1.5 rounded-full transition flex-shrink-0"
+            className="flex items-center gap-1.5 text-sm font-medium text-[#dcefe7] bg-[#10231d] border border-[#2a4a40] hover:border-[#0F8B6C]/60 hover:bg-[#14291f] px-3.5 py-1.5 rounded-full transition flex-shrink-0"
           >
-            <FileText className="w-4 h-4 text-[#0F8B6C]" />
+            <FileText className="w-4 h-4 text-[#3dd9b0]" />
             Generar cotización
           </button>
           <button
             onClick={() => setOpen('op')}
-            className="flex items-center gap-1.5 text-sm font-medium text-[#22302c] bg-white border border-[#e7d8c6] hover:border-[#0F8B6C]/50 hover:bg-[#e9f3ef] px-3.5 py-1.5 rounded-full transition flex-shrink-0"
+            className="flex items-center gap-1.5 text-sm font-medium text-[#dcefe7] bg-[#10231d] border border-[#2a4a40] hover:border-[#0F8B6C]/60 hover:bg-[#14291f] px-3.5 py-1.5 rounded-full transition flex-shrink-0"
           >
-            <Factory className="w-4 h-4 text-[#D96B4D]" />
+            <Factory className="w-4 h-4 text-[#f0a085]" />
             Crear orden de producción
           </button>
         </div>

@@ -42,7 +42,7 @@ export default function MessageStream({ messages, crm, kpis, onAction, busyId, l
         {messages.map((m, i) => (
           <div key={i} className={`flex gap-3 ${m.role === 'user' ? 'flex-row-reverse' : ''}`}>
             {m.role === 'assistant' && (
-              <div className="w-8 h-8 rounded-full bg-white border border-[#e7d8c6] flex items-center justify-center text-base flex-shrink-0 mt-0.5 shadow-sm">
+              <div className="w-8 h-8 rounded-full bg-[#10231d] border border-[#2a4a40] flex items-center justify-center text-base flex-shrink-0 mt-0.5 shadow-sm">
                 🐢
               </div>
             )}
@@ -55,7 +55,7 @@ export default function MessageStream({ messages, crm, kpis, onAction, busyId, l
                 className={`rounded-2xl px-4 py-2.5 text-sm ${
                   m.role === 'user'
                     ? 'bg-[#0F8B6C] text-white rounded-tr-sm ml-auto inline-block'
-                    : 'bg-white border border-[#ece4d8] text-[#22302c] rounded-tl-sm'
+                    : 'bg-[#10231d] border border-[#2a4a40] text-[#eaf5f0] rounded-tl-sm'
                 }`}
               >
                 {m.role === 'user' ? (
@@ -64,11 +64,11 @@ export default function MessageStream({ messages, crm, kpis, onAction, busyId, l
                   <ReactMarkdown
                     className="prose prose-sm max-w-none [&>*:first-child]:mt-0 [&>*:last-child]:mb-0"
                     components={{
-                      p: ({ children }) => <p className="my-1 leading-relaxed text-[#22302c]">{children}</p>,
-                      ul: ({ children }) => <ul className="my-1 ml-4 list-disc text-[#22302c]">{children}</ul>,
+                      p: ({ children }) => <p className="my-1 leading-relaxed text-[#eaf5f0]">{children}</p>,
+                      ul: ({ children }) => <ul className="my-1 ml-4 list-disc text-[#eaf5f0]">{children}</ul>,
                       li: ({ children }) => <li className="my-0.5">{children}</li>,
-                      strong: ({ children }) => <strong className="text-[#0F8B6C] font-semibold">{children}</strong>,
-                      code: ({ children }) => <code className="px-1 py-0.5 rounded bg-[#f6f1ea] text-xs">{children}</code>,
+                      strong: ({ children }) => <strong className="text-[#3dd9b0] font-semibold">{children}</strong>,
+                      code: ({ children }) => <code className="px-1 py-0.5 rounded bg-[#0a1813] text-xs">{children}</code>,
                     }}
                   >
                     {m.content}
@@ -79,7 +79,7 @@ export default function MessageStream({ messages, crm, kpis, onAction, busyId, l
               {m.role === 'assistant' && m.content && m.content.trim() && (
                 <button
                   onClick={() => hablar(i, m.content)}
-                  className="mt-1.5 inline-flex items-center gap-1.5 text-[11px] font-medium text-[#6f7d77] hover:text-[#0F8B6C] transition-colors"
+                  className="mt-1.5 inline-flex items-center gap-1.5 text-[11px] font-medium text-[#7fa295] hover:text-[#3dd9b0] transition-colors"
                 >
                   {cargandoId === i ? (
                     <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Generando voz…</>
@@ -99,11 +99,11 @@ export default function MessageStream({ messages, crm, kpis, onAction, busyId, l
 
         {loading && (
           <div className="flex gap-3">
-            <div className="w-8 h-8 rounded-full bg-white border border-[#e7d8c6] flex items-center justify-center text-base flex-shrink-0 shadow-sm">🐢</div>
-            <div className="bg-white border border-[#ece4d8] rounded-2xl rounded-tl-sm px-4 py-3">
+            <div className="w-8 h-8 rounded-full bg-[#10231d] border border-[#2a4a40] flex items-center justify-center text-base flex-shrink-0 shadow-sm">🐢</div>
+            <div className="bg-[#10231d] border border-[#2a4a40] rounded-2xl rounded-tl-sm px-4 py-3">
               <div className="flex gap-1">
                 {[0, 1, 2].map((i) => (
-                  <div key={i} className="w-1.5 h-1.5 rounded-full bg-[#0F8B6C] animate-bounce" style={{ animationDelay: `${i * 0.15}s` }} />
+                  <div key={i} className="w-1.5 h-1.5 rounded-full bg-[#3dd9b0] animate-bounce" style={{ animationDelay: `${i * 0.15}s` }} />
                 ))}
               </div>
             </div>

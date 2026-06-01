@@ -20,17 +20,17 @@ export default function VoiceCommandBar({ onCommand }) {
   return (
     <div className="w-full max-w-lg mx-auto mt-5">
       <div className="flex items-center gap-1.5 mb-2.5 justify-center">
-        <Mic className="w-3.5 h-3.5 text-[#0F8B6C]" />
-        <span className="text-[11px] font-semibold text-[#9aa6a0] uppercase tracking-wide">Comandos rápidos</span>
+        <Mic className="w-3.5 h-3.5 text-[#3dd9b0]" />
+        <span className="text-[11px] font-semibold text-[#7fa295] uppercase tracking-wide">Comandos rápidos</span>
       </div>
       <div className="flex flex-wrap items-center justify-center gap-2">
         {COMANDOS.map((c) => (
           <button
             key={c.label}
             onClick={() => onCommand(c.prompt)}
-            className="flex items-center gap-1.5 text-sm font-medium text-[#22302c] bg-white border border-[#e7d8c6] hover:border-[#0F8B6C]/50 hover:bg-[#e9f3ef] px-3 py-1.5 rounded-full transition"
+            className="flex items-center gap-1.5 text-sm font-medium text-[#dcefe7] bg-[#10231d] border border-[#2a4a40] hover:border-[#0F8B6C]/60 hover:bg-[#14291f] px-3 py-1.5 rounded-full transition"
           >
-            <c.icon className="w-4 h-4 text-[#0F8B6C]" />
+            <c.icon className="w-4 h-4 text-[#3dd9b0]" />
             {c.label}
           </button>
         ))}
