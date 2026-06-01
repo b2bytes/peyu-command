@@ -153,6 +153,27 @@
       "default": false,
       "description": "Flag para que la futura cara nueva /v2 lea solo los productos madre can\u00f3nicos, sin borrar ni desactivar nada del cat\u00e1logo actual."
     },
+    "categoria_v2": {
+      "type": "string",
+      "title": "Categor\u00eda V2",
+      "description": "Categor\u00eda can\u00f3nica para la vista /v2 (Cachos | Escritorio | Paletas | Hogar)."
+    },
+    "precio_b2b_tramos": {
+      "type": "object",
+      "title": "Precios B2B por tramo (cat\u00e1logo oficial V2)",
+      "additionalProperties": true,
+      "description": "Objeto con las 8 llaves: unitario, t10_49, t50_99, t100_249, t250_499, t500_999, t1000_1999, t2000_mas."
+    },
+    "incluye_v2": {
+      "type": "string",
+      "title": "Incluye (V2)",
+      "description": "Descripci\u00f3n de qu\u00e9 incluye el producto, para la vista /v2."
+    },
+    "personalizacion_v2": {
+      "type": "string",
+      "title": "Personalizaci\u00f3n (V2)",
+      "description": "Detalle de personalizaci\u00f3n para la vista /v2."
+    },
     "descripcion": {
       "type": "string",
       "title": "Descripci\u00f3n"
