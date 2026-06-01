@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Sun, Moon, Check, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import BrandSwatches from './BrandSwatches';
-import BrandMockupPreview, { PEYU_LOGO } from './BrandMockupPreview';
+import BrandHomeMockup, { PEYU_LOGO } from './BrandHomeMockup';
 
 export default function BrandDirectionCard({ direction, onChoose, choosing }) {
   const [mode, setMode] = useState('dark'); // arranca en oscuro (norte Warm Dusk OS)
@@ -77,8 +77,8 @@ export default function BrandDirectionCard({ direction, onChoose, choosing }) {
         {/* Swatches */}
         <BrandSwatches palette={palette} />
 
-        {/* Mini-mockups: home conversacional + card + carrito */}
-        <BrandMockupPreview palette={palette} tipografia={tipografia} radios={radios} sombras={tokens.sombras} />
+        {/* Mockup realista de la HOME conversacional completa (estilo Agent OS) */}
+        <BrandHomeMockup palette={palette} tipografia={tipografia} radios={radios} sombras={tokens.sombras} mode={mode} />
       </div>
 
       {/* CTA */}
