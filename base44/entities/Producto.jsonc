@@ -147,6 +147,12 @@
       "title": "Activo en Cat\u00e1logo",
       "default": true
     },
+    "mostrar_en_v2": {
+      "type": "boolean",
+      "title": "Mostrar en V2 (producto madre can\u00f3nico)",
+      "default": false,
+      "description": "Flag para que la futura cara nueva /v2 lea solo los productos madre can\u00f3nicos, sin borrar ni desactivar nada del cat\u00e1logo actual."
+    },
     "descripcion": {
       "type": "string",
       "title": "Descripci\u00f3n"
