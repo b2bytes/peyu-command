@@ -160,6 +160,107 @@ function pickProducts(productos, { category, text }) {
   return [...pool].sort((a, b) => (a.precio_b2c ?? Infinity) - (b.precio_b2c ?? Infinity));
 }
 
+// ════════════════════════════════════════════════════════════════════
+// EXTRACCIÓN DE DATOS B2B DESDE TEXTO LIBRE (aditivo, solo perfil B2B).
+// Captura email/empresa/cantidad/nombre/producto cuando el cliente los
+// escribe directo en el chat (no solo vía formulario de la card).
+// ════════════════════════════════════════════════════════════════════
+
+const FREE_EMAIL_DOMAINS = new Set([
+  'gmail.com', 'hotmail.com', 'outlook.com', 'yahoo.com', 'yahoo.es',
+  'live.com', 'icloud.com', 'me.com', 'proton.me', 'protonmail.com',
+  'aol.com', 'gmx.com', 'zoho.com', 'msn.com', 'hotmail.es', 'outlook.es',
+]);
+
+// Regex-based: barato, sin LLM. Devuelve {email, cantidad, nombre, empresa}.
+function extractB2BRegex(textRaw) {
+  const text = textRaw || '';
+  const out = { email: null, cantidad: null, nombre: null, empresa: null };
+
+  // Email estándar
+  const em = text.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/);
+  if (em) out.email = em[0].toLowerCase();
+
+  // Cantidad asociada a unidades / productos
+  const tNorm = text.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  const qm = tNorm.match(/(\d{2,6})\s*(unidades|u\b|piezas|cachos|paletas|posavasos|productos|maceteros|organizadores|kits?)/);
+  if (qm) {
+    const n = parseInt(qm[1], 10);
+    if (!isNaN(n) && n > 0) out.cantidad = n;
+  }
+  if (out.cantidad == null) {
+    const qm2 = tNorm.match(/(?:necesito|quiero|cotizar|son|serian|seran|para)\s*(\d{2,6})\b/);
+    if (qm2) { const n = parseInt(qm2[1], 10); if (!isNaN(n) && n > 0) out.cantidad = n; }
+  }
+
+  // Nombre de contacto: "soy Carolina", "me llamo Juan", "habla Pedro"
+  const nm = text.match(/\b(?:soy|me llamo|habla|aqui|aquí)\s+([A-ZÁÉÍÓÚÑ][a-záéíóúñ]+(?:\s+[A-ZÁÉÍÓÚÑ][a-záéíóúñ]+)?)/);
+  if (nm) out.nombre = nm[1].trim();
+
+  // Empresa: "de Entel", "de la empresa X", "para mi empresa X"
+  const cm = text.match(/\b(?:de|para)\s+(?:la\s+empresa\s+|mi\s+empresa\s+|empresa\s+)?([A-ZÁÉÍÓÚÑ][\wÁÉÍÓÚÑáéíóúñ&.\- ]{1,40}?)(?:\.|,|;|\s+(?:necesito|quiero|cotizar|mi|y|para)|$)/);
+  if (cm) {
+    const cand = cm[1].trim();
+    // Evitar capturar el propio nombre como empresa
+    if (cand && cand.toLowerCase() !== (out.nombre || '').toLowerCase() && cand.length > 1) {
+      out.empresa = cand;
+    }
+  }
+
+  // Empresa por dominio corporativo del email (si no se detectó otra)
+  if (!out.empresa && out.email) {
+    const dom = out.email.split('@')[1];
+    if (dom && !FREE_EMAIL_DOMAINS.has(dom)) {
+      const base = dom.split('.')[0];
+      if (base) out.empresa = base.charAt(0).toUpperCase() + base.slice(1);
+    }
+  }
+
+  return out;
+}
+
+// LLM fallback: solo si el regex no encontró email NI (empresa+cantidad).
+async function extractB2BLLM(base44, text) {
+  try {
+    const res = await base44.integrations.Core.InvokeLLM({
+      prompt: `Extrae datos de contacto B2B del siguiente mensaje de un cliente que quiere cotizar productos para su empresa. Devuelve null donde no haya dato explícito. NO inventes.
+Mensaje: "${text}"`,
+      response_json_schema: {
+        type: 'object',
+        properties: {
+          nombre: { type: ['string', 'null'] },
+          empresa: { type: ['string', 'null'] },
+          email: { type: ['string', 'null'] },
+          cantidad: { type: ['number', 'null'] },
+          producto_interes: { type: ['string', 'null'] },
+        },
+      },
+    });
+    return {
+      nombre: res.nombre || null,
+      empresa: res.empresa || null,
+      email: res.email ? String(res.email).toLowerCase() : null,
+      cantidad: typeof res.cantidad === 'number' ? res.cantidad : null,
+      producto_interes: res.producto_interes || null,
+    };
+  } catch {
+    return { nombre: null, empresa: null, email: null, cantidad: null, producto_interes: null };
+  }
+}
+
+function isCorporateEmail(email) {
+  if (!email || !email.includes('@')) return false;
+  return !FREE_EMAIL_DOMAINS.has(email.split('@')[1]);
+}
+
+function computeB2BScore({ empresa, cantidad, email }) {
+  let s = 50;
+  if (empresa) s += 20;
+  if (cantidad && cantidad >= 10) s += 20;
+  if (isCorporateEmail(email)) s += 10;
+  return Math.min(s, 100);
+}
+
 Deno.serve(async (req) => {
   try {
     if (req.method !== 'POST') {
@@ -308,6 +409,7 @@ Deno.serve(async (req) => {
         });
       } catch { /* persistencia best-effort, no afecta la respuesta */ }
 
+      let chatLeadRow = null;
       try {
         const preview = (text || '').slice(0, 120);
         const tipo = perfil === 'b2b' ? 'B2B' : 'B2C';
@@ -316,6 +418,7 @@ Deno.serve(async (req) => {
         );
         if (existing && existing.length > 0) {
           const cl = existing[0];
+          chatLeadRow = cl;
           await base44.asServiceRole.entities.ChatLead.update(cl.id, {
             tipo,
             mensajes_count: (cl.mensajes_count || 0) + 1,
@@ -323,7 +426,7 @@ Deno.serve(async (req) => {
             ultimo_mensaje_at: new Date().toISOString(),
           });
         } else {
-          await base44.asServiceRole.entities.ChatLead.create({
+          chatLeadRow = await base44.asServiceRole.entities.ChatLead.create({
             conversation_id: conversationId,
             session_id: sessionId,
             tipo,
@@ -335,6 +438,100 @@ Deno.serve(async (req) => {
           });
         }
       } catch { /* best-effort */ }
+
+      // ─── EXTRACCIÓN B2B DESDE TEXTO LIBRE (solo perfil B2B, aditivo) ───
+      // B2C nunca pasa por aquí: a un cliente personal jamás se le extraen
+      // ni piden datos de empresa.
+      if (perfil === 'b2b') {
+        try {
+          let ex = extractB2BRegex(text);
+          // LLM solo si el regex no halló email NI (empresa+cantidad).
+          const regexSuficiente = ex.email || (ex.empresa && ex.cantidad);
+          if (!regexSuficiente) {
+            const ll = await extractB2BLLM(base44, text);
+            ex = {
+              email: ex.email || ll.email,
+              cantidad: ex.cantidad ?? ll.cantidad,
+              nombre: ex.nombre || ll.nombre,
+              empresa: ex.empresa || ll.empresa,
+              producto_interes: ll.producto_interes || null,
+            };
+          }
+          const productoInteres = ex.producto_interes || category || null;
+
+          // Hay datos accionables si tenemos email O (empresa + cantidad).
+          const hasActionable = !!ex.email || (!!ex.empresa && !!ex.cantidad);
+
+          if (hasActionable && chatLeadRow) {
+            // a. Enriquecer ChatLead: solo rellena vacíos, no pisa con null.
+            const clUpdate = {};
+            if (ex.email && !chatLeadRow.email) clUpdate.email = ex.email;
+            if (ex.empresa && !chatLeadRow.empresa) clUpdate.empresa = ex.empresa;
+            if (ex.nombre && !chatLeadRow.nombre) clUpdate.nombre = ex.nombre;
+            if (ex.cantidad && !chatLeadRow.cantidad_estimada) clUpdate.cantidad_estimada = ex.cantidad;
+            if (productoInteres && !chatLeadRow.producto_interes_nombre) clUpdate.producto_interes_nombre = productoInteres;
+
+            // b. Upsert idempotente de B2BLead (por conversación o email existente).
+            let leadId = chatLeadRow.convertido_a_b2b_lead_id || null;
+            let existingLead = null;
+            if (leadId) {
+              try { existingLead = await base44.asServiceRole.entities.B2BLead.get(leadId); } catch { existingLead = null; }
+            }
+            if (!existingLead && ex.email) {
+              const byEmail = await base44.asServiceRole.entities.B2BLead.filter({ email: ex.email }, '-created_date', 1);
+              if (byEmail && byEmail[0]) { existingLead = byEmail[0]; leadId = byEmail[0].id; }
+            }
+
+            const score = computeB2BScore({ empresa: ex.empresa || existingLead?.company_name, cantidad: ex.cantidad ?? existingLead?.qty_estimate, email: ex.email || existingLead?.email });
+            const histEntry = { at: new Date().toISOString(), type: existingLead ? 'note' : 'created', actor: 'peyuBrain', channel: 'web', detail: `Captura texto libre /v2: "${(text || '').slice(0, 180)}"` };
+
+            if (existingLead) {
+              const lu = { lead_score: score };
+              if (ex.email && !existingLead.email) lu.email = ex.email;
+              if (ex.empresa && !existingLead.company_name) lu.company_name = ex.empresa;
+              if (ex.nombre && !existingLead.contact_name) lu.contact_name = ex.nombre;
+              if (ex.cantidad && !existingLead.qty_estimate) lu.qty_estimate = ex.cantidad;
+              if (productoInteres && !existingLead.product_interest) lu.product_interest = productoInteres;
+              lu.historial = [...(existingLead.historial || []), histEntry];
+              await base44.asServiceRole.entities.B2BLead.update(existingLead.id, lu);
+            } else {
+              const created = await base44.asServiceRole.entities.B2BLead.create({
+                source: 'Formulario Web',
+                contact_name: ex.nombre || 'Sin nombre',
+                company_name: ex.empresa || 'Sin empresa',
+                email: ex.email || null,
+                qty_estimate: ex.cantidad || null,
+                product_interest: productoInteres || null,
+                status: 'Nuevo',
+                lead_score: score,
+                notes: `Capturado desde texto libre /v2 (chat_v2_texto): "${(text || '').slice(0, 400)}"`,
+                historial: [histEntry],
+              });
+              leadId = created.id;
+            }
+
+            // c. Vincular ChatLead ↔ B2BLead.
+            if (leadId) { clUpdate.convertido_a_b2b_lead_id = leadId; clUpdate.tipo = 'B2B'; clUpdate.estado = 'Calificado'; }
+            if (Object.keys(clUpdate).length > 0) {
+              await base44.asServiceRole.entities.ChatLead.update(chatLeadRow.id, clUpdate);
+            }
+
+            // 3. Confirmación cálida sin re-pedir datos ya entregados.
+            const nombreSaludo = ex.nombre || chatLeadRow.nombre;
+            const empresaTxt = ex.empresa || chatLeadRow.empresa;
+            const cantTxt = ex.cantidad || chatLeadRow.cantidad_estimada;
+            const emailTxt = ex.email || chatLeadRow.email;
+            let conf = `¡Perfecto${nombreSaludo ? `, ${nombreSaludo}` : ''}! Ya anoté tu cotización`;
+            if (cantTxt && productoInteres) conf += ` por ${cantTxt} ${productoInteres.toLowerCase()}`;
+            else if (cantTxt) conf += ` por ${cantTxt} unidades`;
+            if (empresaTxt) conf += ` para ${empresaTxt}`;
+            conf += ' 🐢';
+            if (emailTxt) conf += ` Te contactamos a ${emailTxt} en menos de 24h con precios por volumen (el grabado de tu logo va gratis desde 10 unidades).`;
+            else conf += ' Para enviarte la cotización formal, ¿me dejas tu email?';
+            reply_text = conf;
+          }
+        } catch { /* extracción best-effort, nunca rompe la respuesta */ }
+      }
     }
 
     return Response.json({ reply_text, cards, perfil, intent });
