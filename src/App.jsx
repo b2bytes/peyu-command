@@ -46,6 +46,7 @@ import Canjear from './pages/Canjear';
 import RegalarGiftCard from './pages/RegalarGiftCard';
 import Gracias from './pages/Gracias';
 import FoundersPresentation from './pages/FoundersPresentation';
+import BrandLab from './pages/BrandLab';
 
 // ── ADMIN PAGES (lazy + retry) ───────────────────────────────────────
 // Cargadas on-demand. Cada lazy() está envuelto en lazyWithRetry para
@@ -240,6 +241,9 @@ function App() {
             <Routes>
               {/* Landing Page - Standalone */}
               <Route path="/" element={<ShopLanding />} />
+
+              {/* Brand Lab (Fase 0) - Standalone, ruta nueva paralela */}
+              <Route path="/brand" element={<BrandLab />} />
 
               {/* Presentación a fundadores - 22 layouts del design system */}
               <Route path="/founders-presentation" element={<FoundersPresentation />} />

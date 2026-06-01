@@ -1,0 +1,141 @@
+{
+  "name": "BrandDirection",
+  "type": "object",
+  "description": "Direcci\u00f3n visual candidata para la nueva cara de peyuchile.cl (Commerce OS conversacional). Cada registro define una identidad completa (tokens de dise\u00f1o claro/oscuro, tipograf\u00eda, radios, densidad, sombras) que Diego puede previsualizar y activar en el Brand Lab. Solo una puede estar activa a la vez.",
+  "properties": {
+    "nombre": {
+      "type": "string",
+      "title": "Nombre de la direcci\u00f3n",
+      "description": "Ej: Editorial C\u00e1lido, Minimal Premium, Eco Vibrante, Warm Dusk OS"
+    },
+    "descripcion": {
+      "type": "string",
+      "title": "Descripci\u00f3n"
+    },
+    "tokens": {
+      "type": "object",
+      "title": "Tokens de dise\u00f1o",
+      "description": "Paleta claro/oscuro, tipograf\u00eda, radios, densidad y sombras.",
+      "properties": {
+        "paleta": {
+          "type": "object",
+          "properties": {
+            "light": {
+              "type": "object",
+              "properties": {
+                "bg": {
+                  "type": "string"
+                },
+                "surface": {
+                  "type": "string"
+                },
+                "accent": {
+                  "type": "string"
+                },
+                "accent2": {
+                  "type": "string"
+                },
+                "text": {
+                  "type": "string"
+                },
+                "muted": {
+                  "type": "string"
+                }
+              }
+            },
+            "dark": {
+              "type": "object",
+              "properties": {
+                "bg": {
+                  "type": "string"
+                },
+                "surface": {
+                  "type": "string"
+                },
+                "accent": {
+                  "type": "string"
+                },
+                "accent2": {
+                  "type": "string"
+                },
+                "text": {
+                  "type": "string"
+                },
+                "muted": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "tipografia": {
+          "type": "object",
+          "properties": {
+            "titular": {
+              "type": "string"
+            },
+            "cuerpo": {
+              "type": "string"
+            }
+          }
+        },
+        "radios": {
+          "type": "object",
+          "properties": {
+            "sm": {
+              "type": "string"
+            },
+            "md": {
+              "type": "string"
+            },
+            "lg": {
+              "type": "string"
+            }
+          }
+        },
+        "densidad": {
+          "type": "string",
+          "enum": [
+            "compacta",
+            "media",
+            "amplia"
+          ]
+        },
+        "sombras": {
+          "type": "string",
+          "enum": [
+            "suave",
+            "media",
+            "marcada"
+          ]
+        }
+      }
+    },
+    "preview_home_url": {
+      "type": "string",
+      "title": "Mockup home (URL)"
+    },
+    "preview_card_url": {
+      "type": "string",
+      "title": "Mockup card producto (URL)"
+    },
+    "preview_cart_url": {
+      "type": "string",
+      "title": "Mockup carrito (URL)"
+    },
+    "activa": {
+      "type": "boolean",
+      "title": "Activa",
+      "default": false,
+      "description": "Solo una direcci\u00f3n puede estar activa a la vez."
+    },
+    "orden": {
+      "type": "number",
+      "title": "Orden",
+      "default": 0
+    }
+  },
+  "required": [
+    "nombre"
+  ]
+}
