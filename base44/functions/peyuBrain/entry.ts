@@ -36,13 +36,16 @@ function cheapClassify(textRaw) {
   if (cat && /\b(ver|muestrame|mostrar|quiero ver|cachos|escritorio|paletas|hogar|macetero)\b/.test(t))
     return { intent: 'search_product', perfil, category: cat };
 
-  // Recomendación de regalo
-  if (/\b(regalo|regalar|recomienda|recomendacion|sugerencia|para mi (mama|papa|polola|pareja|amigo|jefe)|cumpleanos|navidad|aniversario|que me recomiendas)\b/.test(t))
+  // Recomendación de regalo (incluye señales de presupuesto: "bajo $25.000", "barato")
+  if (/\b(regalo|regalar|recomienda|recomendacion|sugerencia|para mi (mama|papa|polola|pareja|amigo|jefe)|cumpleanos|navidad|aniversario|que me recomiendas|barato|economico|bajo \$?\d|menos de \$?\d|hasta \$?\d)\b/.test(t))
     return { intent: 'recommend_gift', perfil, category: cat };
 
   // "¿cómo personalizo con mi logo?" y dudas → chat informativo
   if (/\b(como personalizo|personalizar|mi logo|grabado laser|envio|despacho|garantia|reciclado|sustentable|de que material)\b/.test(t))
     return { intent: 'chat', perfil, category: null };
+
+  // Si menciona una categoría o trae palabras de búsqueda concretas → search dinámico (evita ir al LLM)
+  if (cat) return { intent: 'search_product', perfil, category: cat };
 
   return null; // no obvio → LLM
 }
@@ -97,12 +100,64 @@ function projectProduct(p) {
   };
 }
 
-// Filtra productos relevantes por categoría o por texto libre (match simple en nombre/incluye).
+// Stopwords ES que no aportan al matching de productos.
+const STOP = new Set(['para','con','los','las','una','uno','del','que','por','como','mas','muy','este','esta','algo','quiero','busco','necesito','tienen','tienes','ver','muestrame','mostrar','regalo','empresa','mi','de','la','el','un','y','o','en','a']);
+
+// Extrae presupuesto máximo del texto: "bajo $25.000", "menos de 25000", "hasta 25 mil".
+function extractBudget(t) {
+  const m = t.match(/(?:bajo|menos de|hasta|maximo|max|menor a|por debajo de)\s*\$?\s*([\d.]+)\s*(mil|k)?/);
+  if (!m) return null;
+  let n = parseInt(m[1].replace(/\./g, ''), 10);
+  if (isNaN(n)) return null;
+  if (m[2]) n *= 1000;           // "25 mil" / "25k"
+  else if (n < 1000) n *= 1000;  // "25" → 25.000
+  return n;
+}
+
+// Tokeniza el texto del usuario en palabras útiles (>2 chars, sin stopwords).
+function tokenize(textRaw) {
+  const t = (textRaw || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  return t.split(/[^a-z0-9]+/).filter((w) => w.length > 2 && !STOP.has(w));
+}
+
+// Selección DINÁMICA: filtra por categoría + presupuesto y rankea por relevancia
+// textual real contra nombre/incluye/categoría de cada producto del catálogo.
 function pickProducts(productos, { category, text }) {
+  const t = (text || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  const tokens = tokenize(text);
+  const budget = extractBudget(t);
+
   let pool = productos;
-  if (category) pool = pool.filter((p) => p.categoria_v2 === category);
-  if (pool.length === 0) pool = productos; // fallback: no dejar vacío
-  return pool;
+  if (category) {
+    const byCat = pool.filter((p) => p.categoria_v2 === category);
+    if (byCat.length) pool = byCat;
+  }
+  if (budget) {
+    const byBudget = pool.filter((p) => (p.precio_b2c ?? Infinity) <= budget);
+    if (byBudget.length) pool = byBudget;
+  }
+
+  // Scoring textual: cada token que aparece en nombre/incluye/categoría suma.
+  if (tokens.length) {
+    const scored = pool.map((p) => {
+      const hay = `${p.nombre || ''} ${p.incluye_v2 || p.incluye || ''} ${p.categoria_v2 || ''}`
+        .toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+      let score = 0;
+      for (const tok of tokens) {
+        if (hay.includes(tok)) score += 2;
+        else if (hay.includes(tok.slice(0, 4))) score += 1; // match parcial (singular/plural)
+      }
+      return { p, score };
+    });
+    const hits = scored.filter((s) => s.score > 0);
+    if (hits.length) {
+      return hits.sort((a, b) => b.score - a.score).map((s) => s.p);
+    }
+  }
+
+  // Sin matches textuales: ordena por precio asc (regalos económicos primero) como fallback útil.
+  if (pool.length === 0) pool = productos;
+  return [...pool].sort((a, b) => (a.precio_b2c ?? Infinity) - (b.precio_b2c ?? Infinity));
 }
 
 Deno.serve(async (req) => {
