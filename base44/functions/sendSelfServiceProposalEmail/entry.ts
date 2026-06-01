@@ -189,34 +189,72 @@ Deno.serve(async (req) => {
     const proposalUrl = `${baseUrl}/b2b/propuesta?id=${proposal.id}`;
     const acceptUrl = `${baseUrl}/b2b/propuesta?id=${proposal.id}&action=accept`;
 
+    // El flujo self-service es PÚBLICO (cliente anónimo), por lo que el correo
+    // al cliente externo se envía vía Resend con el dominio verificado de PEYU.
+    // Core.SendEmail no sirve aquí porque solo entrega a usuarios de la app.
     const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');
     if (!RESEND_API_KEY) return Response.json({ error: 'RESEND_API_KEY no configurada' }, { status: 500 });
-    const FROM_ADDR = 'PEYU Chile <onboarding@resend.dev>';
 
-    const sendViaResend = async ({ to, subject, html }) => {
+    // FROM con dominio propio (entrega a clientes externos cuando está verificado).
+    const FROM_VERIFIED = 'PEYU Chile <ventas@peyuchile.cl>';
+    // FROM sandbox de Resend (siempre disponible, pero SOLO entrega al dueño
+    // de la cuenta). Lo usamos como respaldo para no perder la propuesta.
+    const FROM_SANDBOX = 'PEYU Chile <onboarding@resend.dev>';
+    const TEAM_INBOX = 'ventas@peyuchile.cl';
+
+    const postResend = async ({ from, to, subject, html, replyTo }) => {
       const r = await fetch('https://api.resend.com/emails', {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${RESEND_API_KEY}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ from: FROM_ADDR, to: [to], subject, html }),
+        body: JSON.stringify({ from, to: [to], subject, html, reply_to: replyTo }),
       });
       if (!r.ok) {
         const err = await r.text();
-        throw new Error(`Resend ${r.status}: ${err}`);
+        const domainNotVerified = r.status === 403 && /domain is not verified/i.test(err);
+        const e = new Error(`Resend ${r.status}: ${err}`);
+        e.domainNotVerified = domainNotVerified;
+        throw e;
       }
       return r.json();
     };
 
+    let clientSent = false;
+    let domainPending = false;
     if (proposal.email) {
-      await sendViaResend({
-        to: proposal.email,
-        subject: `Propuesta PEYU N° ${proposal.numero} · ${fmtCLP(proposal.total)}`,
-        html: buildClientHtml({ proposal, items, proposalUrl, acceptUrl }),
-      });
+      try {
+        await postResend({
+          from: FROM_VERIFIED,
+          to: proposal.email,
+          subject: `Propuesta PEYU N° ${proposal.numero} · ${fmtCLP(proposal.total)}`,
+          html: buildClientHtml({ proposal, items, proposalUrl, acceptUrl }),
+          replyTo: TEAM_INBOX,
+        });
+        clientSent = true;
+      } catch (e) {
+        if (!e.domainNotVerified) throw e;
+        // Dominio aún sin verificar en Resend → no podemos entregar al cliente
+        // externo. Respaldo: avisamos al equipo con la propuesta lista para que
+        // la reenvíen manualmente. El flujo NO se rompe.
+        domainPending = true;
+        console.warn('peyuchile.cl no verificado en Resend, usando respaldo interno.');
+        try {
+          await postResend({
+            from: FROM_SANDBOX,
+            to: TEAM_INBOX,
+            subject: `[REENVIAR AL CLIENTE] Propuesta ${proposal.numero} · ${proposal.empresa} → ${proposal.email}`,
+            html: buildClientHtml({ proposal, items, proposalUrl, acceptUrl }),
+          });
+        } catch (e2) {
+          console.warn('Respaldo interno también falló:', e2?.message);
+        }
+      }
     }
 
+    // Notificación interna al equipo comercial (no bloquea al cliente si falla)
     try {
-      await sendViaResend({
-        to: 'ventas@peyuchile.cl',
+      await postResend({
+        from: clientSent ? FROM_VERIFIED : FROM_SANDBOX,
+        to: TEAM_INBOX,
         subject: `[Nueva propuesta] ${proposal.numero} · ${proposal.empresa} · ${fmtCLP(proposal.total)}`,
         html: buildInternalHtml({ proposal, items, form: form || { contact_name: proposal.contacto, company_name: proposal.empresa, email: proposal.email } }),
       });
@@ -224,7 +262,11 @@ Deno.serve(async (req) => {
       console.warn('Email interno falló (no bloquea al cliente):', e?.message);
     }
 
-    return Response.json({ success: true, sent_to: proposal.email });
+    return Response.json({
+      success: clientSent,
+      sent_to: proposal.email,
+      domain_pending: domainPending,
+    });
   } catch (error) {
     return Response.json({ error: error.message, stack: error.stack }, { status: 500 });
   }
