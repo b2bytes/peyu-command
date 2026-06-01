@@ -13,6 +13,7 @@ import { ensureFreshSession, addToHistory, readHistory } from '@/lib/chat-histor
 import { withContext } from '@/lib/chat-context';
 import { sanitizeUserMessage } from '@/lib/chat-sanitize';
 import { syncShownSkusFromMessages, buildOccasionPrompt, clearShownSkus } from '@/lib/chat-recommendations';
+import { matchFAQ } from '@/lib/chat-faq-cache.js';
 import { History, RotateCcw } from 'lucide-react';
 import { useAppBackground, getBackgroundById, buildBackgroundImageCSS, BG_OVERLAY, THEME_OVERLAY } from '@/lib/background';
 import BackgroundSwitcher from '@/components/BackgroundSwitcher';
@@ -273,6 +274,40 @@ export default function ShopLanding() {
     setInput('');
     setLoading(true);
     setMessages(prev => [...prev, { role: 'user', content: text }]);
+
+    // ⚡ CACHÉ DE RESPUESTAS INSTANTÁNEAS: si la consulta coincide con una FAQ
+    // frecuente (envíos, garantía, pagos, ubicación…), respondemos AL INSTANTE
+    // sin pasar por el agente IA — atención al cliente inmediata, cero latencia.
+    // La conversación igual se registra en background para no perder el lead.
+    const cached = matchFAQ(text);
+    if (cached) {
+      setMessages(prev => [...prev, { role: 'assistant', content: cached }]);
+      setLoading(false);
+      // Registro en background (lead + trazabilidad), sin bloquear la UI.
+      (async () => {
+        try {
+          const sid = localStorage.getItem('peyu_session_id') || null;
+          let convId = conversationId;
+          if (!convId) {
+            const cr = await base44.functions.invoke('publicChatProxy', {
+              action: 'create', context: 'landing', session_id: sid,
+              page_path: window.location.pathname, referrer: document.referrer || null,
+            });
+            convId = cr.data?.conversation_id;
+            if (convId) { setConversationId(convId); localStorage.setItem(STORAGE_KEY, convId); }
+          }
+          if (convId) {
+            addToHistory(convId, text);
+            setHistoryCount(readHistory().length);
+            await base44.functions.invoke('publicChatProxy', {
+              action: 'send', conversation_id: convId, content: text,
+              session_id: sid, page_path: window.location.pathname,
+            });
+          }
+        } catch { /* best-effort */ }
+      })();
+      return;
+    }
 
     // Detectar cantidad mencionada por el usuario (ej: "necesito 100 unidades")
     const qtyMatch = text.match(/\b(\d{2,5})\b\s*(u\.?|unidades|pcs|piezas|regalos)?/i);

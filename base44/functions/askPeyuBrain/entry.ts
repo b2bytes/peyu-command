@@ -15,13 +15,24 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 const INDEX_NAME = 'peyu-brain';
 const ALL_NS = ['products', 'policies_faq', 'brand_voice', 'sustainability'];
 
+// ⚡ Cache del host del índice en memoria del worker. El host de Pinecone es
+// estable, así que evitamos un fetch extra a la API en CADA consulta del chat
+// (un round-trip menos = respuesta más rápida). Se refresca cada 30 min.
+let _hostCache = null;
+let _hostCacheAt = 0;
+const HOST_TTL_MS = 30 * 60 * 1000;
+
 async function getIndexHost(apiKey) {
+  const now = Date.now();
+  if (_hostCache && (now - _hostCacheAt) < HOST_TTL_MS) return _hostCache;
   const r = await fetch(`https://api.pinecone.io/indexes/${INDEX_NAME}`, {
     headers: { 'Api-Key': apiKey, 'X-Pinecone-API-Version': '2025-01' }
   });
   if (!r.ok) throw new Error('Índice no encontrado');
   const d = await r.json();
-  return d.host;
+  _hostCache = d.host;
+  _hostCacheAt = now;
+  return _hostCache;
 }
 
 async function searchNs(host, apiKey, ns, query, topK, filter) {
