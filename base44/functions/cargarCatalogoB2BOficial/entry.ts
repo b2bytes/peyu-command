@@ -6,14 +6,15 @@ Deno.serve(async (req) => {
             return Response.json({ ok: false, error: 'Method not allowed' }, { status: 405 });
         }
 
-        // Protección por secreto simple
-        const secret = req.headers.get('X-Madre-Secret');
+        const body = await req.json().catch(() => ({}));
+
+        // Protección por secreto simple: acepta desde body.secret o header X-Madre-Secret
+        const secret = body?.secret || req.headers.get('X-Madre-Secret');
         const expected = Deno.env.get('MADRE_V2_SECRET');
         if (!expected || secret !== expected) {
             return Response.json({ ok: false, error: 'Forbidden' }, { status: 403 });
         }
 
-        const body = await req.json().catch(() => ({}));
         const productos = Array.isArray(body?.productos) ? body.productos : [];
 
         if (productos.length === 0) {
