@@ -230,15 +230,23 @@ Deno.serve(async (req) => {
       if (!conversation_id || !content) {
         return Response.json({ error: 'conversation_id and content required' }, { status: 400 });
       }
+      // ⚡ SOLO esperamos lo imprescindible para que el agente empiece a pensar:
+      // entregar el mensaje del usuario a la conversación. Todo lo demás
+      // (captura de lead, ActivityLog, AILog) es analítica que el usuario NO
+      // necesita esperar — antes corría en serie y sumaba latencia inútil al chat.
       const conv = await base44.asServiceRole.agents.getConversation(conversation_id);
       await base44.asServiceRole.agents.addMessage(conv, { role: 'user', content });
 
-      // 🆕 CAPTURA PROGRESIVA: upsert ChatLead con datos extraídos del mensaje
-      await upsertChatLead(base44, { conversation_id, session_id, page_path, referrer, content });
+      // 🔄 Registro en background: lead + logs sin bloquear la respuesta.
+      const cleanedForLog = stripContextBlocks(content);
+      const userMessageForLog = cleanedForLog
+        || '(solo apertura del chat — sin mensaje del cliente todavía)';
 
-      // Trazabilidad 360°: registramos cada mensaje del usuario en ActivityLog
-      if (session_id) {
-        try {
+      const recordInBackground = (async () => {
+        // Captura progresiva de lead
+        await upsertChatLead(base44, { conversation_id, session_id, page_path, referrer, content }).catch(() => {});
+        // Trazabilidad 360°
+        if (session_id) {
           await base44.asServiceRole.entities.ActivityLog.create({
             event_type: 'chat_message',
             category: 'Soporte',
@@ -246,21 +254,10 @@ Deno.serve(async (req) => {
             page_path: page_path || null,
             entity_type: 'Conversation',
             entity_id: conversation_id,
-            meta: {
-              agent: AGENT_NAME,
-              text_preview: String(content).slice(0, 140),
-            },
-          });
-        } catch {}
-      }
-
-      // 🎯 Registrar en AILog con el mensaje REAL del cliente (sin [CONTEXTO]/[BRAIN]).
-      // El bloque técnico va aparte en system_context para auditoría.
-      const cleanedForLog = stripContextBlocks(content);
-      const userMessageForLog = cleanedForLog
-        || '(solo apertura del chat — sin mensaje del cliente todavía)';
-
-      try {
+            meta: { agent: AGENT_NAME, text_preview: String(content).slice(0, 140) },
+          }).catch(() => {});
+        }
+        // Auditoría AILog
         await base44.asServiceRole.entities.AILog.create({
           agent_name: AGENT_NAME,
           model: 'agent_sdk',
@@ -272,8 +269,11 @@ Deno.serve(async (req) => {
           system_context: page_path ? `page=${page_path}` : null,
           status: 'success',
           tags: ['chat_publico', 'landing'],
-        });
-      } catch {}
+        }).catch(() => {});
+      })();
+      if (typeof EdgeRuntime !== 'undefined' && EdgeRuntime.waitUntil) {
+        EdgeRuntime.waitUntil(recordInBackground);
+      }
 
       return Response.json({ ok: true });
     }

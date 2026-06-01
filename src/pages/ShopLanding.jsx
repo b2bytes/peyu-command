@@ -333,10 +333,10 @@ export default function ShopLanding() {
       // El agente suele responder en 4-12s. Damos hasta ~35s totales antes
       // del fallback — más allá la UX se siente rota.
       const intervals = [
-        700, 800, 900, 1000, 1200, 1500, 1500,
-        2000, 2000, 2000, 2500, 2500,
+        400, 500, 600, 700, 800, 1000, 1200, 1500,
+        1500, 2000, 2000, 2000, 2500, 2500,
         3000, 3000, 3000, 3000
-      ]; // ~30-32s total
+      ]; // primer chequeo más temprano → la respuesta aparece apenas el agente termina
       let attempt = 0;
       let consecutiveErrors = 0;
 
@@ -394,7 +394,7 @@ export default function ShopLanding() {
         }
       };
 
-      setTimeout(poll, intervals[0]);
+      setTimeout(poll, 600);
 
     } catch (e) {
       console.error('Error chat:', e);
