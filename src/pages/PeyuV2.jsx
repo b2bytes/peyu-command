@@ -198,12 +198,12 @@ export default function PeyuV2() {
       {messages.map((m, i) => (
         <div key={i} className={`flex flex-col gap-2 ${m.role === 'user' ? 'items-end' : 'items-start'}`}>
           {m.reply_text && (
-            <div className="flex gap-2 max-w-[88%]">
+            <div className="flex gap-2.5 max-w-[92%]">
               {m.role === 'assistant' && (
-                <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 text-sm" style={{ background: 'var(--v2-grad-action)' }}>🐢</div>
+                <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 text-base" style={{ background: 'var(--v2-grad-action)' }}>🐢</div>
               )}
               <div
-                className="rounded-2xl px-4 py-2.5 text-sm whitespace-pre-wrap break-words leading-relaxed"
+                className="rounded-2xl px-4 py-3 text-[15px] whitespace-pre-wrap break-words leading-relaxed"
                 style={m.role === 'user'
                   ? { background: 'var(--v2-grad-gold)', color: '#2a1f2b' }
                   : { background: 'var(--v2-surface)', color: 'var(--v2-fg-soft)', border: '1px solid var(--v2-border)' }}
@@ -273,34 +273,34 @@ export default function PeyuV2() {
         {/* COLUMNA CENTRAL — río de chat */}
         <main className="flex-1 min-w-0 flex flex-col overflow-hidden">
           <div className="flex-1 overflow-y-auto overflow-x-hidden v2-scroll">
-            <div className="max-w-[720px] mx-auto px-4 py-5">
+            <div className="max-w-[920px] w-full mx-auto px-6 py-6">
               {renderStream()}
             </div>
           </div>
 
           {/* Input sticky */}
           <div className="flex-shrink-0 px-4 pt-2 pb-4 pb-safe" style={{ borderTop: '1px solid var(--v2-border)' }}>
-            <div className="max-w-[720px] mx-auto">
-              <div className="flex gap-2 overflow-x-auto v2-scrollbar-hide pb-2">
+            <div className="max-w-[920px] w-full mx-auto">
+              <div className="flex gap-2 overflow-x-auto v2-scrollbar-hide pb-2.5">
                 {QUICK_REPLIES.map((q) => (
-                  <button key={q} onClick={() => ask(q.replace(/^[^\s]+\s/, ''))} className="v2-chip px-3 py-1.5 text-[11px] flex-shrink-0">
+                  <button key={q} onClick={() => ask(q.replace(/^[^\s]+\s/, ''))} className="v2-chip px-3.5 py-2 text-xs flex-shrink-0">
                     {q}
                   </button>
                 ))}
               </div>
-              <div className="v2-input flex items-center gap-2 pl-4 pr-1.5 py-1.5">
-                <Sparkles className="w-4 h-4 flex-shrink-0" style={{ color: 'var(--v2-gold)' }} />
+              <div className="v2-input flex items-center gap-2.5 pl-5 pr-2 py-2">
+                <Sparkles className="w-5 h-5 flex-shrink-0" style={{ color: 'var(--v2-gold)' }} />
                 <input
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && !loading && ask()}
                   placeholder={mode === 'b2b' ? 'Ej: 100 cachos con mi logo para mi empresa…' : 'Ej: un regalo sustentable bajo $25.000…'}
-                  className="flex-1 bg-transparent border-0 outline-none text-sm h-10"
+                  className="flex-1 bg-transparent border-0 outline-none text-[15px] h-12"
                   style={{ color: 'var(--v2-fg)' }}
                   disabled={loading}
                 />
-                <button onClick={() => ask()} disabled={loading || !input.trim()} className="v2-btn-primary w-10 h-10 flex items-center justify-center flex-shrink-0 disabled:opacity-50">
-                  <Send className="w-4 h-4" />
+                <button onClick={() => ask()} disabled={loading || !input.trim()} className="v2-btn-primary w-12 h-12 flex items-center justify-center flex-shrink-0 disabled:opacity-50">
+                  <Send className="w-5 h-5" />
                 </button>
               </div>
             </div>
