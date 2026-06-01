@@ -215,7 +215,7 @@ async function brainLookup(userMessage, userEmail) {
         : ['products', 'policies_faq', 'sustainability'],
     });
     const timeoutPromise = new Promise((_, reject) =>
-      setTimeout(() => reject(new Error('brain_timeout')), 3000)
+      setTimeout(() => reject(new Error('brain_timeout')), 1500)
     );
     const res = await Promise.race([brainPromise, timeoutPromise]);
     return res?.data?.context || '';
@@ -337,16 +337,17 @@ export async function withContext(userMessage) {
     }
   } catch { /* no-op */ }
 
-  const ctx = await buildChatContext(userMessage);
-  const ctxLine = serializeContext(ctx);
+  // ⚡ Corremos el contexto y el Brain EN PARALELO. Antes esperábamos a que
+  // terminara buildChatContext (productos + auth) y recién ahí lanzábamos el
+  // Brain — sumando ambas latencias en serie. El Brain solo necesita el mensaje,
+  // así que lo disparamos al mismo tiempo. En saludos triviales lo omitimos.
+  const ctxPromise = buildChatContext(userMessage);
+  const brainPromise = isTrivialMessage(userMessage)
+    ? Promise.resolve('')
+    : brainLookup(userMessage, null);
 
-  // 🧠 Brain lookup — solo cuando hay intención real (no en saludos).
-  // En "hola" devolvíamos un párrafo enorme porque Brain inyectaba políticas,
-  // sostenibilidad, etc. Ahora en saludos confiamos solo en el system prompt
-  // del agente, que ya tiene la regla "1-2 líneas + 1 producto".
-  const brainBlock = isTrivialMessage(userMessage)
-    ? ''
-    : await brainLookup(userMessage, ctx.user_email);
+  const [ctx, brainBlock] = await Promise.all([ctxPromise, brainPromise]);
+  const ctxLine = serializeContext(ctx);
 
   const parts = [];
   if (ctxLine) parts.push(ctxLine);

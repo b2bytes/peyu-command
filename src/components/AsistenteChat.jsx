@@ -167,7 +167,11 @@ export default function AsistenteChat() {
         localStorage.setItem(STORAGE_KEY, convId);
         setConversationId(convId);
       } else {
-        conv = await base44.agents.getConversation(convId);
+        // ⚡ No re-descargamos la conversación completa (getConversation): es una
+        // llamada de red redundante que sumaba latencia antes de que el agente
+        // empiece a pensar. addMessage solo necesita el id; ya tenemos los
+        // mensajes en estado + suscripción en vivo.
+        conv = { id: convId };
       }
       // Inyectamos el contexto de página (producto visto, carrito, ruta) al mensaje
       // que recibe el agente. El usuario sigue viendo solo su texto en la UI.
