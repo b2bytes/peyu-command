@@ -13,7 +13,7 @@ import { ensureFreshSession, addToHistory, readHistory } from '@/lib/chat-histor
 import { withContext } from '@/lib/chat-context';
 import { sanitizeUserMessage } from '@/lib/chat-sanitize';
 import { syncShownSkusFromMessages, buildOccasionPrompt, clearShownSkus } from '@/lib/chat-recommendations';
-import { matchFAQ } from '@/lib/chat-faq-cache.js';
+import { matchFAQ } from '@/lib/chat-faq-cache';
 import { History, RotateCcw } from 'lucide-react';
 import { useAppBackground, getBackgroundById, buildBackgroundImageCSS, BG_OVERLAY, THEME_OVERLAY } from '@/lib/background';
 import BackgroundSwitcher from '@/components/BackgroundSwitcher';
