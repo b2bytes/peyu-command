@@ -76,8 +76,19 @@ function ChatProductCard({ sku, variant = 'dark' }) {
 
   useEffect(() => {
     let alive = true;
-    base44.entities.Producto.filter({ sku })
-      .then(list => { if (alive) setProducto(list?.[0] || null); })
+    const cleanSku = String(sku || '').trim();
+    if (!cleanSku) { setLoading(false); return () => { alive = false; }; }
+    base44.entities.Producto.filter({ sku: cleanSku })
+      .then(list => {
+        if (!alive) return;
+        // 🛡️ Match EXACTO de SKU (case-insensitive). Si el agente emitió un
+        // SKU inventado o parecido, NO mostramos un producto equivocado:
+        // preferimos no renderizar la tarjeta antes que confundir al cliente.
+        const exact = (list || []).find(
+          (p) => String(p.sku || '').trim().toLowerCase() === cleanSku.toLowerCase()
+        );
+        setProducto(exact || null);
+      })
       .finally(() => { if (alive) setLoading(false); });
     return () => { alive = false; };
   }, [sku]);

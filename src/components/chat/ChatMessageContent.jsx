@@ -97,8 +97,13 @@ function CartInject({ spec }) {
   useEffect(() => {
     let alive = true;
     (async () => {
-      const list = await base44.entities.Producto.filter({ sku });
-      const producto = list?.[0];
+      const cleanSku = String(sku || '').trim();
+      if (!cleanSku) return;
+      const list = await base44.entities.Producto.filter({ sku: cleanSku });
+      // 🛡️ Solo agregamos al carrito si el SKU existe EXACTO en catálogo.
+      const producto = (list || []).find(
+        (p) => String(p.sku || '').trim().toLowerCase() === cleanSku.toLowerCase()
+      );
       if (!producto || !alive) return;
       const key = `peyu_chat_cart_added_${sku}_${qty}`;
       if (!sessionStorage.getItem(key)) {
