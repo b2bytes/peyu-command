@@ -178,13 +178,16 @@ El bloque generará el borrador (texto + imagen IA), lo guardará como borrador 
     const history = [...messages, userMsg].map((m) => `${m.role === 'user' ? 'Usuario' : 'Peyu'}: ${m.content}`).join('\n\n');
 
     // Datos operativos EN VIVO desde el cerebro operacional (fuente de verdad).
-    // No rompe el flujo si falla: el LLM igual responde con el contexto CRM.
+    // Lo lanzamos EN PARALELO con el LLM para no sumar latencia: primero
+    // disparamos ambas promesas y luego esperamos el brain solo para inyectar
+    // contexto. No rompe el flujo si falla: el LLM igual responde con CRM.
+    const brainPromise = base44.functions.invoke('peyuBrainOps', { query: content }).catch(() => null);
+
     let liveOps = '';
-    try {
-      const brain = await base44.functions.invoke('peyuBrainOps', { query: content });
-      const m = brain?.data?.metrics;
-      if (m) {
-        liveOps = `\n\n=== DATOS OPERATIVOS EN VIVO (fuente de verdad, ${new Date().toLocaleString('es-CL')}) ===
+    const brain = await brainPromise;
+    const m = brain?.data?.metrics;
+    if (m) {
+      liveOps = `\n\n=== DATOS OPERATIVOS EN VIVO (fuente de verdad, ${new Date().toLocaleString('es-CL')}) ===
 Pedidos hoy: ${m.pedidos_hoy} · pagados: ${m.pedidos_pagados_hoy} · en producción: ${m.pedidos_en_produccion} · listos despacho: ${m.pedidos_listos}
 Ingresos hoy: ${fmtCLP(m.ingresos_hoy)} · últimos 7d: ${fmtCLP(m.ingresos_7d)}
 Leads B2B hoy: ${m.leads_hoy} · calientes: ${m.leads_calientes} · activos: ${m.leads_activos}
@@ -193,12 +196,11 @@ Consultas hoy: ${m.consultas_hoy} · sin responder: ${m.consultas_sin_responder}
 Conversaciones con Peyu hoy: ${m.conversaciones_hoy}
 Envíos en tránsito: ${m.envios_en_transito} · con excepción: ${m.envios_con_excepcion} · entregados hoy: ${m.envios_entregados_hoy}
 Stock bajo (<10u): ${m.stock_bajo} SKUs`;
-      }
-    } catch (_) { /* sin datos en vivo, seguimos con contexto CRM */ }
+    }
 
     const response = await base44.integrations.Core.InvokeLLM({
       prompt: `${buildContext()}${liveOps}\n\n=== CONVERSACIÓN ===\n${history}\n\nPeyu:`,
-      model: 'claude_sonnet_4_6',
+      model: 'gemini_3_flash',
       response_json_schema: {
         type: 'object',
         properties: {
