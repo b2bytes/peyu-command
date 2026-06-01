@@ -29,11 +29,22 @@ const WELCOME = {
 // Página /v2 "Peyu Commerce OS" — COCKPIT de 3 columnas.
 // Izq: navegación+filtros · Centro: río de chat (protagonista) · Der: panel vivo.
 // Móvil: 1 columna + drawers (filtro / carrito).
+// IDs persistentes del hilo conversacional (sobreviven recarga / re-entrada).
+function getOrCreateId(key, prefix) {
+  try {
+    let v = localStorage.getItem(key);
+    if (!v) { v = `${prefix}_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`; localStorage.setItem(key, v); }
+    return v;
+  } catch { return `${prefix}_${Date.now()}`; }
+}
+
 export default function PeyuV2() {
   const [mode, setMode] = useState('b2c');
   const [messages, setMessages] = useState([WELCOME]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
+  const convIdRef = useRef(getOrCreateId('peyu_v2_conversation_id', 'v2conv'));
+  const sessionIdRef = useRef(getOrCreateId('peyu_v2_session_id', 'v2sess'));
   const [cart, setCart] = useState(() => {
     try { return JSON.parse(localStorage.getItem('carrito') || '[]'); } catch { return []; }
   });
@@ -59,6 +70,33 @@ export default function PeyuV2() {
   // Cargar catálogo madre para los paneles laterales (destacados/best-sellers).
   useEffect(() => { fetchV2Catalog().then(setCatalog); }, []);
 
+  // Retomar conversación previa: si el hilo ya tiene historial, lo reconstruimos
+  // con un saludo "welcome-back" según el perfil inferido la última vez.
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await base44.functions.invoke('peyuBrain', {
+          action: 'history', conversation_id: convIdRef.current,
+        });
+        const turns = res.data?.turns || [];
+        if (turns.length > 0) {
+          const prevPerfil = res.data?.perfil;
+          if (prevPerfil) setMode(prevPerfil);
+          const history = [];
+          for (const turn of turns) {
+            if (turn.user_message) history.push({ role: 'user', reply_text: turn.user_message, cards: [] });
+            if (turn.reply_text) history.push({ role: 'assistant', reply_text: turn.reply_text, cards: [] });
+          }
+          const back = prevPerfil === 'b2b'
+            ? '¡Qué bueno verte de nuevo! 🐢 Seguimos con tu compra para empresa. ¿Continuamos donde quedamos?'
+            : '¡Hola otra vez! 🐢 Retomemos donde quedamos. ¿En qué te ayudo?';
+          setMessages([...history, { role: 'assistant', reply_text: back, cards: [] }]);
+        }
+      } catch { /* sin historial: se queda el WELCOME por defecto */ }
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // Sincronizar carrito + vistos recientes con eventos globales.
   useEffect(() => {
     const refreshCart = () => { try { setCart(JSON.parse(localStorage.getItem('carrito') || '[]')); } catch { /* noop */ } };
@@ -81,7 +119,10 @@ export default function PeyuV2() {
     setMessages((p) => [...p, { role: 'user', reply_text: text, cards: [] }]);
 
     try {
-      const res = await base44.functions.invoke('peyuBrain', { message: text, perfil: mode });
+      const res = await base44.functions.invoke('peyuBrain', {
+        message: text, perfil: mode,
+        conversation_id: convIdRef.current, session_id: sessionIdRef.current,
+      });
       const d = res.data || {};
       if (d.perfil && d.perfil !== mode) setMode(d.perfil);
       setMessages((p) => [...p, {
