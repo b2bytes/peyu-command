@@ -1,0 +1,214 @@
+/* ═══════════════════════════════════════════════════════════════════
+   PEYU COMMERCE OS · /v2 · "Warm Dusk OS"
+   Tema 100% AISLADO — todas las variables prefijadas --v2-* para no
+   colisionar nunca con el design system de la tienda viva.
+   Se activa SOLO dentro de `.v2-root`.
+   ─────────────────────────────────────────────────────────────────── */
+
+.v2-root {
+  /* Paleta base — fondo profundo plum/pizarra cálido */
+  --v2-bg:            #1c1722;
+  --v2-bg-deep:       #14101a;
+  --v2-surface:       #261f2d;
+  --v2-surface-2:     #2f2736;
+  --v2-glass:         rgba(47, 39, 54, 0.55);
+  --v2-glass-border:  rgba(227, 193, 150, 0.14);
+
+  /* Acentos cálidos firma Peyu */
+  --v2-terracota:     #c06a4a;
+  --v2-terracota-soft:rgba(192, 106, 74, 0.16);
+  --v2-gold:          #e3c196;
+  --v2-gold-soft:     rgba(227, 193, 150, 0.14);
+  --v2-teal:          #5fbfa6;   /* plástico reciclado marmolado */
+  --v2-teal-soft:     rgba(95, 191, 166, 0.16);
+
+  /* Texto */
+  --v2-fg:            #f4ece2;
+  --v2-fg-soft:       #d8ccc0;
+  --v2-fg-muted:      #a294a0;
+  --v2-fg-subtle:     #7c7280;
+
+  /* Bordes / sombras / radios */
+  --v2-border:        rgba(227, 193, 150, 0.10);
+  --v2-border-strong: rgba(227, 193, 150, 0.22);
+  --v2-shadow-sm:     0 1px 2px rgba(0,0,0,0.4);
+  --v2-shadow-md:     0 12px 32px -12px rgba(0,0,0,0.6);
+  --v2-shadow-lg:     0 28px 64px -20px rgba(0,0,0,0.7);
+  --v2-glow-gold:     0 0 40px -8px rgba(227,193,150,0.25);
+  --v2-glow-teal:     0 0 40px -8px rgba(95,191,166,0.22);
+  --v2-radius-sm:     12px;
+  --v2-radius-md:     18px;
+  --v2-radius-lg:     26px;
+
+  /* Gradientes ambientales */
+  --v2-grad-canvas:   radial-gradient(120% 90% at 100% 0%, #2a1f2b 0%, #1c1722 40%, #14101a 100%);
+  --v2-grad-action:   linear-gradient(135deg, #c06a4a 0%, #a8543a 100%);
+  --v2-grad-gold:     linear-gradient(135deg, #e3c196 0%, #c9a06f 100%);
+
+  /* Tipografía */
+  --v2-font-display:  'Fraunces', Georgia, serif;
+  --v2-font-body:     'Hanken Grotesk', 'Inter', system-ui, sans-serif;
+
+  background: var(--v2-grad-canvas);
+  color: var(--v2-fg);
+  font-family: var(--v2-font-body);
+  min-height: 100vh;
+  min-height: 100svh;
+  -webkit-font-smoothing: antialiased;
+}
+
+.v2-root *::selection { background: var(--v2-gold-soft); color: var(--v2-fg); }
+
+/* ─── Tipografía ─── */
+.v2-display {
+  font-family: var(--v2-font-display);
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  line-height: 1.02;
+}
+.v2-display-italic {
+  font-family: var(--v2-font-display);
+  font-style: italic;
+  font-weight: 400;
+}
+
+/* ─── Glass surfaces ─── */
+.v2-glass {
+  background: var(--v2-glass);
+  backdrop-filter: blur(18px) saturate(150%);
+  -webkit-backdrop-filter: blur(18px) saturate(150%);
+  border: 1px solid var(--v2-glass-border);
+  box-shadow: var(--v2-shadow-md);
+}
+.v2-card {
+  background: var(--v2-surface);
+  border: 1px solid var(--v2-border);
+  border-radius: var(--v2-radius-md);
+  box-shadow: var(--v2-shadow-sm);
+  transition: transform 250ms ease, box-shadow 250ms ease, border-color 250ms ease;
+}
+.v2-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--v2-shadow-lg), var(--v2-glow-gold);
+  border-color: var(--v2-border-strong);
+}
+
+/* ─── Botones ─── */
+.v2-btn-primary {
+  background: var(--v2-grad-action);
+  color: #fff;
+  border-radius: 999px;
+  box-shadow: var(--v2-shadow-md);
+  transition: filter 200ms ease, transform 200ms ease;
+  font-weight: 600;
+}
+.v2-btn-primary:hover { filter: brightness(1.08); transform: translateY(-1px); }
+.v2-btn-primary:active { transform: translateY(0); }
+
+.v2-btn-gold {
+  background: var(--v2-grad-gold);
+  color: #2a1f2b;
+  border-radius: 999px;
+  font-weight: 700;
+  box-shadow: var(--v2-shadow-md);
+  transition: filter 200ms ease, transform 200ms ease;
+}
+.v2-btn-gold:hover { filter: brightness(1.06); transform: translateY(-1px); }
+
+.v2-btn-ghost {
+  background: var(--v2-glass);
+  border: 1px solid var(--v2-glass-border);
+  color: var(--v2-fg);
+  border-radius: 999px;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  transition: background 200ms ease, border-color 200ms ease;
+}
+.v2-btn-ghost:hover { border-color: var(--v2-border-strong); }
+
+/* ─── Input ─── */
+.v2-input {
+  background: var(--v2-glass);
+  border: 1px solid var(--v2-glass-border);
+  color: var(--v2-fg);
+  border-radius: 999px;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  transition: border-color 200ms ease, box-shadow 200ms ease;
+}
+.v2-input::placeholder { color: var(--v2-fg-muted); }
+.v2-input:focus {
+  outline: none;
+  border-color: var(--v2-gold);
+  box-shadow: 0 0 0 3px var(--v2-gold-soft);
+}
+
+/* ─── Toggle B2C/B2B ─── */
+.v2-segment {
+  background: var(--v2-glass);
+  border: 1px solid var(--v2-glass-border);
+  border-radius: 999px;
+  padding: 4px;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+.v2-segment-btn {
+  border-radius: 999px;
+  font-weight: 600;
+  color: var(--v2-fg-muted);
+  transition: color 200ms ease;
+}
+.v2-segment-btn[data-active="true"] {
+  color: #2a1f2b;
+  background: var(--v2-grad-gold);
+  box-shadow: var(--v2-shadow-sm);
+}
+
+/* ─── Chips categoría ─── */
+.v2-chip {
+  background: var(--v2-glass);
+  border: 1px solid var(--v2-glass-border);
+  color: var(--v2-fg-soft);
+  border-radius: 999px;
+  font-weight: 600;
+  transition: all 200ms ease;
+}
+.v2-chip[data-active="true"] {
+  background: var(--v2-terracota-soft);
+  border-color: var(--v2-terracota);
+  color: var(--v2-fg);
+}
+
+/* ─── Tabla de precios B2B ─── */
+.v2-price-table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+.v2-price-table th, .v2-price-table td {
+  padding: 6px 8px;
+  text-align: right;
+  border-bottom: 1px solid var(--v2-border);
+  font-size: 0.78rem;
+}
+.v2-price-table th:first-child, .v2-price-table td:first-child { text-align: left; color: var(--v2-fg-muted); }
+.v2-price-table td { color: var(--v2-gold); font-weight: 600; }
+
+/* ─── Badges / glows ─── */
+.v2-badge-eco {
+  background: var(--v2-teal-soft);
+  border: 1px solid rgba(95,191,166,0.3);
+  color: var(--v2-teal);
+  border-radius: 999px;
+}
+
+/* ─── Scrollbar ─── */
+.v2-scroll { scrollbar-width: thin; scrollbar-color: rgba(227,193,150,0.3) transparent; }
+.v2-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
+.v2-scroll::-webkit-scrollbar-thumb { background: rgba(227,193,150,0.3); border-radius: 999px; }
+
+.v2-scrollbar-hide { scrollbar-width: none; -ms-overflow-style: none; }
+.v2-scrollbar-hide::-webkit-scrollbar { display: none; }
+
+@keyframes v2FadeUp { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+.v2-fade-up { animation: v2FadeUp 0.5s cubic-bezier(0.22,1,0.36,1) backwards; }
+
+@media (prefers-reduced-motion: reduce) {
+  .v2-fade-up, .v2-card { animation: none !important; transition: none !important; }
+}

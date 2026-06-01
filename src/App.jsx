@@ -47,6 +47,7 @@ import RegalarGiftCard from './pages/RegalarGiftCard';
 import Gracias from './pages/Gracias';
 import FoundersPresentation from './pages/FoundersPresentation';
 import BrandLab from './pages/BrandLab';
+import PeyuV2 from './pages/PeyuV2';
 
 // ── ADMIN PAGES (lazy + retry) ───────────────────────────────────────
 // Cargadas on-demand. Cada lazy() está envuelto en lazyWithRetry para
@@ -244,6 +245,9 @@ function App() {
 
               {/* Brand Lab (Fase 0) - Standalone, ruta nueva paralela */}
               <Route path="/brand" element={<BrandLab />} />
+
+              {/* Peyu Commerce OS (Fase 2) - Standalone AISLADA, no toca la tienda viva */}
+              <Route path="/v2" element={<PeyuV2 />} />
 
               {/* Presentación a fundadores - 22 layouts del design system */}
               <Route path="/founders-presentation" element={<FoundersPresentation />} />
