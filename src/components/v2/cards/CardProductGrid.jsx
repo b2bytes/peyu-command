@@ -29,7 +29,7 @@ export default function CardProductGrid({ data, perfil, onPick, onAddCart }) {
             <button key={p.id || p.sku} onClick={() => onPick?.(p)} className="v2-mini-card text-left flex flex-col">
               <div className="relative aspect-square overflow-hidden" style={{ background: 'var(--v2-surface-2)' }}>
                 {p.imagen_url
-                  ? <img src={p.imagen_url} alt={p.nombre} loading="lazy" className="w-full h-full object-cover" />
+                  ? <img src={p.imagen_url} alt={p.nombre} loading="lazy" decoding="async" className="w-full h-full object-cover" style={{ backfaceVisibility: 'hidden' }} />
                   : <div className="w-full h-full flex items-center justify-center text-2xl">🐢</div>}
                 <span className="v2-badge-eco absolute top-1.5 left-1.5 flex items-center gap-0.5 px-1.5 py-0.5 text-[8px] font-semibold">
                   <Leaf className="w-2 h-2" /> ♻

@@ -231,7 +231,7 @@ export default function PeyuV2() {
 
         {/* COLUMNA CENTRAL — río de chat */}
         <main className="flex-1 min-w-0 flex flex-col overflow-hidden">
-          <div className="flex-1 overflow-y-auto v2-scroll">
+          <div className="flex-1 overflow-y-auto overflow-x-hidden v2-scroll">
             <div className="max-w-[720px] mx-auto px-4 py-5">
               {renderStream()}
             </div>

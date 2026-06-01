@@ -24,7 +24,7 @@ export default function CardProduct({ data, perfil, onAddCart, onQuote }) {
     <div className="v2-card v2-fade-up overflow-hidden w-full max-w-[300px]">
       <div className="relative aspect-square overflow-hidden" style={{ background: 'var(--v2-surface-2)' }}>
         {p.imagen_url
-          ? <img src={p.imagen_url} alt={p.nombre} loading="lazy" className="w-full h-full object-cover" />
+          ? <img src={p.imagen_url} alt={p.nombre} loading="lazy" decoding="async" className="w-full h-full object-cover" style={{ backfaceVisibility: 'hidden' }} />
           : <div className="w-full h-full flex items-center justify-center text-4xl">🐢</div>}
         <span className="v2-badge-eco absolute top-2 left-2 flex items-center gap-1 px-2 py-0.5 text-[9px] font-semibold">
           <Leaf className="w-2.5 h-2.5" /> 100% reciclado

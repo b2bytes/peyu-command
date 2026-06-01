@@ -22,7 +22,7 @@ export default function CardCompare({ data, perfil, onPick }) {
             {productos.map((p) => (
               <th key={p.sku} className="min-w-[120px]">
                 <button onClick={() => onPick?.(p)} className="flex flex-col gap-1">
-                  {p.imagen_url && <img src={p.imagen_url} alt="" className="w-16 h-16 rounded-lg object-cover" />}
+                  {p.imagen_url && <img src={p.imagen_url} alt="" loading="lazy" decoding="async" className="w-16 h-16 rounded-lg object-cover" style={{ background: 'var(--v2-surface-2)', backfaceVisibility: 'hidden' }} />}
                   <span className="font-semibold line-clamp-2" style={{ color: 'var(--v2-fg)' }}>{p.nombre}</span>
                 </button>
               </th>
