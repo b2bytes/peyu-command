@@ -1,0 +1,103 @@
+{
+  "name": "CatalogoB2BOficial",
+  "type": "object",
+  "description": "Cat\u00e1logo B2B oficial de PEYU, transcrito EXACTAMENTE del PDF de Productos Corporativos. Es la fuente de verdad B2B: nombres exactos, qu\u00e9 incluye, dimensiones, colores, tapitas y los 8 tramos de precio por unidad (todos EXCLUYEN IVA). Separado del cat\u00e1logo en vivo (entidad Producto). 19 productos en 4 categor\u00edas: Cachos, Escritorio, Paletas, Hogar.",
+  "properties": {
+    "slug": {
+      "type": "string",
+      "title": "Slug \u00fanico"
+    },
+    "nombre": {
+      "type": "string",
+      "title": "Nombre oficial (tal cual el PDF)"
+    },
+    "categoria": {
+      "type": "string",
+      "title": "Categor\u00eda",
+      "enum": [
+        "Cachos",
+        "Escritorio",
+        "Paletas",
+        "Hogar"
+      ]
+    },
+    "orden": {
+      "type": "number",
+      "title": "Orden en el cat\u00e1logo"
+    },
+    "descripcion": {
+      "type": "string",
+      "title": "Descripci\u00f3n / texto del PDF"
+    },
+    "incluye": {
+      "type": "string",
+      "title": "Qu\u00e9 incluye"
+    },
+    "dimensiones": {
+      "type": "string",
+      "title": "Dimensiones"
+    },
+    "peso": {
+      "type": "string",
+      "title": "Peso (unidad o pack)"
+    },
+    "colores": {
+      "type": "array",
+      "title": "Colores disponibles",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    },
+    "tapitas_aprox": {
+      "type": "number",
+      "title": "Tapitas pl\u00e1sticas aprox."
+    },
+    "personalizacion_gratis_desde": {
+      "type": "number",
+      "title": "Logo l\u00e1ser gratis desde (u)",
+      "default": 10
+    },
+    "precio_unitario_clp": {
+      "type": "number",
+      "title": "Unitario (CLP, sin IVA)"
+    },
+    "precio_10_49_clp": {
+      "type": "number",
+      "title": "10 a 49 u (CLP, sin IVA)"
+    },
+    "precio_50_99_clp": {
+      "type": "number",
+      "title": "50 a 99 u (CLP, sin IVA)"
+    },
+    "precio_100_249_clp": {
+      "type": "number",
+      "title": "100 a 249 u (CLP, sin IVA)"
+    },
+    "precio_250_499_clp": {
+      "type": "number",
+      "title": "250 a 499 u (CLP, sin IVA)"
+    },
+    "precio_500_999_clp": {
+      "type": "number",
+      "title": "500 a 999 u (CLP, sin IVA)"
+    },
+    "precio_1000_1999_clp": {
+      "type": "number",
+      "title": "1000 a 1999 u (CLP, sin IVA)"
+    },
+    "precio_2000_mas_clp": {
+      "type": "number",
+      "title": "2000+ u (CLP, sin IVA)"
+    },
+    "notas": {
+      "type": "string",
+      "title": "Notas del PDF"
+    }
+  },
+  "required": [
+    "slug",
+    "nombre",
+    "categoria"
+  ]
+}

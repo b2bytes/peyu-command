@@ -184,23 +184,60 @@ Deno.serve(async (req) => {
     const items = (() => { try { return prop.items_json ? JSON.parse(prop.items_json) : []; } catch { return []; } })();
     const anticipoMonto = prop.total ? Math.round(prop.total * (prop.anticipo_pct || 50) / 100) : null;
 
-    // 1. Email cliente
-    if (prop.email) {
-      await base44.integrations.Core.SendEmail({
-        to: prop.email,
-        subject: `🎉 ¡Producción iniciada! Propuesta ${prop.numero || ''} · ${prop.empresa}`,
-        body: buildClientHtml({ prop, items, anticipoMonto }),
-        from_name: 'Carlos · PEYU Chile',
+    // ── Email vía Resend ──────────────────────────────────────────────────
+    // Core.SendEmail NO entrega a clientes externos (solo usuarios de la app),
+    // por eso usamos Resend. FROM con dominio propio (entrega real si está
+    // verificado) y respaldo sandbox al equipo si el dominio aún no se verifica.
+    const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');
+    const FROM_VERIFIED = 'PEYU Chile <ventas@peyuchile.cl>';
+    const FROM_SANDBOX = 'PEYU Chile <onboarding@resend.dev>';
+    const TEAM_INBOX = 'ventas@peyuchile.cl';
+
+    const postResend = async ({ from, to, subject, html, replyTo }) => {
+      const r = await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${RESEND_API_KEY}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ from, to: [to], subject, html, reply_to: replyTo }),
       });
+      if (!r.ok) {
+        const err = await r.text();
+        const e = new Error(`Resend ${r.status}: ${err}`);
+        e.domainNotVerified = r.status === 403 && /domain is not verified/i.test(err);
+        throw e;
+      }
+      return r.json();
+    };
+
+    // 1. Email cliente (con respaldo interno si el dominio no está verificado)
+    if (RESEND_API_KEY && prop.email) {
+      try {
+        await postResend({
+          from: FROM_VERIFIED,
+          to: prop.email,
+          subject: `🎉 ¡Producción iniciada! Propuesta ${prop.numero || ''} · ${prop.empresa}`,
+          html: buildClientHtml({ prop, items, anticipoMonto }),
+          replyTo: TEAM_INBOX,
+        });
+      } catch (e) {
+        if (!e.domainNotVerified) throw e;
+        await postResend({
+          from: FROM_SANDBOX,
+          to: TEAM_INBOX,
+          subject: `[REENVIAR AL CLIENTE] Aceptada ${prop.numero || ''} · ${prop.empresa} → ${prop.email}`,
+          html: buildClientHtml({ prop, items, anticipoMonto }),
+        }).catch((e2) => console.warn('Respaldo interno falló:', e2?.message));
+      }
     }
 
-    // 2. Email interno
-    await base44.integrations.Core.SendEmail({
-      to: 'ventas@peyuchile.cl',
-      subject: `🎉 ACEPTADA · ${prop.empresa} · ${fmtCLP(prop.total)}`,
-      body: buildInternalHtml({ prop, anticipoMonto }),
-      from_name: 'Sistema PEYU',
-    });
+    // 2. Email interno (notificación al equipo)
+    if (RESEND_API_KEY) {
+      await postResend({
+        from: FROM_SANDBOX,
+        to: TEAM_INBOX,
+        subject: `🎉 ACEPTADA · ${prop.empresa} · ${fmtCLP(prop.total)}`,
+        html: buildInternalHtml({ prop, anticipoMonto }),
+      }).catch((e) => console.warn('Email interno falló:', e?.message));
+    }
 
     // 3. OrdenProduccion
     await base44.asServiceRole.entities.OrdenProduccion.create({
