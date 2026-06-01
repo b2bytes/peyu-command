@@ -170,6 +170,29 @@ Deno.serve(async (req) => {
     const body = await req.json();
     const text = (body.message || '').toString().slice(0, 500);
     const perfilHint = body.perfil === 'b2b' ? 'b2b' : 'b2c'; // toggle del frontend
+    // Identificadores de hilo persistente (vienen del front /v2 vía localStorage).
+    const conversationId = (body.conversation_id || '').toString().slice(0, 120) || null;
+    const sessionId = (body.session_id || '').toString().slice(0, 120) || null;
+
+    // ─── MODO HISTORIAL (aditivo): el front /v2 pide retomar la conversación previa ───
+    // Devuelve los turnos previos (user + respuesta real de Peyu) + el perfil del ChatLead.
+    if (body.action === 'history' && conversationId) {
+      const logs = await base44.asServiceRole.entities.AILog.filter(
+        { conversation_id: conversationId }, 'created_date', 100
+      );
+      const turns = (logs || []).map((l) => ({
+        user_message: l.user_message || '',
+        reply_text: l.ai_response || '',
+      }));
+      let perfilPrev = null;
+      try {
+        const cl = await base44.asServiceRole.entities.ChatLead.filter(
+          { conversation_id: conversationId }, '-created_date', 1
+        );
+        if (cl && cl[0]) perfilPrev = cl[0].tipo === 'B2B' ? 'b2b' : (cl[0].tipo === 'B2C' ? 'b2c' : null);
+      } catch { /* noop */ }
+      return Response.json({ turns, perfil: perfilPrev });
+    }
 
     // 1) Catálogo madre canónico (SOLO mostrar_en_v2 === true). Service role:
     // chat público sin auth, pero solo lectura de productos visibles en v2.
@@ -264,6 +287,54 @@ Deno.serve(async (req) => {
           : 'Soy Peyu 🐢 diseñamos regalos en plástico 100% reciclado chileno — desde maceteros reciclados hasta organizadores de escritorio, con garantía de 10 años. ¿Buscas un regalo para alguien o algo para ti?';
         break;
       }
+    }
+
+    // ─── PERSISTENCIA ADITIVA (riesgo cero) ───
+    // Guarda la respuesta REAL de Peyu en AILog y refresca el ChatLead del hilo.
+    // Solo si el front mandó un conversation_id estable. Nunca rompe la respuesta.
+    if (conversationId) {
+      try {
+        await base44.asServiceRole.entities.AILog.create({
+          agent_name: 'peyuBrain',
+          task_type: 'brain_search',
+          model: 'gemini_3_flash',
+          user_message: text,
+          ai_response: (reply_text || '').slice(0, 4000), // texto REAL, no placeholder
+          system_context: `perfil=${perfil}; intent=${intent}`,
+          conversation_id: conversationId,
+          session_id: sessionId,
+          status: 'success',
+          tags: ['v2', perfil, intent],
+        });
+      } catch { /* persistencia best-effort, no afecta la respuesta */ }
+
+      try {
+        const preview = (text || '').slice(0, 120);
+        const tipo = perfil === 'b2b' ? 'B2B' : 'B2C';
+        const existing = await base44.asServiceRole.entities.ChatLead.filter(
+          { conversation_id: conversationId }, '-created_date', 1
+        );
+        if (existing && existing.length > 0) {
+          const cl = existing[0];
+          await base44.asServiceRole.entities.ChatLead.update(cl.id, {
+            tipo,
+            mensajes_count: (cl.mensajes_count || 0) + 1,
+            ultimo_mensaje_preview: preview,
+            ultimo_mensaje_at: new Date().toISOString(),
+          });
+        } else {
+          await base44.asServiceRole.entities.ChatLead.create({
+            conversation_id: conversationId,
+            session_id: sessionId,
+            tipo,
+            estado: 'Activo',
+            mensajes_count: 1,
+            ultimo_mensaje_preview: preview,
+            ultimo_mensaje_at: new Date().toISOString(),
+            page_origen: '/v2',
+          });
+        }
+      } catch { /* best-effort */ }
     }
 
     return Response.json({ reply_text, cards, perfil, intent });
