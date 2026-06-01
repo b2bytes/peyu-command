@@ -1,0 +1,83 @@
+/* ═══════════════════════════════════════════════════════════════════
+   PEYU · OS DESIGN TOKENS — FUENTE DE VERDAD (Fase 0 cerrada)
+   ────────────────────────────────────────────────────────────────────
+   Dirección activa: "Warm Dusk OS" (elegida por Diego en el Brand Lab).
+   Estos tokens alimentan TODA la app nueva (rutas /v2). Sistema de 2 themas
+   conmutables que leen de la misma dirección:
+     · [data-os-theme="dark"]  → Warm Dusk (DEFAULT, la app abre en oscuro)
+     · [data-os-theme="light"] → variante clara de la misma dirección
+   El toggle claro/oscuro sólo cambia el atributo data-os-theme.
+
+   NO afecta el sistema legacy (data-liquid-mode / variables --ld-*).
+   Esta capa es independiente y prefijada con --os-* para evitar colisiones.
+   ─────────────────────────────────────────────────────────────────── */
+
+/* ─── DARK · Warm Dusk OS (DEFAULT) ─── */
+:root,
+[data-os-theme="dark"] {
+  --os-bg:            #1A1418;
+  --os-surface:       #241B22;
+  --os-accent:        #19C39C;
+  --os-accent2:       #E47A5C;
+  --os-text:          #F6EEF1;
+  --os-muted:         #A2929A;
+
+  /* Derivados útiles */
+  --os-border:        rgba(246, 238, 241, 0.10);
+  --os-border-strong: rgba(246, 238, 241, 0.20);
+  --os-accent-soft:   rgba(25, 195, 156, 0.16);
+  --os-accent2-soft:  rgba(228, 122, 92, 0.16);
+
+  /* Tipografía de la dirección */
+  --os-font-titular:  'Plus Jakarta Sans', system-ui, sans-serif;
+  --os-font-cuerpo:   'Hanken Grotesk', system-ui, sans-serif;
+
+  /* Radios de la dirección */
+  --os-radius-sm:     12px;
+  --os-radius-md:     18px;
+  --os-radius-lg:     26px;
+
+  /* Sombras + glows (sombras: "marcada") */
+  --os-glow:          0 0 40px -8px rgba(25, 195, 156, 0.45);
+  --os-glow2:         0 0 40px -8px rgba(228, 122, 92, 0.35);
+  --os-shadow-sm:     0 1px 2px rgba(0, 0, 0, 0.45);
+  --os-shadow-md:     0 12px 32px -10px rgba(0, 0, 0, 0.60);
+  --os-shadow-lg:     0 28px 70px -22px rgba(0, 0, 0, 0.70);
+
+  /* Canvas Warm Dusk: fondo difuminado plomo/vino con glows sutiles */
+  --os-canvas:        radial-gradient(130% 90% at 50% 0%, #241B22 0%, #1A1418 55%, #161015 100%);
+
+  color-scheme: dark;
+}
+
+/* ─── LIGHT · misma dirección, variante clara ─── */
+[data-os-theme="light"] {
+  --os-bg:            #F7F4F2;
+  --os-surface:       #FFFFFF;
+  --os-accent:        #0F8B6C;
+  --os-accent2:       #C25A45;
+  --os-text:          #221C1F;
+  --os-muted:         #8A7E82;
+
+  --os-border:        rgba(34, 28, 31, 0.10);
+  --os-border-strong: rgba(34, 28, 31, 0.18);
+  --os-accent-soft:   rgba(15, 139, 108, 0.12);
+  --os-accent2-soft:  rgba(194, 90, 69, 0.12);
+
+  --os-font-titular:  'Plus Jakarta Sans', system-ui, sans-serif;
+  --os-font-cuerpo:   'Hanken Grotesk', system-ui, sans-serif;
+
+  --os-radius-sm:     12px;
+  --os-radius-md:     18px;
+  --os-radius-lg:     26px;
+
+  --os-glow:          0 14px 36px -18px rgba(15, 139, 108, 0.40);
+  --os-glow2:         0 14px 36px -18px rgba(194, 90, 69, 0.30);
+  --os-shadow-sm:     0 1px 2px rgba(34, 28, 31, 0.06);
+  --os-shadow-md:     0 12px 32px -12px rgba(34, 28, 31, 0.14);
+  --os-shadow-lg:     0 28px 70px -22px rgba(34, 28, 31, 0.20);
+
+  --os-canvas:        #F7F4F2;
+
+  color-scheme: light;
+}
