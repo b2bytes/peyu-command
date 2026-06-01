@@ -24,6 +24,8 @@ function cheapClassify(textRaw) {
     return { intent: 'track_order', perfil, category: null };
   if (/\b(gift ?card|tarjeta de regalo|giftcard|regalar saldo)\b/.test(t))
     return { intent: 'gift_card', perfil, category: null };
+  if (/\b(comparar|compara|comparacion|cual es mejor|diferencia entre|vs\.?)\b/.test(t))
+    return { intent: 'compare', perfil, category: matchCategory(t) };
   if (/\b(cotizar|cotizacion|por volumen|pedido grande|para mi empresa|mayorista)\b/.test(t))
     return { intent: 'b2b_quote', perfil: 'b2b', category: matchCategory(t) };
   if (/\b(carro|carrito|comprar|agregar|añadir|lo quiero|checkout|pagar|finalizar compra)\b/.test(t))
@@ -137,7 +139,7 @@ Deno.serve(async (req) => {
     switch (intent) {
       case 'recommend_gift':
       case 'search_product': {
-        const picks = pickProducts(productos, { category, text }).slice(0, 6);
+        const picks = pickProducts(productos, { category, text }).slice(0, 9);
         if (picks.length === 0) {
           reply_text = 'Aún estoy preparando el catálogo 🐢. ¿Te cuento de nuestras categorías?';
         } else if (picks.length === 1) {
@@ -150,6 +152,16 @@ Deno.serve(async (req) => {
             ? `Estas son nuestras opciones de ${category} 🐢 todas en plástico reciclado chileno.`
             : `Te dejo algunas ideas de productos reciclados que vuelan 🐢`;
           cards.push({ type: 'product_grid', data: { productos: picks.map(projectProduct) } });
+        }
+        break;
+      }
+      case 'compare': {
+        const picks = pickProducts(productos, { category, text }).slice(0, 3);
+        if (picks.length >= 2) {
+          reply_text = 'Te dejo una comparación lado a lado 🐢 elige el que más te tinque.';
+          cards.push({ type: 'compare', data: { productos: picks.map(projectProduct) } });
+        } else {
+          reply_text = '¿Qué productos quieres comparar? Dime un par de nombres o categorías 🐢';
         }
         break;
       }

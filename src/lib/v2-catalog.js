@@ -1,7 +1,35 @@
 // Helpers AISLADOS para la vista /v2 "Peyu Commerce OS".
 // No reutilizan lógica de la tienda viva para mantener total independencia.
+import { base44 } from '@/api/base44Client';
 
 export const V2_CATEGORIES = ['Cachos', 'Escritorio', 'Paletas', 'Hogar'];
+
+// Iconos emoji por categoría (sidebar de navegación).
+export const V2_CATEGORY_ICON = {
+  Cachos: '🎲',
+  Escritorio: '🖊️',
+  Paletas: '🏓',
+  Hogar: '🪴',
+};
+
+// Rangos de precio rápidos (filtro lateral B2C).
+export const V2_PRICE_RANGES = [
+  { id: 'all', label: 'Todos', min: 0, max: Infinity },
+  { id: 'lt15', label: 'Hasta $15.000', min: 0, max: 15000 },
+  { id: '15-30', label: '$15.000 – $30.000', min: 15000, max: 30000 },
+  { id: 'gt30', label: 'Más de $30.000', min: 30000, max: Infinity },
+];
+
+// Carga el catálogo madre canónico (SOLO mostrar_en_v2 === true) para los
+// paneles laterales. Aislado de la tienda viva.
+export async function fetchV2Catalog() {
+  try {
+    const productos = await base44.entities.Producto.filter({ mostrar_en_v2: true }, '-created_date', 100);
+    return Array.isArray(productos) ? productos : [];
+  } catch {
+    return [];
+  }
+}
 
 // Tramos B2B oficiales (8 llaves) con label legible para la tabla.
 export const V2_B2B_TRAMOS = [
