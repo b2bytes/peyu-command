@@ -10,6 +10,9 @@ import CartBubble from '@/components/shop/CartBubble';
 import { getProductImage } from '@/utils/productImages';
 import PublicSEO from '@/components/PublicSEO';
 import { SITE_URL } from '@/lib/seo-catalog';
+import CyberCatalogBanner from '@/components/cyber/CyberCatalogBanner';
+import CyberFeaturedRow from '@/components/cyber/CyberFeaturedRow';
+import { isCyberActive, tieneOfertaCyber } from '@/lib/cyber-campaign';
 
 const CATEGORIAS_META = [
   { id: 'Todos',           label: 'Todos',           icon: '🌍' },
@@ -45,6 +48,7 @@ export default function Shop() {
   const [selectedPrice, setSelectedPrice] = useState('all');
   const [sortBy, setSortBy] = useState('popular');
   const [filtersOpen, setFiltersOpen] = useState(false);
+  const [soloCyber, setSoloCyber] = useState(false);
   const [carrito, setCarrito] = useState(() => {
     // Lectura defensiva: si el localStorage está corrupto no debe crashear la página.
     try { return JSON.parse(localStorage.getItem('carrito') || '[]') || []; }
@@ -77,6 +81,7 @@ export default function Shop() {
   // Productos filtrados (sin paginar)
   const filtered = useMemo(() => {
     let result = [...productos];
+    if (soloCyber) result = result.filter(tieneOfertaCyber);
     if (selectedCategory !== 'Todos') result = result.filter(p => p.categoria === selectedCategory);
     if (search) {
       const q = search.toLowerCase();
@@ -89,6 +94,7 @@ export default function Shop() {
         return price >= priceRange.min && price < priceRange.max;
       });
     }
+    if (soloCyber) result = result.filter(tieneOfertaCyber);
     switch (sortBy) {
       case 'price_asc': result.sort((a, b) => (a.precio_b2c || 0) - (b.precio_b2c || 0)); break;
       case 'price_desc': result.sort((a, b) => (b.precio_b2c || 0) - (a.precio_b2c || 0)); break;
@@ -107,7 +113,10 @@ export default function Shop() {
         break;
     }
     return result;
-  }, [productos, search, selectedCategory, selectedPrice, sortBy]);
+  }, [productos, search, selectedCategory, selectedPrice, sortBy, soloCyber]);
+
+  // ¿Hay productos en oferta Cyber en todo el catálogo? (para mostrar el chip)
+  const hayOfertasCyber = useMemo(() => isCyberActive() && productos.some(tieneOfertaCyber), [productos]);
 
   // Conteos por categoría (en base al search + price activos, NO a la categoría)
   const categoriasConConteo = useMemo(() => {
@@ -267,6 +276,10 @@ export default function Shop() {
       </section>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 pb-20">
+        {/* Banner Cyber + destacados (solo si campaña activa) */}
+        <CyberCatalogBanner />
+        <CyberFeaturedRow productos={productos} />
+
         {/* Search bar Liquid Dual — sticky en mobile */}
         <div className="mb-3 sm:mb-3 sticky top-14 sm:static z-20 -mx-4 px-4 sm:mx-0 sm:px-0 py-2 sm:py-0 ld-glass-strong sm:bg-transparent sm:backdrop-blur-none">
           <div className="ld-input flex items-center gap-2 px-3.5 py-2.5 max-w-xl rounded-full">

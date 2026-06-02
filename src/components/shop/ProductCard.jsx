@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { ShoppingCart, Check, Leaf, Recycle, Zap, ArrowRight } from 'lucide-react';
 import { getProductImage } from '@/utils/productImages';
 import CyberBadge from '@/components/cyber/CyberBadge';
+import { isCyberActive, tieneOfertaCyber } from '@/lib/cyber-campaign';
 
 /**
  * Tarjeta de producto del Shop — diseño 2026 editorial Liquid Dual.
@@ -33,6 +34,10 @@ function ProductCard({ producto, onAddToCart, agregandoId, index = 0 }) {
   const personalizable = (p.personalizacion_gratis_desde || 0) > 0;
   const leadTime = p.lead_time_sin_personal || 7;
   const stockBajo = p.stock_actual > 0 && p.stock_actual < 15;
+
+  // Oferta Cyber real (solo si trae precio_oferta < precio_b2c). No inventamos %.
+  const cyberOferta = isCyberActive() && tieneOfertaCyber(p);
+  const ahorro = cyberOferta ? (p.precio_b2c - p.precio_oferta) : 0;
 
   return (
     <Link
@@ -166,16 +171,30 @@ function ProductCard({ producto, onAddToCart, agregandoId, index = 0 }) {
           </div>
         )}
 
-        <div className="flex items-baseline justify-between mt-3">
-          <p className="font-jakarta font-bold text-lg text-ld-fg leading-none">
-            ${precio.toLocaleString('es-CL')}
-          </p>
-          {p.precio_500_mas && (
-            <p className="text-[10px] text-ld-fg-muted font-medium">
-              desde <span className="font-bold" style={{ color: 'var(--ld-action)' }}>${p.precio_500_mas.toLocaleString('es-CL')}</span>
+        {cyberOferta ? (
+          <div className="mt-3">
+            <div className="flex items-baseline gap-2">
+              <p className="text-[11px] line-through text-ld-fg-subtle leading-none">${precio.toLocaleString('es-CL')}</p>
+              <p className="font-jakarta font-bold text-lg leading-none" style={{ color: 'var(--ld-highlight)' }}>
+                ${p.precio_oferta.toLocaleString('es-CL')}
+              </p>
+            </div>
+            <p className="text-[10px] font-semibold mt-1" style={{ color: 'var(--ld-action)' }}>
+              Ahorras ${ahorro.toLocaleString('es-CL')}
             </p>
-          )}
-        </div>
+          </div>
+        ) : (
+          <div className="flex items-baseline justify-between mt-3">
+            <p className="font-jakarta font-bold text-lg text-ld-fg leading-none">
+              ${precio.toLocaleString('es-CL')}
+            </p>
+            {p.precio_500_mas && (
+              <p className="text-[10px] text-ld-fg-muted font-medium">
+                desde <span className="font-bold" style={{ color: 'var(--ld-action)' }}>${p.precio_500_mas.toLocaleString('es-CL')}</span>
+              </p>
+            )}
+          </div>
+        )}
       </div>
     </Link>
   );
