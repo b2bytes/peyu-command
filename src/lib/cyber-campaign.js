@@ -26,7 +26,7 @@ export const CYBER_DISCOUNT_LABEL = '-XX%';
 
 // Copys centralizados (fácil de editar).
 export const CYBER_COPY = {
-  bar: '⚡ CYBER PEYU · Ofertas en regalos con causa · Termina mañana',
+  bar: '⚡ CYBER PEYU — Ofertas con causa · Termina mañana',
   barShort: '⚡ CYBER PEYU · Ofertas con causa',
   heroLine: 'Cyber de Junio en PEYU — los regalos que el planeta también agradece ♻️',
   microUrgency: '⏳ Precios Cyber hasta mañana',

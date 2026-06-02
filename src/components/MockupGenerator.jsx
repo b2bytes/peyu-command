@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Sparkles, Upload, X, Loader2, Check } from 'lucide-react';
 import { detectMockupType, MOCKUP_UI_CONFIG } from '@/lib/mockup-types';
+import DisenosPeyuPicker from '@/components/personalizacion/DisenosPeyuPicker';
 
 export default function MockupGenerator({
   open,
@@ -160,6 +161,11 @@ export default function MockupGenerator({
                 </label>
               )}
             </div>
+          )}
+
+          {/* C3 · Galería de diseños PEYU — solo para grabado láser (logo) */}
+          {mockupType === 'logo' && (
+            <DisenosPeyuPicker selectedUrl={logoUrl} onSelect={(url) => { setLogoUrl(url); setError(''); }} />
           )}
 
           {error && (

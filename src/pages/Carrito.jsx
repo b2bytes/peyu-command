@@ -17,6 +17,7 @@ import { saveOneClickProfile } from '@/lib/one-click-profile';
 import { computeQtyDiscountBySku } from '@/lib/volume-discount';
 import { PEYU_COLORS } from '@/lib/color-parser';
 import { isCyberActive, CYBER_COPY } from '@/lib/cyber-campaign';
+import { calcularCargoPersonalizacionCarrito } from '@/lib/personalizacion-config';
 
 const DESCUENTO_TRANSFERENCIA_PCT = 5;
 
@@ -106,8 +107,11 @@ export default function Carrito() {
   const descuentoTransferencia = medioPago === 'Transferencia'
     ? Math.floor(subtotal * (DESCUENTO_TRANSFERENCIA_PCT / 100))
     : 0;
+  // 🔧 C2 · Cargo personalización láser: bajo el MOQ (10u) el grabado SE COBRA.
+  // ≥10u del mismo ítem es gratis. Monto en lib/personalizacion-config.
+  const cargoPersonalizacion = calcularCargoPersonalizacionCarrito(carrito);
 
-  const totalAntesGC = Math.max(0, subtotal + envio - descuentoCupon - descuentoVolumen - descuentoTransferencia);
+  const totalAntesGC = Math.max(0, subtotal + envio + cargoPersonalizacion - descuentoCupon - descuentoVolumen - descuentoTransferencia);
   const carritoTieneGC = carrito.some(i =>
     String(i.sku || '').startsWith('GC-PEYU') ||
     String(i.nombre || '').toLowerCase().includes('gift card')
@@ -202,6 +206,7 @@ export default function Carrito() {
       cupon ? `Cupón ${cupon.codigo} -$${(cupon.descuento_clp || 0).toLocaleString('es-CL')}` : null,
       descuentoVolumen > 0 ? `Dscto cantidad por SKU -$${descuentoVolumen.toLocaleString('es-CL')} (${lineasConDescuento.map(l => `${l.sku || l.nombre} x${l.unidades} -${l.pct}%`).join(', ')})` : null,
       descuentoTransferencia > 0 ? `Dscto transferencia -$${descuentoTransferencia.toLocaleString('es-CL')}` : null,
+      cargoPersonalizacion > 0 ? `Personalización láser +$${cargoPersonalizacion.toLocaleString('es-CL')} (bajo 10u)` : null,
       cliente.codigo_postal ? `CP ${cliente.codigo_postal}` : null,
       cliente.region ? `Región ${cliente.region}` : null,
       envioBluex ? `Bluex ${envioBluex.servicio} (${envioBluex.peso_kg}kg) → $${envioBluex.costo_real.toLocaleString('es-CL')}` : null,
@@ -690,6 +695,14 @@ export default function Carrito() {
                     : <span className="font-semibold text-gray-900 tabular-nums">${envio.toLocaleString('es-CL')}</span>
                   }
                 </div>
+
+                {/* C2 · Cargo personalización láser bajo 10u (gratis ≥10u) */}
+                {cargoPersonalizacion > 0 && (
+                  <div className="flex justify-between text-gray-700">
+                    <span className="font-medium inline-flex items-center gap-1">✨ Personalización láser <span className="text-gray-400 font-normal">(bajo 10u)</span></span>
+                    <span className="font-semibold text-gray-900 tabular-nums">+${cargoPersonalizacion.toLocaleString('es-CL')}</span>
+                  </div>
+                )}
 
                 {descuentoCupon > 0 && (
                   <div className="flex justify-between text-emerald-700">

@@ -1,0 +1,48 @@
+{
+  "name": "DisenoPeyu",
+  "type": "object",
+  "description": "Dise\u00f1os predefinidos PEYU para grabado l\u00e1ser. Galer\u00eda que el cliente puede elegir en el personalizador en vez de subir su propio logo. Mientras Diego no suba los reales, se poblan ejemplos marcados es_ejemplo=true.",
+  "properties": {
+    "nombre": {
+      "type": "string",
+      "title": "Nombre del dise\u00f1o"
+    },
+    "imagen_url": {
+      "type": "string",
+      "title": "URL imagen del dise\u00f1o (PNG transparente recomendado)"
+    },
+    "categoria": {
+      "type": "string",
+      "title": "Categor\u00eda",
+      "enum": [
+        "Naturaleza",
+        "Frases",
+        "Geom\u00e9trico",
+        "Festividades",
+        "Corporativo",
+        "Mascotas",
+        "Otro"
+      ],
+      "default": "Otro"
+    },
+    "es_ejemplo": {
+      "type": "boolean",
+      "title": "Es ejemplo (placeholder hasta que Diego suba el real)",
+      "default": false
+    },
+    "activo": {
+      "type": "boolean",
+      "title": "Activo (visible en el personalizador)",
+      "default": true
+    },
+    "orden": {
+      "type": "number",
+      "title": "Orden de aparici\u00f3n",
+      "default": 0
+    }
+  },
+  "required": [
+    "nombre",
+    "imagen_url"
+  ]
+}

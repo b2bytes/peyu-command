@@ -30,6 +30,7 @@ import DesktopTrustFooter from '@/components/landing/desktop/DesktopTrustFooter'
 import DesktopChatWelcomeChips from '@/components/landing/desktop/DesktopChatWelcomeChips';
 import { isCyberActive, CYBER_COPY } from '@/lib/cyber-campaign';
 import CyberCatalogBanner from '@/components/cyber/CyberCatalogBanner';
+import CyberAnnouncementBar from '@/components/cyber/CyberAnnouncementBar';
 
 // Línea Cyber para inyectar UNA vez en el saludo (solo si la campaña está activa).
 const cyberGreetingLine = () => (isCyberActive() ? `\n\n${CYBER_COPY.greeting}` : '');
@@ -490,6 +491,10 @@ export default function ShopLanding() {
     <h1 className="sr-only">
       PEYU Chile · Regalos Corporativos Sustentables en Plástico 100% Reciclado
     </h1>
+
+    {/* ─── FRENTE A · Banner Cyber PEYU cálido y cerrable (solo aviso visual,
+        controlado por el flag de campaña — NO afecta precios) ─── */}
+    <CyberAnnouncementBar />
 
     {/* ─── MOBILE: Home e-commerce agéntico ─── */}
     <div className="lg:hidden">
