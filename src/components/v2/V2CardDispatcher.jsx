@@ -14,11 +14,11 @@ import CardOnboarding from './cards/CardOnboarding';
 // Dispatcher: 1 card del río = 1 componente. switch(card.type).
 export default function V2CardDispatcher({ card, perfil, handlers }) {
   if (!card || !card.type) return null;
-  const { onAddCart, onQuote, onPick, onCheckout, onShippingContinue, onRetryPay } = handlers || {};
+  const { onAddCart, onQuote, onPick, onCheckout, onShippingContinue, onRetryPay, onAsk } = handlers || {};
 
   switch (card.type) {
     case 'onboarding':
-      return <CardOnboarding />;
+      return <CardOnboarding onAsk={onAsk} />;
     case 'product':
       return <CardProduct data={card.data} perfil={perfil} onAddCart={onAddCart} onQuote={onQuote} />;
     case 'product_grid':

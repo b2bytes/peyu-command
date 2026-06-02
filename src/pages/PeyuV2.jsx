@@ -283,6 +283,7 @@ export default function PeyuV2() {
   const cardHandlers = useMemo(() => ({
     onAddCart: handleAddCart, onQuote: handleQuote, onPick: handlePick,
     onCheckout: handleCheckout, onShippingContinue: handleShippingContinue, onRetryPay: handleRetryPay,
+    onAsk: ask,
   }), []);
 
   // Click en categoría del panel izquierdo → conversación.
