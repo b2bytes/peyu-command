@@ -10,15 +10,18 @@ import CardGiftCard from './cards/CardGiftCard';
 import CardOrderStatus from './cards/CardOrderStatus';
 import CardCompare from './cards/CardCompare';
 import CardOnboarding from './cards/CardOnboarding';
+import CardB2BFork from './cards/CardB2BFork';
 
 // Dispatcher: 1 card del río = 1 componente. switch(card.type).
 export default function V2CardDispatcher({ card, perfil, handlers }) {
   if (!card || !card.type) return null;
-  const { onAddCart, onQuote, onPick, onCheckout, onShippingContinue, onRetryPay, onAsk } = handlers || {};
+  const { onAddCart, onQuote, onPick, onCheckout, onShippingContinue, onRetryPay, onAsk, onForkPick } = handlers || {};
 
   switch (card.type) {
     case 'onboarding':
       return <CardOnboarding onAsk={onAsk} />;
+    case 'b2b_fork':
+      return <CardB2BFork data={card.data} onPick={onForkPick} />;
     case 'product':
       return <CardProduct data={card.data} perfil={perfil} onAddCart={onAddCart} onQuote={onQuote} />;
     case 'product_grid':

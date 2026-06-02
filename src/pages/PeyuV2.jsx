@@ -44,7 +44,11 @@ function getOrCreateId(key, prefix) {
 }
 
 export default function PeyuV2() {
-  const [mode, setMode] = useState('b2c');
+  // Default B2C al entrar fresco; si el cliente ya eligió perfil antes (fork o
+  // toggle manual), lo respetamos (CASO C — no re-preguntar al volver).
+  const [mode, setMode] = useState(() => {
+    try { return localStorage.getItem('peyu_v2_perfil') === 'b2b' ? 'b2b' : 'b2c'; } catch { return 'b2c'; }
+  });
   // Tema claro/oscuro de /v2. Default: oscuro (Warm Dusk). Persistido.
   const [theme, setTheme] = useState(() => {
     try { return localStorage.getItem('peyu_v2_theme') === 'light' ? 'light' : 'dark'; } catch { return 'dark'; }
@@ -52,6 +56,11 @@ export default function PeyuV2() {
   const handleThemeChange = useCallback((t) => {
     setTheme(t);
     try { localStorage.setItem('peyu_v2_theme', t); } catch { /* noop */ }
+  }, []);
+  // Toggle manual Personal/Empresa: cambia modo y persiste la elección (CASO C).
+  const handleModeChange = useCallback((m) => {
+    setMode(m);
+    try { localStorage.setItem('peyu_v2_perfil', m); } catch { /* noop */ }
   }, []);
   const [messages, setMessages] = useState([WELCOME]);
   const [input, setInput] = useState('');
@@ -244,6 +253,23 @@ export default function PeyuV2() {
     }]);
   };
 
+  // Fork de embudo (CASO B): el cliente eligió Personal o Empresa en los botones.
+  const handleForkPick = (eleccion, cantidad) => {
+    if (eleccion === 'b2b') {
+      setMode('b2b'); // cambio de toggle suave y visible → modo Empresa
+      try { localStorage.setItem('peyu_v2_perfil', 'b2b'); } catch { /* noop */ }
+      ask(`Es para mi empresa, necesito ${cantidad || ''} unidades con cotización por volumen`.trim());
+    } else {
+      setMode('b2c');
+      try { localStorage.setItem('peyu_v2_perfil', 'b2c'); } catch { /* noop */ }
+      setMessages((prev) => [...prev, {
+        role: 'assistant',
+        reply_text: '¡Perfecto! 🐢 Te muestro precios personales (con IVA incluido). Eso sí: desde 10 unidades con tu logo conviene el modo Empresa — lo activas arriba cuando quieras y te armo precios por volumen.',
+        cards: [],
+      }]);
+    }
+  };
+
   const handlePick = (p) => {
     pushRecentView(p);
     setCtxOpen(false);
@@ -292,7 +318,7 @@ export default function PeyuV2() {
   const cardHandlers = useMemo(() => ({
     onAddCart: handleAddCart, onQuote: handleQuote, onPick: handlePick,
     onCheckout: handleCheckout, onShippingContinue: handleShippingContinue, onRetryPay: handleRetryPay,
-    onAsk: ask,
+    onAsk: ask, onForkPick: handleForkPick,
   }), []);
 
   // Click en categoría del panel izquierdo → conversación.
@@ -376,7 +402,7 @@ export default function PeyuV2() {
             </button>
           )}
           <V2ThemeToggle theme={theme} onChange={handleThemeChange} />
-          <V2ModeToggle mode={mode} onChange={setMode} />
+          <V2ModeToggle mode={mode} onChange={handleModeChange} />
           {/* Carrito: en desktop vive en panel der; aquí badge + drawer en móvil */}
           <button onClick={() => setCtxOpen(true)} className="lg:hidden relative v2-btn-ghost w-9 h-9 flex items-center justify-center">
             <ShoppingCart className="w-4 h-4" />

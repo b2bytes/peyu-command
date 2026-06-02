@@ -50,6 +50,25 @@ function cheapClassify(textRaw) {
   return null; // no obvio → LLM
 }
 
+// ─── Detección de cantidad + señal de empresa para el FORK de embudo B2B ───
+// Umbral 10 = MOQ real de personalización. Devuelve { cantidad, empresaSignal }.
+const MOQ_B2B = 10;
+
+function detectQtyAndCompany(textRaw) {
+  const t = (textRaw || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  // Cantidad: "40 productos", "50 cachos", "200 unidades", "necesito 40"
+  let cantidad = null;
+  const qm = t.match(/(\d{1,6})\s*(unidades|u\b|piezas|cachos|paletas|posavasos|productos|maceteros|organizadores|kits?|cosas|articulos)/);
+  if (qm) { const n = parseInt(qm[1], 10); if (!isNaN(n) && n > 0) cantidad = n; }
+  if (cantidad == null) {
+    const qm2 = t.match(/(?:necesito|quiero|cotizar|son|serian|seran|para|comprar|llevar)\s*(\d{1,6})\b/);
+    if (qm2) { const n = parseInt(qm2[1], 10); if (!isNaN(n) && n > 0) cantidad = n; }
+  }
+  // Señal explícita de empresa (más amplia que el b2bHint general).
+  const empresaSignal = /\b(para mi empresa|mi empresa|de mi empresa|con logo|con mi logo|cotizacion|cotizar|mayorista|corporativo|corporativos|regalo para mi equipo|para mi equipo|colaboradores|factura|institucional|merchandising|pyme)\b/.test(t);
+  return { cantidad, empresaSignal };
+}
+
 function matchCategory(t) {
   if (/\bcacho/.test(t)) return 'Cachos';
   if (/\b(escritorio|oficina|organizador|porta)\b/.test(t)) return 'Escritorio';
@@ -315,9 +334,35 @@ Deno.serve(async (req) => {
       catch { cls = { intent: 'chat', perfil: null, category: matchCategory(text) }; }
     }
     // El perfil del toggle manda salvo que el texto sea explícitamente B2B
-    const perfil = cls.perfil === 'b2b' ? 'b2b' : perfilHint;
-    const intent = cls.intent || 'chat';
+    let perfil = cls.perfil === 'b2b' ? 'b2b' : perfilHint;
+    let intent = cls.intent || 'chat';
     const category = cls.category || null;
+
+    // ════════════════════════════════════════════════════════════════
+    // FORK DE EMBUDO B2B/B2C (CASO A / B / C).
+    // Se evalúa ANTES del switch. perfilHint refleja el toggle/elección
+    // previa del cliente (incluye memoria persistida vía body.perfil).
+    // ════════════════════════════════════════════════════════════════
+    const { cantidad: qtyDetectada, empresaSignal } = detectQtyAndCompany(text);
+    const cantidadAlta = qtyDetectada != null && qtyDetectada >= MOQ_B2B;
+    // CASO C: si el cliente YA eligió modo Empresa (toggle/memoria persistida en
+    // body.perfil), respetamos su decisión y no re-preguntamos.
+    // OJO: el fork mira SOLO perfilHint (decisión real del cliente), nunca la
+    // inferencia del LLM/keywords — así "necesito 40 productos" (sin señal de
+    // empresa explícita) SIEMPRE pregunta (CASO B), aunque el LLM lo crea B2B.
+    const clienteYaDecidioB2B = perfilHint === 'b2b';
+
+    if (!clienteYaDecidioB2B && cantidadAlta && empresaSignal) {
+      // CASO A — intención B2B CLARA (cantidad + señal empresa): cambia solo a
+      // Empresa + cotización, sin preguntar.
+      perfil = 'b2b';
+      intent = 'b2b_quote_auto';
+    } else if (!clienteYaDecidioB2B && cantidadAlta && !empresaSignal) {
+      // CASO B — AMBIGUO: cantidad alta sin señal de empresa → micro-fork.
+      // Forzamos perfil b2c (aún no decide) para no extraer datos de empresa.
+      perfil = 'b2c';
+      intent = 'b2b_fork';
+    }
 
     let reply_text = '';
     const cards = [];
@@ -359,6 +404,22 @@ Deno.serve(async (req) => {
         } else {
           reply_text = '¿De qué producto quieres saber más? 🐢';
         }
+        break;
+      }
+      case 'b2b_fork': {
+        // CASO B — pregunta cálida con dos botones tappables. NO cambia toggle.
+        reply_text = `¡Genial! Para ${qtyDetectada} unidades quiero recomendarte bien 🐢 ¿Esto es para ti o para tu empresa?`;
+        cards.push({ type: 'b2b_fork', data: { cantidad: qtyDetectada, category } });
+        break;
+      }
+      case 'b2b_quote_auto': {
+        // CASO A — intención B2B clara: ya cambiamos a Empresa, mostramos precios por tramo.
+        const picks = pickProducts(productos, { category, text }).slice(0, 1);
+        reply_text = `Perfecto, para ${qtyDetectada} unidades te muestro precios por volumen 🐢 son por unidad y excluyen IVA. El grabado de tu logo va gratis desde 10 unidades.`;
+        cards.push({
+          type: 'b2b_quote',
+          data: { producto: picks[0] ? projectProduct(picks[0]) : null },
+        });
         break;
       }
       case 'b2b_quote': {
