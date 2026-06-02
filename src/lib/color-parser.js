@@ -75,15 +75,12 @@ export function getColoresProducto(producto) {
   const sku = String(producto.sku || '').toUpperCase();
   if (sku.startsWith('GC-PEYU')) return [];
 
-  // Productos de fibra de trigo: vienen con color natural único, no se eligen
-  if (producto.material === 'Fibra de Trigo (Compostable)') {
-    return [{ id: 'natural', label: 'Natural compostable', hex: '#d4b896' }];
-  }
-
-  // ── REGLA OFICIAL PEYU ───────────────────────────────────────────────
-  // Carcasas B2C: el cliente DEBE elegir color antes de comprar. Colores
-  // por defecto Negro, Beige Natural, Azul, Rojo, Verde — configurables por
-  // producto vía `producto.colores_v2` (si el catálogo trae lista explícita).
+  // ── REGLA OFICIAL PEYU (PRIORIDAD MÁXIMA) ────────────────────────────
+  // Carcasas B2C: el cliente DEBE elegir color antes de comprar. Esta regla
+  // va PRIMERO — antes del check de material fibra de trigo — porque las
+  // carcasas son compostables (fibra) pero igual tienen 5 colores reales en
+  // su campo `colores`. Si dejáramos el check de fibra antes, mostraría un
+  // solo swatch "Natural compostable" (era el bug reportado).
   if (producto.categoria === 'Carcasas B2C') {
     // Fuente de verdad: campo `colores` (tienda raíz). Si existe, lo usamos.
     // Fallback legacy a `colores_v2`.
@@ -104,6 +101,11 @@ export function getColoresProducto(producto) {
     return PEYU_COLOR_CATALOG.filter((c) =>
       ['negro', 'beige', 'azul', 'rojo', 'verde'].includes(c.id)
     );
+  }
+
+  // Productos de fibra de trigo (NO carcasas): vienen con color natural único.
+  if (producto.material === 'Fibra de Trigo (Compostable)') {
+    return [{ id: 'natural', label: 'Natural compostable', hex: '#d4b896' }];
   }
 
   // Resto del catálogo (Escritorio, Hogar, Entretenimiento, Corporativo):
