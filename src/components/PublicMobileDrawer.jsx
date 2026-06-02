@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import {
   Home, ShoppingCart, Grid3x3, Building2, HelpCircle, Heart, BookOpen,
-  Sparkles, Package, X, Menu, Phone, Instagram, MapPin
+  Sparkles, Package, X, Menu, Phone, Instagram, Facebook, Music2, MapPin
 } from 'lucide-react';
 import PEYULogo from './PEYULogo';
 
@@ -94,12 +94,28 @@ export default function PublicMobileDrawer({ open, onClose }) {
             <Phone className="w-4 h-4" style={{ color: 'var(--ld-action)' }} /> +56 9 3504 0242
           </a>
           <a
-            href="https://instagram.com/peyu.chile"
+            href="https://www.instagram.com/peyuchile/"
             target="_blank"
-            rel="noreferrer"
-            className="flex items-center gap-2.5 text-sm text-ld-fg-soft hover:text-ld-fg transition"
+            rel="noopener noreferrer"
+            className="flex items-center gap-2.5 text-sm text-ld-fg-soft hover:text-ld-action transition"
           >
-            <Instagram className="w-4 h-4" style={{ color: 'var(--ld-action)' }} /> @peyu.chile
+            <Instagram className="w-4 h-4" style={{ color: 'var(--ld-action)' }} /> @peyuchile
+          </a>
+          <a
+            href="https://www.facebook.com/p/Peyuchile-100063704654550/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-2.5 text-sm text-ld-fg-soft hover:text-ld-action transition"
+          >
+            <Facebook className="w-4 h-4" style={{ color: 'var(--ld-action)' }} /> Peyuchile
+          </a>
+          <a
+            href="https://www.tiktok.com/@peyuchile"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-2.5 text-sm text-ld-fg-soft hover:text-ld-action transition"
+          >
+            <Music2 className="w-4 h-4" style={{ color: 'var(--ld-action)' }} /> @peyuchile
           </a>
           <p className="flex items-start gap-2.5 text-xs text-ld-fg-muted">
             <MapPin className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: 'var(--ld-action)' }} />

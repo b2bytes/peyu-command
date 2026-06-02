@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { MessageCircle, Mail, MapPin, ArrowRight, Instagram, Linkedin } from 'lucide-react';
+import { MessageCircle, Mail, MapPin, ArrowRight, Instagram, Facebook, Music2 } from 'lucide-react';
 import PEYULogo from './PEYULogo';
 
 /**
@@ -71,22 +71,31 @@ export default function PublicFooter() {
               <MessageCircle className="w-4 h-4" />
             </a>
             <a
-              href="https://instagram.com/peyu.chile"
+              href="https://www.instagram.com/peyuchile/"
               target="_blank"
-              rel="noreferrer"
+              rel="noopener noreferrer"
               aria-label="Instagram"
-              className="w-9 h-9 rounded-full ld-glass-soft flex items-center justify-center text-ld-fg-soft hover:text-ld-fg transition"
+              className="w-9 h-9 rounded-full ld-glass-soft flex items-center justify-center text-ld-fg-soft hover:text-ld-action transition"
             >
               <Instagram className="w-4 h-4" />
             </a>
             <a
-              href="https://linkedin.com/company/peyuchile"
+              href="https://www.facebook.com/p/Peyuchile-100063704654550/"
               target="_blank"
-              rel="noreferrer"
-              aria-label="LinkedIn"
-              className="w-9 h-9 rounded-full ld-glass-soft flex items-center justify-center text-ld-fg-soft hover:text-ld-fg transition"
+              rel="noopener noreferrer"
+              aria-label="Facebook"
+              className="w-9 h-9 rounded-full ld-glass-soft flex items-center justify-center text-ld-fg-soft hover:text-ld-action transition"
             >
-              <Linkedin className="w-4 h-4" />
+              <Facebook className="w-4 h-4" />
+            </a>
+            <a
+              href="https://www.tiktok.com/@peyuchile"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="TikTok"
+              className="w-9 h-9 rounded-full ld-glass-soft flex items-center justify-center text-ld-fg-soft hover:text-ld-action transition"
+            >
+              <Music2 className="w-4 h-4" />
             </a>
           </div>
         </div>
