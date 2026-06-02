@@ -323,6 +323,17 @@ export default function Shop() {
               duplicado, así que lo dejamos sólo aquí (un sentinel invisible). */}
           <span ref={gridTopRef} className="block w-full h-0" aria-hidden="true" />
           <div className="flex items-center gap-2 flex-shrink-0 ml-auto">
+            {hayOfertasCyber && (
+              <button
+                onClick={() => setSoloCyber(v => !v)}
+                className={`px-3.5 py-2 rounded-full text-sm font-semibold transition-all flex items-center gap-1.5 ${
+                  soloCyber ? 'text-white shadow-sm' : 'ld-glass-soft text-ld-fg border border-ld-border'
+                }`}
+                style={soloCyber ? { background: 'var(--ld-highlight)' } : undefined}
+              >
+                ⚡ Solo ofertas Cyber
+              </button>
+            )}
             <select
               value={sortBy}
               onChange={e => setSortBy(e.target.value)}

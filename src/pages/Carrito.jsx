@@ -751,11 +751,21 @@ export default function Carrito() {
                 <span className="font-poppins font-extrabold text-3xl text-gray-900 tabular-nums tracking-tight">${total.toLocaleString('es-CL')}</span>
               </div>
 
-              {isCyberActive() && (
-                <p className="text-[11px] font-semibold mt-2 text-center" style={{ color: '#D96B4D' }}>
-                  {CYBER_COPY.microUrgency}
-                </p>
-              )}
+              {isCyberActive() && (() => {
+                const ahorroTotal = descuentoCupon + descuentoVolumen + descuentoTransferencia + gcDescuento;
+                return (
+                  <div className="mt-2 text-center space-y-0.5">
+                    {ahorroTotal > 0 && (
+                      <p className="text-xs font-bold" style={{ color: '#0F8B6C' }}>
+                        ⚡ Estás ahorrando ${ahorroTotal.toLocaleString('es-CL')} con Cyber PEYU
+                      </p>
+                    )}
+                    <p className="text-[11px] font-medium" style={{ color: '#D96B4D' }}>
+                      Precios Cyber válidos hasta mañana
+                    </p>
+                  </div>
+                );
+              })()}
 
               {/* Tu impacto real — integrado como footer del resumen, no flotando */}
               <ImpactoAmbiental carrito={carrito} variant="inline" />

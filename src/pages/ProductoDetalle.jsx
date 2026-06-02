@@ -24,7 +24,8 @@ import SEO from '@/components/SEO';
 import { buildOrganizationSchema, buildProductSchema, buildBreadcrumbSchema, combineSchemas } from '@/lib/schemas-peyu';
 import { trackAddToCart } from '@/lib/analytics-peyu';
 import { track } from '@/lib/activity-tracker';
-import { isCyberActive, CYBER_COPY } from '@/lib/cyber-campaign';
+import { isCyberActive, CYBER_COPY, tieneOfertaCyber } from '@/lib/cyber-campaign';
+import CyberBadge from '@/components/cyber/CyberBadge';
 
 
 // Los colores ahora se extraen dinámicamente desde la descripción del producto
@@ -779,6 +780,12 @@ export default function ProductoDetalle() {
                         <p className="ld-display text-4xl text-ld-fg leading-none">${precioVolumen.precio.toLocaleString('es-CL')}</p>
                         <p className="text-[10px] text-ld-fg-muted mt-1">por unidad · IVA incluido</p>
                       </>
+                    ) : isCyberActive() && tieneOfertaCyber(producto) ? (
+                      <>
+                        <p className="text-sm line-through text-ld-fg-subtle leading-none">${precioFinal.toLocaleString('es-CL')}</p>
+                        <p className="ld-display text-4xl leading-none mt-1" style={{ color: 'var(--ld-highlight)' }}>${producto.precio_oferta.toLocaleString('es-CL')}</p>
+                        <p className="text-[10px] font-semibold mt-1" style={{ color: 'var(--ld-action)' }}>Ahorras ${(precioFinal - producto.precio_oferta).toLocaleString('es-CL')} · IVA incluido</p>
+                      </>
                     ) : (
                       <>
                         <p className="ld-display text-4xl text-ld-fg leading-none">${precioFinal.toLocaleString('es-CL')}</p>
@@ -788,6 +795,7 @@ export default function ProductoDetalle() {
                   </div>
                   <div className="text-right space-y-1">
                     {precioVolumen && <span className="inline-block text-[11px] font-bold px-2 py-0.5 rounded-lg" style={{ background: 'var(--ld-highlight-soft)', color: 'var(--ld-highlight)' }}>Precio B2B</span>}
+                    <CyberBadge producto={producto} className="ml-auto" />
                   </div>
                 </div>
                 {precioFinal * cantidad < 40000 && !precioVolumen && (
