@@ -27,7 +27,7 @@ const QUICK_REPLIES = [
 const WELCOME = {
   role: 'assistant',
   reply_text: '¡Hola! 🐢 Soy Peyu. Diseñamos regalos en plástico 100% reciclado chileno — merchandising sustentable, maceteros reciclados, productos para oficina, con garantía de 10 años.\n\n¿Buscas un regalo para alguien especial o algo para tu empresa?',
-  cards: [],
+  cards: [{ type: 'onboarding', data: {} }],
 };
 
 // Página /v2 "Peyu Commerce OS" — COCKPIT de 3 columnas.

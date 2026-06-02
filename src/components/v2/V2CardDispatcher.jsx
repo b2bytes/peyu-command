@@ -9,6 +9,7 @@ import CardB2BQuote from './cards/CardB2BQuote';
 import CardGiftCard from './cards/CardGiftCard';
 import CardOrderStatus from './cards/CardOrderStatus';
 import CardCompare from './cards/CardCompare';
+import CardOnboarding from './cards/CardOnboarding';
 
 // Dispatcher: 1 card del río = 1 componente. switch(card.type).
 export default function V2CardDispatcher({ card, perfil, handlers }) {
@@ -16,6 +17,8 @@ export default function V2CardDispatcher({ card, perfil, handlers }) {
   const { onAddCart, onQuote, onPick, onCheckout, onShippingContinue, onRetryPay } = handlers || {};
 
   switch (card.type) {
+    case 'onboarding':
+      return <CardOnboarding />;
     case 'product':
       return <CardProduct data={card.data} perfil={perfil} onAddCart={onAddCart} onQuote={onQuote} />;
     case 'product_grid':

@@ -3,6 +3,7 @@ import { ShoppingCart, Lock, Loader2, AlertCircle } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { formatCLP } from '@/lib/v2-catalog';
 import { readCart, computeCartTotals, clearCart } from '@/lib/v2-cart';
+import V2TrustBadges from '@/components/v2/V2TrustBadges';
 
 // Card de checkout final del río /v2. Crea el PedidoWeb (misma estructura que
 // la tienda viva), invoca assessOrderRisk + mpCreatePreference EXISTENTES y
@@ -148,6 +149,10 @@ export default function CardCheckout({ data }) {
         {loading ? <><Loader2 className="w-4 h-4 animate-spin" /> Conectando…</> : <><Lock className="w-4 h-4" /> Pagar con Mercado Pago</>}
       </button>
       <p className="text-[10px] text-center mt-2" style={{ color: 'var(--v2-fg-subtle)' }}>Pago 100% seguro · Mercado Pago</p>
+
+      <div className="mt-3 pt-3" style={{ borderTop: '1px solid var(--v2-border)' }}>
+        <V2TrustBadges keys={['envio', 'garantia', 'seguro']} />
+      </div>
     </div>
   );
 }

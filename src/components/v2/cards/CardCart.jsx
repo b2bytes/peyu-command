@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { ShoppingCart, Trash2, ArrowRight, Minus, Plus } from 'lucide-react';
 import { formatCLP } from '@/lib/v2-catalog';
 import { readCart, setQty, removeLine, clearCart, computeCartTotals } from '@/lib/v2-cart';
+import V2TrustBadges from '@/components/v2/V2TrustBadges';
 
 // Card del río: carrito completo y EDITABLE (cantidad, quitar, vaciar) + CTA
 // finalizar compra. Sincroniza en vivo con la columna derecha vía eventos.
@@ -93,6 +94,10 @@ export default function CardCart({ onCheckout }) {
       <button onClick={onCheckout} className="v2-btn-primary w-full h-10 flex items-center justify-center gap-2 text-xs mt-3">
         Finalizar compra <ArrowRight className="w-3.5 h-3.5" />
       </button>
+
+      <div className="mt-3">
+        <V2TrustBadges keys={['envio', 'garantia', 'cambios']} />
+      </div>
     </div>
   );
 }
