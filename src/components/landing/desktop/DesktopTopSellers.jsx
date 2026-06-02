@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { Star, ArrowUpRight } from 'lucide-react';
+import CyberBadge from '@/components/cyber/CyberBadge';
+import { isCyberActive, tieneOfertaCyber } from '@/lib/cyber-campaign';
 
 /**
  * Top sellers Liquid Dual — cards editoriales con vidrio auto-adaptativo.
@@ -71,11 +73,14 @@ export default function DesktopTopSellers() {
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                     loading="lazy"
                   />
-                  <div
-                    className="absolute top-3 left-3 backdrop-blur-md text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md"
-                    style={{ background: 'var(--ld-glass-strong)', color: 'var(--ld-fg)', border: '1px solid var(--ld-glass-border)' }}
-                  >
-                    {p.categoria}
+                  <div className="absolute top-3 left-3 flex flex-col gap-1.5">
+                    <span
+                      className="backdrop-blur-md text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md"
+                      style={{ background: 'var(--ld-glass-strong)', color: 'var(--ld-fg)', border: '1px solid var(--ld-glass-border)' }}
+                    >
+                      {p.categoria}
+                    </span>
+                    <CyberBadge producto={p} />
                   </div>
                   <div
                     className="absolute bottom-3 left-3 flex items-center gap-1 backdrop-blur-md rounded-md px-2 py-1"
@@ -86,9 +91,16 @@ export default function DesktopTopSellers() {
                   </div>
                 </div>
                 <p className="text-sm font-semibold leading-tight line-clamp-2 mb-1 text-ld-fg">{p.nombre}</p>
-                <p className="text-base font-bold" style={{ color: 'var(--ld-action)' }}>
-                  ${(p.precio_b2c || 0).toLocaleString('es-CL')}
-                </p>
+                {isCyberActive() && tieneOfertaCyber(p) ? (
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-xs line-through text-ld-fg-subtle">${(p.precio_b2c || 0).toLocaleString('es-CL')}</span>
+                    <span className="text-base font-bold" style={{ color: 'var(--ld-highlight)' }}>${p.precio_oferta.toLocaleString('es-CL')}</span>
+                  </div>
+                ) : (
+                  <p className="text-base font-bold" style={{ color: 'var(--ld-action)' }}>
+                    ${(p.precio_b2c || 0).toLocaleString('es-CL')}
+                  </p>
+                )}
               </Link>
             ))}
       </div>

@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { Star, ArrowRight } from 'lucide-react';
+import CyberBadge from '@/components/cyber/CyberBadge';
+import { isCyberActive, tieneOfertaCyber } from '@/lib/cyber-campaign';
 
 /**
  * Carrusel horizontal "Lo más regalado" — productos reales destacados.
@@ -63,9 +65,12 @@ export default function MobileTopSellers() {
                     className="w-full h-full object-cover"
                     loading="lazy"
                   />
-                  {/* Badge categoria */}
-                  <div className="absolute top-2 left-2 bg-black/60 backdrop-blur-sm text-white text-[8px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-md">
-                    {p.categoria}
+                  {/* Badge categoria + Cyber */}
+                  <div className="absolute top-2 left-2 flex flex-col gap-1">
+                    <span className="bg-black/60 backdrop-blur-sm text-white text-[8px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-md">
+                      {p.categoria}
+                    </span>
+                    <CyberBadge producto={p} />
                   </div>
                   {/* Stars */}
                   <div className="absolute bottom-2 left-2 flex items-center gap-0.5 bg-black/60 backdrop-blur-sm rounded-md px-1.5 py-0.5">
@@ -76,9 +81,16 @@ export default function MobileTopSellers() {
                 <p className="text-white text-[12px] font-semibold leading-tight line-clamp-2 mb-1 px-0.5">
                   {p.nombre}
                 </p>
-                <p className="text-teal-300 text-[13px] font-bold px-0.5">
-                  ${(p.precio_b2c || 0).toLocaleString('es-CL')}
-                </p>
+                {isCyberActive() && tieneOfertaCyber(p) ? (
+                  <div className="flex items-baseline gap-1.5 px-0.5">
+                    <span className="text-white/40 text-[10px] line-through">${(p.precio_b2c || 0).toLocaleString('es-CL')}</span>
+                    <span className="text-[13px] font-bold" style={{ color: '#F08560' }}>${p.precio_oferta.toLocaleString('es-CL')}</span>
+                  </div>
+                ) : (
+                  <p className="text-teal-300 text-[13px] font-bold px-0.5">
+                    ${(p.precio_b2c || 0).toLocaleString('es-CL')}
+                  </p>
+                )}
               </Link>
             ))}
         {/* Card final "Ver todo" */}

@@ -29,6 +29,7 @@ import DesktopTopSellers from '@/components/landing/desktop/DesktopTopSellers';
 import DesktopTrustFooter from '@/components/landing/desktop/DesktopTrustFooter';
 import DesktopChatWelcomeChips from '@/components/landing/desktop/DesktopChatWelcomeChips';
 import { isCyberActive, CYBER_COPY } from '@/lib/cyber-campaign';
+import CyberCatalogBanner from '@/components/cyber/CyberCatalogBanner';
 
 // Línea Cyber para inyectar UNA vez en el saludo (solo si la campaña está activa).
 const cyberGreetingLine = () => (isCyberActive() ? `\n\n${CYBER_COPY.greeting}` : '');
@@ -748,6 +749,9 @@ export default function ShopLanding() {
 
         {/* ─── BELOW THE FOLD: E-commerce sections ─── */}
         <div className="w-full max-w-[1440px] mx-auto">
+          <div className="px-6 pt-2">
+            <CyberCatalogBanner />
+          </div>
           <DesktopCategorySection />
           <DesktopTopSellers />
           <DesktopTrustFooter />
