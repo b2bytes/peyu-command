@@ -97,6 +97,13 @@ function projectProduct(p) {
     precio_b2c: p.precio_b2c ?? null,
     precio_b2b_tramos: p.precio_b2b_tramos || null,
     dimensiones: p.dimensiones || null,
+    // Ficha de detalle /v2 (catálogo B2B oficial)
+    incluye_items_v2: Array.isArray(p.incluye_items_v2) ? p.incluye_items_v2 : [],
+    colores_v2: Array.isArray(p.colores_v2) ? p.colores_v2 : [],
+    peso_pack_gr: p.peso_pack_gr ?? null,
+    dim_detalle_v2: p.dim_detalle_v2 || null,
+    tapitas_aprox: p.tapitas_aprox ?? null,
+    galeria_urls: Array.isArray(p.galeria_urls) ? p.galeria_urls.slice(0, 8) : [],
   };
 }
 

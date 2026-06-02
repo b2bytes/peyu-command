@@ -340,8 +340,19 @@
 @keyframes v2SlideL { from { transform: translateX(-100%); } to { transform: translateX(0); } }
 @keyframes v2SlideR { from { transform: translateX(100%); } to { transform: translateX(0); } }
 
+/* ─── Sheet de ficha de detalle (producto /v2) ─── */
+.v2-detail-sheet {
+  position: relative; z-index: 121;
+  width: min(92vw, 440px); height: 100%;
+  background: var(--v2-bg);
+  border-left: 1px solid var(--v2-glass-border);
+  box-shadow: var(--v2-shadow-lg);
+  overflow-y: auto;
+  animation: v2SlideR 0.3s cubic-bezier(0.22,1,0.36,1);
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .v2-fade-up, .v2-card, .v2-mini-card, .v2-skeleton, .v2-drawer, .v2-drawer-backdrop {
+  .v2-fade-up, .v2-card, .v2-mini-card, .v2-skeleton, .v2-drawer, .v2-drawer-backdrop, .v2-detail-sheet {
     animation: none !important; transition: none !important;
   }
 }

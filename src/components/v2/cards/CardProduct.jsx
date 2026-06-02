@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { Leaf, ShoppingCart, MessageCircle, Check } from 'lucide-react';
+import { Leaf, ShoppingCart, MessageCircle, Check, Eye } from 'lucide-react';
 import { formatCLP } from '@/lib/v2-catalog';
+import CardProductDetail from './CardProductDetail';
 
 const COLORES = ['Azul', 'Negro', 'Rojo', 'Verde'];
 
@@ -11,6 +12,7 @@ export default function CardProduct({ data, perfil, onAddCart, onQuote }) {
   const colores = esCacho ? [...COLORES, 'Mixto'] : COLORES;
   const [color, setColor] = useState(colores[0]);
   const [added, setAdded] = useState(false);
+  const [showDetail, setShowDetail] = useState(false);
   const tramos = p.precio_b2b_tramos || {};
   const desdeB2B = tramos.t2000_mas || tramos.t1000_1999 || tramos.unitario;
 
@@ -38,6 +40,9 @@ export default function CardProduct({ data, perfil, onAddCart, onQuote }) {
         {p.incluye_v2 && (
           <p className="text-xs mt-1.5 line-clamp-2 leading-relaxed" style={{ color: 'var(--v2-fg-muted)' }}>{p.incluye_v2}</p>
         )}
+        <button onClick={() => setShowDetail(true)} className="flex items-center gap-1 text-[11px] font-medium mt-1.5 self-start hover:underline" style={{ color: 'var(--v2-teal)' }}>
+          <Eye className="w-3.5 h-3.5" /> Ver detalle
+        </button>
 
         {/* Colores */}
         <div className="flex flex-wrap gap-1.5 mt-3">
@@ -76,6 +81,8 @@ export default function CardProduct({ data, perfil, onAddCart, onQuote }) {
           )}
         </div>
       </div>
+
+      {showDetail && <CardProductDetail data={p} onClose={() => setShowDetail(false)} />}
     </div>
   );
 }
