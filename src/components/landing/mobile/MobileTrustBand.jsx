@@ -8,7 +8,7 @@ import { Recycle, ShieldCheck, Truck, Award, ArrowRight, Gift, Building2 } from 
  * y los dos CTAs principales abajo, cerrando el embudo.
  */
 const SIGNALS = [
-  { icon: Recycle,     label: '100% Reciclado',   desc: 'Plástico chileno' },
+  { icon: Recycle,     label: 'Sustentables',     desc: 'Reciclado y compostable' },
   { icon: ShieldCheck, label: '10 años garantía', desc: 'Sin letra chica' },
   { icon: Truck,       label: 'Envío Bluex',      desc: 'Todo Chile' },
   { icon: Award,       label: 'Hecho en Chile',   desc: 'Producción local' },

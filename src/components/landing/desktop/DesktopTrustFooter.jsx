@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import { Recycle, ShieldCheck, Truck, Award, Lock } from 'lucide-react';
 
 const SIGNALS = [
-  { icon: Recycle,     label: '100% Plástico Reciclado', desc: 'Recolectado en Chile' },
+  { icon: Recycle,     label: 'Materiales Sustentables', desc: 'Plástico reciclado · Fibra de trigo compostable' },
   { icon: ShieldCheck, label: '10 años de garantía',     desc: 'Sin letra chica' },
   { icon: Truck,       label: 'Despacho Bluex',          desc: 'A todo Chile en 2-5 días' },
   { icon: Award,       label: 'Hecho en Chile',          desc: 'Producción local · Santiago' },

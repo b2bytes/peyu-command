@@ -376,11 +376,11 @@ Deno.serve(async (req) => {
         } else if (picks.length === 1) {
           reply_text = perfil === 'b2b'
             ? `Mira esta opción ideal para tu empresa — con grabado láser de tu logo y precios por volumen 🐢`
-            : `Esto te puede encajar perfecto 🐢 plástico 100% reciclado y garantía de 10 años.`;
+            : `Esto te puede encajar perfecto 🐢 plástico 100% reciclado chileno y garantía de 10 años.`;
           cards.push({ type: 'product', data: projectProduct(picks[0]) });
         } else {
           reply_text = category
-            ? `Estas son nuestras opciones de ${category} 🐢 todas en plástico reciclado chileno.`
+            ? `Estas son nuestras opciones de ${category} 🐢 todas en plástico 100% reciclado chileno.`
             : `Te dejo algunas ideas de productos reciclados que vuelan 🐢`;
           cards.push({ type: 'product_grid', data: { productos: picks.map(projectProduct) } });
         }
@@ -452,8 +452,8 @@ Deno.serve(async (req) => {
       default: {
         // chat informativo — espejamos keywords SEO sin inventar productos
         reply_text = perfil === 'b2b'
-          ? 'Somos PEYU 🐢 hacemos merchandising sustentable en plástico 100% reciclado chileno: regalos corporativos con grabado láser de tu logo, garantía de 10 años. ¿Quieres ver productos reciclados para oficina o cotizar por volumen?'
-          : 'Soy Peyu 🐢 diseñamos regalos en plástico 100% reciclado chileno — desde maceteros reciclados hasta organizadores de escritorio, con garantía de 10 años. ¿Buscas un regalo para alguien o algo para ti?';
+          ? 'Somos PEYU 🐢 hacemos merchandising sustentable en plástico 100% reciclado chileno (y fibra de trigo compostable en nuestras carcasas de teléfono): regalos corporativos con grabado láser de tu logo, garantía de 10 años. ¿Quieres ver productos reciclados para oficina o cotizar por volumen?'
+          : 'Soy Peyu 🐢 diseñamos regalos sustentables: plástico 100% reciclado chileno en maceteros, cachos y organizadores, y fibra de trigo compostable en nuestras carcasas de teléfono. Con garantía de 10 años. ¿Buscas un regalo para alguien o algo para ti?';
         break;
       }
     }

@@ -60,7 +60,7 @@ const WELCOME_MSG = {
   content: [
     '¡Hola! 🐢 Soy Peyu, tu asistente para encontrar el regalo perfecto.',
     '',
-    'En PEYU diseñamos regalos únicos en plástico 100% reciclado chileno, con grabado láser personalizable y garantía de 10 años. Cada pieza rescata plástico del océano 🌊',
+    'En PEYU diseñamos regalos sustentables: plástico 100% reciclado chileno en la mayoría de nuestros productos y fibra de trigo compostable en nuestras carcasas de teléfono. Con grabado láser personalizable y garantía de 10 años. 🌱',
     '',
     '¿Para quién buscas algo lindo hoy? ¿Es para una persona especial 🎁 o para tu equipo/empresa 💼?',
   ].join('\n'),

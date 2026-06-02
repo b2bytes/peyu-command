@@ -19,7 +19,7 @@ export default function DesktopHeroSplit({ onOpenChat }) {
   const highlight = celebration?.copy?.highlight || 'con propósito.';
   const paragraph =
     celebration?.copy?.paragraph ||
-    'Plástico 100% reciclado, grabado láser de regalo y diez años de garantía. Para tu casa, tu oficina o tu equipo entero.';
+    'Materiales sustentables —plástico 100% reciclado y fibra de trigo compostable—, grabado láser de regalo y diez años de garantía. Para tu casa, tu oficina o tu equipo entero.';
   const ctaPrimaryLabel = celebration?.copy?.ctaPrimary?.label || 'Explorar tienda';
   const ctaPrimaryHref = celebration?.copy?.ctaPrimary?.href || '/shop';
 
