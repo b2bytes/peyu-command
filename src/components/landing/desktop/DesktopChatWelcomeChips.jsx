@@ -55,42 +55,39 @@ const ACCENT_BG = {
 
 export default function DesktopChatWelcomeChips({ onPick, disabled }) {
   return (
-    <div className="flex flex-col gap-2 px-0.5 pt-1 pb-1">
-      {/* Subtítulo IA */}
-      <div className="flex items-center gap-1.5 px-2.5 py-2 rounded-xl ld-glass-soft mb-0.5">
-        <Gift className="w-3 h-3 flex-shrink-0" style={{ color: 'var(--ld-highlight)' }} />
-        <p className="text-[11px] text-ld-fg-soft font-medium leading-tight">
-          ¿No sabes qué regalar? Te ayudo a encontrar el regalo perfecto.
-        </p>
-      </div>
+    <div className="flex flex-col gap-1.5 px-0.5 pt-0.5">
+      {/* Label fila — compacto, sin burbuja que robe altura */}
+      <p className="text-[10.5px] font-semibold uppercase tracking-wider text-ld-fg-muted px-1 mb-0.5">
+        Ideas rápidas
+      </p>
 
       {QUICK_INTENTS.map(({ id, icon: Icon, label, sub, prompt, accent, featured }) => (
         <button
           key={id}
           onClick={() => onPick(prompt)}
           disabled={disabled}
-          className="group flex items-center gap-3 rounded-2xl px-3 py-2.5 text-left transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed border"
+          className="group flex items-center gap-2.5 rounded-xl px-2.5 py-2 text-left transition-all duration-200 hover:-translate-y-px hover:shadow-sm active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed border"
           style={{
             background: featured ? 'var(--ld-highlight-soft)' : 'var(--ld-glass-soft)',
             borderColor: featured ? 'var(--ld-highlight)' : 'var(--ld-border)',
           }}
         >
           <span
-            className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 shadow-sm"
+            className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 shadow-sm"
             style={{ background: ACCENT_BG[accent] }}
           >
-            <Icon className="w-4 h-4 text-white" />
+            <Icon className="w-3.5 h-3.5 text-white" />
           </span>
           <span className="flex-1 min-w-0">
-            <span className="block text-[12.5px] font-bold text-ld-fg leading-tight">
+            <span className="block text-[12px] font-bold text-ld-fg leading-tight truncate">
               {label}
             </span>
-            <span className="block text-[10.5px] text-ld-fg-muted leading-tight mt-0.5 truncate">
+            <span className="block text-[10px] text-ld-fg-muted leading-tight truncate">
               {sub}
             </span>
           </span>
           <ArrowRight
-            className="w-4 h-4 flex-shrink-0 opacity-50 group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-200"
+            className="w-3.5 h-3.5 flex-shrink-0 opacity-40 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all duration-200"
             style={{ color: featured ? 'var(--ld-highlight)' : 'var(--ld-action)' }}
           />
         </button>
