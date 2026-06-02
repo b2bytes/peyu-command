@@ -347,26 +347,40 @@ export default function ProductoDetalle() {
     const color = coloresLista.find(c => c.id === colorSeleccionado);
     if (!color) return;
 
-    const match = findColorImageMatch(galeria, color);
-    if (!match) {
-      // Sin imagen específica → limpiamos feedback antiguo
+    // Fuente de verdad 1: mapa estructurado imagenes_por_color (Diego / backend).
+    // Si existe, buscamos esa URL exacta en la galería para saltar a ella.
+    let targetIndex = -1;
+    const mapa = producto.imagenes_por_color || {};
+    const urlMapeada = mapa[color.label] || mapa[color.id];
+    if (urlMapeada) {
+      targetIndex = galeria.findIndex(u => u === urlMapeada);
+    }
+
+    // Fuente de verdad 2: match scored por filename de la galería.
+    if (targetIndex < 0) {
+      const match = findColorImageMatch(galeria, color);
+      if (match) targetIndex = match.index;
+    }
+
+    // ⚠️ Bug 1 — Honestidad visual: si NO hay foto real para este color
+    // (caso típico de carcasas migradas, cuya galería son ángulos del mismo
+    // modelo sin color en el filename), NO mostramos el badge "Mostrando en X"
+    // ni forzamos un cambio de imagen falso. Dejamos la imagen tal cual.
+    if (targetIndex < 0) {
       setColorMatchFeedback(null);
       return;
     }
 
-    if (match.index !== vistaActiva) {
-      // Fade-out → cambio → fade-in
+    if (targetIndex !== vistaActiva) {
       setImageFading(true);
       const t = setTimeout(() => {
-        setVistaActiva(match.index);
+        setVistaActiva(targetIndex);
         setImageFading(false);
       }, 180);
-      // Badge contextual desaparece a los 2.5s
       setColorMatchFeedback({ label: color.label, key: Date.now() });
       const tBadge = setTimeout(() => setColorMatchFeedback(null), 2500);
       return () => { clearTimeout(t); clearTimeout(tBadge); };
     } else {
-      // Ya estaba en la imagen correcta → solo flash sutil del badge
       setColorMatchFeedback({ label: color.label, key: Date.now() });
       const tBadge = setTimeout(() => setColorMatchFeedback(null), 1800);
       return () => clearTimeout(tBadge);
