@@ -3,11 +3,62 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 // ============================================================================
 // sendProposalEmail — Email premium para propuestas B2B asistidas (Carlos)
 // ============================================================================
-// Diseño unificado con paleta PEYU, tipografía elegante, CTAs aceptar/rechazar
-// destacados, y enlace al PDF online. Pensado para Gmail/Outlook/Apple Mail.
+// Envío directo desde ti@peyuchile.cl vía Gmail API (conector OAuth, scope
+// gmail.send). YA NO usa Core.SendEmail/Resend. Va al CLIENTE con copia (CC)
+// a ventas@peyuchile.cl y enlace al PDF online.
 // ----------------------------------------------------------------------------
 
 const fmtCLP = (n) => '$' + (n || 0).toLocaleString('es-CL') + ' CLP';
+
+// ── Gmail API helpers ──────────────────────────────────────────────────
+function encodeHeader(str) {
+  if (!str) return '';
+  // eslint-disable-next-line no-control-regex
+  if (/^[\x20-\x7E]*$/.test(str)) return str;
+  return `=?UTF-8?B?${btoa(unescape(encodeURIComponent(str)))}?=`;
+}
+function toBase64Url(str) {
+  return btoa(unescape(encodeURIComponent(str)))
+    .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+async function sendViaGmail(accessToken, { to, cc, replyTo, subject, html, fromName = 'PEYU Chile' }) {
+  const boundary = `peyu_prop_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+  const plain = html.replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
+  const message = [
+    `From: ${encodeHeader(fromName)} <ti@peyuchile.cl>`,
+    `To: ${to}`,
+    cc ? `Cc: ${cc}` : null,
+    replyTo ? `Reply-To: ${replyTo}` : null,
+    `Subject: ${encodeHeader(subject)}`,
+    'MIME-Version: 1.0',
+    `Content-Type: multipart/alternative; boundary="${boundary}"`,
+    '',
+    `--${boundary}`,
+    'Content-Type: text/plain; charset="UTF-8"',
+    'Content-Transfer-Encoding: 7bit',
+    '',
+    plain,
+    '',
+    `--${boundary}`,
+    'Content-Type: text/html; charset="UTF-8"',
+    'Content-Transfer-Encoding: 7bit',
+    '',
+    html,
+    '',
+    `--${boundary}--`,
+  ].filter((l) => l !== null).join('\r\n');
+
+  const res = await fetch('https://gmail.googleapis.com/gmail/v1/users/me/messages/send', {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ raw: toBase64Url(message) }),
+  });
+  if (!res.ok) {
+    const t = await res.text();
+    throw new Error(`Gmail API ${res.status}: ${t.slice(0, 300)}`);
+  }
+  return res.json();
+}
 
 function buildHtml({ prop, items, propUrl, acceptUrl, rejectUrl }) {
   const itemsHtml = items.map(i => `
@@ -238,24 +289,18 @@ Deno.serve(async (req) => {
 
     const subject = `Propuesta PEYU N° ${prop.numero || proposalId.slice(-6)} · ${prop.empresa}`;
 
-    // 1) Email al cliente
-    await base44.integrations.Core.SendEmail({
-      to: prop.email,
-      subject,
-      body: html,
-      from_name: 'Carlos · PEYU Chile',
-    });
+    // Token OAuth de Gmail (conector compartido autorizado por el builder).
+    const { accessToken } = await base44.asServiceRole.connectors.getConnection('gmail');
 
-    // 2) Copia interna al equipo comercial (visibilidad de qué se envió)
-    const TEAM_INBOXES = ['jnilo@peyuchile.cl', 'ventas@peyuchile.cl'];
-    await Promise.all(TEAM_INBOXES.map(to =>
-      base44.integrations.Core.SendEmail({
-        to,
-        subject: `[COPIA] ${subject}`,
-        body: html,
-        from_name: 'PEYU · Propuestas enviadas',
-      }).catch(e => console.warn(`Copia interna a ${to} falló:`, e.message))
-    ));
+    // 1) Email al CLIENTE desde ti@peyuchile.cl, con copia (CC) a ventas@
+    await sendViaGmail(accessToken, {
+      to: prop.email,
+      cc: 'ventas@peyuchile.cl',
+      replyTo: 'ventas@peyuchile.cl',
+      subject,
+      html,
+      fromName: 'Carlos · PEYU Chile',
+    });
 
     await base44.asServiceRole.entities.CorporateProposal.update(proposalId, {
       status: 'Enviada',

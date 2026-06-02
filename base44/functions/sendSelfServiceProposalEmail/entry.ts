@@ -3,11 +3,63 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 // ============================================================================
 // sendSelfServiceProposalEmail — Email B2B auto-generado (self-service)
 // ============================================================================
-// Mismo lenguaje visual que sendProposalEmail. Envía vía Resend (permite
-// destinatarios externos sin necesidad de dominio verificado).
+// Envío directo desde ti@peyuchile.cl vía Gmail API (conector OAuth ya
+// autorizado, scope gmail.send). YA NO usa Resend. El flujo self-service es
+// público, por eso se usa el conector con service role (sin requerir usuario).
+// Va al CLIENTE con copia (CC) a ventas@peyuchile.cl.
 // ----------------------------------------------------------------------------
 
 const fmtCLP = (n) => '$' + (n || 0).toLocaleString('es-CL');
+
+// ── Gmail API helpers ──────────────────────────────────────────────────
+function encodeHeader(str) {
+  if (!str) return '';
+  // eslint-disable-next-line no-control-regex
+  if (/^[\x20-\x7E]*$/.test(str)) return str;
+  return `=?UTF-8?B?${btoa(unescape(encodeURIComponent(str)))}?=`;
+}
+function toBase64Url(str) {
+  return btoa(unescape(encodeURIComponent(str)))
+    .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+async function sendViaGmail(accessToken, { to, cc, replyTo, subject, html, fromName = 'PEYU Chile' }) {
+  const boundary = `peyu_prop_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+  const plain = html.replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
+  const message = [
+    `From: ${encodeHeader(fromName)} <ti@peyuchile.cl>`,
+    `To: ${to}`,
+    cc ? `Cc: ${cc}` : null,
+    replyTo ? `Reply-To: ${replyTo}` : null,
+    `Subject: ${encodeHeader(subject)}`,
+    'MIME-Version: 1.0',
+    `Content-Type: multipart/alternative; boundary="${boundary}"`,
+    '',
+    `--${boundary}`,
+    'Content-Type: text/plain; charset="UTF-8"',
+    'Content-Transfer-Encoding: 7bit',
+    '',
+    plain,
+    '',
+    `--${boundary}`,
+    'Content-Type: text/html; charset="UTF-8"',
+    'Content-Transfer-Encoding: 7bit',
+    '',
+    html,
+    '',
+    `--${boundary}--`,
+  ].filter((l) => l !== null).join('\r\n');
+
+  const res = await fetch('https://gmail.googleapis.com/gmail/v1/users/me/messages/send', {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ raw: toBase64Url(message) }),
+  });
+  if (!res.ok) {
+    const t = await res.text();
+    throw new Error(`Gmail API ${res.status}: ${t.slice(0, 300)}`);
+  }
+  return res.json();
+}
 
 function buildClientHtml({ proposal, items, proposalUrl, acceptUrl }) {
   const rows = items.map(it => `
@@ -189,74 +241,34 @@ Deno.serve(async (req) => {
     const proposalUrl = `${baseUrl}/b2b/propuesta?id=${proposal.id}`;
     const acceptUrl = `${baseUrl}/b2b/propuesta?id=${proposal.id}&action=accept`;
 
-    // El flujo self-service es PÚBLICO (cliente anónimo), por lo que el correo
-    // al cliente externo se envía vía Resend con el dominio verificado de PEYU.
-    // Core.SendEmail no sirve aquí porque solo entrega a usuarios de la app.
-    const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');
-    if (!RESEND_API_KEY) return Response.json({ error: 'RESEND_API_KEY no configurada' }, { status: 500 });
-
-    // FROM con dominio propio (entrega a clientes externos cuando está verificado).
-    const FROM_VERIFIED = 'PEYU Chile <ventas@peyuchile.cl>';
-    // FROM sandbox de Resend (siempre disponible, pero SOLO entrega al dueño
-    // de la cuenta). Lo usamos como respaldo para no perder la propuesta.
-    const FROM_SANDBOX = 'PEYU Chile <onboarding@resend.dev>';
     const TEAM_INBOX = 'ventas@peyuchile.cl';
 
-    const postResend = async ({ from, to, subject, html, replyTo }) => {
-      const r = await fetch('https://api.resend.com/emails', {
-        method: 'POST',
-        headers: { 'Authorization': `Bearer ${RESEND_API_KEY}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ from, to: [to], subject, html, reply_to: replyTo }),
-      });
-      if (!r.ok) {
-        const err = await r.text();
-        const domainNotVerified = r.status === 403 && /domain is not verified/i.test(err);
-        const e = new Error(`Resend ${r.status}: ${err}`);
-        e.domainNotVerified = domainNotVerified;
-        throw e;
-      }
-      return r.json();
-    };
+    // Token OAuth de Gmail (conector compartido, autorizado por el builder).
+    // service role → no requiere usuario autenticado (flujo público).
+    const { accessToken } = await base44.asServiceRole.connectors.getConnection('gmail');
 
     let clientSent = false;
-    let domainPending = false;
     if (proposal.email) {
-      try {
-        await postResend({
-          from: FROM_VERIFIED,
-          to: proposal.email,
-          subject: `Propuesta PEYU N° ${proposal.numero} · ${fmtCLP(proposal.total)}`,
-          html: buildClientHtml({ proposal, items, proposalUrl, acceptUrl }),
-          replyTo: TEAM_INBOX,
-        });
-        clientSent = true;
-      } catch (e) {
-        if (!e.domainNotVerified) throw e;
-        // Dominio aún sin verificar en Resend → no podemos entregar al cliente
-        // externo. Respaldo: avisamos al equipo con la propuesta lista para que
-        // la reenvíen manualmente. El flujo NO se rompe.
-        domainPending = true;
-        console.warn('peyuchile.cl no verificado en Resend, usando respaldo interno.');
-        try {
-          await postResend({
-            from: FROM_SANDBOX,
-            to: TEAM_INBOX,
-            subject: `[REENVIAR AL CLIENTE] Propuesta ${proposal.numero} · ${proposal.empresa} → ${proposal.email}`,
-            html: buildClientHtml({ proposal, items, proposalUrl, acceptUrl }),
-          });
-        } catch (e2) {
-          console.warn('Respaldo interno también falló:', e2?.message);
-        }
-      }
+      // Al CLIENTE, con copia (CC) a ventas@peyuchile.cl. El HTML incluye
+      // el enlace para ver/descargar el PDF online.
+      await sendViaGmail(accessToken, {
+        to: proposal.email,
+        cc: TEAM_INBOX,
+        replyTo: TEAM_INBOX,
+        subject: `Propuesta PEYU N° ${proposal.numero} · ${fmtCLP(proposal.total)}`,
+        html: buildClientHtml({ proposal, items, proposalUrl, acceptUrl }),
+        fromName: 'PEYU Chile',
+      });
+      clientSent = true;
     }
 
-    // Notificación interna al equipo comercial (no bloquea al cliente si falla)
+    // Notificación interna detallada al equipo comercial (best-effort).
     try {
-      await postResend({
-        from: clientSent ? FROM_VERIFIED : FROM_SANDBOX,
+      await sendViaGmail(accessToken, {
         to: TEAM_INBOX,
         subject: `[Nueva propuesta] ${proposal.numero} · ${proposal.empresa} · ${fmtCLP(proposal.total)}`,
         html: buildInternalHtml({ proposal, items, form: form || { contact_name: proposal.contacto, company_name: proposal.empresa, email: proposal.email } }),
+        fromName: 'PEYU · Propuestas',
       });
     } catch (e) {
       console.warn('Email interno falló (no bloquea al cliente):', e?.message);
@@ -265,7 +277,7 @@ Deno.serve(async (req) => {
     return Response.json({
       success: clientSent,
       sent_to: proposal.email,
-      domain_pending: domainPending,
+      cc: TEAM_INBOX,
     });
   } catch (error) {
     return Response.json({ error: error.message, stack: error.stack }, { status: 500 });
