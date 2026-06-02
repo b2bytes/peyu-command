@@ -57,6 +57,17 @@ export const getPersonalizacion = (p) =>
   p.personalizacion_v2 ||
   'Grabado láser de tu logo gratis desde 10 unidades. Empaque personalizado opcional.';
 
+// Precio B2B "desde": usa el tramo 10-49 (MOQ real de personalización = 10u).
+// NUNCA usar t2000_mas como "desde" (es engañoso, nadie parte en 2000u).
+// Devuelve { precio, label, ahorro } o null si no hay tabla.
+export const getB2BDesde = (tramos) => {
+  if (!tramos || typeof tramos !== 'object') return null;
+  const precio = tramos.t10_49 ?? tramos.unitario ?? null;
+  if (precio == null) return null;
+  const ahorro = tramos.t2000_mas && tramos.t2000_mas < precio ? tramos.t2000_mas : null;
+  return { precio, label: tramos.t10_49 != null ? '10-49 u' : '1 u', ahorro };
+};
+
 // Devuelve true si el producto tiene tabla B2B válida.
 export const hasB2B = (p) =>
   p.precio_b2b_tramos && typeof p.precio_b2b_tramos === 'object' &&

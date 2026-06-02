@@ -53,7 +53,7 @@ export default function CardProductDetail({ data, onClose }) {
   }, [onClose]);
 
   return (
-    <div className="fixed inset-0 z-[120] flex justify-end" role="dialog" aria-modal="true">
+    <div className="fixed inset-0 z-[120] flex justify-end items-stretch max-md:items-end max-md:justify-center" role="dialog" aria-modal="true">
       <div className="v2-drawer-backdrop" onClick={onClose} />
       <div className="v2-detail-sheet v2-scroll" data-v2-detail>
         {/* Header sticky */}

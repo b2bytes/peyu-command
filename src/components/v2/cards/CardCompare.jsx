@@ -1,4 +1,4 @@
-import { formatCLP } from '@/lib/v2-catalog';
+import { formatCLP, getB2BDesde } from '@/lib/v2-catalog';
 
 // Tabla de comparación lado a lado de 2-3 productos, en el río del chat.
 export default function CardCompare({ data, perfil, onPick }) {
@@ -7,8 +7,8 @@ export default function CardCompare({ data, perfil, onPick }) {
 
   const precioDe = (p) => {
     if (perfil === 'b2b') {
-      const t = p.precio_b2b_tramos || {};
-      return `Desde ${formatCLP(t.t2000_mas || t.t1000_1999 || t.unitario)} c/u`;
+      const d = getB2BDesde(p.precio_b2b_tramos);
+      return d ? `Desde ${formatCLP(d.precio)} c/u + IVA (${d.label})` : '—';
     }
     return formatCLP(p.precio_b2c);
   };

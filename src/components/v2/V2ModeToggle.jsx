@@ -7,18 +7,18 @@ export default function V2ModeToggle({ mode, onChange }) {
       <button
         data-active={mode === 'b2c'}
         onClick={() => onChange('b2c')}
-        className="v2-segment-btn flex items-center gap-1.5 px-4 h-9 text-xs"
+        className="v2-segment-btn flex items-center justify-center gap-1.5 px-3 sm:px-4 h-9 text-xs"
       >
         <User className="w-3.5 h-3.5" />
-        Personal
+        <span className="hidden sm:inline">Personal</span>
       </button>
       <button
         data-active={mode === 'b2b'}
         onClick={() => onChange('b2b')}
-        className="v2-segment-btn flex items-center gap-1.5 px-4 h-9 text-xs"
+        className="v2-segment-btn flex items-center justify-center gap-1.5 px-3 sm:px-4 h-9 text-xs"
       >
         <Building2 className="w-3.5 h-3.5" />
-        Empresa
+        <span className="hidden sm:inline">Empresa</span>
       </button>
     </div>
   );

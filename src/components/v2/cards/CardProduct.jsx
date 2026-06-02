@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Leaf, ShoppingCart, MessageCircle, Check, Eye } from 'lucide-react';
-import { formatCLP } from '@/lib/v2-catalog';
+import { formatCLP, getB2BDesde } from '@/lib/v2-catalog';
 import CardProductDetail from './CardProductDetail';
 
 const COLORES = ['Azul', 'Negro', 'Rojo', 'Verde'];
@@ -13,8 +13,7 @@ export default function CardProduct({ data, perfil, onAddCart, onQuote }) {
   const [color, setColor] = useState(colores[0]);
   const [added, setAdded] = useState(false);
   const [showDetail, setShowDetail] = useState(false);
-  const tramos = p.precio_b2b_tramos || {};
-  const desdeB2B = tramos.t2000_mas || tramos.t1000_1999 || tramos.unitario;
+  const desde = getB2BDesde(p.precio_b2b_tramos);
 
   const handleAdd = () => {
     onAddCart?.(p, color);
@@ -57,8 +56,11 @@ export default function CardProduct({ data, perfil, onAddCart, onQuote }) {
           {perfil === 'b2b' ? (
             <div className="mb-3">
               <span className="text-[11px]" style={{ color: 'var(--v2-fg-muted)' }}>Desde</span>
-              <span className="text-xl font-bold ml-1.5" style={{ color: 'var(--v2-teal)' }}>{formatCLP(desdeB2B)}</span>
-              <span className="text-[11px] ml-1.5" style={{ color: 'var(--v2-fg-subtle)' }}>c/u · sin IVA</span>
+              <span className="text-xl font-bold ml-1.5" style={{ color: 'var(--v2-teal)' }}>{formatCLP(desde?.precio)}</span>
+              <span className="text-[11px] ml-1.5" style={{ color: 'var(--v2-fg-subtle)' }}>c/u + IVA · ({desde?.label})</span>
+              {desde?.ahorro && (
+                <p className="text-[10px] mt-0.5" style={{ color: 'var(--v2-fg-subtle)' }}>hasta {formatCLP(desde.ahorro)} c/u en 2.000+</p>
+              )}
               {p.personalizacion_v2 && (
                 <p className="text-[11px] mt-1.5" style={{ color: 'var(--v2-fg-soft)' }}>✦ {p.personalizacion_v2}</p>
               )}

@@ -351,6 +351,44 @@
   animation: v2SlideR 0.3s cubic-bezier(0.22,1,0.36,1);
 }
 
+/* ═══════════════════════════════════════════════════════════════
+   MÓVIL <768px — auditoría y fix profundo
+   - Sin backdrop-filter (glitches GPU en móvil): fondos sólidos.
+   - Tap targets ≥44px (HIG Apple).
+   - Detalle de producto = bottom-sheet a pantalla casi completa.
+   - Sin scroll horizontal accidental.
+   ═══════════════════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+  /* Anti scroll horizontal de toda la página */
+  .v2-root { overflow-x: hidden; max-width: 100vw; }
+
+  /* Matar blur en móvil → fondos sólidos (evita glitches de render GPU) */
+  .v2-glass, .v2-btn-ghost, .v2-input, .v2-segment, .v2-chip, .v2-panel {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+  .v2-glass, .v2-btn-ghost, .v2-input, .v2-segment, .v2-panel { background: var(--v2-surface); }
+  .v2-drawer-backdrop { backdrop-filter: none !important; -webkit-backdrop-filter: none !important; background: rgba(10,7,14,0.66); }
+
+  /* Tap targets cómodos: chips y botones redondos del header */
+  .v2-chip { min-height: 44px; display: inline-flex; align-items: center; }
+  .v2-segment-btn { min-height: 38px; }
+
+  /* Drawer lateral más ancho y cómodo en móvil */
+  .v2-drawer { width: min(90vw, 360px); }
+
+  /* Ficha de detalle → BOTTOM-SHEET (sube desde abajo, casi pantalla completa) */
+  .v2-detail-sheet {
+    width: 100vw; height: 92svh;
+    margin-top: auto;                 /* se ancla abajo */
+    border-left: none;
+    border-top: 1px solid var(--v2-glass-border);
+    border-radius: 22px 22px 0 0;
+    animation: v2SlideUp 0.3s cubic-bezier(0.22,1,0.36,1);
+  }
+}
+@keyframes v2SlideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+
 @media (prefers-reduced-motion: reduce) {
   .v2-fade-up, .v2-card, .v2-mini-card, .v2-skeleton, .v2-drawer, .v2-drawer-backdrop, .v2-detail-sheet {
     animation: none !important; transition: none !important;

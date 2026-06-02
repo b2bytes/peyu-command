@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Leaf, Plus, Check, ShieldCheck, Sparkles } from 'lucide-react';
-import { formatCLP } from '@/lib/v2-catalog';
+import { formatCLP, getB2BDesde } from '@/lib/v2-catalog';
 
 // Grilla DENSA de productos dentro del río del chat (2-3 columnas).
 // Muestra hasta `initial` y permite "cargar +". Cada mini-card tiene quick-add.
@@ -23,8 +23,7 @@ export default function CardProductGrid({ data, perfil, onPick, onAddCart }) {
     <div className="v2-fade-up w-full max-w-[760px]">
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
         {shown.map((p) => {
-          const tramos = p.precio_b2b_tramos || {};
-          const desdeB2B = tramos.t2000_mas || tramos.t1000_1999 || tramos.unitario;
+          const desde = getB2BDesde(p.precio_b2b_tramos);
           return (
             <button key={p.id || p.sku} onClick={() => onPick?.(p)} className="v2-mini-card text-left flex flex-col">
               <div className="relative aspect-square overflow-hidden" style={{ background: 'var(--v2-surface-2)' }}>
@@ -52,8 +51,11 @@ export default function CardProductGrid({ data, perfil, onPick, onAddCart }) {
                   <span title="Garantía 10 años"><ShieldCheck className="w-3 h-3" style={{ color: 'var(--v2-teal)' }} /></span>
                 </div>
                 <p className="text-sm font-bold mt-auto pt-1.5" style={{ color: perfil === 'b2b' ? 'var(--v2-teal)' : 'var(--v2-gold)' }}>
-                  {perfil === 'b2b' ? `Desde ${formatCLP(desdeB2B)}` : formatCLP(p.precio_b2c)}
+                  {perfil === 'b2b' ? `Desde ${formatCLP(desde?.precio)}` : formatCLP(p.precio_b2c)}
                 </p>
+                {perfil === 'b2b' && desde && (
+                  <span className="text-[9px] -mt-0.5" style={{ color: 'var(--v2-fg-subtle)' }}>c/u + IVA · {desde.label}</span>
+                )}
               </div>
             </button>
           );
