@@ -95,33 +95,34 @@ export default function SelfServiceProductCard({ producto, inCart, onAdd, onUpda
             )}
           </div>
 
-          {/* Acciones — cambia entre "Agregar" y controles +/− cuando está en carrito */}
+          {/* Acciones — cambia entre "Agregar" y controles +/− cuando está en carrito.
+              Tap targets ≥44px de alto (HIG) para uso cómodo en móvil. */}
           {!inCart ? (
             <button
               onClick={() => onAdd(producto)}
-              className="inline-flex items-center gap-1 bg-gradient-to-br from-teal-400 to-cyan-500 hover:from-teal-500 hover:to-cyan-600 active:from-teal-600 active:to-cyan-700 text-white text-xs font-bold px-3.5 py-2.5 rounded-xl shadow-lg shadow-teal-500/30 transition-all hover:shadow-teal-500/50 hover:scale-105 active:scale-95"
+              className="inline-flex items-center gap-1 bg-gradient-to-br from-teal-400 to-cyan-500 hover:from-teal-500 hover:to-cyan-600 active:from-teal-600 active:to-cyan-700 text-white text-xs font-bold px-4 h-11 rounded-xl shadow-lg shadow-teal-500/30 transition-all hover:shadow-teal-500/50 hover:scale-105 active:scale-95 flex-shrink-0"
             >
-              <Plus className="w-3.5 h-3.5" />
+              <Plus className="w-4 h-4" />
               Agregar
             </button>
           ) : (
-            <div className="flex items-center bg-teal-500/20 border border-teal-400/40 rounded-xl overflow-hidden">
+            <div className="flex items-center bg-teal-500/20 border border-teal-400/40 rounded-xl overflow-hidden flex-shrink-0">
               <button
                 onClick={() => cantidad <= 10 ? onRemove(producto.id) : onUpdateQty(producto.id, -10)}
-                className="w-8 h-9 flex items-center justify-center text-white hover:bg-teal-500/30 active:bg-teal-500/40 transition"
+                className="w-10 h-11 flex items-center justify-center text-white hover:bg-teal-500/30 active:bg-teal-500/40 transition"
                 aria-label="Restar 10"
               >
-                <Minus className="w-3.5 h-3.5" />
+                <Minus className="w-4 h-4" />
               </button>
-              <span className="px-2 text-sm font-bold text-white tabular-nums min-w-[2rem] text-center">
+              <span className="px-1 text-sm font-bold text-white tabular-nums min-w-[2.25rem] text-center">
                 {cantidad}
               </span>
               <button
                 onClick={() => onUpdateQty(producto.id, 10)}
-                className="w-8 h-9 flex items-center justify-center text-white hover:bg-teal-500/30 active:bg-teal-500/40 transition"
+                className="w-10 h-11 flex items-center justify-center text-white hover:bg-teal-500/30 active:bg-teal-500/40 transition"
                 aria-label="Sumar 10"
               >
-                <Plus className="w-3.5 h-3.5" />
+                <Plus className="w-4 h-4" />
               </button>
             </div>
           )}

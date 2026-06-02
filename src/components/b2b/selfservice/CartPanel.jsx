@@ -1,4 +1,4 @@
-import { Package, Trash2, ShoppingBag, Sparkles } from 'lucide-react';
+import { Package, Trash2, ShoppingBag, Sparkles, ArrowRight } from 'lucide-react';
 import { getProductImage } from '@/utils/productImages';
 
 /**
@@ -13,8 +13,9 @@ import { getProductImage } from '@/utils/productImages';
  *  • Precio unitario chiquito debajo del total → contexto sin ruido.
  *  • Botón "eliminar" siempre visible en mobile (no on-hover) para tap targets HIG.
  */
-export default function CartPanel({ cart, calcPrice, updateQty, setQty, removeFromCart, subtotalEstimado, compact = false }) {
+export default function CartPanel({ cart, calcPrice, updateQty, setQty, removeFromCart, subtotalEstimado, compact = false, onContinue, continueLabel = 'Generar cotización' }) {
   const totalUnidades = cart.reduce((s, c) => s + c.cantidad, 0);
+  const vacio = cart.length === 0;
 
   return (
     <div className={compact ? '' : 'bg-gradient-to-br from-white/[0.08] to-white/[0.03] border border-white/15 rounded-3xl p-4 backdrop-blur-xl shadow-2xl shadow-black/20'}>
@@ -26,7 +27,11 @@ export default function CartPanel({ cart, calcPrice, updateQty, setQty, removeFr
             </div>
             <div>
               <h3 className="font-poppins font-bold text-white text-sm leading-none">Tu pedido</h3>
-              <p className="text-[10px] text-white/50 mt-0.5">{cart.length} {cart.length === 1 ? 'producto' : 'productos'} · {totalUnidades} u.</p>
+              {/* Contador visible: X productos · Y unidades · Subtotal */}
+              <p className="text-[10px] text-white/50 mt-0.5 tabular-nums">
+                {cart.length} {cart.length === 1 ? 'producto' : 'productos'} · {totalUnidades} u.
+                {!vacio && <span className="text-teal-300 font-semibold"> · ${subtotalEstimado.toLocaleString('es-CL')}</span>}
+              </p>
             </div>
           </div>
         </div>
@@ -130,6 +135,24 @@ export default function CartPanel({ cart, calcPrice, updateQty, setQty, removeFr
             </div>
           </div>
         </div>
+      )}
+
+      {/* Botón de avanzar SIEMPRE visible al fondo del panel sticky (desktop) */}
+      {onContinue && (
+        <button
+          onClick={onContinue}
+          disabled={vacio}
+          className="mt-3 w-full h-12 rounded-xl bg-gradient-to-br from-teal-400 to-cyan-500 hover:from-teal-500 hover:to-cyan-600 active:from-teal-600 active:to-cyan-700 text-white font-bold text-sm flex items-center justify-center gap-2 shadow-lg shadow-teal-500/30 hover:shadow-teal-500/50 transition-all disabled:opacity-40 disabled:shadow-none disabled:cursor-not-allowed"
+        >
+          {vacio ? (
+            'Agrega productos para cotizar'
+          ) : (
+            <>
+              <span>{continueLabel}</span>
+              <ArrowRight className="w-4 h-4" />
+            </>
+          )}
+        </button>
       )}
     </div>
   );

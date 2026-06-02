@@ -17,6 +17,7 @@ import CrossSellCarousel from '@/components/b2b/selfservice/CrossSellCarousel';
 import PhoneCountryInput from '@/components/b2b/selfservice/PhoneCountryInput';
 import EngravingPositionPicker from '@/components/producto/EngravingPositionPicker';
 import DeliveryMethodPicker from '@/components/b2b/selfservice/DeliveryMethodPicker';
+import MobileOrderBar from '@/components/b2b/selfservice/MobileOrderBar';
 
 const STEPS = ['Productos', 'Empresa', 'Personalización', 'Propuesta'];
 const PERSIST_KEY = 'peyu_b2b_flow';
@@ -368,19 +369,6 @@ export default function B2BSelfService() {
           </div>
         </div>
 
-        {/* Botón carrito (solo móvil, steps 0-2) */}
-        {step === 0 && cart.length > 0 && (
-          <button
-            onClick={() => setCartOpen(true)}
-            className="lg:hidden relative flex items-center gap-2 bg-gradient-to-br from-teal-400 to-cyan-500 hover:from-teal-500 hover:to-cyan-600 active:from-teal-600 active:to-cyan-700 text-white text-xs font-bold px-3.5 py-2.5 rounded-xl shadow-xl shadow-teal-500/40 transition-all"
-          >
-            <ShoppingBag className="w-4 h-4" />
-            <span className="tabular-nums">{cart.length}</span>
-            <span className="absolute -top-1.5 -right-1.5 bg-amber-400 text-amber-950 text-[10px] font-extrabold min-w-[20px] h-5 px-1 rounded-full flex items-center justify-center border-2 border-slate-900 tabular-nums">
-              {cart.reduce((s, c) => s + c.cantidad, 0)}
-            </span>
-          </button>
-        )}
       </div>
 
       <div className="max-w-6xl mx-auto px-3 sm:px-6 py-4 sm:py-6 space-y-5">
@@ -406,8 +394,8 @@ export default function B2BSelfService() {
               </div>
             </div>
 
-            {/* Filtro categoría — chips premium */}
-            <div className="flex gap-2 overflow-x-auto pb-1 -mx-3 px-3 sm:mx-0 sm:px-0 scrollbar-hide">
+            {/* Filtro categoría — chips premium · scroll horizontal sticky bajo el header en móvil */}
+            <div className="flex gap-2 overflow-x-auto pb-2 pt-1 -mx-3 px-3 sm:mx-0 sm:px-0 scrollbar-hide sticky top-[60px] z-30 lg:static ld-glass-strong lg:bg-transparent lg:backdrop-blur-none rounded-none lg:rounded-none">
               {categorias.map(cat => {
                 const active = filtroCategoria === cat;
                 return (
@@ -464,7 +452,7 @@ export default function B2BSelfService() {
                 )}
               </div>
 
-              {/* Carrito — solo desktop (sidebar sticky) */}
+              {/* Carrito — solo desktop (sidebar sticky con botón de avanzar integrado) */}
               <div className="hidden lg:block sticky top-24 self-start">
                 <CartPanel
                   cart={cart}
@@ -473,6 +461,8 @@ export default function B2BSelfService() {
                   setQty={setQty}
                   removeFromCart={removeFromCart}
                   subtotalEstimado={subtotalEstimado}
+                  onContinue={() => setStep(1)}
+                  continueLabel="Continuar"
                 />
               </div>
             </div>
@@ -731,7 +721,7 @@ export default function B2BSelfService() {
               )}
             </div>
 
-            {/* Resumen pedido (sticky desktop) */}
+            {/* Resumen pedido (sticky desktop) — botón Generar cotización integrado */}
             <div className="hidden lg:block sticky top-24 self-start">
               <CartPanel
                 cart={cart}
@@ -740,6 +730,8 @@ export default function B2BSelfService() {
                 setQty={setQty}
                 removeFromCart={removeFromCart}
                 subtotalEstimado={subtotalEstimado}
+                onContinue={handleGenerar}
+                continueLabel={generando ? 'Generando…' : 'Generar cotización'}
               />
             </div>
           </div>
@@ -861,10 +853,11 @@ export default function B2BSelfService() {
           </div>
         )}
 
-        {/* Footer nav — sticky en móvil, glass premium */}
+        {/* Footer nav — sticky en móvil, glass premium.
+            En STEP 0 móvil se OCULTA: la bottom bar fija (MobileOrderBar) maneja el avance. */}
         {step < 3 && (
           <div
-            className="lg:relative fixed bottom-0 inset-x-0 lg:inset-auto bg-slate-900/90 lg:bg-transparent backdrop-blur-2xl lg:backdrop-blur-none border-t lg:border-t border-white/15 lg:border-white/10 px-3 lg:px-0 py-3 lg:pt-4 z-30 shadow-[0_-8px_24px_-8px_rgba(0,0,0,0.4)] lg:shadow-none"
+            className={`lg:relative fixed bottom-0 inset-x-0 lg:inset-auto bg-slate-900/90 lg:bg-transparent backdrop-blur-2xl lg:backdrop-blur-none border-t lg:border-t border-white/15 lg:border-white/10 px-3 lg:px-0 py-3 lg:pt-4 z-30 shadow-[0_-8px_24px_-8px_rgba(0,0,0,0.4)] lg:shadow-none ${step === 0 ? 'hidden lg:block' : ''}`}
             style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 0.75rem)' }}
           >
             <div className="flex items-center justify-between gap-2 sm:gap-3 max-w-6xl mx-auto">
@@ -909,6 +902,15 @@ export default function B2BSelfService() {
           </div>
         )}
       </div>
+
+      {/* Bottom bar fija (solo móvil, step 0) — siempre visible con subtotal */}
+      {step === 0 && (
+        <MobileOrderBar
+          cart={cart}
+          subtotalEstimado={subtotalEstimado}
+          onOpen={() => setCartOpen(true)}
+        />
+      )}
 
       {/* Drawer del carrito (solo móvil) — premium glass */}
       {cartOpen && (
@@ -961,9 +963,9 @@ export default function B2BSelfService() {
               >
                 <Button
                   onClick={() => { setCartOpen(false); setStep(1); }}
-                  className="w-full h-13 rounded-xl bg-gradient-to-br from-teal-400 to-cyan-500 hover:from-teal-500 hover:to-cyan-600 text-white font-bold gap-2 h-12 shadow-lg shadow-teal-500/30"
+                  className="w-full rounded-xl bg-gradient-to-br from-teal-400 to-cyan-500 hover:from-teal-500 hover:to-cyan-600 text-white font-bold gap-2 h-14 text-base shadow-lg shadow-teal-500/30"
                 >
-                  Continuar con {cart.length} producto{cart.length > 1 ? 's' : ''}
+                  Generar cotización · {cart.length} producto{cart.length > 1 ? 's' : ''}
                   <ArrowRight className="w-4 h-4" />
                 </Button>
               </div>
