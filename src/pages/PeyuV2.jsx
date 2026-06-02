@@ -3,6 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { Link } from 'react-router-dom';
 import '@/styles/v2-warm-dusk.css';
 import V2ModeToggle from '@/components/v2/V2ModeToggle';
+import V2ThemeToggle from '@/components/v2/V2ThemeToggle';
 import V2CardDispatcher from '@/components/v2/V2CardDispatcher';
 import V2NavPanel from '@/components/v2/panels/V2NavPanel';
 import V2ContextPanel from '@/components/v2/panels/V2ContextPanel';
@@ -44,6 +45,14 @@ function getOrCreateId(key, prefix) {
 
 export default function PeyuV2() {
   const [mode, setMode] = useState('b2c');
+  // Tema claro/oscuro de /v2. Default: oscuro (Warm Dusk). Persistido.
+  const [theme, setTheme] = useState(() => {
+    try { return localStorage.getItem('peyu_v2_theme') === 'light' ? 'light' : 'dark'; } catch { return 'dark'; }
+  });
+  const handleThemeChange = useCallback((t) => {
+    setTheme(t);
+    try { localStorage.setItem('peyu_v2_theme', t); } catch { /* noop */ }
+  }, []);
   const [messages, setMessages] = useState([WELCOME]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -337,7 +346,7 @@ export default function PeyuV2() {
   ), [messages, loading, mode]);
 
   return (
-    <div className="v2-root flex flex-col h-screen overflow-hidden" style={{ height: '100svh' }}>
+    <div className="v2-root flex flex-col h-screen overflow-hidden" data-v2-theme={theme} style={{ height: '100svh' }}>
       {/* ─── Barra superior ─── */}
       <header className="flex-shrink-0 px-4 py-3 flex items-center justify-between gap-3" style={{ borderBottom: '1px solid var(--v2-border)' }}>
         <div className="flex items-center gap-2 flex-shrink-0">
@@ -366,6 +375,7 @@ export default function PeyuV2() {
               <span className="hidden sm:inline">{space === 'conversaciones' ? 'Volver al chat' : 'Conversaciones'}</span>
             </button>
           )}
+          <V2ThemeToggle theme={theme} onChange={handleThemeChange} />
           <V2ModeToggle mode={mode} onChange={setMode} />
           {/* Carrito: en desktop vive en panel der; aquí badge + drawer en móvil */}
           <button onClick={() => setCtxOpen(true)} className="lg:hidden relative v2-btn-ghost w-9 h-9 flex items-center justify-center">

@@ -57,6 +57,60 @@
   -webkit-font-smoothing: antialiased;
 }
 
+/* ───────────────────────────────────────────────────────────────────
+   TEMA CLARO · Warm Dusk OS (light) — derivado de la BrandDirection activa.
+   Se activa con [data-v2-theme="light"] en .v2-root. El default (sin
+   atributo o ="dark") mantiene la paleta oscura de arriba intacta.
+   Solo redefine tokens de color/superficie/sombra; radios y tipografía
+   se heredan para conservar la identidad de la marca.
+   ─────────────────────────────────────────────────────────────────── */
+.v2-root[data-v2-theme="light"] {
+  --v2-bg:            #F7F4F2;
+  --v2-bg-deep:       #EFE9E5;
+  --v2-surface:       #FFFFFF;
+  --v2-surface-2:     #F3EEEA;
+  --v2-glass:         rgba(255, 255, 255, 0.72);
+  --v2-glass-border:  rgba(34, 28, 31, 0.10);
+
+  /* Acentos ajustados para contraste sobre fondo claro */
+  --v2-terracota:     #C25A45;
+  --v2-terracota-soft:rgba(194, 90, 69, 0.12);
+  --v2-gold:          #B6864A;
+  --v2-gold-soft:     rgba(182, 134, 74, 0.14);
+  --v2-teal:          #0F8B6C;
+  --v2-teal-soft:     rgba(15, 139, 108, 0.12);
+
+  /* Texto */
+  --v2-fg:            #221C1F;
+  --v2-fg-soft:       #3F363B;
+  --v2-fg-muted:      #6E636A;
+  --v2-fg-subtle:     #9A8E94;
+
+  /* Bordes / sombras / glows */
+  --v2-border:        rgba(34, 28, 31, 0.08);
+  --v2-border-strong: rgba(34, 28, 31, 0.18);
+  --v2-shadow-sm:     0 1px 2px rgba(34,28,31,0.06);
+  --v2-shadow-md:     0 12px 32px -14px rgba(34,28,31,0.18);
+  --v2-shadow-lg:     0 28px 64px -22px rgba(34,28,31,0.22);
+  --v2-glow-gold:     0 0 40px -10px rgba(182,134,74,0.20);
+  --v2-glow-teal:     0 0 40px -10px rgba(15,139,108,0.18);
+
+  /* Gradientes ambientales (versión luminosa) */
+  --v2-grad-canvas:   radial-gradient(120% 90% at 100% 0%, #FBF7F3 0%, #F7F4F2 40%, #EFE9E5 100%);
+  --v2-grad-action:   linear-gradient(135deg, #C25A45 0%, #A8543A 100%);
+  --v2-grad-gold:     linear-gradient(135deg, #D8B27A 0%, #B6864A 100%);
+}
+
+/* En modo claro, los botones dorados llevan texto oscuro para legibilidad */
+.v2-root[data-v2-theme="light"] .v2-btn-gold,
+.v2-root[data-v2-theme="light"] .v2-segment-btn[data-active="true"] { color: #2a1f2b; }
+
+/* Skeleton shimmer: en claro usamos tinte oscuro en vez de blanco */
+.v2-root[data-v2-theme="light"] .v2-skeleton {
+  background: linear-gradient(90deg, rgba(34,28,31,0.04) 0%, rgba(34,28,31,0.09) 50%, rgba(34,28,31,0.04) 100%);
+  background-size: 200% 100%;
+}
+
 .v2-root *::selection { background: var(--v2-gold-soft); color: var(--v2-fg); }
 
 /* ─── Tipografía ─── */
