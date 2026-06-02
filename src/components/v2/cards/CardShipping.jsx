@@ -1,8 +1,8 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import { Truck, MapPin, ArrowRight, User, Mail, Phone } from 'lucide-react';
 import { REGIONES_CHILE, getComunasByRegion } from '@/lib/chile-regiones';
 import { readCart } from '@/lib/v2-cart';
-import { readCheckout, mergeCheckout } from '@/lib/v2-checkout-store';
+import { readCheckout, writeCheckout } from '@/lib/v2-checkout-store';
 import ShippingSelector from '@/components/cart/ShippingSelector';
 
 // Card conversacional de datos de envío. Cálido, NO formulario frío.
@@ -11,30 +11,45 @@ import ShippingSelector from '@/components/cart/ShippingSelector';
 // Pre-llena con datos ya capturados en la conversación (prefill).
 // Reusa ShippingSelector → cotización Bluex REAL por comuna y peso del carrito.
 export default function CardShipping({ data, onContinue }) {
-  const prefill = data?.prefill || {};
-  // Rehidratamos: localStorage manda, y rellenamos vacíos con el prefill del chat.
+  // Init UNA sola vez (lazy): localStorage manda, prefill rellena vacíos.
+  // prefill se lee SOLO en el primer montaje vía ref, para que cambios de
+  // identidad del objeto `data.prefill` en re-renders NUNCA pisen lo escrito.
+  const prefillRef = useRef(data?.prefill || {});
   const [cliente, setCliente] = useState(() => {
     const saved = readCheckout();
+    const pf = prefillRef.current;
     return {
-      nombre: saved.nombre || prefill.nombre || '',
-      email: saved.email || prefill.email || '',
-      telefono: saved.telefono || prefill.telefono || '',
-      region: saved.region || prefill.region || '',
-      ciudad: saved.ciudad || prefill.ciudad || '',
-      direccion: saved.direccion || prefill.direccion || '',
-      referencia: saved.referencia || prefill.referencia || '',
+      nombre: saved.nombre || pf.nombre || '',
+      email: saved.email || pf.email || '',
+      telefono: saved.telefono || pf.telefono || '',
+      region: saved.region || pf.region || '',
+      ciudad: saved.ciudad || pf.ciudad || '',
+      direccion: saved.direccion || pf.direccion || '',
+      referencia: saved.referencia || pf.referencia || '',
     };
   });
   const [envioBluex, setEnvioBluex] = useState(null);
   const [error, setError] = useState(null);
 
-  const carrito = readCart();
-  const subtotal = carrito.reduce((s, i) => s + (i.precio || 0) * (i.cantidad || 1), 0);
+  // Persistencia como EFECTO (no dentro del updater de setState). Esto evita
+  // efectos secundarios en renders dobles y garantiza que cada estado válido
+  // se guarde sin pisar nada. Cambiar región/comuna NO borra los textos.
+  useEffect(() => { writeCheckout(cliente); }, [cliente]);
+
+  // Carro snapshot al montar (no cambia durante el checkout). Memoizado para
+  // que `items` mantenga identidad estable y ShippingSelector no recotice en loop.
+  const carrito = useMemo(() => readCart(), []);
+  const subtotal = useMemo(() => carrito.reduce((s, i) => s + (i.precio || 0) * (i.cantidad || 1), 0), [carrito]);
+  const shippingItems = useMemo(
+    () => carrito.map((i) => ({ productoId: i.productoId, cantidad: i.cantidad, nombre: i.nombre })),
+    [carrito],
+  );
   const comunas = useMemo(() => getComunasByRegion(cliente.region), [cliente.region]);
 
-  // Cada cambio actualiza estado Y persiste en localStorage (no se pierde nunca).
-  const set = (k, v) => {
-    setCliente((c) => { const next = { ...c, [k]: v }; mergeCheckout(next); return next; });
+  // set puro: SOLO actualiza el estado de React (updater funcional). La
+  // persistencia la hace el useEffect de arriba. Soporta patch multi-campo.
+  const set = (patch) => {
+    setCliente((c) => ({ ...c, ...patch }));
     setError(null);
   };
 
@@ -49,7 +64,7 @@ export default function CardShipping({ data, onContinue }) {
     if (!cliente.ciudad) return setError('Elige tu comuna.');
     if (cliente.direccion.trim().length < 5) return setError('Necesito tu dirección completa.');
     if (!envioBluex) return setError('Selecciona una forma de envío.');
-    mergeCheckout(cliente); // persistimos el set completo antes de ir al pago
+    writeCheckout(cliente); // persistimos el set completo antes de ir al pago
     onContinue?.({ cliente, envioBluex });
   };
 
@@ -66,29 +81,29 @@ export default function CardShipping({ data, onContinue }) {
       <div className="grid grid-cols-1 gap-2.5">
         <div>
           <p className={labelCls} style={{ color: 'var(--v2-fg-subtle)' }}><User className="w-3 h-3" /> Nombre</p>
-          <input value={cliente.nombre} onChange={(e) => set('nombre', e.target.value)} placeholder="Tu nombre" className={inputCls} style={{ color: 'var(--v2-fg)' }} />
+          <input value={cliente.nombre} onChange={(e) => set({ nombre: e.target.value })} placeholder="Tu nombre" className={inputCls} style={{ color: 'var(--v2-fg)' }} />
         </div>
         <div className="grid grid-cols-2 gap-2.5">
           <div>
             <p className={labelCls} style={{ color: 'var(--v2-fg-subtle)' }}><Mail className="w-3 h-3" /> Email</p>
-            <input value={cliente.email} onChange={(e) => set('email', e.target.value)} placeholder="tu@email.cl" className={inputCls} style={{ color: 'var(--v2-fg)' }} />
+            <input value={cliente.email} onChange={(e) => set({ email: e.target.value })} placeholder="tu@email.cl" className={inputCls} style={{ color: 'var(--v2-fg)' }} />
           </div>
           <div>
             <p className={labelCls} style={{ color: 'var(--v2-fg-subtle)' }}><Phone className="w-3 h-3" /> Teléfono</p>
-            <input value={cliente.telefono} onChange={(e) => set('telefono', e.target.value)} placeholder="+56 9 ..." className={inputCls} style={{ color: 'var(--v2-fg)' }} />
+            <input value={cliente.telefono} onChange={(e) => set({ telefono: e.target.value })} placeholder="+56 9 ..." className={inputCls} style={{ color: 'var(--v2-fg)' }} />
           </div>
         </div>
         <div className="grid grid-cols-2 gap-2.5">
           <div>
             <p className={labelCls} style={{ color: 'var(--v2-fg-subtle)' }}><MapPin className="w-3 h-3" /> Región</p>
-            <select value={cliente.region} onChange={(e) => { set('region', e.target.value); set('ciudad', ''); }} className={inputCls} style={{ color: 'var(--v2-fg)' }}>
+            <select value={cliente.region} onChange={(e) => set({ region: e.target.value, ciudad: '' })} className={inputCls} style={{ color: 'var(--v2-fg)' }}>
               <option value="">Elige…</option>
               {REGIONES_CHILE.map((r) => <option key={r.codigo} value={r.nombre}>{r.nombre}</option>)}
             </select>
           </div>
           <div>
             <p className={labelCls} style={{ color: 'var(--v2-fg-subtle)' }}>Comuna</p>
-            <select value={cliente.ciudad} onChange={(e) => set('ciudad', e.target.value)} disabled={!cliente.region} className={inputCls} style={{ color: 'var(--v2-fg)' }}>
+            <select value={cliente.ciudad} onChange={(e) => set({ ciudad: e.target.value })} disabled={!cliente.region} className={inputCls} style={{ color: 'var(--v2-fg)' }}>
               <option value="">Elige…</option>
               {comunas.map((c) => <option key={c} value={c}>{c}</option>)}
             </select>
@@ -96,11 +111,11 @@ export default function CardShipping({ data, onContinue }) {
         </div>
         <div>
           <p className={labelCls} style={{ color: 'var(--v2-fg-subtle)' }}>Dirección</p>
-          <input value={cliente.direccion} onChange={(e) => set('direccion', e.target.value)} placeholder="Calle y número" className={inputCls} style={{ color: 'var(--v2-fg)' }} />
+          <input value={cliente.direccion} onChange={(e) => set({ direccion: e.target.value })} placeholder="Calle y número" className={inputCls} style={{ color: 'var(--v2-fg)' }} />
         </div>
         <div>
           <p className={labelCls} style={{ color: 'var(--v2-fg-subtle)' }}>Depto / oficina / referencia (opcional)</p>
-          <input value={cliente.referencia} onChange={(e) => set('referencia', e.target.value)} placeholder="Depto 42, timbre azul…" className={inputCls} style={{ color: 'var(--v2-fg)' }} />
+          <input value={cliente.referencia} onChange={(e) => set({ referencia: e.target.value })} placeholder="Depto 42, timbre azul…" className={inputCls} style={{ color: 'var(--v2-fg)' }} />
         </div>
       </div>
 
@@ -110,7 +125,7 @@ export default function CardShipping({ data, onContinue }) {
           <p className="text-[11px] font-semibold mb-2" style={{ color: 'var(--v2-fg-soft)' }}>Forma de envío · BlueExpress</p>
           <ShippingSelector
             variant="dark"
-            items={carrito.map((i) => ({ productoId: i.productoId, cantidad: i.cantidad, nombre: i.nombre }))}
+            items={shippingItems}
             comuna={cliente.ciudad}
             region={cliente.region}
             subtotal={subtotal}
