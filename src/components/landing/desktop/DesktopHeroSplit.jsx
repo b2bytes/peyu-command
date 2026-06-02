@@ -4,6 +4,7 @@ import { Sparkles, ArrowRight, Recycle, ShieldCheck, Award } from 'lucide-react'
 import HeroCelebrationStrip from './HeroCelebrationStrip';
 import { getActiveCelebration } from '@/lib/celebration-moments';
 import FathersDayQuoteModal from '@/components/landing/FathersDayQuoteModal';
+import { isCyberActive, CYBER_COPY } from '@/lib/cyber-campaign';
 
 /**
  * Hero Liquid Dual — desktop.
@@ -75,11 +76,18 @@ export default function DesktopHeroSplit({ onOpenChat }) {
           </span>
         </h2>
 
-        <p className={`leading-[1.55] mb-6 max-w-[520px] text-ld-fg-soft font-light ${
+        <p className={`leading-[1.55] mb-3 max-w-[520px] text-ld-fg-soft font-light ${
           celebration ? 'text-[13px] xl:text-[14px]' : 'text-base xl:text-[17px]'
         }`}>
           {paragraph}
         </p>
+
+        {/* Lema campaña Cyber — sutil, no reemplaza el mensaje de marca */}
+        {isCyberActive() && (
+          <p className="text-[13px] font-semibold mb-6 max-w-[520px]" style={{ color: 'var(--ld-highlight)' }}>
+            {CYBER_COPY.heroLine}
+          </p>
+        )}
 
         {/* CTAs duales */}
         <div className="flex flex-wrap gap-3 mb-7">

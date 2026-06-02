@@ -24,6 +24,7 @@ import SEO from '@/components/SEO';
 import { buildOrganizationSchema, buildProductSchema, buildBreadcrumbSchema, combineSchemas } from '@/lib/schemas-peyu';
 import { trackAddToCart } from '@/lib/analytics-peyu';
 import { track } from '@/lib/activity-tracker';
+import { isCyberActive, CYBER_COPY } from '@/lib/cyber-campaign';
 
 
 // Los colores ahora se extraen dinámicamente desde la descripción del producto
@@ -794,6 +795,11 @@ export default function ProductoDetalle() {
                     <Truck className="w-3.5 h-3.5 flex-shrink-0" />
                     Agrega ${(40000 - precioFinal * cantidad).toLocaleString('es-CL')} más para envío gratis
                   </div>
+                )}
+                {!isGiftCard && isCyberActive() && (
+                  <p className="text-[11px] font-medium flex items-center gap-1" style={{ color: 'var(--ld-highlight)' }}>
+                    {CYBER_COPY.microUrgency}
+                  </p>
                 )}
                 {(producto.precio_50_199 || producto.precio_base_b2b) && (
                   <button onClick={() => setShowB2BTable(!showB2BTable)}

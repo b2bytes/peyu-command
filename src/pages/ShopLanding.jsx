@@ -28,6 +28,10 @@ import DesktopCategorySection from '@/components/landing/desktop/DesktopCategory
 import DesktopTopSellers from '@/components/landing/desktop/DesktopTopSellers';
 import DesktopTrustFooter from '@/components/landing/desktop/DesktopTrustFooter';
 import DesktopChatWelcomeChips from '@/components/landing/desktop/DesktopChatWelcomeChips';
+import { isCyberActive, CYBER_COPY } from '@/lib/cyber-campaign';
+
+// Línea Cyber para inyectar UNA vez en el saludo (solo si la campaña está activa).
+const cyberGreetingLine = () => (isCyberActive() ? `\n\n${CYBER_COPY.greeting}` : '');
 
 // Limpia los bloques [CONTEXTO] y [BRAIN] inyectados al agente — no deben
 // verse en la UI. Usamos sanitizeUserMessage (que ya conoce todos los patrones)
@@ -54,7 +58,9 @@ const STORAGE_KEY = 'peyu_chat_conversation_id';
 
 // Saludo base (anónimo). Si el usuario está logueado, se personaliza con su
 // nombre al montar el componente (efecto useEffect que reemplaza el welcome).
-const WELCOME_MSG = {
+// Saludo base (anónimo). Se construye en runtime para inyectar la línea Cyber
+// solo mientras la campaña esté activa (flag CYBER_ENABLED + ventana).
+const getWelcome = () => ({
   role: 'assistant',
   content: [
     '¡Hola! 🐢 Soy Peyu, tu asistente para encontrar el regalo perfecto.',
@@ -62,13 +68,15 @@ const WELCOME_MSG = {
     'En PEYU diseñamos regalos sustentables: plástico 100% reciclado chileno en la mayoría de nuestros productos y fibra de trigo compostable en nuestras carcasas de teléfono. Con grabado láser personalizable y garantía de 10 años. 🌱',
     '',
     '¿Para quién buscas algo lindo hoy? ¿Es para una persona especial 🎁 o para tu equipo/empresa 💼?',
-  ].join('\n'),
-};
+  ].join('\n') + cyberGreetingLine(),
+});
+
+const WELCOME_MSG = getWelcome();
 
 const buildPersonalizedWelcome = (fullName) => {
   // Primer nombre solamente — más cálido que el nombre completo.
   const firstName = (fullName || '').trim().split(/\s+/)[0];
-  if (!firstName) return WELCOME_MSG;
+  if (!firstName) return getWelcome();
   return {
     role: 'assistant',
     content: [
@@ -77,7 +85,7 @@ const buildPersonalizedWelcome = (fullName) => {
       'Tengo ideas frescas — drops nuevos, packs corporativos y algunos best-sellers que se están yendo rápido. ✨',
       '',
       '¿Vienes por algo personal 🎁 o para tu equipo 💼?',
-    ].join('\n'),
+    ].join('\n') + cyberGreetingLine(),
   };
 };
 

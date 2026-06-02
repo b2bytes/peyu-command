@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { Sparkles, ArrowRight, MessageCircle } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { getLiquidPhase, subscribeLiquidMode } from '@/lib/liquid-dual';
+import { isCyberActive, CYBER_COPY } from '@/lib/cyber-campaign';
 
 const PHASE_GREETING = {
   dawn:  { hello: 'Buenos días',   sub: 'Empieza el día con propósito' },
@@ -52,9 +53,16 @@ export default function MobileHero({ onOpenChat }) {
             </span>
           </h1>
 
-          <p className="text-ld-fg-soft text-[13px] leading-snug mb-5 max-w-[92%] font-light">
+          <p className="text-ld-fg-soft text-[13px] leading-snug mb-2.5 max-w-[92%] font-light">
             Plástico 100% reciclado, grabado láser de regalo y diez años de garantía.
           </p>
+
+          {/* Lema campaña Cyber — sutil */}
+          {isCyberActive() && (
+            <p className="text-[12px] font-semibold mb-4" style={{ color: 'var(--ld-highlight)' }}>
+              {CYBER_COPY.heroLine}
+            </p>
+          )}
 
           {/* CTAs duales Liquid Dual */}
           <div className="flex flex-col gap-2">

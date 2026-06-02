@@ -14,7 +14,8 @@ import { getRecentViews, pushRecentView } from '@/lib/v2-recent';
 import { isV2Founder } from '@/lib/v2-founders';
 import { addToCart, computeCartTotals } from '@/lib/v2-cart';
 import { readCheckout, mergeCheckout } from '@/lib/v2-checkout-store';
-import { Send, ShoppingCart, Sparkles, SlidersHorizontal, MessagesSquare, ArrowLeft } from 'lucide-react';
+import { Send, ShoppingCart, Sparkles, SlidersHorizontal, MessagesSquare, ArrowLeft, X } from 'lucide-react';
+import { isCyberActive, CYBER_COPY } from '@/lib/cyber-campaign';
 
 const PEYU_LOGO = 'https://media.base44.com/images/public/6a1a158951bc398e16add415/86a2b4b89_image.png';
 
@@ -27,7 +28,8 @@ const QUICK_REPLIES = [
 
 const WELCOME = {
   role: 'assistant',
-  reply_text: '¡Hola! 🐢 Soy Peyu. Diseñamos regalos sustentables: plástico 100% reciclado chileno en maceteros, cachos y productos de oficina (y fibra de trigo compostable en nuestras carcasas), con garantía de 10 años.\n\n¿Buscas un regalo para alguien especial o algo para tu empresa?',
+  reply_text: '¡Hola! 🐢 Soy Peyu. Diseñamos regalos sustentables: plástico 100% reciclado chileno en maceteros, cachos y productos de oficina (y fibra de trigo compostable en nuestras carcasas), con garantía de 10 años.\n\n¿Buscas un regalo para alguien especial o algo para tu empresa?'
+    + (isCyberActive() ? `\n\n${CYBER_COPY.greeting}` : ''),
   cards: [{ type: 'onboarding', data: {} }],
 };
 
@@ -88,6 +90,15 @@ export default function PeyuV2() {
   // Espacio activo + gating founders (panel Conversaciones, solo lectura).
   const [space, setSpace] = useState('chat'); // 'chat' | 'conversaciones'
   const [isFounder, setIsFounder] = useState(false);
+
+  // Barra Cyber (cerrable, recordada en sesión).
+  const [cyberClosed, setCyberClosed] = useState(() => {
+    try { return sessionStorage.getItem('cyber_bar_closed') === '1'; } catch { return false; }
+  });
+  const closeCyber = () => {
+    setCyberClosed(true);
+    try { sessionStorage.setItem('cyber_bar_closed', '1'); } catch { /* noop */ }
+  };
 
   const endRef = useRef(null);
 
@@ -373,6 +384,18 @@ export default function PeyuV2() {
 
   return (
     <div className="v2-root flex flex-col h-screen overflow-hidden" data-v2-theme={theme} style={{ height: '100svh' }}>
+      {/* ─── Banda Cyber (sutil, cerrable) ─── */}
+      {isCyberActive() && !cyberClosed && (
+        <div
+          className="relative flex-shrink-0 text-center px-9 py-1.5 text-[11px] sm:text-xs font-semibold"
+          style={{ background: 'var(--v2-grad-gold)', color: '#2a1f2b', borderBottom: '1px solid var(--v2-border)' }}
+        >
+          {CYBER_COPY.bar}
+          <button onClick={closeCyber} aria-label="Cerrar anuncio" className="absolute right-2 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full flex items-center justify-center hover:bg-black/10 transition">
+            <X className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      )}
       {/* ─── Barra superior ─── */}
       <header className="flex-shrink-0 px-4 py-3 flex items-center justify-between gap-3" style={{ borderBottom: '1px solid var(--v2-border)' }}>
         <div className="flex items-center gap-2 flex-shrink-0">

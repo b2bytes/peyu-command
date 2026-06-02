@@ -2,6 +2,7 @@ import { memo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ShoppingCart, Check, Leaf, Recycle, Zap, ArrowRight } from 'lucide-react';
 import { getProductImage } from '@/utils/productImages';
+import CyberBadge from '@/components/cyber/CyberBadge';
 
 /**
  * Tarjeta de producto del Shop — diseño 2026 editorial Liquid Dual.
@@ -87,6 +88,7 @@ function ProductCard({ producto, onAddToCart, agregandoId, index = 0 }) {
           <span className="ld-glass-strong text-ld-fg text-[10px] font-bold px-2.5 py-1 rounded-full shadow-sm">
             {p.categoria}
           </span>
+          <CyberBadge producto={p} />
         </div>
 
         {/* ─── Stock bajo: indicador editorial urgencia (esquina sup. derecha) ─── */}

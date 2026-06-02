@@ -8,6 +8,7 @@ import PublicMobileNav from './PublicMobileNav';
 import PublicMobileHeader from './PublicMobileHeader';
 import PublicFooter from './PublicFooter';
 import LiquidDualToggle from './LiquidDualToggle';
+import CyberAnnouncementBar from './cyber/CyberAnnouncementBar';
 import { setLiquidPreference } from '@/lib/liquid-dual';
 
 const MENU_ITEMS = [
@@ -101,6 +102,7 @@ export default function PublicLayout() {
 
       {/* MAIN CONTENT — sin backgroundImage propio, reserva espacio solo para el sidebar colapsado en desktop */}
       <main className="absolute inset-0 overflow-auto pb-16 lg:pb-0 lg:pl-14 flex flex-col">
+        <CyberAnnouncementBar />
         <PublicMobileHeader />
         <div className="flex-1">
           <Outlet />

@@ -16,6 +16,7 @@ import CartBundleToggle from '@/components/cart/CartBundleToggle';
 import { saveOneClickProfile } from '@/lib/one-click-profile';
 import { computeVolumeDiscount, getNextVolumeTeaser } from '@/lib/volume-discount';
 import { PEYU_COLORS } from '@/lib/color-parser';
+import { isCyberActive, CYBER_COPY } from '@/lib/cyber-campaign';
 
 const DESCUENTO_TRANSFERENCIA_PCT = 5;
 
@@ -749,6 +750,12 @@ export default function Carrito() {
                 <span className="font-poppins font-bold text-gray-900 text-base">Total</span>
                 <span className="font-poppins font-extrabold text-3xl text-gray-900 tabular-nums tracking-tight">${total.toLocaleString('es-CL')}</span>
               </div>
+
+              {isCyberActive() && (
+                <p className="text-[11px] font-semibold mt-2 text-center" style={{ color: '#D96B4D' }}>
+                  {CYBER_COPY.microUrgency}
+                </p>
+              )}
 
               {/* Tu impacto real — integrado como footer del resumen, no flotando */}
               <ImpactoAmbiental carrito={carrito} variant="inline" />
