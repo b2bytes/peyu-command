@@ -7,7 +7,7 @@ import { getProductImage } from '@/utils/productImages';
 import {
   ArrowLeft, Check, Building2, ShoppingCart, Shield, Truck, Zap,
   Star, Recycle, Sparkles, ChevronRight, Heart, Share2,
-  RotateCcw, BadgeCheck, Copy, X, Gift
+  RotateCcw, BadgeCheck, Copy, X, Gift, AlertCircle
 } from 'lucide-react';
 import MockupGenerator from '@/components/MockupGenerator';
 import { saveMockupDraft } from '@/lib/mockup-draft';
@@ -164,6 +164,7 @@ export default function ProductoDetalle() {
     catch { return []; }
   });
   const [agregado, setAgregado] = useState(false);
+  const [colorError, setColorError] = useState(false); // bloqueo: color obligatorio
   const [vistaActiva, setVistaActiva] = useState(0);
   const [colorMatchFeedback, setColorMatchFeedback] = useState(null); // { label, key } para badge "Mostrando en X"
   const [imageFading, setImageFading] = useState(false); // fade-in/out al cambiar imagen por color
@@ -244,6 +245,18 @@ export default function ProductoDetalle() {
   const packSize = producto ? getPackSize(producto) : null;
 
   const agregarAlCarrito = () => {
+    // 🔒 Color OBLIGATORIO: si el producto tiene selector de color (no pack) y no
+    // se eligió ninguno, bloqueamos y mostramos mensaje claro. Aplica a carcasas
+    // y cualquier producto con colores disponibles.
+    if (!packSize && colores.length > 0 && !colorSeleccionado) {
+      setColorError(true);
+      // Scroll al selector de color para que el cliente lo vea.
+      setTimeout(() => {
+        document.querySelector('[data-color-selector]')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 50);
+      return;
+    }
+    setColorError(false);
     // Resumen legible del pack para mostrar en carrito (ej. "2× Negro · 1× Verde")
     const packSummary = (packSize && coloresPack.length === packSize)
       ? (() => {
@@ -261,7 +274,7 @@ export default function ProductoDetalle() {
     const item = {
       id: Math.random(), productoId: producto.id, sku: producto.sku, nombre: producto.nombre,
       precio: precioActual, cantidad,
-      color: packSize ? null : (colorSeleccionado || null),
+      color: packSize ? null : (colores.find(c => c.id === colorSeleccionado)?.label || colorSeleccionado || null),
       colores_pack: packSize ? coloresPack : null,
       pack_resumen: packSummary,
       personalizacion: personalizacion || null,
@@ -833,20 +846,25 @@ export default function ProductoDetalle() {
                     onChange={setColoresPack}
                   />
                 ) : (
-                  <div>
+                  <div data-color-selector>
                     <label className="text-sm font-bold text-ld-fg mb-2.5 block">
-                      Color: <span className="font-normal text-ld-fg-muted">{colores.find(c => c.id === colorSeleccionado)?.label || ''}</span>
+                      Color: <span className="font-normal text-ld-fg-muted">{colores.find(c => c.id === colorSeleccionado)?.label || <span style={{ color: 'var(--ld-highlight)' }}>elige uno *</span>}</span>
                     </label>
                     <div className="flex gap-2 flex-wrap">
                       {colores.map(c => (
-                        <button key={c.id} onClick={() => setColorSeleccionado(c.id)}
+                        <button key={c.id} onClick={() => { setColorSeleccionado(c.id); setColorError(false); }}
                           title={c.label}
                           className="w-10 h-10 rounded-xl border-2 transition-all hover:scale-110 shadow-md"
-                          style={{ backgroundColor: c.hex, borderColor: colorSeleccionado === c.id ? 'var(--ld-action)' : 'var(--ld-border)', boxShadow: colorSeleccionado === c.id ? '0 0 0 3px var(--ld-action-soft)' : undefined }}>
+                          style={{ backgroundColor: c.hex, borderColor: colorSeleccionado === c.id ? 'var(--ld-action)' : (colorError ? 'var(--ld-highlight)' : 'var(--ld-border)'), boxShadow: colorSeleccionado === c.id ? '0 0 0 3px var(--ld-action-soft)' : undefined }}>
                           {colorSeleccionado === c.id && <Check className="w-4 h-4 text-white mx-auto drop-shadow" />}
                         </button>
                       ))}
                     </div>
+                    {colorError && (
+                      <p className="text-xs font-semibold mt-2 flex items-center gap-1.5" style={{ color: 'var(--ld-highlight)' }}>
+                        <AlertCircle className="w-3.5 h-3.5" /> Elige un color antes de agregar al carrito
+                      </p>
+                    )}
                   </div>
                 )
               )}

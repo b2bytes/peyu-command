@@ -146,8 +146,35 @@ export default function PedidoDetailDrawer({ pedido, onClose, onUpdate }) {
               <Package className="w-4 h-4 text-teal-600" /> {pedido.cantidad || 1} unidad{(pedido.cantidad || 1) > 1 ? 'es' : ''} {pedido.sku && `· SKU ${pedido.sku}`}
             </div>
 
-            {/* Detalle línea por línea, parseando color, pack y grabado */}
-            {pedido.descripcion_items && (
+            {/* 🎨 FUENTE DE VERDAD: items_detalle estructurado (color por línea).
+                Producción ve el color exacto a fabricar/despachar. */}
+            {Array.isArray(pedido.items_detalle) && pedido.items_detalle.length > 0 ? (
+              <div className="space-y-2">
+                {pedido.items_detalle.map((it, i) => (
+                  <div key={i} className="bg-white border border-gray-200 rounded-lg p-3">
+                    <p className="text-sm font-semibold text-gray-900">{it.nombre || 'Producto'} × {it.cantidad || 1}</p>
+                    <div className="mt-1.5 flex flex-wrap gap-1.5">
+                      {(it.color || it.pack_resumen) && (
+                        <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-md border bg-amber-50 text-amber-800 border-amber-200 capitalize">
+                          🎨 Color: {it.color || it.pack_resumen}
+                        </span>
+                      )}
+                      {it.personalizacion && (
+                        <span className="inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-md border bg-purple-50 text-purple-800 border-purple-200">
+                          ✨ Grabado: "{it.personalizacion}"
+                        </span>
+                      )}
+                      {it.sku && (
+                        <span className="inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-md border bg-gray-100 text-gray-600 border-gray-200 font-mono">
+                          SKU {it.sku}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : pedido.descripcion_items && (
+              /* Fallback retrocompatible: pedidos viejos sin items_detalle → parse texto */
               <div className="space-y-2">
                 {pedido.descripcion_items.split(/\n|\s\|\s/).filter(Boolean).map((linea, i) => {
                   const partes = linea.split(' · ').map(p => p.trim());

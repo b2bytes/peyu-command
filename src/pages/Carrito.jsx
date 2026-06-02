@@ -15,6 +15,7 @@ import OneClickBuyButton from '@/components/cart/OneClickBuyButton';
 import CartBundleToggle from '@/components/cart/CartBundleToggle';
 import { saveOneClickProfile } from '@/lib/one-click-profile';
 import { computeVolumeDiscount, getNextVolumeTeaser } from '@/lib/volume-discount';
+import { PEYU_COLORS } from '@/lib/color-parser';
 
 const DESCUENTO_TRANSFERENCIA_PCT = 5;
 
@@ -71,6 +72,14 @@ export default function Carrito() {
   const actualizar = (id, cantidad) => {
     if (cantidad < 1) return;
     const nuevo = carrito.map(i => i.id === id ? { ...i, cantidad } : i);
+    setCarrito(nuevo);
+    localStorage.setItem('carrito', JSON.stringify(nuevo));
+  };
+
+  // 🎨 Cambiar color de un item en el carrito (actualiza in-place, no duplica).
+  // Guarda la etiqueta legible del color ("Azul") para que viaje al pedido.
+  const cambiarColor = (id, colorLabel) => {
+    const nuevo = carrito.map(i => i.id === id ? { ...i, color: colorLabel } : i);
     setCarrito(nuevo);
     localStorage.setItem('carrito', JSON.stringify(nuevo));
   };
@@ -197,6 +206,21 @@ export default function Carrito() {
 
     const descuentoTotal = descuentoCupon + descuentoVolumen + descuentoTransferencia + gcDescuento;
 
+    // 🎨 FUENTE DE VERDAD DEL COLOR — campo estructurado por línea.
+    // items_detalle preserva color/personalización fuera del string frágil.
+    // El campo `color` (top-level) se llena solo cuando el pedido es 1 item con
+    // color (caso típico carcasa) → simplifica comprobante/admin/fulfillment.
+    const itemsDetalle = carrito.map(i => ({
+      sku: i.sku || '',
+      nombre: i.nombre || '',
+      color: i.color || (i.pack_resumen ? i.pack_resumen : '') || '',
+      pack_resumen: i.pack_resumen || '',
+      personalizacion: i.personalizacion || '',
+      precio_unitario: i.precio || 0,
+      cantidad: i.cantidad || 1,
+    }));
+    const colorTopLevel = carrito.length === 1 ? (carrito[0]?.color || '') : '';
+
     let pedido;
     const datosPedido = {
       numero_pedido: numero,
@@ -208,6 +232,8 @@ export default function Carrito() {
       tipo_cliente: 'B2C Individual',
       sku: carrito[0]?.sku || carrito[0]?.productoId || null,
       descripcion_items: items,
+      items_detalle: itemsDetalle,
+      color: colorTopLevel,
       cantidad: carrito.reduce((s, i) => s + i.cantidad, 0),
       subtotal,
       costo_envio: envio,
@@ -494,7 +520,24 @@ export default function Carrito() {
                           <p className="text-xs text-teal-800 mt-1.5 font-semibold bg-teal-50 inline-flex px-2 py-0.5 rounded-md">🎨 Pack: {item.pack_resumen}</p>
                         )}
                         {item.color && !item.pack_resumen && (
-                          <p className="text-xs text-gray-600 mt-1 capitalize font-medium">Color: <span className="text-gray-900">{item.color}</span></p>
+                          <div className="mt-1.5">
+                            <p className="text-xs text-gray-600 font-medium mb-1">Color: <span className="text-gray-900 font-semibold capitalize">{item.color}</span></p>
+                            <div className="flex gap-1.5 flex-wrap">
+                              {PEYU_COLORS.map(c => {
+                                const activo = String(item.color).toLowerCase() === c.label.toLowerCase() || String(item.color).toLowerCase() === c.id;
+                                return (
+                                  <button
+                                    key={c.id}
+                                    type="button"
+                                    title={c.label}
+                                    onClick={() => cambiarColor(item.id, c.label)}
+                                    className="w-6 h-6 rounded-lg border-2 transition-all hover:scale-110"
+                                    style={{ backgroundColor: c.hex, borderColor: activo ? '#0F8B6C' : '#e5e7eb', boxShadow: activo ? '0 0 0 2px rgba(15,139,108,0.25)' : undefined }}
+                                  />
+                                );
+                              })}
+                            </div>
+                          </div>
                         )}
                       </div>
                       <div className="flex items-center justify-between mt-3 gap-3 flex-wrap">

@@ -132,6 +132,32 @@ Deno.serve(async (req) => {
       resendKey
     ) {
       try {
+        // 🎨 Detalle de items CON COLOR — fuente de verdad: items_detalle estructurado.
+        // Fallback retrocompatible: pedidos viejos sin items_detalle leen el color
+        // del string descripcion_items ("· Color: X ·").
+        const buildItemsHtml = () => {
+          const detalle = Array.isArray(pedido.items_detalle) ? pedido.items_detalle : [];
+          if (detalle.length > 0) {
+            return detalle.map((it) => {
+              const color = it.color || it.pack_resumen || '';
+              const partes = [];
+              if (color) partes.push(`Color: <strong>${color}</strong>`);
+              if (it.personalizacion) partes.push(`Grabado: "${it.personalizacion}"`);
+              const sub = partes.length ? `<div style="font-size:12px;color:#6B7280;margin-top:2px">${partes.join(' · ')}</div>` : '';
+              return `<div style="padding:8px 0;border-bottom:1px solid #E5E7EB">
+                <span style="font-weight:600">${it.nombre || 'Producto'} × ${it.cantidad || 1}</span>${sub}
+              </div>`;
+            }).join('');
+          }
+          // Fallback: derivar del campo color top-level o del texto.
+          if (pedido.color) {
+            return `<div style="padding:8px 0"><span style="font-weight:600">${pedido.descripcion_items?.split('\n')[0] || 'Tu pedido'}</span><div style="font-size:12px;color:#6B7280;margin-top:2px">Color: <strong>${pedido.color}</strong></div></div>`;
+          }
+          return (pedido.descripcion_items || '')
+            .split('\n').filter(Boolean)
+            .map((l) => `<div style="padding:6px 0;border-bottom:1px solid #E5E7EB;font-size:13px">${l}</div>`).join('');
+        };
+        const itemsHtml = buildItemsHtml();
         const html = `
           <div style="font-family:system-ui,sans-serif;max-width:560px;margin:0 auto;padding:24px;color:#1f2937">
             <h1 style="color:#0F8B6C;margin:0 0 8px">¡Pago confirmado! 🐢</h1>
@@ -141,6 +167,10 @@ Deno.serve(async (req) => {
               <p style="margin:0"><strong>N° Pedido:</strong> ${pedido.numero_pedido}</p>
               <p style="margin:6px 0 0"><strong>Total:</strong> $${Number(pedido.total).toLocaleString('es-CL')}</p>
               <p style="margin:6px 0 0"><strong>Estado:</strong> Confirmado · En preparación</p>
+            </div>
+            <div style="margin:20px 0">
+              <p style="font-weight:700;margin:0 0 8px;color:#111827">Tu pedido</p>
+              ${itemsHtml}
             </div>
             <p>Te avisaremos por email cuando tu pedido salga despachado con el código de tracking.</p>
             <p style="margin-top:24px">

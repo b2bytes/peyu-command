@@ -25,6 +25,9 @@ const PEYU_COLOR_CATALOG = [
   { id: 'beige',     label: 'Beige',            hex: '#E7D8C6', aliases: ['beige', 'arena', 'crema', 'natural'] },
 ];
 
+// Export público del catálogo de colores PEYU (para selectores en carrito, etc.)
+export const PEYU_COLORS = PEYU_COLOR_CATALOG;
+
 // Normaliza string: minúsculas, sin tildes, sin signos.
 function normalize(str = '') {
   return String(str)
@@ -78,10 +81,26 @@ export function getColoresProducto(producto) {
   }
 
   // ── REGLA OFICIAL PEYU ───────────────────────────────────────────────
-  // Carcasas B2C: cada SKU es un único color (el que muestra la foto).
-  // No se ofrece selector — el cliente compra el modelo/color que ve.
+  // Carcasas B2C: el cliente DEBE elegir color antes de comprar. Colores
+  // por defecto Negro, Beige Natural, Azul, Rojo, Verde — configurables por
+  // producto vía `producto.colores_v2` (si el catálogo trae lista explícita).
   if (producto.categoria === 'Carcasas B2C') {
-    return [];
+    // Si el producto define colores explícitos, los usamos (matcheando catálogo).
+    const explicit = Array.isArray(producto.colores_v2) ? producto.colores_v2 : [];
+    if (explicit.length > 0) {
+      const norm = (s) => normalize(s);
+      const mapped = explicit
+        .map((raw) => {
+          const n = norm(raw);
+          return PEYU_COLOR_CATALOG.find((c) => c.aliases.some((a) => normalize(a) === n));
+        })
+        .filter(Boolean);
+      if (mapped.length > 0) return mapped;
+    }
+    // Set por defecto para carcasas.
+    return PEYU_COLOR_CATALOG.filter((c) =>
+      ['negro', 'beige', 'azul', 'rojo', 'verde'].includes(c.id)
+    );
   }
 
   // Resto del catálogo (Escritorio, Hogar, Entretenimiento, Corporativo):
