@@ -9,6 +9,7 @@ import {
   ShoppingCart
 } from 'lucide-react';
 import MarbleSwatch from '@/components/personalizacion/MarbleSwatch';
+import LaserEngravePreview from '@/components/personalizacion/LaserEngravePreview';
 import { getProductImage } from '@/utils/productImages';
 import { getColoresProducto } from '@/lib/color-parser';
 import { trackAddToCart } from '@/lib/analytics-peyu';
@@ -456,10 +457,14 @@ export default function PersonalizacionFlow() {
           </div>
         </div>
       ) : (
-        <div className="bg-white/5 backdrop-blur-sm border border-white/15 rounded-3xl p-6 shadow-xl">
-          <LaserPreview texto={texto} producto={producto} color={color} />
-          <p className="text-center text-[10px] text-white/40 mt-3">Vista previa simplificada</p>
-        </div>
+        <LaserEngravePreview
+          productImageUrl={getProductImage(producto)}
+          logoFile={archivo}
+          logoUrl={logoUrlSubido}
+          texto={texto}
+          areaLabel={producto?.area_laser_mm}
+          defaultTint={color?.hex && parseInt(color.hex.replace('#', '').slice(0, 2), 16) < 130 ? 'light' : 'dark'}
+        />
       )}
 
       <div className="space-y-3">
