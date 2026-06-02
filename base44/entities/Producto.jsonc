@@ -169,6 +169,34 @@
       "title": "Incluye (V2)",
       "description": "Descripci\u00f3n de qu\u00e9 incluye el producto, para la vista /v2."
     },
+    "incluye_items_v2": {
+      "type": "array",
+      "title": "Incluye \u00b7 items (V2)",
+      "description": "Lista de qu\u00e9 trae el producto, para la ficha de detalle de /v2.",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    },
+    "colores_v2": {
+      "type": "array",
+      "title": "Colores disponibles (V2)",
+      "description": "Colores disponibles del producto, para la ficha de detalle de /v2.",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    },
+    "peso_pack_gr": {
+      "type": "number",
+      "title": "Peso del pack (gr)",
+      "description": "Peso total del pack en gramos, para la ficha de detalle de /v2."
+    },
+    "dim_detalle_v2": {
+      "type": "string",
+      "title": "Dimensiones legibles (V2)",
+      "description": "Dimensiones en formato legible para la ficha de detalle de /v2."
+    },
     "personalizacion_v2": {
       "type": "string",
       "title": "Personalizaci\u00f3n (V2)",
