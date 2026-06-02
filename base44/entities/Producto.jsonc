@@ -187,6 +187,15 @@
       },
       "default": []
     },
+    "colores": {
+      "type": "array",
+      "title": "Colores disponibles",
+      "description": "Colores que el cliente puede elegir en la ficha del producto (tienda ra\u00edz). Fuente de verdad del selector de color. Ej. carcasas: Turquesa, Amarillo, Rosado, Negro, Azul.",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    },
     "peso_pack_gr": {
       "type": "number",
       "title": "Peso del pack (gr)",
