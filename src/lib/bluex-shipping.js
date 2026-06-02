@@ -23,7 +23,26 @@ export function normalizeComuna(s) {
     .replace(/[\u0300-\u036f]/g, '')
     .toLowerCase()
     .trim()
+    .replace(/^comuna de\s+/, '')   // "Comuna de Santiago" → "santiago"
     .replace(/\s+/g, ' ');
+}
+
+// Alias de comunas: el catálogo de direcciones usa nombres "oficiales"
+// (ej. "Santiago") pero la tabla TarifaBluex guarda variantes Bluex
+// (ej. "Santiago Centro"). Mapeamos el normalizado del usuario → normalizado
+// real en la tabla. Aditivo: solo agrega matches que antes caían al fallback.
+const COMUNA_ALIASES = {
+  'santiago': 'santiago centro',
+  'santiago centro': 'santiago centro',
+};
+
+/** Lista de candidatos normalizados a probar contra la tabla, en orden. */
+export function comunaCandidates(comuna) {
+  const norm = normalizeComuna(comuna);
+  const out = [norm];
+  const alias = COMUNA_ALIASES[norm];
+  if (alias && alias !== norm) out.push(alias);
+  return out;
 }
 
 /** Devuelve el campo de la entidad que corresponde al peso (kg) dado. */
@@ -47,13 +66,17 @@ export function pickTarifaField(pesoKg) {
  */
 export async function cotizarEnvioBluex({ comuna, pesoKg = 0.5, servicio = 'EXPRESS' }) {
   if (!comuna) return null;
-  const norm = normalizeComuna(comuna);
-  const tarifas = await base44.entities.TarifaBluex.filter({
-    servicio,
-    comuna_normalizada: norm,
-    vigente: true,
-  });
-  const t = tarifas?.[0];
+  // Probamos la comuna tal cual y sus alias (ej. Santiago → Santiago Centro)
+  // hasta encontrar tarifa real en la tabla. Solo si todos fallan → null.
+  let t = null;
+  for (const cand of comunaCandidates(comuna)) {
+    const tarifas = await base44.entities.TarifaBluex.filter({
+      servicio,
+      comuna_normalizada: cand,
+      vigente: true,
+    });
+    if (tarifas?.[0]) { t = tarifas[0]; break; }
+  }
   if (!t) return null;
 
   const field = pickTarifaField(pesoKg);

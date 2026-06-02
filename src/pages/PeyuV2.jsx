@@ -12,6 +12,7 @@ import { fetchV2Catalog } from '@/lib/v2-catalog';
 import { getRecentViews, pushRecentView } from '@/lib/v2-recent';
 import { isV2Founder } from '@/lib/v2-founders';
 import { addToCart, computeCartTotals } from '@/lib/v2-cart';
+import { readCheckout, mergeCheckout } from '@/lib/v2-checkout-store';
 import { Send, ShoppingCart, Sparkles, SlidersHorizontal, MessagesSquare, ArrowLeft } from 'lucide-react';
 
 const PEYU_LOGO = 'https://media.base44.com/images/public/6a1a158951bc398e16add415/86a2b4b89_image.png';
@@ -251,16 +252,19 @@ export default function PeyuV2() {
       setMessages((prev) => [...prev, { role: 'assistant', reply_text: 'Tu carro está vacío todavía 🐢 ¿Te muestro algunas ideas?', cards: [] }]);
       return;
     }
+    // Prefill combina lo capturado en el chat + lo guardado en localStorage.
+    const prefill = { ...shippingPrefillRef.current, ...readCheckout() };
     setMessages((prev) => [...prev, {
       role: 'assistant',
       reply_text: '¡Perfecto! 🐢 Para coordinar tu envío y el pago, déjame estos datos. Si ya me los diste, los dejé listos abajo.',
-      cards: [{ type: 'shipping', data: { prefill: shippingPrefillRef.current } }],
+      cards: [{ type: 'shipping', data: { prefill } }],
     }]);
   };
 
   // El cliente completó datos de envío → mostramos resumen + botón Pagar con MP.
   const handleShippingContinue = ({ cliente, envioBluex }) => {
     shippingPrefillRef.current = { ...shippingPrefillRef.current, ...cliente };
+    mergeCheckout(cliente); // persiste el set completo para evitar re-preguntas
     setMessages((prev) => [...prev, {
       role: 'assistant',
       reply_text: `¡Listo${cliente.nombre ? `, ${cliente.nombre}` : ''}! 🐢 Revisa el resumen y paga seguro con Mercado Pago. Te llega por BlueExpress a ${cliente.ciudad}.`,

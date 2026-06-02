@@ -1,22 +1,29 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { Truck, MapPin, ArrowRight, User, Mail, Phone } from 'lucide-react';
 import { REGIONES_CHILE, getComunasByRegion } from '@/lib/chile-regiones';
 import { readCart } from '@/lib/v2-cart';
+import { readCheckout, mergeCheckout } from '@/lib/v2-checkout-store';
 import ShippingSelector from '@/components/cart/ShippingSelector';
 
 // Card conversacional de datos de envío. Cálido, NO formulario frío.
+// Estado controlado estable que PERSISTE en localStorage (peyu_v2_checkout):
+// los campos NO se borran al cambiar región/comuna, al recotizar, ni al recargar.
 // Pre-llena con datos ya capturados en la conversación (prefill).
 // Reusa ShippingSelector → cotización Bluex REAL por comuna y peso del carrito.
 export default function CardShipping({ data, onContinue }) {
   const prefill = data?.prefill || {};
-  const [cliente, setCliente] = useState({
-    nombre: prefill.nombre || '',
-    email: prefill.email || '',
-    telefono: prefill.telefono || '',
-    region: prefill.region || '',
-    ciudad: prefill.ciudad || '',
-    direccion: prefill.direccion || '',
-    referencia: prefill.referencia || '',
+  // Rehidratamos: localStorage manda, y rellenamos vacíos con el prefill del chat.
+  const [cliente, setCliente] = useState(() => {
+    const saved = readCheckout();
+    return {
+      nombre: saved.nombre || prefill.nombre || '',
+      email: saved.email || prefill.email || '',
+      telefono: saved.telefono || prefill.telefono || '',
+      region: saved.region || prefill.region || '',
+      ciudad: saved.ciudad || prefill.ciudad || '',
+      direccion: saved.direccion || prefill.direccion || '',
+      referencia: saved.referencia || prefill.referencia || '',
+    };
   });
   const [envioBluex, setEnvioBluex] = useState(null);
   const [error, setError] = useState(null);
@@ -25,7 +32,14 @@ export default function CardShipping({ data, onContinue }) {
   const subtotal = carrito.reduce((s, i) => s + (i.precio || 0) * (i.cantidad || 1), 0);
   const comunas = useMemo(() => getComunasByRegion(cliente.region), [cliente.region]);
 
-  const set = (k, v) => { setCliente((c) => ({ ...c, [k]: v })); setError(null); };
+  // Cada cambio actualiza estado Y persiste en localStorage (no se pierde nunca).
+  const set = (k, v) => {
+    setCliente((c) => { const next = { ...c, [k]: v }; mergeCheckout(next); return next; });
+    setError(null);
+  };
+
+  // Memoizado: evita que ShippingSelector dispare re-cotizaciones en loop.
+  const handleSelectEnvio = useCallback((sel) => setEnvioBluex(sel), []);
 
   const handleContinue = () => {
     if (!cliente.nombre.trim()) return setError('¿Cómo te llamas?');
@@ -35,6 +49,7 @@ export default function CardShipping({ data, onContinue }) {
     if (!cliente.ciudad) return setError('Elige tu comuna.');
     if (cliente.direccion.trim().length < 5) return setError('Necesito tu dirección completa.');
     if (!envioBluex) return setError('Selecciona una forma de envío.');
+    mergeCheckout(cliente); // persistimos el set completo antes de ir al pago
     onContinue?.({ cliente, envioBluex });
   };
 
@@ -100,7 +115,7 @@ export default function CardShipping({ data, onContinue }) {
             region={cliente.region}
             subtotal={subtotal}
             umbralEnvioGratis={40000}
-            onSelect={setEnvioBluex}
+            onSelect={handleSelectEnvio}
           />
         </div>
       )}
