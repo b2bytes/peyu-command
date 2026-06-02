@@ -11,6 +11,7 @@ import V2ConversacionesPanel from '@/components/v2/conversaciones/V2Conversacion
 import { fetchV2Catalog } from '@/lib/v2-catalog';
 import { getRecentViews, pushRecentView } from '@/lib/v2-recent';
 import { isV2Founder } from '@/lib/v2-founders';
+import { addToCart, computeCartTotals } from '@/lib/v2-cart';
 import { Send, ShoppingCart, Sparkles, SlidersHorizontal, MessagesSquare, ArrowLeft } from 'lucide-react';
 
 const PEYU_LOGO = 'https://media.base44.com/images/public/6a1a158951bc398e16add415/86a2b4b89_image.png';
@@ -47,6 +48,8 @@ export default function PeyuV2() {
   const [loading, setLoading] = useState(false);
   const convIdRef = useRef(getOrCreateId('peyu_v2_conversation_id', 'v2conv'));
   const sessionIdRef = useRef(getOrCreateId('peyu_v2_session_id', 'v2sess'));
+  // Datos de envío capturados durante la conversación (prefill de CardShipping).
+  const shippingPrefillRef = useRef({});
   const [cart, setCart] = useState(() => {
     try { return JSON.parse(localStorage.getItem('carrito') || '[]'); } catch { return []; }
   });
@@ -84,6 +87,46 @@ export default function PeyuV2() {
   // Si un no-founder fuerza el espacio, lo devolvemos al chat (seguridad).
   useEffect(() => { if (space === 'conversaciones' && !isFounder) setSpace('chat'); }, [space, isFounder]);
 
+  // Detectar retorno desde Mercado Pago: si dejamos un pedido v2 pendiente de pago
+  // y el cliente vuelve a /v2 (o llega con ?mp=...), verificamos el PedidoWeb y
+  // mostramos confirmación. El pago lo confirma la maquinaria existente (webhook).
+  useEffect(() => {
+    const numero = (() => { try { return sessionStorage.getItem('peyu_v2_pending_pay'); } catch { return null; } })();
+    if (!numero) return;
+    const params = new URLSearchParams(window.location.search);
+    const mpFlag = params.get('mp');
+    (async () => {
+      try {
+        const pedidos = await base44.entities.PedidoWeb.filter({ numero_pedido: numero }, '-created_date', 1);
+        const pedido = pedidos?.[0];
+        if (!pedido) return;
+        const pagado = pedido.payment_status === 'paid' || pedido.estado === 'Confirmado';
+        const fallido = mpFlag === 'failure' || pedido.payment_status === 'failed';
+        try {
+          sessionStorage.removeItem('peyu_v2_pending_pay');
+          if (pagado) {
+            sessionStorage.removeItem('peyu_v2_order_numero');
+            sessionStorage.removeItem('peyu_v2_order_id');
+          }
+        } catch { /* noop */ }
+        setMessages((prev) => [...prev, {
+          role: 'assistant',
+          reply_text: '',
+          cards: [{
+            type: 'order_confirmed',
+            data: {
+              numero: pedido.numero_pedido,
+              nombre: pedido.cliente_nombre,
+              total: pedido.total,
+              pending: !pagado && !fallido,
+            },
+          }],
+        }]);
+      } catch { /* noop */ }
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // Retomar conversación previa: si el hilo ya tiene historial, lo reconstruimos
   // con un saludo "welcome-back" según el perfil inferido la última vez.
   useEffect(() => {
@@ -116,10 +159,12 @@ export default function PeyuV2() {
     const refreshCart = () => { try { setCart(JSON.parse(localStorage.getItem('carrito') || '[]')); } catch { /* noop */ } };
     const refreshRecent = () => setRecientes(getRecentViews());
     window.addEventListener('peyu:cart-added', refreshCart);
+    window.addEventListener('v2:cart-updated', refreshCart);
     window.addEventListener('storage', refreshCart);
     window.addEventListener('v2:recent-updated', refreshRecent);
     return () => {
       window.removeEventListener('peyu:cart-added', refreshCart);
+      window.removeEventListener('v2:cart-updated', refreshCart);
       window.removeEventListener('storage', refreshCart);
       window.removeEventListener('v2:recent-updated', refreshRecent);
     };
@@ -139,12 +184,21 @@ export default function PeyuV2() {
       });
       const d = res.data || {};
       if (d.perfil && d.perfil !== mode) setMode(d.perfil);
-      // Inyectamos los IDs del hilo en las cards de captura B2B para vincular el ChatLead.
-      const cards = (Array.isArray(d.cards) ? d.cards : []).map((c) =>
-        c?.type === 'b2b_quote'
-          ? { ...c, data: { ...(c.data || {}), conversation_id: convIdRef.current, session_id: sessionIdRef.current } }
-          : c
-      );
+      // Prefill de envío: capturamos email del texto del usuario para no re-pedirlo.
+      const emailMatch = text.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/);
+      if (emailMatch) shippingPrefillRef.current = { ...shippingPrefillRef.current, email: emailMatch[0].toLowerCase() };
+      // Inyectamos los IDs del hilo en las cards B2B; remapeamos checkout (B2C) al
+      // flujo conversacional de carro editable.
+      const cards = (Array.isArray(d.cards) ? d.cards : []).map((c) => {
+        if (c?.type === 'b2b_quote') {
+          return { ...c, data: { ...(c.data || {}), conversation_id: convIdRef.current, session_id: sessionIdRef.current } };
+        }
+        if (c?.type === 'checkout') {
+          // El brain pide checkout B2C → mostramos el carro editable del río.
+          return { type: 'cart', data: {} };
+        }
+        return c;
+      });
       setMessages((p) => [...p, {
         role: 'assistant',
         reply_text: d.reply_text || 'Listo 🐢',
@@ -162,13 +216,7 @@ export default function PeyuV2() {
 
   // ── Handlers de cards ──
   const handleAddCart = (p, color) => {
-    try {
-      const carrito = JSON.parse(localStorage.getItem('carrito') || '[]');
-      carrito.push({ sku: p.sku, nombre: p.nombre, precio: p.precio_b2c, imagen: p.imagen_url, cantidad: 1, color });
-      localStorage.setItem('carrito', JSON.stringify(carrito));
-      setCart(carrito);
-      window.dispatchEvent(new Event('peyu:cart-added'));
-    } catch { /* noop */ }
+    addToCart(p, { color });
     setMessages((prev) => [...prev, {
       role: 'assistant',
       reply_text: '',
@@ -196,9 +244,37 @@ export default function PeyuV2() {
     }]);
   };
 
-  const handleCheckout = () => { window.location.href = '/cart'; };
+  // Finalizar compra → flujo conversacional: muestra carro editable + pide envío.
+  const handleCheckout = () => {
+    const totals = computeCartTotals();
+    if (totals.unidades === 0) {
+      setMessages((prev) => [...prev, { role: 'assistant', reply_text: 'Tu carro está vacío todavía 🐢 ¿Te muestro algunas ideas?', cards: [] }]);
+      return;
+    }
+    setMessages((prev) => [...prev, {
+      role: 'assistant',
+      reply_text: '¡Perfecto! 🐢 Para coordinar tu envío y el pago, déjame estos datos. Si ya me los diste, los dejé listos abajo.',
+      cards: [{ type: 'shipping', data: { prefill: shippingPrefillRef.current } }],
+    }]);
+  };
 
-  const cardHandlers = { onAddCart: handleAddCart, onQuote: handleQuote, onPick: handlePick, onCheckout: handleCheckout };
+  // El cliente completó datos de envío → mostramos resumen + botón Pagar con MP.
+  const handleShippingContinue = ({ cliente, envioBluex }) => {
+    shippingPrefillRef.current = { ...shippingPrefillRef.current, ...cliente };
+    setMessages((prev) => [...prev, {
+      role: 'assistant',
+      reply_text: `¡Listo${cliente.nombre ? `, ${cliente.nombre}` : ''}! 🐢 Revisa el resumen y paga seguro con Mercado Pago. Te llega por BlueExpress a ${cliente.ciudad}.`,
+      cards: [{ type: 'checkout', data: { cliente, envioBluex } }],
+    }]);
+  };
+
+  // Reintento de pago tras volver de MP pendiente: reabre el carro.
+  const handleRetryPay = () => handleCheckout();
+
+  const cardHandlers = {
+    onAddCart: handleAddCart, onQuote: handleQuote, onPick: handlePick,
+    onCheckout: handleCheckout, onShippingContinue: handleShippingContinue, onRetryPay: handleRetryPay,
+  };
 
   // Click en categoría del panel izquierdo → conversación.
   const handleCatClick = (cat) => {

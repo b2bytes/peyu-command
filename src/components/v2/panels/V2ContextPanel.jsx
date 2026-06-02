@@ -1,5 +1,6 @@
-import { ShoppingCart, ArrowRight, Clock, Sparkles, Building2, X } from 'lucide-react';
+import { ShoppingCart, ArrowRight, Clock, Sparkles, Building2, X, Minus, Plus, Trash2 } from 'lucide-react';
 import { formatCLP } from '@/lib/v2-catalog';
+import { setQty, removeLine, computeCartTotals } from '@/lib/v2-cart';
 
 // Panel derecho cockpit VIVO: carrito persistente + vistos recientemente +
 // recomendaciones / destacados. En modo Empresa muestra resumen de cotización.
@@ -7,7 +8,7 @@ export default function V2ContextPanel({
   perfil, cart, recientes, destacados, quoteDraft,
   onPick, onCheckout, onClose,
 }) {
-  const total = cart.reduce((s, i) => s + (i.precio || 0) * (i.cantidad || 1), 0);
+  const t = computeCartTotals(cart);
   const recos = (recientes.length > 0 ? destacados : destacados).slice(0, 4);
 
   return (
@@ -34,18 +35,35 @@ export default function V2ContextPanel({
           ) : (
             <>
               <div className="flex flex-col gap-2 mb-2.5">
-                {cart.slice(0, 4).map((it, i) => (
-                  <div key={i} className="flex items-center gap-2">
+                {cart.map((it) => (
+                  <div key={it.id} className="flex items-center gap-2">
                     {it.imagen && <img src={it.imagen} alt="" className="w-9 h-9 rounded-lg object-cover flex-shrink-0" />}
-                    <span className="text-[11px] flex-1 line-clamp-1" style={{ color: 'var(--v2-fg-soft)' }}>{it.nombre}</span>
-                    <span className="text-[11px] font-semibold flex-shrink-0" style={{ color: 'var(--v2-gold)' }}>{formatCLP(it.precio)}</span>
+                    <div className="flex-1 min-w-0">
+                      <span className="text-[11px] line-clamp-1 block" style={{ color: 'var(--v2-fg-soft)' }}>{it.nombre}</span>
+                      <span className="text-[11px] font-semibold" style={{ color: 'var(--v2-gold)' }}>{formatCLP((it.precio || 0) * (it.cantidad || 1))}</span>
+                    </div>
+                    <div className="flex items-center gap-0.5 flex-shrink-0">
+                      <button onClick={() => setQty(it.id, (it.cantidad || 1) - 1)} className="v2-btn-ghost w-5 h-5 flex items-center justify-center"><Minus className="w-2.5 h-2.5" /></button>
+                      <span className="text-[10px] font-semibold w-4 text-center" style={{ color: 'var(--v2-fg)' }}>{it.cantidad}</span>
+                      <button onClick={() => setQty(it.id, (it.cantidad || 1) + 1)} className="v2-btn-ghost w-5 h-5 flex items-center justify-center"><Plus className="w-2.5 h-2.5" /></button>
+                      <button onClick={() => removeLine(it.id)} className="v2-btn-ghost w-5 h-5 flex items-center justify-center ml-0.5"><Trash2 className="w-2.5 h-2.5" /></button>
+                    </div>
                   </div>
                 ))}
-                {cart.length > 4 && <p className="text-[10px]" style={{ color: 'var(--v2-fg-muted)' }}>+{cart.length - 4} más</p>}
               </div>
-              <div className="flex items-center justify-between pt-2 mb-2.5" style={{ borderTop: '1px solid var(--v2-border)' }}>
-                <span className="text-[11px]" style={{ color: 'var(--v2-fg-muted)' }}>Subtotal</span>
-                <span className="text-sm font-bold" style={{ color: 'var(--v2-gold)' }}>{formatCLP(total)}</span>
+              <div className="space-y-1 pt-2 mb-2.5" style={{ borderTop: '1px solid var(--v2-border)' }}>
+                <div className="flex items-center justify-between text-[11px]" style={{ color: 'var(--v2-fg-muted)' }}>
+                  <span>Subtotal</span><span>{formatCLP(t.subtotal)}</span>
+                </div>
+                {t.descuentoVolumen > 0 && (
+                  <div className="flex items-center justify-between text-[11px]" style={{ color: 'var(--v2-teal)' }}>
+                    <span>Volumen ({t.pctVolumen}%)</span><span>−{formatCLP(t.descuentoVolumen)}</span>
+                  </div>
+                )}
+                <div className="flex items-center justify-between pt-0.5">
+                  <span className="text-[11px] font-semibold" style={{ color: 'var(--v2-fg)' }}>Total</span>
+                  <span className="text-sm font-bold" style={{ color: 'var(--v2-gold)' }}>{formatCLP(t.totalSinEnvio)}</span>
+                </div>
               </div>
               <button onClick={onCheckout} className="v2-btn-primary w-full h-9 flex items-center justify-center gap-1.5 text-[11px]">
                 Finalizar compra <ArrowRight className="w-3.5 h-3.5" />
