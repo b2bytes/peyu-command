@@ -4,31 +4,32 @@
 // Regla PEYU: el grabado láser es GRATIS desde 10 unidades del mismo ítem.
 // Bajo ese MOQ, se cobra un cargo por unidad personalizada.
 //
-// ⚠️ DATO PENDIENTE DE DIEGO: el monto exacto del cargo. Mientras tanto usamos
-// el placeholder PRECIO_PERSONALIZACION_LASER. Cuando Diego confirme, cambia
-// SOLO esa constante (ej. 1500).
+// ✅ DATO CONFIRMADO POR DIEGO (2026-06-02): $4.500 CLP fijo por la
+// personalización láser cuando la línea va bajo 10 unidades. Desde 10u → GRATIS.
+// Para cambiarlo en el futuro, edita SOLO esta constante.
 // ============================================================================
 
-// 💲 Cargo por unidad personalizada bajo el MOQ. CAMBIAR cuando Diego confirme.
-export const PRECIO_PERSONALIZACION_LASER = 1500;
+// 💲 Cargo FIJO por personalización láser bajo el MOQ. Confirmado por Diego.
+export const PRECIO_PERSONALIZACION_LASER = 4500;
 
 // MOQ para grabado gratis (productos pueden sobreescribir con personalizacion_gratis_desde).
 export const MOQ_PERSONALIZACION_GRATIS = 10;
 
 /**
  * Calcula el cargo de personalización láser de una línea del carrito.
- * GRATIS si la cantidad alcanza el MOQ del producto; si no, cobra por unidad.
+ * GRATIS si la cantidad alcanza el MOQ del producto; si no, cobra el cargo
+ * FIJO de $4.500 (una sola vez por línea personalizada, no por unidad).
  *
  * @param {object} item - línea del carrito { cantidad, personalizacion, ... }
  * @param {number} [moqGratis] - MOQ específico del producto (default global)
- * @returns {number} cargo total en CLP para esa línea (0 si no aplica)
+ * @returns {number} cargo en CLP para esa línea (0 si no aplica)
  */
 export function calcularCargoPersonalizacion(item, moqGratis = MOQ_PERSONALIZACION_GRATIS) {
   if (!item || !item.personalizacion) return 0;
   const qty = item.cantidad || 0;
   const moq = moqGratis || MOQ_PERSONALIZACION_GRATIS;
   if (qty >= moq) return 0; // gratis desde el MOQ
-  return PRECIO_PERSONALIZACION_LASER * qty;
+  return PRECIO_PERSONALIZACION_LASER; // cargo fijo por línea bajo 10u
 }
 
 /**
