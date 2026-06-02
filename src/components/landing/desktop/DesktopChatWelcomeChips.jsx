@@ -1,79 +1,97 @@
 // ────────────────────────────────────────────────────────────────────────
 // DesktopChatWelcomeChips
 // ────────────────────────────────────────────────────────────────────────
-// Chips de bienvenida que aparecen SOLO cuando el chat está vacío en el
-// hero desktop. Replican la energía visual del modal mobile / del modal de
-// referencia ("Peyu IA · Asistente de gifting · en línea") para que el
-// preview desktop NO se vea muerto comparado con el de mobile.
+// Cards de bienvenida que aparecen SOLO cuando el chat está vacío en el
+// hero desktop. Replican la energía visual del modal mobile.
 //
-// Disparan envíos directos al agente (intents pre-baked), exactamente como
-// hace el modal mobile con OCASIONES + buildOccasionPrompt — pero acá los
-// intents apuntan a flujos de venta más conversacionales (gifting, B2B,
-// sostenibilidad) en vez de fechas calendarizadas.
+// Orden por relevancia temporal (estamos en CyberDay + se viene Día del
+// Padre 21 jun). Ya NO mostramos Día de la Madre (pasó). Cada card lleva
+// ícono en círculo de acento, título en negrita y subtítulo gris corto.
 // ────────────────────────────────────────────────────────────────────────
-import { Gift, Building2, Sparkles, ArrowRight } from 'lucide-react';
+import { Gift, Building2, Recycle, Flame, ArrowRight } from 'lucide-react';
 
 const QUICK_INTENTS = [
   {
-    id: 'madre',
+    id: 'padre',
     icon: Gift,
-    label: 'Regalo para Día de la Madre',
-    prompt: 'Quiero un regalo lindo y especial para Día de la Madre. ¿Qué me recomiendas?',
-    accent: 'rose',
+    label: 'Regalo Día del Padre',
+    sub: 'Útil, masculino y con causa',
+    prompt: 'Quiero un regalo para el Día del Padre. Algo útil y especial, ¿qué me recomiendas?',
+    accent: 'warm',
+    featured: true,
   },
   {
     id: 'empresa',
     icon: Building2,
     label: 'Regalos para mi empresa',
+    sub: 'Corporativos con tu logo, por volumen',
     prompt: 'Necesito regalos corporativos para mi empresa. ¿Puedes ayudarme a cotizar?',
     accent: 'blue',
   },
   {
     id: 'sostenibles',
-    icon: Sparkles,
+    icon: Recycle,
     label: 'Productos sostenibles',
+    sub: 'Reciclados y compostables hechos en Chile',
     prompt: '¿Cuáles son sus productos más sostenibles y por qué? Cuéntame del impacto.',
     accent: 'emerald',
+  },
+  {
+    id: 'cyber',
+    icon: Flame,
+    label: 'Ofertas CyberDay',
+    sub: 'Termina mañana · precios especiales',
+    prompt: 'Muéstrame las mejores ofertas de CyberDay disponibles ahora.',
+    accent: 'cyber',
   },
 ];
 
 const ACCENT_BG = {
-  rose:    'linear-gradient(135deg, #FF6B8A 0%, #E14B6E 100%)',
+  warm:    'linear-gradient(135deg, #F2994A 0%, #D96B4D 100%)',
   blue:    'linear-gradient(135deg, #4F8BFF 0%, #3D6FE0 100%)',
   emerald: 'linear-gradient(135deg, #34D399 0%, #0F8B6C 100%)',
+  cyber:   'linear-gradient(135deg, #A855F7 0%, #6D28D9 100%)',
 };
 
 export default function DesktopChatWelcomeChips({ onPick, disabled }) {
   return (
-    <div className="flex flex-col gap-1.5 px-0.5 pt-1 pb-1">
-      {/* Subtítulo IA — replica el spirit de la captura "¿No sabes qué regalar?" */}
-      <div className="flex items-center gap-1.5 px-2 py-1.5 rounded-xl ld-glass-soft mb-0.5">
-        <Sparkles className="w-3 h-3 flex-shrink-0" style={{ color: 'var(--ld-highlight)' }} />
+    <div className="flex flex-col gap-2 px-0.5 pt-1 pb-1">
+      {/* Subtítulo IA */}
+      <div className="flex items-center gap-1.5 px-2.5 py-2 rounded-xl ld-glass-soft mb-0.5">
+        <Gift className="w-3 h-3 flex-shrink-0" style={{ color: 'var(--ld-highlight)' }} />
         <p className="text-[11px] text-ld-fg-soft font-medium leading-tight">
           ¿No sabes qué regalar? Te ayudo a encontrar el regalo perfecto.
         </p>
       </div>
 
-      {/* Tres intents grandes y clickeables — desktop "vivo" como mobile */}
-      {QUICK_INTENTS.map(({ id, icon: Icon, label, prompt, accent }) => (
+      {QUICK_INTENTS.map(({ id, icon: Icon, label, sub, prompt, accent, featured }) => (
         <button
           key={id}
           onClick={() => onPick(prompt)}
           disabled={disabled}
-          className="group ld-glass-soft flex items-center gap-2.5 rounded-xl px-2.5 py-2 text-left transition-all hover:scale-[1.01] hover:shadow-md active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed border border-ld-border hover:border-ld-action"
+          className="group flex items-center gap-3 rounded-2xl px-3 py-2.5 text-left transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed border"
+          style={{
+            background: featured ? 'var(--ld-highlight-soft)' : 'var(--ld-glass-soft)',
+            borderColor: featured ? 'var(--ld-highlight)' : 'var(--ld-border)',
+          }}
         >
           <span
-            className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 shadow-sm"
+            className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 shadow-sm"
             style={{ background: ACCENT_BG[accent] }}
           >
-            <Icon className="w-3.5 h-3.5 text-white" />
+            <Icon className="w-4 h-4 text-white" />
           </span>
-          <span className="flex-1 text-[11.5px] font-semibold text-ld-fg leading-tight">
-            {label}
+          <span className="flex-1 min-w-0">
+            <span className="block text-[12.5px] font-bold text-ld-fg leading-tight">
+              {label}
+            </span>
+            <span className="block text-[10.5px] text-ld-fg-muted leading-tight mt-0.5 truncate">
+              {sub}
+            </span>
           </span>
           <ArrowRight
-            className="w-3.5 h-3.5 flex-shrink-0 opacity-50 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all"
-            style={{ color: 'var(--ld-action)' }}
+            className="w-4 h-4 flex-shrink-0 opacity-50 group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-200"
+            style={{ color: featured ? 'var(--ld-highlight)' : 'var(--ld-action)' }}
           />
         </button>
       ))}

@@ -38,15 +38,14 @@ const stripContext = (m) => {
   return { ...m, content: cleaned || m.content };
 };
 
+// Ordenadas por cercanía real desde hoy (jun): Día del Padre (21 jun) primero
+// y destacado, luego Fiestas Patrias (sep), Navidad (dic), Año Nuevo. B2B
+// evergreen (Bienestar/Logros) al final. Quitamos las que ya pasaron.
 const OCASIONES = [
+  { id: 'padre', label: 'Día del Padre', icon: '👔', featured: true },
+  { id: 'patrias', label: 'Fiestas Patrias', icon: '🇨🇱' },
   { id: 'navidad', label: 'Navidad', icon: '🎄' },
-  { id: 'patrias', label: 'Patrias', icon: '🇨🇱' },
   { id: 'anio', label: 'Año Nuevo', icon: '🎉' },
-  { id: 'trabajador', label: 'Trabajador', icon: '💼' },
-  { id: 'secretaria', label: 'Secretaria', icon: '💐' },
-  { id: 'profesor', label: 'Profesor', icon: '📚' },
-  { id: 'madre', label: 'Día Madre', icon: '❤️' },
-  { id: 'padre', label: 'Día Padre', icon: '👨' },
   { id: 'bienestar', label: 'Bienestar', icon: '🌟' },
   { id: 'logros', label: 'Logros', icon: '🏆' },
 ];
@@ -716,18 +715,23 @@ export default function ShopLanding() {
                   </Button>
                 </div>
 
-                {/* Quick replies Liquid Dual */}
-                <div className="flex-shrink-0 mt-2 overflow-x-auto scrollbar-hide flex gap-1 pb-0.5">
-                  {OCASIONES.map(occ => (
-                    <button
-                      key={occ.id}
-                      onClick={() => handleOccasionClick(occ)}
-                      className="ld-btn-ghost flex items-center gap-1 flex-shrink-0 rounded-full px-2 py-0.5 hover:border-ld-action transition"
-                    >
-                      <span className="text-[10px] leading-none">{occ.icon}</span>
-                      <span className="text-[10px] font-medium whitespace-nowrap text-ld-fg-soft">{occ.label}</span>
-                    </button>
-                  ))}
+                {/* Quick replies Liquid Dual — fade en borde derecho para scroll limpio */}
+                <div className="relative flex-shrink-0 mt-2">
+                  <div className="overflow-x-auto scrollbar-hide flex gap-1.5 pb-0.5 pr-5">
+                    {OCASIONES.map(occ => (
+                      <button
+                        key={occ.id}
+                        onClick={() => handleOccasionClick(occ)}
+                        className={`flex items-center gap-1 flex-shrink-0 rounded-full px-2.5 py-1 border transition-all duration-200 active:scale-95 ${occ.featured ? '' : 'ld-btn-ghost hover:border-ld-action'}`}
+                        style={occ.featured ? { background: 'var(--ld-highlight-soft)', borderColor: 'var(--ld-highlight)' } : undefined}
+                      >
+                        <span className="text-[10px] leading-none">{occ.icon}</span>
+                        <span className="text-[10px] font-semibold whitespace-nowrap" style={{ color: occ.featured ? 'var(--ld-highlight)' : 'var(--ld-fg-soft)' }}>{occ.label}</span>
+                      </button>
+                    ))}
+                  </div>
+                  {/* Fade derecho indicando más contenido scrollable */}
+                  <div className="absolute right-0 top-0 bottom-0 w-6 pointer-events-none" style={{ background: 'linear-gradient(to right, transparent, var(--ld-bg-elevated))' }} />
                 </div>
               </div>
             </div>

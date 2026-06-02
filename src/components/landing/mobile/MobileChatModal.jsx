@@ -19,12 +19,13 @@ import { sanitizeUserMessage } from '@/lib/chat-sanitize';
  *
  * Mantiene 100% la lógica del padre (props messages, loading, onSend...).
  */
+// Ordenadas por cercanía real desde hoy (jun): Día del Padre primero y
+// destacado. Quitamos las fechas ya pasadas (Madre, Trabajador).
 const OCASIONES = [
-  { id: 'navidad', label: 'Navidad', icon: '🎄' },
+  { id: 'padre', label: 'Día del Padre', icon: '👔', featured: true },
   { id: 'patrias', label: 'Patrias', icon: '🇨🇱' },
-  { id: 'madre', label: 'Día Madre', icon: '❤️' },
-  { id: 'trabajador', label: 'Trabajador', icon: '💼' },
-  { id: 'profesor', label: 'Profesor', icon: '📚' },
+  { id: 'navidad', label: 'Navidad', icon: '🎄' },
+  { id: 'anio', label: 'Año Nuevo', icon: '🎉' },
   { id: 'logros', label: 'Logros', icon: '🏆' },
 ];
 
@@ -209,22 +210,25 @@ export default function MobileChatModal({
 
       {/* ─── QUICK REPLIES (chips horizontales) ─── */}
       <div className="relative flex-shrink-0 ld-glass border-t border-ld-border">
-        <div className="px-3 py-2.5 flex items-center gap-1.5 overflow-x-auto scrollbar-hide">
+        <div className="px-3 py-2.5 flex items-center gap-1.5 overflow-x-auto scrollbar-hide pr-7">
           <Sparkles className="w-3.5 h-3.5 flex-shrink-0" style={{ color: 'var(--ld-highlight)' }} />
           {OCASIONES.map(occ => (
             <button
               key={occ.id}
               onClick={() => onOccasionClick(occ)}
               disabled={loading}
-              className="ld-btn-ghost flex items-center gap-1.5 flex-shrink-0 rounded-full px-3 py-1.5 active:scale-95 transition disabled:opacity-50"
+              className={`flex items-center gap-1.5 flex-shrink-0 rounded-full px-3 py-1.5 border active:scale-95 transition duration-200 disabled:opacity-50 ${occ.featured ? '' : 'ld-btn-ghost'}`}
+              style={occ.featured ? { background: 'var(--ld-highlight-soft)', borderColor: 'var(--ld-highlight)' } : undefined}
             >
               <span className="text-xs leading-none">{occ.icon}</span>
-              <span className="text-ld-fg-soft text-[11px] font-semibold whitespace-nowrap">
+              <span className="text-[11px] font-semibold whitespace-nowrap" style={{ color: occ.featured ? 'var(--ld-highlight)' : 'var(--ld-fg-soft)' }}>
                 {occ.label}
               </span>
             </button>
           ))}
         </div>
+        {/* Fade derecho para scroll limpio en mobile */}
+        <div className="absolute right-0 top-0 bottom-0 w-8 pointer-events-none" style={{ background: 'linear-gradient(to right, transparent, var(--ld-glass))' }} />
       </div>
 
       {/* ─── INPUT BAR ─── */}
