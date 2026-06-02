@@ -51,7 +51,7 @@ Deno.serve(async (req) => {
     const base44 = createClientFromRequest(req);
 
     const carcasas = await base44.asServiceRole.entities.Producto.filter(
-      { categoria: 'Carcasas B2C', activo: true }, '-created_date', 200
+      { categoria: 'Carcasas B2C' }, '-created_date', 500
     );
     const pendientes = carcasas.filter(p => {
       if (!mejorFoto(p)) return false;

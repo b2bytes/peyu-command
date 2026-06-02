@@ -4,7 +4,7 @@
 // Cards de bienvenida que aparecen SOLO cuando el chat está vacío en el
 // hero desktop. Replican la energía visual del modal mobile.
 //
-// Orden por relevancia temporal (estamos en CyberDay + se viene Día del
+// Orden por relevancia temporal (estamos en Cyber PEYU + se viene Día del
 // Padre 21 jun). Ya NO mostramos Día de la Madre (pasó). Cada card lleva
 // ícono en círculo de acento, título en negrita y subtítulo gris corto.
 // ────────────────────────────────────────────────────────────────────────
@@ -39,9 +39,9 @@ const QUICK_INTENTS = [
   {
     id: 'cyber',
     icon: Flame,
-    label: 'Ofertas CyberDay',
+    label: 'Ofertas Cyber PEYU',
     sub: 'Termina mañana · precios especiales',
-    prompt: 'Muéstrame las mejores ofertas de CyberDay disponibles ahora.',
+    prompt: 'Muéstrame las mejores ofertas de Cyber PEYU disponibles ahora.',
     accent: 'cyber',
   },
 ];

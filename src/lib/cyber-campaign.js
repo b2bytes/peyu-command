@@ -1,13 +1,13 @@
 // ============================================================
-// PEYU — Campaña "Cyber de Junio" (CYBER PEYU)
+// PEYU — Campaña "Cyber PEYU"
 // ------------------------------------------------------------
 // Fuente ÚNICA de verdad de la campaña Cyber. Para apagar la
 // campaña cuando termine, basta poner CYBER_ENABLED = false
 // (o dejar que expire sola al pasar CYBER_END).
 //
-// NOTA DE MARCA: no usamos "CyberDay" (marca CCS) ni "Cyber
-// Monday" (es de noviembre). Usamos el lema genérico cálido
-// "CYBER PEYU" / "Cyber de Junio".
+// NOTA DE MARCA: NO usamos "CyberDay" (marca registrada CCS) ni
+// "Cyber Monday" (es de noviembre) ni "Cyber de Junio". Usamos
+// SOLO el lema propio de marca "Cyber PEYU" / "Ofertas Cyber PEYU".
 //
 // El % de descuento NO está confirmado: usamos el placeholder
 // CYBER_DISCOUNT_LABEL ("-XX%"). Cuando Diego confirme, cambia
@@ -26,12 +26,12 @@ export const CYBER_DISCOUNT_LABEL = '-XX%';
 
 // Copys centralizados (fácil de editar).
 export const CYBER_COPY = {
-  bar: '⚡ CYBER PEYU — Ofertas con causa · Termina mañana',
-  barShort: '⚡ CYBER PEYU · Ofertas con causa',
-  heroLine: 'Cyber de Junio en PEYU — los regalos que el planeta también agradece ♻️',
-  microUrgency: '⏳ Precios Cyber hasta mañana',
+  bar: '⚡ Cyber PEYU — Ofertas con causa · Termina mañana',
+  barShort: '⚡ Cyber PEYU · Ofertas con causa',
+  heroLine: 'Ofertas Cyber PEYU — los regalos que el planeta también agradece ♻️',
+  microUrgency: '⏳ Precios Cyber PEYU hasta mañana',
   badge: 'CYBER',
-  greeting: 'Estamos en Cyber 🐢 tengo precios especiales hasta mañana — ¿buscas algo para alguien especial o para tu empresa?',
+  greeting: 'Estamos en Cyber PEYU 🐢 tengo precios especiales hasta mañana — ¿buscas algo para alguien especial o para tu empresa?',
 };
 
 // ¿Está la campaña activa AHORA? (flag + dentro de ventana).

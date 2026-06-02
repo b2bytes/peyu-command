@@ -164,6 +164,12 @@
       "additionalProperties": true,
       "description": "Objeto con las 8 llaves: unitario, t10_49, t50_99, t100_249, t250_499, t500_999, t1000_1999, t2000_mas."
     },
+    "precio_b2b_preliminar": {
+      "type": "boolean",
+      "title": "Precios B2B preliminares (calculados, editables)",
+      "default": false,
+      "description": "true = los precio_b2b_tramos fueron calculados con regla porcentual de descuento por volumen (no son los oficiales de Peyu). Editables. false = provienen del cat\u00e1logo oficial."
+    },
     "incluye_v2": {
       "type": "string",
       "title": "Incluye (V2)",

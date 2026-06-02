@@ -141,7 +141,7 @@ Deno.serve(async (req) => {
     // devuelve `pendientes_restantes` para que el caller itere invocación a
     // invocación de forma segura.
     if (lote) {
-      const carcasas = await base44.asServiceRole.entities.Producto.filter({ categoria: 'Carcasas B2C', activo: true }, '-updated_date', 200);
+      const carcasas = await base44.asServiceRole.entities.Producto.filter({ categoria: 'Carcasas B2C' }, '-updated_date', 500);
       const pendientesTodas = carcasas.filter(p => {
         if (!mejorFoto(p)) return false;
         const mapa = p.imagenes_por_color || {};

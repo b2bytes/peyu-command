@@ -67,7 +67,7 @@ export default function CyberCatalogBanner() {
             Regalos con causa,{' '}
             <span className="ld-display-italic" style={{ color: 'var(--ld-highlight)' }}>precios especiales</span>
           </h2>
-          <p className="text-ld-fg-muted text-sm mt-0.5">Solo hoy y mañana — el Cyber de Junio que el planeta también agradece ♻️</p>
+          <p className="text-ld-fg-muted text-sm mt-0.5">Solo hoy y mañana — el Cyber PEYU que el planeta también agradece ♻️</p>
         </div>
         {left && (
           <div className="flex-shrink-0">
