@@ -60,10 +60,10 @@ export default function CardCart({ onCheckout }) {
               {it.color && <p className="text-[10px]" style={{ color: 'var(--v2-fg-muted)' }}>{it.color}</p>}
               <p className="text-[11px] font-bold" style={{ color: 'var(--v2-gold)' }}>{formatCLP((it.precio || 0) * (it.cantidad || 1))}</p>
             </div>
-            <div className="flex items-center gap-1 flex-shrink-0">
-              <button onClick={() => setQty(it.id, (it.cantidad || 1) - 1)} className="v2-btn-ghost w-6 h-6 flex items-center justify-center"><Minus className="w-3 h-3" /></button>
-              <span className="text-[11px] font-semibold w-5 text-center" style={{ color: 'var(--v2-fg)' }}>{it.cantidad}</span>
-              <button onClick={() => setQty(it.id, (it.cantidad || 1) + 1)} className="v2-btn-ghost w-6 h-6 flex items-center justify-center"><Plus className="w-3 h-3" /></button>
+            <div className="flex items-center gap-1.5 flex-shrink-0">
+              <button onClick={() => setQty(it.id, (it.cantidad || 1) - 1)} aria-label="Quitar uno" className="v2-btn-ghost w-9 h-9 sm:w-7 sm:h-7 flex items-center justify-center"><Minus className="w-3.5 h-3.5" /></button>
+              <span className="text-xs font-semibold w-5 text-center" style={{ color: 'var(--v2-fg)' }}>{it.cantidad}</span>
+              <button onClick={() => setQty(it.id, (it.cantidad || 1) + 1)} aria-label="Agregar uno" className="v2-btn-ghost w-9 h-9 sm:w-7 sm:h-7 flex items-center justify-center"><Plus className="w-3.5 h-3.5" /></button>
             </div>
           </div>
         ))}
@@ -91,11 +91,11 @@ export default function CardCart({ onCheckout }) {
         )}
       </div>
 
-      <button onClick={onCheckout} className="v2-btn-primary w-full h-10 flex items-center justify-center gap-2 text-xs mt-3">
-        Finalizar compra <ArrowRight className="w-3.5 h-3.5" />
+      <button onClick={onCheckout} className="v2-btn-primary w-full h-12 sm:h-11 flex items-center justify-center gap-2 text-sm font-semibold mt-3.5">
+        Finalizar compra <ArrowRight className="w-4 h-4" />
       </button>
 
-      <div className="mt-3">
+      <div className="mt-3.5">
         <V2TrustBadges keys={['envio', 'garantia', 'cambios']} />
       </div>
     </div>

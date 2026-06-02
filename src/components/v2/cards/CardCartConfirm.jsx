@@ -20,8 +20,8 @@ export default function CardCartConfirm({ data, onCheckout }) {
           <p className="text-xs font-bold" style={{ color: 'var(--v2-gold)' }}>{formatCLP(item.precio)}</p>
         </div>
       </div>
-      <button onClick={onCheckout} className="v2-btn-primary w-full h-9 flex items-center justify-center gap-2 text-xs mt-3">
-        <ShoppingCart className="w-3.5 h-3.5" /> Ir al carro
+      <button onClick={onCheckout} className="v2-btn-primary w-full h-12 sm:h-10 flex items-center justify-center gap-2 text-sm font-semibold mt-3.5">
+        <ShoppingCart className="w-4 h-4" /> Ir al carro
       </button>
     </div>
   );

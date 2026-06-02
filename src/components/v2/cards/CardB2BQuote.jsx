@@ -100,7 +100,7 @@ export default function CardB2BQuote({ data }) {
         <button
           onClick={submit}
           disabled={sending || !form.empresa || !form.contacto || !form.email}
-          className="v2-btn-gold h-10 flex items-center justify-center gap-2 text-xs mt-1 disabled:opacity-50"
+          className="v2-btn-gold h-12 sm:h-11 flex items-center justify-center gap-2 text-sm font-semibold mt-1.5 disabled:opacity-50"
         >
           {sending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : 'Pedir mi cotización'}
         </button>
