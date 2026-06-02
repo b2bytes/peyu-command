@@ -359,7 +359,7 @@ export default function PeyuV2() {
             <span className="w-2.5 h-2.5 rounded-full" style={{ background: '#e3c196' }} />
             <span className="w-2.5 h-2.5 rounded-full" style={{ background: '#5fbfa6' }} />
           </div>
-          <img src={PEYU_LOGO} alt="PEYU" className="h-6 w-auto object-contain ml-1" style={{ filter: 'brightness(0) invert(1)' }} draggable={false} />
+          <img src={PEYU_LOGO} alt="PEYU" className="h-6 w-auto object-contain ml-1" style={{ filter: theme === 'light' ? 'brightness(0)' : 'brightness(0) invert(1)' }} draggable={false} />
         </div>
 
         <div className="flex items-center gap-2 flex-shrink-0">
