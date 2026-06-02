@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
+import { useReducer, useMemo, useCallback, useEffect, useRef } from 'react';
 import { Truck, MapPin, ArrowRight, User, Mail, Phone } from 'lucide-react';
 import { REGIONES_CHILE, getComunasByRegion } from '@/lib/chile-regiones';
 import { readCart } from '@/lib/v2-cart';
@@ -6,16 +6,24 @@ import { readCheckout, writeCheckout } from '@/lib/v2-checkout-store';
 import ShippingSelector from '@/components/cart/ShippingSelector';
 
 // Card conversacional de datos de envío. Cálido, NO formulario frío.
-// Estado controlado estable que PERSISTE en localStorage (peyu_v2_checkout):
-// los campos NO se borran al cambiar región/comuna, al recotizar, ni al recargar.
-// Pre-llena con datos ya capturados en la conversación (prefill).
-// Reusa ShippingSelector → cotización Bluex REAL por comuna y peso del carrito.
+// Estado controlado vía useReducer: CADA acción mergea sobre el estado previo,
+// por lo que es IMPOSIBLE que un patch parcial (p.ej. {region, ciudad}) pise
+// nombre/email/dirección. Persiste en localStorage (peyu_v2_checkout) y
+// prefill desde la conversación. Reusa ShippingSelector → cotización Bluex real.
+
+const EMPTY = { nombre: '', email: '', telefono: '', region: '', ciudad: '', direccion: '', referencia: '' };
+
+// Reducer: SIEMPRE { ...state, ...patch }. Imposible perder campos.
+function clienteReducer(state, patch) {
+  return { ...state, ...patch };
+}
+
 export default function CardShipping({ data, onContinue }) {
-  // Init UNA sola vez (lazy): localStorage manda, prefill rellena vacíos.
-  // prefill se lee SOLO en el primer montaje vía ref, para que cambios de
-  // identidad del objeto `data.prefill` en re-renders NUNCA pisen lo escrito.
+  // prefill se lee SOLO en el primer montaje vía ref.
   const prefillRef = useRef(data?.prefill || {});
-  const [cliente, setCliente] = useState(() => {
+
+  // Init lazy: localStorage manda, prefill rellena vacíos.
+  const [cliente, patchCliente] = useReducer(clienteReducer, undefined, () => {
     const saved = readCheckout();
     const pf = prefillRef.current;
     return {
@@ -28,16 +36,13 @@ export default function CardShipping({ data, onContinue }) {
       referencia: saved.referencia || pf.referencia || '',
     };
   });
-  const [envioBluex, setEnvioBluex] = useState(null);
-  const [error, setError] = useState(null);
+  const [envioBluex, patchEnvio] = useReducer((_, v) => v, null);
+  const [error, patchError] = useReducer((_, v) => v, null);
 
-  // Persistencia como EFECTO (no dentro del updater de setState). Esto evita
-  // efectos secundarios en renders dobles y garantiza que cada estado válido
-  // se guarde sin pisar nada. Cambiar región/comuna NO borra los textos.
+  // Persistencia como EFECTO. Cambiar región/comuna NO borra los textos.
   useEffect(() => { writeCheckout(cliente); }, [cliente]);
 
-  // Carro snapshot al montar (no cambia durante el checkout). Memoizado para
-  // que `items` mantenga identidad estable y ShippingSelector no recotice en loop.
+  // Carro snapshot al montar. Memoizado para identidad estable.
   const carrito = useMemo(() => readCart(), []);
   const subtotal = useMemo(() => carrito.reduce((s, i) => s + (i.precio || 0) * (i.cantidad || 1), 0), [carrito]);
   const shippingItems = useMemo(
@@ -46,25 +51,21 @@ export default function CardShipping({ data, onContinue }) {
   );
   const comunas = useMemo(() => getComunasByRegion(cliente.region), [cliente.region]);
 
-  // set puro: SOLO actualiza el estado de React (updater funcional). La
-  // persistencia la hace el useEffect de arriba. Soporta patch multi-campo.
-  const set = (patch) => {
-    setCliente((c) => ({ ...c, ...patch }));
-    setError(null);
-  };
+  // set: mergea patch sobre el estado previo (vía reducer) y limpia error.
+  const set = useCallback((patch) => { patchCliente(patch); patchError(null); }, []);
 
-  // Memoizado: evita que ShippingSelector dispare re-cotizaciones en loop.
-  const handleSelectEnvio = useCallback((sel) => setEnvioBluex(sel), []);
+  // La cotización Bluex va a un estado SEPARADO. NUNCA toca `cliente`.
+  const handleSelectEnvio = useCallback((sel) => patchEnvio(sel), []);
 
   const handleContinue = () => {
-    if (!cliente.nombre.trim()) return setError('¿Cómo te llamas?');
-    if (!/\S+@\S+\.\S+/.test(cliente.email)) return setError('Necesito un email válido para enviarte la confirmación.');
-    if (!cliente.telefono.trim()) return setError('¿Me dejas un teléfono de contacto?');
-    if (!cliente.region) return setError('Elige tu región.');
-    if (!cliente.ciudad) return setError('Elige tu comuna.');
-    if (cliente.direccion.trim().length < 5) return setError('Necesito tu dirección completa.');
-    if (!envioBluex) return setError('Selecciona una forma de envío.');
-    writeCheckout(cliente); // persistimos el set completo antes de ir al pago
+    if (!cliente.nombre.trim()) return patchError('¿Cómo te llamas?');
+    if (!/\S+@\S+\.\S+/.test(cliente.email)) return patchError('Necesito un email válido para enviarte la confirmación.');
+    if (!cliente.telefono.trim()) return patchError('¿Me dejas un teléfono de contacto?');
+    if (!cliente.region) return patchError('Elige tu región.');
+    if (!cliente.ciudad) return patchError('Elige tu comuna.');
+    if (cliente.direccion.trim().length < 5) return patchError('Necesito tu dirección completa.');
+    if (!envioBluex) return patchError('Selecciona una forma de envío.');
+    writeCheckout(cliente);
     onContinue?.({ cliente, envioBluex });
   };
 
@@ -81,29 +82,29 @@ export default function CardShipping({ data, onContinue }) {
       <div className="grid grid-cols-1 gap-2.5">
         <div>
           <p className={labelCls} style={{ color: 'var(--v2-fg-subtle)' }}><User className="w-3 h-3" /> Nombre</p>
-          <input value={cliente.nombre} onChange={(e) => set({ nombre: e.target.value })} placeholder="Tu nombre" className={inputCls} style={{ color: 'var(--v2-fg)' }} />
+          <input type="text" autoComplete="name" value={cliente.nombre ?? ''} onChange={(e) => set({ nombre: e.target.value })} placeholder="Tu nombre" className={inputCls} style={{ color: 'var(--v2-fg)' }} />
         </div>
         <div className="grid grid-cols-2 gap-2.5">
           <div>
             <p className={labelCls} style={{ color: 'var(--v2-fg-subtle)' }}><Mail className="w-3 h-3" /> Email</p>
-            <input value={cliente.email} onChange={(e) => set({ email: e.target.value })} placeholder="tu@email.cl" className={inputCls} style={{ color: 'var(--v2-fg)' }} />
+            <input type="email" autoComplete="email" value={cliente.email ?? ''} onChange={(e) => set({ email: e.target.value })} placeholder="tu@email.cl" className={inputCls} style={{ color: 'var(--v2-fg)' }} />
           </div>
           <div>
             <p className={labelCls} style={{ color: 'var(--v2-fg-subtle)' }}><Phone className="w-3 h-3" /> Teléfono</p>
-            <input value={cliente.telefono} onChange={(e) => set({ telefono: e.target.value })} placeholder="+56 9 ..." className={inputCls} style={{ color: 'var(--v2-fg)' }} />
+            <input type="tel" autoComplete="tel" value={cliente.telefono ?? ''} onChange={(e) => set({ telefono: e.target.value })} placeholder="+56 9 ..." className={inputCls} style={{ color: 'var(--v2-fg)' }} />
           </div>
         </div>
         <div className="grid grid-cols-2 gap-2.5">
           <div>
             <p className={labelCls} style={{ color: 'var(--v2-fg-subtle)' }}><MapPin className="w-3 h-3" /> Región</p>
-            <select value={cliente.region} onChange={(e) => set({ region: e.target.value, ciudad: '' })} className={inputCls} style={{ color: 'var(--v2-fg)' }}>
+            <select value={cliente.region ?? ''} onChange={(e) => set({ region: e.target.value, ciudad: '' })} className={inputCls} style={{ color: 'var(--v2-fg)' }}>
               <option value="">Elige…</option>
               {REGIONES_CHILE.map((r) => <option key={r.codigo} value={r.nombre}>{r.nombre}</option>)}
             </select>
           </div>
           <div>
             <p className={labelCls} style={{ color: 'var(--v2-fg-subtle)' }}>Comuna</p>
-            <select value={cliente.ciudad} onChange={(e) => set({ ciudad: e.target.value })} disabled={!cliente.region} className={inputCls} style={{ color: 'var(--v2-fg)' }}>
+            <select value={cliente.ciudad ?? ''} onChange={(e) => set({ ciudad: e.target.value })} disabled={!cliente.region} className={inputCls} style={{ color: 'var(--v2-fg)' }}>
               <option value="">Elige…</option>
               {comunas.map((c) => <option key={c} value={c}>{c}</option>)}
             </select>
@@ -111,19 +112,15 @@ export default function CardShipping({ data, onContinue }) {
         </div>
         <div>
           <p className={labelCls} style={{ color: 'var(--v2-fg-subtle)' }}>Dirección</p>
-          <input value={cliente.direccion} onChange={(e) => set({ direccion: e.target.value })} placeholder="Calle y número" className={inputCls} style={{ color: 'var(--v2-fg)' }} />
+          <input type="text" autoComplete="street-address" value={cliente.direccion ?? ''} onChange={(e) => set({ direccion: e.target.value })} placeholder="Calle y número" className={inputCls} style={{ color: 'var(--v2-fg)' }} />
         </div>
         <div>
           <p className={labelCls} style={{ color: 'var(--v2-fg-subtle)' }}>Depto / oficina / referencia (opcional)</p>
-          <input value={cliente.referencia} onChange={(e) => set({ referencia: e.target.value })} placeholder="Depto 42, timbre azul…" className={inputCls} style={{ color: 'var(--v2-fg)' }} />
+          <input type="text" value={cliente.referencia ?? ''} onChange={(e) => set({ referencia: e.target.value })} placeholder="Depto 42, timbre azul…" className={inputCls} style={{ color: 'var(--v2-fg)' }} />
         </div>
       </div>
 
-      {/* Cotización Bluex REAL (reusa el mismo selector de la tienda viva).
-          NUNCA desmontamos este bloque: lo ocultamos con CSS (display:none)
-          cuando aún no hay comuna. Así el árbol JSX mantiene SIEMPRE la misma
-          estructura e identidad — los inputs de arriba jamás se re-montan al
-          aparecer/desaparecer la sección de envío. */}
+      {/* Cotización Bluex REAL. El wrapper NUNCA se desmonta (display:none). */}
       <div
         className="mt-3.5 pt-3.5"
         style={{
