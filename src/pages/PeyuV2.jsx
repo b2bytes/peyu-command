@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Link } from 'react-router-dom';
 import '@/styles/v2-warm-dusk.css';
@@ -275,10 +275,15 @@ export default function PeyuV2() {
   // Reintento de pago tras volver de MP pendiente: reabre el carro.
   const handleRetryPay = () => handleCheckout();
 
-  const cardHandlers = {
+  // Memoizado: identidad estable del objeto de handlers entre renders, para que
+  // las cards (CardShipping incluida) no reciban props nuevas en cada render del
+  // padre. Las funciones internas usan setMessages/refs estables, así que es
+  // seguro fijar la referencia sin deps que cambien.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const cardHandlers = useMemo(() => ({
     onAddCart: handleAddCart, onQuote: handleQuote, onPick: handlePick,
     onCheckout: handleCheckout, onShippingContinue: handleShippingContinue, onRetryPay: handleRetryPay,
-  };
+  }), []);
 
   // Click en categoría del panel izquierdo → conversación.
   const handleCatClick = (cat) => {
@@ -315,7 +320,10 @@ export default function PeyuV2() {
           {m.cards && m.cards.length > 0 && (
             <div className={`flex flex-wrap gap-3 ${m.role === 'assistant' ? 'pl-9' : ''}`}>
               {m.cards.map((card, ci) => (
-                <V2CardDispatcher key={ci} card={card} perfil={mode} handlers={cardHandlers} />
+                // key estable por posición-en-el-río + tipo de card. Esto ancla
+                // la identidad del nodo: una card 'shipping' del mensaje i jamás
+                // se re-monta aunque su contenido interno cambie (región/comuna).
+                <V2CardDispatcher key={`${i}-${card.type}-${ci}`} card={card} perfil={mode} handlers={cardHandlers} />
               ))}
             </div>
           )}

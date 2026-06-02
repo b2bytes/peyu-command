@@ -119,10 +119,20 @@ export default function CardShipping({ data, onContinue }) {
         </div>
       </div>
 
-      {/* Cotización Bluex REAL (reusa el mismo selector de la tienda viva) */}
-      {cliente.ciudad && (
-        <div className="mt-3.5 pt-3.5" style={{ borderTop: '1px solid var(--v2-border)' }}>
-          <p className="text-[11px] font-semibold mb-2" style={{ color: 'var(--v2-fg-soft)' }}>Forma de envío · BlueExpress</p>
+      {/* Cotización Bluex REAL (reusa el mismo selector de la tienda viva).
+          NUNCA desmontamos este bloque: lo ocultamos con CSS (display:none)
+          cuando aún no hay comuna. Así el árbol JSX mantiene SIEMPRE la misma
+          estructura e identidad — los inputs de arriba jamás se re-montan al
+          aparecer/desaparecer la sección de envío. */}
+      <div
+        className="mt-3.5 pt-3.5"
+        style={{
+          borderTop: '1px solid var(--v2-border)',
+          display: cliente.ciudad ? 'block' : 'none',
+        }}
+      >
+        <p className="text-[11px] font-semibold mb-2" style={{ color: 'var(--v2-fg-soft)' }}>Forma de envío · BlueExpress</p>
+        {cliente.ciudad && (
           <ShippingSelector
             variant="dark"
             items={shippingItems}
@@ -132,8 +142,8 @@ export default function CardShipping({ data, onContinue }) {
             umbralEnvioGratis={40000}
             onSelect={handleSelectEnvio}
           />
-        </div>
-      )}
+        )}
+      </div>
 
       {error && <p className="text-[11px] mt-2.5" style={{ color: '#e0584f' }}>{error}</p>}
 
