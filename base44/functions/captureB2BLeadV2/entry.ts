@@ -1,4 +1,4 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 
 // ════════════════════════════════════════════════════════════════════
 // captureB2BLeadV2 — Paso 4. Captura B2B inteligente desde el chat /v2.
