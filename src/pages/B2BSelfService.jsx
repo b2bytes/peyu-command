@@ -25,12 +25,27 @@ const PERSIST_KEY = 'peyu_b2b_flow';
 // Fallback a descuentos genéricos solo si el producto no tiene precios de volumen configurados.
 function calcPrice(producto, qty) {
   if (!producto) return 0;
+
+  // Prioridad 1: precio_b2b_tramos (catálogo oficial, 8 tramos sin IVA)
+  const t = producto.precio_b2b_tramos;
+  if (t && typeof t === 'object') {
+    if (qty >= 2000 && t.t2000_mas)  return t.t2000_mas;
+    if (qty >= 1000 && t.t1000_1999) return t.t1000_1999;
+    if (qty >= 500 && t.t500_999)    return t.t500_999;
+    if (qty >= 250 && t.t250_499)    return t.t250_499;
+    if (qty >= 100 && t.t100_249)    return t.t100_249;
+    if (qty >= 50 && t.t50_99)       return t.t50_99;
+    if (qty >= 10 && t.t10_49)       return t.t10_49;
+    if (t.unitario)                  return t.unitario;
+  }
+
   const base = producto.precio_base_b2b || producto.precio_b2c || 5000;
+  // Prioridad 2: tabla legacy
   if (qty >= 500 && producto.precio_500_mas) return producto.precio_500_mas;
   if (qty >= 200 && producto.precio_200_499) return producto.precio_200_499;
   if (qty >= 50 && producto.precio_50_199) return producto.precio_50_199;
   if (qty >= 10 && producto.precio_base_b2b) return producto.precio_base_b2b;
-  // Fallback si no hay tabla: descuentos porcentuales suaves sobre precio_b2c
+  // Prioridad 3: fallback porcentual sobre precio_b2c
   let discount = 0;
   if (qty >= 500) discount = 0.25;
   else if (qty >= 200) discount = 0.15;
@@ -236,21 +251,31 @@ export default function B2BSelfService() {
         precio_50_199: c.producto.precio_50_199,
         precio_200_499: c.producto.precio_200_499,
         precio_500_mas: c.producto.precio_500_mas,
+        // Catálogo oficial: 8 tramos de precio mayorista sin IVA
+        precio_b2b_tramos: c.producto.precio_b2b_tramos || null,
         imagen_url: c.producto.imagen_url || '',
         categoria: c.producto.categoria,
         personalizacion: personalizar,
       }));
 
-      const res = await base44.functions.invoke('createSelfServiceProposal', {
-        ...form,
-        items,
-        logoUrl,
-        notes: form.notes,
-        posicion_grabado: posicionGrabado,
-        metodo_entrega: entrega.metodo,
-        direccion_entrega: entrega.direccion,
-        comuna_entrega: entrega.comuna,
-      });
+      // Timeout de seguridad: si el backend no responde en 40s, cortamos y
+      // mostramos error claro en vez de dejar el botón pegado para siempre.
+      const invokeWithTimeout = Promise.race([
+        base44.functions.invoke('createSelfServiceProposal', {
+          ...form,
+          items,
+          logoUrl,
+          notes: form.notes,
+          posicion_grabado: posicionGrabado,
+          metodo_entrega: entrega.metodo,
+          direccion_entrega: entrega.direccion,
+          comuna_entrega: entrega.comuna,
+        }),
+        new Promise((_, reject) =>
+          setTimeout(() => reject(new Error('La generación tardó demasiado. Intenta de nuevo o escríbenos por WhatsApp.')), 40000)
+        ),
+      ]);
+      const res = await invokeWithTimeout;
 
       if (res?.data?.error) throw new Error(res.data.error);
       if (!res?.data?.proposal_id) throw new Error('No se pudo generar la propuesta');

@@ -51,18 +51,35 @@ function buildMockupPrompt({ productName, productCategory, productImageUrl, logo
   return { prompt, references };
 }
 
-// === Pricing usando la TABLA REAL del producto (misma lógica que ProductoDetalle.jsx) ===
+// === Pricing usando la TABLA REAL del producto ===
+// Prioridad 1: precio_b2b_tramos (catálogo oficial V2, 8 tramos sin IVA).
+// Prioridad 2: tabla legacy (precio_50_199, precio_200_499, etc).
+// Prioridad 3: fallback porcentual.
 function calcUnitPrice(item) {
   const qty = item.qty || item.cantidad || 0;
+
+  // ── Prioridad 1: precio_b2b_tramos (8 llaves del catálogo oficial) ──
+  const t = item.precio_b2b_tramos;
+  if (t && typeof t === 'object') {
+    if (qty >= 2000 && t.t2000_mas)      return { unit: t.t2000_mas,      tier: '2000+ u.' };
+    if (qty >= 1000 && t.t1000_1999)     return { unit: t.t1000_1999,     tier: '1000-1999 u.' };
+    if (qty >= 500 && t.t500_999)        return { unit: t.t500_999,       tier: '500-999 u.' };
+    if (qty >= 250 && t.t250_499)        return { unit: t.t250_499,       tier: '250-499 u.' };
+    if (qty >= 100 && t.t100_249)        return { unit: t.t100_249,       tier: '100-249 u.' };
+    if (qty >= 50 && t.t50_99)           return { unit: t.t50_99,         tier: '50-99 u.' };
+    if (qty >= 10 && t.t10_49)           return { unit: t.t10_49,         tier: '10-49 u.' };
+    if (t.unitario)                      return { unit: t.unitario,       tier: '1-9 u.' };
+  }
+
   const base = item.precio_base_b2b || item.precio_base || item.precio_b2c || 5000;
 
-  // Tabla por tramos — idéntica a ProductoDetalle
+  // ── Prioridad 2: tabla legacy ──
   if (qty >= 500 && item.precio_500_mas) return { unit: item.precio_500_mas, tier: '500+ u.' };
   if (qty >= 200 && item.precio_200_499) return { unit: item.precio_200_499, tier: '200-499 u.' };
   if (qty >= 50 && item.precio_50_199) return { unit: item.precio_50_199, tier: '50-199 u.' };
   if (qty >= 10 && item.precio_base_b2b) return { unit: item.precio_base_b2b, tier: '10-49 u.' };
 
-  // Fallback sólo si el producto no trae la tabla
+  // ── Prioridad 3: fallback porcentual ──
   let discount = 0;
   if (qty >= 500) discount = 0.25;
   else if (qty >= 200) discount = 0.15;
@@ -151,9 +168,16 @@ Deno.serve(async (req) => {
     const expiryDate = new Date();
     expiryDate.setDate(expiryDate.getDate() + 15);
 
-    // 4. Mockup: misma técnica que `generateMockup` (imagen del producto + logo como referencia)
-    //    La replicamos inline aquí para evitar llamadas cruzadas function→function que pueden
-    //    sufrir timeouts. GenerateImage tarda ~10-15s, por eso lo ejecutamos directamente.
+    // 4. Mockup con TIMEOUT DURO. GenerateImage tarda ~10-15s y a veces más; si
+    //    se cuelga, NO debe bloquear toda la cotización (era la causa raíz del
+    //    botón "Generando..." infinito). Lo limitamos con Promise.race y, si
+    //    excede, seguimos sin mockup (el cliente igual recibe su propuesta).
+    const withTimeout = (promise, ms) =>
+      Promise.race([
+        promise,
+        new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), ms)),
+      ]);
+
     let mockupUrls = [];
     if (hasPersonalization) {
       try {
@@ -169,23 +193,19 @@ Deno.serve(async (req) => {
           engraveText, posicion: posicion_grabado,
         });
 
-        let imgRes;
-        if (references.length > 0) {
-          try {
-            imgRes = await base44.integrations.Core.GenerateImage({ prompt, existing_image_urls: references });
-          } catch {
-            imgRes = await base44.integrations.Core.GenerateImage({ prompt });
-          }
-        } else {
-          imgRes = await base44.integrations.Core.GenerateImage({ prompt });
-        }
+        const genImage = references.length > 0
+          ? base44.integrations.Core.GenerateImage({ prompt, existing_image_urls: references })
+              .catch(() => base44.integrations.Core.GenerateImage({ prompt }))
+          : base44.integrations.Core.GenerateImage({ prompt });
+
+        const imgRes = await withTimeout(genImage, 25000);
         if (imgRes?.url) mockupUrls = [imgRes.url];
       } catch (e) {
-        console.warn('Mockup opcional falló, continuando sin él:', e?.message);
+        console.warn('Mockup opcional falló/timeout, continuando sin él:', e?.message);
       }
     }
 
-    // 5. Crear propuesta
+    // 5. Crear propuesta (esto SIEMPRE ocurre — es el corazón del flujo)
     const proposal = await base44.asServiceRole.entities.CorporateProposal.create({
       numero: propNum,
       b2b_lead_id: lead.id,
@@ -213,18 +233,21 @@ Deno.serve(async (req) => {
       fecha_vencimiento: expiryDate.toISOString().split('T')[0],
     });
 
-    // 6. Disparar email automático con resumen + link a la propuesta.
-    //    Lo hacemos vía invoke para que el cliente vea la respuesta rápido;
-    //    si falla no bloquea la creación (el cliente ya tiene la propuesta online).
+    // 6. Email automático con TIMEOUT. El cliente igual puede reenviar desde la
+    //    pantalla de éxito (ProposalDeliveryActions), así que esto es best-effort
+    //    y nunca debe colgar la respuesta.
     let emailSent = false;
     try {
-      const emailRes = await base44.functions.invoke('sendSelfServiceProposalEmail', {
-        proposalId: proposal.id,
-        form: { contact_name, company_name, email, phone, rut, notes },
-      });
+      const emailRes = await withTimeout(
+        base44.functions.invoke('sendSelfServiceProposalEmail', {
+          proposalId: proposal.id,
+          form: { contact_name, company_name, email, phone, rut, notes },
+        }),
+        15000,
+      );
       emailSent = !!emailRes?.data?.success;
     } catch (e) {
-      console.warn('Email automático falló:', e?.message);
+      console.warn('Email automático falló/timeout (no bloquea):', e?.message);
     }
 
     return Response.json({
