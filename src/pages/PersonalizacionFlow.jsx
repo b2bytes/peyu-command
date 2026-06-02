@@ -114,6 +114,9 @@ export default function PersonalizacionFlow() {
   const [mockupUrl, setMockupUrl] = useState('');
   const [mockupLoading, setMockupLoading] = useState(false);
   const [mockupError, setMockupError] = useState('');
+  // Base limpia (sin logo PEYU) generada on-demand por producto.
+  const [cleanBaseUrl, setCleanBaseUrl] = useState('');
+  const [cleanBaseLoading, setCleanBaseLoading] = useState(false);
 
   // ── Carga del catálogo (productos personalizables) ───────────────────
   useEffect(() => {
@@ -141,6 +144,24 @@ export default function PersonalizacionFlow() {
     () => productos.find(p => p.id === productoId),
     [productos, productoId]
   );
+
+  // Al cambiar de producto, tomamos su base limpia ya guardada (si existe).
+  useEffect(() => {
+    setCleanBaseUrl(producto?.imagen_base_limpia_url || '');
+  }, [producto]);
+
+  // Genera la base limpia (sin logo PEYU) on-demand la 1ª vez que el cliente
+  // aporta un diseño. Se cachea en el producto para futuras visitas.
+  const tieneDiseno = !!(archivo || logoUrlSubido || texto);
+  useEffect(() => {
+    if (!producto || !tieneDiseno) return;
+    if (cleanBaseUrl || cleanBaseLoading) return;
+    setCleanBaseLoading(true);
+    base44.functions.invoke('generateCleanBaseImage', { productoId: producto.id })
+      .then(res => { if (res?.data?.clean_url) setCleanBaseUrl(res.data.clean_url); })
+      .catch(() => {})
+      .finally(() => setCleanBaseLoading(false));
+  }, [producto, tieneDiseno, cleanBaseUrl, cleanBaseLoading]);
 
   const colores = useMemo(() => producto ? getColoresProducto(producto) : [], [producto]);
   const color = useMemo(() => colores.find(c => c.id === colorId), [colores, colorId]);
@@ -459,6 +480,7 @@ export default function PersonalizacionFlow() {
       ) : (
         <LaserEngravePreview
           productImageUrl={getProductImage(producto)}
+          cleanImageUrl={cleanBaseUrl}
           logoFile={archivo}
           logoUrl={logoUrlSubido}
           texto={texto}

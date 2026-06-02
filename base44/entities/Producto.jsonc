@@ -229,6 +229,11 @@
       "type": "string",
       "title": "URL Imagen Principal"
     },
+    "imagen_base_limpia_url": {
+      "type": "string",
+      "title": "URL Imagen base limpia (sin logo PEYU)",
+      "description": "Versi\u00f3n de la imagen principal con el logo PEYU grabado eliminado, usada como lienzo del personalizador para componer el logo del cliente sin superposiciones. Generada por generateCleanBaseImage."
+    },
     "galeria_urls": {
       "type": "array",
       "title": "Galer\u00eda de im\u00e1genes alternativas",

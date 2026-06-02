@@ -14,11 +14,12 @@ import { engraveLogo } from '@/lib/logo-engraver';
 // ============================================================================
 
 export default function LaserEngravePreview({
-  productImageUrl,
-  logoFile,        // File subido (opcional)
-  logoUrl,         // URL ya subida (opcional)
+  productImageUrl,   // foto original (con logo PEYU) — se usa cuando NO hay logo del cliente
+  cleanImageUrl,     // foto base limpia (sin logo PEYU) — lienzo cuando SÍ hay logo del cliente
+  logoFile,          // File subido (opcional)
+  logoUrl,           // URL ya subida (opcional)
   texto = '',
-  areaLabel,       // ej: "≈ 40×25mm"
+  areaLabel,         // ej: "≈ 40×25mm"
   defaultTint = 'dark',
 }) {
   const [size, setSize] = useState(28);   // % del producto
@@ -31,6 +32,15 @@ export default function LaserEngravePreview({
   const containerRef = useRef(null);
 
   const logoSource = logoFile || logoUrl || null;
+
+  // Cuando el cliente aporta su propio diseño (logo o texto), componemos sobre
+  // la base LIMPIA (sin el logo PEYU) para que no queden dos logos. Si aún no
+  // hay base limpia, caemos a la original (mejor mostrar algo que romper).
+  // Sin diseño del cliente → mostramos la foto original tal cual (con PEYU).
+  const hasClientDesign = !!logoSource || !!texto;
+  const canvasImage = hasClientDesign
+    ? (cleanImageUrl || productImageUrl)
+    : productImageUrl;
 
   // Reprocesa el logo cada vez que cambia el origen o la tinta.
   useEffect(() => {
@@ -85,8 +95,8 @@ export default function LaserEngravePreview({
         onTouchMove={handleTouchMove}
         onTouchEnd={() => setDragging(false)}
       >
-        {productImageUrl
-          ? <img src={productImageUrl} alt="Producto" className="w-full h-full object-cover" draggable={false} />
+        {canvasImage
+          ? <img src={canvasImage} alt="Producto" className="w-full h-full object-cover" draggable={false} />
           : <div className="w-full h-full bg-gradient-to-br from-slate-800 to-slate-900" />
         }
 
