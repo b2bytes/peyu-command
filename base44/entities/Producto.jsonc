@@ -196,6 +196,12 @@
       },
       "default": []
     },
+    "imagenes_por_color": {
+      "type": "object",
+      "title": "Im\u00e1genes por color",
+      "additionalProperties": true,
+      "description": "Mapa color \u2192 URL de imagen. Fuente de verdad del selector de color: al elegir un color, la ficha muestra esta imagen. Ej: { \"Turquesa\": \"https://...\", \"Negro\": \"https://...\" }. Generado por generateCarcasaColors."
+    },
     "peso_pack_gr": {
       "type": "number",
       "title": "Peso del pack (gr)",

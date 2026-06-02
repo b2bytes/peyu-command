@@ -108,13 +108,15 @@ async function procesarProducto(base44, p, coloresObjetivo, sobrescribir) {
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
-    if (user?.role !== 'admin') {
+    const body = await req.json().catch(() => ({}));
+    const { sku = null, productId = null, lote = false, limite = 20, sobrescribir = false, colores = null, internalSecret = null } = body;
+
+    // Autorización: admin autenticado, O invocación interna (CRON) con secreto.
+    const user = await base44.auth.me().catch(() => null);
+    const esInterno = internalSecret && internalSecret === Deno.env.get('MADRE_V2_SECRET');
+    if (user?.role !== 'admin' && !esInterno) {
       return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
     }
-
-    const body = await req.json().catch(() => ({}));
-    const { sku = null, productId = null, lote = false, limite = 20, sobrescribir = false, colores = null } = body;
 
     const coloresObjetivo = Array.isArray(colores) && colores.length
       ? COLORES_OFICIALES.filter(c => colores.includes(c.label))
@@ -134,14 +136,19 @@ Deno.serve(async (req) => {
     }
 
     // ── Modo lote: carcasas activas que falten colores ──
+    // ⚠️ Cada carcasa = 5 generaciones IA secuenciales (~25s c/u ≈ 125s). Para no
+    // pasar el timeout de Deno, el lote procesa DE A 1 (limite default 1) y
+    // devuelve `pendientes_restantes` para que el caller itere invocación a
+    // invocación de forma segura.
     if (lote) {
       const carcasas = await base44.asServiceRole.entities.Producto.filter({ categoria: 'Carcasas B2C', activo: true }, '-updated_date', 200);
-      const pendientes = carcasas.filter(p => {
+      const pendientesTodas = carcasas.filter(p => {
         if (!mejorFoto(p)) return false;
         const mapa = p.imagenes_por_color || {};
         const faltan = coloresObjetivo.some(c => !mapa[c.label]);
         return sobrescribir || faltan;
-      }).slice(0, limite);
+      });
+      const pendientes = pendientesTodas.slice(0, limite || 1);
 
       const resultados = [];
       for (const p of pendientes) {
@@ -152,6 +159,7 @@ Deno.serve(async (req) => {
         modo: 'lote',
         candidatos: pendientes.length,
         procesados: resultados.filter(r => r.ok).length,
+        pendientes_restantes: Math.max(0, pendientesTodas.length - pendientes.length),
         resultados,
       });
     }
