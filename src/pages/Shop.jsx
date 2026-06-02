@@ -13,6 +13,8 @@ import { SITE_URL } from '@/lib/seo-catalog';
 import CyberCatalogBanner from '@/components/cyber/CyberCatalogBanner';
 import CyberFeaturedRow from '@/components/cyber/CyberFeaturedRow';
 import { isCyberActive, tieneOfertaCyber } from '@/lib/cyber-campaign';
+import { searchProductos } from '@/lib/product-search';
+import ShopSearchBar from '@/components/shop/ShopSearchBar';
 
 const CATEGORIAS_META = [
   { id: 'Todos',           label: 'Todos',           icon: '🌍' },
@@ -83,9 +85,9 @@ export default function Shop() {
     let result = [...productos];
     if (soloCyber) result = result.filter(tieneOfertaCyber);
     if (selectedCategory !== 'Todos') result = result.filter(p => p.categoria === selectedCategory);
+    // 🔎 Búsqueda tolerante (nombre, SKU, categoría, modelo de teléfono, typos/acentos)
     if (search) {
-      const q = search.toLowerCase();
-      result = result.filter(p => p.nombre?.toLowerCase().includes(q) || p.sku?.toLowerCase().includes(q));
+      result = searchProductos(result, search);
     }
     const priceRange = PRICE_RANGES.find(r => r.id === selectedPrice);
     if (priceRange && priceRange.id !== 'all') {
@@ -95,6 +97,9 @@ export default function Shop() {
       });
     }
     if (soloCyber) result = result.filter(tieneOfertaCyber);
+    // Si hay búsqueda activa y el sort es "popular", respetamos el orden por
+    // relevancia que ya devolvió searchProductos (no lo pisamos).
+    if (search && sortBy === 'popular') return result;
     switch (sortBy) {
       case 'price_asc': result.sort((a, b) => (a.precio_b2c || 0) - (b.precio_b2c || 0)); break;
       case 'price_desc': result.sort((a, b) => (b.precio_b2c || 0) - (a.precio_b2c || 0)); break;
@@ -122,8 +127,7 @@ export default function Shop() {
   const categoriasConConteo = useMemo(() => {
     let baseList = [...productos];
     if (search) {
-      const q = search.toLowerCase();
-      baseList = baseList.filter(p => p.nombre?.toLowerCase().includes(q) || p.sku?.toLowerCase().includes(q));
+      baseList = searchProductos(baseList, search);
     }
     const priceRange = PRICE_RANGES.find(r => r.id === selectedPrice);
     if (priceRange && priceRange.id !== 'all') {
@@ -280,23 +284,9 @@ export default function Shop() {
         <CyberCatalogBanner />
         <CyberFeaturedRow productos={productos} />
 
-        {/* Search bar Liquid Dual — sticky en mobile */}
-        <div className="mb-3 sm:mb-3 sticky top-14 sm:static z-20 -mx-4 px-4 sm:mx-0 sm:px-0 py-2 sm:py-0 ld-glass-strong sm:bg-transparent sm:backdrop-blur-none">
-          <div className="ld-input flex items-center gap-2 px-3.5 py-2.5 max-w-xl rounded-full">
-            <Search className="w-4 h-4 text-ld-fg-muted flex-shrink-0" />
-            <input
-              type="text"
-              placeholder="Buscar productos, SKU..."
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              className="bg-transparent border-0 text-ld-fg placeholder:text-ld-fg-subtle focus:ring-0 focus:outline-none text-sm w-full"
-            />
-            {search && (
-              <button onClick={() => setSearch('')} className="text-ld-fg-muted hover:text-ld-fg">
-                <X className="w-4 h-4" />
-              </button>
-            )}
-          </div>
+        {/* Search bar Liquid Dual — sticky en mobile, con sugerencias en vivo */}
+        <div className="mb-3 sm:mb-3 sticky top-14 sm:static z-30 -mx-4 px-4 sm:mx-0 sm:px-0 py-2 sm:py-0 ld-glass-strong sm:bg-transparent sm:backdrop-blur-none">
+          <ShopSearchBar value={search} onChange={setSearch} productos={productos} />
         </div>
 
         {/* CATEGORY TABS — sticky con conteos en vivo */}

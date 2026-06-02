@@ -155,6 +155,7 @@ export default function ChatQuoteCard({ spec = '', variant = 'dark' }) {
               {state === 'done' && result && (
                 <p className="text-[11px] text-emerald-100/90 mt-0.5">
                   ✓ {result.numero} · ${result.total.toLocaleString('es-CL')}
+                  {result.email_enviado && ' · enviada a tu correo 📧'}
                 </p>
               )}
             </div>
@@ -217,6 +218,7 @@ export default function ChatQuoteCard({ spec = '', variant = 'dark' }) {
             {state === 'done' && result && (
               <p className="text-[11px] text-emerald-700 mt-0.5">
                 ✓ {result.numero} · ${result.total.toLocaleString('es-CL')}
+                {result.email_enviado && ' · enviada a tu correo 📧'}
               </p>
             )}
           </div>

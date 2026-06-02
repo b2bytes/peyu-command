@@ -915,6 +915,22 @@ export default function ProductoDetalle() {
                   )}
                 </div>
                 <p className="text-xs text-ld-fg-muted mt-2">Total: <span className="font-bold text-ld-fg">${(precioActual * cantidad).toLocaleString('es-CL')}</span></p>
+                {/* Descuento B2C automático por cantidad del MISMO producto (no aplica al
+                    tramo corporativo ≥10u que usa precios B2B escalonados). No-acumula
+                    con Cyber: si hay oferta Cyber, esa prevalece y no sumamos %. */}
+                {!isGiftCard && !precioVolumen && cantidad >= 2 && !(isCyberActive() && tieneOfertaCyber(producto)) && (() => {
+                  const pct = cantidad >= 3 ? 15 : 10;
+                  const ahorro = Math.floor(precioActual * cantidad * (pct / 100));
+                  return (
+                    <div className="mt-2 flex items-center gap-2 text-xs font-semibold rounded-xl p-2.5" style={{ background: 'var(--ld-action-soft)', color: 'var(--ld-action)' }}>
+                      <Sparkles className="w-3.5 h-3.5 flex-shrink-0" />
+                      Llevas {cantidad} → −{pct}% automático · ahorras ${ahorro.toLocaleString('es-CL')} en el carrito
+                    </div>
+                  );
+                })()}
+                {!isGiftCard && !precioVolumen && cantidad === 1 && (
+                  <p className="text-[11px] text-ld-fg-muted mt-1.5">💡 Lleva 2 y obtén −10% · 3 o más −15% (automático en el carrito)</p>
+                )}
               </div>
 
               {/* Personalización — no aplicable a giftcards */}

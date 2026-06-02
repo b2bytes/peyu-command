@@ -97,9 +97,11 @@ export function getColoresProducto(producto) {
         .filter(Boolean);
       if (mapped.length > 0) return mapped;
     }
-    // Set por defecto para carcasas.
+    // Set OFICIAL por defecto para carcasas (5 colores PEYU):
+    // Turquesa, Amarillo, Rosado, Negro, Azul. Aplica a TODAS las carcasas
+    // (iPhone y Samsung) cuando el producto no trae `colores` cargado.
     return PEYU_COLOR_CATALOG.filter((c) =>
-      ['negro', 'beige', 'azul', 'rojo', 'verde'].includes(c.id)
+      ['turquesa', 'amarillo', 'rosa', 'negro', 'azul'].includes(c.id)
     );
   }
 

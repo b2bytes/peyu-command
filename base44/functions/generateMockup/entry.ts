@@ -107,6 +107,25 @@ Return concise, production-accurate guidance.`,
   }
 }
 
+// ============================================================================
+// LÁSER INTELIGENTE POR COLOR — El grabado láser es SIEMPRE monocromo (1 tono),
+// pero ese tono debe contrastar con el color de la carcasa para ser visible:
+//   · Carcasas OSCURAS (negro, azul) → láser CLARO (gris claro/blanco humo).
+//   · Carcasas CLARAS (amarillo, rosado, turquesa, beige, blanco) → láser OSCURO.
+// Detectamos el color desde el label que viene de la ficha (es texto en español).
+// ============================================================================
+const DARK_COLOR_HINTS = ['negro', 'azul', 'azul marino', 'marino', 'gris oscuro', 'café', 'cafe', 'marron', 'marrón', 'violeta', 'morado', 'verde oscuro'];
+
+function buildLaserToneInstruction(color) {
+  if (!color) return '';
+  const c = String(color).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  const isDark = DARK_COLOR_HINTS.some(h => c.includes(h.normalize('NFD').replace(/[\u0300-\u036f]/g, ''))) || /(^|\s)(negr|azul|marin|oscur)/.test(c);
+  if (isDark) {
+    return ` 🔦 LASER TONE (monochrome, single color): the case color is DARK ("${color}"), so the engraving must appear in a LIGHT smoky-grey / off-white etched tone so it is clearly visible against the dark surface. Still ONE single tone — real UV laser engraving is monochrome — only lighter than the case.`;
+  }
+  return ` 🔦 LASER TONE (monochrome, single color): the case color is LIGHT ("${color}"), so the engraving must appear in a DARK charcoal-grey etched tone so it is clearly visible against the light surface. Still ONE single tone — real UV laser engraving is monochrome — only darker than the case.`;
+}
+
 // Construye una instrucción de placement a partir del análisis de visión.
 function buildZoneInstruction(zone) {
   if (!zone) return '';
@@ -119,7 +138,7 @@ function buildZoneInstruction(zone) {
 }
 
 // Construye el prompt según el tipo de mockup (logo/retrato/foto/jenga).
-function buildPromptByType({ mockupType, productName, productCategory, hasProductRef, hasArtRef, text, color, zoneInstruction = '' }) {
+function buildPromptByType({ mockupType, productName, productCategory, hasProductRef, hasArtRef, text, color, zoneInstruction = '', laserTone = '' }) {
   const base = hasProductRef
     ? `⚠️ ABSOLUTE CRITICAL RULE: The FIRST reference image IS the exact product the customer chose from our e-commerce. You MUST use it as the base. DO NOT generate a new product. DO NOT change the product shape, color, material, angle, lighting, background, or framing. Preserve the image EXACTLY as provided — only add the personalization on top. Product: "${productName}"${productCategory ? ` (category: ${productCategory})` : ''} — Peyu Chile, made in Chile from 100% recycled plastic. `
     : `Photorealistic product photograph of a Peyu Chile gift: "${productName}"${productCategory ? ` (${productCategory})` : ''}. Made from 100% recycled plastic with visible marbled texture, manufactured in Chile. Clean studio photography, soft neutral background, professional soft lighting, 3/4 view. ${color ? `Product color: ${color}. ` : ''}`;
@@ -176,14 +195,14 @@ function buildPromptByType({ mockupType, productName, productCategory, hasProduc
       `The engraving MUST look PHYSICALLY ENGRAVED into the recycled plastic: monochrome single tone (lasers engrave in one tone determined by the material), micro depth, subtle darkening or lighter etched tone, tiny shadow inside the strokes, follows curvature and marbled texture. NO floating stickers, NO flat overlay, NO glow, NO color fills. ` +
       `Keep the logo proportional (~30-40% of the visible flat surface), centered on the natural engraving zone, preserving aspect ratio. ` +
       (text && text.trim() ? `Engrave the tagline "${text}" in clean sans-serif below the logo, same engraved style, smaller size. Copy character-by-character. ` : '') +
-      zoneInstruction +
+      zoneInstruction + laserTone +
       `\nFinal output: photorealistic, identical background/framing/angle/lighting to the first reference.`;
   }
   if (text && text.trim()) {
     return base +
       `⚠️ The customer's text is "${text}". Engrave it LITERALLY, character-by-character, preserving letters, accents, spaces and punctuation EXACTLY. ` +
       `TASK: UV laser engraving of "${text}" onto the product surface. Clean sans-serif (Inter/Helvetica), micro depth, subtle darkening inside strokes, tiny shadow, follows curvature, blends with marbled recycled plastic. NO stickers, NO flat overlay, NO glow. Centered on the engraving zone. ` +
-      zoneInstruction +
+      zoneInstruction + laserTone +
       `\nFinal output: photorealistic, identical to the first reference image with the engraving added physically.`;
   }
   return base + `Show the product identical to the reference, no engraving added.`;
@@ -219,6 +238,8 @@ Deno.serve(async (req) => {
       zoneInstruction = buildZoneInstruction(zone);
     }
 
+    const laserTone = buildLaserToneInstruction(color);
+
     const prompt = buildPromptByType({
       mockupType,
       productName,
@@ -228,40 +249,70 @@ Deno.serve(async (req) => {
       text,
       color,
       zoneInstruction,
+      laserTone,
     });
 
     const references = [];
     if (hasProductRef) references.push(productImageUrl);
     if (hasLogoRef) references.push(effectiveLogoUrl);
 
-    let result;
-    if (references.length > 0) {
-      try {
-        result = await base44.integrations.Core.GenerateImage({
-          prompt,
-          existing_image_urls: references,
-        });
-      } catch (imgErr) {
-        console.warn('Referencias directas fallaron, intentando mirror:', imgErr?.message);
-        const mirrored = [];
-        for (const url of references) {
-          const m = await mirrorToBase44(base44, url);
-          if (m) mirrored.push(m);
+    // 🔁 Generación robusta con reintentos. El bug reportado por Diego: a veces
+    // GenerateImage falla intermitentemente (timeout/red) y el mockup queda vacío.
+    // Estrategia: 2 intentos con refs directas → 1 con refs espejadas a Base44 →
+    // 1 sin refs (solo prompt). Backoff corto entre intentos. Logueamos cada fallo.
+    const genWithRetry = async (urls, intentos = 2) => {
+      for (let i = 0; i < intentos; i++) {
+        try {
+          const r = await base44.integrations.Core.GenerateImage(
+            urls && urls.length ? { prompt, existing_image_urls: urls } : { prompt }
+          );
+          if (r?.url) return r;
+          console.warn(`GenerateImage devolvió sin url (intento ${i + 1}/${intentos})`);
+        } catch (err) {
+          console.error(`GenerateImage falló (intento ${i + 1}/${intentos}):`, err?.message || err);
         }
-        if (mirrored.length > 0) {
-          try {
-            result = await base44.integrations.Core.GenerateImage({
-              prompt,
-              existing_image_urls: mirrored,
-            });
-          } catch {
-            result = null;
-          }
-        }
+        if (i < intentos - 1) await new Promise(res => setTimeout(res, 800 * (i + 1)));
       }
+      return null;
+    };
+
+    let result = null;
+
+    // 1) Refs directas (2 intentos)
+    if (references.length > 0) {
+      result = await genWithRetry(references, 2);
     }
+
+    // 2) Refs espejadas a Base44 (1 intento) — sortea bloqueos de hotlink de Woo
+    if (!result && references.length > 0) {
+      console.warn('Mockup: refs directas fallaron, espejando a Base44…');
+      const mirrored = [];
+      for (const url of references) {
+        const m = await mirrorToBase44(base44, url);
+        if (m) mirrored.push(m);
+      }
+      if (mirrored.length > 0) result = await genWithRetry(mirrored, 1);
+    }
+
+    // 3) Sin refs, solo prompt (1 intento) — última red de seguridad
     if (!result) {
-      result = await base44.integrations.Core.GenerateImage({ prompt });
+      console.warn('Mockup: generando solo con prompt (sin refs)…');
+      result = await genWithRetry(null, 1);
+    }
+
+    // 4) Fallback final: si TODO falló, devolvemos la imagen original del producto
+    // para que la UI nunca quede en blanco. Marcamos success:false para que el
+    // frontend muestre el aviso correcto.
+    if (!result?.url) {
+      console.error('Mockup: todos los intentos fallaron. Fallback a imagen del producto.', { productName, sku, color });
+      return Response.json({
+        mockup_url: hasProductRef ? productImageUrl : null,
+        success: false,
+        fallback: true,
+        error: 'No se pudo generar el mockup tras varios intentos. Mostrando producto base.',
+        product: productName,
+        mockup_type: mockupType,
+      });
     }
 
     if (jobId) {

@@ -82,7 +82,10 @@ export default function MockupGenerator({
         mockupType,
       });
       const url = res.data?.mockup_url;
-      if (!url) throw new Error('No se generó la imagen.');
+      const ok = res.data?.success !== false && !res.data?.fallback;
+      if (!url || !ok) {
+        throw new Error(res.data?.error || 'No pudimos generar el mockup ahora. Intenta de nuevo en unos segundos.');
+      }
       setResultUrl(url);
       onGenerated?.(url, { texto: text, logoUrl });
     } catch (err) {

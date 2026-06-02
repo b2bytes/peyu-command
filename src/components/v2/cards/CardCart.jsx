@@ -74,19 +74,19 @@ export default function CardCart({ onCheckout }) {
           <span>Subtotal ({t.unidades} u.)</span>
           <span>{formatCLP(t.subtotal)}</span>
         </div>
-        {t.descuentoVolumen > 0 && (
-          <div className="flex items-center justify-between text-[11px]" style={{ color: 'var(--v2-teal)' }}>
-            <span>📦 Descuento volumen ({t.pctVolumen}%)</span>
-            <span>−{formatCLP(t.descuentoVolumen)}</span>
+        {(t.lineasDescuento || []).filter(l => l.ahorro > 0).map((l) => (
+          <div key={l.sku || l.nombre} className="flex items-center justify-between text-[11px]" style={{ color: 'var(--v2-teal)' }}>
+            <span className="truncate">📦 {l.nombre || l.sku} ×{l.unidades} → −{l.pct}%</span>
+            <span>−{formatCLP(l.ahorro)}</span>
           </div>
-        )}
+        ))}
         <div className="flex items-center justify-between pt-1">
           <span className="text-xs font-semibold" style={{ color: 'var(--v2-fg)' }}>Total</span>
           <span className="text-base font-bold" style={{ color: 'var(--v2-gold)' }}>{formatCLP(t.totalSinEnvio)}</span>
         </div>
-        {t.teaser.necesita > 0 && t.unidades >= 1 && (
+        {t.descuentoVolumen === 0 && t.unidades >= 1 && (
           <p className="text-[10px] pt-1" style={{ color: 'var(--v2-teal)' }}>
-            ✨ Agrega {t.teaser.necesita} más y obtén {t.teaser.pctSiguiente}% off
+            ✨ Lleva 2 del mismo producto y obtén −10% · 3 o más −15%
           </p>
         )}
       </div>

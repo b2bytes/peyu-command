@@ -1,14 +1,23 @@
-// 💸 Descuento automático B2C por volumen
-// Replica la lógica de la web anterior de PEYU:
-//   - 2 unidades totales → 10% off sobre subtotal
-//   - 3+ unidades totales → 15% off sobre subtotal
+// 💸 Descuento automático B2C por cantidad — POR SKU IGUAL
+// ----------------------------------------------------------------------------
+// Regla PEYU (retail B2C, NO el flujo corporativo ≥10u con cotización PDF):
+//   - Se cuentan las unidades del MISMO SKU (mismo producto exacto).
+//   - 2 unidades del mismo SKU  → 10% sobre esas unidades de ese SKU.
+//   - 3+ unidades del mismo SKU → 15% sobre esas unidades de ese SKU.
+//   - Cada SKU se evalúa de forma INDEPENDIENTE. 1 sola unidad → sin descuento.
 //
-// Reglas de acumulación:
+// No-acumulación con Cyber:
+//   - Si una línea tiene precio_oferta Cyber Y califica al descuento por cantidad,
+//     se aplica SOLO el beneficio MAYOR para el cliente (nunca ambos).
+//     El precio Cyber ya viene reflejado en item.precio (se setea al agregar),
+//     por eso el descuento por cantidad se calcula sobre item.precio salvo que
+//     la línea esté marcada como oferta Cyber (cyber=true) — en ese caso el
+//     beneficio Cyber ya está incluido y NO sumamos el % por cantidad encima.
+//
+// Reglas de acumulación con otros descuentos:
 //   - NO se acumula con cupones (si hay cupón, se prioriza el cupón).
-//   - SÍ se acumula con descuento por transferencia (-5%) y GiftCard (es pago, no descuento).
-//   - NO aplica para B2B (B2B usa precios escalonados de precio_50_199 etc.).
-//
-// Excluimos GiftCards del cómputo de cantidades (no es un producto físico).
+//   - SÍ con transferencia (-5%) y GiftCard (es pago, no descuento).
+//   - NO aplica para B2B (precios escalonados precio_50_199, etc.).
 
 const GIFTCARD_SKU_PREFIX = 'GC-PEYU';
 
@@ -17,52 +26,81 @@ const isGiftCardItem = (item) =>
   String(item?.nombre || '').toLowerCase().includes('gift card');
 
 /**
- * Cuenta unidades totales del carrito EXCLUYENDO gift cards.
- */
-export function countVolumeUnits(carrito = []) {
-  return (carrito || [])
-    .filter(it => !isGiftCardItem(it))
-    .reduce((sum, it) => sum + (it.cantidad || 0), 0);
-}
-
-/**
- * Devuelve el porcentaje de descuento por volumen según unidades totales.
+ * % de descuento por cantidad para N unidades de un mismo SKU.
  * 2u → 10 | 3+u → 15 | else → 0
  */
-export function getVolumeDiscountPct(unidades) {
+export function getQtyDiscountPct(unidades) {
   if (unidades >= 3) return 15;
   if (unidades === 2) return 10;
   return 0;
 }
 
 /**
- * Calcula el descuento por volumen en CLP a partir de un carrito y subtotal.
- * Si hay cupón aplicado, retorna 0 (no se acumulan).
+ * Agrupa el carrito por SKU y calcula el descuento por cantidad de cada grupo.
+ * Devuelve por línea: sku, nombre, unidades, pct, montoBruto, ahorro y si fue
+ * bloqueado porque la línea ya tiene beneficio Cyber (no-acumulación).
+ *
+ * @param {Object} args
+ * @param {Array}  args.carrito  items del carrito ({ sku, nombre, precio, cantidad, cyber })
+ * @param {boolean} args.hasCupon  si hay cupón aplicado (bloquea todo el descuento por cantidad)
  */
-export function computeVolumeDiscount({ carrito, subtotal, hasCupon = false }) {
+export function computeQtyDiscountBySku({ carrito = [], hasCupon = false } = {}) {
   if (hasCupon) {
-    return { pct: 0, clp: 0, unidades: countVolumeUnits(carrito), bloqueadoPorCupon: true };
+    return { lineas: [], ahorroTotal: 0, bloqueadoPorCupon: true };
   }
-  const unidades = countVolumeUnits(carrito);
-  const pct = getVolumeDiscountPct(unidades);
-  const clp = Math.floor((subtotal || 0) * (pct / 100));
-  return { pct, clp, unidades, bloqueadoPorCupon: false };
+
+  // Agrupar por SKU (los productos sin SKU se agrupan por nombre como fallback).
+  const grupos = new Map();
+  for (const it of carrito) {
+    if (isGiftCardItem(it)) continue;
+    const key = String(it.sku || it.productoId || it.nombre || '').trim();
+    if (!key) continue;
+    const prev = grupos.get(key) || {
+      sku: it.sku || '',
+      nombre: it.nombre || '',
+      unidades: 0,
+      precioUnit: it.precio || 0,
+      cyber: !!it.cyber, // línea con oferta Cyber ya aplicada
+    };
+    prev.unidades += (it.cantidad || 0);
+    grupos.set(key, prev);
+  }
+
+  const lineas = [];
+  let ahorroTotal = 0;
+  for (const g of grupos.values()) {
+    const pct = getQtyDiscountPct(g.unidades);
+    if (pct === 0) continue;
+    const montoBruto = g.precioUnit * g.unidades;
+
+    // No-acumulación: si la línea ya trae beneficio Cyber, NO sumamos el % por
+    // cantidad encima. Mostramos que se aplicó Cyber (mayor beneficio asumido).
+    if (g.cyber) {
+      lineas.push({
+        sku: g.sku, nombre: g.nombre, unidades: g.unidades, pct,
+        montoBruto, ahorro: 0, beneficioAplicado: 'cyber',
+      });
+      continue;
+    }
+
+    const ahorro = Math.floor(montoBruto * (pct / 100));
+    ahorroTotal += ahorro;
+    lineas.push({
+      sku: g.sku, nombre: g.nombre, unidades: g.unidades, pct,
+      montoBruto, ahorro, beneficioAplicado: 'cantidad',
+    });
+  }
+
+  return { lineas, ahorroTotal, bloqueadoPorCupon: false };
 }
 
 /**
- * Mensaje motivador: si está cerca del próximo escalón, devuelve cuántas unidades
- * más necesita y el % que ganaría. Útil para mostrar "agrega 1 más y obtén 15% off".
+ * Teaser por SKU: para un grupo de N unidades de un mismo producto, cuántas
+ * más necesita para subir de escalón y a qué % llegaría. null si ya está al tope.
  */
-export function getNextVolumeTeaser(unidades) {
-  if (unidades === 0) {
-    return { necesita: 2, pctSiguiente: 10, alcanzado: 0 };
-  }
-  if (unidades === 1) {
-    return { necesita: 1, pctSiguiente: 10, alcanzado: 0 };
-  }
-  if (unidades === 2) {
-    return { necesita: 1, pctSiguiente: 15, alcanzado: 10 };
-  }
-  // 3+ ya está en el tope
-  return { necesita: 0, pctSiguiente: 15, alcanzado: 15 };
+export function getNextQtyTeaserForSku(unidades) {
+  if (unidades <= 0) return { necesita: 2, pctSiguiente: 10 };
+  if (unidades === 1) return { necesita: 1, pctSiguiente: 10 };
+  if (unidades === 2) return { necesita: 1, pctSiguiente: 15 };
+  return null; // 3+ ya está en el tope
 }

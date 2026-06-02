@@ -270,6 +270,52 @@ Deno.serve(async (req) => {
     const pdfBytes = doc.output('arraybuffer');
     const base64 = btoa(String.fromCharCode(...new Uint8Array(pdfBytes)));
 
+    // 📧 Enviar la cotización al correo del cliente (si dejó email) vía Resend,
+    // con el PDF adjunto. Best-effort: si falla el email NO rompemos la descarga.
+    let emailEnviado = false;
+    const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');
+    if (email && /\S+@\S+\.\S+/.test(email) && RESEND_API_KEY) {
+      try {
+        const r = await fetch('https://api.resend.com/emails', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${RESEND_API_KEY}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            from: 'PEYU Chile <ventas@peyuchile.cl>',
+            to: [email],
+            subject: `Tu cotización PEYU ${numero} · ${producto.nombre} x${cantidad}u`,
+            html: `
+              <div style="font-family:Arial,sans-serif;max-width:560px;margin:0 auto;color:#1a1a1a">
+                <div style="background:#0F8B6C;padding:24px;border-radius:12px 12px 0 0">
+                  <h1 style="color:#fff;margin:0;font-size:22px">PEYU 🐢</h1>
+                  <p style="color:#d7f0e8;margin:4px 0 0;font-size:13px">Productos con propósito · 100% plástico reciclado</p>
+                </div>
+                <div style="border:1px solid #e5e7eb;border-top:0;padding:24px;border-radius:0 0 12px 12px">
+                  <p>Hola${contacto ? ` ${contacto}` : ''} 👋</p>
+                  <p>Te adjuntamos tu cotización <strong>${numero}</strong> generada desde el chat:</p>
+                  <table style="width:100%;border-collapse:collapse;margin:16px 0;font-size:14px">
+                    <tr><td style="padding:6px 0;color:#666">Producto</td><td style="padding:6px 0;text-align:right;font-weight:600">${producto.nombre}</td></tr>
+                    <tr><td style="padding:6px 0;color:#666">Cantidad</td><td style="padding:6px 0;text-align:right;font-weight:600">${cantidad} u.</td></tr>
+                    <tr><td style="padding:6px 0;color:#666">Precio unitario</td><td style="padding:6px 0;text-align:right;font-weight:600">$${precioUnit.toLocaleString('es-CL')}</td></tr>
+                    <tr><td style="padding:6px 0;color:#666;border-top:2px solid #0F8B6C">Total (IVA incl.)</td><td style="padding:6px 0;text-align:right;font-weight:800;color:#0F8B6C;border-top:2px solid #0F8B6C">$${total.toLocaleString('es-CL')}</td></tr>
+                  </table>
+                  ${cantidad >= 10 ? '<p style="color:#0F8B6C;font-weight:600;font-size:13px">✓ Personalización láser UV incluida GRATIS desde 10 unidades.</p>' : ''}
+                  <p style="font-size:13px;color:#666">Validez: 15 días · Lead time estimado: ${leadTime} días hábiles. Para confirmar, responde este correo indicando el número de cotización.</p>
+                  <a href="https://wa.me/56935040242?text=${encodeURIComponent(`Hola PEYU, quiero confirmar la cotización ${numero}`)}" style="display:inline-block;background:#0F8B6C;color:#fff;text-decoration:none;padding:12px 22px;border-radius:999px;font-weight:700;font-size:14px;margin-top:8px">Confirmar por WhatsApp</a>
+                </div>
+              </div>`,
+            attachments: [{ filename: `Cotizacion-Peyu-${numero}.pdf`, content: base64 }],
+          }),
+        });
+        emailEnviado = r.ok;
+        if (!r.ok) console.error('Resend cotización error:', await r.text());
+      } catch (e) {
+        console.error('Error enviando cotización por email:', e?.message || e);
+      }
+    }
+
     return Response.json({
       ok: true,
       cotizacion_id: cot.id,
@@ -277,6 +323,7 @@ Deno.serve(async (req) => {
       total,
       pdf_base64: base64,
       filename: `Cotizacion-Peyu-${numero}.pdf`,
+      email_enviado: emailEnviado,
     });
   } catch (error) {
     console.error('generateChatQuotePDF error:', error);

@@ -8,7 +8,7 @@
 //   { id, sku, productoId, nombre, imagen, precio, cantidad, color }
 // ════════════════════════════════════════════════════════════════════
 
-import { computeVolumeDiscount, getNextVolumeTeaser } from '@/lib/volume-discount';
+import { computeQtyDiscountBySku } from '@/lib/volume-discount';
 
 const CART_KEY = 'carrito';
 
@@ -79,19 +79,21 @@ export function clearCart() {
   return writeCart([]);
 }
 
-// Totales del carrito B2C con descuento por volumen (misma lógica que /cart).
+// Totales del carrito B2C con descuento por cantidad POR SKU (misma lógica que /cart).
 export function computeCartTotals(items = readCart()) {
   const subtotal = items.reduce((s, i) => s + (i.precio || 0) * (i.cantidad || 1), 0);
   const unidades = items.reduce((s, i) => s + (i.cantidad || 1), 0);
-  const vol = computeVolumeDiscount({ carrito: items, subtotal, hasCupon: false });
-  const teaser = getNextVolumeTeaser(vol.unidades);
-  const totalSinEnvio = Math.max(0, subtotal - vol.clp);
+  const qty = computeQtyDiscountBySku({ carrito: items, hasCupon: false });
+  const descuentoVolumen = qty.ahorroTotal;
+  // % máximo aplicado entre las líneas (para mostrar un indicador resumido).
+  const pctVolumen = qty.lineas.reduce((m, l) => Math.max(m, l.pct || 0), 0);
+  const totalSinEnvio = Math.max(0, subtotal - descuentoVolumen);
   return {
     subtotal,
     unidades,
-    descuentoVolumen: vol.clp,
-    pctVolumen: vol.pct,
-    teaser,
+    descuentoVolumen,
+    pctVolumen,
+    lineasDescuento: qty.lineas,
     totalSinEnvio,
   };
 }
