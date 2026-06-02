@@ -85,8 +85,11 @@ export function getColoresProducto(producto) {
   // por defecto Negro, Beige Natural, Azul, Rojo, Verde — configurables por
   // producto vía `producto.colores_v2` (si el catálogo trae lista explícita).
   if (producto.categoria === 'Carcasas B2C') {
-    // Si el producto define colores explícitos, los usamos (matcheando catálogo).
-    const explicit = Array.isArray(producto.colores_v2) ? producto.colores_v2 : [];
+    // Fuente de verdad: campo `colores` (poblado en el catálogo). Si existe, lo
+    // usamos matcheando contra el catálogo central. Fallback a `colores_v2`.
+    const explicit = Array.isArray(producto.colores) && producto.colores.length > 0
+      ? producto.colores
+      : (Array.isArray(producto.colores_v2) ? producto.colores_v2 : []);
     if (explicit.length > 0) {
       const norm = (s) => normalize(s);
       const mapped = explicit
