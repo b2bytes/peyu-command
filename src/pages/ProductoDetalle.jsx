@@ -281,7 +281,7 @@ export default function ProductoDetalle() {
       pack_resumen: packSummary,
       personalizacion: personalizacion || null,
       posicion_grabado: personalizacion ? posicionGrabado : null,
-      imagen: getProductImage(producto),
+      imagen: packSize ? getProductImage(producto) : imagenColorSeleccionado,
     };
     const nuevo = [...carrito, item];
     setCarrito(nuevo);
@@ -316,6 +316,25 @@ export default function ProductoDetalle() {
         ...(Array.isArray(producto.galeria_urls) ? producto.galeria_urls : []),
       ].filter(Boolean)))
     : [];
+
+  // 🎨 Imagen que corresponde al color seleccionado. Fuente de verdad:
+  //   1) mapa estructurado imagenes_por_color (color → URL) que Diego carga
+  //   2) match scored sobre la galería (filename con el color)
+  //   3) imagen principal del producto (fallback)
+  // Se usa para el item del carrito y como base del mockup láser, así el
+  // cliente ve SU color elegido (no la imagen genérica del primer producto).
+  const colorObjSel = producto ? getColores(producto).find(c => c.id === colorSeleccionado) : null;
+  const imagenColorSeleccionado = (() => {
+    if (!producto) return '';
+    if (colorObjSel) {
+      const mapa = producto.imagenes_por_color || {};
+      const porMapa = mapa[colorObjSel.label] || mapa[colorObjSel.id];
+      if (porMapa) return porMapa;
+      const match = findColorImageMatch(galeria, colorObjSel);
+      if (match && galeria[match.index]) return galeria[match.index];
+    }
+    return imgPrincipal;
+  })();
 
   // 🎨 UX 2026 — Sync inteligente color ↔ imagen
   // Cuando el cliente cambia el color, buscamos en la galería la imagen que
@@ -1301,7 +1320,7 @@ export default function ProductoDetalle() {
           productName={producto.nombre}
           productCategory={producto.categoria}
           productSku={producto.sku}
-          productImageUrl={galeria[vistaActiva] || imgPrincipal}
+          productImageUrl={imagenColorSeleccionado || galeria[vistaActiva] || imgPrincipal}
           initialText={personalizacion}
           initialColor={colores.find(c => c.id === colorSeleccionado)?.label || ''}
           onGenerated={(url, extra = {}) => {
