@@ -11,6 +11,7 @@ import CardOrderStatus from './cards/CardOrderStatus';
 import CardCompare from './cards/CardCompare';
 import CardOnboarding from './cards/CardOnboarding';
 import CardB2BFork from './cards/CardB2BFork';
+import V2TransitionBanner from './V2TransitionBanner';
 
 // Dispatcher: 1 card del río = 1 componente. switch(card.type).
 export default function V2CardDispatcher({ card, perfil, handlers }) {
@@ -19,9 +20,11 @@ export default function V2CardDispatcher({ card, perfil, handlers }) {
 
   switch (card.type) {
     case 'onboarding':
-      return <CardOnboarding onAsk={onAsk} />;
+      return <CardOnboarding onAsk={onAsk} onForkPick={onForkPick} />;
     case 'b2b_fork':
       return <CardB2BFork data={card.data} onPick={onForkPick} />;
+    case 'transition':
+      return <V2TransitionBanner variant={card.data?.variant} onAction={onForkPick && ((v) => onForkPick(v === 'to_b2b' ? 'b2b' : 'b2c'))} />;
     case 'product':
       return <CardProduct data={card.data} perfil={perfil} onAddCart={onAddCart} onQuote={onQuote} />;
     case 'product_grid':

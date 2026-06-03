@@ -14,8 +14,7 @@ import { getRecentViews, pushRecentView } from '@/lib/v2-recent';
 import { isV2Founder } from '@/lib/v2-founders';
 import { addToCart, computeCartTotals } from '@/lib/v2-cart';
 import { readCheckout, mergeCheckout } from '@/lib/v2-checkout-store';
-import { Send, ShoppingCart, Sparkles, SlidersHorizontal, MessagesSquare, ArrowLeft, X } from 'lucide-react';
-import { isCyberActive, CYBER_COPY } from '@/lib/cyber-campaign';
+import { Send, ShoppingCart, Sparkles, SlidersHorizontal, MessagesSquare, ArrowLeft } from 'lucide-react';
 
 const PEYU_LOGO = 'https://media.base44.com/images/public/6a1a158951bc398e16add415/86a2b4b89_image.png';
 
@@ -28,8 +27,7 @@ const QUICK_REPLIES = [
 
 const WELCOME = {
   role: 'assistant',
-  reply_text: '¡Hola! 🐢 Soy Peyu. Diseñamos regalos sustentables: plástico 100% reciclado chileno en maceteros, cachos y productos de oficina (y fibra de trigo compostable en nuestras carcasas), con garantía de 10 años.\n\n¿Buscas un regalo para alguien especial o algo para tu empresa?'
-    + (isCyberActive() ? `\n\n${CYBER_COPY.greeting}` : ''),
+  reply_text: '¡Hola! 🐢 Soy Peyu. Cuéntame, ¿es un regalo para alguien o un pedido para tu empresa? Así te llevo por el camino correcto.',
   cards: [{ type: 'onboarding', data: {} }],
 };
 
@@ -59,9 +57,18 @@ export default function PeyuV2() {
     setTheme(t);
     try { localStorage.setItem('peyu_v2_theme', t); } catch { /* noop */ }
   }, []);
-  // Toggle manual Personal/Empresa: cambia modo y persiste la elección (CASO C).
+  // Toggle manual Personal/Empresa: cambia modo, persiste y avisa con microcopy
+  // cálido en el río (solo si realmente cambió de modo).
   const handleModeChange = useCallback((m) => {
-    setMode(m);
+    setMode((prev) => {
+      if (prev !== m) {
+        const txt = m === 'b2b'
+          ? 'Modo Empresa activado — ahora ves precios por volumen y puedes armar tu cotización.'
+          : 'Modo Personal — precios para ti, con personalización y envío a domicilio.';
+        setMessages((p) => [...p, { role: 'assistant', reply_text: txt, cards: [] }]);
+      }
+      return m;
+    });
     try { localStorage.setItem('peyu_v2_perfil', m); } catch { /* noop */ }
   }, []);
   const [messages, setMessages] = useState([WELCOME]);
@@ -90,15 +97,6 @@ export default function PeyuV2() {
   // Espacio activo + gating founders (panel Conversaciones, solo lectura).
   const [space, setSpace] = useState('chat'); // 'chat' | 'conversaciones'
   const [isFounder, setIsFounder] = useState(false);
-
-  // Barra Cyber (cerrable, recordada en sesión).
-  const [cyberClosed, setCyberClosed] = useState(() => {
-    try { return sessionStorage.getItem('cyber_bar_closed') === '1'; } catch { return false; }
-  });
-  const closeCyber = () => {
-    setCyberClosed(true);
-    try { sessionStorage.setItem('cyber_bar_closed', '1'); } catch { /* noop */ }
-  };
 
   const endRef = useRef(null);
 
@@ -259,7 +257,7 @@ export default function PeyuV2() {
     setQuoteDraft(p);
     setMessages((prev) => [...prev, {
       role: 'assistant',
-      reply_text: 'Armemos tu cotización por volumen 🐢 Precios por unidad, excluyen IVA. El grabado de tu logo va gratis desde 10 unidades.',
+      reply_text: 'Perfecto, eso es un pedido corporativo. Te armo una cotización con descuento por volumen y tu logo grabado. ¿Qué producto tienes en mente?',
       cards: [{ type: 'b2b_quote', data: { producto: p, conversation_id: convIdRef.current, session_id: sessionIdRef.current } }],
     }]);
   };
@@ -275,7 +273,7 @@ export default function PeyuV2() {
       try { localStorage.setItem('peyu_v2_perfil', 'b2c'); } catch { /* noop */ }
       setMessages((prev) => [...prev, {
         role: 'assistant',
-        reply_text: '¡Perfecto! 🐢 Te muestro precios personales (con IVA incluido). Eso sí: desde 10 unidades con tu logo conviene el modo Empresa — lo activas arriba cuando quieras y te armo precios por volumen.',
+        reply_text: '¡Qué lindo detalle! Te ayudo a encontrar algo que le encante. ¿Tienes idea de qué le gusta o lo dejamos en mis manos? 😊',
         cards: [],
       }]);
     }
@@ -384,18 +382,6 @@ export default function PeyuV2() {
 
   return (
     <div className="v2-root flex flex-col h-screen overflow-hidden" data-v2-theme={theme} style={{ height: '100svh' }}>
-      {/* ─── Banda Cyber (sutil, cerrable) ─── */}
-      {isCyberActive() && !cyberClosed && (
-        <div
-          className="relative flex-shrink-0 text-center px-9 py-1.5 text-[11px] sm:text-xs font-semibold"
-          style={{ background: 'var(--v2-grad-gold)', color: '#2a1f2b', borderBottom: '1px solid var(--v2-border)' }}
-        >
-          {CYBER_COPY.bar}
-          <button onClick={closeCyber} aria-label="Cerrar anuncio" className="absolute right-2 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full flex items-center justify-center hover:bg-black/10 transition">
-            <X className="w-3.5 h-3.5" />
-          </button>
-        </div>
-      )}
       {/* ─── Barra superior ─── */}
       <header className="flex-shrink-0 px-4 py-3 flex items-center justify-between gap-3" style={{ borderBottom: '1px solid var(--v2-border)' }}>
         <div className="flex items-center gap-2 flex-shrink-0">
