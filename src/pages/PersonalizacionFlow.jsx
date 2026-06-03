@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
@@ -15,6 +15,7 @@ import { getColoresProducto } from '@/lib/color-parser';
 import { trackAddToCart } from '@/lib/analytics-peyu';
 import { PRECIO_PERSONALIZACION, PERSONALIZACION_LABEL, MOQ_PERSONALIZACION_GRATIS } from '@/lib/personalizacion-config';
 import DisenosPeyuPicker from '@/components/personalizacion/DisenosPeyuPicker';
+import ColorPickerCarcasa from '@/components/personalizacion/ColorPickerCarcasa';
 import QuantityStepper from '@/components/personalizacion/QuantityStepper';
 import PublicSEO from '@/components/PublicSEO';
 
@@ -106,6 +107,9 @@ export default function PersonalizacionFlow() {
   const [step, setStep] = useState(0);
   const [productoId, setProductoId] = useState(null);
   const [colorId, setColorId] = useState(null);
+  // Clave de color REAL para productos con imagenes_por_color (carcasas).
+  // Ej. "Turquesa" | "Negro" | "Azul" — coincide 1:1 con las llaves del mapa.
+  const [carcasaColorKey, setCarcasaColorKey] = useState(null);
   const [texto, setTexto] = useState('');
   const [cantidad, setCantidad] = useState(1);
   const [archivo, setArchivo] = useState(null);
@@ -158,10 +162,16 @@ export default function PersonalizacionFlow() {
 
   // Genera la base limpia (sin logo PEYU) on-demand la 1ª vez que el cliente
   // aporta un diseño. Se cachea en el producto para futuras visitas.
+  // cleanBaseTried evita el loop de reintentos si la función falla (ej. 401 en
+  // usuario público): se intenta UNA vez por producto y si falla se cae al
+  // fallback (imagen normal del producto), sin reintentar sin fin.
+  const cleanBaseTried = useRef(new Set());
   const tieneDiseno = !!(archivo || logoUrlSubido || texto || disenoPeyuUrl);
   useEffect(() => {
     if (!producto || !tieneDiseno) return;
     if (cleanBaseUrl || cleanBaseLoading) return;
+    if (cleanBaseTried.current.has(producto.id)) return;
+    cleanBaseTried.current.add(producto.id);
     setCleanBaseLoading(true);
     base44.functions.invoke('generateCleanBaseImage', { productoId: producto.id })
       .then(res => { if (res?.data?.clean_url) setCleanBaseUrl(res.data.clean_url); })
@@ -169,15 +179,35 @@ export default function PersonalizacionFlow() {
       .finally(() => setCleanBaseLoading(false));
   }, [producto, tieneDiseno, cleanBaseUrl, cleanBaseLoading]);
 
-  const colores = useMemo(() => producto ? getColoresProducto(producto) : [], [producto]);
+  // ¿El producto tiene imagenes_por_color con al menos una URL válida?
+  // (carcasas). Si es así, el selector de color LEE las claves reales del mapa
+  // y muestra la imagen real de cada variante — NO el marmolado genérico.
+  const imagenesPorColor = useMemo(() => {
+    const mapa = producto?.imagenes_por_color;
+    if (mapa && typeof mapa === 'object') {
+      const valid = Object.entries(mapa).filter(([, u]) => typeof u === 'string' && u.startsWith('http'));
+      if (valid.length > 0) return Object.fromEntries(valid);
+    }
+    return null;
+  }, [producto]);
+
+  // Colores genéricos (marmolado) — SOLO para productos SIN imagenes_por_color.
+  const colores = useMemo(
+    () => (producto && !imagenesPorColor) ? getColoresProducto(producto) : [],
+    [producto, imagenesPorColor]
+  );
   const color = useMemo(() => colores.find(c => c.id === colorId), [colores, colorId]);
 
-  // 🎨 Imagen mostrada = imagen del COLOR elegido (imagenes_por_color). Es la
-  // fuente de verdad del selector: color → imagen → lienzo del grabado. 1:1.
-  const displayImg = useMemo(
-    () => producto ? getProductImageForColor(producto, color || colorId) : null,
-    [producto, color, colorId]
-  );
+  // Etiqueta de color visible (para resúmenes/pedido), unifica ambos modos.
+  const colorLabel = imagenesPorColor ? carcasaColorKey : (color?.label || colorId || null);
+
+  // 🎨 Imagen mostrada = imagen de la VARIANTE elegida. Si hay imagenes_por_color
+  // usamos la clave real (carcasaColorKey) → imagen exacta. Si no, marmolado.
+  const displayImg = useMemo(() => {
+    if (!producto) return null;
+    if (imagenesPorColor) return getProductImageForColor(producto, carcasaColorKey);
+    return getProductImageForColor(producto, color || colorId);
+  }, [producto, imagenesPorColor, carcasaColorKey, color, colorId]);
 
   // Tipo y cargo de personalización según diseño elegido (frase/peyu/archivo).
   const tipoPersonalizacion = useMemo(() => {
@@ -195,14 +225,24 @@ export default function PersonalizacionFlow() {
   // Cargo total de personalización = unitario × cantidad (o $0 si gratis).
   const cargoPersonalizacion = personalizacionGratis ? 0 : cargoPersonalizacionUnit * cantidad;
 
-  // Cuando cambia el producto, resetear color al primero disponible
+  // Cuando cambia el producto, resetear color al primero disponible.
+  // Modo carcasa (imagenes_por_color): inicializa carcasaColorKey con la 1ª
+  // clave real del mapa. Modo marmolado: inicializa colorId como antes.
   useEffect(() => {
+    if (imagenesPorColor) {
+      const keys = Object.keys(imagenesPorColor);
+      if (!carcasaColorKey || !keys.includes(carcasaColorKey)) {
+        setCarcasaColorKey(keys[0] || null);
+      }
+      return;
+    }
+    setCarcasaColorKey(null);
     if (colores.length > 0 && !colores.find(c => c.id === colorId)) {
       setColorId(colores[0].id);
     } else if (colores.length === 0) {
       setColorId(null);
     }
-  }, [colores]); // eslint-disable-line
+  }, [colores, imagenesPorColor]); // eslint-disable-line
 
   const precioBaseProducto = producto ? (producto.precio_b2c || 9990) : 0;
   // Subtotal del producto = precio × cantidad.
@@ -485,7 +525,13 @@ export default function PersonalizacionFlow() {
         <p className="text-white/50 text-sm">Cada marmolado es único e irrepetible</p>
       </div>
 
-      {colores.length === 0 ? (
+      {imagenesPorColor ? (
+        <ColorPickerCarcasa
+          imagenesPorColor={imagenesPorColor}
+          selectedKey={carcasaColorKey}
+          onSelect={(key) => { setCarcasaColorKey(key); setMockupUrl(''); }}
+        />
+      ) : colores.length === 0 ? (
         <div className="bg-teal-500/10 border border-teal-400/25 rounded-2xl p-6 text-center">
           <CheckCircle className="w-7 h-7 text-teal-400 mx-auto mb-3" />
           <p className="text-sm text-white font-semibold">Color natural único</p>
