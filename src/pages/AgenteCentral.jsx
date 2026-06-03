@@ -18,6 +18,7 @@ import { RefreshCw, Loader2, MessageSquare, Columns3, Volume2, VolumeX } from 'l
 import useVoz from '@/components/agente/os/useVoz';
 import useGrabacion from '@/components/agente/os/useGrabacion';
 import { PEYU_ADN } from '@/components/agente/os/peyu-brain';
+import AgenteErrorBoundary from '@/components/agente/os/AgenteErrorBoundary.jsx';
 import AgentRail from '@/components/agente/os/AgentRail';
 import MobileAgentBar from '@/components/agente/os/MobileAgentBar';
 import MemoryPanel from '@/components/agente/os/MemoryPanel';
@@ -38,6 +39,17 @@ const SUGERENCIAS = [
 ];
 
 export default function AgenteCentral() {
+  // Envolvemos toda la pantalla en un boundary local: si algo del chat/canvas
+  // lanza durante el render (típico solo-en-móvil), mostramos un fallback usable
+  // en vez de pantalla negra. NUNCA bloquea el resto del admin.
+  return (
+    <AgenteErrorBoundary>
+      <AgenteCentralInner />
+    </AgenteErrorBoundary>
+  );
+}
+
+function AgenteCentralInner() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [crm, setCrm] = useState({ leads: [], cotizaciones: [], pedidos: [], productos: [], clientes: [], consultas: [], envios: [] });
@@ -460,7 +472,7 @@ Stock bajo (<10u): ${m.stock_bajo} SKUs`;
 
   return (
     <div
-      className="flex h-[100dvh] text-[#eaf5f0] font-inter overflow-hidden"
+      className="flex h-[100dvh] w-full max-w-full text-[#eaf5f0] font-inter overflow-hidden"
       style={{ background: 'radial-gradient(130% 100% at 0% 0%, #11352b 0%, #0a1813 45%, #081210 100%)' }}
     >
       {/* Riel izquierdo */}
