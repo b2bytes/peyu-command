@@ -10,9 +10,11 @@ import {
 } from 'lucide-react';
 import MarbleSwatch from '@/components/personalizacion/MarbleSwatch';
 import LaserEngravePreview from '@/components/personalizacion/LaserEngravePreview';
-import { getProductImage } from '@/utils/productImages';
+import { getProductImage, getProductImageForColor } from '@/utils/productImages';
 import { getColoresProducto } from '@/lib/color-parser';
 import { trackAddToCart } from '@/lib/analytics-peyu';
+import { PRECIO_PERSONALIZACION, PERSONALIZACION_LABEL, MOQ_PERSONALIZACION_GRATIS } from '@/lib/personalizacion-config';
+import DisenosPeyuPicker from '@/components/personalizacion/DisenosPeyuPicker';
 import PublicSEO from '@/components/PublicSEO';
 
 const STEP_LABELS = [
@@ -106,6 +108,8 @@ export default function PersonalizacionFlow() {
   const [texto, setTexto] = useState('');
   const [archivo, setArchivo] = useState(null);
   const [logoUrlSubido, setLogoUrlSubido] = useState('');
+  // Diseño elegido de la galería PEYU (url) → define tipo de cobro "peyu".
+  const [disenoPeyuUrl, setDisenoPeyuUrl] = useState('');
   const [nombre, setNombre] = useState('');
   const [email, setEmail] = useState('');
   const [telefono, setTelefono] = useState('');
@@ -152,7 +156,7 @@ export default function PersonalizacionFlow() {
 
   // Genera la base limpia (sin logo PEYU) on-demand la 1ª vez que el cliente
   // aporta un diseño. Se cachea en el producto para futuras visitas.
-  const tieneDiseno = !!(archivo || logoUrlSubido || texto);
+  const tieneDiseno = !!(archivo || logoUrlSubido || texto || disenoPeyuUrl);
   useEffect(() => {
     if (!producto || !tieneDiseno) return;
     if (cleanBaseUrl || cleanBaseLoading) return;
@@ -166,6 +170,24 @@ export default function PersonalizacionFlow() {
   const colores = useMemo(() => producto ? getColoresProducto(producto) : [], [producto]);
   const color = useMemo(() => colores.find(c => c.id === colorId), [colores, colorId]);
 
+  // 🎨 Imagen mostrada = imagen del COLOR elegido (imagenes_por_color). Es la
+  // fuente de verdad del selector: color → imagen → lienzo del grabado. 1:1.
+  const displayImg = useMemo(
+    () => producto ? getProductImageForColor(producto, color?.label || colorId) : null,
+    [producto, color, colorId]
+  );
+
+  // Tipo y cargo de personalización según diseño elegido (frase/peyu/archivo).
+  const tipoPersonalizacion = useMemo(() => {
+    if (archivo || logoUrlSubido) return 'archivo';
+    if (disenoPeyuUrl) return 'peyu';
+    if (texto) return 'frase';
+    return null;
+  }, [archivo, logoUrlSubido, disenoPeyuUrl, texto]);
+
+  const moqGratis = producto?.personalizacion_gratis_desde || producto?.moq_personalizacion || MOQ_PERSONALIZACION_GRATIS;
+  const cargoPersonalizacion = tipoPersonalizacion ? (PRECIO_PERSONALIZACION[tipoPersonalizacion] || 0) : 0;
+
   // Cuando cambia el producto, resetear color al primero disponible
   useEffect(() => {
     if (colores.length > 0 && !colores.find(c => c.id === colorId)) {
@@ -175,13 +197,15 @@ export default function PersonalizacionFlow() {
     }
   }, [colores]); // eslint-disable-line
 
-  const precioFinal = producto ? Math.floor((producto.precio_b2c || 9990) * 0.85) : 0;
+  const precioBaseProducto = producto ? (producto.precio_b2c || 9990) : 0;
+  // Precio final = producto + cargo de personalización según tipo (gratis ≥ MOQ).
+  const precioFinal = precioBaseProducto + cargoPersonalizacion;
 
   const resetMockupIfNeeded = () => { if (mockupUrl) setMockupUrl(''); };
 
   const handleGenerateMockup = async () => {
-    if (!texto && !archivo) {
-      setMockupError('Agrega un texto o sube tu logo para generar el mockup.');
+    if (!texto && !archivo && !disenoPeyuUrl) {
+      setMockupError('Agrega un texto, elige un diseño PEYU o sube tu logo para generar el mockup.');
       return;
     }
     setMockupLoading(true);
@@ -196,9 +220,9 @@ export default function PersonalizacionFlow() {
       const res = await base44.functions.invoke('generateMockup', {
         productName: producto?.nombre,
         productCategory: producto?.categoria || 'Personalización',
-        productImageUrl: getProductImage(producto),
+        productImageUrl: displayImg,
         sku: producto?.sku,
-        logoUrl,
+        logoUrl: logoUrl || disenoPeyuUrl || undefined,
         text: texto,
         color: color?.label,
       });
@@ -225,16 +249,24 @@ export default function PersonalizacionFlow() {
     }
 
     // 2. Agregar al carrito (storage local — mismo formato que ProductoDetalle)
+    const personalizacionLabel = texto
+      || (logoUrl ? '[Logo personalizado]' : (disenoPeyuUrl ? '[Diseño PEYU]' : null));
     const item = {
       id: Math.random(),
       productoId: producto.id,
+      sku: producto.sku || null,
       nombre: producto.nombre,
-      precio: precioFinal,
+      precio: precioBaseProducto,            // precio del producto (sin cargo)
+      cargo_personalizacion: cargoPersonalizacion, // cargo desglosado aparte
+      tipo_personalizacion: tipoPersonalizacion,    // frase | peyu | archivo
+      moq_personalizacion: moqGratis,
+      personalizacion_gratis_desde: moqGratis,
       cantidad: 1,
-      color: colorId || null,
-      personalizacion: texto || (logoUrl ? '[Logo personalizado]' : null),
-      imagen: getProductImage(producto),
+      color: color?.label || colorId || null,
+      personalizacion: personalizacionLabel,
+      imagen: displayImg,
       logoUrl: logoUrl || null,
+      disenoPeyuUrl: disenoPeyuUrl || null,
       mockupUrl: mockupUrl || null,
     };
     const carritoActual = JSON.parse(localStorage.getItem('carrito') || '[]');
@@ -260,13 +292,13 @@ export default function PersonalizacionFlow() {
     });
 
     // 4. Si no hay mockup pero hay diseño, dispararlo en background
-    if (job?.id && !mockupUrl && (logoUrl || texto)) {
+    if (job?.id && !mockupUrl && (logoUrl || disenoPeyuUrl || texto)) {
       base44.functions.invoke('generateMockup', {
         productName: producto.nombre,
         productCategory: producto.categoria || 'Personalización',
-        productImageUrl: getProductImage(producto),
+        productImageUrl: displayImg,
         sku: producto.sku,
-        logoUrl,
+        logoUrl: logoUrl || disenoPeyuUrl || undefined,
         text: texto,
         color: color?.label,
         jobId: job.id,
@@ -332,7 +364,7 @@ export default function PersonalizacionFlow() {
           <div className="bg-white/5 backdrop-blur-sm border border-white/15 rounded-3xl p-5 text-left space-y-4 shadow-xl">
             <div className="flex items-center gap-3">
               <img
-                src={getProductImage(producto)}
+                src={displayImg}
                 alt={producto?.nombre}
                 className="w-14 h-14 rounded-xl object-cover border border-white/15 flex-shrink-0"
               />
@@ -479,10 +511,10 @@ export default function PersonalizacionFlow() {
         </div>
       ) : (
         <LaserEngravePreview
-          productImageUrl={getProductImage(producto)}
+          productImageUrl={displayImg}
           cleanImageUrl={cleanBaseUrl}
           logoFile={archivo}
-          logoUrl={logoUrlSubido}
+          logoUrl={logoUrlSubido || disenoPeyuUrl}
           texto={texto}
           areaLabel={producto?.area_laser_mm}
           defaultTint={color?.hex && parseInt(color.hex.replace('#', '').slice(0, 2), 16) < 130 ? 'light' : 'dark'}
@@ -506,6 +538,21 @@ export default function PersonalizacionFlow() {
 
         <div className="flex items-center gap-3">
           <div className="flex-1 h-px bg-white/15" />
+          <span className="text-[10px] text-white/40 font-bold uppercase tracking-widest">o elige un diseño PEYU</span>
+          <div className="flex-1 h-px bg-white/15" />
+        </div>
+
+        <DisenosPeyuPicker
+          selectedUrl={disenoPeyuUrl}
+          onSelect={(url) => {
+            setDisenoPeyuUrl(url);
+            if (url) { setArchivo(null); setLogoUrlSubido(''); }
+            resetMockupIfNeeded();
+          }}
+        />
+
+        <div className="flex items-center gap-3">
+          <div className="flex-1 h-px bg-white/15" />
           <span className="text-[10px] text-white/40 font-bold uppercase tracking-widest">o sube tu logo</span>
           <div className="flex-1 h-px bg-white/15" />
         </div>
@@ -524,8 +571,23 @@ export default function PersonalizacionFlow() {
             <p className="text-sm text-white/50">PNG, SVG, AI · Subir tu logo</p>
           )}
           <input id="pers-logo" type="file" className="hidden" accept=".png,.svg,.ai,.pdf,.jpg"
-            onChange={e => { setArchivo(e.target.files[0]); setLogoUrlSubido(''); resetMockupIfNeeded(); }} />
+            onChange={e => { setArchivo(e.target.files[0]); setLogoUrlSubido(''); setDisenoPeyuUrl(''); resetMockupIfNeeded(); }} />
         </div>
+
+        {/* Desglose del cargo de personalización según tipo (los 3 tramos) */}
+        {tipoPersonalizacion && (
+          <div className="rounded-2xl border border-teal-400/25 bg-teal-500/10 p-3.5 space-y-1.5">
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-white/70">Personalización · {PERSONALIZACION_LABEL[tipoPersonalizacion]}</span>
+              <span className="font-bold text-white">
+                {cargoPersonalizacion > 0 ? `+$${cargoPersonalizacion.toLocaleString('es-CL')}` : 'GRATIS'}
+              </span>
+            </div>
+            <p className="text-[10px] text-teal-100/70 leading-relaxed">
+              Frase $3.990 · Diseño PEYU $4.990 · Diseño propio $7.990 · <strong className="text-teal-200">Gratis desde {moqGratis} unidades</strong>
+            </p>
+          </div>
+        )}
 
         <Button
           type="button"
@@ -566,7 +628,7 @@ export default function PersonalizacionFlow() {
         <p className="text-[10px] font-bold text-teal-300 uppercase tracking-widest mb-3">Resumen de tu pedido</p>
         <div className="flex items-center gap-3">
           <img
-            src={getProductImage(producto)}
+            src={displayImg}
             alt={producto?.nombre}
             className="w-14 h-14 rounded-xl object-cover border border-white/20 flex-shrink-0"
           />
@@ -574,9 +636,23 @@ export default function PersonalizacionFlow() {
             <div className="font-semibold text-sm text-white truncate">{producto?.nombre}</div>
             <div className="text-xs text-white/55 truncate">{color?.label || 'Color por definir'}{texto ? ` · "${texto}"` : ''}</div>
             {archivo && <div className="text-[10px] text-teal-300 mt-0.5">+ Logo adjunto</div>}
+            {disenoPeyuUrl && <div className="text-[10px] text-teal-300 mt-0.5">+ Diseño PEYU</div>}
           </div>
           <div className="font-poppins font-bold text-lg text-white">${precioFinal.toLocaleString('es-CL')}</div>
         </div>
+        {tipoPersonalizacion && (
+          <div className="mt-3 pt-3 border-t border-white/10 space-y-1 text-xs">
+            <div className="flex justify-between text-white/55">
+              <span>Producto</span><span>${precioBaseProducto.toLocaleString('es-CL')}</span>
+            </div>
+            <div className="flex justify-between text-white/55">
+              <span>Personalización · {PERSONALIZACION_LABEL[tipoPersonalizacion]}</span>
+              <span className={cargoPersonalizacion > 0 ? 'text-white' : 'text-teal-300'}>
+                {cargoPersonalizacion > 0 ? `+$${cargoPersonalizacion.toLocaleString('es-CL')}` : 'GRATIS'}
+              </span>
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="space-y-3">
@@ -657,7 +733,7 @@ export default function PersonalizacionFlow() {
           {step < 3 ? (
             <Button onClick={() => setStep(s => s + 1)} size="lg"
               className="w-full gap-2 font-bold rounded-2xl h-14 text-base bg-gradient-to-r from-teal-500 to-cyan-500 hover:from-teal-600 hover:to-cyan-600 text-white shadow-2xl shadow-teal-500/30 border-0 hover:scale-[1.01] transition-all"
-              disabled={(step === 0 && !producto) || (step === 2 && !texto && !archivo)}>
+              disabled={(step === 0 && !producto) || (step === 2 && !texto && !archivo && !disenoPeyuUrl)}>
               Continuar <ArrowRight className="w-4 h-4" />
             </Button>
           ) : (

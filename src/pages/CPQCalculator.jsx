@@ -4,28 +4,36 @@ import { Calculator, Download, Send, Plus, Trash2, Zap, Copy, Check, ExternalLin
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { getB2BPriceForQty, getUnitBasePrice } from "@/lib/catalog-pricing";
 
+// Tabla informativa de los tramos reales por volumen (escala de verdad).
 const DESCUENTOS = [
-  { label: '1-49 unidades', min: 1, max: 49, pct: 0 },
-  { label: '50-199 unidades', min: 50, max: 199, pct: 10 },
-  { label: '200-499 unidades', min: 200, max: 499, pct: 15 },
-  { label: '500+ unidades', min: 500, max: Infinity, pct: 22 },
+  { label: '1–9 u', min: 1, pct: 0 },
+  { label: '10–49 u', min: 10, pct: 10 },
+  { label: '100–249 u', min: 100, pct: 20 },
+  { label: '500–999 u', min: 500, pct: 28 },
+  { label: '1000+ u', min: 1000, pct: 30 },
 ];
 
 const FEE_PERSONALIZACION_BAJO_MOQ = 30000;
 const FEE_PACKAGING_PCT = 3;
 const RECARGO_EXPRESS = 12;
 
-function getDescuento(qty) {
-  const tier = DESCUENTOS.find(d => qty >= d.min && qty <= d.max);
-  return tier ? tier.pct : 0;
+// Precio unitario y % real para una cantidad, usando los tramos B2B del producto.
+// Escala correctamente hasta 2000+ (no topado). Fallback: precio base sin descuento.
+function getPrecioUnitario(prod, qty) {
+  const tramo = getB2BPriceForQty(prod, qty || 0);
+  if (tramo) return { precioUnit: tramo.precio, pct: tramo.ahorroPct, label: tramo.label };
+  const base = getUnitBasePrice(prod) || prod?.precio_base_b2b || 0;
+  return { precioUnit: base, pct: 0, label: '1–9 u' };
 }
 
 function LineaItem({ index, productos, linea, onChange, onRemove }) {
   const prod = productos.find(p => p.id === linea.producto_id);
-  const precio_base = prod?.precio_base_b2b || 0;
-  const desc_pct = getDescuento(linea.cantidad || 0);
-  const precio_con_desc = precio_base * (1 - desc_pct / 100);
+  const precio_base = prod ? (getUnitBasePrice(prod) || prod.precio_base_b2b || 0) : 0;
+  const { precioUnit: precio_con_desc, pct: desc_pct, label: tramo_label } = prod
+    ? getPrecioUnitario(prod, linea.cantidad || 0)
+    : { precioUnit: 0, pct: 0, label: '' };
   const sub_productos = precio_con_desc * (linea.cantidad || 0);
   const fee_pers = linea.personalizacion && (linea.cantidad || 0) < (prod?.moq_personalizacion || 10) ? FEE_PERSONALIZACION_BAJO_MOQ : 0;
   const lead = linea.personalizacion ? (prod?.lead_time_con_personal || 7) : (prod?.lead_time_sin_personal || 5);
@@ -77,7 +85,7 @@ function LineaItem({ index, productos, linea, onChange, onRemove }) {
             </div>
             {desc_pct > 0 && (
               <div className="flex justify-between text-green-600">
-                <span>Descuento volumen ({DESCUENTOS.find(d => (linea.cantidad||0) >= d.min && (linea.cantidad||0) <= d.max)?.label})</span>
+                <span>Descuento volumen ({tramo_label})</span>
                 <span>-{desc_pct}%</span>
               </div>
             )}
@@ -123,8 +131,7 @@ export default function CPQCalculator() {
   const calcLinea = (linea) => {
     const prod = productos.find(p => p.id === linea.producto_id);
     if (!prod || !linea.cantidad) return { sub: 0, fee_pers: 0, fee_pack: 0, lead: 0 };
-    const desc_pct = getDescuento(linea.cantidad);
-    const precio_desc = (prod.precio_base_b2b || 0) * (1 - desc_pct / 100);
+    const { precioUnit: precio_desc } = getPrecioUnitario(prod, linea.cantidad);
     const sub = precio_desc * linea.cantidad;
     const fee_pers = linea.personalizacion && linea.cantidad < (prod.moq_personalizacion || 10) ? FEE_PERSONALIZACION_BAJO_MOQ : 0;
     const fee_pack = linea.packaging ? sub * FEE_PACKAGING_PCT / 100 : 0;
@@ -179,7 +186,7 @@ export default function CPQCalculator() {
       sku: prod0?.nombre || 'Múltiples productos',
       cantidad: lineas.reduce((s, l) => s + (l.cantidad || 0), 0),
       precio_unitario: prod0?.precio_base_b2b || 0,
-      descuento_pct: prod0 ? getDescuento(linea0?.cantidad || 0) : 0,
+      descuento_pct: prod0 ? getPrecioUnitario(prod0, linea0?.cantidad || 0).pct : 0,
       fee_personalizacion: totales.fees,
       total: Math.round(total),
       personalizacion_tipo: 'Láser UV',

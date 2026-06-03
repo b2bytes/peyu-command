@@ -134,6 +134,30 @@ export const NAME_KEYWORD_IMAGES = [
   { keywords: ['pocillo', 'bowl', 'tapa bowl'], img: SKU_IMAGES['HOG-POC-COL'] },
 ];
 
+/**
+ * Resuelve la imagen de un producto para un color específico.
+ * Fuente de verdad: producto.imagenes_por_color (mapa color→URL generado por
+ * generateCarcasaColors). Hace matching tolerante (sin tildes, case-insensitive,
+ * por label o id). Si no hay imagen para ese color, cae a getProductImage.
+ *
+ * @param {object} producto
+ * @param {string} colorLabelOrId - "Turquesa", "turquesa", etc.
+ */
+export function getProductImageForColor(producto, colorLabelOrId) {
+  if (producto && colorLabelOrId && producto.imagenes_por_color && typeof producto.imagenes_por_color === 'object') {
+    const norm = (s) => String(s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+    const target = norm(colorLabelOrId);
+    const entries = Object.entries(producto.imagenes_por_color);
+    // Match exacto normalizado por clave
+    const hit = entries.find(([k]) => norm(k) === target);
+    if (hit && isValidImageUrl(hit[1])) return hit[1];
+    // Match parcial (la clave contiene el color o viceversa)
+    const partial = entries.find(([k]) => norm(k).includes(target) || target.includes(norm(k)));
+    if (partial && isValidImageUrl(partial[1])) return partial[1];
+  }
+  return getProductImage(producto);
+}
+
 // Helper: matchea imagen por nombre del producto
 function matchImageByName(nombre) {
   if (!nombre) return null;
