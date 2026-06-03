@@ -26,6 +26,7 @@ import { trackAddToCart } from '@/lib/analytics-peyu';
 import { track } from '@/lib/activity-tracker';
 import { isCyberActive, CYBER_COPY, tieneOfertaCyber } from '@/lib/cyber-campaign';
 import CyberBadge from '@/components/cyber/CyberBadge';
+import { PRECIO_PERSONALIZACION, PERSONALIZACION_LABEL, MOQ_PERSONALIZACION_GRATIS } from '@/lib/personalizacion-config';
 
 
 // Los colores ahora se extraen dinámicamente desde la descripción del producto
@@ -237,6 +238,15 @@ export default function ProductoDetalle() {
   const precioVolumen = getPrecioVolumen(producto, cantidad);
   const precioActual = precioVolumen ? precioVolumen.precio : precioFinal;
 
+  // ✨ Cargo de personalización láser (coherente con /personalizar y el carrito).
+  // En la ficha la personalización es por TEXTO → tipo "frase" ($3.990/u).
+  // GRATIS desde el MOQ del producto. Se cobra unitario × cantidad bajo el MOQ.
+  const moqGratisPers = producto?.personalizacion_gratis_desde || producto?.moq_personalizacion || MOQ_PERSONALIZACION_GRATIS;
+  const personalizacionGratis = cantidad >= moqGratisPers;
+  const cargoPersUnit = personalizacion ? (PRECIO_PERSONALIZACION.frase || 0) : 0;
+  const cargoPersTotal = personalizacionGratis ? 0 : cargoPersUnit * cantidad;
+  const totalConPers = precioActual * cantidad + cargoPersTotal;
+
   // 🔧 FIX CRÍTICO: estas variables se usan dentro de agregarAlCarrito() y
   // antes vivían DESPUÉS del return condicional (líneas ~301). Eso causaba
   // ReferenceError (TDZ) al hacer click en "Agregar al carrito" sobre PACKS
@@ -280,6 +290,9 @@ export default function ProductoDetalle() {
       colores_pack: packSize ? coloresPack : null,
       pack_resumen: packSummary,
       personalizacion: personalizacion || null,
+      tipo_personalizacion: personalizacion ? 'frase' : null,
+      moq_personalizacion: moqGratisPers,
+      personalizacion_gratis_desde: moqGratisPers,
       posicion_grabado: personalizacion ? posicionGrabado : null,
       imagen: packSize ? getProductImage(producto) : imagenColorSeleccionado,
     };
@@ -514,7 +527,7 @@ export default function ProductoDetalle() {
                 <p className="font-semibold text-sm text-ld-fg truncate">{producto.nombre}</p>
               </div>
               <div className="flex items-center gap-3 flex-shrink-0">
-                <p className="font-poppins font-bold text-ld-fg">${precioActual.toLocaleString('es-CL')}</p>
+                <p className="font-poppins font-bold text-ld-fg">${totalConPers.toLocaleString('es-CL')}</p>
                 {agregado ? (
                   <Link to="/cart">
                     <Button size="sm" className="ld-btn-primary gap-2 rounded-full">
@@ -1000,6 +1013,19 @@ export default function ProductoDetalle() {
                       <span className="text-xs font-bold" style={{ color: personalizacion.length >= 22 ? 'var(--ld-highlight)' : 'var(--ld-fg-muted)' }}>{personalizacion.length}/25</span>
                     </div>
                   </div>
+
+                  {/* Cargo de personalización por texto (frase): $3.990/u · gratis ≥ MOQ */}
+                  {personalizacion && (
+                    <div className="flex items-center justify-between text-xs rounded-xl px-3 py-2" style={{ background: 'var(--ld-bg)' }}>
+                      <span className="text-ld-fg-soft">
+                        {PERSONALIZACION_LABEL.frase}
+                        {!personalizacionGratis && ` · $${cargoPersUnit.toLocaleString('es-CL')} × ${cantidad}`}
+                      </span>
+                      <span className="font-bold" style={{ color: personalizacionGratis ? 'var(--ld-action)' : 'var(--ld-fg)' }}>
+                        {personalizacionGratis ? `✓ GRATIS desde ${moqGratisPers} u.` : `+$${cargoPersTotal.toLocaleString('es-CL')}`}
+                      </span>
+                    </div>
+                  )}
                   {personalizacion && (
                     <>
                       <div className="rounded-xl px-4 py-2 text-center bg-slate-900 border border-yellow-500/40">
@@ -1056,7 +1082,7 @@ export default function ProductoDetalle() {
                 ) : (
                   <Button onClick={agregarAlCarrito} size="lg"
                     className="ld-btn-primary w-full h-12 font-bold text-sm gap-2 rounded-xl hover:scale-[1.01] transition-all duration-200">
-                    <ShoppingCart className="w-4 h-4" /> Agregar al carrito · ${(precioActual * cantidad).toLocaleString('es-CL')}
+                    <ShoppingCart className="w-4 h-4" /> Agregar al carrito · ${totalConPers.toLocaleString('es-CL')}
                   </Button>
                 )}
 
