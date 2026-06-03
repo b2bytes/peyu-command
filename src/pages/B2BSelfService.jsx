@@ -204,24 +204,29 @@ export default function B2BSelfService() {
   const categorias = ['todos', ...Array.from(new Set(catalogo.map(p => p.categoria).filter(Boolean)))];
   const catalogoFiltrado = filtroCategoria === 'todos' ? catalogo : catalogo.filter(p => p.categoria === filtroCategoria);
 
+  // ── Mutaciones del carrito (forma FUNCIONAL prev => …) ──────────────────
+  // Usar prev evita pisar el carrito al navegar entre pasos o re-renderizar
+  // por los efectos de persistencia. "Agregar más producto" solo cambia el
+  // paso visible; estas funciones ACUMULAN, nunca resetean.
   const addToCart = (producto) => {
-    const exists = cart.find(c => c.producto.id === producto.id);
-    if (exists) {
-      setCart(cart.map(c => c.producto.id === producto.id ? { ...c, cantidad: c.cantidad + 10 } : c));
-    } else {
-      setCart([...cart, { producto, cantidad: 10 }]);
-    }
+    setCart(prev => {
+      const exists = prev.find(c => c.producto.id === producto.id);
+      if (exists) {
+        return prev.map(c => c.producto.id === producto.id ? { ...c, cantidad: c.cantidad + 10 } : c);
+      }
+      return [...prev, { producto, cantidad: 10 }];
+    });
   };
 
   const updateQty = (id, delta) => {
-    setCart(cart.map(c => c.producto.id === id ? { ...c, cantidad: Math.max(10, c.cantidad + delta) } : c));
+    setCart(prev => prev.map(c => c.producto.id === id ? { ...c, cantidad: Math.max(10, c.cantidad + delta) } : c));
   };
 
   const setQty = (id, val) => {
-    setCart(cart.map(c => c.producto.id === id ? { ...c, cantidad: Math.max(10, parseInt(val) || 10) } : c));
+    setCart(prev => prev.map(c => c.producto.id === id ? { ...c, cantidad: Math.max(10, parseInt(val) || 10) } : c));
   };
 
-  const removeFromCart = (id) => setCart(cart.filter(c => c.producto.id !== id));
+  const removeFromCart = (id) => setCart(prev => prev.filter(c => c.producto.id !== id));
 
   const subtotalEstimado = cart.reduce((s, c) => s + (calcPrice(c.producto, c.cantidad) * c.cantidad), 0);
 
