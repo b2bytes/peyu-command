@@ -122,10 +122,20 @@ Deno.serve(async (req) => {
       ],
     });
 
-    // Si pasó a "Confirmado" por primera vez, enviamos email al cliente.
-    // Usamos Resend (no requiere usuario autenticado) si está configurado.
-    const resendKey = Deno.env.get('RESEND_API_KEY');
+    // Si el pago fue aprobado, enviamos el comprobante vía Gmail SMTP
+    // (ti@peyuchile.cl) usando la función centralizada (idempotente).
+    if (nuevoPaymentStatus === 'paid' && pedido.cliente_email) {
+      try {
+        await base44.asServiceRole.functions.invoke('enviarComprobantePedido', { pedido_id: pedido.id });
+      } catch (e) {
+        console.warn('Comprobante Gmail falló (no bloqueante):', e.message);
+      }
+    }
+
+    // [LEGACY desactivado] Email de confirmación vía Resend.
+    const resendKey = null;
     if (
+      false &&
       nuevoEstado === 'Confirmado' &&
       estadoAnterior !== 'Confirmado' &&
       pedido.cliente_email &&

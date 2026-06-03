@@ -78,11 +78,6 @@ Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
 
-    const user = await base44.auth.me();
-    if (!user) {
-      return Response.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
     const {
       to,
       subject,
@@ -91,7 +86,21 @@ Deno.serve(async (req) => {
       cc,
       reply_to,
       from_name = 'PEYU Chile',
+      internal_token,
     } = await req.json();
+
+    // Permitimos dos modos de uso:
+    //  1) Usuario autenticado del backoffice (admin manda emails manuales).
+    //  2) Llamada interna service-role (webhooks/CRON sin usuario), validada
+    //     con un token interno compartido. El conector Gmail es del builder.
+    const INTERNAL = Deno.env.get('MADRE_V2_SECRET');
+    const isInternal = internal_token && INTERNAL && internal_token === INTERNAL;
+    if (!isInternal) {
+      const user = await base44.auth.me();
+      if (!user) {
+        return Response.json({ error: 'Unauthorized' }, { status: 401 });
+      }
+    }
 
     if (!to || !subject || !html) {
       return Response.json(

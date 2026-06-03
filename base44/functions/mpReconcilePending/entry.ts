@@ -98,6 +98,12 @@ Deno.serve(async (req) => {
               },
             ],
           });
+          // Enviar comprobante vía Gmail SMTP (idempotente).
+          try {
+            await base44.asServiceRole.functions.invoke('enviarComprobantePedido', { pedido_id: pedido.id });
+          } catch (e) {
+            console.warn('Comprobante Gmail falló en reconcile (no bloqueante):', e.message);
+          }
           stats.reconciliados_pagados++;
           detalle.push({ numero: pedido.numero_pedido, accion: 'paid', mp_id: pago.id });
         } else if (['rejected', 'cancelled', 'charged_back'].includes(pago.status)) {

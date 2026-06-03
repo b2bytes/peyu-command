@@ -766,7 +766,7 @@ export default function PersonalizacionFlow() {
           {step < 3 ? (
             <Button onClick={() => setStep(s => s + 1)} size="lg"
               className="w-full gap-2 font-bold rounded-2xl h-14 text-base bg-gradient-to-r from-teal-500 to-cyan-500 hover:from-teal-600 hover:to-cyan-600 text-white shadow-2xl shadow-teal-500/30 border-0 hover:scale-[1.01] transition-all"
-              disabled={(step === 0 && !producto) || (step === 2 && !texto && !archivo && !disenoPeyuUrl)}>
+              disabled={(step === 0 && !producto) || (step === 2 && !tipoPersonalizacion)}>
               Continuar <ArrowRight className="w-4 h-4" />
             </Button>
           ) : (

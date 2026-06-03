@@ -22,6 +22,9 @@ export default function LaserEngravePreview({
   areaLabel,         // ej: "≈ 40×25mm"
   defaultTint = 'dark',
 }) {
+  // Fuente de imagen efectiva con fallback robusto: si la base limpia falla a
+  // cargar (404/red), caemos a la imagen normal del producto. NUNCA roto.
+  const [imgFailed, setImgFailed] = useState(false);
   const [size, setSize] = useState(28);   // % del producto
   const [posX, setPosX] = useState(50);   // %
   const [posY, setPosY] = useState(55);   // %
@@ -38,9 +41,12 @@ export default function LaserEngravePreview({
   // hay base limpia, caemos a la original (mejor mostrar algo que romper).
   // Sin diseño del cliente → mostramos la foto original tal cual (con PEYU).
   const hasClientDesign = !!logoSource || !!texto;
-  const canvasImage = hasClientDesign
-    ? (cleanImageUrl || productImageUrl)
-    : productImageUrl;
+  // Si la base limpia falló a cargar, usamos directamente la imagen del producto.
+  const preferClean = hasClientDesign && cleanImageUrl && !imgFailed;
+  const canvasImage = preferClean ? cleanImageUrl : productImageUrl;
+
+  // Reset del flag cuando cambia la imagen candidata.
+  useEffect(() => { setImgFailed(false); }, [cleanImageUrl, productImageUrl]);
 
   // Reprocesa el logo cada vez que cambia el origen o la tinta.
   useEffect(() => {
@@ -96,7 +102,17 @@ export default function LaserEngravePreview({
         onTouchEnd={() => setDragging(false)}
       >
         {canvasImage
-          ? <img src={canvasImage} alt="Producto" className="w-full h-full object-cover" draggable={false} />
+          ? <img
+              src={canvasImage}
+              alt="Producto"
+              className="w-full h-full object-cover"
+              draggable={false}
+              onError={() => {
+                // 1º fallo: si veníamos de la base limpia, reintentamos con la
+                // imagen normal del producto (marcamos imgFailed).
+                if (preferClean) setImgFailed(true);
+              }}
+            />
           : <div className="w-full h-full bg-gradient-to-br from-slate-800 to-slate-900" />
         }
 

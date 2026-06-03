@@ -102,12 +102,51 @@ export async function cotizarEnvioBluex({ comuna, pesoKg = 0.5, servicio = 'EXPR
   };
 }
 
-/** Cotiza ambos servicios (EXPRESS y PRIORITY) en paralelo. */
+// ─────────────────────────────────────────────────────────────────────────────
+// Fallback de tarifa PÚBLICA · garantiza que el checkout NUNCA se bloquee
+// ─────────────────────────────────────────────────────────────────────────────
+// Si la tabla TarifaBluex no tiene la comuna (servidor QA caído, comuna nueva,
+// etc.), devolvemos una tarifa pública estimada por tramo de peso para que el
+// cliente SIEMPRE pueda completar la compra. Es transparente: se marca como
+// estimada y se coordina con BlueExpress al confirmar.
+function tarifaPublicaFallback(pesoKg = 0.5, servicio = 'EXPRESS') {
+  let base;
+  if (pesoKg <= 1) base = 4990;
+  else if (pesoKg <= 3) base = 6490;
+  else if (pesoKg <= 6) base = 8990;
+  else if (pesoKg <= 10) base = 12990;
+  else base = 12990 + Math.ceil(pesoKg - 10) * 990;
+  const costo = servicio === 'PRIORITY' ? Math.round(base * 1.4) : base;
+  return {
+    servicio,
+    comuna: '',
+    region: '',
+    costo,
+    lead_time_dias: servicio === 'PRIORITY' ? 1 : 3,
+    tramo: 'fallback_publico',
+    peso_kg: pesoKg,
+    es_estimado: true,
+  };
+}
+
+/** Cotiza ambos servicios (EXPRESS y PRIORITY) en paralelo, con fallback público. */
 export async function cotizarEnvioAmbos({ comuna, pesoKg = 0.5 }) {
-  const [express, priority] = await Promise.all([
-    cotizarEnvioBluex({ comuna, pesoKg, servicio: 'EXPRESS' }),
-    cotizarEnvioBluex({ comuna, pesoKg, servicio: 'PRIORITY' }),
-  ]);
+  let express, priority;
+  try {
+    [express, priority] = await Promise.all([
+      cotizarEnvioBluex({ comuna, pesoKg, servicio: 'EXPRESS' }),
+      cotizarEnvioBluex({ comuna, pesoKg, servicio: 'PRIORITY' }),
+    ]);
+  } catch {
+    express = null; priority = null;
+  }
+  // Si ninguna tarifa real existe, usamos la pública para no bloquear el checkout.
+  if (!express && !priority) {
+    return {
+      express: tarifaPublicaFallback(pesoKg, 'EXPRESS'),
+      priority: tarifaPublicaFallback(pesoKg, 'PRIORITY'),
+    };
+  }
   return { express, priority };
 }
 

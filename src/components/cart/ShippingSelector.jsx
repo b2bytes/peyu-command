@@ -154,6 +154,13 @@ export default function ShippingSelector({
             </span>
           </div>
 
+          {(cotizacion.express?.es_estimado || cotizacion.priority?.es_estimado) && (
+            <div className={`text-[10px] flex items-center gap-1.5 px-1 ${isDark ? 'text-amber-300' : 'text-amber-700'}`}>
+              <AlertCircle className="w-3 h-3" />
+              Tarifa estimada · confirmaremos el valor exacto con BlueExpress al despachar.
+            </div>
+          )}
+
           {cotizacion.express && (
             <ShippingOption
               icon={Zap}
