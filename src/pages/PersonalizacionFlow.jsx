@@ -15,6 +15,7 @@ import { getColoresProducto } from '@/lib/color-parser';
 import { trackAddToCart } from '@/lib/analytics-peyu';
 import { PRECIO_PERSONALIZACION, PERSONALIZACION_LABEL, MOQ_PERSONALIZACION_GRATIS } from '@/lib/personalizacion-config';
 import DisenosPeyuPicker from '@/components/personalizacion/DisenosPeyuPicker';
+import QuantityStepper from '@/components/personalizacion/QuantityStepper';
 import PublicSEO from '@/components/PublicSEO';
 
 const STEP_LABELS = [
@@ -106,6 +107,7 @@ export default function PersonalizacionFlow() {
   const [productoId, setProductoId] = useState(null);
   const [colorId, setColorId] = useState(null);
   const [texto, setTexto] = useState('');
+  const [cantidad, setCantidad] = useState(1);
   const [archivo, setArchivo] = useState(null);
   const [logoUrlSubido, setLogoUrlSubido] = useState('');
   // Diseño elegido de la galería PEYU (url) → define tipo de cobro "peyu".
@@ -186,7 +188,12 @@ export default function PersonalizacionFlow() {
   }, [archivo, logoUrlSubido, disenoPeyuUrl, texto]);
 
   const moqGratis = producto?.personalizacion_gratis_desde || producto?.moq_personalizacion || MOQ_PERSONALIZACION_GRATIS;
-  const cargoPersonalizacion = tipoPersonalizacion ? (PRECIO_PERSONALIZACION[tipoPersonalizacion] || 0) : 0;
+  // Cargo unitario de personalización según tipo (frase/peyu/archivo).
+  const cargoPersonalizacionUnit = tipoPersonalizacion ? (PRECIO_PERSONALIZACION[tipoPersonalizacion] || 0) : 0;
+  // ✅ GRATIS desde el MOQ (≥10u): el cargo de personalización pasa a $0.
+  const personalizacionGratis = cantidad >= moqGratis;
+  // Cargo total de personalización = unitario × cantidad (o $0 si gratis).
+  const cargoPersonalizacion = personalizacionGratis ? 0 : cargoPersonalizacionUnit * cantidad;
 
   // Cuando cambia el producto, resetear color al primero disponible
   useEffect(() => {
@@ -198,8 +205,10 @@ export default function PersonalizacionFlow() {
   }, [colores]); // eslint-disable-line
 
   const precioBaseProducto = producto ? (producto.precio_b2c || 9990) : 0;
-  // Precio final = producto + cargo de personalización según tipo (gratis ≥ MOQ).
-  const precioFinal = precioBaseProducto + cargoPersonalizacion;
+  // Subtotal del producto = precio × cantidad.
+  const subtotalProducto = precioBaseProducto * cantidad;
+  // Precio final = (producto × cantidad) + cargo personalización total (gratis ≥ MOQ).
+  const precioFinal = subtotalProducto + cargoPersonalizacion;
 
   const resetMockupIfNeeded = () => { if (mockupUrl) setMockupUrl(''); };
 
@@ -257,11 +266,11 @@ export default function PersonalizacionFlow() {
       sku: producto.sku || null,
       nombre: producto.nombre,
       precio: precioBaseProducto,            // precio del producto (sin cargo)
-      cargo_personalizacion: cargoPersonalizacion, // cargo desglosado aparte
+      cargo_personalizacion: cargoPersonalizacionUnit, // cargo UNITARIO (el carrito multiplica × cantidad)
       tipo_personalizacion: tipoPersonalizacion,    // frase | peyu | archivo
       moq_personalizacion: moqGratis,
       personalizacion_gratis_desde: moqGratis,
-      cantidad: 1,
+      cantidad,
       color: color?.label || colorId || null,
       personalizacion: personalizacionLabel,
       imagen: displayImg,
@@ -279,7 +288,7 @@ export default function PersonalizacionFlow() {
       source_type: 'Pedido B2C',
       product_name: producto.nombre,
       sku: producto.sku,
-      quantity: 1,
+      quantity: cantidad,
       laser_required: true,
       laser_text: texto,
       logo_url: logoUrl,
@@ -369,8 +378,8 @@ export default function PersonalizacionFlow() {
                 className="w-14 h-14 rounded-xl object-cover border border-white/15 flex-shrink-0"
               />
               <div className="flex-1 min-w-0">
-                <div className="font-semibold text-white text-sm truncate">{producto?.nombre}</div>
-                <div className="text-xs text-white/50 truncate">{color?.label || ''}{texto ? ` · "${texto}"` : ''}</div>
+                <div className="font-semibold text-white text-sm truncate">{producto?.nombre} × {cantidad}</div>
+                <div className="text-xs text-white/50 truncate">{color?.label || ''}{texto ? ` · "${texto}"` : ''}{personalizacionGratis ? ' · grabado gratis' : ''}</div>
               </div>
               <div className="font-poppins font-bold text-white">${precioFinal.toLocaleString('es-CL')}</div>
             </div>
@@ -574,17 +583,17 @@ export default function PersonalizacionFlow() {
             onChange={e => { setArchivo(e.target.files[0]); setLogoUrlSubido(''); setDisenoPeyuUrl(''); resetMockupIfNeeded(); }} />
         </div>
 
-        {/* Desglose del cargo de personalización según tipo (los 3 tramos) */}
+        {/* Desglose del cargo de personalización por unidad (los 3 tramos) */}
         {tipoPersonalizacion && (
           <div className="rounded-2xl border border-teal-400/25 bg-teal-500/10 p-3.5 space-y-1.5">
             <div className="flex items-center justify-between text-xs">
-              <span className="text-white/70">Personalización · {PERSONALIZACION_LABEL[tipoPersonalizacion]}</span>
+              <span className="text-white/70">Personalización · {PERSONALIZACION_LABEL[tipoPersonalizacion]} <span className="text-white/40">(c/u)</span></span>
               <span className="font-bold text-white">
-                {cargoPersonalizacion > 0 ? `+$${cargoPersonalizacion.toLocaleString('es-CL')}` : 'GRATIS'}
+                +${cargoPersonalizacionUnit.toLocaleString('es-CL')}
               </span>
             </div>
             <p className="text-[10px] text-teal-100/70 leading-relaxed">
-              Frase $3.990 · Diseño PEYU $4.990 · Diseño propio $7.990 · <strong className="text-teal-200">Gratis desde {moqGratis} unidades</strong>
+              Frase $3.990 · Diseño PEYU $4.990 · Diseño propio $7.990 c/u · <strong className="text-teal-200">Gratis desde {moqGratis} unidades</strong>
             </p>
           </div>
         )}
@@ -638,21 +647,45 @@ export default function PersonalizacionFlow() {
             {archivo && <div className="text-[10px] text-teal-300 mt-0.5">+ Logo adjunto</div>}
             {disenoPeyuUrl && <div className="text-[10px] text-teal-300 mt-0.5">+ Diseño PEYU</div>}
           </div>
-          <div className="font-poppins font-bold text-lg text-white">${precioFinal.toLocaleString('es-CL')}</div>
         </div>
-        {tipoPersonalizacion && (
-          <div className="mt-3 pt-3 border-t border-white/10 space-y-1 text-xs">
+
+        {/* Selector de cantidad − [n] + */}
+        <div className="mt-4 pt-4 border-t border-white/10 flex items-center justify-between">
+          <div>
+            <div className="text-xs font-bold text-white/70 uppercase tracking-wider">Cantidad</div>
+            {tipoPersonalizacion && (
+              <div className={`text-[10px] mt-0.5 font-semibold ${personalizacionGratis ? 'text-teal-300' : 'text-white/45'}`}>
+                {personalizacionGratis
+                  ? `✓ Personalización GRATIS desde ${moqGratis} u.`
+                  : `Faltan ${moqGratis - cantidad} u. para grabado gratis`}
+              </div>
+            )}
+          </div>
+          <QuantityStepper value={cantidad} onChange={setCantidad} min={1} />
+        </div>
+
+        {/* Desglose en vivo: (producto × cantidad) + (personalización × cantidad o $0) */}
+        <div className="mt-4 pt-3 border-t border-white/10 space-y-1.5 text-xs">
+          <div className="flex justify-between text-white/55">
+            <span>Producto · ${precioBaseProducto.toLocaleString('es-CL')} × {cantidad}</span>
+            <span>${subtotalProducto.toLocaleString('es-CL')}</span>
+          </div>
+          {tipoPersonalizacion && (
             <div className="flex justify-between text-white/55">
-              <span>Producto</span><span>${precioBaseProducto.toLocaleString('es-CL')}</span>
-            </div>
-            <div className="flex justify-between text-white/55">
-              <span>Personalización · {PERSONALIZACION_LABEL[tipoPersonalizacion]}</span>
-              <span className={cargoPersonalizacion > 0 ? 'text-white' : 'text-teal-300'}>
-                {cargoPersonalizacion > 0 ? `+$${cargoPersonalizacion.toLocaleString('es-CL')}` : 'GRATIS'}
+              <span>
+                Personalización · {PERSONALIZACION_LABEL[tipoPersonalizacion]}
+                {!personalizacionGratis && cargoPersonalizacionUnit > 0 && ` · $${cargoPersonalizacionUnit.toLocaleString('es-CL')} × ${cantidad}`}
+              </span>
+              <span className={personalizacionGratis ? 'text-teal-300 font-bold' : 'text-white'}>
+                {personalizacionGratis ? 'GRATIS' : `+$${cargoPersonalizacion.toLocaleString('es-CL')}`}
               </span>
             </div>
+          )}
+          <div className="flex justify-between pt-2 mt-1 border-t border-white/10 text-sm">
+            <span className="font-bold text-white">Total</span>
+            <span className="font-poppins font-bold text-lg text-white">${precioFinal.toLocaleString('es-CL')}</span>
           </div>
-        )}
+        </div>
       </div>
 
       <div className="space-y-3">

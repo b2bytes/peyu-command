@@ -55,7 +55,7 @@ export function getPrecioPersonalizacion(tipo) {
 /**
  * Calcula el cargo de personalización láser de una línea del carrito.
  * GRATIS si la cantidad alcanza el MOQ del producto; si no, cobra el cargo
- * según el TIPO de diseño (una sola vez por línea personalizada, no por unidad).
+ * POR UNIDAD según el TIPO de diseño (cargo unitario × cantidad).
  *
  * @param {object} item - línea del carrito { cantidad, personalizacion, tipo_personalizacion, ... }
  * @param {number} [moqGratis] - MOQ específico del producto (default global)
@@ -67,7 +67,7 @@ export function calcularCargoPersonalizacion(item, moqGratis = MOQ_PERSONALIZACI
   const moq = moqGratis || MOQ_PERSONALIZACION_GRATIS;
   if (qty >= moq) return 0; // gratis desde el MOQ
   const tipo = getTipoPersonalizacion(item);
-  return getPrecioPersonalizacion(tipo);
+  return getPrecioPersonalizacion(tipo) * qty; // cargo POR UNIDAD
 }
 
 /**
