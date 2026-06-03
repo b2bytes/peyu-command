@@ -44,6 +44,27 @@
       "type": "string",
       "title": "URL Logo"
     },
+    "design_type": {
+      "type": "string",
+      "title": "Tipo de dise\u00f1o",
+      "enum": [
+        "frase",
+        "peyu",
+        "archivo"
+      ],
+      "description": "Qu\u00e9 eligi\u00f3 el cliente: frase (texto), peyu (dise\u00f1o de galer\u00eda) o archivo (logo propio subido)."
+    },
+    "design_url": {
+      "type": "string",
+      "title": "URL del arte a grabar",
+      "description": "URL del arte exacto que producci\u00f3n debe grabar (logo subido o dise\u00f1o PEYU). Vac\u00edo si es solo frase de texto."
+    },
+    "engrave_position": {
+      "type": "object",
+      "title": "Posici\u00f3n/escala del grabado",
+      "additionalProperties": true,
+      "description": "Posici\u00f3n y escala usadas en el preview: { size, x, y } en % del producto. Gu\u00eda para producci\u00f3n."
+    },
     "laser_area_mm": {
       "type": "string",
       "title": "\u00c1rea L\u00e1ser (mm)"

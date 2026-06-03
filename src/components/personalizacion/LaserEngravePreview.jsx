@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { Move, Sparkles, Loader2 } from 'lucide-react';
+import { Move, Sparkles, Loader2, ZoomIn, ZoomOut, Maximize } from 'lucide-react';
 import { engraveLogo } from '@/lib/logo-engraver';
+import { useMockupZoom } from '@/components/personalizacion/useMockupZoom';
 
 // ============================================================================
 // LaserEngravePreview — Compositor de grabado láser SIN caja negra.
@@ -34,7 +35,15 @@ export default function LaserEngravePreview({
   const [processing, setProcessing] = useState(false);
   const containerRef = useRef(null);
 
+  // Zoom VISUAL del mockup (rueda/pinch/doble-tap/pan). No afecta posición real
+  // del diseño, ni precio, ni estado del wizard. Es solo para inspeccionar.
+  const zoom = useMockupZoom(containerRef);
+
   const logoSource = logoFile || logoUrl || null;
+
+  // Resetear el zoom visual a 1x cuando cambia el diseño o el producto, para que
+  // nunca quede "atascado" ampliado al volver al paso.
+  useEffect(() => { zoom.reset(); }, [logoSource, texto, productImageUrl]); // eslint-disable-line
 
   // Cuando el cliente aporta su propio diseño (logo o texto), componemos sobre
   // la base LIMPIA (sin el logo PEYU) para que no queden dos logos. Si aún no
@@ -83,7 +92,7 @@ export default function LaserEngravePreview({
           </div>
           <div>
             <p className="font-semibold text-sm text-white">Mockup en vivo</p>
-            <p className="text-[10px] text-white/50">Grabado láser simulado · fondo eliminado automáticamente</p>
+            <p className="text-[10px] text-white/50">Grabado láser simulado · acerca con rueda o pinch para inspeccionar</p>
           </div>
         </div>
         <span className="text-[10px] font-bold text-teal-300 bg-teal-500/20 border border-teal-400/30 px-2 py-1 rounded-full">
@@ -91,97 +100,150 @@ export default function LaserEngravePreview({
         </span>
       </div>
 
-      {/* Canvas */}
+      {/* Canvas — el contenedor captura gestos de zoom y recorta (overflow-hidden).
+          La capa interna .zoom-layer aplica el transform de zoom VISUAL. */}
       <div
         ref={containerRef}
-        className="relative aspect-square rounded-2xl overflow-hidden bg-slate-900 border border-white/10 select-none"
-        onMouseMove={handleMouseMove}
-        onMouseUp={() => setDragging(false)}
-        onMouseLeave={() => setDragging(false)}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={() => setDragging(false)}
+        className={`relative aspect-square rounded-2xl overflow-hidden bg-slate-900 border border-white/10 select-none touch-none ${zoom.zoomedIn ? 'cursor-grab active:cursor-grabbing' : ''}`}
+        onMouseMove={(e) => { handleMouseMove(e); zoom.bind.onMouseMove(e); }}
+        onMouseDown={(e) => { if (!dragging) zoom.bind.onMouseDown(e); }}
+        onMouseUp={(e) => { setDragging(false); zoom.bind.onMouseUp(e); }}
+        onMouseLeave={(e) => { setDragging(false); zoom.bind.onMouseLeave(e); }}
+        onTouchMove={(e) => { if (dragging) handleTouchMove(e); else zoom.bind.onTouchMove(e); }}
+        onTouchStart={(e) => { if (!dragging) zoom.bind.onTouchStart(e); }}
+        onTouchEnd={(e) => { setDragging(false); zoom.bind.onTouchEnd(e); }}
+        onDoubleClick={zoom.bind.onDoubleClick}
       >
-        {canvasImage
-          ? <img
-              src={canvasImage}
-              alt="Producto"
-              className="w-full h-full object-cover"
-              draggable={false}
-              onError={() => {
-                // 1º fallo: si veníamos de la base limpia, reintentamos con la
-                // imagen normal del producto (marcamos imgFailed).
-                if (preferClean) setImgFailed(true);
+        {/* Capa de zoom visual — escala/traslada TODO el contenido del mockup */}
+        <div
+          className="absolute inset-0"
+          style={{
+            transform: `translate(${zoom.tx}px, ${zoom.ty}px) scale(${zoom.scale})`,
+            transformOrigin: 'center center',
+            transition: zoom.zoomedIn ? 'transform 60ms linear' : 'transform 180ms ease-out',
+            willChange: 'transform',
+          }}
+        >
+          {canvasImage
+            ? <img
+                src={canvasImage}
+                alt="Producto"
+                className="w-full h-full object-cover"
+                draggable={false}
+                onError={() => {
+                  if (preferClean) setImgFailed(true);
+                }}
+              />
+            : <div className="w-full h-full bg-gradient-to-br from-slate-800 to-slate-900" />
+          }
+
+          {/* Área técnica guía (recuadro sutil) */}
+          <div
+            className="absolute pointer-events-none rounded-lg border border-dashed border-white/25"
+            style={{
+              left: `${posX}%`, top: `${posY}%`,
+              width: `${size * 1.25}%`, height: `${size * 0.85}%`,
+              transform: 'translate(-50%, -50%)',
+            }}
+          />
+
+          {/* Halo sutil de grabado (oscurecimiento leve, NO caja) */}
+          <div
+            className="absolute pointer-events-none rounded-full"
+            style={{
+              left: `${posX}%`, top: `${posY}%`,
+              width: `${size * 1.3}%`, height: `${size * 1.3}%`,
+              transform: 'translate(-50%, -50%)',
+              background: 'radial-gradient(circle, rgba(0,0,0,0.10) 0%, transparent 68%)',
+            }}
+          />
+
+          {/* Logo grabado (transparente + monocromo + blend) */}
+          {engravedUrl && (
+            <div
+              className="absolute cursor-move"
+              style={{
+                left: `${posX}%`, top: `${posY}%`,
+                width: `${size}%`,
+                transform: 'translate(-50%, -50%)',
+                mixBlendMode: tint === 'light' ? 'screen' : 'multiply',
+                opacity: 0.88,
+                filter: 'drop-shadow(0 1px 1px rgba(0,0,0,0.25))',
               }}
-            />
-          : <div className="w-full h-full bg-gradient-to-br from-slate-800 to-slate-900" />
-        }
+              onMouseDown={(e) => { if (!zoom.zoomedIn) { e.stopPropagation(); setDragging(true); } }}
+              onTouchStart={(e) => { if (!zoom.zoomedIn) { e.stopPropagation(); setDragging(true); } }}
+            >
+              <img src={engravedUrl} alt="Tu logo grabado" draggable={false} className="w-full h-auto pointer-events-none" />
+            </div>
+          )}
 
-        {/* Área técnica guía (recuadro sutil) */}
-        <div
-          className="absolute pointer-events-none rounded-lg border border-dashed border-white/25"
-          style={{
-            left: `${posX}%`, top: `${posY}%`,
-            width: `${size * 1.25}%`, height: `${size * 0.85}%`,
-            transform: 'translate(-50%, -50%)',
-          }}
-        />
+          {/* Texto grabado (cuando no hay logo) */}
+          {!logoSource && texto && (
+            <div
+              className="absolute text-center cursor-move"
+              style={{
+                left: `${posX}%`, top: `${posY}%`,
+                transform: 'translate(-50%, -50%)',
+                fontSize: `${size * 0.42}px`,
+                fontFamily: 'monospace', fontWeight: 'bold',
+                color: tint === 'light' ? '#f5f5f5' : '#1c1c1c',
+                letterSpacing: '0.15em',
+                opacity: 0.88,
+                mixBlendMode: tint === 'light' ? 'screen' : 'multiply',
+                textShadow: '0 1px 1px rgba(0,0,0,0.25)',
+                whiteSpace: 'nowrap',
+              }}
+              onMouseDown={(e) => { if (!zoom.zoomedIn) { e.stopPropagation(); setDragging(true); } }}
+              onTouchStart={(e) => { if (!zoom.zoomedIn) { e.stopPropagation(); setDragging(true); } }}
+            >
+              {texto.toUpperCase()}
+            </div>
+          )}
+        </div>
 
-        {/* Halo sutil de grabado (oscurecimiento leve, NO caja) */}
-        <div
-          className="absolute pointer-events-none rounded-full"
-          style={{
-            left: `${posX}%`, top: `${posY}%`,
-            width: `${size * 1.3}%`, height: `${size * 1.3}%`,
-            transform: 'translate(-50%, -50%)',
-            background: 'radial-gradient(circle, rgba(0,0,0,0.10) 0%, transparent 68%)',
-          }}
-        />
-
-        {/* Logo grabado (transparente + monocromo + blend) */}
-        {engravedUrl && (
-          <div
-            className="absolute cursor-move touch-none"
-            style={{
-              left: `${posX}%`, top: `${posY}%`,
-              width: `${size}%`,
-              transform: 'translate(-50%, -50%)',
-              mixBlendMode: tint === 'light' ? 'screen' : 'multiply',
-              opacity: 0.88,
-              filter: 'drop-shadow(0 1px 1px rgba(0,0,0,0.25))',
-            }}
-            onMouseDown={() => setDragging(true)}
-            onTouchStart={() => setDragging(true)}
+        {/* ── Controles de zoom (fuera de la capa que escala) ── */}
+        <div className="absolute top-2 right-2 flex flex-col gap-1.5">
+          <button
+            type="button"
+            onClick={zoom.zoomIn}
+            disabled={!zoom.canZoomIn}
+            className="w-8 h-8 rounded-lg bg-slate-900/80 backdrop-blur border border-white/15 flex items-center justify-center text-white/80 hover:bg-slate-800 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+            aria-label="Acercar"
           >
-            <img src={engravedUrl} alt="Tu logo grabado" draggable={false} className="w-full h-auto pointer-events-none" />
-          </div>
-        )}
-
-        {/* Texto grabado (cuando no hay logo) */}
-        {!logoSource && texto && (
-          <div
-            className="absolute pointer-events-none text-center cursor-move"
-            style={{
-              left: `${posX}%`, top: `${posY}%`,
-              transform: 'translate(-50%, -50%)',
-              fontSize: `${size * 0.42}px`,
-              fontFamily: 'monospace', fontWeight: 'bold',
-              color: tint === 'light' ? '#f5f5f5' : '#1c1c1c',
-              letterSpacing: '0.15em',
-              opacity: 0.88,
-              mixBlendMode: tint === 'light' ? 'screen' : 'multiply',
-              textShadow: '0 1px 1px rgba(0,0,0,0.25)',
-              whiteSpace: 'nowrap',
-            }}
-            onMouseDown={() => setDragging(true)}
-            onTouchStart={() => setDragging(true)}
+            <ZoomIn className="w-4 h-4" />
+          </button>
+          <button
+            type="button"
+            onClick={zoom.zoomOut}
+            disabled={!zoom.canZoomOut}
+            className="w-8 h-8 rounded-lg bg-slate-900/80 backdrop-blur border border-white/15 flex items-center justify-center text-white/80 hover:bg-slate-800 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+            aria-label="Alejar"
           >
-            {texto.toUpperCase()}
+            <ZoomOut className="w-4 h-4" />
+          </button>
+          {zoom.zoomedIn && (
+            <button
+              type="button"
+              onClick={zoom.reset}
+              className="w-8 h-8 rounded-lg bg-teal-500/80 backdrop-blur border border-teal-400/40 flex items-center justify-center text-white hover:bg-teal-500 transition-all"
+              aria-label="Centrar y restablecer zoom"
+            >
+              <Maximize className="w-3.5 h-3.5" />
+            </button>
+          )}
+        </div>
+
+        {/* Indicador de zoom (solo cuando hay zoom) */}
+        {zoom.zoomedIn && (
+          <div className="absolute top-2 left-2 bg-slate-900/80 backdrop-blur px-2 py-1 rounded-md border border-white/15">
+            <p className="text-[9px] text-teal-300 font-bold tabular-nums">{zoom.scale.toFixed(1)}×</p>
           </div>
         )}
 
         {processing && (
-          <div className="absolute inset-0 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm">
-            <Loader2 className="w-6 h-6 text-teal-300 animate-spin" />
+          <div className="absolute bottom-2 left-2 bg-slate-900/80 backdrop-blur px-2 py-1 rounded-md flex items-center gap-1.5">
+            <Loader2 className="w-3 h-3 text-teal-300 animate-spin" />
+            <span className="text-[9px] text-white/70 font-medium">procesando…</span>
           </div>
         )}
 

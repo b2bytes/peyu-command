@@ -212,6 +212,25 @@ export default function PersonalizacionFlow() {
 
   const resetMockupIfNeeded = () => { if (mockupUrl) setMockupUrl(''); };
 
+  // Escala/posición por defecto del grabado según el producto. Usa grabado_area
+  // si existe (campo opcional { size, x, y }); si no, default por categoría que
+  // se ve bien centrado y proporcionado en cada tipo de producto.
+  const grabadoDefaults = useMemo(() => {
+    const area = producto?.grabado_area;
+    if (area && typeof area === 'object') {
+      return {
+        size: area.size ?? 30,
+        x: area.x ?? 50,
+        y: area.y ?? 52,
+      };
+    }
+    const cat = (producto?.categoria || '').toLowerCase();
+    if (cat.includes('carcasa')) return { size: 34, x: 50, y: 44 };
+    if (cat.includes('hogar')) return { size: 30, x: 50, y: 50 };       // posavasos
+    if (cat.includes('entreten')) return { size: 26, x: 50, y: 50 };     // cachos / packs
+    return { size: 30, x: 50, y: 52 };
+  }, [producto]);
+
   const handleGenerateMockup = async () => {
     if (!texto && !archivo && !disenoPeyuUrl) {
       setMockupError('Agrega un texto, elige un diseño PEYU o sube tu logo para generar el mockup.');
@@ -283,7 +302,10 @@ export default function PersonalizacionFlow() {
     localStorage.setItem('carrito', JSON.stringify(nuevo));
     trackAddToCart({ ...item, sku: producto.sku, categoria: producto.categoria });
 
-    // 3. Crear PersonalizationJob para tracking de producción
+    // 3. Crear PersonalizationJob para tracking de producción.
+    // Producción necesita saber EXACTAMENTE qué grabar: el arte (logo subido o
+    // diseño PEYU), el tipo, y la posición/escala usada en el preview.
+    const arteUrl = logoUrl || disenoPeyuUrl || null;
     const job = await base44.entities.PersonalizationJob.create({
       source_type: 'Pedido B2C',
       product_name: producto.nombre,
@@ -291,7 +313,10 @@ export default function PersonalizacionFlow() {
       quantity: cantidad,
       laser_required: true,
       laser_text: texto,
-      logo_url: logoUrl,
+      logo_url: arteUrl,                       // arte real a grabar (logo o diseño PEYU)
+      design_type: tipoPersonalizacion,        // frase | peyu | archivo
+      design_url: arteUrl,                     // url del arte (explícito para producción)
+      engrave_position: grabadoDefaults,       // { size, x, y } usados en el preview
       color_producto: color?.label || '',
       status: mockupUrl ? 'Preview generado' : 'Pendiente',
       mockup_urls: mockupUrl ? [mockupUrl] : [],
@@ -527,6 +552,9 @@ export default function PersonalizacionFlow() {
           texto={texto}
           areaLabel={producto?.area_laser_mm}
           defaultTint={color?.hex && parseInt(color.hex.replace('#', '').slice(0, 2), 16) < 130 ? 'light' : 'dark'}
+          defaultSize={grabadoDefaults.size}
+          defaultPosX={grabadoDefaults.x}
+          defaultPosY={grabadoDefaults.y}
         />
       )}
 
