@@ -1,5 +1,99 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
+const fmtCLP = (n) => '$' + (n || 0).toLocaleString('es-CL');
+
+// ── Gmail API inline (evita subllamada function→function que da 403 en flujo público) ──
+function encodeHeader(str) {
+  if (!str) return '';
+  // eslint-disable-next-line no-control-regex
+  if (/^[\x20-\x7E]*$/.test(str)) return str;
+  return `=?UTF-8?B?${btoa(unescape(encodeURIComponent(str)))}?=`;
+}
+function toBase64Url(str) {
+  return btoa(unescape(encodeURIComponent(str)))
+    .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+async function sendViaGmail(accessToken, { to, cc, replyTo, subject, html, fromName = 'PEYU Chile' }) {
+  const boundary = `peyu_prop_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+  const plain = html.replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
+  const message = [
+    `From: ${encodeHeader(fromName)} <ti@peyuchile.cl>`,
+    `To: ${to}`,
+    cc ? `Cc: ${cc}` : null,
+    replyTo ? `Reply-To: ${replyTo}` : null,
+    `Subject: ${encodeHeader(subject)}`,
+    'MIME-Version: 1.0',
+    `Content-Type: multipart/alternative; boundary="${boundary}"`,
+    '',
+    `--${boundary}`,
+    'Content-Type: text/plain; charset="UTF-8"',
+    'Content-Transfer-Encoding: 7bit',
+    '',
+    plain,
+    '',
+    `--${boundary}`,
+    'Content-Type: text/html; charset="UTF-8"',
+    'Content-Transfer-Encoding: 7bit',
+    '',
+    html,
+    '',
+    `--${boundary}--`,
+  ].filter((l) => l !== null).join('\r\n');
+
+  const res = await fetch('https://gmail.googleapis.com/gmail/v1/users/me/messages/send', {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ raw: toBase64Url(message) }),
+  });
+  if (!res.ok) {
+    const t = await res.text();
+    throw new Error(`Gmail API ${res.status}: ${t.slice(0, 200)}`);
+  }
+  return res.json();
+}
+
+function buildProposalEmailHtml({ proposal, items, proposalUrl }) {
+  const rows = items.map((it) => `
+    <tr>
+      <td style="padding:12px;border-bottom:1px solid #EEF1F0;font-size:14px;color:#0F172A;font-weight:600;">${it.nombre || '-'}${it.personalizacion ? '<div style="font-size:11px;color:#0F8B6C;margin-top:2px;">+ Personalización láser UV</div>' : ''}</td>
+      <td style="padding:12px;border-bottom:1px solid #EEF1F0;text-align:center;font-size:14px;color:#475569;">${it.cantidad || it.qty || 0}</td>
+      <td style="padding:12px;border-bottom:1px solid #EEF1F0;text-align:right;font-size:14px;color:#475569;">${fmtCLP(it.precio_unitario)}</td>
+      <td style="padding:12px;border-bottom:1px solid #EEF1F0;text-align:right;font-size:14px;font-weight:700;color:#0F172A;">${fmtCLP(it.line_total)}</td>
+    </tr>`).join('');
+  return `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"></head>
+<body style="margin:0;padding:0;background:#F4F1EB;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#F4F1EB;padding:32px 16px;"><tr><td align="center">
+<table role="presentation" width="640" cellpadding="0" cellspacing="0" style="max-width:640px;width:100%;background:#FFFFFF;border-radius:20px;overflow:hidden;box-shadow:0 6px 28px rgba(15,23,42,0.06);">
+<tr><td style="background:linear-gradient(135deg,#0F172A 0%,#0A4A3D 60%,#0F8B6C 100%);padding:36px;color:#fff;">
+<p style="margin:0 0 6px;font-size:11px;font-weight:700;letter-spacing:3px;color:#A7D9C9;text-transform:uppercase;">PEYU · COTIZACIÓN INSTANTÁNEA</p>
+<h1 style="margin:0;font-size:24px;font-weight:800;">Tu propuesta está lista 🐢</h1>
+<p style="margin:8px 0 0;font-size:14px;color:rgba(255,255,255,0.75);">Propuesta <strong style="color:#fff;">N° ${proposal.numero}</strong> · Precios por volumen aplicados</p>
+</td></tr>
+<tr><td style="padding:32px 36px 8px;">
+<p style="margin:0 0 8px;font-size:16px;color:#0F172A;font-weight:600;">Hola ${proposal.contacto},</p>
+<p style="margin:0 0 24px;font-size:15px;line-height:1.6;color:#475569;">Generamos tu propuesta corporativa al instante. Aquí está el detalle con tus descuentos por volumen ya aplicados.</p>
+<table role="presentation" width="100%" style="background:linear-gradient(135deg,#F0FAF7,#E0F2EB);border:1px solid #C8E6DA;border-radius:16px;margin-bottom:24px;"><tr><td style="padding:22px 26px;">
+<p style="margin:0 0 4px;font-size:11px;font-weight:700;letter-spacing:1.5px;color:#0F8B6C;text-transform:uppercase;">Inversión total</p>
+<p style="margin:0;font-size:34px;font-weight:800;color:#0F172A;">${fmtCLP(proposal.total)}</p>
+<p style="margin:4px 0 0;font-size:12px;color:#64748B;">CLP · Lead time ${proposal.lead_time_dias} días · Validez ${proposal.validity_days || 15} días</p>
+</td></tr></table>
+<table role="presentation" width="100%" style="border-collapse:collapse;margin-bottom:28px;"><thead><tr style="background:#0F172A;">
+<th style="padding:10px 12px;text-align:left;font-size:11px;color:#fff;text-transform:uppercase;border-radius:8px 0 0 8px;">Producto</th>
+<th style="padding:10px;text-align:center;font-size:11px;color:#fff;text-transform:uppercase;">Cant.</th>
+<th style="padding:10px;text-align:right;font-size:11px;color:#fff;text-transform:uppercase;">Unit.</th>
+<th style="padding:10px 12px;text-align:right;font-size:11px;color:#fff;text-transform:uppercase;border-radius:0 8px 8px 0;">Total</th>
+</tr></thead><tbody>${rows}</tbody></table>
+<table role="presentation" width="100%" style="margin-bottom:24px;"><tr><td align="center">
+<a href="${proposalUrl}" style="display:block;background:linear-gradient(135deg,#0F8B6C,#0A6B54);color:#fff;text-decoration:none;padding:16px 28px;border-radius:14px;font-weight:700;font-size:15px;text-align:center;">Ver propuesta online y descargar PDF →</a>
+</td></tr></table>
+<p style="margin:0;font-size:13px;color:#78350F;background:#FFF8E6;border-left:4px solid #F59E0B;border-radius:8px;padding:14px 18px;line-height:1.5;"><strong>¿Ajustamos algo?</strong> Responde este email o escríbenos al <a href="https://wa.me/56935040242" style="color:#0F8B6C;font-weight:700;text-decoration:none;">+56 9 3504 0242</a>.</p>
+</td></tr>
+<tr><td style="background:#0F172A;padding:24px 36px;text-align:center;">
+<p style="margin:0 0 4px;font-size:13px;color:#fff;font-weight:700;">PEYU Chile SpA</p>
+<p style="margin:0;font-size:11px;color:#94A3B8;">Plástico que renace · <a href="https://peyuchile.cl" style="color:#A7D9C9;text-decoration:none;">peyuchile.cl</a> · ti@peyuchile.cl</p>
+</td></tr></table></td></tr></table></body></html>`;
+}
+
 // === Construcción del prompt del mockup con POSICIÓN del grabado ===
 // posicion: 'arriba' | 'centro' | 'abajo'. Es clave para que el logo NO quede
 // donde no es. Se describe explícitamente la ubicación sobre la superficie.
@@ -233,19 +327,28 @@ Deno.serve(async (req) => {
       fecha_vencimiento: expiryDate.toISOString().split('T')[0],
     });
 
-    // 6. Email automático con TIMEOUT. El cliente igual puede reenviar desde la
-    //    pantalla de éxito (ProposalDeliveryActions), así que esto es best-effort
-    //    y nunca debe colgar la respuesta.
+    // 6. Email automático INLINE vía Gmail (ti@peyuchile.cl). Best-effort: si
+    //    falla NO bloquea la respuesta (el cliente puede reenviar desde la
+    //    pantalla de éxito). Se inlinea para evitar la subllamada
+    //    function→function, que da 403 en este flujo público.
     let emailSent = false;
     try {
-      const emailRes = await withTimeout(
-        base44.functions.invoke('sendSelfServiceProposalEmail', {
-          proposalId: proposal.id,
-          form: { contact_name, company_name, email, phone, rut, notes },
+      const { accessToken } = await base44.asServiceRole.connectors.getConnection('gmail');
+      const origin = req.headers.get('origin') || req.headers.get('referer') || 'https://peyuchile.cl';
+      const baseUrl = origin.replace(/\/$/, '').split('/').slice(0, 3).join('/');
+      const proposalUrl = `${baseUrl}/b2b/propuesta?id=${proposal.id}`;
+      await withTimeout(
+        sendViaGmail(accessToken, {
+          to: email,
+          cc: 'ventas@peyuchile.cl',
+          replyTo: 'ventas@peyuchile.cl',
+          subject: `Propuesta PEYU N° ${propNum} · ${fmtCLP(total)}`,
+          html: buildProposalEmailHtml({ proposal: { ...proposal, numero: propNum, contacto: contact_name }, items: breakdown, proposalUrl }),
+          fromName: 'PEYU Chile',
         }),
         15000,
       );
-      emailSent = !!emailRes?.data?.success;
+      emailSent = true;
     } catch (e) {
       console.warn('Email automático falló/timeout (no bloquea):', e?.message);
     }
