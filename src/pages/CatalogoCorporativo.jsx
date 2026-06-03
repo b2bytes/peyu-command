@@ -9,12 +9,15 @@ import B2BQuoteModal from '@/components/B2BQuoteModal';
 import { toast } from 'sonner';
 import SEO from '@/components/SEO';
 import { combineSchemas, buildOrganizationSchema, buildBreadcrumbSchema } from '@/lib/schemas-peyu';
+import { getB2BPriceForQty, getUnitBasePrice } from '@/lib/catalog-pricing';
 
-const PRICE_TIERS = [
-  { label: '10–49 u.', discount: 0, badge: 'Laser gratis' },
-  { label: '50–199 u.', discount: 8, badge: '−8%' },
-  { label: '200–499 u.', discount: 15, badge: '−15%' },
-  { label: '500+ u.', discount: 25, badge: '−25%' },
+// Tramos OFICIALES del catálogo B2B (sin IVA). El % se calcula dinámicamente
+// vs el precio unitario base — NO es fijo. Mismos tramos que precio_b2b_tramos.
+const TIER_DEFS = [
+  { min: 10,   label: '10–49 u.' },
+  { min: 100,  label: '100–499 u.' },
+  { min: 500,  label: '500–999 u.' },
+  { min: 1000, label: '1000+ u.' },
 ];
 
 const KITS = [
@@ -26,20 +29,28 @@ const KITS = [
   { id: 'soporte-cel', nombre: 'Soporte Celular Corporativo', descripcion: 'Soporte de celular ergonómico para escritorio. El más vendido.', emoji: '📱', piezas: ['Soporte ajustable', 'Antideslizante', '100% reciclado'], precio_base: 6990, sku: 'SOC-COR-ERG', categoria: 'Escritorio', material: 'Plástico 100% Reciclado', stock: 'stock', destacado: false },
 ];
 
-function calcPrice(base, qty) {
-  let discount = 0;
-  if (qty >= 500) discount = 0.25;
-  else if (qty >= 200) discount = 0.15;
-  else if (qty >= 50) discount = 0.08;
-  return Math.round(base * (1 - discount));
-}
-
 export default function CatalogoCorporativo() {
   const [qty, setQty] = useState(100);
   const [filters, setFilters] = useState({ categoria: [], material: [], precio: [], stock: [] });
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [showMobileFilters, setShowMobileFilters] = useState(false);
-  const tier = qty >= 500 ? 3 : qty >= 200 ? 2 : qty >= 50 ? 1 : 0;
+  // Producto real del catálogo para el simulador (Kit Escritorio Pro), con sus
+  // precio_b2b_tramos oficiales. Sin esto caeríamos a un % hardcodeado.
+  const [simProducto, setSimProducto] = useState(null);
+
+  useEffect(() => {
+    base44.entities.Producto.filter({ sku: 'HOG-PACK-PRO' })
+      .then(list => { if (list?.[0]) setSimProducto(list[0]); })
+      .catch(() => {});
+  }, []);
+
+  // Precio unitario del TRAMO real para la cantidad (no % fijo). Fallback al
+  // precio base si el producto aún no cargó o no tiene tramos.
+  const baseUnit = simProducto ? (getUnitBasePrice(simProducto) || 19990) : 19990;
+  const tramo = simProducto ? getB2BPriceForQty(simProducto, qty) : null;
+  const precioUnitSim = tramo ? tramo.precio : baseUnit;
+  const ahorroPctSim = tramo ? tramo.ahorroPct : 0;
+  const tierLabel = tramo ? tramo.label : '1–9 u.';
 
   const handleFilterChange = (filterType, option, isChecked) => {
     setFilters(prev => ({
@@ -161,36 +172,42 @@ export default function CatalogoCorporativo() {
             </div>
           </div>
 
-          {/* Tier pills */}
+          {/* Tier pills — basados en tramos reales del catálogo */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-6">
-            {PRICE_TIERS.map((t, i) => (
-              <div key={i} className={`rounded-lg p-2.5 text-center border-2 transition-all ${i === tier ? 'border-[#0F8B6C] bg-[#0F8B6C]/5' : 'border-gray-100 bg-gray-50'}`}>
-                <div className="text-[10px] text-gray-500 font-medium">{t.label}</div>
-                <div className={`font-bold text-xs mt-1 ${i === tier ? 'text-[#0F8B6C]' : 'text-gray-400'}`}>{t.badge}</div>
-              </div>
-            ))}
+            {TIER_DEFS.map((t, i) => {
+              const next = TIER_DEFS[i + 1];
+              const activo = qty >= t.min && (!next || qty < next.min);
+              const pct = simProducto ? (getB2BPriceForQty(simProducto, t.min)?.ahorroPct || 0) : 0;
+              return (
+                <div key={i} className={`rounded-lg p-2.5 text-center border-2 transition-all ${activo ? 'border-[#0F8B6C] bg-[#0F8B6C]/5' : 'border-gray-100 bg-gray-50'}`}>
+                  <div className="text-[10px] text-gray-500 font-medium">{t.label}</div>
+                  <div className={`font-bold text-xs mt-1 ${activo ? 'text-[#0F8B6C]' : 'text-gray-400'}`}>{pct > 0 ? `−${pct}%` : 'Laser gratis'}</div>
+                </div>
+              );
+            })}
           </div>
 
-          {/* Price display */}
+          {/* Price display — precio del TRAMO real, sin % fijo */}
           <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg p-5 space-y-4">
-            <p className="text-sm text-gray-600 text-center font-medium">Kit Escritorio Pro · {qty} unidades</p>
+            <p className="text-sm text-gray-600 text-center font-medium">{simProducto?.nombre || 'Kit Escritorio Pro'} · {qty} unidades · {tierLabel}</p>
             <div className="grid grid-cols-2 gap-4 sm:gap-6 md:grid-cols-3 md:gap-8">
               <div className="text-center">
-                <div className="text-xs text-gray-500 mb-1">Precio original</div>
-                <div className="text-lg text-gray-400 line-through">${(19990 * qty).toLocaleString('es-CL')}</div>
+                <div className="text-xs text-gray-500 mb-1">Precio unitario base</div>
+                <div className="text-lg text-gray-400 line-through">${(baseUnit * qty).toLocaleString('es-CL')}</div>
               </div>
               <div className="col-span-2 md:col-span-1 text-center">
-                <div className="text-xs text-gray-500 mb-1">Total con descuento</div>
-                <div className="text-2xl md:text-3xl font-poppins font-bold text-[#0F8B6C]">${(calcPrice(19990, qty) * qty).toLocaleString('es-CL')}</div>
+                <div className="text-xs text-gray-500 mb-1">Total ({qty} u.)</div>
+                <div className="text-2xl md:text-3xl font-poppins font-bold text-[#0F8B6C]">${(precioUnitSim * qty).toLocaleString('es-CL')}</div>
               </div>
               <div className="text-center col-span-2 md:col-span-1">
                 <div className="text-xs text-gray-500 mb-1">Por unidad</div>
-                <div className="text-xl font-poppins font-bold text-gray-900">${calcPrice(19990, qty).toLocaleString('es-CL')}</div>
+                <div className="text-xl font-poppins font-bold text-gray-900">${precioUnitSim.toLocaleString('es-CL')}</div>
                 <div className="text-xs text-[#0F8B6C] font-semibold mt-1">
-                  {PRICE_TIERS[tier].discount > 0 ? `−${PRICE_TIERS[tier].discount}%` : '✨ Laser gratis'}
+                  {ahorroPctSim > 0 ? `−${ahorroPctSim}%` : '✨ Laser gratis'}
                 </div>
               </div>
             </div>
+            <p className="text-[10px] text-gray-400 text-center">Precios por unidad · Excluyen IVA · Tramos oficiales del catálogo</p>
           </div>
           <div className="text-center mt-6">
             <Link to={`/b2b/contacto?qty=${qty}`}>
