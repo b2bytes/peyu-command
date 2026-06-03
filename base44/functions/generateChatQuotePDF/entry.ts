@@ -16,13 +16,34 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 import { jsPDF } from 'npm:jspdf@4.0.0';
 
-// Resuelve precio por volumen según las escalas de Producto.
+// Tramos B2B oficiales (objeto precio_b2b_tramos). Fuente de verdad del cotizador.
+// q>=2000→t2000_mas · >=1000→t1000_1999 · >=500→t500_999 · >=250→t250_499
+// >=100→t100_249 · >=50→t50_99 · >=10→t10_49 · <10→unitario.
+const TRAMOS_B2B = [
+  { min: 2000, key: 't2000_mas' },
+  { min: 1000, key: 't1000_1999' },
+  { min: 500,  key: 't500_999' },
+  { min: 250,  key: 't250_499' },
+  { min: 100,  key: 't100_249' },
+  { min: 50,   key: 't50_99' },
+  { min: 10,   key: 't10_49' },
+  { min: 1,    key: 'unitario' },
+];
+const num = (v) => (Number.isFinite(Number(v)) && Number(v) > 0 ? Number(v) : null);
+
+// Resuelve el precio unitario por volumen leyendo precio_b2b_tramos (igual que
+// lib/catalog-pricing.getB2BPriceForQty). Cae al tramo anterior con precio si
+// uno está vacío. Devuelve null si el producto NO tiene tramos cargados.
 function pickEscalonado(producto, qty) {
-  if (qty >= 500 && producto.precio_500_mas) return producto.precio_500_mas;
-  if (qty >= 200 && producto.precio_200_499) return producto.precio_200_499;
-  if (qty >= 50  && producto.precio_50_199)  return producto.precio_50_199;
-  if (qty >= 10  && producto.precio_base_b2b) return producto.precio_base_b2b;
-  return producto.precio_b2c || producto.precio_base_b2b || 9990;
+  const tramos = producto?.precio_b2b_tramos;
+  if (!tramos || typeof tramos !== 'object') return null; // sin tramos → no cotizable
+  const idx = TRAMOS_B2B.findIndex((t) => qty >= t.min);
+  if (idx < 0) return null;
+  for (let i = idx; i < TRAMOS_B2B.length; i++) {
+    const precio = num(tramos[TRAMOS_B2B[i].key]);
+    if (precio) return precio;
+  }
+  return null;
 }
 
 function genCotNumero() {
@@ -60,9 +81,16 @@ Deno.serve(async (req) => {
     }
     const producto = productos[0];
 
-    // 2. Calcular precios
+    // 2. Calcular precios por TRAMO de volumen (precio_b2b_tramos).
     const cantidad = Math.max(1, parseInt(qty, 10) || 1);
     const precioUnit = pickEscalonado(producto, cantidad);
+    if (!precioUnit) {
+      // Producto sin tramos B2B cargados → NO cotizable (no inventamos precio).
+      return Response.json({
+        error: `El producto ${sku} no tiene precios por volumen cargados. Contáctanos para cotizar este producto.`,
+        no_b2b_tramos: true,
+      }, { status: 422 });
+    }
     const subtotal = precioUnit * cantidad;
 
     // Personalización: GRATIS desde 10u (política PEYU), serigrafía siempre fee.

@@ -99,6 +99,9 @@ export default function ChatQuoteCard({ spec = '', variant = 'dark' }) {
       });
 
       const data = res?.data || {};
+      if (data.no_b2b_tramos) {
+        throw new Error(data.error || 'Este producto no tiene precios por volumen. Contáctanos para cotizarlo');
+      }
       if (!data.ok || !data.pdf_base64) {
         throw new Error(data.error || 'No se pudo generar la cotización');
       }
