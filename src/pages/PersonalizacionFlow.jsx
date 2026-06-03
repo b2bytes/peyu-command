@@ -173,7 +173,7 @@ export default function PersonalizacionFlow() {
   // 🎨 Imagen mostrada = imagen del COLOR elegido (imagenes_por_color). Es la
   // fuente de verdad del selector: color → imagen → lienzo del grabado. 1:1.
   const displayImg = useMemo(
-    () => producto ? getProductImageForColor(producto, color?.label || colorId) : null,
+    () => producto ? getProductImageForColor(producto, color || colorId) : null,
     [producto, color, colorId]
   );
 
