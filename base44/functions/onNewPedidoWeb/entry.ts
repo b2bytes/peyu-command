@@ -29,6 +29,53 @@ const fmtCLP = (n) => '$' + (n || 0).toLocaleString('es-CL');
 // (ej: "PEYU Chile <ventas@peyuchile.cl>") y se usará automáticamente.
 const RESEND_DEFAULT_FROM = 'PEYU Chile <onboarding@resend.dev>';
 
+// ── Gmail API (ti@peyuchile.cl): entrega a CUALQUIER destinatario externo,
+//    a diferencia de Resend sandbox que solo entrega al owner de la cuenta.
+//    Este es el canal correcto para el correo al CLIENTE.
+function encodeHeader(str) {
+  if (!str) return '';
+  // eslint-disable-next-line no-control-regex
+  if (/^[\x20-\x7E]*$/.test(str)) return str;
+  return `=?UTF-8?B?${btoa(unescape(encodeURIComponent(str)))}?=`;
+}
+function toBase64Url(str) {
+  return btoa(unescape(encodeURIComponent(str)))
+    .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+async function sendViaGmail(accessToken, { to, replyTo, subject, html, fromName = 'PEYU Chile' }) {
+  const boundary = `peyu_new_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+  const plain = html.replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
+  const message = [
+    `From: ${encodeHeader(fromName)} <ti@peyuchile.cl>`,
+    `To: ${to}`,
+    replyTo ? `Reply-To: ${replyTo}` : null,
+    `Subject: ${encodeHeader(subject)}`,
+    'MIME-Version: 1.0',
+    `Content-Type: multipart/alternative; boundary="${boundary}"`,
+    '',
+    `--${boundary}`,
+    'Content-Type: text/plain; charset="UTF-8"',
+    'Content-Transfer-Encoding: 7bit',
+    '',
+    plain,
+    '',
+    `--${boundary}`,
+    'Content-Type: text/html; charset="UTF-8"',
+    'Content-Transfer-Encoding: 7bit',
+    '',
+    html,
+    '',
+    `--${boundary}--`,
+  ].filter((l) => l !== null).join('\r\n');
+  const res = await fetch('https://gmail.googleapis.com/gmail/v1/users/me/messages/send', {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ raw: toBase64Url(message) }),
+  });
+  if (!res.ok) throw new Error(`Gmail API ${res.status}: ${(await res.text()).slice(0, 200)}`);
+  return res.json();
+}
+
 async function sendViaResend({ to, from, subject, html, replyTo }) {
   const apiKey = Deno.env.get('RESEND_API_KEY');
   if (!apiKey) throw new Error('RESEND_API_KEY not set');
@@ -425,15 +472,43 @@ Deno.serve(async (req) => {
 
     const tareas = [];
 
-    // ── 1. EMAIL CLIENTE (vía Resend — soporta destinatarios externos) ───
-    if (pedido.cliente_email) {
-      tareas.push(
-        sendViaResend({
-          to: pedido.cliente_email,
-          subject: buildSubject(pedido),
-          html: buildClientHtml(pedido),
-        }).catch(e => console.error('Email cliente falló:', e.message))
-      );
+    // ── 1. EMAIL CLIENTE (vía Gmail — entrega a destinatarios externos) ──
+    // CRÍTICO: Resend sandbox solo entrega al owner de la cuenta, por eso los
+    // clientes de transferencia nunca recibían correo. Gmail (ti@peyuchile.cl)
+    // sí entrega a cualquiera. Idempotente para transferencia con flag.
+    const esTransferencia = pedido.medio_pago === 'Transferencia';
+    const yaEnviadoTransfer = esTransferencia && pedido.email_instrucciones_transferencia_enviado;
+    if (pedido.cliente_email && !yaEnviadoTransfer) {
+      tareas.push((async () => {
+        try {
+          const { accessToken } = await base44.asServiceRole.connectors.getConnection('gmail');
+          await sendViaGmail(accessToken, {
+            to: pedido.cliente_email,
+            subject: buildSubject(pedido),
+            html: buildClientHtml(pedido),
+            replyTo: 'ventas@peyuchile.cl',
+            fromName: 'PEYU Chile',
+          });
+          // Marca el flag de transferencia para no reenviar las instrucciones.
+          if (esTransferencia && pedido.id) {
+            await base44.asServiceRole.entities.PedidoWeb.update(pedido.id, {
+              email_instrucciones_transferencia_enviado: true,
+              historial: [
+                ...(pedido.historial || []),
+                { at: new Date().toISOString(), type: 'email_sent', actor: 'onNewPedidoWeb', channel: 'email', detail: 'Instrucciones de transferencia enviadas vía Gmail' },
+              ],
+            });
+          }
+        } catch (e) {
+          console.error('Email cliente (Gmail) falló:', e.message);
+          // Fallback a Resend por si Gmail está caído (mejor algo que nada).
+          await sendViaResend({
+            to: pedido.cliente_email,
+            subject: buildSubject(pedido),
+            html: buildClientHtml(pedido),
+          }).catch(err => console.error('Fallback Resend también falló:', err.message));
+        }
+      })());
     }
 
     // ── 2. EMAIL INTERNO ────────────────────────────────────────
@@ -447,15 +522,24 @@ Deno.serve(async (req) => {
     ];
     const internalSubject = `🛒 Nuevo pedido · ${pedido.numero_pedido} · ${fmtCLP(pedido.total)} · ${pedido.medio_pago || 'WebPay'}`;
     const internalHtml = buildInternalHtml(pedido);
-    for (const to of INTERNAL_EMAILS) {
-      tareas.push(
-        sendViaResend({
-          to,
-          subject: internalSubject,
-          html: internalHtml,
-        }).catch(e => console.error(`Email interno (${to}) falló:`, e.message))
-      );
-    }
+    // Vía Gmail (no Resend): los buzones @peyuchile.cl son externos a la cuenta
+    // Resend sandbox y rebotaban con 403. Gmail sí los entrega.
+    tareas.push((async () => {
+      try {
+        const { accessToken } = await base44.asServiceRole.connectors.getConnection('gmail');
+        for (const to of INTERNAL_EMAILS) {
+          await sendViaGmail(accessToken, {
+            to,
+            subject: internalSubject,
+            html: internalHtml,
+            replyTo: 'ventas@peyuchile.cl',
+            fromName: 'PEYU · Nuevos pedidos',
+          }).catch(e => console.error(`Email interno (${to}) falló:`, e.message));
+        }
+      } catch (e) {
+        console.error('Gmail interno falló:', e.message);
+      }
+    })());
 
     // ── 3. STOCK ─────────────────────────────────────────────────
     if (pedido.sku && pedido.cantidad) {

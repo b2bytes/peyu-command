@@ -100,7 +100,7 @@ export default function MockupGenerator({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg bg-slate-900 border-white/15 text-white">
+      <DialogContent className="w-[92vw] max-w-lg max-h-[90vh] overflow-y-auto peyu-scrollbar bg-slate-900 border-white/15 text-white">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 font-poppins">
             <span className="text-xl">{config.icon}</span> {config.title}
@@ -177,7 +177,7 @@ export default function MockupGenerator({
           {/* Resultado */}
           {resultUrl && (
             <div className="rounded-xl overflow-hidden border border-purple-400/40 bg-black/30">
-              <img src={resultUrl} alt="Mockup generado" className="w-full h-auto" />
+              <img src={resultUrl} alt="Mockup generado" className="w-full max-h-[40vh] object-contain mx-auto" />
               <p className="text-[10px] text-white/60 text-center py-1.5 bg-purple-500/20">
                 ✨ Mockup generado con IA · referencial
               </p>

@@ -21,6 +21,9 @@ const CREAM = [167, 217, 201];  // #A7D9C9 — accent claro
 
 const fmtCLP = (n) => '$' + (n || 0).toLocaleString('es-CL');
 
+// Logo PEYU oficial (blanco, fondo transparente) para incrustar en el header.
+const PEYU_LOGO_URL = 'https://media.base44.com/images/public/69d99b9d61f699701129c103/df49bff0d_generated_image.png';
+
 // jsPDF/Helvetica solo soporta WinAnsi. Limpia el texto preservando ñ/tildes
 // y reemplazando símbolos no representables.
 function safeTxt(s) {
@@ -81,6 +84,14 @@ Deno.serve(async (req) => {
       }
     }));
 
+    // Logo PEYU oficial (header) + logo del cliente si lo subió.
+    let peyuLogo = null;
+    try { peyuLogo = await fetchImageAsBase64(PEYU_LOGO_URL); } catch { /* fallback a texto */ }
+    let clientLogo = null;
+    if (/^https?:\/\//i.test(p.logo_url || '')) {
+      try { clientLogo = await fetchImageAsBase64(p.logo_url); } catch { /* sin logo cliente */ }
+    }
+
     // ─── Garantía contextual: si la propuesta es solo carcasas/compostables, no
     // aplicamos el discurso "10 años" (incorrecto para esos materiales).
     const esSoloCompostable = items.length > 0 && items.every(it => {
@@ -118,11 +129,22 @@ Deno.serve(async (req) => {
     doc.setFillColor(10, 74, 61);
     doc.triangle(0, 0, 50, 0, 0, 50, 'F');
 
-    // Brand
-    doc.setTextColor(255, 255, 255);
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(32);
-    doc.text('PEYU', 18, 32);
+    // Brand — logo PEYU real incrustado (con fallback a texto)
+    if (peyuLogo) {
+      try {
+        doc.addImage(`data:image/${peyuLogo.fmt.toLowerCase()};base64,${peyuLogo.b64}`, peyuLogo.fmt, 18, 16, 46, 20);
+      } catch {
+        doc.setTextColor(255, 255, 255);
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(32);
+        doc.text('PEYU', 18, 32);
+      }
+    } else {
+      doc.setTextColor(255, 255, 255);
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(32);
+      doc.text('PEYU', 18, 32);
+    }
 
     // Tagline
     doc.setFontSize(7);
@@ -191,6 +213,20 @@ Deno.serve(async (req) => {
     doc.setTextColor(...SLATE);
     doc.text(safeTxt(p.contacto || '-'), 22, y + 23);
     if (p.email) doc.text(safeTxt(p.email), 22, y + 28);
+
+    // Logo del cliente (si lo subió): chip blanco centrado en la columna media.
+    if (clientLogo) {
+      try {
+        const lx = pw / 2 - 6, ly = y + 6, ls = 22;
+        doc.setFillColor(255, 255, 255);
+        doc.roundedRect(lx - 2, ly - 2, ls + 4, ls + 4, 2, 2, 'F');
+        doc.addImage(`data:image/${clientLogo.fmt.toLowerCase()};base64,${clientLogo.b64}`, clientLogo.fmt, lx, ly, ls, ls);
+        doc.setFontSize(5.5);
+        doc.setTextColor(...SLATE2);
+        doc.setFont('helvetica', 'bold');
+        doc.text(safeTxt('SU MARCA'), lx + ls / 2, ly + ls + 4, { align: 'center' });
+      } catch { /* sin logo cliente */ }
+    }
 
     // Columna derecha: total grande
     doc.setFontSize(7);

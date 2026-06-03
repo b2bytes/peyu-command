@@ -176,6 +176,36 @@
       "format": "date-time",
       "title": "Comprobante enviado en"
     },
+    "email_instrucciones_transferencia_enviado": {
+      "type": "boolean",
+      "title": "Email instrucciones de transferencia enviado",
+      "description": "Flag idempotencia: true cuando ya se envi\u00f3 al cliente el correo con los datos bancarios para transferir (pedidos medio_pago=Transferencia). Evita duplicados.",
+      "default": false
+    },
+    "email_preparacion_enviado": {
+      "type": "boolean",
+      "title": "Email 'preparando tu pedido' enviado",
+      "description": "Flag idempotencia secuencia post-compra: correo de En Producci\u00f3n/preparaci\u00f3n ya enviado.",
+      "default": false
+    },
+    "email_despacho_enviado": {
+      "type": "boolean",
+      "title": "Email despacho/tracking enviado",
+      "description": "Flag idempotencia: correo con c\u00f3digo de tracking BlueExpress ya enviado.",
+      "default": false
+    },
+    "email_entrega_enviado": {
+      "type": "boolean",
+      "title": "Email '\u00bfc\u00f3mo lleg\u00f3 tu PEYU?' enviado",
+      "description": "Flag idempotencia: correo de entrega con review + cup\u00f3n ya enviado.",
+      "default": false
+    },
+    "email_recompra_enviado": {
+      "type": "boolean",
+      "title": "Email recompra (post-venta) enviado",
+      "description": "Flag idempotencia: correo de recompra ~21 d\u00edas tras entrega ya enviado (CRON).",
+      "default": false
+    },
     "expires_at": {
       "type": "string",
       "format": "date-time",
