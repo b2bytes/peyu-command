@@ -173,6 +173,9 @@ Deno.serve(async (req) => {
     const body = await req.json().catch(() => ({}));
     const { pedido_id, reprocesar_pagados } = body;
 
+    // Token OAuth del conector Gmail (compartido, del builder) — service role.
+    const { accessToken } = await base44.asServiceRole.connectors.getConnection('gmail');
+
     // Modo barrido: requiere admin (datos sensibles de todos los pedidos)
     if (reprocesar_pagados) {
       const user = await base44.auth.me();
@@ -183,7 +186,7 @@ Deno.serve(async (req) => {
       const objetivo = todos.filter(p => p.payment_status === 'paid' && !p.comprobante_enviado);
       const results = [];
       for (const p of objetivo) {
-        try { results.push(await enviarUno(base44, p)); }
+        try { results.push(await enviarUno(base44, accessToken, p)); }
         catch (e) { results.push({ id: p.id, status: 'error', error: e.message }); }
       }
       return Response.json({
@@ -201,7 +204,7 @@ Deno.serve(async (req) => {
     const pedido = await base44.asServiceRole.entities.PedidoWeb.get(pedido_id);
     if (!pedido) return Response.json({ error: 'Pedido no encontrado' }, { status: 404 });
 
-    const result = await enviarUno(base44, pedido);
+    const result = await enviarUno(base44, accessToken, pedido);
     return Response.json(result);
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
