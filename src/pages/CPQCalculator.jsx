@@ -6,15 +6,6 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { getB2BPriceForQty, getUnitBasePrice } from "@/lib/catalog-pricing";
 
-// Tabla informativa de los tramos reales por volumen (escala de verdad).
-const DESCUENTOS = [
-  { label: '1–9 u', min: 1, pct: 0 },
-  { label: '10–49 u', min: 10, pct: 10 },
-  { label: '100–249 u', min: 100, pct: 20 },
-  { label: '500–999 u', min: 500, pct: 28 },
-  { label: '1000+ u', min: 1000, pct: 30 },
-];
-
 const FEE_PERSONALIZACION_BAJO_MOQ = 30000;
 const FEE_PACKAGING_PCT = 3;
 const RECARGO_EXPRESS = 12;
@@ -205,21 +196,21 @@ export default function CPQCalculator() {
         <p className="text-muted-foreground text-sm mt-1">Precios con descuentos automáticos por volumen • Blueprint Peyu</p>
       </div>
 
-      {/* Tabla de descuentos */}
+      {/* Info de precios por tramo */}
       <div className="bg-white rounded-2xl p-5 shadow-sm border border-border">
-        <h3 className="font-poppins font-semibold text-sm text-foreground mb-3">Estructura de Descuentos por Volumen</h3>
-        <div className="grid grid-cols-4 gap-2">
-          {DESCUENTOS.map((d, i) => (
-            <div key={i} className="text-center p-3 rounded-xl" style={{ background: i === 0 ? '#f5f5f5' : i === 1 ? '#f0faf7' : i === 2 ? '#e6f7f2' : '#d0f0e8' }}>
-              <p className="text-xs text-muted-foreground">{d.label}</p>
-              <p className="font-poppins font-bold text-lg mt-1" style={{ color: d.pct > 0 ? '#0F8B6C' : '#4B4F54' }}>
-                {d.pct > 0 ? `-${d.pct}%` : 'Precio base'}
-              </p>
+        <h3 className="font-poppins font-semibold text-sm text-foreground mb-2">Precios oficiales por tramo de volumen</h3>
+        <p className="text-xs text-muted-foreground mb-3">
+          Cada producto tiene su propia tabla de precios fijos por tramo (catálogo B2B oficial). El cotizador toma el precio del tramo según la cantidad y calcula el ahorro real vs. el precio unitario. El descuento NO es fijo: cada producto baja distinto y puede superar el 70% en grandes volúmenes.
+        </p>
+        <div className="grid grid-cols-4 gap-2 sm:grid-cols-8">
+          {['1–9 u','10–49','50–99','100–249','250–499','500–999','1000–1999','2000+'].map((label, i) => (
+            <div key={i} className="text-center p-2 rounded-lg" style={{ background: '#f0faf7' }}>
+              <p className="text-[10px] text-muted-foreground leading-tight">{label}</p>
             </div>
           ))}
         </div>
         <p className="text-xs text-muted-foreground mt-3">
-          ✓ Personalización láser <strong>GRATIS desde 10 unidades</strong> • Packaging personalizado +3% • Express (≤7 días) +12%
+          ✓ Personalización láser UV en grises <strong>GRATIS desde 10 u</strong> · bolsitos (cachos/kits/paletas) <strong>gratis desde 50 u</strong> · serigrafía/color con costo extra • Packaging personalizado +3% • Express (≤7 días) +12% • Todos los precios <strong>EXCLUYEN IVA</strong>
         </p>
       </div>
 
@@ -292,7 +283,7 @@ export default function CPQCalculator() {
                     <p className="font-poppins font-bold text-2xl" style={{ color: '#0F8B6C' }}>
                       ${Math.round(total).toLocaleString('es-CL')}
                     </p>
-                    <p className="text-xs text-muted-foreground">CLP (incl. IVA)</p>
+                    <p className="text-xs text-muted-foreground">CLP (excl. IVA)</p>
                   </div>
                 </div>
               </div>
