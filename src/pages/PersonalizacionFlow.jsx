@@ -292,7 +292,7 @@ export default function PersonalizacionFlow() {
         sku: producto?.sku,
         logoUrl: logoUrl || disenoPeyuUrl || undefined,
         text: texto,
-        color: color?.label,
+        color: colorLabel,
       });
       const url = res?.data?.mockup_url;
       if (!url) throw new Error(res?.data?.error || 'No se pudo generar el mockup');
@@ -330,7 +330,7 @@ export default function PersonalizacionFlow() {
       moq_personalizacion: moqGratis,
       personalizacion_gratis_desde: moqGratis,
       cantidad,
-      color: color?.label || colorId || null,
+      color: colorLabel,
       personalizacion: personalizacionLabel,
       imagen: displayImg,
       logoUrl: logoUrl || null,
@@ -357,7 +357,7 @@ export default function PersonalizacionFlow() {
       design_type: tipoPersonalizacion,        // frase | peyu | archivo
       design_url: arteUrl,                     // url del arte (explícito para producción)
       engrave_position: grabadoDefaults,       // { size, x, y } usados en el preview
-      color_producto: color?.label || '',
+      color_producto: colorLabel || '',
       status: mockupUrl ? 'Preview generado' : 'Pendiente',
       mockup_urls: mockupUrl ? [mockupUrl] : [],
       customer_name: nombre,
@@ -374,7 +374,7 @@ export default function PersonalizacionFlow() {
         sku: producto.sku,
         logoUrl: logoUrl || disenoPeyuUrl || undefined,
         text: texto,
-        color: color?.label,
+        color: colorLabel,
         jobId: job.id,
       }).catch(() => {});
     }
@@ -384,7 +384,7 @@ export default function PersonalizacionFlow() {
       base44.integrations.Core.SendEmail({
         to: email,
         subject: '✨ ¡Tu personalización Peyu está en cola!',
-        body: `<div style="font-family:Inter,Arial,sans-serif;padding:20px;max-width:500px"><h2 style="color:#0F8B6C">Tu grabado láser está en proceso 🌿</h2><p>Hola <strong>${nombre}</strong>, recibimos tu pedido de personalización:</p><ul><li><strong>Producto:</strong> ${producto.nombre}</li><li><strong>Color:</strong> ${color?.label || '—'}</li>${texto ? `<li><strong>Texto a grabar:</strong> ${texto}</li>` : ''}${logoUrl ? '<li><strong>Logo:</strong> Recibido ✓</li>' : ''}</ul><p>Está agregado a tu carrito. Continúa al checkout para completar la compra.</p><p style="color:#9ca3af;font-size:12px">Peyu Chile · +56 9 3504 0242</p></div>`,
+        body: `<div style="font-family:Inter,Arial,sans-serif;padding:20px;max-width:500px"><h2 style="color:#0F8B6C">Tu grabado láser está en proceso 🌿</h2><p>Hola <strong>${nombre}</strong>, recibimos tu pedido de personalización:</p><ul><li><strong>Producto:</strong> ${producto.nombre}</li><li><strong>Color:</strong> ${colorLabel || '—'}</li>${texto ? `<li><strong>Texto a grabar:</strong> ${texto}</li>` : ''}${logoUrl ? '<li><strong>Logo:</strong> Recibido ✓</li>' : ''}</ul><p>Está agregado a tu carrito. Continúa al checkout para completar la compra.</p><p style="color:#9ca3af;font-size:12px">Peyu Chile · +56 9 3504 0242</p></div>`,
         from_name: 'Peyu Chile Personalización',
       }).catch(() => {});
     }
@@ -444,7 +444,7 @@ export default function PersonalizacionFlow() {
               />
               <div className="flex-1 min-w-0">
                 <div className="font-semibold text-white text-sm truncate">{producto?.nombre} × {cantidad}</div>
-                <div className="text-xs text-white/50 truncate">{color?.label || ''}{texto ? ` · "${texto}"` : ''}{personalizacionGratis ? ' · grabado gratis' : ''}</div>
+                <div className="text-xs text-white/50 truncate">{colorLabel || ''}{texto ? ` · "${texto}"` : ''}{personalizacionGratis ? ' · grabado gratis' : ''}</div>
               </div>
               <div className="font-poppins font-bold text-white">${precioFinal.toLocaleString('es-CL')}</div>
             </div>
@@ -522,7 +522,7 @@ export default function PersonalizacionFlow() {
       <div className="text-center">
         <p className="text-xs font-bold text-teal-400 uppercase tracking-widest mb-2">Paso 2 · Tu paleta</p>
         <h2 className="text-2xl sm:text-3xl font-poppins font-bold text-white mb-2">Elige el color</h2>
-        <p className="text-white/50 text-sm">Cada marmolado es único e irrepetible</p>
+        <p className="text-white/50 text-sm">{imagenesPorColor ? 'Elige el color de tu carcasa' : 'Cada marmolado es único e irrepetible'}</p>
       </div>
 
       {imagenesPorColor ? (
@@ -566,12 +566,14 @@ export default function PersonalizacionFlow() {
         </div>
       )}
 
-      <div className="bg-teal-500/10 border border-teal-400/25 rounded-2xl p-3 flex items-start gap-2.5">
-        <Sparkles className="w-4 h-4 text-teal-300 flex-shrink-0 mt-0.5" />
-        <p className="text-xs text-teal-100/80 leading-relaxed">
-          <strong className="text-white">El marmolado nace del proceso artesanal.</strong> Tu producto tendrá un patrón único — nunca habrá dos iguales.
-        </p>
-      </div>
+      {!imagenesPorColor && (
+        <div className="bg-teal-500/10 border border-teal-400/25 rounded-2xl p-3 flex items-start gap-2.5">
+          <Sparkles className="w-4 h-4 text-teal-300 flex-shrink-0 mt-0.5" />
+          <p className="text-xs text-teal-100/80 leading-relaxed">
+            <strong className="text-white">El marmolado nace del proceso artesanal.</strong> Tu producto tendrá un patrón único — nunca habrá dos iguales.
+          </p>
+        </div>
+      )}
     </div>,
 
     // ── Step 2 — Diseño + Mockup IA ─────────────────────────────────
@@ -597,7 +599,7 @@ export default function PersonalizacionFlow() {
           logoUrl={logoUrlSubido || disenoPeyuUrl}
           texto={texto}
           areaLabel={producto?.area_laser_mm}
-          defaultTint={color?.hex && parseInt(color.hex.replace('#', '').slice(0, 2), 16) < 130 ? 'light' : 'dark'}
+          defaultTint={!imagenesPorColor && color?.hex && parseInt(color.hex.replace('#', '').slice(0, 2), 16) < 130 ? 'light' : 'dark'}
           defaultSize={grabadoDefaults.size}
           defaultPosX={grabadoDefaults.x}
           defaultPosY={grabadoDefaults.y}
@@ -717,7 +719,7 @@ export default function PersonalizacionFlow() {
           />
           <div className="flex-1 min-w-0">
             <div className="font-semibold text-sm text-white truncate">{producto?.nombre}</div>
-            <div className="text-xs text-white/55 truncate">{color?.label || 'Color por definir'}{texto ? ` · "${texto}"` : ''}</div>
+            <div className="text-xs text-white/55 truncate">{colorLabel || 'Color por definir'}{texto ? ` · "${texto}"` : ''}</div>
             {archivo && <div className="text-[10px] text-teal-300 mt-0.5">+ Logo adjunto</div>}
             {disenoPeyuUrl && <div className="text-[10px] text-teal-300 mt-0.5">+ Diseño PEYU</div>}
           </div>

@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { Move, Sparkles, Loader2, ZoomIn, ZoomOut, Maximize } from 'lucide-react';
 import { engraveLogo } from '@/lib/logo-engraver';
-import { useMockupZoom } from '@/components/personalizacion/useMockupZoom';
+import { useMockupZoom } from '@/components/personalizacion/useMockupZoom.jsx';
 
 // ============================================================================
 // LaserEngravePreview — Compositor de grabado láser SIN caja negra.
