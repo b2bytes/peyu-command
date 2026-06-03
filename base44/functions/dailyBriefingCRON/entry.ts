@@ -1,5 +1,51 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
+// Codifica cabeceras con tildes/emojis (RFC 2047) para que el asunto no se rompa.
+function encodeHeader(str) {
+  if (!str) return '';
+  // eslint-disable-next-line no-control-regex
+  if (/^[\x20-\x7E]*$/.test(str)) return str;
+  return `=?UTF-8?B?${btoa(unescape(encodeURIComponent(str)))}?=`;
+}
+function toBase64Url(str) {
+  return btoa(unescape(encodeURIComponent(str)))
+    .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+// Envía un email HTML vía Gmail API (ti@peyuchile.cl). A diferencia de
+// Core.SendEmail, Gmail permite cualquier destinatario (no solo usuarios de la app).
+async function sendViaGmail(accessToken, { to, subject, html, fromName = 'PEYU Daily Briefing' }) {
+  const boundary = `peyu-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+  const plain = html.replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
+  const mime = [
+    `From: ${encodeHeader(fromName)} <ti@peyuchile.cl>`,
+    `To: ${to}`,
+    `Subject: ${encodeHeader(subject)}`,
+    'MIME-Version: 1.0',
+    `Content-Type: multipart/alternative; boundary="${boundary}"`,
+    '',
+    `--${boundary}`,
+    'Content-Type: text/plain; charset="UTF-8"',
+    'Content-Transfer-Encoding: 7bit',
+    '',
+    plain,
+    '',
+    `--${boundary}`,
+    'Content-Type: text/html; charset="UTF-8"',
+    'Content-Transfer-Encoding: 7bit',
+    '',
+    html,
+    '',
+    `--${boundary}--`,
+  ].join('\r\n');
+  const res = await fetch('https://gmail.googleapis.com/gmail/v1/users/me/messages/send', {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ raw: toBase64Url(mime) }),
+  });
+  if (!res.ok) throw new Error(`Gmail API ${res.status}: ${(await res.text()).slice(0, 200)}`);
+  return res.json();
+}
+
 /**
  * CRON diario 08:00 — Daily Briefing al equipo PEYU.
  * Resume KPIs del día anterior + actividad pendiente para hoy.
@@ -144,19 +190,10 @@ Deno.serve(async (req) => {
 </div></body></html>`;
 
     const briefingSubject = `☀️ Daily PEYU · ${fmt(totalHoy)} cerrado · ${leadsHoy.length} leads · ${fechaAyer}`;
+    const { accessToken } = await base44.asServiceRole.connectors.getConnection('gmail');
     await Promise.all([
-      base44.integrations.Core.SendEmail({
-        from_name: 'PEYU Daily Briefing',
-        to: 'ti@peyuchile.cl',
-        subject: briefingSubject,
-        body: html,
-      }),
-      base44.integrations.Core.SendEmail({
-        from_name: 'PEYU Daily Briefing',
-        to: 'ventas@peyuchile.cl',
-        subject: briefingSubject,
-        body: html,
-      }),
+      sendViaGmail(accessToken, { to: 'ti@peyuchile.cl', subject: briefingSubject, html }),
+      sendViaGmail(accessToken, { to: 'ventas@peyuchile.cl', subject: briefingSubject, html }),
     ]);
 
     return Response.json({
@@ -167,6 +204,7 @@ Deno.serve(async (req) => {
       ventasHoy: totalHoy,
       porExpirar: porExpirar.length,
       enRiesgo: enRiesgo.length,
+      email_sent: true,
     });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
