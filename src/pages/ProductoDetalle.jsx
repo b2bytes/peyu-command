@@ -336,6 +336,15 @@ export default function ProductoDetalle() {
     return imgPrincipal;
   })();
 
+  // 🖼️ Imagen principal mostrada en la galería grande.
+  // Prioridad: si el usuario tocó manualmente un thumbnail → respeta su elección
+  // (galeria[vistaActiva]). Si no → muestra la imagen del COLOR seleccionado
+  // (imagenColorSeleccionado), que lee imagenes_por_color[color]. Así el clic en
+  // un swatch cambia la imagen aunque esa URL no esté dentro de la galería.
+  const imagenPrincipalMostrada = userInteractedRef.current
+    ? (galeria[vistaActiva] || imgPrincipal)
+    : (imagenColorSeleccionado || galeria[vistaActiva] || imgPrincipal);
+
   // 🎨 UX 2026 — Sync inteligente color ↔ imagen
   // Cuando el cliente cambia el color, buscamos en la galería la imagen que
   // mejor representa ese color usando matching scored (no solo substring) con
@@ -576,8 +585,8 @@ export default function ProductoDetalle() {
               ) : (
               <div className="relative ld-card overflow-hidden shadow-xl mx-auto w-full max-w-[460px] lg:max-w-none bg-white" style={{ aspectRatio: '1' }}>
                 <img
-                  key={galeria[vistaActiva] || imgPrincipal}
-                  src={galeria[vistaActiva] || imgPrincipal}
+                  key={imagenPrincipalMostrada}
+                  src={imagenPrincipalMostrada}
                   alt={`${producto.nombre} · ${producto.material || 'Plástico reciclado'} · ${producto.categoria} · PEYU Chile`}
                   width="600"
                   height="600"
