@@ -13,32 +13,63 @@ function toBase64Url(str) {
   return btoa(unescape(encodeURIComponent(str)))
     .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 }
-async function sendViaGmail(accessToken, { to, cc, replyTo, subject, html, fromName = 'PEYU Chile' }) {
-  const boundary = `peyu_prop_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+// Adjunta un PDF (base64) al correo usando multipart/mixed que envuelve un
+// multipart/alternative (texto + html). Asunto en RFC 2047 UTF-8 (encodeHeader).
+async function sendViaGmail(accessToken, { to, cc, replyTo, subject, html, fromName = 'PEYU Chile', pdfBase64 = null, pdfName = 'propuesta.pdf' }) {
+  const altB = `peyu_alt_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+  const mixB = `peyu_mix_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
   const plain = html.replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
-  const message = [
+
+  const altPart = [
+    `Content-Type: multipart/alternative; boundary="${altB}"`,
+    '',
+    `--${altB}`,
+    'Content-Type: text/plain; charset="UTF-8"',
+    'Content-Transfer-Encoding: 7bit',
+    '',
+    plain,
+    '',
+    `--${altB}`,
+    'Content-Type: text/html; charset="UTF-8"',
+    'Content-Transfer-Encoding: 7bit',
+    '',
+    html,
+    '',
+    `--${altB}--`,
+  ].join('\r\n');
+
+  const headers = [
     `From: ${encodeHeader(fromName)} <ti@peyuchile.cl>`,
     `To: ${to}`,
     cc ? `Cc: ${cc}` : null,
     replyTo ? `Reply-To: ${replyTo}` : null,
     `Subject: ${encodeHeader(subject)}`,
     'MIME-Version: 1.0',
-    `Content-Type: multipart/alternative; boundary="${boundary}"`,
-    '',
-    `--${boundary}`,
-    'Content-Type: text/plain; charset="UTF-8"',
-    'Content-Transfer-Encoding: 7bit',
-    '',
-    plain,
-    '',
-    `--${boundary}`,
-    'Content-Type: text/html; charset="UTF-8"',
-    'Content-Transfer-Encoding: 7bit',
-    '',
-    html,
-    '',
-    `--${boundary}--`,
-  ].filter((l) => l !== null).join('\r\n');
+  ].filter((l) => l !== null);
+
+  let message;
+  if (pdfBase64) {
+    // Gmail exige el base64 del adjunto en líneas de máx 76 chars.
+    const wrapped = pdfBase64.replace(/.{76}/g, '$&\r\n');
+    message = [
+      ...headers,
+      `Content-Type: multipart/mixed; boundary="${mixB}"`,
+      '',
+      `--${mixB}`,
+      altPart,
+      '',
+      `--${mixB}`,
+      `Content-Type: application/pdf; name="${pdfName}"`,
+      'Content-Transfer-Encoding: base64',
+      `Content-Disposition: attachment; filename="${pdfName}"`,
+      '',
+      wrapped,
+      '',
+      `--${mixB}--`,
+    ].join('\r\n');
+  } else {
+    message = [...headers, altPart].join('\r\n');
+  }
 
   const res = await fetch('https://gmail.googleapis.com/gmail/v1/users/me/messages/send', {
     method: 'POST',
@@ -50,6 +81,22 @@ async function sendViaGmail(accessToken, { to, cc, replyTo, subject, html, fromN
     throw new Error(`Gmail API ${res.status}: ${t.slice(0, 200)}`);
   }
   return res.json();
+}
+
+// ── Personalización láser: tarifa por unidad según tipo, GRATIS desde 10u ──
+// frase $3.990 · diseño PEYU (galería) $4.990 · diseño/logo cliente $7.990
+const FEE_PERSONALIZACION = { frase: 3990, peyu: 4990, archivo: 7990, logo: 7990, propio: 7990 };
+const MOQ_PERS_GRATIS = 10;
+
+function feePersonalizacionItem(item) {
+  // No hay personalización en este ítem → sin cargo.
+  if (!item.personalizacion && !item.tipo_personalizacion) return { feeUnit: 0, fee: 0, gratis: false, tipo: null };
+  const qty = item.qty || item.cantidad || 0;
+  const tipo = (item.tipo_personalizacion || 'frase').toLowerCase();
+  const feeUnit = FEE_PERSONALIZACION[tipo] ?? FEE_PERSONALIZACION.frase;
+  const gratis = qty >= MOQ_PERS_GRATIS;
+  const fee = gratis ? 0 : feeUnit * qty;
+  return { feeUnit, fee, gratis, tipo };
 }
 
 function buildProposalEmailHtml({ proposal, items, proposalUrl }) {
@@ -181,8 +228,17 @@ function calcUnitPrice(item) {
   return { unit: Math.round(base * (1 - discount)), tier: '1-9 u.' };
 }
 
+// ¿El producto tiene tabla B2B oficial (precio_b2b_tramos con al menos 1 valor)?
+function tieneTramosOficiales(item) {
+  const t = item.precio_b2b_tramos;
+  if (!t || typeof t !== 'object') return false;
+  return ['unitario','t10_49','t50_99','t100_249','t250_499','t500_999','t1000_1999','t2000_mas']
+    .some(k => Number(t[k]) > 0);
+}
+
 function calcPricing(items) {
   let subtotal = 0;
+  let feePersonalizacionTotal = 0;
   const breakdown = items.map(item => {
     const qty = item.qty || item.cantidad || 0;
     const { unit, tier } = calcUnitPrice(item);
@@ -190,15 +246,24 @@ function calcPricing(items) {
     const descuentoPct = refB2C > 0 ? Math.round((1 - unit / refB2C) * 100) : 0;
     const lineTotal = unit * qty;
     subtotal += lineTotal;
+
+    // FIX 1 — Fee de personalización láser por ítem (gratis ≥10u).
+    const pers = feePersonalizacionItem(item);
+    feePersonalizacionTotal += pers.fee;
+
     return {
       ...item,
       precio_unitario: unit,
       descuento_pct: Math.max(0, descuentoPct),
       tier,
       line_total: lineTotal,
+      fee_personalizacion_unit: pers.feeUnit,
+      fee_personalizacion: pers.fee,
+      personalizacion_gratis: pers.gratis,
+      tipo_personalizacion: pers.tipo,
     };
   });
-  return { breakdown, subtotal };
+  return { breakdown, subtotal, feePersonalizacionTotal };
 }
 
 function calcLeadTime(items) {
@@ -230,9 +295,22 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Debes incluir al menos un producto' }, { status: 400 });
     }
 
+    // FIX 2 — Cero precios fabricados: el cotizador SOLO acepta productos con
+    // tabla B2B oficial (precio_b2b_tramos). Los que no la tienen se derivan a
+    // contacto y NO entran a la propuesta con descuentos inventados.
+    const sinTabla = items.filter(it => !tieneTramosOficiales(it));
+    const itemsValidos = items.filter(tieneTramosOficiales);
+    if (itemsValidos.length === 0) {
+      return Response.json({
+        error: 'precio_a_consultar',
+        message: 'Estos productos no tienen tarifa B2B oficial. Te derivamos a un ejecutivo para cotizar.',
+        productos_sin_tarifa: sinTabla.map(i => i.nombre || i.name).filter(Boolean),
+      }, { status: 422 });
+    }
+
     // 1. Crear B2BLead
-    const totalQty = items.reduce((s, i) => s + (i.qty || i.cantidad || 0), 0);
-    const hasPersonalization = items.some(i => i.personalizacion);
+    const totalQty = itemsValidos.reduce((s, i) => s + (i.qty || i.cantidad || 0), 0);
+    const hasPersonalization = itemsValidos.some(i => i.personalizacion || i.tipo_personalizacion);
     const lead = await base44.asServiceRole.entities.B2BLead.create({
       source: 'Formulario Web',
       contact_name,
@@ -240,7 +318,7 @@ Deno.serve(async (req) => {
       email,
       phone: phone || '',
       rut: rut || '',
-      product_interest: items.map(i => i.nombre || i.name).filter(Boolean).join(', ').slice(0, 200),
+      product_interest: itemsValidos.map(i => i.nombre || i.name).filter(Boolean).join(', ').slice(0, 200),
       qty_estimate: totalQty,
       personalization_needs: hasPersonalization,
       logo_url: logoUrl || '',
@@ -252,10 +330,10 @@ Deno.serve(async (req) => {
       utm_source: 'self_service',
     });
 
-    // 2. Calcular precios (misma tabla que ProductoDetalle) y lead time
-    const { breakdown, subtotal } = calcPricing(items);
-    const total = subtotal;
-    const leadTime = calcLeadTime(items);
+    // 2. Calcular precios (tabla B2B oficial) + fee personalización + lead time
+    const { breakdown, subtotal, feePersonalizacionTotal } = calcPricing(itemsValidos);
+    const total = subtotal + feePersonalizacionTotal;
+    const leadTime = calcLeadTime(itemsValidos);
 
     // 3. Numero + vencimiento
     const propNum = `PEY-${Date.now().toString().slice(-6)}`;
@@ -308,7 +386,7 @@ Deno.serve(async (req) => {
       email,
       items_json: JSON.stringify(breakdown),
       subtotal,
-      fee_personalizacion: 0,
+      fee_personalizacion: feePersonalizacionTotal,
       total,
       lead_time_dias: leadTime,
       validity_days: 15,
@@ -331,7 +409,40 @@ Deno.serve(async (req) => {
     //    falla NO bloquea la respuesta (el cliente puede reenviar desde la
     //    pantalla de éxito). Se inlinea para evitar la subllamada
     //    function→function, que da 403 en este flujo público.
+    // 6.a Generar el PDF para adjuntarlo. La subllamada SDK function→function da
+    //     403 en el flujo público, así que llamamos al endpoint HTTP directamente
+    //     reenviando el Authorization/apikey del request original.
+    // Las funciones NO se pueden invocar desde el dominio de plataforma; hay que
+    // pegarle al SUBDOMINIO de la app. Lo derivamos del appId y reenviamos el
+    // Authorization/api_key del request original para conservar el contexto.
+    let pdfBase64 = null;
+    let pdfError = null;
+    try {
+      const appId = Deno.env.get('BASE44_APP_ID');
+      const pdfUrl = `https://${appId}.base44.app/api/apps/${appId}/functions/generateProposalPDF`;
+      const fwdHeaders = { 'Content-Type': 'application/json' };
+      const auth = req.headers.get('authorization');
+      const apikey = req.headers.get('api_key') || req.headers.get('apikey') || req.headers.get('x-api-key');
+      if (auth) fwdHeaders['Authorization'] = auth;
+      if (apikey) fwdHeaders['api_key'] = apikey;
+      const pdfResp = await withTimeout(
+        fetch(pdfUrl, { method: 'POST', headers: fwdHeaders, body: JSON.stringify({ proposalId: proposal.id }) }),
+        20000,
+      );
+      if (pdfResp.ok) {
+        const body = await pdfResp.json();
+        if (body?.pdf_base64) pdfBase64 = body.pdf_base64;
+        else pdfError = 'respuesta sin pdf_base64';
+      } else {
+        pdfError = `PDF endpoint ${pdfResp.status}: ${(await pdfResp.text()).slice(0, 160)}`;
+      }
+    } catch (e) {
+      pdfError = e?.message || 'error desconocido';
+      console.warn('PDF para adjunto falló:', pdfError);
+    }
+
     let emailSent = false;
+    let emailError = null;
     try {
       const { accessToken } = await base44.asServiceRole.connectors.getConnection('gmail');
       const origin = req.headers.get('origin') || req.headers.get('referer') || 'https://peyuchile.cl';
@@ -345,12 +456,16 @@ Deno.serve(async (req) => {
           subject: `Propuesta PEYU N° ${propNum} · ${fmtCLP(total)}`,
           html: buildProposalEmailHtml({ proposal: { ...proposal, numero: propNum, contacto: contact_name }, items: breakdown, proposalUrl }),
           fromName: 'PEYU Chile',
+          pdfBase64,
+          pdfName: `PEYU-Propuesta-${propNum}.pdf`,
         }),
-        15000,
+        20000,
       );
       emailSent = true;
     } catch (e) {
-      console.warn('Email automático falló/timeout (no bloquea):', e?.message);
+      // FIX 3 — nada de fallar en silencio: registramos y reportamos al frontend.
+      emailError = e?.message || 'Error desconocido enviando el correo';
+      console.error('Email/adjunto falló:', emailError);
     }
 
     return Response.json({
@@ -359,12 +474,17 @@ Deno.serve(async (req) => {
       numero: propNum,
       total,
       subtotal,
+      fee_personalizacion: feePersonalizacionTotal,
       lead_time_dias: leadTime,
       items: breakdown,
       mockup_urls: mockupUrls,
       proposal_url: `/b2b/propuesta?id=${proposal.id}`,
+      pdf_attached: !!pdfBase64,
+      pdf_error: pdfError,
       email_sent: emailSent,
+      email_error: emailError,
       email_to: email,
+      productos_sin_tarifa: sinTabla.map(i => i.nombre || i.name).filter(Boolean),
     });
   } catch (error) {
     return Response.json({ error: error.message, stack: error.stack }, { status: 500 });

@@ -1,26 +1,67 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
-// Volume pricing rules (aligned with Peyu's real pricing)
+// ── Personalización láser: tarifa por unidad según tipo, GRATIS desde 10u ──
+const FEE_PERSONALIZACION = { frase: 3990, peyu: 4990, archivo: 7990, logo: 7990, propio: 7990 };
+const MOQ_PERS_GRATIS = 10;
+
+function feePersonalizacionItem(item) {
+  if (!item.personalizacion && !item.tipo_personalizacion) return { feeUnit: 0, fee: 0, gratis: false, tipo: null };
+  const qty = item.qty || item.cantidad || 0;
+  const tipo = (item.tipo_personalizacion || 'frase').toLowerCase();
+  const feeUnit = FEE_PERSONALIZACION[tipo] ?? FEE_PERSONALIZACION.frase;
+  const gratis = qty >= MOQ_PERS_GRATIS;
+  return { feeUnit, fee: gratis ? 0 : feeUnit * qty, gratis, tipo };
+}
+
+// ¿El producto tiene tabla B2B oficial (precio_b2b_tramos con al menos 1 valor)?
+function tieneTramosOficiales(item) {
+  const t = item.precio_b2b_tramos;
+  if (!t || typeof t !== 'object') return false;
+  return ['unitario','t10_49','t50_99','t100_249','t250_499','t500_999','t1000_1999','t2000_mas']
+    .some(k => Number(t[k]) > 0);
+}
+
+// Precio unitario desde la tabla B2B oficial (8 tramos sin IVA). Cero inventos.
+function calcUnitPrice(item) {
+  const qty = item.qty || item.cantidad || 0;
+  const t = item.precio_b2b_tramos || {};
+  if (qty >= 2000 && t.t2000_mas)   return { unit: t.t2000_mas,   tier: '2000+ u.' };
+  if (qty >= 1000 && t.t1000_1999)  return { unit: t.t1000_1999,  tier: '1000-1999 u.' };
+  if (qty >= 500 && t.t500_999)     return { unit: t.t500_999,    tier: '500-999 u.' };
+  if (qty >= 250 && t.t250_499)     return { unit: t.t250_499,    tier: '250-499 u.' };
+  if (qty >= 100 && t.t100_249)     return { unit: t.t100_249,    tier: '100-249 u.' };
+  if (qty >= 50 && t.t50_99)        return { unit: t.t50_99,      tier: '50-99 u.' };
+  if (qty >= 10 && t.t10_49)        return { unit: t.t10_49,      tier: '10-49 u.' };
+  return { unit: t.unitario || 0,   tier: '1-9 u.' };
+}
+
 function calcPricing(items) {
   let subtotal = 0;
+  let feePersonalizacionTotal = 0;
   const breakdown = items.map(item => {
     const qty = item.qty || item.cantidad || 0;
-    const basePrice = item.precio_base || item.precio_b2b || item.precio_base_b2b || 5000;
-    let discount = 0;
-    if (qty >= 500) discount = 0.25;
-    else if (qty >= 200) discount = 0.15;
-    else if (qty >= 50) discount = 0.08;
-    const unitPrice = Math.round(basePrice * (1 - discount));
-    const lineTotal = unitPrice * qty;
+    const { unit, tier } = calcUnitPrice(item);
+    const refB2C = item.precio_b2c || unit;
+    const descuentoPct = refB2C > 0 ? Math.max(0, Math.round((1 - unit / refB2C) * 100)) : 0;
+    const lineTotal = unit * qty;
     subtotal += lineTotal;
+
+    const pers = feePersonalizacionItem(item);
+    feePersonalizacionTotal += pers.fee;
+
     return {
       ...item,
-      precio_unitario: unitPrice,
-      descuento_pct: Math.round(discount * 100),
+      precio_unitario: unit,
+      descuento_pct: descuentoPct,
+      tier,
       line_total: lineTotal,
+      fee_personalizacion_unit: pers.feeUnit,
+      fee_personalizacion: pers.fee,
+      personalizacion_gratis: pers.gratis,
+      tipo_personalizacion: pers.tipo,
     };
   });
-  return { breakdown, subtotal };
+  return { breakdown, subtotal, feePersonalizacionTotal };
 }
 
 function calcLeadTime(items) {
@@ -47,12 +88,23 @@ Deno.serve(async (req) => {
     if (!leads || leads.length === 0) return Response.json({ error: 'Lead no encontrado' }, { status: 404 });
     const lead = leads[0];
 
-    // Calculate pricing
-    const { breakdown, subtotal } = calcPricing(items);
-    const hasPersonalization = items.some(i => i.personalizacion);
-    const feePersonalizacion = hasPersonalization && subtotal > 0 && items[0]?.qty < 10 ? 5000 * items[0]?.qty : 0;
+    // FIX 2 — Solo productos con tabla B2B oficial. Sin descuentos inventados.
+    const sinTabla = items.filter(it => !tieneTramosOficiales(it));
+    const itemsValidos = items.filter(tieneTramosOficiales);
+    if (itemsValidos.length === 0) {
+      return Response.json({
+        error: 'precio_a_consultar',
+        message: 'Los productos no tienen tarifa B2B oficial (precio_b2b_tramos). No se puede cotizar automáticamente.',
+        productos_sin_tarifa: sinTabla.map(i => i.nombre || i.name).filter(Boolean),
+      }, { status: 422 });
+    }
+
+    // Calculate pricing (tabla oficial) + fee personalización real (FIX 1)
+    const { breakdown, subtotal, feePersonalizacionTotal } = calcPricing(itemsValidos);
+    const hasPersonalization = itemsValidos.some(i => i.personalizacion || i.tipo_personalizacion);
+    const feePersonalizacion = feePersonalizacionTotal;
     const total = subtotal + feePersonalizacion;
-    const leadTime = calcLeadTime(items);
+    const leadTime = calcLeadTime(itemsValidos);
 
     // Generate proposal number
     const propNum = `PEY-${Date.now().toString().slice(-6)}`;
