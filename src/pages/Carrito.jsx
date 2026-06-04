@@ -9,6 +9,8 @@ import SEO from '@/components/SEO';
 import PromoBox from '@/components/cart/PromoBox';
 import PaymentMethodSelector from '@/components/cart/PaymentMethodSelector';
 import ShippingAddressForm, { validarShippingForm } from '@/components/cart/ShippingAddressForm';
+import BillingSection, { validarBilling } from '@/components/cart/BillingSection';
+import { normalizarRut } from '@/lib/rut-chile';
 import ShippingSelector from '@/components/cart/ShippingSelector';
 import ImpactoAmbiental from '@/components/cart/ImpactoAmbiental';
 import OneClickBuyButton from '@/components/cart/OneClickBuyButton';
@@ -34,6 +36,12 @@ export default function Carrito() {
     region: '', ciudad: '', direccion: '', referencia: '', codigo_postal: '',
   });
   const [errors, setErrors] = useState({});
+  // FIX 5 · Datos de facturación (Boleta por defecto → no pide nada de empresa).
+  const [billing, setBilling] = useState({
+    tipo_documento: 'Boleta', razon_social: '', rut_empresa: '', giro: '',
+    direccion_facturacion: '', comuna_facturacion: '',
+  });
+  const [billingErrors, setBillingErrors] = useState({});
   const [creando, setCreando] = useState(false);
   const [step, setStep] = useState(1); // 1=Carrito, 2=Datos+Pago
   const [giftCard, setGiftCard] = useState(null);
@@ -151,6 +159,17 @@ export default function Carrito() {
       return;
     }
 
+    // FIX 5 · Si pidió Factura, exigimos datos de empresa válidos (incl. RUT módulo 11).
+    const bErrs = validarBilling(billing);
+    setBillingErrors(bErrs);
+    if (Object.keys(bErrs).length > 0) {
+      setErrorPago('Completa los datos de facturación para emitir la factura.');
+      setTimeout(() => {
+        document.querySelector('[data-billing-section]')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 100);
+      return;
+    }
+
     // 🛡️ Validar selección de envío (Bluex) — evita pedidos sin courier definido
     if (!envioBluex) {
       setErrorPago('Selecciona una forma de envío antes de continuar.');
@@ -237,7 +256,14 @@ export default function Carrito() {
       cliente_nombre: cliente.nombre.trim(),
       cliente_email: cliente.email.trim().toLowerCase(),
       cliente_telefono: cliente.telefono,
-      tipo_cliente: 'B2C Individual',
+      tipo_cliente: billing.tipo_documento === 'Factura' ? 'B2B Corporativo' : 'B2C Individual',
+      // FIX 5 · Documento tributario + datos de facturación (solo si es Factura).
+      tipo_documento: billing.tipo_documento,
+      razon_social: billing.tipo_documento === 'Factura' ? billing.razon_social.trim() : '',
+      rut_empresa: billing.tipo_documento === 'Factura' ? normalizarRut(billing.rut_empresa) : '',
+      giro: billing.tipo_documento === 'Factura' ? billing.giro.trim() : '',
+      direccion_facturacion: billing.tipo_documento === 'Factura' ? billing.direccion_facturacion.trim() : '',
+      comuna_facturacion: billing.tipo_documento === 'Factura' ? billing.comuna_facturacion.trim() : '',
       sku: carrito[0]?.sku || carrito[0]?.productoId || null,
       descripcion_items: items,
       items_detalle: itemsDetalle,
@@ -629,6 +655,15 @@ export default function Carrito() {
                     setCliente={(c) => { setCliente(c); setErrors({}); }}
                     errors={errors}
                     onEmailBlur={() => capturarCarrito(cliente)}
+                  />
+                </div>
+
+                {/* FIX 5 · Documento tributario: Boleta o Factura (datos empresa) */}
+                <div data-billing-section>
+                  <BillingSection
+                    billing={billing}
+                    setBilling={(b) => { setBilling(b); setBillingErrors({}); }}
+                    errors={billingErrors}
                   />
                 </div>
 

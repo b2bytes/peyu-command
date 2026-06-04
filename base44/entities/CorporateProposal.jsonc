@@ -27,6 +27,14 @@
       "type": "string",
       "title": "Email"
     },
+    "giro": {
+      "type": "string",
+      "title": "Giro (facturaci\u00f3n)"
+    },
+    "direccion_facturacion": {
+      "type": "string",
+      "title": "Direcci\u00f3n de facturaci\u00f3n"
+    },
     "items_json": {
       "type": "string",
       "title": "Items (JSON)"

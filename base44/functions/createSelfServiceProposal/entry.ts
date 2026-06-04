@@ -282,6 +282,8 @@ Deno.serve(async (req) => {
     const base44 = createClientFromRequest(req);
     const {
       contact_name, company_name, email, phone, rut, items, logoUrl, notes,
+      giro = '',
+      direccion_facturacion = '',
       posicion_grabado = 'centro',
       metodo_entrega = 'Despacho a domicilio',
       direccion_entrega = '',
@@ -384,6 +386,8 @@ Deno.serve(async (req) => {
       empresa: company_name,
       contacto: contact_name,
       email,
+      giro,
+      direccion_facturacion,
       items_json: JSON.stringify(breakdown),
       subtotal,
       fee_personalizacion: feePersonalizacionTotal,

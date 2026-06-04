@@ -519,6 +519,22 @@ html[data-liquid-mode="day"] {
     }
   }
 
+  /* ─── FIX 4 · Neutralizar autofill del navegador en inputs del checkout ───
+     Chrome/Safari pintan un fondo amarillo/azul al autocompletar. Lo matamos
+     con un box-shadow inset gigante del color del fondo y forzamos el color de
+     texto. Aplica a inputs/selects/textarea con foco o autofill. */
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover,
+  input:-webkit-autofill:focus,
+  textarea:-webkit-autofill,
+  select:-webkit-autofill {
+    -webkit-box-shadow: 0 0 0 1000px var(--ld-bg, #ffffff) inset !important;
+    box-shadow: 0 0 0 1000px var(--ld-bg, #ffffff) inset !important;
+    -webkit-text-fill-color: var(--ld-fg, #020617) !important;
+    caret-color: var(--ld-fg, #020617) !important;
+    transition: background-color 9999s ease-in-out 0s !important;
+  }
+
   /* Variante para fondos oscuros/glass (landing chat) */
   .peyu-scrollbar-light {
     scrollbar-width: thin;

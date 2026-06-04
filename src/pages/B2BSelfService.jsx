@@ -68,7 +68,8 @@ export default function B2BSelfService() {
 
   // Empresa
   const [form, setForm] = useState({
-    contact_name: '', company_name: '', email: '', phone: '', rut: '', notes: '',
+    contact_name: '', company_name: '', email: '', phone: '', rut: '',
+    giro: '', direccion_facturacion: '', notes: '',
   });
 
   // Personalización
@@ -272,6 +273,8 @@ export default function B2BSelfService() {
           items,
           logoUrl,
           notes: form.notes,
+          giro: form.giro,
+          direccion_facturacion: form.direccion_facturacion,
           posicion_grabado: posicionGrabado,
           metodo_entrega: entrega.metodo,
           direccion_entrega: entrega.direccion,
@@ -515,8 +518,10 @@ export default function B2BSelfService() {
                     { k: 'company_name', label: 'Empresa', required: true, ph: 'Nombre empresa' },
                     { k: 'email', label: 'Email', required: true, ph: 'correo@empresa.cl', type: 'email' },
                     { k: 'rut', label: 'RUT Empresa', ph: '12.345.678-9' },
+                    { k: 'giro', label: 'Giro (para factura)', ph: 'Comercio al por menor' },
+                    { k: 'direccion_facturacion', label: 'Dirección de facturación', ph: 'Av. Apoquindo 1234, of. 56', full: true },
                   ].map(f => (
-                    <div key={f.k} className={f.k === 'rut' ? 'md:col-span-2' : ''}>
+                    <div key={f.k} className={(f.k === 'rut' || f.full) ? 'md:col-span-2' : ''}>
                       <label className="text-[10px] font-bold text-white/55 uppercase tracking-[0.1em] mb-1.5 flex items-center gap-1">
                         {f.label}
                         {f.required && <span className="text-teal-300">*</span>}

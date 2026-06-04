@@ -21,8 +21,8 @@ const CREAM = [167, 217, 201];  // #A7D9C9 — accent claro
 
 const fmtCLP = (n) => '$' + (n || 0).toLocaleString('es-CL');
 
-// Logo PEYU oficial (blanco, fondo transparente) para incrustar en el header.
-const PEYU_LOGO_URL = 'https://media.base44.com/images/public/69d99b9d61f699701129c103/df49bff0d_generated_image.png';
+// Logo PEYU oficial de la página, incrustado CUADRADO (no se deforma).
+const PEYU_LOGO_URL = 'https://media.base44.com/images/public/69d99b9d61f699701129c103/b1f2edc5e_logo.png';
 
 // jsPDF/Helvetica solo soporta WinAnsi. Limpia el texto preservando ñ/tildes
 // y reemplazando símbolos no representables.
@@ -129,10 +129,15 @@ Deno.serve(async (req) => {
     doc.setFillColor(10, 74, 61);
     doc.triangle(0, 0, 50, 0, 0, 50, 'F');
 
-    // Brand — logo PEYU real incrustado (con fallback a texto)
+    // Brand — logo PEYU real incrustado CUADRADO (22x22mm) sobre un chip
+    // crema de respeto, para que el logo (fondo crema) se vea limpio sobre el
+    // header teal/ink. Proporción 1:1 — no se aplasta.
     if (peyuLogo) {
       try {
-        doc.addImage(`data:image/${peyuLogo.fmt.toLowerCase()};base64,${peyuLogo.b64}`, peyuLogo.fmt, 18, 16, 46, 20);
+        const lgS = 22, lgX = 18, lgY = 14;
+        doc.setFillColor(...SAND);
+        doc.roundedRect(lgX - 2, lgY - 2, lgS + 4, lgS + 4, 3, 3, 'F');
+        doc.addImage(`data:image/${peyuLogo.fmt.toLowerCase()};base64,${peyuLogo.b64}`, peyuLogo.fmt, lgX, lgY, lgS, lgS);
       } catch {
         doc.setTextColor(255, 255, 255);
         doc.setFont('helvetica', 'bold');
@@ -213,6 +218,10 @@ Deno.serve(async (req) => {
     doc.setTextColor(...SLATE);
     doc.text(safeTxt(p.contacto || '-'), 22, y + 23);
     if (p.email) doc.text(safeTxt(p.email), 22, y + 28);
+    // Datos de facturación (si el cliente los entregó) — para emitir la factura.
+    let facturaY = y + 28;
+    if (p.giro) { facturaY += 4.5; doc.text(safeTxt(`Giro: ${p.giro}`).substring(0, 48), 22, facturaY); }
+    if (p.direccion_facturacion) { facturaY += 4.5; doc.text(safeTxt(`Facturacion: ${p.direccion_facturacion}`).substring(0, 48), 22, facturaY); }
 
     // Logo del cliente (si lo subió): chip blanco centrado en la columna media.
     if (clientLogo) {

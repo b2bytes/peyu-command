@@ -39,6 +39,37 @@
       "type": "string",
       "title": "Tel\u00e9fono"
     },
+    "tipo_documento": {
+      "type": "string",
+      "title": "Documento tributario",
+      "enum": [
+        "Boleta",
+        "Factura"
+      ],
+      "default": "Boleta",
+      "description": "Boleta (B2C) o Factura (empresa). Si es Factura se exigen los datos de facturaci\u00f3n."
+    },
+    "razon_social": {
+      "type": "string",
+      "title": "Raz\u00f3n social (facturaci\u00f3n)"
+    },
+    "rut_empresa": {
+      "type": "string",
+      "title": "RUT empresa (facturaci\u00f3n)",
+      "description": "RUT normalizado con d\u00edgito verificador, ej. 76123456-7"
+    },
+    "giro": {
+      "type": "string",
+      "title": "Giro (facturaci\u00f3n)"
+    },
+    "direccion_facturacion": {
+      "type": "string",
+      "title": "Direcci\u00f3n de facturaci\u00f3n"
+    },
+    "comuna_facturacion": {
+      "type": "string",
+      "title": "Comuna de facturaci\u00f3n"
+    },
     "tipo_cliente": {
       "type": "string",
       "title": "Tipo",

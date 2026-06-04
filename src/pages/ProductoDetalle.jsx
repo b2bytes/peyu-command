@@ -13,6 +13,7 @@ import MockupGenerator from '@/components/MockupGenerator';
 import { saveMockupDraft } from '@/lib/mockup-draft';
 import { getColoresProducto } from '@/lib/color-parser';
 import { findColorImageMatch } from '@/lib/color-image-matcher';
+import { resolveColorImage } from '@/lib/color-image-resolver';
 import { getPackSize } from '@/lib/pack-parser';
 import PackColorPicker from '@/components/producto/PackColorPicker';
 import EngravingPositionPicker from '@/components/producto/EngravingPositionPicker';
@@ -340,8 +341,9 @@ export default function ProductoDetalle() {
   const imagenColorSeleccionado = (() => {
     if (!producto) return '';
     if (colorObjSel) {
-      const mapa = producto.imagenes_por_color || {};
-      const porMapa = mapa[colorObjSel.label] || mapa[colorObjSel.id];
+      // Fuente de verdad: imagenes_por_color (resuelta priorizando foto real
+      // sobre IA placeholder, con fallback a la base). Ver lib/color-image-resolver.
+      const porMapa = resolveColorImage(producto, colorObjSel.label, null) || resolveColorImage(producto, colorObjSel.id, null);
       if (porMapa) return porMapa;
       const match = findColorImageMatch(galeria, colorObjSel);
       if (match && galeria[match.index]) return galeria[match.index];
