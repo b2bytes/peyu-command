@@ -117,9 +117,14 @@ export async function engraveLogo(input, tint = 'dark') {
     }
 
     ctx.putImageData(imageData, 0, 0);
+    // toDataURL lanza SecurityError si el canvas quedó "tainted" (logo remoto sin
+    // CORS). En ese caso NO podemos limpiar el fondo → devolvemos processed:false
+    // para que el preview NO aplique blend ennegrecedor (evita la caja negra).
     return { dataUrl: canvas.toDataURL('image/png'), processed: true };
   } catch (e) {
-    // Fallback: nunca devolvemos caja negra — devolvemos el logo tal cual.
+    // Fallback: nunca devolvemos caja negra — devolvemos el logo tal cual y
+    // marcamos processed:false para que el preview lo muestre limpio (sin blend
+    // multiply que lo volvería un bloque oscuro).
     console.warn('engraveLogo falló, usando logo original:', e?.message);
     return { dataUrl: srcUrl, processed: false };
   }

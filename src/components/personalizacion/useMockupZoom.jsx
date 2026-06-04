@@ -19,6 +19,7 @@ export function useMockupZoom(containerRef) {
   const [tx, setTx] = useState(0);
   const [ty, setTy] = useState(0);
   const pan = useRef(null);
+  const pinch = useRef(null); // { startDist, startScale } durante gesto de 2 dedos
 
   const clamp = useCallback((s) => Math.max(MIN, Math.min(MAX, s)), []);
 
@@ -58,6 +59,37 @@ export function useMockupZoom(containerRef) {
 
   const endPan = useCallback(() => { pan.current = null; }, []);
 
+  // ── Pinch (2 dedos) → zoom real en táctil ──────────────────────────────
+  const touchDist = (touches) => {
+    const dx = touches[0].clientX - touches[1].clientX;
+    const dy = touches[0].clientY - touches[1].clientY;
+    return Math.hypot(dx, dy);
+  };
+
+  const onTouchStart = useCallback((e) => {
+    if (e.touches.length >= 2) {
+      pinch.current = { startDist: touchDist(e.touches), startScale: scale };
+      pan.current = null;
+    } else if (e.touches[0]) {
+      startPan(e.touches[0].clientX, e.touches[0].clientY);
+    }
+  }, [scale, startPan]);
+
+  const onTouchMove = useCallback((e) => {
+    if (e.touches.length >= 2 && pinch.current) {
+      e.preventDefault();
+      const ratio = touchDist(e.touches) / (pinch.current.startDist || 1);
+      setScaleSafe(pinch.current.startScale * ratio);
+    } else if (e.touches[0]) {
+      movePan(e.touches[0].clientX, e.touches[0].clientY);
+    }
+  }, [movePan, setScaleSafe]);
+
+  const onTouchEnd = useCallback((e) => {
+    if (!e.touches || e.touches.length < 2) pinch.current = null;
+    endPan();
+  }, [endPan]);
+
   const bind = {
     onWheel,
     onDoubleClick,
@@ -65,9 +97,9 @@ export function useMockupZoom(containerRef) {
     onMouseMove: (e) => movePan(e.clientX, e.clientY),
     onMouseUp: endPan,
     onMouseLeave: endPan,
-    onTouchStart: (e) => { if (e.touches[0]) startPan(e.touches[0].clientX, e.touches[0].clientY); },
-    onTouchMove: (e) => { if (e.touches[0]) movePan(e.touches[0].clientX, e.touches[0].clientY); },
-    onTouchEnd: endPan,
+    onTouchStart,
+    onTouchMove,
+    onTouchEnd,
   };
 
   return {

@@ -1,15 +1,16 @@
 // ============================================================================
-// PriceBreakdownLive — Desglose de precio en vivo (Neto + IVA 19% + Total)
+// PriceBreakdownLive — Desglose de precio en vivo (B2C, IVA incluido)
 // ----------------------------------------------------------------------------
-// Mismo criterio de IVA transparente que en B2B: los montos son NETOS, se suma
-// IVA 19% aparte, y luego el total. Nada de "IVA incluido" sobre netos.
+// En B2C el precio_b2c YA incluye IVA, igual que el resto del flujo (paso 4,
+// carrito, checkout y correo). Por eso el total = producto + personalización,
+// SIN sumar 19% aparte. Mostramos "IVA incluido" para transparencia.
 // Se actualiza al cambiar opción/cantidad. Estética Warm Dusk (--ld-*).
 // ============================================================================
 
 const clp = (n) => `$${(n || 0).toLocaleString('es-CL')}`;
 
 export default function PriceBreakdownLive({
-  precioUnit,          // precio neto unitario del producto
+  precioUnit,          // precio unitario del producto (IVA incluido)
   cantidad,
   subtotalProducto,    // precioUnit × cantidad
   tipoLabel,           // etiqueta de la personalización elegida (o null)
@@ -17,9 +18,7 @@ export default function PriceBreakdownLive({
   cargoTotal,          // cargo total (0 si gratis)
   gratis,              // ¿personalización gratis (≥ MOQ)?
 }) {
-  const neto = subtotalProducto + cargoTotal;
-  const iva = Math.round(neto * 0.19);
-  const total = neto + iva;
+  const total = (subtotalProducto || 0) + (cargoTotal || 0);
 
   return (
     <div className="ld-card p-4 space-y-2 text-sm">
@@ -42,16 +41,11 @@ export default function PriceBreakdownLive({
         </div>
       )}
 
-      <div className="flex justify-between text-ld-fg-soft pt-2 border-t border-ld-border">
-        <span>Subtotal neto</span>
-        <span>{clp(neto)}</span>
-      </div>
-      <div className="flex justify-between text-ld-fg-soft">
-        <span>IVA (19%)</span>
-        <span>{clp(iva)}</span>
-      </div>
-      <div className="flex justify-between pt-2 border-t border-ld-border">
-        <span className="font-bold text-ld-fg">Total</span>
+      <div className="flex justify-between pt-2 border-t border-ld-border items-end">
+        <div>
+          <span className="font-bold text-ld-fg">Total</span>
+          <p className="text-[10px] text-ld-fg-muted font-medium">IVA incluido</p>
+        </div>
         <span className="font-poppins font-bold text-lg text-ld-fg">{clp(total)}</span>
       </div>
     </div>

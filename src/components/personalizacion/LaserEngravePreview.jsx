@@ -32,6 +32,9 @@ export default function LaserEngravePreview({
   const [tint, setTint] = useState(defaultTint); // dark | light
   const [dragging, setDragging] = useState(false);
   const [engravedUrl, setEngravedUrl] = useState('');
+  // ¿El logo se pudo procesar a monocromo-transparente? Si NO (CORS / canvas
+  // tainted), lo mostramos limpio SIN blend multiply para evitar la caja negra.
+  const [engravedOk, setEngravedOk] = useState(true);
   const [processing, setProcessing] = useState(false);
   const containerRef = useRef(null);
 
@@ -60,10 +63,14 @@ export default function LaserEngravePreview({
   // Reprocesa el logo cada vez que cambia el origen o la tinta.
   useEffect(() => {
     let cancelled = false;
-    if (!logoSource) { setEngravedUrl(''); return; }
+    if (!logoSource) { setEngravedUrl(''); setEngravedOk(true); return; }
     setProcessing(true);
     engraveLogo(logoSource, tint)
-      .then(({ dataUrl }) => { if (!cancelled) setEngravedUrl(dataUrl); })
+      .then(({ dataUrl, processed }) => {
+        if (cancelled) return;
+        setEngravedUrl(dataUrl);
+        setEngravedOk(processed !== false);
+      })
       .finally(() => { if (!cancelled) setProcessing(false); });
     return () => { cancelled = true; };
   }, [logoSource, tint]);
@@ -112,6 +119,7 @@ export default function LaserEngravePreview({
         onTouchMove={(e) => { if (dragging) handleTouchMove(e); else zoom.bind.onTouchMove(e); }}
         onTouchStart={(e) => { if (!dragging) zoom.bind.onTouchStart(e); }}
         onTouchEnd={(e) => { setDragging(false); zoom.bind.onTouchEnd(e); }}
+        onWheel={zoom.bind.onWheel}
         onDoubleClick={zoom.bind.onDoubleClick}
       >
         {/* Capa de zoom visual — escala/traslada TODO el contenido del mockup */}
@@ -158,7 +166,10 @@ export default function LaserEngravePreview({
             }}
           />
 
-          {/* Logo grabado (transparente + monocromo + blend) */}
+          {/* Logo grabado (transparente + monocromo + blend).
+              Si el procesado falló (engravedOk=false, p.ej. logo remoto sin CORS),
+              NO aplicamos mixBlendMode multiply — eso convertiría el logo crudo en
+              un bloque oscuro. Lo mostramos limpio con opacidad media. */}
           {engravedUrl && (
             <div
               className="absolute cursor-move"
@@ -166,8 +177,8 @@ export default function LaserEngravePreview({
                 left: `${posX}%`, top: `${posY}%`,
                 width: `${size}%`,
                 transform: 'translate(-50%, -50%)',
-                mixBlendMode: tint === 'light' ? 'screen' : 'multiply',
-                opacity: 0.88,
+                mixBlendMode: engravedOk ? (tint === 'light' ? 'screen' : 'multiply') : 'normal',
+                opacity: engravedOk ? 0.88 : 0.92,
                 filter: 'drop-shadow(0 1px 1px rgba(0,0,0,0.25))',
               }}
               onMouseDown={(e) => { if (!zoom.zoomedIn) { e.stopPropagation(); setDragging(true); } }}
