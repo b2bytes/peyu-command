@@ -256,19 +256,23 @@ function ChatProductCard({ sku, variant = 'dark' }) {
           </>
         ) : (
           <>
-            <button
-              onClick={handleAdd}
-              className={`flex-1 flex items-center justify-center gap-1 text-[11px] font-bold rounded-lg py-2 shadow-sm transition-all ${added ? (dark ? 'bg-green-500/30 border border-green-400/50 text-green-100' : 'bg-green-50 border border-green-300 text-green-700') : (dark ? 'bg-gradient-to-r from-teal-500 to-cyan-500 hover:from-teal-600 hover:to-cyan-600 text-white' : 'bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 text-white')}`}
-            >
-              {added
-                ? <><Check className="w-3 h-3" /> Agregado</>
-                : <><ShoppingCart className="w-3 h-3" /> Agregar ${precioUnitario.toLocaleString('es-CL')}</>}
-            </button>
-            <Link to={`/producto/${producto.id}`} onClick={markAgentNavigation}>
-              <button className={`flex items-center justify-center gap-1 text-[11px] font-semibold rounded-lg py-2 px-2.5 transition-all border ${dark ? 'bg-white/10 hover:bg-white/20 border-white/20 text-white/80' : 'bg-gray-50 hover:bg-gray-100 border-gray-200 text-gray-700'}`}>
-                <Package className="w-3 h-3" /> Ficha
+            {/* C1 · El botón principal lleva a la ficha del producto, donde el
+                cliente elige COLOR + GRABADO (personalización) antes de comprar.
+                Agregar directo se saltaba esos pasos (color/personalización null). */}
+            <Link to={`/producto/${producto.id}`} onClick={markAgentNavigation} className="flex-1">
+              <button className={`w-full flex items-center justify-center gap-1 text-[11px] font-bold rounded-lg py-2 shadow-sm transition-all ${dark ? 'bg-gradient-to-r from-teal-500 to-cyan-500 hover:from-teal-600 hover:to-cyan-600 text-white' : 'bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 text-white'}`}>
+                <Sparkles className="w-3 h-3" /> Elegir color y comprar
               </button>
             </Link>
+            <button
+              onClick={handleAdd}
+              title="Agregar al carrito sin personalizar"
+              className={`flex items-center justify-center gap-1 text-[11px] font-semibold rounded-lg py-2 px-2.5 transition-all border ${added ? (dark ? 'bg-green-500/30 border-green-400/50 text-green-100' : 'bg-green-50 border-green-300 text-green-700') : (dark ? 'bg-white/10 hover:bg-white/20 border-white/20 text-white/80' : 'bg-gray-50 hover:bg-gray-100 border-gray-200 text-gray-700')}`}
+            >
+              {added
+                ? <><Check className="w-3 h-3" /> Listo</>
+                : <><ShoppingCart className="w-3 h-3" /></>}
+            </button>
           </>
         )}
       </div>

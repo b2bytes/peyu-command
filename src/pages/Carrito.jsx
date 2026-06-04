@@ -18,7 +18,7 @@ import { saveOneClickProfile } from '@/lib/one-click-profile';
 import { computeQtyDiscountBySku } from '@/lib/volume-discount';
 import { PEYU_COLORS } from '@/lib/color-parser';
 import { isCyberActive, CYBER_COPY } from '@/lib/cyber-campaign';
-import { calcularCargoPersonalizacionCarrito } from '@/lib/personalizacion-config';
+import { calcularCargoPersonalizacionCarrito, calcularCargoPersonalizacion, getTipoPersonalizacion, PERSONALIZACION_LABEL, MOQ_PERSONALIZACION_GRATIS } from '@/lib/personalizacion-config';
 
 const DESCUENTO_TRANSFERENCIA_PCT = 5;
 
@@ -117,6 +117,18 @@ export default function Carrito() {
   // 🔧 C2 · Cargo personalización láser: bajo el MOQ (10u) el grabado SE COBRA.
   // ≥10u del mismo ítem es gratis. Monto en lib/personalizacion-config.
   const cargoPersonalizacion = calcularCargoPersonalizacionCarrito(carrito);
+
+  // Fee de personalización POR ÍTEM (para mostrar en cada card y persistir en el pedido).
+  const feePersItem = (item) => {
+    const moq = item.moq_personalizacion || item.personalizacion_gratis_desde || MOQ_PERSONALIZACION_GRATIS;
+    return calcularCargoPersonalizacion(item, moq);
+  };
+  // ¿El grabado de este ítem es gratis por alcanzar el MOQ (≥10u)?
+  const personalizacionGratisItem = (item) => {
+    if (!item.personalizacion) return false;
+    const moq = item.moq_personalizacion || item.personalizacion_gratis_desde || MOQ_PERSONALIZACION_GRATIS;
+    return (item.cantidad || 0) >= moq;
+  };
 
   const totalAntesGC = Math.max(0, subtotal + envio + cargoPersonalizacion - descuentoCupon - descuentoVolumen - descuentoTransferencia);
   const carritoTieneGC = carrito.some(i =>
@@ -242,6 +254,9 @@ export default function Carrito() {
       color: i.color || (i.pack_resumen ? i.pack_resumen : '') || '',
       pack_resumen: i.pack_resumen || '',
       personalizacion: i.personalizacion || '',
+      // Fee de personalización láser de ESTA línea (0 si gratis ≥10u o sin grabado).
+      tipo_personalizacion: i.personalizacion ? getTipoPersonalizacion(i) : '',
+      fee_personalizacion: feePersItem(i),
       precio_unitario: i.precio || 0,
       cantidad: i.cantidad || 1,
     }));
@@ -270,6 +285,14 @@ export default function Carrito() {
       cantidad: carrito.reduce((s, i) => s + i.cantidad, 0),
       subtotal,
       costo_envio: envio,
+      // 🔧 PARTE A · Fee total de personalización láser del pedido (suma de líneas).
+      // Persistido aparte para que el comprobante/correo desglosen Subtotal + Personalización + Envío = Total.
+      fee_personalizacion: cargoPersonalizacion,
+      tipo_personalizacion: (() => {
+        const conPers = carrito.filter(i => i.personalizacion);
+        const tipos = Array.from(new Set(conPers.map(i => getTipoPersonalizacion(i)).filter(Boolean)));
+        return tipos.length === 1 ? tipos[0] : (tipos.length > 1 ? 'mixto' : '');
+      })(),
       descuento: descuentoTotal,
       total,
       medio_pago: medioPagoFinal,
@@ -538,15 +561,28 @@ export default function Carrito() {
                       <div>
                         <h3 className="font-poppins font-semibold text-gray-900 leading-snug line-clamp-2 text-[15px]">{item.nombre}</h3>
                         {item.personalizacion && (
-                          <div className="mt-1.5 flex flex-wrap gap-1">
+                          <div className="mt-1.5 flex flex-wrap gap-1 items-center">
                             <span className="text-xs text-purple-700 font-semibold inline-flex items-center gap-1 bg-purple-50 px-2 py-0.5 rounded-md">
-                              ✨ Grabado: "{item.personalizacion}"
+                              ✨ Grabado{(() => {
+                                const tipo = getTipoPersonalizacion(item);
+                                return tipo && PERSONALIZACION_LABEL[tipo] ? ` (${PERSONALIZACION_LABEL[tipo]})` : '';
+                              })()}: "{item.personalizacion}"
                             </span>
                             {item.posicion_grabado && (
                               <span className="text-[11px] text-purple-700 font-semibold inline-flex items-center gap-1 bg-purple-50 px-2 py-0.5 rounded-md capitalize">
                                 📍 {item.posicion_grabado}
                               </span>
                             )}
+                            {/* Precio del grabado por ítem: cobra bajo 10u, gratis ≥10u */}
+                            {personalizacionGratisItem(item) ? (
+                              <span className="text-[11px] text-teal-700 font-bold inline-flex items-center gap-1 bg-teal-50 px-2 py-0.5 rounded-md">
+                                ✓ Personalización gratis (≥10u)
+                              </span>
+                            ) : feePersItem(item) > 0 ? (
+                              <span className="text-[11px] text-gray-700 font-bold inline-flex items-center gap-1 bg-gray-100 px-2 py-0.5 rounded-md">
+                                +${feePersItem(item).toLocaleString('es-CL')}
+                              </span>
+                            ) : null}
                           </div>
                         )}
                         {item.pack_resumen && (
@@ -730,13 +766,18 @@ export default function Carrito() {
                   }
                 </div>
 
-                {/* C2 · Cargo personalización láser bajo 10u (gratis ≥10u) */}
-                {cargoPersonalizacion > 0 && (
+                {/* Personalización láser: muestra cargo (bajo 10u) o "Gratis" (≥10u). */}
+                {cargoPersonalizacion > 0 ? (
                   <div className="flex justify-between text-gray-700">
-                    <span className="font-medium inline-flex items-center gap-1">✨ Personalización láser <span className="text-gray-400 font-normal">(bajo 10u)</span></span>
+                    <span className="font-medium inline-flex items-center gap-1">✨ Personalización láser</span>
                     <span className="font-semibold text-gray-900 tabular-nums">+${cargoPersonalizacion.toLocaleString('es-CL')}</span>
                   </div>
-                )}
+                ) : carrito.some(i => i.personalizacion) ? (
+                  <div className="flex justify-between text-teal-700">
+                    <span className="font-medium inline-flex items-center gap-1">✨ Personalización láser</span>
+                    <span className="font-bold inline-flex items-center gap-1">✓ Gratis (≥10u)</span>
+                  </div>
+                ) : null}
 
                 {descuentoCupon > 0 && (
                   <div className="flex justify-between text-emerald-700">

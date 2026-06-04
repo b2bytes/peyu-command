@@ -89,8 +89,16 @@ function buildItemsHtml(pedido) {
 
 function buildHtml(pedido) {
   const itemsHtml = buildItemsHtml(pedido);
-  const personalizacion = pedido.texto_personalizacion
-    ? `<tr><td style="padding:4px 0;color:#6B7280">Personalización</td><td style="padding:4px 0;text-align:right;font-weight:600;color:#1f2937">"${pedido.texto_personalizacion}"</td></tr>` : '';
+  // Personalización láser: si hubo cargo, lo desglosamos como línea con monto
+  // (así Subtotal + Personalización + Envío = Total cuadra). Si el grabado fue
+  // gratis (≥10u), lo mostramos como "Gratis". Si no hubo grabado, no se muestra.
+  const tienePersonalizacion = !!pedido.texto_personalizacion || pedido.requiere_personalizacion;
+  const feePers = Number(pedido.fee_personalizacion || 0);
+  const personalizacion = feePers > 0
+    ? `<tr><td style="padding:4px 0;color:#6B7280">Personalización láser</td><td style="padding:4px 0;text-align:right;font-weight:600;color:#1f2937">${clp(feePers)}</td></tr>`
+    : tienePersonalizacion
+      ? `<tr><td style="padding:4px 0;color:#6B7280">Personalización láser</td><td style="padding:4px 0;text-align:right;font-weight:600;color:#0F8B6C">Gratis</td></tr>`
+      : '';
   const envio = pedido.costo_envio
     ? `<tr><td style="padding:4px 0;color:#6B7280">Envío</td><td style="padding:4px 0;text-align:right;font-weight:600;color:#1f2937">${clp(pedido.costo_envio)}</td></tr>` : '';
   const direccion = pedido.direccion_envio
