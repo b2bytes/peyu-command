@@ -379,7 +379,7 @@ export default function B2BSelfService() {
 
       </div>
 
-      <div className="max-w-6xl mx-auto px-3 sm:px-6 py-4 sm:py-6 space-y-5">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 py-4 sm:py-6 space-y-5 pb-28 lg:pb-28">
         {/* Steps indicator premium */}
         <StepperProgress steps={STEPS} current={step} />
 
@@ -426,8 +426,8 @@ export default function B2BSelfService() {
               {/* Catálogo */}
               <div>
                 {loadingCat ? (
-                  <div className="grid grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4">
-                    {[1, 2, 3, 4, 5, 6].map(i => (
+                  <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
+                    {[1, 2, 3, 4, 5, 6, 7, 8].map(i => (
                       <div key={i} className="bg-white/[0.04] border border-white/10 rounded-3xl overflow-hidden animate-pulse">
                         <div className="aspect-square bg-white/5" />
                         <div className="p-4 space-y-2">
@@ -445,7 +445,7 @@ export default function B2BSelfService() {
                     <button onClick={() => setFiltroCategoria('todos')} className="text-teal-300 text-xs font-bold mt-2 hover:underline">Ver todos</button>
                   </div>
                 ) : (
-                  <div className="grid grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4">
+                  <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
                     {catalogoFiltrado.map(p => (
                       <SelfServiceProductCard
                         key={p.id}
@@ -460,7 +460,7 @@ export default function B2BSelfService() {
                 )}
               </div>
 
-              {/* Carrito — solo desktop (sidebar sticky con botón de avanzar integrado) */}
+              {/* Carrito — solo desktop (sidebar sticky). El avance lo maneja el footer fijo. */}
               <div className="hidden lg:block sticky top-24 self-start">
                 <CartPanel
                   cart={cart}
@@ -469,8 +469,6 @@ export default function B2BSelfService() {
                   setQty={setQty}
                   removeFromCart={removeFromCart}
                   subtotalEstimado={subtotalEstimado}
-                  onContinue={() => setStep(1)}
-                  continueLabel="Continuar"
                 />
               </div>
             </div>
@@ -731,7 +729,7 @@ export default function B2BSelfService() {
               )}
             </div>
 
-            {/* Resumen pedido (sticky desktop) — botón Generar cotización integrado */}
+            {/* Resumen pedido (sticky desktop). El botón Generar lo maneja el footer fijo. */}
             <div className="hidden lg:block sticky top-24 self-start">
               <CartPanel
                 cart={cart}
@@ -740,8 +738,6 @@ export default function B2BSelfService() {
                 setQty={setQty}
                 removeFromCart={removeFromCart}
                 subtotalEstimado={subtotalEstimado}
-                onContinue={handleGenerar}
-                continueLabel={generando ? 'Generando…' : 'Generar cotización'}
               />
             </div>
           </div>
@@ -863,14 +859,14 @@ export default function B2BSelfService() {
           </div>
         )}
 
-        {/* Footer nav — sticky en móvil, glass premium.
+        {/* Footer nav — SIEMPRE fijo abajo (móvil + desktop), glass premium, ordenado.
             En STEP 0 móvil se OCULTA: la bottom bar fija (MobileOrderBar) maneja el avance. */}
         {step < 3 && (
           <div
-            className={`lg:relative fixed bottom-0 inset-x-0 lg:inset-auto bg-slate-900/90 lg:bg-transparent backdrop-blur-2xl lg:backdrop-blur-none border-t lg:border-t border-white/15 lg:border-white/10 px-3 lg:px-0 py-3 lg:pt-4 z-30 shadow-[0_-8px_24px_-8px_rgba(0,0,0,0.4)] lg:shadow-none ${step === 0 ? 'hidden lg:block' : ''}`}
+            className={`fixed bottom-0 inset-x-0 bg-slate-900/90 backdrop-blur-2xl border-t border-white/15 px-3 sm:px-6 py-3 z-40 shadow-[0_-8px_24px_-8px_rgba(0,0,0,0.4)] ${step === 0 ? 'hidden lg:block' : ''}`}
             style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 0.75rem)' }}
           >
-            <div className="flex items-center justify-between gap-2 sm:gap-3 max-w-6xl mx-auto">
+            <div className="flex items-center justify-between gap-2 sm:gap-3 max-w-7xl mx-auto">
               <Button
                 onClick={() => setStep(Math.max(0, step - 1))}
                 variant="outline"

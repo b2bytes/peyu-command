@@ -1,5 +1,6 @@
 import { Package, Trash2, ShoppingBag, Sparkles, ArrowRight } from 'lucide-react';
 import { getProductImage } from '@/utils/productImages';
+import { desgloseIVA } from '@/lib/iva-chile';
 
 /**
  * Panel del carrito del flujo Self-Service B2B.
@@ -30,7 +31,7 @@ export default function CartPanel({ cart, calcPrice, updateQty, setQty, removeFr
               {/* Contador visible: X productos · Y unidades · Subtotal */}
               <p className="text-[10px] text-white/50 mt-0.5 tabular-nums">
                 {cart.length} {cart.length === 1 ? 'producto' : 'productos'} · {totalUnidades} u.
-                {!vacio && <span className="text-teal-300 font-semibold"> · ${subtotalEstimado.toLocaleString('es-CL')}</span>}
+                {!vacio && <span className="text-teal-300 font-semibold"> · ${desgloseIVA(subtotalEstimado).total.toLocaleString('es-CL')} c/IVA</span>}
               </p>
             </div>
           </div>
@@ -120,22 +121,35 @@ export default function CartPanel({ cart, calcPrice, updateQty, setQty, removeFr
         </div>
       )}
 
-      {cart.length > 0 && (
-        <div className="border-t border-white/10 mt-3 pt-3.5">
-          <div className="bg-gradient-to-br from-teal-500/15 to-cyan-500/15 border border-teal-400/25 rounded-2xl p-3">
-            <div className="flex items-center justify-between mb-1">
-              <span className="text-xs font-medium text-white/70">Subtotal estimado</span>
-              <span className="font-poppins font-extrabold text-lg text-white tabular-nums">
-                ${subtotalEstimado.toLocaleString('es-CL')}
-              </span>
-            </div>
-            <div className="flex items-center gap-1.5 text-[10px] text-teal-300/90">
-              <Sparkles className="w-2.5 h-2.5" />
-              <span>IVA incluido · descuento por volumen aplicado</span>
+      {cart.length > 0 && (() => {
+        // Los precios por tramo son NETOS → desglose oficial neto/IVA/total.
+        const { neto, iva, total } = desgloseIVA(subtotalEstimado);
+        return (
+          <div className="border-t border-white/10 mt-3 pt-3.5">
+            <div className="bg-gradient-to-br from-teal-500/15 to-cyan-500/15 border border-teal-400/25 rounded-2xl p-3.5 space-y-2">
+              {/* Desglose detallado: Subtotal neto · IVA 19% · Total con IVA */}
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-medium text-white/70">Subtotal neto</span>
+                <span className="text-sm font-semibold text-white tabular-nums">${neto.toLocaleString('es-CL')}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-medium text-white/70">IVA (19%)</span>
+                <span className="text-sm font-semibold text-white tabular-nums">${iva.toLocaleString('es-CL')}</span>
+              </div>
+              <div className="flex items-center justify-between pt-2 border-t border-white/10">
+                <span className="text-sm font-bold text-white">Total con IVA</span>
+                <span className="font-poppins font-extrabold text-xl text-teal-300 tabular-nums">
+                  ${total.toLocaleString('es-CL')}
+                </span>
+              </div>
+              <div className="flex items-center gap-1.5 text-[10px] text-teal-300/90 pt-0.5">
+                <Sparkles className="w-2.5 h-2.5 flex-shrink-0" />
+                <span>Descuento por volumen aplicado · estimado referencial</span>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
 
       {/* Botón de avanzar SIEMPRE visible al fondo del panel sticky (desktop) */}
       {onContinue && (
