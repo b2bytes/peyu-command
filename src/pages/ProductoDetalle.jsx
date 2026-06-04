@@ -1429,6 +1429,7 @@ export default function ProductoDetalle() {
           productImageUrl={imagenColorSeleccionado || galeria[vistaActiva] || imgPrincipal}
           initialText={personalizacion}
           initialColor={colores.find(c => c.id === colorSeleccionado)?.label || ''}
+          onLogoUploaded={(url) => setLogoCliente(url)}
           onGenerated={(url, extra = {}) => {
             setMockupGenerado(url);
             if (extra.logoUrl) setLogoCliente(extra.logoUrl);

@@ -17,6 +17,7 @@ export default function MockupGenerator({
   initialText = '',
   initialColor = '',
   onGenerated,
+  onLogoUploaded,
 }) {
   const mockupType = useMemo(
     () => detectMockupType({ sku: productSku, nombre: productName }),
@@ -51,7 +52,12 @@ export default function MockupGenerator({
     setLogoUploading(true);
     try {
       const res = await base44.integrations.Core.UploadFile({ file });
-      setLogoUrl(res.file_url || '');
+      const url = res.file_url || '';
+      setLogoUrl(url);
+      // 🎨 Propagamos el archivo subido al pedido APENAS se sube — sin esperar a
+      // que el cliente genere el mockup IA. Garantiza que el logo SIEMPRE quede
+      // guardado y visible en el panel interno, aunque cierre el modal sin generar.
+      if (url) onLogoUploaded?.(url);
     } catch (err) {
       setError('No se pudo subir el archivo. Intenta de nuevo.');
     } finally {
@@ -165,7 +171,7 @@ export default function MockupGenerator({
 
           {/* C3 · Galería de diseños PEYU — solo para grabado láser (logo) */}
           {mockupType === 'logo' && (
-            <DisenosPeyuPicker selectedUrl={logoUrl} onSelect={(url) => { setLogoUrl(url); setError(''); }} />
+            <DisenosPeyuPicker selectedUrl={logoUrl} onSelect={(url) => { setLogoUrl(url); setError(''); if (url) onLogoUploaded?.(url); }} />
           )}
 
           {error && (
