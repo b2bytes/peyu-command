@@ -19,7 +19,7 @@ export default function HeroCelebrationStrip() {
 
   return (
     <Link
-      to={copy.ctaPrimary.href}
+      to="/shop"
       className="group inline-flex items-center gap-2.5 rounded-full pl-2.5 pr-3.5 py-2 mb-6 self-start relative overflow-hidden transition-all hover:scale-[1.015]"
       style={{
         background: `linear-gradient(90deg, ${palette.tint} 0%, rgba(255,255,255,0.04) 100%)`,
