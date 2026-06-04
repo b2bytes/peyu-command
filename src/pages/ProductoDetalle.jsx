@@ -332,12 +332,16 @@ export default function ProductoDetalle() {
   const imgAlterna = producto ? (SKU_IMAGES_ALT[producto.sku] || imgPrincipal) : '';
   // Galería: imagen principal + alterna (si difiere) + imágenes de la galería
   // del producto (de WooCommerce) sin duplicados.
+  // ⚠️ Filtramos URLs de IA (generated_image.png): son imágenes inventadas que
+  // NO representan fielmente el color/producto. No se borran de la base, solo se
+  // ignoran en el frontend hasta que existan fotos reales por color.
   const galeria = producto
     ? Array.from(new Set([
         imgPrincipal,
         imgAlterna !== imgPrincipal ? imgAlterna : null,
         ...(Array.isArray(producto.galeria_urls) ? producto.galeria_urls : []),
       ].filter(Boolean)))
+        .filter(u => !/generated_image\.png/i.test(u))
     : [];
 
   // 🎨 Imagen que corresponde al color seleccionado. Fuente de verdad:
@@ -347,15 +351,20 @@ export default function ProductoDetalle() {
   // Se usa para el item del carrito y como base del mockup láser, así el
   // cliente ve SU color elegido (no la imagen genérica del primer producto).
   const colorObjSel = producto ? getColores(producto).find(c => c.id === colorSeleccionado) : null;
+  // Una URL es "IA placeholder" si apunta a un generated_image.png. Mientras el
+  // cliente no suba fotos REALES por color, ignoramos estas imágenes inventadas
+  // y mostramos siempre la foto de catálogo (imagen_url). Honesto y profesional.
+  const esImagenIA = (url) => typeof url === 'string' && /generated_image\.png/i.test(url);
   const imagenColorSeleccionado = (() => {
     if (!producto) return '';
     if (colorObjSel) {
       // Fuente de verdad: imagenes_por_color (resuelta priorizando foto real
       // sobre IA placeholder, con fallback a la base). Ver lib/color-image-resolver.
       const porMapa = resolveColorImage(producto, colorObjSel.label, null) || resolveColorImage(producto, colorObjSel.id, null);
-      if (porMapa) return porMapa;
+      if (porMapa && !esImagenIA(porMapa)) return porMapa;
+      // Match scored sobre la galería, pero SOLO si la imagen NO es IA inventada.
       const match = findColorImageMatch(galeria, colorObjSel);
-      if (match && galeria[match.index]) return galeria[match.index];
+      if (match && galeria[match.index] && !esImagenIA(galeria[match.index])) return galeria[match.index];
     }
     return imgPrincipal;
   })();
@@ -669,6 +678,19 @@ export default function ProductoDetalle() {
                 {shareMsg && (
                   <div className="absolute bottom-4 left-1/2 -translate-x-1/2 ld-glass-strong text-ld-fg text-xs font-semibold px-4 py-2 rounded-xl shadow-xl flex items-center gap-2">
                     <Copy className="w-3 h-3" /> {shareMsg}
+                  </div>
+                )}
+                {/* Badge persistente del color elegido (swatch + label) — refuerza
+                    la elección de forma honesta sobre la foto marmolada real.
+                    Solo cuando hay color elegido, no es pack y no hay otro feedback activo. */}
+                {colorObjSel && !packSize && !colorMatchFeedback && (
+                  <div className="absolute bottom-4 left-4 ld-glass-strong text-ld-fg text-[11px] font-semibold pl-2 pr-3 py-1.5 rounded-full shadow-lg flex items-center gap-2">
+                    <span
+                      className="w-3.5 h-3.5 rounded-full border border-white/40 shadow-inner flex-shrink-0"
+                      style={{ backgroundColor: colorObjSel.hex }}
+                      aria-hidden
+                    />
+                    <span className="text-ld-fg">{colorObjSel.label}</span>
                   </div>
                 )}
                 {/* Badge contextual UI 2026: feedback sutil "Mostrando en X" cuando el color sincronizó la galería */}
