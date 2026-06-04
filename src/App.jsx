@@ -114,7 +114,7 @@ const MobileCockpit = lazyWithRetry(() => import('./pages/MobileCockpit'), { nam
 const ContratoImpulsia = lazyWithRetry(() => import('./pages/ContratoImpulsia'), { name: 'ContratoImpulsia' });
 const SEOKeywords = lazyWithRetry(() => import('./pages/SEOKeywords'), { name: 'SEOKeywords' });
 const RecategorizarCatalogo = lazyWithRetry(() => import('./pages/RecategorizarCatalogo'), { name: 'RecategorizarCatalogo' });
-const AgenteCentral = lazyWithRetry(() => import('./pages/AgenteCentral'), { name: 'AgenteCentral' });
+const AgenteOS = lazyWithRetry(() => import('./pages/AgenteOS'), { name: 'AgenteOS' });
 const ConciliarCatalogo = lazyWithRetry(() => import('./pages/ConciliarCatalogo'), { name: 'ConciliarCatalogo' });
 const CatalogoB2BOficial = lazyWithRetry(() => import('./pages/CatalogoB2BOficial'), { name: 'CatalogoB2BOficial' });
 const MigrarPreciosB2B = lazyWithRetry(() => import('./pages/MigrarPreciosB2B'), { name: 'MigrarPreciosB2B' });
@@ -222,7 +222,7 @@ const AuthenticatedApp = () => {
           <Route path="contrato-impulsia" element={<ContratoImpulsia />} />
           <Route path="seo-keywords" element={<SEOKeywords />} />
           <Route path="recategorizar" element={<RecategorizarCatalogo />} />
-          <Route path="agente" element={<AgenteCentral />} />
+          <Route path="agente" element={<AgenteOS />} />
           <Route path="conciliar-catalogo" element={<ConciliarCatalogo />} />
           <Route path="catalogo-b2b-oficial" element={<CatalogoB2BOficial />} />
           <Route path="migrar-precios-b2b" element={<MigrarPreciosB2B />} />
