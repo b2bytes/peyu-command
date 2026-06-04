@@ -38,36 +38,31 @@ function getB2BSessionId() {
   }
 }
 
-// Precio por volumen basado en la TABLA REAL del producto (misma que ProductoDetalle).
-// Fallback a descuentos genéricos solo si el producto no tiene precios de volumen configurados.
+// 💲 Precio B2B por volumen — FUENTE ÚNICA DE VERDAD: precio_b2b_tramos del
+// producto ACTIVO (8 tramos NETOS, sin IVA). CERO fallbacks porcentuales ni
+// precio_b2c inflado: si el producto no tiene tabla B2B oficial, devolvemos 0
+// y el cotizador lo deriva a contacto (no inventa precios).
 function calcPrice(producto, qty) {
   if (!producto) return 0;
-
-  // Prioridad 1: precio_b2b_tramos (catálogo oficial, 8 tramos sin IVA)
   const t = producto.precio_b2b_tramos;
-  if (t && typeof t === 'object') {
-    if (qty >= 2000 && t.t2000_mas)  return t.t2000_mas;
-    if (qty >= 1000 && t.t1000_1999) return t.t1000_1999;
-    if (qty >= 500 && t.t500_999)    return t.t500_999;
-    if (qty >= 250 && t.t250_499)    return t.t250_499;
-    if (qty >= 100 && t.t100_249)    return t.t100_249;
-    if (qty >= 50 && t.t50_99)       return t.t50_99;
-    if (qty >= 10 && t.t10_49)       return t.t10_49;
-    if (t.unitario)                  return t.unitario;
-  }
+  if (!t || typeof t !== 'object') return 0;
+  if (qty >= 2000 && t.t2000_mas)  return t.t2000_mas;
+  if (qty >= 1000 && t.t1000_1999) return t.t1000_1999;
+  if (qty >= 500 && t.t500_999)    return t.t500_999;
+  if (qty >= 250 && t.t250_499)    return t.t250_499;
+  if (qty >= 100 && t.t100_249)    return t.t100_249;
+  if (qty >= 50 && t.t50_99)       return t.t50_99;
+  if (qty >= 10 && t.t10_49)       return t.t10_49;
+  return t.unitario || 0;
+}
 
-  const base = producto.precio_base_b2b || producto.precio_b2c || 5000;
-  // Prioridad 2: tabla legacy
-  if (qty >= 500 && producto.precio_500_mas) return producto.precio_500_mas;
-  if (qty >= 200 && producto.precio_200_499) return producto.precio_200_499;
-  if (qty >= 50 && producto.precio_50_199) return producto.precio_50_199;
-  if (qty >= 10 && producto.precio_base_b2b) return producto.precio_base_b2b;
-  // Prioridad 3: fallback porcentual sobre precio_b2c
-  let discount = 0;
-  if (qty >= 500) discount = 0.25;
-  else if (qty >= 200) discount = 0.15;
-  else if (qty >= 50) discount = 0.08;
-  return Math.round(base * (1 - discount));
+// ¿El producto tiene tabla B2B oficial (al menos 1 tramo con precio)?
+// Los que no la tienen NO se cotizan (se derivan a un ejecutivo).
+function tieneTablaB2B(producto) {
+  const t = producto?.precio_b2b_tramos;
+  if (!t || typeof t !== 'object') return false;
+  return ['unitario','t10_49','t50_99','t100_249','t250_499','t500_999','t1000_1999','t2000_mas']
+    .some(k => Number(t[k]) > 0);
 }
 
 export default function B2BSelfService() {
@@ -112,7 +107,12 @@ export default function B2BSelfService() {
   useEffect(() => {
     base44.entities.Producto.filter({ activo: true })
       .then(list => {
-        const b2b = (list || []).filter(p => p.canal === 'B2B Exclusivo' || p.canal === 'B2B + B2C');
+        // Solo productos ACTIVOS, de canal B2B y CON tabla B2B oficial
+        // (precio_b2b_tramos). Esto excluye los duplicados "(corporativo)"
+        // inactivos/inflados que daban precios malos (ej. Pack 5 cachos $21.990).
+        const b2b = (list || []).filter(p =>
+          (p.canal === 'B2B Exclusivo' || p.canal === 'B2B + B2C') && tieneTablaB2B(p)
+        );
         setCatalogo(b2b);
 
         // 🎯 Producto pre-anclado al embudo B2B ("Cotizar B2B").
@@ -343,22 +343,33 @@ export default function B2BSelfService() {
     }
   };
 
+  // Descarga el base64 de un PDF como archivo en el navegador.
+  const descargarBase64 = (pdf_base64, filename) => {
+    const byteChars = atob(pdf_base64);
+    const byteNumbers = new Array(byteChars.length);
+    for (let i = 0; i < byteChars.length; i++) byteNumbers[i] = byteChars.charCodeAt(i);
+    const blob = new Blob([new Uint8Array(byteNumbers)], { type: 'application/pdf' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename || `PEYU-Propuesta-${propuesta?.numero || ''}.pdf`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   const handleDescargarPDF = async () => {
     if (!propuesta?.proposal_id) return;
     setDescargando(true);
     try {
+      // 1) Si la respuesta de la propuesta ya trae el PDF, descarga directa (instantáneo).
+      if (propuesta.pdf_base64) {
+        descargarBase64(propuesta.pdf_base64, propuesta.pdf_filename);
+        return;
+      }
+      // 2) Fallback: regenerar el PDF on-demand.
       const res = await base44.functions.invoke('generateProposalPDF', { proposalId: propuesta.proposal_id });
       const { pdf_base64, filename } = res.data;
-      const byteChars = atob(pdf_base64);
-      const byteNumbers = new Array(byteChars.length);
-      for (let i = 0; i < byteChars.length; i++) byteNumbers[i] = byteChars.charCodeAt(i);
-      const blob = new Blob([new Uint8Array(byteNumbers)], { type: 'application/pdf' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = filename || `PEYU-Propuesta-${propuesta.numero}.pdf`;
-      a.click();
-      URL.revokeObjectURL(url);
+      descargarBase64(pdf_base64, filename);
     } catch {
       alert('No se pudo descargar el PDF. Revisa la propuesta online.');
     } finally {

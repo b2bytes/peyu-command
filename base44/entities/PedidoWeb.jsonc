@@ -248,6 +248,17 @@
       "format": "date-time",
       "title": "Comprobante enviado en"
     },
+    "email_confirmacion_enviado": {
+      "type": "boolean",
+      "title": "Email confirmaci\u00f3n inicial enviado",
+      "description": "Flag idempotencia: true cuando ya se envi\u00f3 el correo de confirmaci\u00f3n INMEDIATO al crear el pedido (cualquier medio de pago). Independiente del comprobante de pago confirmado.",
+      "default": false
+    },
+    "email_confirmacion_enviado_at": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Confirmaci\u00f3n inicial enviada en"
+    },
     "email_instrucciones_transferencia_enviado": {
       "type": "boolean",
       "title": "Email instrucciones de transferencia enviado",

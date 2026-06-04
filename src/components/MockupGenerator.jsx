@@ -100,7 +100,7 @@ export default function MockupGenerator({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="w-[92vw] max-w-lg max-h-[90vh] overflow-y-auto peyu-scrollbar bg-slate-900 border-white/15 text-white">
+      <DialogContent className="w-[95vw] sm:w-[92vw] max-w-lg max-h-[90vh] overflow-y-auto peyu-scrollbar bg-slate-900 border-white/15 text-white p-4 sm:p-6">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 font-poppins">
             <span className="text-xl">{config.icon}</span> {config.title}

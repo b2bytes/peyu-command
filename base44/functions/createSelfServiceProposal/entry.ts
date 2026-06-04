@@ -491,6 +491,10 @@ Deno.serve(async (req) => {
       items: breakdown,
       mockup_urls: mockupUrls,
       proposal_url: `/b2b/propuesta?id=${proposal.id}`,
+      // Devolvemos el PDF (base64) para descarga DIRECTA en el navegador, sin
+      // tener que re-generarlo. Si falló, el frontend cae a generateProposalPDF.
+      pdf_base64: pdfBase64,
+      pdf_filename: `PEYU-Propuesta-${propNum}.pdf`,
       pdf_attached: !!pdfBase64,
       pdf_error: pdfError,
       email_sent: emailSent,

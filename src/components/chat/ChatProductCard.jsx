@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { getProductImage } from '@/utils/productImages';
 import { getCatalogPriceForQty, getUnitBasePrice } from '@/lib/catalog-pricing';
+import ChatPersonalizarPicker from '@/components/chat/ChatPersonalizarPicker';
 import {
   ShoppingCart, Building2, Sparkles, Package, Check, Recycle,
   Star, Zap, Truck, TrendingDown,
@@ -31,18 +32,30 @@ function markAgentNavigation() {
   try { localStorage.setItem('peyu_chat_agent_navigated_at', String(Date.now())); } catch {}
 }
 
-function addToCart(producto, cantidad) {
+function addToCart(producto, cantidad, pers = null) {
   const carrito = JSON.parse(localStorage.getItem('carrito') || '[]');
   // Precio unitario oficial según cantidad (sin descuentos fabricados).
   const precio = getCatalogPriceForQty(producto, cantidad || 1).precio || getUnitBasePrice(producto);
+  const moq = producto.personalizacion_gratis_desde || producto.moq_personalizacion || 10;
+  // Personalización (BLOQUE 3): el tipo y contenido viajan al carrito → checkout
+  // → pedido → correo, igual que en la ficha de producto.
+  const personalizacion = pers
+    ? (pers.tipo === 'archivo' ? '[Logo personalizado]' : pers.texto)
+    : null;
   const nuevoItem = {
     id: Math.random(),
     productoId: producto.id,
+    sku: producto.sku || null,
     nombre: producto.nombre,
     precio,
     cantidad: cantidad || 1,
     color: null,
-    personalizacion: null,
+    personalizacion,
+    tipo_personalizacion: pers?.tipo || null,
+    logoUrl: pers?.logoUrl || null,
+    moq_personalizacion: moq,
+    personalizacion_gratis_desde: moq,
+    posicion_grabado: pers ? 'centro' : null,
     imagen: getProductImage(producto),
   };
   carrito.push(nuevoItem);
@@ -72,6 +85,7 @@ function ChatProductCard({ sku, variant = 'dark' }) {
   const [producto, setProducto] = useState(null);
   const [loading, setLoading] = useState(true);
   const [added, setAdded] = useState(false);
+  const [personalizando, setPersonalizando] = useState(false); // BLOQUE 3 · picker abierto
   const dark = variant === 'dark';
 
   useEffect(() => {
@@ -116,10 +130,11 @@ function ChatProductCard({ sku, variant = 'dark' }) {
   const qtyHint = getChatQty();
   const isB2B = qtyHint && qtyHint >= 10;
 
-  const handleAdd = () => {
+  const handleAdd = (pers = null) => {
     if (!producto) return;
-    addToCart(producto, qtyHint && qtyHint < 10 ? qtyHint : 1);
+    addToCart(producto, qtyHint && qtyHint < 10 ? qtyHint : 1, pers);
     setAdded(true);
+    setPersonalizando(false);
     setTimeout(() => setAdded(false), 2500);
   };
 

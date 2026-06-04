@@ -208,10 +208,12 @@ Deno.serve(async (req) => {
       } catch { /* sin logo */ }
     }
 
-    // Columna total (derecha, justificado)
-    T('INVERSION TOTAL', RX - 8, y + 9, { size: 7, font: 'bold', color: TEAL, align: 'right', spacing: 1 });
+    // Columna total (derecha, justificado). Los tramos son NETOS → mostramos el
+    // TOTAL con IVA aquí y el desglose Neto + IVA detallado más abajo. Nada de
+    // "IVA incluido" sobre netos: el IVA va explícito como línea aparte.
+    T('TOTAL CON IVA', RX - 8, y + 9, { size: 7, font: 'bold', color: TEAL, align: 'right', spacing: 1 });
     T(fmtCLP(p.total), RX - 8, y + 21, { size: 21, font: 'bold', color: FOREST, align: 'right' });
-    T('CLP - IVA incluido', RX - 8, y + 27, { size: 7.5, font: 'normal', color: STONE, align: 'right' });
+    T('CLP - incluye IVA 19% (ver detalle)', RX - 8, y + 27, { size: 7, font: 'normal', color: STONE, align: 'right' });
 
     y += cardH + 6;
 

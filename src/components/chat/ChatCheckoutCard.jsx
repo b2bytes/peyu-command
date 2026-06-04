@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { CheckCircle2, Lock, Trash2, ShoppingBag, Loader2, User, Mail, Phone } from 'lucide-react';
+import { calcularCargoPersonalizacionCarrito, calcularCargoPersonalizacion, getTipoPersonalizacion, MOQ_PERSONALIZACION_GRATIS } from '@/lib/personalizacion-config';
 
 /**
  * Tarjeta de checkout express DENTRO del chat — el cliente puede completar
@@ -33,7 +34,9 @@ export default function ChatCheckoutCard({ variant = 'dark' }) {
 
   const subtotal = carrito.reduce((s, i) => s + (i.precio || 0) * (i.cantidad || 1), 0);
   const envio = subtotal >= 40000 ? 0 : 5990;
-  const total = subtotal + envio;
+  // Personalización láser: se cobra bajo 10u del mismo ítem, gratis ≥10u.
+  const cargoPersonalizacion = calcularCargoPersonalizacionCarrito(carrito);
+  const total = subtotal + envio + cargoPersonalizacion;
 
   const eliminar = (id) => {
     const nuevo = carrito.filter(i => i.id !== id);
@@ -48,7 +51,25 @@ export default function ChatCheckoutCard({ variant = 'dark' }) {
     try {
       const numero = `CHAT-${Date.now()}`;
       const items = carrito.map(i => `${i.nombre} x${i.cantidad}${i.personalizacion ? ` [${i.personalizacion}]` : ''}`).join(' | ');
-      await base44.entities.PedidoWeb.create({
+      // items_detalle estructurado: fuente de verdad de color/personalización/fee
+      // para que el pedido quede COMPLETO igual que el checkout del carrito.
+      const itemsDetalle = carrito.map(i => {
+        const moq = i.moq_personalizacion || i.personalizacion_gratis_desde || MOQ_PERSONALIZACION_GRATIS;
+        return {
+          sku: i.sku || '',
+          nombre: i.nombre || '',
+          color: i.color || '',
+          personalizacion: i.personalizacion || '',
+          tipo_personalizacion: i.personalizacion ? getTipoPersonalizacion(i) : '',
+          fee_personalizacion: i.personalizacion ? calcularCargoPersonalizacion(i, moq) : 0,
+          logo_url: i.logoUrl || i.logo_url || '',
+          mockup_url: i.mockupUrl || i.mockup_url || '',
+          posicion_grabado: i.posicion_grabado || '',
+          precio_unitario: i.precio || 0,
+          cantidad: i.cantidad || 1,
+        };
+      });
+      const pedido = await base44.entities.PedidoWeb.create({
         numero_pedido: numero,
         fecha: new Date().toISOString().split('T')[0],
         canal: 'Web Propia',
@@ -57,16 +78,23 @@ export default function ChatCheckoutCard({ variant = 'dark' }) {
         cliente_telefono: cliente.telefono,
         tipo_cliente: 'B2C Individual',
         descripcion_items: items,
+        items_detalle: itemsDetalle,
         cantidad: carrito.reduce((s, i) => s + i.cantidad, 0),
         subtotal,
         costo_envio: envio,
+        fee_personalizacion: cargoPersonalizacion,
         total,
-        medio_pago: 'WebPay',
+        medio_pago: 'Transferencia',
         estado: 'Nuevo',
         requiere_personalizacion: carrito.some(i => i.personalizacion),
+        texto_personalizacion: carrito.filter(i => i.personalizacion).map(i => i.personalizacion).join(', '),
         courier: 'Pendiente',
         notas: 'Checkout desde chat Peyu',
       });
+      // 📧 Correo de confirmación inmediato (con datos bancarios de transferencia).
+      if (pedido?.id) {
+        base44.functions.invoke('enviarConfirmacionPedido', { pedido_id: pedido.id }).catch(() => {});
+      }
       localStorage.removeItem('carrito');
       window.dispatchEvent(new CustomEvent('peyu:cart-cleared'));
       setPedido({ numero, total });
@@ -110,7 +138,7 @@ export default function ChatCheckoutCard({ variant = 'dark' }) {
         <p className="font-bold text-sm">¡Pedido confirmado! 🎉</p>
         <p className={`text-[11px] ${subtle}`}>N° <span className="font-mono font-bold">{pedido.numero}</span></p>
         <p className="font-poppins font-bold text-lg">${pedido.total.toLocaleString('es-CL')}</p>
-        <p className={`text-[10px] ${subtle}`}>Te contactaremos por email para coordinar despacho.</p>
+        <p className={`text-[10px] ${subtle}`}>Te enviamos un correo con los datos para transferir y coordinar tu despacho. 📧</p>
       </div>
     );
   }
@@ -188,7 +216,7 @@ export default function ChatCheckoutCard({ variant = 'dark' }) {
         ))}
       </div>
 
-      <p className={`text-[9px] text-center ${subtle}`}>Pago WebPay seguro · Te enviaremos link de pago por email</p>
+      <p className={`text-[9px] text-center ${subtle}`}>Te enviaremos por email los datos para transferir y confirmar tu pedido</p>
 
       <button
         onClick={handleCheckout}
