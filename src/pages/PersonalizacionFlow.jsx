@@ -154,6 +154,14 @@ export default function PersonalizacionFlow() {
       const preId = params.get('productoId');
       const initial = personalizables.find(p => p.id === preId) || personalizables[0];
       if (initial) setProductoId(initial.id);
+      // Deep-link de prueba/QA: ?step=2 salta directo al paso (0-index). Permite
+      // certificar/compartir el paso de diseño sin recorrer todo el wizard.
+      const preStep = parseInt(params.get('step'), 10);
+      if (!isNaN(preStep) && preStep >= 0 && preStep <= 3) setStep(preStep);
+      const preOpcion = params.get('opcion');
+      if (['frase', 'peyu', 'archivo', 'none'].includes(preOpcion)) setOpcion(preOpcion);
+      const preTexto = params.get('texto');
+      if (preTexto) setTexto(preTexto.slice(0, 20));
     }).finally(() => setProductosLoading(false));
   }, [location.search]);
 
