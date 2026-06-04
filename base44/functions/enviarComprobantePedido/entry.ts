@@ -16,6 +16,14 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 const EMAILS_PRUEBA = ['alfonsovambe@gmail.com', 'lyamundaca007@gmail.com'];
 const clp = (n) => `$${Number(n || 0).toLocaleString('es-CL')}`;
 
+// Etiqueta legible por tipo de personalización (espejo de lib/personalizacion-config).
+// No se puede importar el lib del frontend en Deno → se inlinea aquí.
+const LABEL_PERSONALIZACION = {
+  frase: 'Frase personalizada',
+  peyu: 'Diseño PEYU',
+  archivo: 'Diseño personalizado',
+};
+
 // ── Gmail API (inline, igual patrón que sendSelfServiceProposalEmail) ──
 function encodeHeader(str) {
   if (!str) return '';
@@ -71,11 +79,23 @@ function buildItemsHtml(pedido) {
     return detalle.map((it) => {
       const partes = [];
       if (it.color) partes.push(`Color: <strong>${it.color}</strong>`);
-      if (it.personalizacion) partes.push(`Grabado: "${it.personalizacion}"`);
+      if (it.personalizacion) {
+        const tipoLabel = it.tipo_personalizacion && LABEL_PERSONALIZACION[it.tipo_personalizacion]
+          ? ` (${LABEL_PERSONALIZACION[it.tipo_personalizacion]})` : '';
+        partes.push(`Grabado${tipoLabel}: "${it.personalizacion}"`);
+      }
       const sub = partes.length
         ? `<div style="font-size:12px;color:#6B7280;margin-top:2px">${partes.join(' · ')}</div>` : '';
+      // Línea del fee de personalización por ítem: muestra el monto cobrado o
+      // "Gratis (≥10u)" cuando alcanzó el MOQ. Coincide 1:1 con el carrito.
+      const fee = Number(it.fee_personalizacion || 0);
+      const feeHtml = it.personalizacion
+        ? (fee > 0
+            ? `<div style="font-size:12px;color:#1f2937;margin-top:2px">✨ Personalización: <strong>+${clp(fee)}</strong></div>`
+            : `<div style="font-size:12px;color:#0F8B6C;margin-top:2px">✨ Personalización gratis (10+ unidades)</div>`)
+        : '';
       return `<div style="padding:10px 0;border-bottom:1px solid #EAE3D9">
-        <span style="font-weight:600;color:#1f2937">${it.nombre || 'Producto'} × ${it.cantidad || 1}</span>${sub}
+        <span style="font-weight:600;color:#1f2937">${it.nombre || 'Producto'} × ${it.cantidad || 1}</span>${sub}${feeHtml}
       </div>`;
     }).join('');
   }
