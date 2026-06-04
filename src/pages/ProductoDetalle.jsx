@@ -27,7 +27,7 @@ import { trackAddToCart } from '@/lib/analytics-peyu';
 import { track } from '@/lib/activity-tracker';
 import { isCyberActive, CYBER_COPY, tieneOfertaCyber } from '@/lib/cyber-campaign';
 import CyberBadge from '@/components/cyber/CyberBadge';
-import { PRECIO_PERSONALIZACION, PERSONALIZACION_LABEL, MOQ_PERSONALIZACION_GRATIS } from '@/lib/personalizacion-config';
+import { PRECIO_PERSONALIZACION, PERSONALIZACION_LABEL, MOQ_PERSONALIZACION_GRATIS, getPrecioPersonalizacion } from '@/lib/personalizacion-config';
 
 
 // Los colores ahora se extraen dinámicamente desde la descripción del producto
@@ -246,11 +246,15 @@ export default function ProductoDetalle() {
   const precioActual = precioVolumen ? precioVolumen.precio : precioFinal;
 
   // ✨ Cargo de personalización láser (coherente con /personalizar y el carrito).
-  // En la ficha la personalización es por TEXTO → tipo "frase" ($3.990/u).
+  // El TIPO define el cargo unitario:
+  //   - logo propio subido (logoCliente) → "archivo" ($7.990/u)
+  //   - solo texto/frase                  → "frase"   ($3.990/u)
   // GRATIS desde el MOQ del producto. Se cobra unitario × cantidad bajo el MOQ.
+  const hayPersonalizacion = !!(personalizacion || logoCliente);
+  const tipoPersonalizacion = logoCliente ? 'archivo' : 'frase';
   const moqGratisPers = producto?.personalizacion_gratis_desde || producto?.moq_personalizacion || MOQ_PERSONALIZACION_GRATIS;
   const personalizacionGratis = cantidad >= moqGratisPers;
-  const cargoPersUnit = personalizacion ? (PRECIO_PERSONALIZACION.frase || 0) : 0;
+  const cargoPersUnit = hayPersonalizacion ? getPrecioPersonalizacion(tipoPersonalizacion) : 0;
   const cargoPersTotal = personalizacionGratis ? 0 : cargoPersUnit * cantidad;
   const totalConPers = precioActual * cantidad + cargoPersTotal;
 
@@ -300,11 +304,14 @@ export default function ProductoDetalle() {
       color: packSize ? null : (colores.find(c => c.id === colorSeleccionado)?.label || colorSeleccionado || null),
       colores_pack: packSize ? coloresPack : null,
       pack_resumen: packSummary,
-      personalizacion: personalizacion || null,
-      tipo_personalizacion: personalizacion ? 'frase' : null,
+      // Marca de personalización: texto si hay frase, o "Logo personalizado"
+      // cuando el cliente solo subió su logo (sin texto). Así el carrito siempre
+      // detecta que hay grabado y suma el cargo correcto por tipo.
+      personalizacion: personalizacion || (logoCliente ? 'Logo personalizado' : null),
+      tipo_personalizacion: hayPersonalizacion ? tipoPersonalizacion : null,
       moq_personalizacion: moqGratisPers,
       personalizacion_gratis_desde: moqGratisPers,
-      posicion_grabado: personalizacion ? posicionGrabado : null,
+      posicion_grabado: hayPersonalizacion ? posicionGrabado : null,
       // 🎨 Arte del cliente — viaja con el item al carrito y luego al pedido,
       // para que producción y soporte vean exactamente qué estampar.
       mockupUrl: mockupGenerado || null,
@@ -1061,11 +1068,12 @@ export default function ProductoDetalle() {
                     </div>
                   </div>
 
-                  {/* Cargo de personalización por texto (frase): $3.990/u · gratis ≥ MOQ */}
-                  {personalizacion && (
+                  {/* Cargo de personalización láser según tipo:
+                      frase $3.990/u · logo propio $7.990/u · gratis ≥ MOQ */}
+                  {hayPersonalizacion && (
                     <div className="flex items-center justify-between text-xs rounded-xl px-3 py-2" style={{ background: 'var(--ld-bg)' }}>
                       <span className="text-ld-fg-soft">
-                        {PERSONALIZACION_LABEL.frase}
+                        {PERSONALIZACION_LABEL[tipoPersonalizacion]}
                         {!personalizacionGratis && ` · $${cargoPersUnit.toLocaleString('es-CL')} × ${cantidad}`}
                       </span>
                       <span className="font-bold" style={{ color: personalizacionGratis ? 'var(--ld-action)' : 'var(--ld-fg)' }}>
