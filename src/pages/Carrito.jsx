@@ -13,7 +13,6 @@ import BillingSection, { validarBilling } from '@/components/cart/BillingSection
 import { normalizarRut } from '@/lib/rut-chile';
 import ShippingSelector from '@/components/cart/ShippingSelector';
 import ImpactoAmbiental from '@/components/cart/ImpactoAmbiental';
-import OneClickBuyButton from '@/components/cart/OneClickBuyButton';
 import CartBundleToggle from '@/components/cart/CartBundleToggle';
 import { saveOneClickProfile } from '@/lib/one-click-profile';
 import { computeQtyDiscountBySku } from '@/lib/volume-discount';
@@ -846,8 +845,6 @@ export default function Carrito() {
             {/* CTA */}
             {step === 1 ? (
               <div className="space-y-2.5">
-                {/* Compra en 1 Clic — solo aparece si hay perfil guardado válido */}
-                <OneClickBuyButton items={carrito} variant="light" />
                 <button
                   onClick={() => {
                     trackBeginCheckout(carrito, subtotal);
