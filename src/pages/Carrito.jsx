@@ -363,12 +363,9 @@ export default function Carrito() {
       return;
     }
 
-    // 📧 BLOQUE 5 · Correo de confirmación INMEDIATO (cualquier medio de pago).
-    // No depende del webhook de MercadoPago. Para transferencia incluye los
-    // datos bancarios. Idempotente y best-effort: nunca bloquea el checkout.
-    if (pedido?.id) {
-      base44.functions.invoke('enviarConfirmacionPedido', { pedido_id: pedido.id }).catch(() => {});
-    }
+    // El correo de confirmación al cliente (con datos bancarios para transferencia)
+    // lo envía la automation onNewPedidoWeb al crearse el PedidoWeb — un solo
+    // correo, completo. No lo disparamos aquí para evitar correos duplicados.
 
     // Gift Card: descontar saldo
     if (gcDescuento > 0 && giftCard) {
