@@ -100,8 +100,13 @@ export default function PublicLayout() {
         </div>
       </aside>
 
-      {/* MAIN CONTENT — sin backgroundImage propio, reserva espacio solo para el sidebar colapsado en desktop */}
-      <main className="absolute inset-0 overflow-auto pb-16 lg:pb-0 lg:pl-14 flex flex-col">
+      {/* MAIN CONTENT — sin backgroundImage propio, reserva espacio solo para el sidebar colapsado en desktop.
+          Safe-area: el contenedor más alto absorbe el inset superior (notch/Dynamic Island)
+          para que el banner promocional y el header sticky empiecen SIEMPRE bajo la hora/cámara. */}
+      <main
+        className="absolute inset-0 overflow-auto pb-16 lg:pb-0 lg:pl-14 flex flex-col"
+        style={{ paddingTop: 'env(safe-area-inset-top)' }}
+      >
         <CyberAnnouncementBar />
         <PublicMobileHeader />
         <div className="flex-1">

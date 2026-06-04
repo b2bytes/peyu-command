@@ -1,6 +1,6 @@
 import { memo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ShoppingCart, Check, Leaf, Recycle, Zap, ArrowRight } from 'lucide-react';
+import { ShoppingCart, Check, Leaf, Recycle, Zap, ArrowRight, X } from 'lucide-react';
 import { getProductImage } from '@/utils/productImages';
 import CyberBadge from '@/components/cyber/CyberBadge';
 import { isCyberActive, tieneOfertaCyber } from '@/lib/cyber-campaign';
@@ -34,6 +34,8 @@ function ProductCard({ producto, onAddToCart, agregandoId, index = 0 }) {
   const personalizable = (p.personalizacion_gratis_desde || 0) > 0;
   const leadTime = p.lead_time_sin_personal || 7;
   const stockBajo = p.stock_actual > 0 && p.stock_actual < 15;
+  // Agotado: stock_actual definido y en 0 (no aplica a productos sin control de stock).
+  const agotado = typeof p.stock_actual === 'number' && p.stock_actual <= 0;
 
   // Oferta Cyber real (solo si trae precio_oferta < precio_b2c). No inventamos %.
   const cyberOferta = isCyberActive() && tieneOfertaCyber(p);
@@ -96,8 +98,14 @@ function ProductCard({ producto, onAddToCart, agregandoId, index = 0 }) {
           <CyberBadge producto={p} />
         </div>
 
-        {/* ─── Stock bajo: indicador editorial urgencia (esquina sup. derecha) ─── */}
-        {stockBajo && (
+        {/* ─── Estado de stock (esquina sup. derecha) ─── */}
+        {agotado ? (
+          <div className="absolute top-3 right-3 z-10">
+            <span className="text-white text-[10px] font-bold px-2.5 py-1 rounded-full shadow-md bg-slate-600">
+              Agotado
+            </span>
+          </div>
+        ) : stockBajo && (
           <div className="absolute top-3 right-3 z-10">
             <span
               className="text-white text-[10px] font-bold px-2.5 py-1 rounded-full shadow-md flex items-center gap-1"
@@ -106,6 +114,11 @@ function ProductCard({ producto, onAddToCart, agregandoId, index = 0 }) {
               <Zap className="w-2.5 h-2.5" /> Últimas {p.stock_actual}
             </span>
           </div>
+        )}
+
+        {/* Velo sutil sobre la imagen cuando está agotado */}
+        {agotado && (
+          <div aria-hidden className="absolute inset-0 z-10 pointer-events-none" style={{ background: 'rgba(255,255,255,0.35)' }} />
         )}
 
         {/* ─── INFO TÉCNICA DESPLEGABLE (hover-only, desktop) ─── */}
@@ -138,16 +151,20 @@ function ProductCard({ producto, onAddToCart, agregandoId, index = 0 }) {
             <ArrowRight className="w-3 h-3 transition-transform duration-300 group-hover:translate-x-0.5" strokeWidth={2.4} />
           </span>
 
-          {/* Quick-add FAB */}
+          {/* Quick-add FAB — deshabilitado si el producto está agotado */}
           <button
-            onClick={(e) => onAddToCart(e, p)}
+            onClick={(e) => {
+              if (agotado) { e.preventDefault(); e.stopPropagation(); return; }
+              onAddToCart(e, p);
+            }}
+            disabled={agotado}
             className={`w-10 h-10 sm:w-11 sm:h-11 rounded-full flex items-center justify-center text-white transition-all duration-300 shadow-lg active:scale-90 ${
-              isAdding ? 'scale-110' : 'ld-btn-primary'
+              agotado ? 'bg-slate-400 cursor-not-allowed opacity-70 active:scale-100' : isAdding ? 'scale-110' : 'ld-btn-primary'
             }`}
-            style={isAdding ? { background: 'var(--ld-action)' } : undefined}
-            aria-label="Agregar al carrito"
+            style={isAdding && !agotado ? { background: 'var(--ld-action)' } : undefined}
+            aria-label={agotado ? 'Producto agotado' : 'Agregar al carrito'}
           >
-            {isAdding ? <Check className="w-5 h-5" /> : <ShoppingCart className="w-4 h-4" />}
+            {agotado ? <X className="w-4 h-4" /> : isAdding ? <Check className="w-5 h-5" /> : <ShoppingCart className="w-4 h-4" />}
           </button>
         </div>
       </div>

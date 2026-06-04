@@ -37,7 +37,6 @@ export default function PublicMobileHeader() {
     <>
       <header
         className="lg:hidden sticky top-0 z-30 ld-glass-strong border-b border-ld-border flex items-center justify-between px-3 h-14 flex-shrink-0"
-        style={{ paddingTop: 'env(safe-area-inset-top)' }}
       >
         <button
           onClick={() => setOpen(true)}

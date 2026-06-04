@@ -15,6 +15,7 @@ import CyberFeaturedRow from '@/components/cyber/CyberFeaturedRow';
 import { isCyberActive, tieneOfertaCyber } from '@/lib/cyber-campaign';
 import { searchProductos } from '@/lib/product-search';
 import ShopSearchBar from '@/components/shop/ShopSearchBar';
+import { ordenarCarcasas } from '@/lib/carcasa-sort';
 
 const CATEGORIAS_META = [
   { id: 'Todos',           label: 'Todos',           icon: '🌍' },
@@ -114,6 +115,10 @@ export default function Shop() {
             const bCarcasa = b.categoria === 'Carcasas B2C' ? 1 : 0;
             return aCarcasa - bCarcasa;
           });
+        } else if (selectedCategory === 'Carcasas B2C') {
+          // 📱 Orden estilo sitio oficial: por marca (Apple→Samsung→Huawei→
+          // Xiaomi) y dentro de cada marca por modelo (nuevo→viejo).
+          result = ordenarCarcasas(result);
         }
         break;
     }
