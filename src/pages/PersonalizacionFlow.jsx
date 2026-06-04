@@ -17,6 +17,9 @@ import { PRECIO_PERSONALIZACION, PERSONALIZACION_LABEL, MOQ_PERSONALIZACION_GRAT
 import DisenosPeyuPicker from '@/components/personalizacion/DisenosPeyuPicker';
 import ColorPickerCarcasa from '@/components/personalizacion/ColorPickerCarcasa';
 import QuantityStepper from '@/components/personalizacion/QuantityStepper';
+import PersonalizacionOptionPicker from '@/components/personalizacion/PersonalizacionOptionPicker';
+import PriceBreakdownLive from '@/components/personalizacion/PriceBreakdownLive';
+import MockupGenerator from '@/components/MockupGenerator';
 import PublicSEO from '@/components/PublicSEO';
 
 const STEP_LABELS = [
@@ -116,6 +119,10 @@ export default function PersonalizacionFlow() {
   const [logoUrlSubido, setLogoUrlSubido] = useState('');
   // Diseño elegido de la galería PEYU (url) → define tipo de cobro "peyu".
   const [disenoPeyuUrl, setDisenoPeyuUrl] = useState('');
+  // Opción de personalización elegida explícitamente: frase | peyu | archivo | none
+  const [opcion, setOpcion] = useState(null);
+  // Modal de regeneración con IA (max-h/max-w ajustado, ya viene en MockupGenerator)
+  const [mockupModalOpen, setMockupModalOpen] = useState(false);
   const [nombre, setNombre] = useState('');
   const [email, setEmail] = useState('');
   const [telefono, setTelefono] = useState('');
@@ -209,13 +216,22 @@ export default function PersonalizacionFlow() {
     return getProductImageForColor(producto, color || colorId);
   }, [producto, imagenesPorColor, carcasaColorKey, color, colorId]);
 
-  // Tipo y cargo de personalización según diseño elegido (frase/peyu/archivo).
+  // Tipo de personalización = la OPCIÓN elegida explícitamente (fuente de verdad).
+  // 'none' → sin personalización (tipo null, fee $0). frase/peyu/archivo → cobran.
   const tipoPersonalizacion = useMemo(() => {
-    if (archivo || logoUrlSubido) return 'archivo';
-    if (disenoPeyuUrl) return 'peyu';
-    if (texto) return 'frase';
-    return null;
-  }, [archivo, logoUrlSubido, disenoPeyuUrl, texto]);
+    if (opcion === 'none') return null;
+    return opcion || null;
+  }, [opcion]);
+
+  // ¿El cliente ya completó el contenido de la opción elegida?
+  // none → siempre completo · frase → texto · peyu → diseño · archivo → logo subido.
+  const personalizacionCompleta = useMemo(() => {
+    if (opcion === 'none') return true;
+    if (opcion === 'frase') return texto.trim().length > 0;
+    if (opcion === 'peyu') return !!disenoPeyuUrl;
+    if (opcion === 'archivo') return !!(archivo || logoUrlSubido);
+    return false;
+  }, [opcion, texto, disenoPeyuUrl, archivo, logoUrlSubido]);
 
   const moqGratis = producto?.personalizacion_gratis_desde || producto?.moq_personalizacion || MOQ_PERSONALIZACION_GRATIS;
   // Cargo unitario de personalización según tipo (frase/peyu/archivo).
@@ -581,54 +597,64 @@ export default function PersonalizacionFlow() {
     // ── Step 2 — Diseño + Mockup IA ─────────────────────────────────
     <div key="pers" className="space-y-5">
       <div className="text-center">
-        <p className="text-xs font-bold text-teal-400 uppercase tracking-widest mb-2">Paso 3 · Tu diseño</p>
-        <h2 className="text-2xl sm:text-3xl font-poppins font-bold text-white mb-2">Personaliza tu producto</h2>
-        <p className="text-white/50 text-sm">Grabado láser UV permanente</p>
+        <p className="text-xs font-bold text-ld-action uppercase tracking-widest mb-2">Paso 3 · Tu diseño</p>
+        <h2 className="text-2xl sm:text-3xl font-poppins font-bold text-ld-fg mb-2">Personaliza tu producto</h2>
+        <p className="text-ld-fg-muted text-sm">Grabado láser UV permanente</p>
       </div>
 
+      {/* Mockup en vivo — grabado realista (NO cuadro negro). Si hay mockup IA, lo muestra. */}
       {mockupUrl ? (
-        <div className="relative rounded-3xl overflow-hidden border border-white/20 bg-white/5 shadow-2xl">
+        <div className="relative rounded-3xl overflow-hidden border border-ld-border bg-ld-glass-soft shadow-2xl">
           <img src={mockupUrl} alt="Mockup generado con IA" className="w-full h-auto" />
-          <div className="absolute top-3 left-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-[10px] font-bold px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-lg">
-            <Sparkles className="w-3 h-3" /> Generado con IA
+          <div className="absolute top-3 left-3 ld-glass-strong text-ld-fg text-[10px] font-bold px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-lg">
+            <Sparkles className="w-3 h-3 text-ld-action" /> Generado con IA
           </div>
         </div>
       ) : (
         <LaserEngravePreview
           productImageUrl={displayImg}
           cleanImageUrl={cleanBaseUrl}
-          logoFile={archivo}
-          logoUrl={logoUrlSubido || disenoPeyuUrl}
-          texto={texto}
+          logoFile={opcion === 'archivo' ? archivo : null}
+          logoUrl={opcion === 'archivo' ? logoUrlSubido : (opcion === 'peyu' ? disenoPeyuUrl : '')}
+          texto={opcion === 'frase' ? texto : ''}
           areaLabel={producto?.area_laser_mm}
           defaultTint={!imagenesPorColor && color?.hex && parseInt(color.hex.replace('#', '').slice(0, 2), 16) < 130 ? 'light' : 'dark'}
-          defaultSize={grabadoDefaults.size}
-          defaultPosX={grabadoDefaults.x}
-          defaultPosY={grabadoDefaults.y}
         />
       )}
 
-      <div className="space-y-3">
+      {/* 1 — Las 3 opciones de personalización con sus precios + regla gratis ≥10u */}
+      <PersonalizacionOptionPicker
+        value={opcion}
+        gratis={personalizacionGratis}
+        moq={moqGratis}
+        onSelect={(id) => {
+          setOpcion(id);
+          // Al cambiar de opción, limpiamos el contenido de las otras para no arrastrar datos.
+          if (id !== 'frase') setTexto('');
+          if (id !== 'peyu') setDisenoPeyuUrl('');
+          if (id !== 'archivo') { setArchivo(null); setLogoUrlSubido(''); }
+          resetMockupIfNeeded();
+        }}
+      />
+
+      {/* Control concreto según la opción elegida */}
+      {opcion === 'frase' && (
         <div>
-          <label className="text-xs font-bold text-white/70 uppercase tracking-wider block mb-2">
+          <label className="text-xs font-bold text-ld-fg-muted uppercase tracking-wider block mb-2">
             Texto a grabar (máx. 20)
           </label>
           <Input
             value={texto}
             onChange={e => { setTexto(e.target.value.slice(0, 20)); resetMockupIfNeeded(); }}
             placeholder="Tu nombre, empresa, frase..."
-            className="text-center font-bold tracking-widest h-12 rounded-2xl bg-white/10 border-white/20 text-white placeholder:text-white/30 focus:bg-white/15 focus:border-teal-400/50 focus:ring-teal-400/20" />
-          <p className={`text-xs text-right mt-1 font-bold ${texto.length >= 18 ? 'text-orange-400' : 'text-white/40'}`}>
+            className="text-center font-bold tracking-widest h-12 rounded-2xl ld-input" />
+          <p className={`text-xs text-right mt-1 font-bold ${texto.length >= 18 ? 'text-ld-highlight' : 'text-ld-fg-muted'}`}>
             {texto.length}/20
           </p>
         </div>
+      )}
 
-        <div className="flex items-center gap-3">
-          <div className="flex-1 h-px bg-white/15" />
-          <span className="text-[10px] text-white/40 font-bold uppercase tracking-widest">o elige un diseño PEYU</span>
-          <div className="flex-1 h-px bg-white/15" />
-        </div>
-
+      {opcion === 'peyu' && (
         <DisenosPeyuPicker
           selectedUrl={disenoPeyuUrl}
           onSelect={(url) => {
@@ -637,70 +663,63 @@ export default function PersonalizacionFlow() {
             resetMockupIfNeeded();
           }}
         />
+      )}
 
-        <div className="flex items-center gap-3">
-          <div className="flex-1 h-px bg-white/15" />
-          <span className="text-[10px] text-white/40 font-bold uppercase tracking-widest">o sube tu logo</span>
-          <div className="flex-1 h-px bg-white/15" />
-        </div>
-
+      {opcion === 'archivo' && (
         <div
-          className={`border-2 border-dashed rounded-2xl p-6 text-center cursor-pointer transition-all backdrop-blur-sm ${
-            archivo
-              ? 'border-teal-400/50 bg-teal-500/10'
-              : 'border-white/20 bg-white/5 hover:border-teal-400/40 hover:bg-white/10'
+          className={`border-2 border-dashed rounded-2xl p-6 text-center cursor-pointer transition-all ${
+            (archivo || logoUrlSubido)
+              ? 'border-ld-action bg-ld-action-soft'
+              : 'border-ld-border bg-ld-glass-soft hover:border-ld-action'
           }`}
           onClick={() => document.getElementById('pers-logo').click()}>
-          <Upload className={`w-7 h-7 mx-auto mb-2 ${archivo ? 'text-teal-400' : 'text-white/40'}`} />
+          <Upload className={`w-7 h-7 mx-auto mb-2 ${(archivo || logoUrlSubido) ? 'text-ld-action' : 'text-ld-fg-muted'}`} />
           {archivo ? (
-            <p className="text-sm text-teal-300 font-bold">✓ {archivo.name}</p>
+            <p className="text-sm text-ld-action font-bold">✓ {archivo.name}</p>
+          ) : logoUrlSubido ? (
+            <p className="text-sm text-ld-action font-bold">✓ Logo cargado</p>
           ) : (
-            <p className="text-sm text-white/50">PNG, SVG, AI · Subir tu logo</p>
+            <p className="text-sm text-ld-fg-muted">PNG, SVG, AI · Subir tu logo</p>
           )}
           <input id="pers-logo" type="file" className="hidden" accept=".png,.svg,.ai,.pdf,.jpg"
             onChange={e => { setArchivo(e.target.files[0]); setLogoUrlSubido(''); setDisenoPeyuUrl(''); resetMockupIfNeeded(); }} />
         </div>
+      )}
 
-        {/* Desglose del cargo de personalización por unidad (los 3 tramos) */}
-        {tipoPersonalizacion && (
-          <div className="rounded-2xl border border-teal-400/25 bg-teal-500/10 p-3.5 space-y-1.5">
-            <div className="flex items-center justify-between text-xs">
-              <span className="text-white/70">Personalización · {PERSONALIZACION_LABEL[tipoPersonalizacion]} <span className="text-white/40">(c/u)</span></span>
-              <span className="font-bold text-white">
-                +${cargoPersonalizacionUnit.toLocaleString('es-CL')}
-              </span>
-            </div>
-            <p className="text-[10px] text-teal-100/70 leading-relaxed">
-              Frase $3.990 · Diseño PEYU $4.990 · Diseño propio $7.990 c/u · <strong className="text-teal-200">Gratis desde {moqGratis} unidades</strong>
-            </p>
+      {/* 2 — Desglose de precio EN VIVO (Neto + IVA 19% + Total) en este mismo paso */}
+      {opcion && (
+        <>
+          <div className="flex items-center justify-between px-1">
+            <span className="text-xs font-bold text-ld-fg-muted uppercase tracking-wider">Cantidad</span>
+            <QuantityStepper value={cantidad} onChange={(v) => { setCantidad(v); }} min={1} />
           </div>
-        )}
+          <PriceBreakdownLive
+            precioUnit={precioBaseProducto}
+            cantidad={cantidad}
+            subtotalProducto={subtotalProducto}
+            tipoLabel={tipoPersonalizacion ? PERSONALIZACION_LABEL[tipoPersonalizacion] : null}
+            cargoUnit={cargoPersonalizacionUnit}
+            cargoTotal={cargoPersonalizacion}
+            gratis={personalizacionGratis}
+          />
+        </>
+      )}
 
+      {/* 4 — Regenerar mockup con IA: abre el MODAL ajustado (max-h 90vh, scroll) */}
+      {opcion && opcion !== 'none' && (
         <Button
           type="button"
-          onClick={handleGenerateMockup}
-          disabled={mockupLoading || (!texto && !archivo)}
-          className="w-full h-12 rounded-2xl bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-bold gap-2 shadow-lg shadow-purple-500/30 border-0 disabled:opacity-50">
-          {mockupLoading ? (
-            <><Loader2 className="w-4 h-4 animate-spin" /> Generando con IA... (~15s)</>
-          ) : mockupUrl ? (
-            <><RefreshCw className="w-4 h-4" /> Regenerar mockup</>
-          ) : (
-            <><Sparkles className="w-4 h-4" /> Ver mockup realista con IA</>
-          )}
+          onClick={() => setMockupModalOpen(true)}
+          disabled={!personalizacionCompleta}
+          className="w-full h-12 rounded-2xl ld-btn-primary font-bold gap-2 disabled:opacity-50">
+          <Sparkles className="w-4 h-4" /> {mockupUrl ? 'Regenerar mockup con IA' : 'Ver mockup realista con IA'}
         </Button>
-
-        {mockupError && (
-          <div className="bg-red-500/15 border border-red-400/30 text-red-300 text-xs rounded-xl px-3 py-2.5">
-            {mockupError}
-          </div>
-        )}
-        <p className="text-[10px] text-white/40 text-center">
-          {mockupUrl
-            ? '✓ Mockup incluido en tu pedido · resultado referencial'
-            : 'Simulación fotorrealista sobre tu producto · opcional'}
-        </p>
-      </div>
+      )}
+      <p className="text-[10px] text-ld-fg-muted text-center">
+        {mockupUrl
+          ? '✓ Mockup incluido en tu pedido · resultado referencial'
+          : 'Mockup en vivo arriba · simulación fotorrealista opcional con IA'}
+      </p>
     </div>,
 
     // ── Step 3 — Datos ──────────────────────────────────────────────
@@ -844,7 +863,7 @@ export default function PersonalizacionFlow() {
           {step < 3 ? (
             <Button onClick={() => setStep(s => s + 1)} size="lg"
               className="w-full gap-2 font-bold rounded-2xl h-14 text-base bg-gradient-to-r from-teal-500 to-cyan-500 hover:from-teal-600 hover:to-cyan-600 text-white shadow-2xl shadow-teal-500/30 border-0 hover:scale-[1.01] transition-all"
-              disabled={(step === 0 && !producto) || (step === 2 && !tipoPersonalizacion)}>
+              disabled={(step === 0 && !producto) || (step === 2 && (!opcion || !personalizacionCompleta))}>
               Continuar <ArrowRight className="w-4 h-4" />
             </Button>
           ) : (
@@ -868,6 +887,20 @@ export default function PersonalizacionFlow() {
           <span className="flex items-center gap-1"><ShieldCheck className="w-3 h-3 text-cyan-400" /> 10 años</span>
         </div>
       </div>
+
+      {/* Modal de mockup IA ajustado (max-h 90vh / max-w / scroll interno) */}
+      <MockupGenerator
+        open={mockupModalOpen}
+        onOpenChange={setMockupModalOpen}
+        productName={producto?.nombre}
+        productCategory={producto?.categoria || 'Personalización'}
+        productSku={producto?.sku}
+        productImageUrl={displayImg}
+        initialText={opcion === 'frase' ? texto : ''}
+        initialColor={colorLabel || ''}
+        onLogoUploaded={(url) => { if (url) { setLogoUrlSubido(url); setArchivo(null); } }}
+        onGenerated={(url) => { if (url) setMockupUrl(url); }}
+      />
     </div>
   );
 }
