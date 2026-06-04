@@ -17,8 +17,14 @@ export function detectCards(text) {
   if (has(['stock', 'inventario', 'agotad', 'reponer'])) {
     cards.push({ type: 'stock' });
   }
-  if (has(['cotizaci', 'propuesta', 'b2b', 'corporativ'])) {
-    cards.push({ type: 'quotes' });
+  if (has(['cotizaci', 'propuesta', 'corporativ'])) {
+    cards.push({ type: 'proposals' });
+  }
+  if (has(['lead', 'b2b', 'prospecto'])) {
+    cards.push({ type: 'leads' });
+  }
+  if (has(['consulta', 'pregunta', 'sin responder', 'mensaje', 'whatsapp'])) {
+    cards.push({ type: 'consultas' });
   }
   if (has(['cliente', 'comprador'])) {
     cards.push({ type: 'clients' });

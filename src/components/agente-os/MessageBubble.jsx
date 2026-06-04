@@ -4,7 +4,7 @@ import CardDispatcher from './CardDispatcher';
 
 // Burbuja de conversación. Usuario → derecha (acento). Agente → izquierda con
 // avatar 🐢 y nombre, más tarjetas ricas embebidas.
-export default function MessageBubble({ message, crm, metrics, onAsk }) {
+export default function MessageBubble({ message, crm, metrics, lists, onAsk, onDone }) {
   const isUser = message.role === 'user';
 
   if (isUser) {
@@ -43,7 +43,7 @@ export default function MessageBubble({ message, crm, metrics, onAsk }) {
           </div>
         )}
         {message.cards?.map((card, i) => (
-          <CardDispatcher key={i} card={card} crm={crm} metrics={metrics} onAsk={onAsk} />
+          <CardDispatcher key={i} card={card} crm={crm} metrics={metrics} lists={message.lists || lists} onAsk={onAsk} onDone={onDone} />
         ))}
       </div>
     </motion.div>

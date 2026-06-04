@@ -104,6 +104,37 @@ Deno.serve(async (req) => {
       stock_bajo: stockBajo.length,
     };
 
+    // ── Listas REALES (no solo números) para que el agente muestre tarjetas ──
+    // Esto arregla el bug "dice que tiene 2 consultas pendientes pero no las dice":
+    // ahora devolvemos los registros concretos para hidratar las tarjetas.
+    const lists = {
+      consultas_pendientes: consultasSinResponder.slice(0, 8).map(c => ({
+        id: c.id, nombre: c.nombre, email: c.email, telefono: c.telefono,
+        canal: c.canal, mensaje: c.mensaje || c.consulta || c.descripcion || '',
+        calidad: c.calidad, created_date: c.created_date,
+      })),
+      pedidos_pendientes: pedidos
+        .filter(p => !['Entregado', 'Cancelado', 'Reembolsado'].includes(p.estado))
+        .slice(0, 8)
+        .map(p => ({
+          id: p.id, numero_pedido: p.numero_pedido, cliente_nombre: p.cliente_nombre,
+          cliente_email: p.cliente_email, total: p.total, estado: p.estado,
+          medio_pago: p.medio_pago, tracking: p.tracking, ciudad: p.ciudad,
+        })),
+      leads_top: leadsActivos.slice(0, 8).map(l => ({
+        id: l.id, company_name: l.company_name, contact_name: l.contact_name,
+        email: l.email, phone: l.phone, lead_score: l.lead_score, status: l.status,
+        product_interest: l.product_interest, qty_estimate: l.qty_estimate,
+      })),
+      propuestas_pendientes_list: propuestas.filter(p => p.status === 'Enviada').slice(0, 8).map(p => ({
+        id: p.id, numero: p.numero, empresa: p.empresa, contacto: p.contacto,
+        email: p.email, total: p.total, status: p.status,
+      })),
+      stock_bajo_list: stockBajo.slice(0, 10).map(p => ({
+        id: p.id, sku: p.sku, nombre: p.nombre, stock_actual: p.stock_actual,
+      })),
+    };
+
     // ── Pattern matching para construir respuesta narrativa ────────────────
     const matches = (kw) => kw.some(k => q.includes(k));
 
@@ -195,7 +226,7 @@ Deno.serve(async (req) => {
       sources.push('multiple');
     }
 
-    return Response.json({ ok: true, answer, metrics, sources, query });
+    return Response.json({ ok: true, answer, metrics, lists, sources, query });
   } catch (error) {
     console.error('peyuBrainOps error:', error);
     return Response.json({ error: error.message }, { status: 500 });

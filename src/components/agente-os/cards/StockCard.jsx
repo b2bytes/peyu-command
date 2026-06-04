@@ -1,12 +1,16 @@
-import { AlertTriangle, ChevronRight } from 'lucide-react';
+import { AlertTriangle, ChevronRight, Plus } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import ActionButton from '../ActionButton';
 
-// Lista de productos con stock bajo (<10u).
-export default function StockCard({ productos = [] }) {
-  const bajos = productos
-    .filter((p) => typeof p.stock_actual === 'number' && p.stock_actual < 10)
-    .sort((a, b) => (a.stock_actual || 0) - (b.stock_actual || 0))
-    .slice(0, 8);
+// Productos con stock bajo (<10u) + acción rápida: reponer +50u.
+// Acepta `productos` (CRM) o `lista` (ya filtrada por brain).
+export default function StockCard({ productos = [], lista, onDone }) {
+  const bajos = lista
+    ? lista
+    : productos
+        .filter((p) => typeof p.stock_actual === 'number' && p.stock_actual < 10)
+        .sort((a, b) => (a.stock_actual || 0) - (b.stock_actual || 0))
+        .slice(0, 8);
 
   return (
     <div className="ld-glass rounded-2xl p-4 sm:p-5">
@@ -26,14 +30,23 @@ export default function StockCard({ productos = [] }) {
       ) : (
         <div className="space-y-2">
           {bajos.map((p) => (
-            <div key={p.id} className="flex items-center justify-between gap-3 rounded-xl px-3 py-2 bg-ld-bg-soft/60 border border-ld-border">
+            <div key={p.id} className="flex items-center justify-between gap-3 rounded-xl px-3 py-2.5 bg-ld-bg-soft/60 border border-ld-border">
               <div className="min-w-0">
                 <div className="text-sm font-medium text-ld-fg truncate">{p.nombre}</div>
                 <div className="text-[11px] text-ld-fg-muted">{p.sku}</div>
               </div>
-              <span className={`text-sm font-bold flex-shrink-0 ${(p.stock_actual || 0) <= 3 ? 'text-ld-highlight' : 'text-ld-fg'}`}>
-                {p.stock_actual ?? 0}u
-              </span>
+              <div className="flex items-center gap-2 flex-shrink-0">
+                <span className={`text-sm font-bold ${(p.stock_actual || 0) <= 3 ? 'text-ld-highlight' : 'text-ld-fg'}`}>
+                  {p.stock_actual ?? 0}u
+                </span>
+                <ActionButton
+                  action="ajustarStock"
+                  payload={{ id: p.id, stock_actual: (p.stock_actual || 0) + 50 }}
+                  label="+50u"
+                  icon={Plus}
+                  onDone={onDone}
+                />
+              </div>
             </div>
           ))}
         </div>
