@@ -96,6 +96,15 @@ export default function SelfServiceProductCard({ producto, inCart, onAdd, onUpda
           </div>
         </div>
 
+        {/* Strip de tier pricing — va ANTES del botón para que nunca quede
+            un precio suelto debajo de "Agregar". */}
+        {(producto.precio_50_199 || producto.precio_200_499 || producto.precio_500_mas) && (
+          <div className="mt-2 flex items-center gap-1.5">
+            <Sparkles className="w-3 h-3 text-amber-300/80 flex-shrink-0" />
+            <p className="text-[10px] text-white/50 font-medium">Precios por volumen disponibles</p>
+          </div>
+        )}
+
         {/* Acciones — fila propia full-width, separada del precio (sin overlap).
             Tap targets ≥44px de alto (HIG) para uso cómodo en móvil. */}
         <div className="mt-3">
@@ -129,18 +138,6 @@ export default function SelfServiceProductCard({ producto, inCart, onAdd, onUpda
             </div>
           )}
         </div>
-
-        {/* Strip de tier pricing — sutil */}
-        {(producto.precio_50_199 || producto.precio_200_499 || producto.precio_500_mas) && (
-          <div className="mt-3 pt-3 border-t border-white/8">
-            <div className="flex items-center gap-1.5 flex-wrap">
-              <Sparkles className="w-3 h-3 text-amber-300/80 flex-shrink-0" />
-              <p className="text-[10px] text-white/50 font-medium">
-                Precios por volumen disponibles
-              </p>
-            </div>
-          </div>
-        )}
       </div>
     </article>
   );

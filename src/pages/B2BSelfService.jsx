@@ -21,6 +21,22 @@ import MobileOrderBar from '@/components/b2b/selfservice/MobileOrderBar';
 
 const STEPS = ['Productos', 'Empresa', 'Personalización', 'Propuesta'];
 const PERSIST_KEY = 'peyu_b2b_flow';
+const SESSION_KEY = 'peyu_b2b_session';
+
+// ID de sesión estable para anclar la captura progresiva del lead B2B.
+// Sobrevive recargas; permite agrupar todo lo que el cliente rellena.
+function getB2BSessionId() {
+  try {
+    let sid = localStorage.getItem(SESSION_KEY);
+    if (!sid) {
+      sid = `b2bss_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
+      localStorage.setItem(SESSION_KEY, sid);
+    }
+    return sid;
+  } catch {
+    return `b2bss_${Date.now()}`;
+  }
+}
 
 // Precio por volumen basado en la TABLA REAL del producto (misma que ProductoDetalle).
 // Fallback a descuentos genéricos solo si el producto no tiene precios de volumen configurados.
@@ -201,6 +217,34 @@ export default function B2BSelfService() {
   useEffect(() => {
     if (propuesta) { try { localStorage.removeItem(PERSIST_KEY); } catch { /* ignore */ } }
   }, [propuesta]);
+
+  // ── Captura PROGRESIVA del lead B2B ────────────────────────────────────
+  // Guarda en el backend todo lo que el cliente va rellenando (form + carrito),
+  // con debounce, para no perder el lead si se va antes de generar la propuesta.
+  // Solo dispara cuando hay algo identificable (email o algún dato de empresa).
+  useEffect(() => {
+    if (!restored || propuesta) return;
+    const hasData = form.email || form.company_name || form.contact_name || form.phone || cart.length > 0;
+    if (!hasData) return;
+
+    const t = setTimeout(() => {
+      try {
+        base44.functions.invoke('captureB2BPartialLead', {
+          session_id: getB2BSessionId(),
+          contact_name: form.contact_name,
+          company_name: form.company_name,
+          email: form.email,
+          phone: form.phone,
+          rut: form.rut,
+          qty_estimate: cart.reduce((s, c) => s + c.cantidad, 0) || undefined,
+          product_interest: cart.map(c => `${c.cantidad}× ${c.producto.nombre}`).join(', ') || undefined,
+          step_label: STEPS[step],
+        }).catch(() => { /* best-effort, no romper UI */ });
+      } catch { /* ignore */ }
+    }, 1500);
+
+    return () => clearTimeout(t);
+  }, [form.contact_name, form.company_name, form.email, form.phone, form.rut, cart, step, restored, propuesta]);
 
   const categorias = ['todos', ...Array.from(new Set(catalogo.map(p => p.categoria).filter(Boolean)))];
   const catalogoFiltrado = filtroCategoria === 'todos' ? catalogo : catalogo.filter(p => p.categoria === filtroCategoria);
