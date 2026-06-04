@@ -372,28 +372,36 @@ export default function ProductoDetalle() {
     if (!color) return;
 
     // Fuente de verdad 1: mapa estructurado imagenes_por_color (Diego / backend).
-    // Si existe, buscamos esa URL exacta en la galería para saltar a ella.
-    let targetIndex = -1;
+    // Tiene la imagen REAL del producto en ese color.
     const mapa = producto.imagenes_por_color || {};
     const urlMapeada = mapa[color.label] || mapa[color.id];
+
+    let targetIndex = -1;
+    // Caso A: la URL real del color está dentro de la galería → saltamos a su índice.
+    // (Solo aplica a fotos reales; las generated_image.png IA no viven en la galería.)
     if (urlMapeada) {
       targetIndex = galeria.findIndex(u => u === urlMapeada);
     }
 
     // Fuente de verdad 2: match scored por filename de la galería.
+    // Esto cubre el caso del usuario: si el color elegido aparece en la galería
+    // del producto (filename con el color), saltamos a esa imagen automáticamente.
     if (targetIndex < 0) {
       const match = findColorImageMatch(galeria, color);
       if (match) targetIndex = match.index;
     }
 
-    // ⚠️ Bug 1 — Honestidad visual: si NO hay foto real para este color
-    // (caso típico de carcasas migradas, cuya galería son ángulos del mismo
-    // modelo sin color en el filename), NO mostramos el badge "Mostrando en X"
-    // ni forzamos un cambio de imagen falso. Dejamos la imagen tal cual.
+    // Honestidad visual: si NO hay foto real para este color (galería de ángulos
+    // del mismo modelo sin color en el filename), NO mostramos el badge ni
+    // forzamos un cambio falso. Dejamos la imagen tal cual.
     if (targetIndex < 0) {
       setColorMatchFeedback(null);
       return;
     }
+
+    // Encontramos la imagen real del color en la galería → la mostramos.
+    // Soltamos la navegación manual para que la galería grande sincronice.
+    userInteractedRef.current = false;
 
     if (targetIndex !== vistaActiva) {
       setImageFading(true);
