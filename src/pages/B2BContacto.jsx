@@ -49,6 +49,13 @@ const PRODUCTOS_FALLBACK = [
 
 const CLIENTES = ['Adidas', 'Nestlé', 'BancoEstado', 'DUOC UC', 'UAI', 'Falabella'];
 
+// Flujo paso a paso (3 pasos) que reemplaza el formulario largo.
+const STEPS = [
+  { icon: Package, title: 'Elige tu producto', sub: 'Arma tu pedido con los productos sostenibles que quieras personalizar.' },
+  { icon: ImageIcon, title: 'Sube tu logo', sub: 'Generamos un mockup real de tu logo grabado láser en menos de 24h.' },
+  { icon: CheckCircle, title: 'Recibe tu propuesta', sub: 'Propuesta + PDF con precios por volumen, lista para aprobar.' },
+];
+
 function calcularScore(form, tieneArchivo) {
   let score = 10;
   if ((form.qty_estimate || 0) >= 500) score += 40;
@@ -386,211 +393,42 @@ export default function B2BContacto() {
               ))}
             </div>
 
-            {/* Form Card — paddings reducidos en mobile */}
-            <div className="bg-white/5 backdrop-blur-md border border-white/15 rounded-2xl sm:rounded-3xl p-4 sm:p-6 md:p-8 shadow-2xl">
-              <div className="flex items-center gap-3 mb-4 sm:mb-6">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-teal-500/30 to-cyan-500/30 border border-teal-400/40 flex items-center justify-center flex-shrink-0">
-                  <Send className="w-5 h-5 text-teal-300" />
-                </div>
-                <div className="min-w-0">
-                  <h2 className="font-poppins font-bold text-base sm:text-lg text-white">Solicitar cotización</h2>
-                  <p className="text-white/50 text-[11px] sm:text-xs">Respondemos en &lt;24h con propuesta + mockup</p>
-                </div>
+            {/* Cómo funciona — flujo paso a paso ordenado y responsive */}
+            <div className="space-y-4">
+              <div className="text-center">
+                <p className="text-[11px] sm:text-xs uppercase tracking-[0.2em] font-bold text-teal-300">Cómo funciona</p>
+                <h2 className="text-xl sm:text-2xl font-poppins font-bold text-white mt-1">Tu cotización en 3 pasos</h2>
               </div>
-
-              {error && (
-                <div className="bg-red-500/20 border border-red-400/40 text-red-300 px-4 py-3 rounded-xl mb-5 text-sm backdrop-blur-sm">{error}</div>
-              )}
-
-              <form onSubmit={handleSubmit} className="space-y-5">
-                {/* Contact Fields */}
-                <div className="grid md:grid-cols-2 gap-4">
-                  {[
-                    { label: 'Nombre contacto *', key: 'contact_name', placeholder: 'Tu nombre completo' },
-                    { label: 'Empresa *', key: 'company_name', placeholder: 'Nombre de la empresa' },
-                    { label: 'Email *', key: 'email', placeholder: 'correo@empresa.cl', type: 'email' },
-                    { label: 'Teléfono / WhatsApp *', key: 'phone', placeholder: '+56 9 xxxx xxxx' },
-                    { label: 'RUT Empresa', key: 'rut', placeholder: '12.345.678-9' },
-                  ].map(f => (
-                    <div key={f.key} className="space-y-1.5">
-                      <label className="text-xs font-semibold text-white/50 uppercase tracking-wide">{f.label}</label>
-                      <Input
-                        type={f.type || 'text'}
-                        value={form[f.key]}
-                        onChange={e => update(f.key, e.target.value)}
-                        placeholder={f.placeholder}
-                        className="h-11 text-sm rounded-xl bg-white/10 border-white/20 text-white placeholder:text-white/30 focus:bg-white/15 focus:border-teal-400/60 focus:ring-teal-400/30"
-                      />
+              <div className="grid sm:grid-cols-3 gap-3 sm:gap-4">
+                {STEPS.map((s, i) => (
+                  <div key={i} className="relative bg-white/5 backdrop-blur-sm border border-white/15 rounded-2xl p-5 hover:bg-white/10 transition-all">
+                    <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-teal-400 to-cyan-500 flex items-center justify-center text-white font-poppins font-bold text-sm mb-3 shadow-lg">
+                      {i + 1}
                     </div>
-                  ))}
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-semibold text-white/50 uppercase tracking-wide">Fecha requerida</label>
-                    <Input type="date" value={form.delivery_date} onChange={e => update('delivery_date', e.target.value)}
-                      min={new Date().toISOString().split('T')[0]}
-                      className="h-11 text-sm rounded-xl bg-white/10 border-white/20 text-white focus:bg-white/15 focus:border-teal-400/60 [color-scheme:dark]" />
+                    <s.icon className="w-5 h-5 text-teal-300 mb-2" />
+                    <p className="font-poppins font-bold text-white text-sm leading-tight">{s.title}</p>
+                    <p className="text-xs text-white/60 mt-1 leading-relaxed">{s.sub}</p>
                   </div>
-                </div>
-
-                {/* Product + Qty */}
-                <div className="grid md:grid-cols-2 gap-4">
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-semibold text-white/50 uppercase tracking-wide flex items-center gap-2">
-                      Producto de interés
-                      {fromChat && form.product_interest && (
-                        <span className="text-[10px] text-purple-300 font-bold bg-purple-500/20 border border-purple-400/30 px-2 py-0.5 rounded-full normal-case tracking-normal">
-                          ✨ Precargado desde chat
-                        </span>
-                      )}
-                    </label>
-                    <select value={form.product_interest} onChange={e => update('product_interest', e.target.value)}
-                      className="flex h-11 w-full rounded-xl border border-white/20 bg-white/10 text-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-400/30 focus:border-teal-400/60">
-                      <option value="" className="bg-slate-900">Seleccionar producto...</option>
-                      {/* Si el producto precargado no está en el catálogo, mostrarlo igual */}
-                      {form.product_interest && !productosCatalogo.includes(form.product_interest) && (
-                        <option value={form.product_interest} className="bg-slate-900">{form.product_interest}</option>
-                      )}
-                      {productosCatalogo.map(p => <option key={p} value={p} className="bg-slate-900">{p}</option>)}
-                    </select>
-                  </div>
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-semibold text-white/50 uppercase tracking-wide flex items-center gap-2">
-                      Cantidad estimada (u)
-                      {fromChat && form.qty_estimate && (
-                        <span className="text-[10px] text-purple-300 font-bold bg-purple-500/20 border border-purple-400/30 px-2 py-0.5 rounded-full normal-case tracking-normal">
-                          ✨ Detectada en chat
-                        </span>
-                      )}
-                    </label>
-                    <Input type="number" value={form.qty_estimate} onChange={e => update('qty_estimate', e.target.value)}
-                      placeholder="Ej: 50, 100, 500" min="1"
-                      className={`h-11 text-sm rounded-xl text-white placeholder:text-white/30 focus:bg-white/15 focus:ring-teal-400/30 ${fromChat && form.qty_estimate ? 'bg-purple-500/10 border-purple-400/40 focus:border-purple-400/60' : 'bg-white/10 border-white/20 focus:border-teal-400/60'}`} />
-                  </div>
-                </div>
-
-                {/* Volume pricing hint */}
-                {form.qty_estimate >= 50 && (
-                  <div className="bg-teal-500/15 border border-teal-400/30 rounded-xl px-4 py-3 flex items-center gap-3 backdrop-blur-sm">
-                    <Star className="w-4 h-4 text-teal-400 flex-shrink-0" />
-                    <p className="text-xs text-teal-200">
-                      {form.qty_estimate >= 500 ? '🔥 Precio especial 500+ u + personalización gratis + packaging premium' :
-                       form.qty_estimate >= 200 ? '⭐ Precio preferencial 200+ u con personalización incluida' :
-                       '✨ Personalización láser UV gratuita incluida para tu pedido'}
-                    </p>
-                  </div>
-                )}
-
-                {/* Checkboxes */}
-                <div className="grid md:grid-cols-2 gap-3">
-                  {[
-                    { key: 'personalization_needs', title: '✨ Requiero personalización con logo', sub: 'Grabado láser UV · gratis desde 10 u.', color: 'cyan' },
-                    { key: 'has_plastic', title: '♻️ Tengo plástico para reciclar', sub: 'Economía circular con tus residuos', color: 'green' },
-                  ].map(cb => (
-                    <label key={cb.key}
-                      className={`flex items-start gap-3 p-4 border rounded-2xl cursor-pointer transition-all ${form[cb.key] ? 'border-teal-400/60 bg-teal-500/15' : 'border-white/15 bg-white/5 hover:border-white/30 hover:bg-white/10'}`}>
-                      <input type="checkbox" checked={form[cb.key]} onChange={e => update(cb.key, e.target.checked)} className="mt-0.5 accent-teal-400 w-4 h-4" />
-                      <div>
-                        <div className="font-semibold text-sm text-white">{cb.title}</div>
-                        <div className="text-xs text-white/50 mt-0.5">{cb.sub}</div>
-                      </div>
-                    </label>
-                  ))}
-                </div>
-
-                {/* Logo Upload + Live Mockup */}
-                <div className="grid md:grid-cols-2 gap-4">
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-semibold text-white/50 uppercase tracking-wide flex items-center gap-1.5">
-                      <ImageIcon className="w-3 h-3" /> Logo o brief
-                      {draftLogoPreview && !archivo && (
-                        <span className="text-[10px] text-pink-300 font-bold bg-pink-500/20 border border-pink-400/30 px-2 py-0.5 rounded-full normal-case tracking-normal">
-                          ✨ Precargado
-                        </span>
-                      )}
-                    </label>
-                    <div
-                      className={`border-2 border-dashed rounded-2xl p-6 text-center transition-all cursor-pointer h-full flex flex-col items-center justify-center min-h-[200px] ${archivo || draftLogoPreview ? 'border-teal-400/60 bg-teal-500/10' : 'border-white/20 hover:border-teal-400/40 hover:bg-white/5'}`}
-                      onClick={() => document.getElementById('logo-upload').click()}>
-                      {archivo ? (
-                        <>
-                          <Upload className="w-8 h-8 mb-3 text-teal-400" />
-                          <p className="text-sm text-teal-300 font-semibold truncate max-w-full">✓ {archivo.name}</p>
-                          <p className="text-[10px] text-teal-300/60 mt-1">Nuevo logo cargado</p>
-                          <button type="button" onClick={(e) => { e.stopPropagation(); setArchivo(null); }}
-                            className="mt-2 text-[10px] text-white/50 hover:text-white underline">Cambiar logo</button>
-                        </>
-                      ) : draftLogoPreview ? (
-                        <>
-                          <img src={draftLogoPreview} alt="Logo precargado" className="w-16 h-16 object-contain rounded-lg bg-white/10 p-1.5 mb-2" />
-                          <p className="text-sm text-teal-300 font-semibold">✓ Logo guardado</p>
-                          <p className="text-[10px] text-teal-300/60 mt-1">Traído desde el producto</p>
-                          <button type="button" onClick={(e) => { e.stopPropagation(); setDraftLogoPreview(''); }}
-                            className="mt-2 text-[10px] text-white/50 hover:text-white underline">Usar otro logo</button>
-                        </>
-                      ) : (
-                        <>
-                          <Upload className="w-8 h-8 mb-3 text-white/30" />
-                          <p className="text-sm font-medium text-white/70">Arrastra tu logo o haz clic</p>
-                          <p className="text-xs text-white/40 mt-1">PNG o SVG (recomendado) · max 10MB</p>
-                          <p className="text-[10px] text-teal-300/70 mt-2 font-semibold">Ideal: fondo transparente</p>
-                        </>
-                      )}
-                      <input id="logo-upload" type="file" className="hidden"
-                        accept=".png,.svg,.jpg,.jpeg"
-                        onChange={e => setArchivo(e.target.files[0])} />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="text-xs font-semibold text-white/50 uppercase tracking-wide flex items-center gap-1.5 mb-1.5">
-                      <Zap className="w-3 h-3" /> Preview en vivo
-                      {draft?.mockupUrl && !archivo && (
-                        <span className="text-[10px] text-pink-300 font-bold bg-pink-500/20 border border-pink-400/30 px-2 py-0.5 rounded-full normal-case tracking-normal">
-                          ✨ Mockup listo
-                        </span>
-                      )}
-                    </label>
-                    {draft?.mockupUrl && !archivo ? (
-                      <div className="rounded-2xl overflow-hidden border border-pink-400/40 bg-black/30 shadow-xl">
-                        <img src={draft.mockupUrl} alt="Mockup generado" className="w-full h-auto" />
-                        <p className="text-[10px] text-white/60 text-center py-1.5 bg-pink-500/20 border-t border-pink-400/30">
-                          ✨ Mockup generado con IA · incluido en tu cotización
-                        </p>
-                      </div>
-                    ) : (
-                      <LogoMockupPreview logoFile={archivo} texto={form.notes ? '' : form.company_name} />
-                    )}
-                  </div>
-                </div>
-
-                {/* Notes */}
-                <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-white/50 uppercase tracking-wide">Notas adicionales</label>
-                  <textarea value={form.notes} onChange={e => update('notes', e.target.value)}
-                    placeholder="Packaging personalizado, colores, instrucciones especiales..."
-                    className="w-full border border-white/20 bg-white/10 text-white placeholder:text-white/30 rounded-xl px-4 py-3 text-sm resize-none h-24 focus:outline-none focus:ring-2 focus:ring-teal-400/30 focus:border-teal-400/60 transition backdrop-blur-sm" />
-                </div>
-
-                {/* Submit */}
-                <Button type="submit" size="lg"
-                  className="w-full font-bold rounded-2xl h-14 shadow-2xl shadow-teal-500/30 gap-2 text-base bg-gradient-to-r from-teal-500 to-cyan-500 hover:from-teal-600 hover:to-cyan-600 text-white border-0 transition-all"
-                  disabled={loading}>
-                  {loading ? (
-                    <><div className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" /> Enviando...</>
-                  ) : '📋 Solicitar cotización — respondemos en <24h'}
-                </Button>
-
-                <div className="text-center space-y-2">
-                  <p className="text-sm text-white/40">¿Prefieres WhatsApp directo?</p>
-                  <a href="https://wa.me/56935040242?text=Hola%2C%20me%20interesa%20una%20cotizaci%C3%B3n%20corporativa%20de%20Peyu"
-                    target="_blank" rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 text-sm text-teal-400 font-semibold hover:text-teal-300 transition-colors">
-                    <MessageCircle className="w-4 h-4" /> +56 9 3504 0242
-                  </a>
-                </div>
-              </form>
+                ))}
+              </div>
             </div>
 
-            {/* Social Proof */}
+            {/* CTAs paso a paso — elegir un camino */}
+            <div className="grid sm:grid-cols-2 gap-3">
+              <Link to="/b2b/self-service">
+                <Button size="lg" className="w-full h-14 font-bold rounded-2xl gap-2 text-sm bg-gradient-to-r from-yellow-400 to-orange-500 hover:from-yellow-500 hover:to-orange-600 text-white border-0 shadow-xl">
+                  ⚡ Armar mi propuesta ahora
+                </Button>
+              </Link>
+              <a href="https://wa.me/56935040242?text=Hola%2C%20me%20interesa%20una%20cotizaci%C3%B3n%20corporativa%20de%20Peyu"
+                target="_blank" rel="noopener noreferrer">
+                <Button size="lg" className="w-full h-14 font-bold rounded-2xl gap-2 text-sm bg-green-500 hover:bg-green-600 text-white border-0 shadow-xl">
+                  <MessageCircle className="w-5 h-5" /> Cotizar por WhatsApp
+                </Button>
+              </a>
+            </div>
+
+            {/* Social Proof — cierre de confianza */}
             <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-5 text-center space-y-3">
               <p className="text-xs text-white/50 uppercase tracking-widest font-semibold">Empresas que confían en PEYU</p>
               <div className="flex flex-wrap justify-center gap-3">

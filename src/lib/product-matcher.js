@@ -23,7 +23,20 @@ const OCCASION_RULES = [
   { kw: ['juego', 'jugar', 'entrete', 'divertido', 'niño', 'niña', 'nino', 'hijo', 'hija', 'sobrino', 'sobrina', 'gamer'], cats: ['Entretenimiento'], boost: ['cacho', 'juego', 'dado', 'cubo'] },
   { kw: ['empresa', 'corporativo', 'equipo', 'colaboradores', 'empleados', 'evento', 'logo', 'branded', 'merchandising', 'welcome kit'], cats: ['Corporativo', 'Escritorio'], boost: ['kit', 'set', 'pack'] },
   { kw: ['celular', 'telefono', 'teléfono', 'carcasa', 'funda', 'iphone', 'samsung'], cats: ['Carcasas B2C'], boost: ['carcasa', 'funda'] },
+  { kw: ['llavero', 'llaveros', 'soporte celular', 'accesorio', 'accesorios'], cats: ['Escritorio', 'Corporativo'], boost: ['llavero', 'soporte'] },
 ];
+
+// Quita la 's' final para emparentar singular/plural ("llaveros"→"llavero",
+// "carcasas"→"carcasa"). Acota a tokens ≥4 para no romper palabras cortas.
+const stem = (t) => (t.length >= 4 && t.endsWith('s') ? t.slice(0, -1) : t);
+
+// ¿El token del mensaje matchea el texto del producto, tolerando plural/singular?
+// "llaveros" matchea "llavero" y viceversa, comparando por raíz sin 's'.
+const tokenInText = (token, text) => {
+  if (text.includes(token)) return true;
+  const ts = stem(token);
+  return ts.length >= 4 && text.includes(ts);
+};
 
 // Destinatarios → sesgo de categoría suave.
 const RECIPIENT_HINTS = [
@@ -80,10 +93,11 @@ export function matchProducts(products, message, opts = {}) {
       // 1) Categoría candidata
       score += catScore.get(cat) || 0;
 
-      // 2) Match directo de tokens del mensaje en nombre/descripción
+      // 2) Match directo de tokens del mensaje en nombre/descripción.
+      // Tolerante a plural/singular: "llaveros" matchea "Llavero…", etc.
       for (const t of tokens) {
-        if (nombre.includes(t)) score += 2.5;
-        else if (desc.includes(t)) score += 1;
+        if (tokenInText(t, nombre)) score += 2.5;
+        else if (tokenInText(t, desc)) score += 1;
       }
 
       // 3) Boost words de la regla de ocasión
