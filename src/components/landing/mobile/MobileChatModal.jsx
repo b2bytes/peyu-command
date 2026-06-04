@@ -19,10 +19,10 @@ import { sanitizeUserMessage } from '@/lib/chat-sanitize';
  *
  * Mantiene 100% la lógica del padre (props messages, loading, onSend...).
  */
-// Ordenadas por cercanía real desde hoy (jun): Día del Padre primero y
-// destacado. Quitamos las fechas ya pasadas (Madre, Trabajador).
+// Chip evergreen "Cotizar Empresa" primero y destacado (navega al flujo B2B
+// self-service), luego fechas atemporales. Se retiró el estacional Día del Padre.
 const OCASIONES = [
-  { id: 'padre', label: 'Día del Padre', icon: '👔', featured: true },
+  { id: 'empresa', label: 'Cotizar Empresa', icon: '🏢', href: '/b2b/self-service', featured: true },
   { id: 'patrias', label: 'Patrias', icon: '🇨🇱' },
   { id: 'navidad', label: 'Navidad', icon: '🎄' },
   { id: 'anio', label: 'Año Nuevo', icon: '🎉' },

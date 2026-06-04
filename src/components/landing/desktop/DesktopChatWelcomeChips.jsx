@@ -8,25 +8,20 @@
 // Padre 21 jun). Ya NO mostramos Día de la Madre (pasó). Cada card lleva
 // ícono en círculo de acento, título en negrita y subtítulo gris corto.
 // ────────────────────────────────────────────────────────────────────────
-import { Gift, Building2, Recycle, Flame, ArrowRight } from 'lucide-react';
+import { Building2, Recycle, Flame, ArrowRight } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const QUICK_INTENTS = [
   {
-    id: 'padre',
-    icon: Gift,
-    label: 'Regalo Día del Padre',
-    sub: 'Útil, masculino y con causa',
-    prompt: 'Quiero un regalo para el Día del Padre. Algo útil y especial, ¿qué me recomiendas?',
-    accent: 'warm',
-    featured: true,
-  },
-  {
-    id: 'empresa',
+    // CTA evergreen de alto valor comercial — reemplaza el estacional "Día del
+    // Padre". Navega directo al flujo de cotización corporativa B2B self-service.
+    id: 'cotizar-empresa',
     icon: Building2,
-    label: 'Regalos para mi empresa',
-    sub: 'Corporativos con tu logo, por volumen',
-    prompt: 'Necesito regalos corporativos para mi empresa. ¿Puedes ayudarme a cotizar?',
+    label: 'Cotizar Empresa',
+    sub: 'Regalos corporativos con tu logo, por volumen',
+    href: '/b2b/self-service',
     accent: 'blue',
+    featured: true,
   },
   {
     id: 'sostenibles',
@@ -54,6 +49,7 @@ const ACCENT_BG = {
 };
 
 export default function DesktopChatWelcomeChips({ onPick, disabled }) {
+  const navigate = useNavigate();
   return (
     <div className="flex flex-col gap-1.5 px-0.5 pt-0.5">
       {/* Label fila — compacto, sin burbuja que robe altura */}
@@ -61,10 +57,10 @@ export default function DesktopChatWelcomeChips({ onPick, disabled }) {
         Ideas rápidas
       </p>
 
-      {QUICK_INTENTS.map(({ id, icon: Icon, label, sub, prompt, accent, featured }) => (
+      {QUICK_INTENTS.map(({ id, icon: Icon, label, sub, prompt, href, accent, featured }) => (
         <button
           key={id}
-          onClick={() => onPick(prompt)}
+          onClick={() => href ? navigate(href) : onPick(prompt)}
           disabled={disabled}
           className="group flex items-center gap-2.5 rounded-xl px-2.5 py-2 text-left transition-all duration-200 hover:-translate-y-px hover:shadow-sm active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed border"
           style={{

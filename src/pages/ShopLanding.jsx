@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -44,11 +44,11 @@ const stripContext = (m) => {
   return { ...m, content: cleaned || m.content };
 };
 
-// Ordenadas por cercanía real desde hoy (jun): Día del Padre (21 jun) primero
-// y destacado, luego Fiestas Patrias (sep), Navidad (dic), Año Nuevo. B2B
-// evergreen (Bienestar/Logros) al final. Quitamos las que ya pasaron.
+// Chip evergreen de alto valor "Cotizar Empresa" primero y destacado (navega
+// al flujo B2B self-service), luego las fechas atemporales. Se retiró el
+// estacional "Día del Padre".
 const OCASIONES = [
-  { id: 'padre', label: 'Día del Padre', icon: '👔', featured: true },
+  { id: 'empresa', label: 'Cotizar Empresa', icon: '🏢', href: '/b2b/self-service', featured: true },
   { id: 'patrias', label: 'Fiestas Patrias', icon: '🇨🇱' },
   { id: 'navidad', label: 'Navidad', icon: '🎄' },
   { id: 'anio', label: 'Año Nuevo', icon: '🎉' },
@@ -92,6 +92,7 @@ const buildPersonalizedWelcome = (fullName) => {
 };
 
 export default function ShopLanding() {
+  const navigate = useNavigate();
   // Si la pestaña es nueva (usuario cerró y volvió), archivar la conv anterior al historial.
   const [freshSession] = useState(() => {
     const fresh = ensureFreshSession();
@@ -477,6 +478,12 @@ export default function ShopLanding() {
   };
 
   const handleOccasionClick = async (ocasion) => {
+    // CTA con destino directo (ej. "Cotizar Empresa" → flujo B2B self-service):
+    // navega en vez de mandar un prompt al chat.
+    if (ocasion.href) {
+      navigate(ocasion.href);
+      return;
+    }
     // Genera un prompt inteligente: pide productos DISTINTOS si ya hubo
     // recomendaciones previas, o cambia el set si cambió la ocasión.
     const mensaje = buildOccasionPrompt(ocasion.label);

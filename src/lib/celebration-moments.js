@@ -104,6 +104,10 @@ export const CELEBRATION_MOMENTS = [
   // ────────────────────────────────────────────────────────
   {
     id: 'padre',
+    // ⛔ Desactivado: el CTA estacional "Día del Padre" se retiró del home
+    // (reemplazado por "Cotizar Empresa", evergreen). Se conserva la data por
+    // si se reactiva a futuro. getActiveCelebration ignora active === false.
+    active: false,
     emoji: '👔',
     name: 'Día del Padre',
     eventDate: '2026-06-21',
@@ -146,7 +150,7 @@ export function getActiveCelebration(now = new Date()) {
   const today = now.toISOString().slice(0, 10); // YYYY-MM-DD
 
   const active = CELEBRATION_MOMENTS.filter(
-    m => today >= m.windowStart && today <= m.windowEnd
+    m => m.active !== false && today >= m.windowStart && today <= m.windowEnd
   );
 
   if (active.length === 0) return null;
