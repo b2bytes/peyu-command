@@ -7,10 +7,11 @@ export default function PublicSidebar() {
 
   const links = [
     { href: '/', label: 'Inicio', icon: Home },
+    // 🏢 Alto valor comercial: B2B arriba y destacado, justo después de Inicio.
+    { href: '/b2b/contacto', label: 'Cotizar Empresa', icon: Building2, featured: true },
     { href: '/shop', label: 'Tienda', icon: ShoppingBag },
     { href: '/regalar-giftcard', label: 'Gift Cards', icon: Gift },
     { href: '/b2b/catalogo', label: 'Catálogo Corporativo', icon: BookOpen },
-    { href: '/b2b/contacto', label: 'Cotización B2B', icon: Building2 },
     { href: '/soporte', label: 'Soporte', icon: HelpCircle },
   ];
 
@@ -46,6 +47,20 @@ export default function PublicSidebar() {
             <nav className="flex-1 overflow-y-auto p-4 space-y-2">
               {links.map((link) => {
                 const Icon = link.icon;
+                if (link.featured) {
+                  return (
+                    <Link
+                      key={link.href}
+                      to={link.href}
+                      onClick={() => setOpen(false)}
+                      className="flex items-center gap-3 px-4 py-3 rounded-lg bg-gradient-to-r from-[#D96B4D] to-[#c25a3e] text-white shadow-md hover:shadow-lg hover:scale-[1.02] transition-all group"
+                    >
+                      <Icon className="w-5 h-5 group-hover:scale-110 transition-transform" />
+                      <span className="font-bold text-sm flex-1">{link.label}</span>
+                      <span className="text-[9px] font-bold uppercase tracking-wider bg-white/20 px-1.5 py-0.5 rounded-full">B2B</span>
+                    </Link>
+                  );
+                }
                 return (
                   <Link
                     key={link.href}

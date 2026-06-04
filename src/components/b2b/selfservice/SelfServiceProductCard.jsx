@@ -81,35 +81,37 @@ export default function SelfServiceProductCard({ producto, inCart, onAdd, onUpda
         </h3>
         <p className="text-[10px] text-white/35 font-mono mb-3">{producto.sku}</p>
 
-        {/* Precio + CTA */}
-        <div className="flex items-end justify-between gap-2">
-          <div className="min-w-0">
-            <p className="text-[10px] text-white/45 leading-none mb-0.5">Desde 10 u.</p>
+        {/* Precio (bloque propio) — siempre legible, nunca tapado por el botón */}
+        <div className="min-w-0">
+          <p className="text-[10px] text-white/45 leading-none mb-0.5">Desde 10 u.</p>
+          <div className="flex items-end gap-2 flex-wrap">
             <p className="font-poppins font-extrabold text-lg sm:text-xl text-white leading-none tracking-tight">
               ${precioBase.toLocaleString('es-CL')}
             </p>
             {producto.precio_b2c && producto.precio_b2c > precioBase && (
-              <p className="text-[10px] text-white/30 line-through mt-0.5">
+              <p className="text-[10px] text-white/30 line-through">
                 ${producto.precio_b2c.toLocaleString('es-CL')}
               </p>
             )}
           </div>
+        </div>
 
-          {/* Acciones — cambia entre "Agregar" y controles +/− cuando está en carrito.
-              Tap targets ≥44px de alto (HIG) para uso cómodo en móvil. */}
+        {/* Acciones — fila propia full-width, separada del precio (sin overlap).
+            Tap targets ≥44px de alto (HIG) para uso cómodo en móvil. */}
+        <div className="mt-3">
           {!inCart ? (
             <button
               onClick={() => onAdd(producto)}
-              className="inline-flex items-center gap-1 bg-gradient-to-br from-teal-400 to-cyan-500 hover:from-teal-500 hover:to-cyan-600 active:from-teal-600 active:to-cyan-700 text-white text-xs font-bold px-4 h-11 rounded-xl shadow-lg shadow-teal-500/30 transition-all hover:shadow-teal-500/50 hover:scale-105 active:scale-95 flex-shrink-0"
+              className="w-full inline-flex items-center justify-center gap-1 bg-gradient-to-br from-teal-400 to-cyan-500 hover:from-teal-500 hover:to-cyan-600 active:from-teal-600 active:to-cyan-700 text-white text-xs font-bold px-4 h-11 rounded-xl shadow-lg shadow-teal-500/30 transition-all hover:shadow-teal-500/50 active:scale-95"
             >
               <Plus className="w-4 h-4" />
               Agregar
             </button>
           ) : (
-            <div className="flex items-center bg-teal-500/20 border border-teal-400/40 rounded-xl overflow-hidden flex-shrink-0">
+            <div className="flex items-center justify-between bg-teal-500/20 border border-teal-400/40 rounded-xl overflow-hidden">
               <button
                 onClick={() => cantidad <= 10 ? onRemove(producto.id) : onUpdateQty(producto.id, -10)}
-                className="w-10 h-11 flex items-center justify-center text-white hover:bg-teal-500/30 active:bg-teal-500/40 transition"
+                className="w-12 h-11 flex items-center justify-center text-white hover:bg-teal-500/30 active:bg-teal-500/40 transition"
                 aria-label="Restar 10"
               >
                 <Minus className="w-4 h-4" />
@@ -119,7 +121,7 @@ export default function SelfServiceProductCard({ producto, inCart, onAdd, onUpda
               </span>
               <button
                 onClick={() => onUpdateQty(producto.id, 10)}
-                className="w-10 h-11 flex items-center justify-center text-white hover:bg-teal-500/30 active:bg-teal-500/40 transition"
+                className="w-12 h-11 flex items-center justify-center text-white hover:bg-teal-500/30 active:bg-teal-500/40 transition"
                 aria-label="Sumar 10"
               >
                 <Plus className="w-4 h-4" />
