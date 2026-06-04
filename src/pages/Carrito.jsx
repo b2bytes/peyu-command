@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
@@ -16,7 +16,7 @@ import ImpactoAmbiental from '@/components/cart/ImpactoAmbiental';
 import CartBundleToggle from '@/components/cart/CartBundleToggle';
 import { saveOneClickProfile } from '@/lib/one-click-profile';
 import { computeQtyDiscountBySku } from '@/lib/volume-discount';
-import { PEYU_COLORS } from '@/lib/color-parser';
+import { PEYU_COLORS, getColoresProducto } from '@/lib/color-parser';
 import { isCyberActive, CYBER_COPY } from '@/lib/cyber-campaign';
 import { calcularCargoPersonalizacionCarrito, calcularCargoPersonalizacion, getTipoPersonalizacion, PERSONALIZACION_LABEL, MOQ_PERSONALIZACION_GRATIS } from '@/lib/personalizacion-config';
 
@@ -51,6 +51,30 @@ export default function Carrito() {
   // Envío Bluex: { servicio, costo, costo_real, lead_time_dias, comuna, peso_kg, envio_gratis_aplicado }
   const [envioBluex, setEnvioBluex] = useState(null);
   const captureTimerRef = useRef(null);
+  // 🎨 FIX 2 · Mapa productoId → colores REALES del producto (su campo `colores`).
+  // El selector del carrito SOLO ofrece estos colores, no la paleta genérica.
+  const [coloresPorProducto, setColoresPorProducto] = useState({});
+
+  // Carga los colores reales de cada producto del carrito (una sola vez por id).
+  useEffect(() => {
+    const ids = Array.from(new Set(carrito.map(i => i.productoId).filter(Boolean)));
+    const faltantes = ids.filter(id => !(id in coloresPorProducto));
+    if (faltantes.length === 0) return;
+    let alive = true;
+    Promise.all(faltantes.map(id =>
+      base44.entities.Producto.get(id)
+        .then(p => [id, getColoresProducto(p)])
+        .catch(() => [id, []])
+    )).then(pares => {
+      if (!alive) return;
+      setColoresPorProducto(prev => {
+        const next = { ...prev };
+        for (const [id, cols] of pares) next[id] = cols;
+        return next;
+      });
+    });
+    return () => { alive = false; };
+  }, [carrito, coloresPorProducto]);
 
   // 📩 Captura el carrito abandonado en cuanto tenemos un email válido.
   const capturarCarrito = (clienteData) => {
@@ -591,21 +615,40 @@ export default function Carrito() {
                         {item.color && !item.pack_resumen && (
                           <div className="mt-1.5">
                             <p className="text-xs text-gray-600 font-medium mb-1">Color: <span className="text-gray-900 font-semibold capitalize">{item.color}</span></p>
-                            <div className="flex gap-1.5 flex-wrap">
-                              {PEYU_COLORS.map(c => {
-                                const activo = String(item.color).toLowerCase() === c.label.toLowerCase() || String(item.color).toLowerCase() === c.id;
-                                return (
-                                  <button
-                                    key={c.id}
-                                    type="button"
-                                    title={c.label}
-                                    onClick={() => cambiarColor(item.id, c.label)}
-                                    className="w-6 h-6 rounded-lg border-2 transition-all hover:scale-110"
-                                    style={{ backgroundColor: c.hex, borderColor: activo ? '#0F8B6C' : '#e5e7eb', boxShadow: activo ? '0 0 0 2px rgba(15,139,108,0.25)' : undefined }}
-                                  />
-                                );
-                              })}
-                            </div>
+                            {/* 🎨 FIX 2 · El selector ofrece SOLO los colores REALES del producto
+                                (su campo `colores`), nunca la paleta genérica. Si el producto solo
+                                tiene 1 color o aún no cargaron, mostramos solo el swatch activo. */}
+                            {(() => {
+                              const colsReales = coloresPorProducto[item.productoId] || [];
+                              // Si hay >1 color real, el cliente puede cambiar entre ellos.
+                              // Si hay ≤1, solo mostramos el swatch del color elegido (sin cambiar).
+                              const swatches = colsReales.length > 1
+                                ? colsReales
+                                : PEYU_COLORS.filter(c =>
+                                    String(item.color).toLowerCase() === c.label.toLowerCase() ||
+                                    String(item.color).toLowerCase() === c.id
+                                  );
+                              if (swatches.length === 0) return null;
+                              return (
+                                <div className="flex gap-1.5 flex-wrap">
+                                  {swatches.map(c => {
+                                    const activo = String(item.color).toLowerCase() === c.label.toLowerCase() || String(item.color).toLowerCase() === c.id;
+                                    const clickable = colsReales.length > 1;
+                                    return (
+                                      <button
+                                        key={c.id}
+                                        type="button"
+                                        title={c.label}
+                                        disabled={!clickable}
+                                        onClick={() => clickable && cambiarColor(item.id, c.label)}
+                                        className={`w-6 h-6 rounded-lg border-2 transition-all ${clickable ? 'hover:scale-110 cursor-pointer' : 'cursor-default'}`}
+                                        style={{ backgroundColor: c.hex, borderColor: activo ? '#0F8B6C' : '#e5e7eb', boxShadow: activo ? '0 0 0 2px rgba(15,139,108,0.25)' : undefined }}
+                                      />
+                                    );
+                                  })}
+                                </div>
+                              );
+                            })()}
                           </div>
                         )}
                       </div>

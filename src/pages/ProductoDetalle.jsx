@@ -210,8 +210,13 @@ export default function ProductoDetalle() {
       try { track.productView(prod); } catch (_) { /* trazabilidad no debe romper UI */ }
       const cols = getColores(prod);
       const firstId = cols[0]?.id || null;
-      setColorSeleccionado(firstId);
-      // Si es pack, inicializamos array con N copias del primer color
+      // 🎨 FIX 2 · NO pre-seleccionar color automáticamente. El color SOLO se
+      // setea cuando el usuario lo elige (regla dura: cero color por defecto).
+      // Si el producto no tiene colores (gift cards, etc.) → null y el bloqueo
+      // de color no aplica. Para carcasas/productos con color → el cliente debe elegir.
+      setColorSeleccionado(null);
+      // Si es pack, inicializamos array con N copias del primer color (los packs
+      // SÍ requieren un estado inicial completo para el PackColorPicker).
       const packN = getPackSize(prod);
       if (packN && firstId) {
         setColoresPack(Array.from({ length: packN }, () => firstId));
@@ -256,6 +261,10 @@ export default function ProductoDetalle() {
   // Las dejamos acá, antes de cualquier handler que las consuma.
   const colores = producto ? getColores(producto) : [];
   const packSize = producto ? getPackSize(producto) : null;
+  // 🎨 FIX 2 · Color obligatorio: si el producto ofrece selector de color (no pack)
+  // y el usuario aún no eligió uno, el botón "Agregar al carrito" queda bloqueado.
+  // NO se mete un color por defecto silenciosamente.
+  const faltaColor = !packSize && colores.length > 0 && !colorSeleccionado;
 
   const agregarAlCarrito = () => {
     // 🔒 Color OBLIGATORIO: si el producto tiene selector de color (no pack) y no
@@ -545,8 +554,9 @@ export default function ProductoDetalle() {
                     </Button>
                   </Link>
                 ) : (
-                  <Button onClick={agregarAlCarrito} size="sm" className="ld-btn-primary gap-2 rounded-full">
-                    <ShoppingCart className="w-4 h-4" /> Agregar
+                  <Button onClick={agregarAlCarrito} size="sm" disabled={faltaColor}
+                    className="ld-btn-primary gap-2 rounded-full disabled:opacity-50 disabled:cursor-not-allowed">
+                    <ShoppingCart className="w-4 h-4" /> {faltaColor ? 'Elige color' : 'Agregar'}
                   </Button>
                 )}
               </div>
@@ -1091,8 +1101,10 @@ export default function ProductoDetalle() {
                   </div>
                 ) : (
                   <Button onClick={agregarAlCarrito} size="lg"
-                    className="ld-btn-primary w-full h-12 font-bold text-sm gap-2 rounded-xl hover:scale-[1.01] transition-all duration-200">
-                    <ShoppingCart className="w-4 h-4" /> Agregar al carrito · ${totalConPers.toLocaleString('es-CL')}
+                    disabled={faltaColor}
+                    className="ld-btn-primary w-full h-12 font-bold text-sm gap-2 rounded-xl hover:scale-[1.01] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100">
+                    <ShoppingCart className="w-4 h-4" />
+                    {faltaColor ? 'Elige un color para continuar' : `Agregar al carrito · $${totalConPers.toLocaleString('es-CL')}`}
                   </Button>
                 )}
 
