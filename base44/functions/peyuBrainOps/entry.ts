@@ -37,7 +37,7 @@ Deno.serve(async (req) => {
     const [pedidos, leads, consultas, ailogs, envios, propuestas, productos] = await Promise.all([
       base44.asServiceRole.entities.PedidoWeb.list('-created_date', 200),
       base44.asServiceRole.entities.B2BLead.list('-created_date', 100),
-      base44.asServiceRole.entities.Consulta.list('-created_date', 100),
+      base44.asServiceRole.entities.Consulta.list('-created_date', 300),
       base44.asServiceRole.entities.AILog.list('-created_date', 200),
       base44.asServiceRole.entities.Envio.list('-created_date', 100),
       base44.asServiceRole.entities.CorporateProposal.list('-created_date', 100),
@@ -108,7 +108,9 @@ Deno.serve(async (req) => {
     // Esto arregla el bug "dice que tiene 2 consultas pendientes pero no las dice":
     // ahora devolvemos los registros concretos para hidratar las tarjetas.
     const lists = {
-      consultas_pendientes: consultasSinResponder.slice(0, 8).map(c => ({
+      // Historial COMPLETO de consultas sin responder (no truncamos a 8).
+      // El founder pidió ver todo el historial pendiente de forma persistente.
+      consultas_pendientes: consultasSinResponder.slice(0, 50).map(c => ({
         id: c.id, nombre: c.nombre, email: c.email, telefono: c.telefono,
         canal: c.canal, mensaje: c.mensaje || c.consulta || c.descripcion || '',
         calidad: c.calidad, created_date: c.created_date,

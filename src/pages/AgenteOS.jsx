@@ -42,7 +42,7 @@ export default function AgenteOS() {
       base44.entities.Cliente.list('-created_date', 40).catch(() => []),
       base44.entities.CorporateProposal.list('-created_date', 40).catch(() => []),
       base44.entities.B2BLead.list('-created_date', 60).catch(() => []),
-      base44.entities.Consulta.list('-created_date', 60).catch(() => []),
+      base44.entities.Consulta.list('-created_date', 300).catch(() => []),
       base44.functions.invoke('peyuBrainOps', { query: 'resumen del día' }).catch(() => null),
     ]);
     setCrm({
