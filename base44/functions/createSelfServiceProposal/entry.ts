@@ -99,12 +99,12 @@ function feePersonalizacionItem(item) {
   return { feeUnit, fee, gratis, tipo };
 }
 
-function buildProposalEmailHtml({ proposal, items, proposalUrl }) {
+function buildProposalEmailHtml({ proposal, items, proposalUrl, subtotalNeto, iva }) {
   const rows = items.map((it) => `
     <tr>
-      <td style="padding:12px;border-bottom:1px solid #EEF1F0;font-size:14px;color:#0F172A;font-weight:600;">${it.nombre || '-'}${it.personalizacion ? '<div style="font-size:11px;color:#0F8B6C;margin-top:2px;">+ Personalización láser UV</div>' : ''}</td>
+      <td style="padding:12px;border-bottom:1px solid #EEF1F0;font-size:14px;color:#0F172A;font-weight:600;">${it.nombre || '-'}${it.tier ? `<div style="font-size:11px;color:#64748B;margin-top:2px;">Tramo ${it.tier}</div>` : ''}${it.personalizacion ? '<div style="font-size:11px;color:#0F8B6C;margin-top:2px;">+ Personalización láser UV</div>' : ''}</td>
       <td style="padding:12px;border-bottom:1px solid #EEF1F0;text-align:center;font-size:14px;color:#475569;">${it.cantidad || it.qty || 0}</td>
-      <td style="padding:12px;border-bottom:1px solid #EEF1F0;text-align:right;font-size:14px;color:#475569;">${fmtCLP(it.precio_unitario)}</td>
+      <td style="padding:12px;border-bottom:1px solid #EEF1F0;text-align:right;font-size:14px;color:#475569;">${fmtCLP(it.precio_unitario)}<div style="font-size:10px;color:#94A3B8;">neto c/u</div></td>
       <td style="padding:12px;border-bottom:1px solid #EEF1F0;text-align:right;font-size:14px;font-weight:700;color:#0F172A;">${fmtCLP(it.line_total)}</td>
     </tr>`).join('');
   return `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"></head>
@@ -120,8 +120,11 @@ function buildProposalEmailHtml({ proposal, items, proposalUrl }) {
 <p style="margin:0 0 8px;font-size:16px;color:#0F172A;font-weight:600;">Hola ${proposal.contacto},</p>
 <p style="margin:0 0 24px;font-size:15px;line-height:1.6;color:#475569;">Generamos tu propuesta corporativa al instante. Aquí está el detalle con tus descuentos por volumen ya aplicados.</p>
 <table role="presentation" width="100%" style="background:linear-gradient(135deg,#F0FAF7,#E0F2EB);border:1px solid #C8E6DA;border-radius:16px;margin-bottom:24px;"><tr><td style="padding:22px 26px;">
-<p style="margin:0 0 4px;font-size:11px;font-weight:700;letter-spacing:1.5px;color:#0F8B6C;text-transform:uppercase;">Inversión total</p>
-<p style="margin:0;font-size:34px;font-weight:800;color:#0F172A;">${fmtCLP(proposal.total)}</p>
+<table role="presentation" width="100%" style="margin-bottom:8px;">
+  <tr><td style="font-size:14px;color:#475569;padding:3px 0;">Subtotal neto</td><td style="font-size:14px;color:#475569;text-align:right;padding:3px 0;">${fmtCLP(subtotalNeto)}</td></tr>
+  <tr><td style="font-size:14px;color:#475569;padding:3px 0;">IVA (19%)</td><td style="font-size:14px;color:#475569;text-align:right;padding:3px 0;">${fmtCLP(iva)}</td></tr>
+  <tr><td style="font-size:16px;font-weight:800;color:#0F172A;padding:8px 0 0;border-top:1px solid #C8E6DA;">Total con IVA</td><td style="font-size:22px;font-weight:800;color:#0F172A;text-align:right;padding:8px 0 0;border-top:1px solid #C8E6DA;">${fmtCLP(proposal.total)}</td></tr>
+</table>
 <p style="margin:4px 0 0;font-size:12px;color:#64748B;">CLP · Lead time ${proposal.lead_time_dias} días · Validez ${proposal.validity_days || 15} días</p>
 </td></tr></table>
 <table role="presentation" width="100%" style="border-collapse:collapse;margin-bottom:28px;"><thead><tr style="background:#0F172A;">
@@ -333,8 +336,11 @@ Deno.serve(async (req) => {
     });
 
     // 2. Calcular precios (tabla B2B oficial) + fee personalización + lead time
+    // IVA: los tramos son NETOS. neto = subtotal + fee · iva = round(neto*0.19) · total = neto + iva.
     const { breakdown, subtotal, feePersonalizacionTotal } = calcPricing(itemsValidos);
-    const total = subtotal + feePersonalizacionTotal;
+    const neto = subtotal + feePersonalizacionTotal;
+    const iva = Math.round(neto * 0.19);
+    const total = neto + iva;
     const leadTime = calcLeadTime(itemsValidos);
 
     // 3. Numero + vencimiento
@@ -458,7 +464,7 @@ Deno.serve(async (req) => {
           cc: 'ventas@peyuchile.cl',
           replyTo: 'ventas@peyuchile.cl',
           subject: `Propuesta PEYU N° ${propNum} · ${fmtCLP(total)}`,
-          html: buildProposalEmailHtml({ proposal: { ...proposal, numero: propNum, contacto: contact_name }, items: breakdown, proposalUrl }),
+          html: buildProposalEmailHtml({ proposal: { ...proposal, numero: propNum, contacto: contact_name }, items: breakdown, proposalUrl, subtotalNeto: neto, iva }),
           fromName: 'PEYU Chile',
           pdfBase64,
           pdfName: `PEYU-Propuesta-${propNum}.pdf`,
@@ -478,6 +484,8 @@ Deno.serve(async (req) => {
       numero: propNum,
       total,
       subtotal,
+      neto,
+      iva,
       fee_personalizacion: feePersonalizacionTotal,
       lead_time_dias: leadTime,
       items: breakdown,

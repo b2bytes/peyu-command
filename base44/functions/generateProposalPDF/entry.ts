@@ -253,7 +253,7 @@ Deno.serve(async (req) => {
     doc.setFontSize(7.5);
     doc.setTextColor(...SLATE);
     doc.setFont('helvetica', 'normal');
-    doc.text(safeTxt('CLP - IVA incluido'), pw - 22, y + 28, { align: 'right' });
+    doc.text(safeTxt('CLP - Total con IVA'), pw - 22, y + 28, { align: 'right' });
 
     // Mini metrics row dentro de la card (4 columnas)
     const metricsY = y + 38;
@@ -464,12 +464,16 @@ Deno.serve(async (req) => {
       y += big ? 9 : (bold ? 7 : 6);
     };
 
-    if (p.subtotal) totRow('Subtotal', p.subtotal);
-    if (p.descuento_pct > 0) {
-      totRow(`Descuento por volumen (${p.descuento_pct}%)`, -Math.round((p.subtotal || 0) * p.descuento_pct / 100), { color: TEAL, valColor: TEAL });
-    }
-    if (p.fee_personalizacion > 0) totRow('Fee personalizacion', p.fee_personalizacion);
-    if (p.fee_packaging > 0) totRow('Fee packaging', p.fee_packaging);
+    // Desglose NETO / IVA / TOTAL (los tramos B2B son netos, sin IVA).
+    const fee = p.fee_personalizacion > 0 ? p.fee_personalizacion : 0;
+    const netoBase = (p.subtotal || 0) + fee + (p.fee_packaging > 0 ? p.fee_packaging : 0);
+    // p.total ya viene con IVA; el IVA es la diferencia (robusto ante datos viejos).
+    const ivaCalc = Math.max(0, Math.round((p.total || netoBase) - netoBase));
+
+    if (p.subtotal) totRow('Subtotal neto', p.subtotal);
+    if (fee > 0) totRow('Fee personalizacion (neto)', fee);
+    if (p.fee_packaging > 0) totRow('Fee packaging (neto)', p.fee_packaging);
+    totRow('IVA (19%)', ivaCalc);
 
     // Línea separadora
     y += 2;
@@ -478,8 +482,8 @@ Deno.serve(async (req) => {
     doc.line(pw - 75, y, pw - 15, y);
     y += 7;
 
-    // TOTAL grande
-    totRow('TOTAL', p.total, { bold: true, big: true, color: INK, valColor: TEAL });
+    // TOTAL grande (con IVA)
+    totRow('TOTAL CON IVA', p.total, { bold: true, big: true, color: INK, valColor: TEAL });
 
     // ═══════════════════════════════════════════════════
     //  CTA: ACEPTACIÓN DIGITAL
