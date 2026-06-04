@@ -180,6 +180,7 @@ export default function ProductoDetalle() {
   const [tabActiva, setTabActiva] = useState('descripcion');
   const [mockupOpen, setMockupOpen] = useState(false);
   const [mockupGenerado, setMockupGenerado] = useState('');
+  const [logoCliente, setLogoCliente] = useState(''); // logo/arte que el cliente subió para estampar
 
   useEffect(() => {
     // Scroll al tope cuando cambiamos de producto (al hacer clic en relacionados).
@@ -304,6 +305,10 @@ export default function ProductoDetalle() {
       moq_personalizacion: moqGratisPers,
       personalizacion_gratis_desde: moqGratisPers,
       posicion_grabado: personalizacion ? posicionGrabado : null,
+      // 🎨 Arte del cliente — viaja con el item al carrito y luego al pedido,
+      // para que producción y soporte vean exactamente qué estampar.
+      mockupUrl: mockupGenerado || null,
+      logoUrl: logoCliente || null,
       imagen: packSize ? getProductImage(producto) : imagenColorSeleccionado,
     };
     const nuevo = [...carrito, item];
@@ -1418,6 +1423,7 @@ export default function ProductoDetalle() {
           initialColor={colores.find(c => c.id === colorSeleccionado)?.label || ''}
           onGenerated={(url, extra = {}) => {
             setMockupGenerado(url);
+            if (extra.logoUrl) setLogoCliente(extra.logoUrl);
             // Persistir draft con todo el contexto para que B2BContacto lo recupere
             saveMockupDraft({
               productoId: producto.id,

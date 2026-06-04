@@ -281,10 +281,21 @@ export default function Carrito() {
       // Fee de personalización láser de ESTA línea (0 si gratis ≥10u o sin grabado).
       tipo_personalizacion: i.personalizacion ? getTipoPersonalizacion(i) : '',
       fee_personalizacion: feePersItem(i),
+      // 🎨 Arte del cliente — fuente de verdad para producción y soporte.
+      // logo_url = imagen que el cliente subió para estampar.
+      // mockup_url = preview generado del grabado sobre el producto.
+      logo_url: i.logoUrl || i.logo_url || '',
+      mockup_url: i.mockupUrl || i.mockup_url || '',
+      posicion_grabado: i.posicion_grabado || '',
       precio_unitario: i.precio || 0,
       cantidad: i.cantidad || 1,
     }));
     const colorTopLevel = carrito.length === 1 ? (carrito[0]?.color || '') : '';
+    // Acceso rápido top-level: 1er item que traiga logo/mockup del cliente.
+    const itemConLogo = carrito.find(i => i.logoUrl || i.logo_url);
+    const itemConMockup = carrito.find(i => i.mockupUrl || i.mockup_url);
+    const logoUrlTopLevel = itemConLogo ? (itemConLogo.logoUrl || itemConLogo.logo_url) : '';
+    const mockupUrlTopLevel = itemConMockup ? (itemConMockup.mockupUrl || itemConMockup.mockup_url) : '';
 
     let pedido;
     const datosPedido = {
@@ -325,6 +336,10 @@ export default function Carrito() {
       direccion_envio: direccionCompleta,
       requiere_personalizacion: carrito.some(i => i.personalizacion),
       texto_personalizacion: carrito.filter(i => i.personalizacion).map(i => i.personalizacion).join(', '),
+      // 🎨 Arte del cliente a nivel pedido (acceso rápido en seguimiento y ficha interna).
+      logo_url: logoUrlTopLevel,
+      mockup_url: mockupUrlTopLevel,
+      logo_recibido: !!(logoUrlTopLevel || mockupUrlTopLevel),
       courier: envioBluex ? `BlueExpress ${envioBluex.servicio}` : 'Pendiente',
       notas: `Carrito: ${carrito.length} items${notasExtras ? ' | ' + notasExtras : ''}`,
     };

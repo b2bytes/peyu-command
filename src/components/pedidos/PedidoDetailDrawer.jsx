@@ -7,6 +7,7 @@ import { X, Mail, Phone, MapPin, Package, CreditCard, Sparkles, Loader2, Externa
 import { toast } from 'sonner';
 import BluexShipmentButton from './BluexShipmentButton';
 import BluexManualDispatchCard from './BluexManualDispatchCard';
+import MockupClientePreview from './MockupClientePreview';
 import { getPagoStatus } from '@/lib/pago-status';
 
 const ESTADOS = ['Nuevo', 'Confirmado', 'En Producción', 'Listo para Despacho', 'Despachado', 'Entregado', 'Cancelado'];
@@ -220,6 +221,9 @@ export default function PedidoDetailDrawer({ pedido, onClose, onUpdate }) {
               </div>
             )}
           </section>
+
+          {/* Arte del cliente para estampar (mockup + logo) — clave para producción */}
+          <MockupClientePreview pedido={pedido} variant="admin" />
 
           {/* Pago */}
           <section className="bg-gray-50 rounded-xl p-4 space-y-1">

@@ -333,9 +333,11 @@ export default function PersonalizacionFlow() {
       color: colorLabel,
       personalizacion: personalizacionLabel,
       imagen: displayImg,
-      logoUrl: logoUrl || null,
+      // Arte del cliente: logo subido, o diseño PEYU elegido como respaldo.
+      logoUrl: logoUrl || disenoPeyuUrl || null,
       disenoPeyuUrl: disenoPeyuUrl || null,
       mockupUrl: mockupUrl || null,
+      posicion_grabado: 'centro',
     };
     const carritoActual = JSON.parse(localStorage.getItem('carrito') || '[]');
     const nuevo = [...carritoActual, item];

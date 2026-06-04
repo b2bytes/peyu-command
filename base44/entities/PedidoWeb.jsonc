@@ -122,6 +122,18 @@
             "type": "number",
             "description": "Cargo de personalizaci\u00f3n l\u00e1ser de esta l\u00ednea (0 si gratis \u226510u o sin grabado)."
           },
+          "logo_url": {
+            "type": "string",
+            "description": "URL del logo/arte que subi\u00f3 el cliente para estampar en esta l\u00ednea. Fuente de verdad para producci\u00f3n."
+          },
+          "mockup_url": {
+            "type": "string",
+            "description": "URL del mockup generado (preview del grabado del cliente sobre el producto) para esta l\u00ednea."
+          },
+          "posicion_grabado": {
+            "type": "string",
+            "description": "Posici\u00f3n del grabado sobre el producto: arriba | centro | abajo."
+          },
           "precio_unitario": {
             "type": "number"
           },
@@ -131,6 +143,16 @@
         }
       },
       "default": []
+    },
+    "logo_url": {
+      "type": "string",
+      "title": "URL Logo del cliente",
+      "description": "Logo/arte que subi\u00f3 el cliente para estampar (acceso r\u00e1pido: 1er item con logo). Fuente de verdad para producci\u00f3n."
+    },
+    "mockup_url": {
+      "type": "string",
+      "title": "URL Mockup del cliente",
+      "description": "Mockup generado del grabado del cliente sobre el producto (acceso r\u00e1pido: 1er item con mockup). Visible en seguimiento y ficha interna."
     },
     "cantidad": {
       "type": "number",
