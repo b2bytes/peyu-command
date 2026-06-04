@@ -10,6 +10,10 @@ import {
   RotateCcw, BadgeCheck, Copy, X, Gift, AlertCircle
 } from 'lucide-react';
 import MockupGenerator from '@/components/MockupGenerator';
+import PersonalizacionOptionPicker from '@/components/personalizacion/PersonalizacionOptionPicker';
+import PriceBreakdownB2C from '@/components/personalizacion/PriceBreakdownB2C';
+import DisenosPeyuPickerB2C from '@/components/personalizacion/DisenosPeyuPickerB2C';
+import { Upload, Loader2 } from 'lucide-react';
 import { saveMockupDraft } from '@/lib/mockup-draft';
 import { getColoresProducto } from '@/lib/color-parser';
 import { findColorImageMatch } from '@/lib/color-image-matcher';
@@ -161,6 +165,11 @@ export default function ProductoDetalle() {
   const [colorSeleccionado, setColorSeleccionado] = useState(null);
   const [coloresPack, setColoresPack] = useState([]); // multi-color para packs
   const [personalizacion, setPersonalizacion] = useState('');
+  // 🎨 Opción de personalización elegida en la ficha B2C:
+  //   'none' (sin grabado) · 'frase' · 'peyu' (galería) · 'archivo' (logo propio)
+  const [opcionPers, setOpcionPers] = useState('none');
+  const [disenoPeyuUrl, setDisenoPeyuUrl] = useState(''); // diseño elegido de la galería PEYU
+  const [logoUploading, setLogoUploading] = useState(false);
   const [posicionGrabado, setPosicionGrabado] = useState('centro');
   const [carrito, setCarrito] = useState(() => {
     // Lectura defensiva: si el localStorage está corrupto no debe crashear la página.
@@ -246,12 +255,14 @@ export default function ProductoDetalle() {
   const precioActual = precioVolumen ? precioVolumen.precio : precioFinal;
 
   // ✨ Cargo de personalización láser (coherente con /personalizar y el carrito).
-  // El TIPO define el cargo unitario:
-  //   - logo propio subido (logoCliente) → "archivo" ($7.990/u)
-  //   - solo texto/frase                  → "frase"   ($3.990/u)
+  // El TIPO lo define la OPCIÓN elegida por el cliente en el selector:
+  //   - 'frase'   → texto ($3.990/u)
+  //   - 'peyu'    → diseño de la galería PEYU ($4.990/u)
+  //   - 'archivo' → logo propio subido ($7.990/u)
+  //   - 'none'    → sin grabado ($0)
   // GRATIS desde el MOQ del producto. Se cobra unitario × cantidad bajo el MOQ.
-  const hayPersonalizacion = !!(personalizacion || logoCliente);
-  const tipoPersonalizacion = logoCliente ? 'archivo' : 'frase';
+  const tipoPersonalizacion = opcionPers === 'none' ? null : opcionPers;
+  const hayPersonalizacion = !!tipoPersonalizacion;
   const moqGratisPers = producto?.personalizacion_gratis_desde || producto?.moq_personalizacion || MOQ_PERSONALIZACION_GRATIS;
   const personalizacionGratis = cantidad >= moqGratisPers;
   const cargoPersUnit = hayPersonalizacion ? getPrecioPersonalizacion(tipoPersonalizacion) : 0;
@@ -304,18 +315,23 @@ export default function ProductoDetalle() {
       color: packSize ? null : (colores.find(c => c.id === colorSeleccionado)?.label || colorSeleccionado || null),
       colores_pack: packSize ? coloresPack : null,
       pack_resumen: packSummary,
-      // Marca de personalización: texto si hay frase, o "Logo personalizado"
-      // cuando el cliente solo subió su logo (sin texto). Así el carrito siempre
-      // detecta que hay grabado y suma el cargo correcto por tipo.
-      personalizacion: personalizacion || (logoCliente ? 'Logo personalizado' : null),
-      tipo_personalizacion: hayPersonalizacion ? tipoPersonalizacion : null,
+      // Marca de personalización legible según la opción elegida. SIEMPRE no-vacío
+      // cuando hay grabado, para que el carrito detecte la línea y sume el cargo.
+      personalizacion: hayPersonalizacion
+        ? (personalizacion ||
+           (opcionPers === 'peyu' ? 'Diseño PEYU' :
+            opcionPers === 'archivo' ? 'Logo personalizado' : 'Grabado láser'))
+        : null,
+      tipo_personalizacion: tipoPersonalizacion,
       moq_personalizacion: moqGratisPers,
       personalizacion_gratis_desde: moqGratisPers,
+      fee_personalizacion: cargoPersTotal,
       posicion_grabado: hayPersonalizacion ? posicionGrabado : null,
       // 🎨 Arte del cliente — viaja con el item al carrito y luego al pedido,
       // para que producción y soporte vean exactamente qué estampar.
       mockupUrl: mockupGenerado || null,
-      logoUrl: logoCliente || null,
+      logoUrl: (opcionPers === 'archivo' ? logoCliente : null) || null,
+      diseno_peyu_url: opcionPers === 'peyu' ? (disenoPeyuUrl || null) : null,
       imagen: packSize ? getProductImage(producto) : imagenColorSeleccionado,
     };
     const nuevo = [...carrito, item];
@@ -326,6 +342,28 @@ export default function ProductoDetalle() {
     trackAddToCart({ ...item, sku: producto.sku, categoria: producto.categoria });
     // Trazabilidad 360°: add_to_cart en ActivityLog
     track.addToCart({ ...item, sku: producto.sku, id: producto.id });
+  };
+
+  // Cambia la opción de personalización y limpia el contenido de las otras
+  // opciones para que el dato que viaja al carrito sea siempre consistente.
+  const handleOpcionPers = (op) => {
+    setOpcionPers(op);
+    if (op !== 'frase') setPersonalizacion('');
+    if (op !== 'peyu') setDisenoPeyuUrl('');
+    if (op !== 'archivo') setLogoCliente('');
+  };
+
+  // Subida del logo propio (opción 'archivo'). Usa el integration UploadFile.
+  const handleLogoUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setLogoUploading(true);
+    try {
+      const res = await base44.integrations.Core.UploadFile({ file });
+      if (res?.file_url) setLogoCliente(res.file_url);
+    } finally {
+      setLogoUploading(false);
+    }
   };
 
   const handleShare = async () => {
@@ -1042,68 +1080,112 @@ export default function ProductoDetalle() {
                 )}
               </div>
 
-              {/* Personalización — no aplicable a giftcards */}
+              {/* Personalización láser UV — selector de opciones con precio (B2C) */}
               {!isGiftCard && producto.moq_personalizacion && (
-                <div className="ld-card p-4 space-y-3" style={{ background: 'var(--ld-highlight-soft)' }}>
-                  <div className="flex items-center justify-between">
+                <div className="ld-card p-4 space-y-3.5" style={{ background: 'var(--ld-highlight-soft)' }}>
+                  <div className="flex items-center justify-between gap-2">
                     <label className="text-sm font-bold text-ld-fg flex items-center gap-2">
                       <Sparkles className="w-4 h-4" style={{ color: 'var(--ld-highlight)' }} /> Personalización láser UV
                     </label>
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full text-white" style={{ background: 'var(--ld-highlight)' }}>
-                      GRATIS desde {producto.moq_personalizacion} u.
-                    </span>
-                  </div>
-                  <Input value={personalizacion} onChange={e => setPersonalizacion(e.target.value.slice(0, 25))}
-                    placeholder="Tu nombre, logo, frase favorita..."
-                    className="ld-input text-sm rounded-xl h-11 font-medium tracking-wide bg-ld-bg text-ld-fg placeholder:text-ld-fg-muted" />
-                  <div className="flex items-center justify-between">
-                    <p className="text-xs text-ld-fg-soft">Área: {producto.area_laser_mm || '40×25mm'} · Grabado permanente</p>
-                    <div className="flex items-center gap-2">
-                      {personalizacion && (
-                        <button onClick={() => setPersonalizacion('')} className="text-ld-fg-muted hover:text-ld-fg">
-                          <X className="w-3.5 h-3.5" />
-                        </button>
-                      )}
-                      <span className="text-xs font-bold" style={{ color: personalizacion.length >= 22 ? 'var(--ld-highlight)' : 'var(--ld-fg-muted)' }}>{personalizacion.length}/25</span>
-                    </div>
+                    {personalizacionGratis ? (
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full text-white flex items-center gap-1" style={{ background: 'var(--ld-action)' }}>
+                        <Check className="w-3 h-3" strokeWidth={3} /> Gratis desde {moqGratisPers}u
+                      </span>
+                    ) : (
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full text-white" style={{ background: 'var(--ld-highlight)' }}>
+                        GRATIS desde {moqGratisPers} u.
+                      </span>
+                    )}
                   </div>
 
-                  {/* Cargo de personalización láser según tipo:
-                      frase $3.990/u · logo propio $7.990/u · gratis ≥ MOQ */}
-                  {hayPersonalizacion && (
-                    <div className="flex items-center justify-between text-xs rounded-xl px-3 py-2" style={{ background: 'var(--ld-bg)' }}>
-                      <span className="text-ld-fg-soft">
-                        {PERSONALIZACION_LABEL[tipoPersonalizacion]}
-                        {!personalizacionGratis && ` · $${cargoPersUnit.toLocaleString('es-CL')} × ${cantidad}`}
-                      </span>
-                      <span className="font-bold" style={{ color: personalizacionGratis ? 'var(--ld-action)' : 'var(--ld-fg)' }}>
-                        {personalizacionGratis ? `✓ GRATIS desde ${moqGratisPers} u.` : `+$${cargoPersTotal.toLocaleString('es-CL')}`}
-                      </span>
-                    </div>
-                  )}
-                  {personalizacion && (
-                    <>
-                      <div className="rounded-xl px-4 py-2 text-center bg-slate-900 border border-yellow-500/40">
-                        <p className="font-bold tracking-[0.2em] text-sm text-yellow-400" style={{ fontFamily: 'monospace' }}>{personalizacion.toUpperCase()}</p>
-                        <p className="text-white/40 text-[9px] mt-0.5">Preview del grabado láser</p>
+                  {/* A · Selector de las 3 opciones + sin personalización */}
+                  <PersonalizacionOptionPicker
+                    value={opcionPers}
+                    onSelect={handleOpcionPers}
+                    gratis={personalizacionGratis}
+                    moq={moqGratisPers}
+                  />
+
+                  {/* Control según la opción elegida */}
+                  {opcionPers === 'frase' && (
+                    <div className="space-y-2">
+                      <Input value={personalizacion} onChange={e => setPersonalizacion(e.target.value.slice(0, 25))}
+                        placeholder="Tu nombre, empresa o frase..."
+                        className="ld-input text-sm rounded-xl h-11 font-medium tracking-wide bg-ld-bg text-ld-fg placeholder:text-ld-fg-muted" />
+                      <div className="flex items-center justify-between">
+                        <p className="text-xs text-ld-fg-soft">Área: {producto.area_laser_mm || '40×25mm'} · Grabado permanente</p>
+                        <span className="text-xs font-bold" style={{ color: personalizacion.length >= 22 ? 'var(--ld-highlight)' : 'var(--ld-fg-muted)' }}>{personalizacion.length}/25</span>
                       </div>
-                      <EngravingPositionPicker
-                        value={posicionGrabado}
-                        onChange={setPosicionGrabado}
-                        areaLaser={producto.area_laser_mm || '40×25mm'}
-                      />
-                    </>
+                      {personalizacion && (
+                        <div className="rounded-xl px-4 py-2 text-center bg-slate-900 border border-yellow-500/40">
+                          <p className="font-bold tracking-[0.2em] text-sm text-yellow-400" style={{ fontFamily: 'monospace' }}>{personalizacion.toUpperCase()}</p>
+                          <p className="text-white/40 text-[9px] mt-0.5">Preview del grabado láser</p>
+                        </div>
+                      )}
+                    </div>
                   )}
 
-                  {/* Mockup IA real */}
-                  <button
-                    type="button"
-                    onClick={() => setMockupOpen(true)}
-                    className="ld-btn-primary w-full flex items-center justify-center gap-2 text-xs font-bold rounded-xl py-2.5 transition-all"
-                  >
-                    <Sparkles className="w-3.5 h-3.5" />
-                    {mockupGenerado ? 'Regenerar mockup con IA' : 'Probar mi mockup realista con IA'}
-                  </button>
+                  {opcionPers === 'peyu' && (
+                    <DisenosPeyuPickerB2C selectedUrl={disenoPeyuUrl} onSelect={(url) => setDisenoPeyuUrl(url)} />
+                  )}
+
+                  {opcionPers === 'archivo' && (
+                    <div className="space-y-2">
+                      {logoCliente ? (
+                        <div className="flex items-center gap-3 bg-ld-bg border border-ld-border rounded-xl p-3">
+                          <img src={logoCliente} alt="Logo subido" className="w-12 h-12 object-contain rounded-lg bg-white" />
+                          <div className="flex-1 text-xs">
+                            <p className="font-bold flex items-center gap-1" style={{ color: 'var(--ld-action)' }}><Check className="w-3 h-3" /> Logo cargado</p>
+                            <p className="text-ld-fg-muted">Listo para grabar</p>
+                          </div>
+                          <button onClick={() => setLogoCliente('')} className="w-8 h-8 rounded-lg bg-ld-glass hover:bg-ld-glass-soft flex items-center justify-center text-ld-fg-muted">
+                            <X className="w-4 h-4" />
+                          </button>
+                        </div>
+                      ) : (
+                        <label className="flex items-center justify-center gap-2 bg-ld-bg hover:bg-ld-bg-soft border border-dashed border-ld-border-strong rounded-xl py-6 cursor-pointer transition-colors">
+                          {logoUploading ? (
+                            <><Loader2 className="w-4 h-4 animate-spin text-ld-fg-muted" /> <span className="text-sm text-ld-fg-muted">Subiendo...</span></>
+                          ) : (
+                            <><Upload className="w-4 h-4 text-ld-fg-muted" /> <span className="text-sm text-ld-fg-muted">Subir PNG, SVG o imagen</span></>
+                          )}
+                          <input type="file" accept="image/*,.svg" onChange={handleLogoUpload} disabled={logoUploading} className="hidden" />
+                        </label>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Posición de grabado — cuando hay personalización */}
+                  {hayPersonalizacion && (
+                    <EngravingPositionPicker
+                      value={posicionGrabado}
+                      onChange={setPosicionGrabado}
+                      areaLaser={producto.area_laser_mm || '40×25mm'}
+                    />
+                  )}
+
+                  {/* B · Desglose de precio en vivo */}
+                  <PriceBreakdownB2C
+                    precioUnit={precioActual}
+                    cantidad={cantidad}
+                    subtotalProducto={precioActual * cantidad}
+                    tipoLabel={hayPersonalizacion ? PERSONALIZACION_LABEL[tipoPersonalizacion] : null}
+                    cargoUnit={cargoPersUnit}
+                    cargoTotal={cargoPersTotal}
+                    gratis={personalizacionGratis}
+                  />
+
+                  {/* Mockup IA real (mandato #2 aparte) */}
+                  {hayPersonalizacion && (
+                    <button
+                      type="button"
+                      onClick={() => setMockupOpen(true)}
+                      className="ld-btn-primary w-full flex items-center justify-center gap-2 text-xs font-bold rounded-xl py-2.5 transition-all"
+                    >
+                      <Sparkles className="w-3.5 h-3.5" />
+                      {mockupGenerado ? 'Regenerar mockup con IA' : 'Probar mi mockup realista con IA'}
+                    </button>
+                  )}
 
                   {mockupGenerado && (
                     <div className="rounded-xl overflow-hidden border border-ld-border bg-white">
