@@ -9,7 +9,7 @@ import { ShoppingBag, ArrowRight } from 'lucide-react';
  * Si el carrito está vacío muestra un estado guía deshabilitado, así el usuario
  * siempre sabe dónde está su pedido.
  */
-export default function MobileOrderBar({ cart, subtotalEstimado, onOpen }) {
+export default function MobileOrderBar({ cart, subtotalEstimado, onOpen, onContinue }) {
   const totalUnidades = cart.reduce((s, c) => s + c.cantidad, 0);
   const vacio = cart.length === 0;
 
@@ -18,9 +18,14 @@ export default function MobileOrderBar({ cart, subtotalEstimado, onOpen }) {
       className="lg:hidden fixed bottom-0 inset-x-0 z-40 ld-glass-strong border-t border-white/15 shadow-[0_-8px_24px_-8px_rgba(0,0,0,0.45)]"
       style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 0.625rem)' }}
     >
-      <div className="px-3 pt-2.5 flex items-center gap-3">
-        {/* Resumen: productos + subtotal */}
-        <div className="flex items-center gap-2.5 min-w-0 flex-shrink">
+      <div className="px-3 pt-2.5 flex items-center gap-2.5">
+        {/* Resumen: productos + subtotal — toca aquí para ver/editar el pedido */}
+        <button
+          onClick={onOpen}
+          disabled={vacio}
+          className="flex items-center gap-2.5 min-w-0 flex-shrink disabled:opacity-100"
+          aria-label="Ver pedido"
+        >
           <div className="relative w-11 h-11 rounded-xl bg-gradient-to-br from-teal-400/30 to-cyan-500/30 border border-teal-400/40 flex items-center justify-center flex-shrink-0">
             <ShoppingBag className="w-5 h-5 text-teal-300" />
             {!vacio && (
@@ -29,7 +34,7 @@ export default function MobileOrderBar({ cart, subtotalEstimado, onOpen }) {
               </span>
             )}
           </div>
-          <div className="min-w-0">
+          <div className="min-w-0 text-left">
             {vacio ? (
               <>
                 <p className="text-[11px] text-white/55 leading-tight">Tu pedido</p>
@@ -46,11 +51,12 @@ export default function MobileOrderBar({ cart, subtotalEstimado, onOpen }) {
               </>
             )}
           </div>
-        </div>
+        </button>
 
-        {/* Botón grande Ver pedido / Cotizar */}
+        {/* Botón grande Continuar — avanza directo al siguiente paso (sin pasar
+            obligatoriamente por el drawer). Soluciona el bloqueo en móvil. */}
         <button
-          onClick={onOpen}
+          onClick={vacio ? undefined : (onContinue || onOpen)}
           disabled={vacio}
           className="ml-auto flex-1 max-w-[58%] h-12 rounded-xl bg-gradient-to-br from-teal-400 to-cyan-500 active:from-teal-600 active:to-cyan-700 text-white font-bold text-sm flex items-center justify-center gap-1.5 shadow-lg shadow-teal-500/30 transition-all disabled:opacity-40 disabled:shadow-none"
         >
@@ -58,7 +64,7 @@ export default function MobileOrderBar({ cart, subtotalEstimado, onOpen }) {
             <span className="text-[13px]">Agrega productos</span>
           ) : (
             <>
-              <span>Ver pedido</span>
+              <span>Continuar</span>
               <ArrowRight className="w-4 h-4" />
             </>
           )}

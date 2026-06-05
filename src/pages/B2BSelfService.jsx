@@ -978,6 +978,7 @@ export default function B2BSelfService() {
           cart={cart}
           subtotalEstimado={subtotalEstimado}
           onOpen={() => setCartOpen(true)}
+          onContinue={() => setStep(1)}
         />
       )}
 
