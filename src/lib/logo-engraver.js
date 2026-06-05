@@ -103,8 +103,19 @@ export async function engraveLogo(input, tint = 'dark') {
         opaqueCorners++;
       }
     }
-    const hasSolidBg = opaqueCorners >= 2;
+    let hasSolidBg = opaqueCorners >= 2;
     if (hasSolidBg) { br /= opaqueCorners; bg /= opaqueCorners; bb /= opaqueCorners; }
+
+    // ── 1b. ¿La imagen es mayoritariamente opaca? (PNG con fondo blanco/color
+    // que NO fue detectado por esquinas, o JPG). Si >85% de píxeles son opacos,
+    // forzamos tratamiento por luminancia para no dejar un bloque sólido.
+    let opaquePx = 0, totalPx = 0;
+    for (let i = 3; i < data.length; i += 4) { totalPx++; if (data[i] > 200) opaquePx++; }
+    const mostlyOpaque = totalPx > 0 && opaquePx / totalPx > 0.85;
+    if (mostlyOpaque && !hasSolidBg) {
+      // Asumimos fondo claro (line-art negro sobre blanco es lo común).
+      hasSolidBg = true; br = 255; bg = 255; bb = 255;
+    }
 
     // Tono de tinta del grabado (1 sola tinta) — intenso modo láser.
     // light = grabado casi blanco sobre producto oscuro.
@@ -143,7 +154,9 @@ export async function engraveLogo(input, tint = 'dark') {
 
       // Suavizado + realce intenso: descartar ruido tenue y empujar el trazo
       // para que el grabado se vea nítido e intenso (modo láser), no lavado.
-      strokeAlpha = strokeAlpha < 0.10 ? 0 : Math.min(1, strokeAlpha * 1.45);
+      // Umbral más alto (0.18) limpia el halo gris claro del antialias del fondo
+      // blanco → ya no queda un "marco" tenue que se ve como caja.
+      strokeAlpha = strokeAlpha < 0.18 ? 0 : Math.min(1, (strokeAlpha - 0.18) / 0.82 * 1.5);
 
       data[i] = ink;
       data[i + 1] = ink;

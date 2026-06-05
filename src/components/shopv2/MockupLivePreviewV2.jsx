@@ -239,12 +239,14 @@ export default function MockupLivePreviewV2({ productImageUrl, capas = [], onPla
           if (fresh) lastEngRef.current[c.id] = fresh;
           const eng = fresh || lastEngRef.current[c.id];
           if (!eng) return null;
-          // light = grabado claro sobre producto oscuro → 'screen' (intenso, luminoso).
-          // dark  = grabado oscuro sobre producto claro → 'multiply' (intenso, sólido).
-          const blend = tint === 'light' ? 'screen' : 'multiply';
-          const fx = tint === 'light'
-            ? 'brightness(1.7) contrast(1.05) drop-shadow(0 1px 0 rgba(0,0,0,0.45))'
-            : 'contrast(1.15) drop-shadow(0 1px 1px rgba(255,255,255,0.35))';
+          // Si el procesado NO logró limpiar el fondo (CORS/tainted), NO aplicamos
+          // blend ennegrecedor → mostramos el diseño limpio (sin caja negra).
+          const blend = !eng.ok ? 'normal' : (tint === 'light' ? 'screen' : 'multiply');
+          const fx = !eng.ok
+            ? 'contrast(1.05) drop-shadow(0 1px 2px rgba(0,0,0,0.25))'
+            : (tint === 'light'
+              ? 'brightness(1.7) contrast(1.05) drop-shadow(0 1px 0 rgba(0,0,0,0.45))'
+              : 'contrast(1.15) drop-shadow(0 1px 1px rgba(255,255,255,0.35))');
           return (
             <div key={c.id} className="absolute cursor-move"
               style={{
