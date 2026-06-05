@@ -8,6 +8,7 @@ import QuoteItemRow from '@/components/cotizacion/QuoteItemRow';
 import QuoteContactForm from '@/components/cotizacion/QuoteContactForm';
 import QuoteResultCard from '@/components/cotizacion/QuoteResultCard';
 import QuoteStepper from '@/components/cotizacion/QuoteStepper';
+import QuoteProductModal from '@/components/cotizacion/QuoteProductModal';
 import { getB2BPriceForQty, getUnitBasePrice } from '@/lib/catalog-pricing';
 import { fmtCLP } from '@/lib/shop-v2-cart';
 
@@ -31,6 +32,7 @@ export default function CotizacionRapida() {
   const [enviando, setEnviando] = useState(false);
   const [error, setError] = useState('');
   const [result, setResult] = useState(null);
+  const [preview, setPreview] = useState(null); // producto en ficha emergente
 
   useEffect(() => {
     base44.entities.Producto.filter({ activo: true }, '-updated_date', 200)
@@ -128,7 +130,7 @@ export default function CotizacionRapida() {
                       <Package className="w-5 h-5 text-[#0F8B6C]" /> Elige tus productos
                     </h2>
                     <p className="text-xs text-[#A78B6F] mb-4">Agrega los productos que quieres cotizar. El descuento se aplica solo al subir las cantidades.</p>
-                    <QuoteProductPicker productos={productos} selectedSkus={selectedSkus} onAdd={addProducto} />
+                    <QuoteProductPicker productos={productos} selectedSkus={selectedSkus} onAdd={addProducto} onView={setPreview} />
                   </div>
 
                   {items.length > 0 && (
@@ -274,6 +276,13 @@ export default function CotizacionRapida() {
           </>
         )}
       </div>
+
+      <QuoteProductModal
+        producto={preview}
+        onClose={() => setPreview(null)}
+        onAdd={addProducto}
+        yaAgregado={preview ? selectedSkus.includes(preview.sku) : false}
+      />
 
       <footer className="border-t border-[#EBE3D6] py-8 text-center text-xs text-[#A78B6F] flex items-center justify-center gap-1.5">
         <Recycle className="w-3.5 h-3.5 text-[#0F8B6C]" /> PEYU Chile · Plástico reciclado · Hecho en Santiago 🇨🇱

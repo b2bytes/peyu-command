@@ -1,13 +1,14 @@
 import { useState, useMemo } from 'react';
-import { Search, Plus, TrendingDown } from 'lucide-react';
+import { Search, Plus, TrendingDown, Eye } from 'lucide-react';
 import { getProductImage } from '@/utils/productImages';
 import { fmtCLP } from '@/lib/shop-v2-cart';
 import { getUnitBasePrice, getB2BPriceForQty } from '@/lib/catalog-pricing';
 
 // Buscador de productos para agregar a la cotización B2B. Lista el catálogo
 // activo, permite filtrar por categoría y agregar con un click. Muestra el
-// ahorro máximo por volumen para incentivar pedidos grandes.
-export default function QuoteProductPicker({ productos, selectedSkus, onAdd }) {
+// ahorro máximo por volumen para incentivar pedidos grandes. Tocar el card
+// abre la ficha emergente (onView); el botón + agrega directo (onAdd).
+export default function QuoteProductPicker({ productos, selectedSkus, onAdd, onView }) {
   const [q, setQ] = useState('');
   const [cat, setCat] = useState('Todos');
 
@@ -68,17 +69,22 @@ export default function QuoteProductPicker({ productos, selectedSkus, onAdd }) {
             const maxVol = getB2BPriceForQty(p, 2000);
             const ahorroMax = maxVol?.ahorroPct || 0;
             return (
-              <button
+              <div
                 key={p.id}
-                onClick={() => onAdd(p)}
-                className="w-full flex items-center gap-3 bg-white border border-[#EBE3D6] hover:border-[#0F8B6C]/40 rounded-xl p-2.5 text-left transition-colors group"
+                onClick={() => onView?.(p)}
+                className="w-full flex items-center gap-3 bg-white border border-[#EBE3D6] hover:border-[#0F8B6C]/40 rounded-xl p-2.5 text-left transition-colors group cursor-pointer"
               >
-                <img
-                  src={getProductImage(p)}
-                  alt={p.nombre}
-                  className="w-10 h-10 object-cover rounded-lg bg-[#FAF7F2] flex-shrink-0"
-                  onError={(e) => { e.target.style.visibility = 'hidden'; }}
-                />
+                <div className="relative flex-shrink-0">
+                  <img
+                    src={getProductImage(p)}
+                    alt={p.nombre}
+                    className="w-10 h-10 object-cover rounded-lg bg-[#FAF7F2]"
+                    onError={(e) => { e.target.style.visibility = 'hidden'; }}
+                  />
+                  <span className="absolute inset-0 rounded-lg bg-[#2A2420]/0 group-hover:bg-[#2A2420]/40 flex items-center justify-center transition-colors">
+                    <Eye className="w-4 h-4 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+                  </span>
+                </div>
                 <div className="flex-1 min-w-0">
                   <p className="font-bold text-sm text-[#2A2420] truncate">{p.nombre}</p>
                   <p className="text-[11px] text-[#A78B6F]">{p.categoria} · desde {fmtCLP(getUnitBasePrice(p))}/u</p>
@@ -88,10 +94,14 @@ export default function QuoteProductPicker({ productos, selectedSkus, onAdd }) {
                     <TrendingDown className="w-3 h-3" /> -{ahorroMax}%
                   </span>
                 )}
-                <span className="w-8 h-8 rounded-lg bg-[#0F8B6C]/8 group-hover:bg-[#0F8B6C] text-[#0F8B6C] group-hover:text-white flex items-center justify-center flex-shrink-0 transition-colors">
+                <button
+                  onClick={(e) => { e.stopPropagation(); onAdd(p); }}
+                  className="w-8 h-8 rounded-lg bg-[#0F8B6C]/8 hover:bg-[#0F8B6C] text-[#0F8B6C] hover:text-white flex items-center justify-center flex-shrink-0 transition-colors"
+                  aria-label="Agregar"
+                >
                   <Plus className="w-4 h-4" />
-                </span>
-              </button>
+                </button>
+              </div>
             );
           })}
         </div>
