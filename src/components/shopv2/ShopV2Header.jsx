@@ -39,6 +39,7 @@ export default function ShopV2Header() {
         <nav className="hidden sm:flex items-center gap-1">
           <Link to="/TiendaNueva" className="px-3 py-2 text-sm font-semibold text-[#4B4F54] hover:text-[#0F8B6C] rounded-lg transition-colors">Inicio</Link>
           <Link to="/CatalogoNuevo" className="px-3 py-2 text-sm font-semibold text-[#4B4F54] hover:text-[#0F8B6C] rounded-lg transition-colors">Tienda</Link>
+          <Link to="/CotizacionRapida" className="px-3 py-2 text-sm font-semibold text-[#4B4F54] hover:text-[#0F8B6C] rounded-lg transition-colors">Empresas</Link>
         </nav>
 
         <button
