@@ -11,6 +11,11 @@
       "type": "string",
       "title": "URL imagen del dise\u00f1o (PNG transparente recomendado)"
     },
+    "imagen_grabado_url": {
+      "type": "string",
+      "title": "URL versi\u00f3n grabado l\u00e1ser (PNG transparente monocromo, pre-procesado)",
+      "description": "Versi\u00f3n del dise\u00f1o ya procesada como grabado l\u00e1ser: line-art monocromo con fondo transparente, lista para superponer sobre cualquier carcasa sin caja ni mancha. Generada por engraveDisenosPeyu. Si existe, el personalizador la usa en vez de imagen_url."
+    },
     "categoria": {
       "type": "string",
       "title": "Categor\u00eda",
