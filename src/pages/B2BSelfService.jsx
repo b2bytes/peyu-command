@@ -983,10 +983,17 @@ export default function B2BSelfService() {
         />
       )}
 
-      {/* FAB flotante "Siguiente" — centrado, siempre visible, sobre la barra,
-          para que el avance nunca quede tapado en móvil (step 0 con productos). */}
-      {step === 0 && !cartOpen && (
-        <MobileNextFab visible={cart.length > 0} onContinue={() => setStep(1)} />
+      {/* FAB flotante "Siguiente" — centrado, siempre visible en TODOS los pasos
+          (0,1,2) para que el avance nunca quede tapado en móvil. En el último
+          paso (2) genera la propuesta. Respeta la validación de cada paso. */}
+      {step < 3 && !cartOpen && (
+        <MobileNextFab
+          visible={step === 0 ? cart.length > 0 : true}
+          enabled={step === 2 ? !generando : canContinue(step)}
+          isLast={step === 2}
+          loading={step === 2 && generando}
+          onAction={step === 2 ? handleGenerar : () => setStep(step + 1)}
+        />
       )}
 
       {/* Drawer del carrito (solo móvil) — premium glass */}
