@@ -13,7 +13,7 @@ import { MOQ_PERSONALIZACION_GRATIS } from '@/lib/personalizacion-config';
 import { addToCartV2, fmtCLP } from '@/lib/shop-v2-cart';
 import {
   PERS_VACIO, tiposActivos, feeUnitarioCombinado, labelCombinada,
-  resumenPersonalizacion, persCompleta,
+  resumenPersonalizacion, persCompleta, hayAlgunoActivado,
 } from '@/lib/pers-combinable';
 
 // ════════════════════════════════════════════════════════════════════════
@@ -64,15 +64,17 @@ export default function LiveConfiguratorV2({ carcasas = [] }) {
   const feeTotal = gratis ? 0 : feeUnit * cantidad;
   const total = precioUnit * cantidad + feeTotal;
 
-  // Capa (única) para el mockup: frase, diseño PEYU o logo propio.
+  // Capas (combinables) para el mockup: frase + diseño PEYU + logo propio.
   const capas = useMemo(() => {
-    if (pers.tipo === 'frase' && pers.texto.trim()) return [{ id: 'frase', tipo: 'frase', texto: pers.texto }];
-    if (pers.tipo === 'peyu' && pers.disenoPeyuUrl) return [{ id: 'peyu', tipo: 'peyu', url: pers.disenoPeyuUrl }];
-    if (pers.tipo === 'archivo' && pers.logoUrl) return [{ id: 'archivo', tipo: 'archivo', url: pers.logoUrl }];
-    return [];
+    const out = [];
+    if (pers.frase && pers.texto.trim()) out.push({ id: 'frase', tipo: 'frase', texto: pers.texto });
+    if (pers.peyu && pers.disenoPeyuUrl) out.push({ id: 'peyu', tipo: 'peyu', url: pers.disenoPeyuUrl });
+    if (pers.archivo && pers.logoUrl) out.push({ id: 'archivo', tipo: 'archivo', url: pers.logoUrl });
+    return out;
   }, [pers]);
 
-  const persOk = persCompleta(pers);
+  // Listo para agregar: sin personalización, o con personalización aprobada.
+  const persOk = persCompleta(pers) && (!hayAlgunoActivado(pers) || pers.aprobada);
   const muestraMockup = capas.length > 0;
 
   // Preview en vivo: imagen del color elegido o principal.
@@ -216,6 +218,8 @@ export default function LiveConfiguratorV2({ carcasas = [] }) {
             >
               {added ? (
                 <><Check className="w-5 h-5" /> ¡Agregado!</>
+              ) : hayAlgunoActivado(pers) && !pers.aprobada ? (
+                <><Sparkles className="w-5 h-5" /> Aprueba tu personalización</>
               ) : (
                 <><ShoppingBag className="w-5 h-5" /> Agregar al carro · {fmtCLP(total)}</>
               )}
