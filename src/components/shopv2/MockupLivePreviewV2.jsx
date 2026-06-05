@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { Move, Sparkles, Loader2, Type, Palette, Upload, Wand2 } from 'lucide-react';
-import { engraveLogo } from '@/lib/logo-engraver';
+import { engraveLogo, detectImageTone } from '@/lib/logo-engraver';
 
 // ════════════════════════════════════════════════════════════════════════
 // MockupLivePreviewV2 — Preview de grabado láser EN VIVO, piel Tema 6 (cream).
@@ -68,13 +68,25 @@ function clampToArea(x, y, sizePct, tipo) {
 export default function MockupLivePreviewV2({ productImageUrl, capas = [], onPlacementChange }) {
   const containerRef = useRef(null);
   const [placements, setPlacements] = useState({}); // id -> {size,x,y}
-  const [engraved, setEngraved] = useState({});       // url -> {dataUrl, ok}
+  const [engraved, setEngraved] = useState({});       // "url::tint" -> {dataUrl, ok}
   const [processing, setProcessing] = useState(false);
   const [activeId, setActiveId] = useState(null);     // capa que se arrastra
   const [dragging, setDragging] = useState(false);
   const [touched, setTouched] = useState({});         // id -> el usuario lo movió a mano
+  const [tint, setTint] = useState('light');          // tono del grabado (contrario al producto)
+  const lastEngRef = useRef({});                       // id -> último {dataUrl,ok} válido (anti-parpadeo)
 
   const capasKey = capas.map((c) => c.id).join('|');
+
+  // Detecta el tono del producto → define la tinta del grabado:
+  //   producto OSCURO  → grabado CLARO (light), intenso.
+  //   producto CLARO   → grabado OSCURO (dark), intenso.
+  useEffect(() => {
+    let cancelled = false;
+    if (!productImageUrl) return;
+    detectImageTone(productImageUrl).then((t) => { if (!cancelled) setTint(t); });
+    return () => { cancelled = true; };
+  }, [productImageUrl]);
 
   // Inicializa/auto-acomoda las capas. Las que el usuario NO ha tocado se
   // recalculan con autoLayout (para que al combinar no se apilen). Las tocadas
@@ -100,25 +112,31 @@ export default function MockupLivePreviewV2({ productImageUrl, capas = [], onPla
   // Reporta placements al padre.
   useEffect(() => { onPlacementChange?.(placements); }, [placements]); // eslint-disable-line
 
-  // Procesa los logos/diseños (URLs) a grabado monocromo transparente.
+  // Procesa los logos/diseños (URLs) a grabado monocromo transparente, según el
+  // tono del producto. Cachea por "url::tint" → cambiar entre diseños ya
+  // procesados es INSTANTÁNEO (no reprocesa, no parpadea). Mantiene el render
+  // anterior visible mientras procesa el nuevo (clave anti-"mareo").
   useEffect(() => {
     let cancelled = false;
-    const urls = capas.filter((c) => c.url && !engraved[c.url]).map((c) => c.url);
+    const pending = capas
+      .filter((c) => c.url && !engraved[`${c.url}::${tint}`])
+      .map((c) => c.url);
+    const urls = Array.from(new Set(pending));
     if (!urls.length) return;
     setProcessing(true);
-    Promise.all(urls.map((u) => engraveLogo(u, 'dark').then(
+    Promise.all(urls.map((u) => engraveLogo(u, tint).then(
       ({ dataUrl, processed }) => ({ u, dataUrl, ok: processed !== false }),
       () => ({ u, dataUrl: u, ok: false }),
     ))).then((results) => {
       if (cancelled) return;
       setEngraved((prev) => {
         const next = { ...prev };
-        results.forEach(({ u, dataUrl, ok }) => { next[u] = { dataUrl, ok }; });
+        results.forEach(({ u, dataUrl, ok }) => { next[`${u}::${tint}`] = { dataUrl, ok }; });
         return next;
       });
     }).finally(() => { if (!cancelled) setProcessing(false); });
     return () => { cancelled = true; };
-  }, [capas.map((c) => c.url || '').join('|')]); // eslint-disable-line
+  }, [capasKey, capas.map((c) => c.url || '').join('|'), tint]); // eslint-disable-line
 
   const moveTo = useCallback((clientX, clientY) => {
     if (!containerRef.current || !activeId) return;
@@ -203,25 +221,38 @@ export default function MockupLivePreviewV2({ productImageUrl, capas = [], onPla
                 {isActive && <span className="absolute -inset-2 rounded-lg border border-dashed border-[#0F8B6C]/70 pointer-events-none" />}
                 <span style={{
                   fontSize: `${pl.size * 0.42}px`, fontFamily: 'monospace', fontWeight: 'bold',
-                  color: 'rgba(235,235,235,0.92)', letterSpacing: '0.14em', whiteSpace: 'nowrap',
-                  textShadow: '0 1px 0 rgba(0,0,0,0.55), 0 -1px 0 rgba(255,255,255,0.12)',
-                  mixBlendMode: 'screen',
+                  color: tint === 'light' ? 'rgba(245,245,245,0.95)' : 'rgba(18,18,18,0.92)',
+                  letterSpacing: '0.14em', whiteSpace: 'nowrap',
+                  textShadow: tint === 'light'
+                    ? '0 1px 0 rgba(0,0,0,0.55), 0 -1px 0 rgba(255,255,255,0.15)'
+                    : '0 1px 0 rgba(255,255,255,0.5), 0 -1px 0 rgba(0,0,0,0.2)',
+                  mixBlendMode: tint === 'light' ? 'screen' : 'multiply',
                 }}>{c.texto.toUpperCase()}</span>
               </div>
             );
           }
 
-          // Capa gráfica (diseño PEYU / logo) — grabado láser sobre superficie oscura.
-          const eng = c.url ? engraved[c.url] : null;
+          // Capa gráfica (diseño PEYU / logo) — grabado láser inteligente según el
+          // tono del producto. Blend distinto si la tinta es clara u oscura.
+          // Anti-parpadeo: si el nuevo aún procesa, mantenemos el último válido.
+          const fresh = c.url ? engraved[`${c.url}::${tint}`] : null;
+          if (fresh) lastEngRef.current[c.id] = fresh;
+          const eng = fresh || lastEngRef.current[c.id];
           if (!eng) return null;
+          // light = grabado claro sobre producto oscuro → 'screen' (intenso, luminoso).
+          // dark  = grabado oscuro sobre producto claro → 'multiply' (intenso, sólido).
+          const blend = tint === 'light' ? 'screen' : 'multiply';
+          const fx = tint === 'light'
+            ? 'brightness(1.7) contrast(1.05) drop-shadow(0 1px 0 rgba(0,0,0,0.45))'
+            : 'contrast(1.15) drop-shadow(0 1px 1px rgba(255,255,255,0.35))';
           return (
             <div key={c.id} className="absolute cursor-move"
               style={{
                 left: `${pl.x}%`, top: `${pl.y}%`, width: `${pl.size}%`, transform: 'translate(-50%, -50%)',
                 zIndex: isActive ? 20 : 10,
-                mixBlendMode: 'screen',
-                opacity: 0.82,
-                filter: 'brightness(1.6) contrast(0.9) drop-shadow(0 1px 0 rgba(0,0,0,0.5))',
+                mixBlendMode: blend,
+                opacity: 0.9,
+                filter: fx,
               }}
               onMouseDown={startDrag} onTouchStart={startDrag}>
               {isActive && <span className="absolute -inset-1.5 rounded-lg border border-dashed border-[#0F8B6C]/70 pointer-events-none" style={{ mixBlendMode: 'normal' }} />}

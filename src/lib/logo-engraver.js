@@ -15,6 +15,38 @@
 // Si algo falla, devuelve el logo original (sin caja negra) como fallback.
 // ============================================================================
 
+/**
+ * Detecta si una imagen (producto) es de tono CLARO u OSCURO muestreando su
+ * zona central (donde va el grabado). Devuelve 'dark' | 'light'.
+ * Si falla CORS o la imagen no carga, asume 'dark' (carcasas suelen ser oscuras).
+ */
+export async function detectImageTone(src) {
+  try {
+    const img = await loadImage(src);
+    const S = 48; // canvas pequeño: rápido y suficiente para promedio
+    const canvas = document.createElement('canvas');
+    canvas.width = S; canvas.height = S;
+    const ctx = canvas.getContext('2d', { willReadFrequently: true });
+    ctx.drawImage(img, 0, 0, S, S);
+    // Muestrea SOLO la zona central (40%-70%) = área de grabado.
+    const x0 = Math.floor(S * 0.30), x1 = Math.floor(S * 0.70);
+    const y0 = Math.floor(S * 0.34), y1 = Math.floor(S * 0.68);
+    const d = ctx.getImageData(x0, y0, x1 - x0, y1 - y0).data;
+    let lum = 0, n = 0;
+    for (let i = 0; i < d.length; i += 4) {
+      if (d[i + 3] < 20) continue;
+      lum += 0.299 * d[i] + 0.587 * d[i + 1] + 0.114 * d[i + 2];
+      n++;
+    }
+    if (!n) return 'dark';
+    const avg = lum / n;
+    // Producto oscuro → grabado claro ('light'); producto claro → grabado oscuro ('dark').
+    return avg < 128 ? 'light' : 'dark';
+  } catch {
+    return 'light';
+  }
+}
+
 /** Carga una imagen (File o URL) como HTMLImageElement. */
 function loadImage(src) {
   return new Promise((resolve, reject) => {
@@ -74,8 +106,10 @@ export async function engraveLogo(input, tint = 'dark') {
     const hasSolidBg = opaqueCorners >= 2;
     if (hasSolidBg) { br /= opaqueCorners; bg /= opaqueCorners; bb /= opaqueCorners; }
 
-    // Tono de tinta del grabado (1 sola tinta).
-    const ink = tint === 'light' ? 245 : 28;
+    // Tono de tinta del grabado (1 sola tinta) — intenso modo láser.
+    // light = grabado casi blanco sobre producto oscuro.
+    // dark  = grabado casi negro sobre producto claro.
+    const ink = tint === 'light' ? 250 : 18;
     // Umbral de similitud al fondo para volverlo transparente.
     const KEY_THRESHOLD = 60;
 
@@ -107,8 +141,9 @@ export async function engraveLogo(input, tint = 'dark') {
         strokeAlpha = a / 255;
       }
 
-      // Suavizado: descartar ruido muy tenue.
-      strokeAlpha = strokeAlpha < 0.08 ? 0 : Math.min(1, strokeAlpha * 1.1);
+      // Suavizado + realce intenso: descartar ruido tenue y empujar el trazo
+      // para que el grabado se vea nítido e intenso (modo láser), no lavado.
+      strokeAlpha = strokeAlpha < 0.10 ? 0 : Math.min(1, strokeAlpha * 1.45);
 
       data[i] = ink;
       data[i + 1] = ink;
