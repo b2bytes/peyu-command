@@ -18,6 +18,7 @@ import PhoneCountryInput from '@/components/b2b/selfservice/PhoneCountryInput';
 import EngravingPositionPicker from '@/components/producto/EngravingPositionPicker';
 import DeliveryMethodPicker from '@/components/b2b/selfservice/DeliveryMethodPicker';
 import MobileOrderBar from '@/components/b2b/selfservice/MobileOrderBar';
+import GrabadoLaserInfo from '@/components/personalizacion/GrabadoLaserInfo';
 
 const STEPS = ['Productos', 'Empresa', 'Personalización', 'Propuesta'];
 const PERSIST_KEY = 'peyu_b2b_flow';

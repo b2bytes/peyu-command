@@ -117,13 +117,20 @@ Return concise, production-accurate guidance.`,
 const DARK_COLOR_HINTS = ['negro', 'azul', 'azul marino', 'marino', 'gris oscuro', 'café', 'cafe', 'marron', 'marrón', 'violeta', 'morado', 'verde oscuro'];
 
 function buildLaserToneInstruction(color) {
-  if (!color) return '';
+  // 🔦 REGLA GLOBAL (items 3 y 5): el grabado láser es SIEMPRE monocromo en
+  // escala de GRISES, tono OPUESTO al color del producto. NUNCA a color, aunque
+  // el logo del cliente venga a color: se convierte a un solo gris. Sin color
+  // conocido, default a gris oscuro (la mayoría de productos son claros).
+  const GLOBAL = ` 🔦 CRITICAL LASER RULE — ALWAYS GREYSCALE: The engraving MUST be a single monochrome GREY tone. NEVER reproduce the customer's logo in color — convert any colored logo to ONE grey tone before engraving. Real UV laser engraving on recycled plastic is always monochrome greyscale, never multicolor. NO color fills, NO gradients, NO colored ink.`;
+  if (!color) {
+    return GLOBAL + ` Default engraving tone: DARK charcoal-grey (#2a2a2a) for a light/neutral product surface.`;
+  }
   const c = String(color).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
   const isDark = DARK_COLOR_HINTS.some(h => c.includes(h.normalize('NFD').replace(/[\u0300-\u036f]/g, ''))) || /(^|\s)(negr|azul|marin|oscur)/.test(c);
   if (isDark) {
-    return ` 🔦 LASER TONE (monochrome, single color): the case color is DARK ("${color}"), so the engraving must appear in a LIGHT smoky-grey / off-white etched tone so it is clearly visible against the dark surface. Still ONE single tone — real UV laser engraving is monochrome — only lighter than the case.`;
+    return GLOBAL + ` The product color is DARK ("${color}"), so the engraving must be a LIGHT smoky-grey / off-white tone (#e8e8e8) clearly visible against the dark surface. ONE single grey tone, only lighter than the product.`;
   }
-  return ` 🔦 LASER TONE (monochrome, single color): the case color is LIGHT ("${color}"), so the engraving must appear in a DARK charcoal-grey etched tone so it is clearly visible against the light surface. Still ONE single tone — real UV laser engraving is monochrome — only darker than the case.`;
+  return GLOBAL + ` The product color is LIGHT ("${color}"), so the engraving must be a DARK charcoal-grey tone (#2a2a2a) clearly visible against the light surface. ONE single grey tone, only darker than the product.`;
 }
 
 // Construye una instrucción de placement a partir del análisis de visión.

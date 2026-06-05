@@ -1,73 +1,78 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowUpRight, Home, Briefcase, Building2, Gift } from 'lucide-react';
+import { ArrowUpRight, Smartphone, Home, Gamepad2, Briefcase } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
+import { getProductImage } from '@/utils/productImages';
 
 /**
- * Categorías Liquid Dual — tiles editoriales con productos REALES PEYU.
- * Carga dinámicamente la imagen de un producto representativo de cada
- * categoría desde la BD. Si no encuentra, usa fallback Unsplash.
+ * Categorías Liquid Dual — tiles editoriales con FOTOS REALES del catálogo.
+ * Cada tarjeta usa la imagen real de un SKU representativo (cargado de la BD),
+ * con SKUs de respaldo si el principal no existe. Enlaza a /shop?categoria=...
+ * Categorías oficiales: Carcasas · Hogar · Entretenimiento · Escritorio.
  */
 const CATEGORY_CONFIG = [
+  {
+    label: 'Carcasas',
+    tagline: 'Funda con tu estilo',
+    to: '/shop?categoria=Carcasas%20B2C',
+    icon: Smartphone,
+    queryCategoria: 'Carcasas B2C',
+    skus: ['17175', 'CARC-IP13'],
+  },
   {
     label: 'Hogar',
     tagline: 'Calidez para tu casa',
     to: '/shop?categoria=Hogar',
     icon: Home,
     queryCategoria: 'Hogar',
-    // Editorial lifestyle — taza + posavasos en mesa cálida
-    image:
-      'https://media.base44.com/images/public/69d99b9d61f699701129c103/9bc5ff697_generated_image.png',
+    skus: ['31686', '31679'],
   },
   {
-    label: 'Oficina',
-    tagline: 'Escritorio · Trabajo',
+    label: 'Entretenimiento',
+    tagline: 'Cachos y juegos',
+    to: '/shop?categoria=Entretenimiento',
+    icon: Gamepad2,
+    queryCategoria: 'Entretenimiento',
+    skus: ['51559', '61411'],
+  },
+  {
+    label: 'Escritorio',
+    tagline: 'Orden con propósito',
     to: '/shop?categoria=Escritorio',
     icon: Briefcase,
     queryCategoria: 'Escritorio',
-    // Editorial lifestyle — soporte laptop + accesorios escritorio
-    image:
-      'https://media.base44.com/images/public/69d99b9d61f699701129c103/062d09698_generated_image.png',
-  },
-  {
-    label: 'Empresas',
-    tagline: 'Regalos B2B personalizados',
-    to: '/b2b/catalogo',
-    icon: Building2,
-    queryCategoria: 'Corporativo',
-    // Editorial corporate gifting — set regalo premium con caja kraft
-    image:
-      'https://media.base44.com/images/public/69d99b9d61f699701129c103/89897ff94_generated_image.png',
-  },
-  {
-    label: 'Gift Card',
-    tagline: 'El regalo perfecto',
-    to: '/regalar-giftcard',
-    icon: Gift,
-    queryCategoria: null,
-    // Editorial gift — manos sosteniendo gift card con eucaliptus
-    image:
-      'https://media.base44.com/images/public/69d99b9d61f699701129c103/e60598fc6_generated_image.png',
+    skus: ['HOG-SOPC', 'HOG-PACK-ESC'],
   },
 ];
 
 export default function DesktopCategorySection() {
-  // Imágenes editoriales fijas — comunican OCASIÓN, no producto suelto.
-  // Solo el contador de productos se enriquece desde la BD.
+  // Imagen REAL por categoría: se resuelve desde la BD buscando el SKU
+  // representativo de cada tarjeta (con respaldos). El contador también.
   const [categories, setCategories] = useState(
-    CATEGORY_CONFIG.map((c) => ({ ...c, count: null }))
+    CATEGORY_CONFIG.map((c) => ({ ...c, count: null, image: null }))
   );
 
   useEffect(() => {
     let alive = true;
     (async () => {
       try {
-        const all = await base44.entities.Producto.filter({ activo: true }, '-stock_actual', 200);
+        const all = await base44.entities.Producto.filter({ activo: true }, '-stock_actual', 300);
         if (!alive) return;
         const enriched = CATEGORY_CONFIG.map((cfg) => {
-          if (!cfg.queryCategoria) return { ...cfg, count: null };
           const matches = all.filter((p) => p.categoria === cfg.queryCategoria);
-          return { ...cfg, count: matches.length };
+          // Busca el primer SKU representativo disponible; si no, el primer
+          // producto de la categoría con imagen. Siempre foto REAL del catálogo.
+          let prod = null;
+          for (const sku of cfg.skus) {
+            prod = all.find((p) => p.sku === sku);
+            if (prod) break;
+          }
+          if (!prod) prod = matches[0];
+          return {
+            ...cfg,
+            count: matches.length,
+            image: prod ? getProductImage(prod) : getProductImage({ categoria: cfg.queryCategoria }),
+          };
         });
         setCategories(enriched);
       } catch (err) {
@@ -108,12 +113,7 @@ export default function DesktopCategorySection() {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-5">
         {categories.map((cat, idx) => {
           const Icon = cat.icon;
-          const itemsLabel =
-            cat.queryCategoria
-              ? cat.count != null
-                ? `${cat.count} productos`
-                : 'Ver catálogo'
-              : 'Desde $10.000';
+          const itemsLabel = cat.count != null ? `${cat.count} productos` : 'Ver catálogo';
           return (
             <Link
               key={cat.label}
@@ -123,12 +123,16 @@ export default function DesktopCategorySection() {
             >
               {/* ── Zona imagen — limpia, sin overlay invasivo ── */}
               <div className="relative aspect-[4/5] overflow-hidden bg-ld-bg-soft">
-                <img
-                  src={cat.image}
-                  alt={cat.label}
-                  loading="lazy"
-                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                />
+                {cat.image && (
+                  <img
+                    src={cat.image}
+                    alt={cat.label}
+                    loading="lazy"
+                    referrerPolicy="no-referrer"
+                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                    onError={(e) => { e.target.style.display = 'none'; }}
+                  />
+                )}
                 {/* Vignette muy sutil solo en esquinas para dar profundidad */}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/25 via-transparent to-transparent pointer-events-none" />
 

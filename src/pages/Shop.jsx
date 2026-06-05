@@ -15,6 +15,7 @@ import CyberFeaturedRow from '@/components/cyber/CyberFeaturedRow';
 import { isCyberActive, tieneOfertaCyber } from '@/lib/cyber-campaign';
 import { searchProductos } from '@/lib/product-search';
 import ShopSearchBar from '@/components/shop/ShopSearchBar';
+import ShopCategoryCards from '@/components/shop/ShopCategoryCards';
 import { ordenarCarcasas } from '@/lib/carcasa-sort';
 
 const CATEGORIAS_META = [
@@ -63,6 +64,18 @@ export default function Shop() {
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
   const sentinelRef = useRef(null);
   const gridTopRef = useRef(null);
+
+  // 🔗 FIX 4 · Lee ?categoria= de la URL al montar (deep-link desde home y
+  // tarjetas de categoría). Mapea el valor a una categoría real del catálogo.
+  useEffect(() => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const cat = params.get('categoria') || params.get('cat');
+      if (cat && CATEGORIAS_META.some(m => m.id === cat)) {
+        setSelectedCategory(cat);
+      }
+    } catch { /* noop */ }
+  }, []);
 
   useEffect(() => {
     let alive = true;
@@ -289,10 +302,16 @@ export default function Shop() {
         <CyberCatalogBanner />
         <CyberFeaturedRow productos={productos} />
 
-        {/* Search bar Liquid Dual — sticky en mobile, con sugerencias en vivo */}
-        <div className="mb-3 sm:mb-3 sticky top-14 sm:static z-30 -mx-4 px-4 sm:mx-0 sm:px-0 py-2 sm:py-0 ld-glass-strong sm:bg-transparent sm:backdrop-blur-none">
+        {/* Search bar Liquid Dual — SIEMPRE arriba del catálogo, sticky en mobile */}
+        <div className="mb-3 sm:mb-4 sticky top-14 sm:static z-30 -mx-4 px-4 sm:mx-0 sm:px-0 py-2 sm:py-0 ld-glass-strong sm:bg-transparent sm:backdrop-blur-none">
           <ShopSearchBar value={search} onChange={setSearch} productos={productos} />
         </div>
+
+        {/* FIX 4 · Tarjetas de categoría con foto real — primero, click filtra.
+            Solo en la vista inicial (sin búsqueda ni categoría específica). */}
+        {!loading && !search && selectedCategory === 'Todos' && (
+          <ShopCategoryCards productos={productos} onSelect={handleSelectCategory} />
+        )}
 
         {/* CATEGORY TABS — sticky con conteos en vivo */}
         <CategoryTabs

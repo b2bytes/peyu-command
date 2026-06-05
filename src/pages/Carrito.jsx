@@ -119,10 +119,12 @@ export default function Carrito() {
 
   // ── CÁLCULOS ───────────────────────────────────────────────────────
   const subtotal = carrito.reduce((sum, i) => sum + i.precio * i.cantidad, 0);
-  // Envío: usa cotización Bluex real si está disponible, sino fallback a $5990 / gratis sobre $40k
-  const envioBase = envioBluex
-    ? envioBluex.costo
-    : (subtotal >= 40000 ? 0 : 5990);
+  // 🚚 FIX 7 · El envío SOLO se conoce tras elegir comuna en el paso 2.
+  // En el paso 1 NO mostramos monto de envío (evita el falso "$5.990" antes
+  // de tener dirección). El cálculo real proviene de envioBluex (Bluex por comuna).
+  // Si por compra ≥$40k el EXPRESS es gratis, eso ya lo refleja envioBluex.costo.
+  const envioConocido = step >= 2 && !!envioBluex;
+  const envioBase = envioBluex ? envioBluex.costo : 0;
   // Cupón "envio_gratis" libera el envío
   const envio = cupon?.libera_envio ? 0 : envioBase;
   // Descuento por cupón (solo si NO es envio_gratis, ese ya redujo el envío)
@@ -822,10 +824,13 @@ export default function Carrito() {
                 </div>
                 <div className="flex justify-between text-gray-700">
                   <span className="font-medium">Envío</span>
-                  {envio === 0
-                    ? <span className="text-teal-700 font-bold inline-flex items-center gap-1">✓ GRATIS</span>
-                    : <span className="font-semibold text-gray-900 tabular-nums">${envio.toLocaleString('es-CL')}</span>
-                  }
+                  {!envioConocido ? (
+                    <span className="text-gray-500 font-medium text-right text-xs leading-tight">Se calcula con tu dirección</span>
+                  ) : envio === 0 ? (
+                    <span className="text-teal-700 font-bold inline-flex items-center gap-1">✓ GRATIS</span>
+                  ) : (
+                    <span className="font-semibold text-gray-900 tabular-nums">${envio.toLocaleString('es-CL')}</span>
+                  )}
                 </div>
 
                 {/* Personalización láser: muestra cargo (bajo 10u) o "Gratis" (≥10u). */}

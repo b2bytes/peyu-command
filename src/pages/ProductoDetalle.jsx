@@ -3,7 +3,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { getProductImage } from '@/utils/productImages';
+import { getProductImage, getProductImageForColor } from '@/utils/productImages';
 import {
   ArrowLeft, Check, Building2, ShoppingCart, Shield, Truck, Zap,
   Star, Recycle, Sparkles, ChevronRight, Heart, Share2,
@@ -408,14 +408,26 @@ export default function ProductoDetalle() {
   const imagenColorSeleccionado = (() => {
     if (!producto) return '';
     if (colorObjSel) {
-      // Fuente de verdad: imagenes_por_color (resuelta priorizando foto real
-      // sobre IA placeholder, con fallback a la base). Ver lib/color-image-resolver.
-      const porMapa = resolveColorImage(producto, colorObjSel.label, null) || resolveColorImage(producto, colorObjSel.id, null);
-      if (porMapa && !esImagenIA(porMapa)) return porMapa;
-      // Match scored sobre la galería, pero SOLO si la imagen NO es IA inventada.
+      // 🎨 FIX 6 · FUENTE DE VERDAD: producto.imagenes_por_color[color] vía
+      // getProductImageForColor (matching robusto label/id/aliases). Si existe
+      // la foto real del color elegido, esa MANDA — aunque no esté en la galería.
+      const mapa = producto.imagenes_por_color;
+      if (mapa && typeof mapa === 'object') {
+        const porMapa = getProductImageForColor(producto, colorObjSel);
+        // getProductImageForColor cae a getProductImage si no encuentra el color;
+        // solo la usamos si efectivamente difiere de la base (= hubo match real)
+        // y no es una imagen IA inventada.
+        if (porMapa && !esImagenIA(porMapa) && porMapa !== getProductImage(producto)) return porMapa;
+      }
+      // Fallback secundario: resolver legacy + match scored sobre la galería.
+      const porResolver = resolveColorImage(producto, colorObjSel.label, null) || resolveColorImage(producto, colorObjSel.id, null);
+      if (porResolver && !esImagenIA(porResolver)) return porResolver;
       const match = findColorImageMatch(galeria, colorObjSel);
       if (match && galeria[match.index] && !esImagenIA(galeria[match.index])) return galeria[match.index];
     }
+    // 🎨 FIX 6 · Fallback final: imagen base limpia (sin logo PEYU) si existe,
+    // NUNCA la imagen de otro color.
+    if (producto.imagen_base_limpia_url) return producto.imagen_base_limpia_url;
     return imgPrincipal;
   })();
 
@@ -1013,7 +1025,14 @@ export default function ProductoDetalle() {
                     </label>
                     <div className="flex gap-2 flex-wrap">
                       {colores.map(c => (
-                        <button key={c.id} onClick={() => { setColorSeleccionado(c.id); setColorError(false); }}
+                        <button key={c.id} onClick={() => {
+                            setColorSeleccionado(c.id);
+                            setColorError(false);
+                            // 🎨 FIX 6 · Al elegir color, soltamos la navegación manual
+                            // para que la imagen principal muestre imagenes_por_color[color]
+                            // aunque esa URL no viva dentro de la galería de thumbnails.
+                            userInteractedRef.current = false;
+                          }}
                           title={c.label}
                           className="w-10 h-10 rounded-xl border-2 transition-all hover:scale-110 shadow-md"
                           style={{ backgroundColor: c.hex, borderColor: colorSeleccionado === c.id ? 'var(--ld-action)' : (colorError ? 'var(--ld-highlight)' : 'var(--ld-border)'), boxShadow: colorSeleccionado === c.id ? '0 0 0 3px var(--ld-action-soft)' : undefined }}>

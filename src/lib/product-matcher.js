@@ -30,6 +30,11 @@ const OCCASION_RULES = [
 // "carcasas"→"carcasa"). Acota a tokens ≥4 para no romper palabras cortas.
 const stem = (t) => (t.length >= 4 && t.endsWith('s') ? t.slice(0, -1) : t);
 
+// 🎯 Palabras "modificadoras" que cambian la naturaleza del producto. Si el
+// producto las trae en el nombre pero el usuario NO las pidió, penalizamos el
+// match para no confundir "Soporte de Celular" con "Llavero Soporte de Celular".
+const MODIFIER_WORDS = ['llavero', 'llaveros', 'pack', 'set', 'promocion', 'promoción', 'kit', 'mini', 'combo', 'unitario'];
+
 // ¿El token del mensaje matchea el texto del producto, tolerando plural/singular?
 // "llaveros" matchea "llavero" y viceversa, comparando por raíz sin 's'.
 const tokenInText = (token, text) => {
@@ -95,9 +100,19 @@ export function matchProducts(products, message, opts = {}) {
 
       // 2) Match directo de tokens del mensaje en nombre/descripción.
       // Tolerante a plural/singular: "llaveros" matchea "Llavero…", etc.
+      // Bonus extra si el NOMBRE EMPIEZA por la query (match más fuerte).
+      const nombreEmpiezaPorQuery = m.length >= 4 && nombre.startsWith(m.slice(0, Math.min(m.length, nombre.length)));
+      if (nombreEmpiezaPorQuery) score += 4;
       for (const t of tokens) {
         if (tokenInText(t, nombre)) score += 2.5;
         else if (tokenInText(t, desc)) score += 1;
+      }
+
+      // 2b) Penalización por palabras modificadoras NO pedidas. Si el producto
+      // se llama "Llavero Soporte de Celular" pero el cliente pidió "soporte de
+      // celular" (sin "llavero"), restamos para que gane el producto exacto.
+      for (const mod of MODIFIER_WORDS) {
+        if (nombre.includes(mod) && !m.includes(mod)) score -= 2.5;
       }
 
       // 3) Boost words de la regla de ocasión
