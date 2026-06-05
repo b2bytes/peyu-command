@@ -69,12 +69,19 @@ export default function CarritoNuevo() {
               const lineaProducto = (item.precio || 0) * (item.cantidad || 1);
               return (
                 <div key={item.id} className="flex gap-3.5 bg-white rounded-2xl border border-[#EBE3D6] p-3.5">
-                  <img
-                    src={item.imagen}
-                    alt={item.nombre}
-                    className="w-20 h-20 sm:w-24 sm:h-24 rounded-xl object-cover border border-[#EBE3D6] flex-shrink-0"
-                    referrerPolicy="no-referrer"
-                  />
+                  <div className="relative flex-shrink-0">
+                    <img
+                      src={item.mockupUrl || item.imagen}
+                      alt={item.nombre}
+                      className="w-20 h-20 sm:w-24 sm:h-24 rounded-xl object-cover border border-[#EBE3D6]"
+                      referrerPolicy="no-referrer"
+                    />
+                    {(item.logoUrl || item.mockupUrl) && (
+                      <span className="absolute -top-1.5 -right-1.5 bg-[#D96B4D] text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full shadow">
+                        Diseño
+                      </span>
+                    )}
+                  </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between gap-2">
                       <h3 className="font-semibold text-sm text-[#2A2420] leading-snug line-clamp-2">{item.nombre}</h3>

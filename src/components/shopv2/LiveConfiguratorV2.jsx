@@ -2,7 +2,8 @@ import { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Sparkles, ShoppingBag, Check, Smartphone, Wand2 } from 'lucide-react';
 import ColorSwatchesV2 from '@/components/shopv2/ColorSwatchesV2';
-import PersonalizacionPickerV2 from '@/components/shopv2/PersonalizacionPickerV2';
+import PersonalizadorV2 from '@/components/shopv2/PersonalizadorV2';
+import MockupLivePreviewV2 from '@/components/shopv2/MockupLivePreviewV2';
 import PriceBreakdownV2 from '@/components/shopv2/PriceBreakdownV2';
 import QtyStepperV2 from '@/components/shopv2/QtyStepperV2';
 import { getProductImage, getProductImageForColor } from '@/utils/productImages';
@@ -35,21 +36,24 @@ export default function LiveConfiguratorV2({ carcasas = [] }) {
 
   // Estado del configurador
   const [colorId, setColorId] = useState(null);
-  const [opcion, setOpcion] = useState('none');
-  const [texto, setTexto] = useState('');
+  const [pers, setPers] = useState({ opcion: 'none', texto: '', logoUrl: '', disenoPeyuUrl: '' });
+  const [placement, setPlacement] = useState(null);
   const [cantidad, setCantidad] = useState(1);
   const [colorError, setColorError] = useState(false);
   const [added, setAdded] = useState(false);
+
+  const opcion = pers.opcion;
 
   const colores = useMemo(() => (producto ? getColoresProducto(producto) : []), [producto]);
   const requiereColor = colores.length > 1;
   const color = useMemo(() => colores.find((c) => c.id === colorId), [colores, colorId]);
 
-  // Al cambiar de producto/modelo, resetea color (1 solo → fija).
+  // Al cambiar de producto/modelo, resetea color (1 solo → fija) y personalización.
   useEffect(() => {
     if (colores.length === 1) setColorId(colores[0].id);
     else setColorId(null);
     setColorError(false);
+    setPers({ opcion: 'none', texto: '', logoUrl: '', disenoPeyuUrl: '' });
   }, [colores]);
 
   const precioUnit = producto?.precio_b2c || 9990;
@@ -60,7 +64,12 @@ export default function LiveConfiguratorV2({ carcasas = [] }) {
   const feeTotal = gratis ? 0 : feeUnit * cantidad;
   const total = precioUnit * cantidad + feeTotal;
 
-  const persOk = opcion === 'none' || opcion !== 'frase' || texto.trim().length > 0;
+  const diseñoUrl = pers.logoUrl || pers.disenoPeyuUrl || '';
+  const persOk =
+    opcion === 'none' ||
+    (opcion === 'frase' && pers.texto.trim().length > 0) ||
+    ((opcion === 'peyu' || opcion === 'archivo') && !!diseñoUrl);
+  const muestraMockup = (opcion === 'frase' && pers.texto.trim()) || ((opcion === 'peyu' || opcion === 'archivo') && diseñoUrl);
 
   // Preview en vivo: imagen del color elegido o principal.
   const previewImg = useMemo(() => {
@@ -83,7 +92,11 @@ export default function LiveConfiguratorV2({ carcasas = [] }) {
       personalizacion_gratis_desde: moq,
       cantidad,
       color: color?.label || null,
-      personalizacion: opcion === 'frase' ? texto : (tipo ? PERSONALIZACION_LABEL[tipo] : null),
+      personalizacion: opcion === 'frase' ? pers.texto : (tipo ? PERSONALIZACION_LABEL[tipo] : null),
+      logoUrl: diseñoUrl || null,
+      disenoPeyuUrl: pers.disenoPeyuUrl || null,
+      mockupUrl: muestraMockup ? previewImg : null,
+      posicion_grabado: placement ? `size:${Math.round(placement.size)}% x:${Math.round(placement.x)}% y:${Math.round(placement.y)}%` : '',
       imagen: previewImg,
     });
     setAdded(true);
@@ -104,24 +117,25 @@ export default function LiveConfiguratorV2({ carcasas = [] }) {
 
       <div className="bg-white border border-[#EBE3D6] rounded-[2rem] p-4 sm:p-7 shadow-[0_24px_60px_-30px_rgba(74,63,51,0.4)]">
         <div className="grid lg:grid-cols-2 gap-7 lg:gap-10">
-          {/* PREVIEW en vivo */}
+          {/* PREVIEW en vivo — mockup interactivo si hay diseño, foto si no */}
           <div className="lg:sticky lg:top-24 self-start">
-            <div className="relative aspect-square rounded-[1.75rem] overflow-hidden bg-[#FAF7F2] border border-[#EBE3D6]">
-              {previewImg && (
-                <img src={previewImg} alt={producto.nombre} referrerPolicy="no-referrer" className="w-full h-full object-cover transition-all duration-500" />
-              )}
-              {/* Overlay de la frase (preview grabado en vivo) */}
-              {opcion === 'frase' && texto.trim() && (
-                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                  <span className="font-fraunces text-2xl sm:text-3xl text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.5)] tracking-wide px-4 text-center">
-                    {texto}
-                  </span>
-                </div>
-              )}
-              <span className="absolute top-3 left-3 inline-flex items-center gap-1 bg-white/90 backdrop-blur text-[10px] font-bold px-2.5 py-1 rounded-full text-[#0F8B6C] shadow-sm">
-                <Sparkles className="w-3 h-3" /> Vista previa
-              </span>
-            </div>
+            {muestraMockup ? (
+              <MockupLivePreviewV2
+                productImageUrl={previewImg}
+                logoUrl={diseñoUrl}
+                texto={opcion === 'frase' ? pers.texto : ''}
+                onPlacementChange={setPlacement}
+              />
+            ) : (
+              <div className="relative aspect-square rounded-[1.75rem] overflow-hidden bg-[#FAF7F2] border border-[#EBE3D6]">
+                {previewImg && (
+                  <img src={previewImg} alt={producto.nombre} referrerPolicy="no-referrer" className="w-full h-full object-cover transition-all duration-500" />
+                )}
+                <span className="absolute top-3 left-3 inline-flex items-center gap-1 bg-white/90 backdrop-blur text-[10px] font-bold px-2.5 py-1 rounded-full text-[#0F8B6C] shadow-sm">
+                  <Sparkles className="w-3 h-3" /> Vista previa
+                </span>
+              </div>
+            )}
           </div>
 
           {/* CONTROLES */}
@@ -162,35 +176,8 @@ export default function LiveConfiguratorV2({ carcasas = [] }) {
               />
             )}
 
-            {/* Personalización */}
-            <div>
-              <div className="flex items-center gap-2 mb-2.5">
-                <Sparkles className="w-4 h-4 text-[#D96B4D]" />
-                <label className="text-sm font-bold text-[#2A2420]">Personalización (opcional)</label>
-              </div>
-              <PersonalizacionPickerV2
-                value={opcion}
-                onSelect={(o) => { setOpcion(o); if (o !== 'frase') setTexto(''); }}
-                gratis={gratis}
-                moq={moq}
-              />
-              {opcion === 'frase' && (
-                <div className="mt-3">
-                  <input
-                    value={texto}
-                    onChange={(e) => setTexto(e.target.value.slice(0, 20))}
-                    placeholder="Tu nombre, frase o empresa..."
-                    className="w-full h-11 px-4 rounded-xl bg-white border border-[#EBE3D6] text-center font-bold tracking-wide text-[#2A2420] placeholder:text-[#A78B6F] focus:outline-none focus:border-[#0F8B6C] focus:ring-2 focus:ring-[#0F8B6C]/15"
-                  />
-                  <p className="text-[11px] text-right text-[#A78B6F] mt-1 font-bold">{texto.length}/20</p>
-                </div>
-              )}
-              {(opcion === 'peyu' || opcion === 'archivo') && (
-                <p className="text-[11px] text-[#A78B6F] mt-2 leading-relaxed">
-                  Coordinaremos el diseño contigo después de la compra para el mejor grabado.
-                </p>
-              )}
-            </div>
+            {/* Personalización — circuito completo (frase / PEYU / logo) */}
+            <PersonalizadorV2 pers={pers} setPers={setPers} gratis={gratis} moq={moq} />
 
             {/* Cantidad */}
             <div className="flex items-center justify-between">

@@ -6,7 +6,8 @@ import {
 } from 'lucide-react';
 import ShopV2Header from '@/components/shopv2/ShopV2Header';
 import ColorSwatchesV2 from '@/components/shopv2/ColorSwatchesV2';
-import PersonalizacionPickerV2 from '@/components/shopv2/PersonalizacionPickerV2';
+import PersonalizadorV2 from '@/components/shopv2/PersonalizadorV2';
+import MockupLivePreviewV2 from '@/components/shopv2/MockupLivePreviewV2';
 import PriceBreakdownV2 from '@/components/shopv2/PriceBreakdownV2';
 import QtyStepperV2 from '@/components/shopv2/QtyStepperV2';
 import ProductGalleryV2 from '@/components/shopv2/ProductGalleryV2';
@@ -18,6 +19,9 @@ import {
   PRECIO_PERSONALIZACION, PERSONALIZACION_LABEL, MOQ_PERSONALIZACION_GRATIS,
 } from '@/lib/personalizacion-config';
 import { addToCartV2, fmtCLP } from '@/lib/shop-v2-cart';
+
+// Estado inicial del circuito de personalización (unificado).
+const PERS_INICIAL = { opcion: 'none', texto: '', logoUrl: '', disenoPeyuUrl: '' };
 
 // ════════════════════════════════════════════════════════════════════════
 // /ProductoNuevo?id= — Ficha de producto del Shop v2 (Tema 6 Conversion Machine).
@@ -34,12 +38,14 @@ export default function ProductoNuevo() {
 
   // Estado del configurador
   const [colorId, setColorId] = useState(null);
-  const [opcion, setOpcion] = useState('none');
-  const [texto, setTexto] = useState('');
+  const [pers, setPers] = useState(PERS_INICIAL);
+  const [placement, setPlacement] = useState(null); // { size, x, y } del mockup
   const [cantidad, setCantidad] = useState(1);
   const [colorError, setColorError] = useState(false);
   const [added, setAdded] = useState(false);
   const [galIdx, setGalIdx] = useState(0);
+
+  const opcion = pers.opcion;
 
   useEffect(() => {
     if (!id) { setLoading(false); return; }
@@ -82,8 +88,20 @@ export default function ProductoNuevo() {
   const feeTotal = gratis ? 0 : feeUnit * cantidad;
   const total = precioUnit * cantidad + feeTotal;
 
+  // Imagen de la carcasa para el color elegido (lienzo del mockup).
+  const colorImg = useMemo(
+    () => (color ? getProductImageForColor(producto, color) : displayImg),
+    [producto, color, displayImg]
+  );
+
   // ¿La opción de personalización elegida está completa?
-  const persOk = opcion === 'none' || opcion !== 'frase' || texto.trim().length > 0;
+  const diseñoUrl = pers.logoUrl || pers.disenoPeyuUrl || '';
+  const persOk =
+    opcion === 'none' ||
+    (opcion === 'frase' && pers.texto.trim().length > 0) ||
+    ((opcion === 'peyu' || opcion === 'archivo') && !!diseñoUrl);
+  // ¿Mostramos el mockup en vivo? Solo cuando hay diseño que componer.
+  const muestraMockup = (opcion === 'frase' && pers.texto.trim()) || ((opcion === 'peyu' || opcion === 'archivo') && diseñoUrl);
 
   // Stock/urgencia sutil (Baymard #6): solo si el dato existe y es bajo.
   const stock = producto?.stock_actual;
@@ -95,8 +113,14 @@ export default function ProductoNuevo() {
       document.querySelector('[data-color-selector]')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
       return;
     }
-    if (!persOk) return;
+    if (!persOk) {
+      document.querySelector('[data-personalizador]')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
 
+    // El mockup que viaja al carrito/pedido = imagen del color con el diseño.
+    // Como el preview es interactivo, guardamos el logo/diseño + posición y la
+    // foto base del color; producción reconstruye el grabado a partir de esto.
     addToCartV2({
       productoId: producto.id,
       sku: producto.sku || null,
@@ -108,8 +132,12 @@ export default function ProductoNuevo() {
       personalizacion_gratis_desde: moq,
       cantidad,
       color: color?.label || null,
-      personalizacion: opcion === 'frase' ? texto : (tipo ? PERSONALIZACION_LABEL[tipo] : null),
-      imagen: displayImg,
+      personalizacion: opcion === 'frase' ? pers.texto : (tipo ? PERSONALIZACION_LABEL[tipo] : null),
+      logoUrl: diseñoUrl || null,
+      disenoPeyuUrl: pers.disenoPeyuUrl || null,
+      mockupUrl: muestraMockup ? colorImg : null,
+      posicion_grabado: placement ? `size:${Math.round(placement.size)}% x:${Math.round(placement.x)}% y:${Math.round(placement.y)}%` : '',
+      imagen: colorImg,
     });
     setAdded(true);
     setTimeout(() => navigate('/CarritoNuevo'), 700);
@@ -190,33 +218,20 @@ export default function ProductoNuevo() {
               />
             )}
 
-            {/* Personalización en vivo (Baymard #5) */}
-            <div>
-              <div className="flex items-center gap-2 mb-2.5">
-                <Sparkles className="w-4 h-4 text-[#D96B4D]" />
-                <label className="text-sm font-bold text-[#2A2420]">Personalización (opcional)</label>
-              </div>
-              <PersonalizacionPickerV2
-                value={opcion}
-                onSelect={(o) => { setOpcion(o); if (o !== 'frase') setTexto(''); }}
-                gratis={gratis}
-                moq={moq}
-              />
-              {opcion === 'frase' && (
-                <div className="mt-3">
-                  <input
-                    value={texto}
-                    onChange={(e) => setTexto(e.target.value.slice(0, 20))}
-                    placeholder="Tu nombre, frase o empresa..."
-                    className="w-full h-11 px-4 rounded-xl bg-white border border-[#EBE3D6] text-center font-bold tracking-wide text-[#2A2420] placeholder:text-[#A78B6F] focus:outline-none focus:border-[#0F8B6C] focus:ring-2 focus:ring-[#0F8B6C]/15"
+            {/* Personalización en vivo (Baymard #5) — circuito completo */}
+            <div data-personalizador>
+              <PersonalizadorV2 pers={pers} setPers={setPers} gratis={gratis} moq={moq} />
+
+              {/* Mockup EN VIVO: aparece cuando hay diseño que componer */}
+              {muestraMockup && (
+                <div className="mt-4">
+                  <MockupLivePreviewV2
+                    productImageUrl={colorImg}
+                    logoUrl={diseñoUrl}
+                    texto={opcion === 'frase' ? pers.texto : ''}
+                    onPlacementChange={setPlacement}
                   />
-                  <p className="text-[11px] text-right text-[#A78B6F] mt-1 font-bold">{texto.length}/20</p>
                 </div>
-              )}
-              {(opcion === 'peyu' || opcion === 'archivo') && (
-                <p className="text-[11px] text-[#A78B6F] mt-2 leading-relaxed">
-                  Coordinaremos el diseño contigo después de la compra para asegurar el mejor resultado del grabado.
-                </p>
               )}
             </div>
 
