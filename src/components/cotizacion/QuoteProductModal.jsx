@@ -66,24 +66,24 @@ export default function QuoteProductModal({ producto, onClose, onAdd, yaAgregado
           transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
           className="relative bg-[#FAF7F2] w-full sm:max-w-md rounded-t-3xl sm:rounded-3xl shadow-2xl max-h-[90vh] sm:max-h-[88vh] overflow-hidden flex flex-col"
         >
-          {/* Imagen + cerrar (altura contenida para no comerse el modal) */}
-          <div className="relative flex-shrink-0">
-            <div className="h-44 sm:h-48 bg-white overflow-hidden">
+          {/* Imagen + cerrar — fondo crema con padding para integrar la foto */}
+          <div className="relative flex-shrink-0 p-4 pb-0">
+            <div className="h-48 sm:h-52 rounded-2xl bg-gradient-to-b from-white to-[#F2ECE2] overflow-hidden flex items-center justify-center">
               <img
                 src={getProductImage(producto)}
                 alt={producto.nombre}
-                className="w-full h-full object-contain"
+                className="w-full h-full object-cover"
                 onError={(e) => { e.target.style.visibility = 'hidden'; }}
               />
             </div>
             <button
               onClick={onClose}
-              className="absolute top-3 right-3 w-9 h-9 rounded-full bg-white/90 backdrop-blur flex items-center justify-center text-[#2A2420] shadow-sm hover:bg-white transition-colors"
+              className="absolute top-6 right-6 w-9 h-9 rounded-full bg-white/95 backdrop-blur flex items-center justify-center text-[#2A2420] shadow-md hover:bg-white transition-colors"
               aria-label="Cerrar"
             >
               <X className="w-5 h-5" />
             </button>
-            <span className="absolute top-3 left-3 inline-flex items-center gap-1 bg-white/90 backdrop-blur text-[10px] font-bold px-2.5 py-1 rounded-full text-[#0F8B6C] shadow-sm">
+            <span className="absolute top-6 left-6 inline-flex items-center gap-1 bg-white/95 backdrop-blur text-[10px] font-bold px-2.5 py-1 rounded-full text-[#0F8B6C] shadow-sm">
               <Recycle className="w-3 h-3" /> {esCompostable ? 'Compostable' : '100% Reciclado'}
             </span>
           </div>
