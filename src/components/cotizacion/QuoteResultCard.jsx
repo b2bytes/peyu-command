@@ -1,5 +1,12 @@
-import { CheckCircle2, Building2, Mail } from 'lucide-react';
+import { CheckCircle2, Building2, Mail, MessageCircle, FileText, PhoneCall } from 'lucide-react';
 import { fmtCLP } from '@/lib/shop-v2-cart';
+
+// Próximos pasos tras enviar la cotización: dan claridad de qué pasará.
+const PASOS = [
+  { Icon: FileText, txt: 'Revisamos tu pedido y armamos el presupuesto formal con factura.' },
+  { Icon: PhoneCall, txt: 'Un ejecutivo te contacta en 24h hábiles para afinar plazos y personalización.' },
+  { Icon: CheckCircle2, txt: 'Confirmas, pagas el anticipo y entramos a producción.' },
+];
 
 // Tarjeta de resultado tras enviar la cotización: confirma el envío y muestra
 // el desglose con precios por volumen reales que calculó el backend.
@@ -41,16 +48,43 @@ export default function QuoteResultCard({ result, empresa, email, onReset }) {
         </div>
       </div>
 
+      {/* Próximos pasos — qué pasará ahora */}
+      <div className="text-left bg-white border border-[#EBE3D6] rounded-2xl p-4 mb-5">
+        <p className="text-xs font-bold text-[#2A2420] mb-3">¿Qué sigue ahora?</p>
+        <div className="space-y-3">
+          {PASOS.map(({ Icon, txt }, i) => (
+            <div key={i} className="flex items-start gap-3">
+              <span className="w-7 h-7 rounded-lg bg-[#0F8B6C]/10 flex items-center justify-center flex-shrink-0">
+                <Icon className="w-3.5 h-3.5 text-[#0F8B6C]" />
+              </span>
+              <p className="text-xs text-[#4B4F54] leading-snug pt-0.5">
+                <span className="font-bold text-[#2A2420]">Paso {i + 1}.</span> {txt}
+              </p>
+            </div>
+          ))}
+        </div>
+      </div>
+
       <p className="text-[11px] text-[#A78B6F] mb-5">
         Precio referencial por volumen. El presupuesto final puede variar según personalización y plazos.
       </p>
 
-      <button
-        onClick={onReset}
-        className="px-6 h-11 rounded-xl bg-[#0F8B6C] hover:bg-[#0B6E55] text-white font-bold text-sm transition-colors"
-      >
-        Hacer otra cotización
-      </button>
+      <div className="flex flex-col sm:flex-row gap-2.5">
+        <a
+          href="https://wa.me/56912345678?text=Hola%20PEYU,%20acabo%20de%20enviar%20una%20cotizaci%C3%B3n%20por%20volumen%20y%20quiero%20avanzar."
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex-1 h-11 rounded-xl bg-[#0F8B6C] hover:bg-[#0B6E55] text-white font-bold text-sm flex items-center justify-center gap-2 transition-colors"
+        >
+          <MessageCircle className="w-4 h-4" /> Avanzar por WhatsApp
+        </a>
+        <button
+          onClick={onReset}
+          className="flex-1 h-11 rounded-xl bg-white border border-[#EBE3D6] hover:border-[#0F8B6C]/40 text-[#2A2420] font-bold text-sm transition-colors"
+        >
+          Hacer otra cotización
+        </button>
+      </div>
     </div>
   );
 }

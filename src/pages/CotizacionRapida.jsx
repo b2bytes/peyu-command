@@ -6,6 +6,7 @@ import QuoteProductPicker from '@/components/cotizacion/QuoteProductPicker';
 import QuoteItemRow from '@/components/cotizacion/QuoteItemRow';
 import QuoteContactForm from '@/components/cotizacion/QuoteContactForm';
 import QuoteResultCard from '@/components/cotizacion/QuoteResultCard';
+import B2BTrustBar from '@/components/cotizacion/B2BTrustBar';
 import { getB2BPriceForQty, getUnitBasePrice } from '@/lib/catalog-pricing';
 import { fmtCLP } from '@/lib/shop-v2-cart';
 
@@ -99,6 +100,8 @@ export default function CotizacionRapida() {
                 Arma tu pedido corporativo, mira el precio por volumen en vivo y recibe tu presupuesto. Mientras más unidades, mejor precio.
               </p>
             </div>
+
+            <B2BTrustBar />
 
             <div className="grid lg:grid-cols-5 gap-6">
               {/* Columna izquierda: productos */}
