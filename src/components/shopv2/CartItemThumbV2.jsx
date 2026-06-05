@@ -44,7 +44,7 @@ export default function CartItemThumbV2({ imagen, capas = [], alt }) {
   }, [capas, tint]);
 
   return (
-    <div className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-xl overflow-hidden border border-[#EBE3D6] bg-[#FAF7F2] flex-shrink-0">
+    <div className="relative w-full aspect-square rounded-xl overflow-hidden border border-[#EBE3D6] bg-[#FAF7F2]">
       {imagen && (
         <img src={imagen} alt={alt} referrerPolicy="no-referrer" className="absolute inset-0 w-full h-full object-cover" />
       )}

@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { ArrowLeft, Lock, ShieldCheck, Recycle, AlertCircle, Gift } from 'lucide-react';
 import ShopV2Header from '@/components/shopv2/ShopV2Header';
+import CartItemThumbV2 from '@/components/shopv2/CartItemThumbV2';
 import ShippingAddressForm, { validarShippingForm } from '@/components/cart/ShippingAddressForm';
 import BillingSection, { validarBilling } from '@/components/cart/BillingSection';
 import ShippingSelector from '@/components/cart/ShippingSelector';
@@ -310,8 +311,9 @@ export default function CheckoutNuevo() {
               <div className="space-y-2.5 max-h-52 overflow-y-auto peyu-scrollbar pr-1 mb-4">
                 {carrito.map((item) => (
                   <div key={item.id} className="flex gap-2.5 items-center">
-                    <img src={item.imagen} alt={item.nombre} referrerPolicy="no-referrer"
-                      className="w-12 h-12 rounded-lg object-cover border border-[#EBE3D6] flex-shrink-0" />
+                    <div className="w-12 h-12 flex-shrink-0">
+                      <CartItemThumbV2 imagen={item.mockupUrl || item.imagen} capas={item.capas_grabado || []} alt={item.nombre} />
+                    </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-xs font-semibold text-[#2A2420] truncate">{item.nombre}</p>
                       <p className="text-[10px] text-[#A78B6F]">x{item.cantidad}{item.color ? ` · ${item.color}` : ''}</p>

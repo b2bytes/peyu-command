@@ -70,7 +70,7 @@ export default function CarritoNuevo() {
               const lineaProducto = (item.precio || 0) * (item.cantidad || 1);
               return (
                 <div key={item.id} className="flex gap-3.5 bg-white rounded-2xl border border-[#EBE3D6] p-3.5">
-                  <div className="relative flex-shrink-0">
+                  <div className="relative flex-shrink-0 w-20 h-20 sm:w-24 sm:h-24">
                     <CartItemThumbV2
                       imagen={item.mockupUrl || item.imagen}
                       capas={item.capas_grabado || []}
