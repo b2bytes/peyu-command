@@ -661,11 +661,13 @@ export default function ProductoDetalle() {
 
         <div className="max-w-[1200px] mx-auto px-4 sm:px-6 pb-10">
 
-          {/* MAIN GRID — más denso, columna info más estrecha */}
-          <div className="grid lg:grid-cols-[1fr_380px] gap-5 lg:gap-7">
+          {/* MAIN GRID — más denso, columna info más estrecha.
+              FIX 10 móvil: orden galería(imagen+thumbs) → info(color/precio/personalización)
+              → historia sustentable. Logrado con flex + order en móvil, grid en desktop. */}
+          <div className="flex flex-col lg:grid lg:grid-cols-[1fr_380px] gap-5 lg:gap-7">
 
-            {/* LEFT: GALERÍA */}
-            <div className="space-y-3">
+            {/* LEFT: GALERÍA — en móvil es flex-col con order para mover la historia al final */}
+            <div className="flex flex-col gap-3 lg:space-y-3 lg:gap-0">
               {/* Main visual: GiftCard oficial o imagen del producto */}
               {isGiftCard ? (
                 <div className="space-y-4">
@@ -819,8 +821,12 @@ export default function ProductoDetalle() {
                 })}
               </div>
               )}
+            {/* /galería imagen+thumbs — cerramos aquí para que la historia sea
+                un hermano del flex y pueda ir order-last en móvil (FIX 10) */}
+            </div>
 
-              {/* Sustainability story / Cómo funciona la GiftCard */}
+            {/* Sustainability story — order-last en móvil (tras comprar), col-izq en desktop */}
+            <div className="order-last lg:order-none lg:col-start-1 lg:row-start-2 space-y-3">
               {isGiftCard ? (
                 <div className="ld-card p-6 space-y-4 shadow-xl mt-6 relative overflow-hidden">
                   <div aria-hidden className="absolute -top-16 -right-16 w-40 h-40 rounded-full blur-3xl pointer-events-none" style={{ background: 'var(--ld-action-soft)', opacity: 0.5 }} />
@@ -880,10 +886,10 @@ export default function ProductoDetalle() {
                   );
                 })()
               )}
-            </div>
+            </div>{/* /historia sustentable */}
 
-            {/* RIGHT: INFO + CTA */}
-            <div className="space-y-3.5 lg:sticky lg:top-20 lg:self-start">
+            {/* RIGHT: INFO + CTA — col-2 en desktop, abarca ambas filas */}
+            <div className="space-y-3.5 lg:col-start-2 lg:row-span-2 lg:sticky lg:top-20 lg:self-start">
 
               {/* Header */}
               <div>
