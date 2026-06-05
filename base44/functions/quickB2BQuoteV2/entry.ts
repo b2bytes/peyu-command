@@ -236,6 +236,142 @@ function buildQuotePDF({ numero, empresa, contacto, email, telefono, rut, lineas
   return btoa(String.fromCharCode(...new Uint8Array(pdfBytes)));
 }
 
+// ─── Email helpers (HTML inline, sin imports locales) ───────────────────
+const clp = (n) => `$${Math.round(n || 0).toLocaleString('es-CL')}`;
+
+// Filas de la tabla de productos para el email del cliente.
+function lineasHTML(lineas) {
+  return lineas.map((l, i) => `
+    <tr style="background:${i % 2 ? '#FAF7F2' : '#ffffff'}">
+      <td style="padding:10px 12px;font-size:13px;color:#2A2420">
+        <strong>${l.cantidad}×</strong> ${l.nombre}
+        <div style="font-size:11px;color:#A78B6F;margin-top:2px">${clp(l.precio_unitario)}/u · ${l.tramo}${l.ahorro_pct > 0 ? ` · −${l.ahorro_pct}%` : ''}</div>
+      </td>
+      <td style="padding:10px 12px;font-size:13px;text-align:right;font-weight:700;color:#2A2420;white-space:nowrap">${clp(l.subtotal)}</td>
+    </tr>`).join('');
+}
+
+// Email al CLIENTE: relato cálido + desglose + impacto + CTA. Diseño PEYU.
+function buildClientEmail({ numero, contacto, empresa, lineas, totalNeto, iva, totalConIva, qtyTotal, deliveryDate, personalizacion }) {
+  const kg = Math.round(qtyTotal * 0.05 * 10) / 10;
+  const litros = (qtyTotal * 12.5).toLocaleString('es-CL');
+  const waMsg = encodeURIComponent(`Hola PEYU, quiero avanzar con la cotización ${numero}`);
+  return `
+  <div style="margin:0;padding:0;background:#F2ECE2">
+    <div style="max-width:600px;margin:0 auto;font-family:'Helvetica Neue',Arial,sans-serif;color:#2A2420">
+      <!-- Header -->
+      <div style="background:linear-gradient(135deg,#0F8B6C,#0B6E55);padding:32px 28px;border-radius:0 0 24px 24px;text-align:center">
+        <div style="font-size:32px;margin-bottom:6px">🐢</div>
+        <h1 style="color:#fff;margin:0;font-size:24px;letter-spacing:-0.5px">PEYU</h1>
+        <p style="color:#d7f0e8;margin:6px 0 0;font-size:13px">Productos con propósito · 100% plástico reciclado</p>
+      </div>
+
+      <!-- Relato -->
+      <div style="padding:32px 28px 8px">
+        <p style="font-size:17px;line-height:1.5;margin:0 0 16px">Hola${contacto ? ` ${contacto}` : ''} 👋</p>
+        <p style="font-size:15px;line-height:1.7;color:#4B4F54;margin:0 0 14px">
+          Gracias por pensar en <strong style="color:#2A2420">PEYU</strong> para ${empresa ? `<strong style="color:#2A2420">${empresa}</strong>` : 'tu empresa'}.
+          Cada producto que ves aquí <strong style="color:#0F8B6C">nació de plástico que estaba destinado al vertedero</strong> —
+          tapitas, envases y residuos que rescatamos y transformamos en Santiago 🇨🇱.
+        </p>
+        <p style="font-size:15px;line-height:1.7;color:#4B4F54;margin:0 0 20px">
+          Preparamos tu cotización por volumen <strong style="color:#2A2420">${numero}</strong>. Aquí está el detalle:
+        </p>
+      </div>
+
+      <!-- Tabla productos -->
+      <div style="padding:0 28px">
+        <table style="width:100%;border-collapse:collapse;border:1px solid #EBE3D6;border-radius:16px;overflow:hidden">
+          <thead>
+            <tr style="background:#0F8B6C">
+              <th style="padding:10px 12px;text-align:left;font-size:11px;color:#fff;text-transform:uppercase;letter-spacing:0.5px">Producto</th>
+              <th style="padding:10px 12px;text-align:right;font-size:11px;color:#fff;text-transform:uppercase;letter-spacing:0.5px">Total</th>
+            </tr>
+          </thead>
+          <tbody>${lineasHTML(lineas)}</tbody>
+        </table>
+      </div>
+
+      <!-- Totales -->
+      <div style="padding:16px 28px 8px">
+        <table style="width:100%;font-size:14px">
+          <tr><td style="padding:4px 0;color:#A78B6F">Neto (${qtyTotal} u)</td><td style="padding:4px 0;text-align:right;color:#4B4F54">${clp(totalNeto)}</td></tr>
+          <tr><td style="padding:4px 0;color:#A78B6F">IVA (19%)</td><td style="padding:4px 0;text-align:right;color:#4B4F54">${clp(iva)}</td></tr>
+          <tr><td style="padding:10px 0 0;font-size:16px;font-weight:800;color:#2A2420;border-top:2px solid #0F8B6C">Total</td><td style="padding:10px 0 0;text-align:right;font-size:18px;font-weight:800;color:#0F8B6C;border-top:2px solid #0F8B6C">${clp(totalConIva)}</td></tr>
+        </table>
+      </div>
+
+      ${personalizacion ? `
+      <div style="margin:16px 28px;padding:12px 16px;background:#FBE9E1;border-radius:12px;font-size:13px;color:#D96B4D">
+        ✨ <strong>Grabado láser de tu logo incluido GRATIS</strong> desde 10 unidades por producto.
+      </div>` : ''}
+
+      <!-- Impacto: la historia que importa -->
+      <div style="margin:20px 28px;padding:20px;background:#E7F4EF;border-radius:16px">
+        <p style="font-size:13px;font-weight:700;color:#0F8B6C;margin:0 0 8px">🌱 El impacto de tu pedido</p>
+        <p style="font-size:14px;line-height:1.6;color:#2A2420;margin:0">
+          Esta orden rescata <strong>~${kg}kg de plástico</strong> y ahorra <strong>${litros}L de agua</strong>
+          frente a fabricar lo mismo con material virgen. Tu marca, contando una historia real de economía circular.
+        </p>
+      </div>
+
+      <!-- CTA -->
+      <div style="padding:8px 28px 28px;text-align:center">
+        <a href="https://wa.me/56935040242?text=${waMsg}" style="display:inline-block;background:#0F8B6C;color:#fff;text-decoration:none;padding:14px 28px;border-radius:999px;font-weight:700;font-size:15px">
+          Avanzar por WhatsApp →
+        </a>
+        <p style="font-size:12px;color:#A78B6F;margin:16px 0 0;line-height:1.6">
+          Adjuntamos tu cotización en PDF. Validez: 15 días.<br/>
+          Un ejecutivo te contactará en 24h hábiles para afinar plazos y personalización${deliveryDate ? ` (fecha requerida: ${deliveryDate})` : ''}.
+        </p>
+      </div>
+
+      <!-- Footer -->
+      <div style="background:#2A2420;padding:20px 28px;border-radius:24px 24px 0 0;text-align:center">
+        <p style="color:#fff;font-size:13px;font-weight:700;margin:0">PEYU Chile SPA</p>
+        <p style="color:#A78B6F;font-size:11px;margin:6px 0 0">♻ Cada compra evita que el plástico llegue al vertedero</p>
+        <p style="color:#A78B6F;font-size:11px;margin:4px 0 0">ventas@peyuchile.cl · +56 9 3504 0242 · peyuchile.cl</p>
+      </div>
+    </div>
+  </div>`;
+}
+
+// Email al EQUIPO: alerta accionable con scoring, datos y desglose. HTML.
+function buildTeamEmail({ numero, leadScore, urgency, empresa, contacto, email, telefono, rut, giro, lineas, totalConIva, qtyTotal, deliveryDate, personalizacion, esRecotizacion }) {
+  const hot = leadScore >= 80;
+  const accent = hot ? '#D96B4D' : '#0F8B6C';
+  const waMsg = encodeURIComponent(`Hola ${contacto || ''}, soy del equipo PEYU. Vi tu cotización ${numero} y quiero ayudarte a avanzar.`);
+  return `
+  <div style="max-width:600px;margin:0 auto;font-family:'Helvetica Neue',Arial,sans-serif;color:#1a1a1a">
+    <div style="background:${accent};padding:20px 24px;border-radius:12px 12px 0 0">
+      <p style="color:#fff;margin:0;font-size:12px;opacity:0.85;text-transform:uppercase;letter-spacing:1px">${esRecotizacion ? '🔄 Re-cotización' : '📥 Nueva cotización'} · Shop v2</p>
+      <h1 style="color:#fff;margin:6px 0 0;font-size:20px">${empresa || 'Empresa sin nombre'}</h1>
+      <p style="color:#fff;margin:4px 0 0;font-size:13px;opacity:0.9">Score ${leadScore}/100 · ${urgency} · ${numero}</p>
+    </div>
+    <div style="border:1px solid #e5e7eb;border-top:0;padding:24px;border-radius:0 0 12px 12px">
+      <table style="width:100%;font-size:14px;margin-bottom:16px">
+        <tr><td style="padding:5px 0;color:#888;width:120px">Contacto</td><td style="padding:5px 0;font-weight:600">${contacto || '—'}</td></tr>
+        <tr><td style="padding:5px 0;color:#888">Email</td><td style="padding:5px 0"><a href="mailto:${email}" style="color:${accent}">${email || '—'}</a></td></tr>
+        <tr><td style="padding:5px 0;color:#888">Teléfono</td><td style="padding:5px 0">${telefono || '—'}</td></tr>
+        <tr><td style="padding:5px 0;color:#888">RUT</td><td style="padding:5px 0">${rut || '—'}</td></tr>
+        ${giro ? `<tr><td style="padding:5px 0;color:#888">Giro</td><td style="padding:5px 0">${giro}</td></tr>` : ''}
+        ${deliveryDate ? `<tr><td style="padding:5px 0;color:#888">Fecha req.</td><td style="padding:5px 0">${deliveryDate}</td></tr>` : ''}
+        <tr><td style="padding:5px 0;color:#888">Personaliz.</td><td style="padding:5px 0">${personalizacion ? '✅ Sí (logo láser)' : 'No'}</td></tr>
+      </table>
+
+      <table style="width:100%;border-collapse:collapse;border:1px solid #eee;border-radius:8px;overflow:hidden;font-size:13px">
+        <tbody>${lineasHTML(lineas)}</tbody>
+      </table>
+      <p style="text-align:right;font-size:16px;font-weight:800;color:${accent};margin:12px 0 0">${qtyTotal} u · ${clp(totalConIva)} <span style="font-size:11px;color:#888;font-weight:400">(IVA incl.)</span></p>
+
+      <div style="margin-top:20px;text-align:center">
+        <a href="https://wa.me/${(telefono || '').replace(/[^0-9]/g, '') || '56935040242'}?text=${waMsg}" style="display:inline-block;background:${accent};color:#fff;text-decoration:none;padding:11px 22px;border-radius:999px;font-weight:700;font-size:14px">Contactar al cliente →</a>
+      </div>
+      <p style="font-size:11px;color:#aaa;text-align:center;margin:14px 0 0">PEYU Pipeline B2B · cotización generada desde /CotizacionRapida</p>
+    </div>
+  </div>`;
+}
+
 Deno.serve(async (req) => {
   try {
     if (req.method !== 'POST') {
@@ -406,10 +542,13 @@ Deno.serve(async (req) => {
       console.error('Error generando PDF cotización B2B:', e?.message || e);
     }
 
-    // ─── Enviar PDF al correo del cliente (best-effort, no rompe el flujo) ───
-    let emailEnviado = false;
+    // ─── Correos (best-effort, nunca rompen el flujo) ───
     const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');
-    if (pdfBase64 && email && /\S+@\S+\.\S+/.test(email) && RESEND_API_KEY) {
+    const esRecotizacion = !!existing;
+
+    // 1) Email al CLIENTE con relato + PDF adjunto.
+    let emailEnviado = false;
+    if (RESEND_API_KEY && pdfBase64 && email && /\S+@\S+\.\S+/.test(email)) {
       try {
         const r = await fetch('https://api.resend.com/emails', {
           method: 'POST',
@@ -417,32 +556,49 @@ Deno.serve(async (req) => {
           body: JSON.stringify({
             from: 'PEYU Chile <ventas@peyuchile.cl>',
             to: [email],
-            subject: `Tu cotización corporativa PEYU ${numero} · ${qtyTotal} unidades`,
-            html: `
-              <div style="font-family:Arial,sans-serif;max-width:560px;margin:0 auto;color:#1a1a1a">
-                <div style="background:#0F8B6C;padding:24px;border-radius:12px 12px 0 0">
-                  <h1 style="color:#fff;margin:0;font-size:22px">PEYU 🐢</h1>
-                  <p style="color:#d7f0e8;margin:4px 0 0;font-size:13px">Productos con propósito · 100% plástico reciclado</p>
-                </div>
-                <div style="border:1px solid #e5e7eb;border-top:0;padding:24px;border-radius:0 0 12px 12px">
-                  <p>Hola${contact_name ? ` ${contact_name}` : ''} 👋</p>
-                  <p>Te adjuntamos tu cotización por volumen <strong>${numero}</strong> para <strong>${company_name}</strong>:</p>
-                  <table style="width:100%;border-collapse:collapse;margin:16px 0;font-size:14px">
-                    <tr><td style="padding:6px 0;color:#666">Unidades totales</td><td style="padding:6px 0;text-align:right;font-weight:600">${qtyTotal} u.</td></tr>
-                    <tr><td style="padding:6px 0;color:#666">Neto</td><td style="padding:6px 0;text-align:right;font-weight:600">$${totalNeto.toLocaleString('es-CL')}</td></tr>
-                    <tr><td style="padding:6px 0;color:#666;border-top:2px solid #0F8B6C">Total (IVA incl.)</td><td style="padding:6px 0;text-align:right;font-weight:800;color:#0F8B6C;border-top:2px solid #0F8B6C">$${totalConIva.toLocaleString('es-CL')}</td></tr>
-                  </table>
-                  <p style="font-size:13px;color:#666">Validez: 15 días. Un ejecutivo te contactará en 24h hábiles para afinar plazos y personalización.</p>
-                  <a href="https://wa.me/56935040242?text=${encodeURIComponent(`Hola PEYU, quiero avanzar con la cotización ${numero}`)}" style="display:inline-block;background:#0F8B6C;color:#fff;text-decoration:none;padding:12px 22px;border-radius:999px;font-weight:700;font-size:14px;margin-top:8px">Avanzar por WhatsApp</a>
-                </div>
-              </div>`,
+            reply_to: 'ventas@peyuchile.cl',
+            subject: `🐢 Tu cotización PEYU ${numero} · ${qtyTotal} unidades, 100% recicladas`,
+            html: buildClientEmail({
+              numero, contacto: contact_name, empresa: company_name,
+              lineas, totalNeto, iva, totalConIva, qtyTotal,
+              deliveryDate: delivery_date, personalizacion: personalization_needs,
+            }),
             attachments: [{ filename, content: pdfBase64 }],
           }),
         });
         emailEnviado = r.ok;
-        if (!r.ok) console.error('Resend cotización B2B error:', await r.text());
+        if (!r.ok) console.error('Resend cliente error:', await r.text());
       } catch (e) {
-        console.error('Error enviando cotización B2B por email:', e?.message || e);
+        console.error('Error email cliente:', e?.message || e);
+      }
+    }
+
+    // 2) Email al EQUIPO (HTML accionable). Cubre creación Y re-cotización
+    //    (onNewB2BLead solo dispara en create; esto cierra el hueco).
+    let emailEquipoEnviado = false;
+    const TEAM_INBOXES = ['jnilo@peyuchile.cl', 'ventas@peyuchile.cl', 'ti@peyuchile.cl'];
+    if (RESEND_API_KEY) {
+      try {
+        const hot = lead_score >= 80;
+        const r = await fetch('https://api.resend.com/emails', {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${RESEND_API_KEY}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            from: 'PEYU Pipeline B2B <ventas@peyuchile.cl>',
+            to: TEAM_INBOXES,
+            subject: `${hot ? '🔥' : '📥'} ${esRecotizacion ? 'Re-cotización' : 'Cotización'} B2B · ${company_name || 'sin nombre'} · ${lead_score}pts · ${clp(totalConIva)}`,
+            html: buildTeamEmail({
+              numero, leadScore: lead_score, urgency,
+              empresa: company_name, contacto: contact_name, email, telefono: phone, rut, giro,
+              lineas, totalConIva, qtyTotal, deliveryDate: delivery_date,
+              personalizacion: personalization_needs, esRecotizacion,
+            }),
+          }),
+        });
+        emailEquipoEnviado = r.ok;
+        if (!r.ok) console.error('Resend equipo error:', await r.text());
+      } catch (e) {
+        console.error('Error email equipo:', e?.message || e);
       }
     }
 
@@ -459,6 +615,7 @@ Deno.serve(async (req) => {
       pdf_base64: pdfBase64,
       filename,
       email_enviado: emailEnviado,
+      email_equipo_enviado: emailEquipoEnviado,
     });
   } catch (error) {
     return Response.json({ ok: false, error: error.message }, { status: 200 });
