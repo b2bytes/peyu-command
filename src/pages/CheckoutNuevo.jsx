@@ -167,7 +167,9 @@ export default function CheckoutNuevo() {
       mockup_url: itemConMockup ? (itemConMockup.mockupUrl || itemConMockup.mockup_url) : '',
       logo_recibido: !!(itemConLogo || itemConMockup),
       courier: `BlueExpress ${envioBluex.servicio}`,
-      notas: `Carrito v2: ${carrito.length} items${envioBluex ? ` | Bluex ${envioBluex.servicio} ($${(envioBluex.costo_real || envioBluex.costo).toLocaleString('es-CL')})` : ''}`,
+      // Nota en el formato que el admin (BluexManualDispatchCard) sabe parsear:
+      // "Bluex EXPRESS (1.5kg) → $4.990" — así el despacho muestra servicio/peso/costo.
+      notas: `Carrito v2: ${carrito.length} items${envioBluex ? ` | Bluex ${envioBluex.servicio} (${(envioBluex.peso_kg || 0)}kg) → $${(envioBluex.costo_real || envioBluex.costo).toLocaleString('es-CL')}` : ''}`,
     };
 
     let pedido;
