@@ -21,7 +21,7 @@ export default function ColorSwatchesV2({ colores = [], value, onSelect, error, 
           </span>
         )}
       </div>
-      <div className={`flex flex-wrap gap-2.5 ${error ? 'p-2 -m-2 rounded-xl ring-2 ring-[#D96B4D]/40' : ''}`}>
+      <div className={`flex flex-wrap justify-center sm:justify-start gap-3 ${error ? 'p-2 -m-2 rounded-xl ring-2 ring-[#D96B4D]/40' : ''}`}>
         {colores.map((c) => {
           const sel = value === c.id;
           const photo = hasPhotos ? getProductImageForColor(producto, c) : null;
@@ -32,7 +32,7 @@ export default function ColorSwatchesV2({ colores = [], value, onSelect, error, 
               type="button"
               onClick={() => onSelect(c.id)}
               title={c.label}
-              className={`relative w-12 h-12 rounded-full border-2 overflow-hidden transition-all ${
+              className={`relative w-14 h-14 sm:w-12 sm:h-12 rounded-full border-2 overflow-hidden transition-all ${
                 sel ? 'border-[#0F8B6C] scale-110 shadow-md' : 'border-[#EBE3D6] hover:scale-105'
               }`}
               style={usePhoto ? undefined : { backgroundColor: c.hex || '#ccc' }}
@@ -42,7 +42,7 @@ export default function ColorSwatchesV2({ colores = [], value, onSelect, error, 
               )}
               {sel && (
                 <span className="absolute inset-0 flex items-center justify-center bg-black/10">
-                  <Check className="w-4 h-4 text-white drop-shadow-lg" strokeWidth={3} />
+                  <Check className="w-5 h-5 sm:w-4 sm:h-4 text-white drop-shadow-lg" strokeWidth={3} />
                 </span>
               )}
             </button>
