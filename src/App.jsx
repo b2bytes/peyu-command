@@ -3,7 +3,7 @@ import { lazyWithRetry } from '@/lib/lazy-with-retry';
 import { Toaster } from "@/components/ui/toaster"
 import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClientInstance } from '@/lib/query-client'
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
@@ -248,6 +248,13 @@ function App() {
             <Routes>
               {/* Landing Page - Standalone */}
               <Route path="/" element={<ShopLanding />} />
+
+              {/* Rutas-alias de seguridad — si queda un menú viejo cacheado o un
+                  enlace externo apuntando a /Inicio, /Tienda o /Empresas, redirige
+                  al flujo nuevo en vez de caer en pantalla negra / PageNotFound. */}
+              <Route path="/Inicio" element={<Navigate to="/TiendaNueva" replace />} />
+              <Route path="/Tienda" element={<Navigate to="/CatalogoNuevo" replace />} />
+              <Route path="/Empresas" element={<Navigate to="/CotizacionRapida" replace />} />
 
               {/* Brand Lab (Fase 0) - Standalone, ruta nueva paralela */}
               <Route path="/brand" element={<BrandLab />} />
