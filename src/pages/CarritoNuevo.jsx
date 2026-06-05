@@ -26,18 +26,15 @@ export default function CarritoNuevo() {
   const cargoPersonalizacion = calcularCargoPersonalizacionCarrito(items);
   const total = subtotal + cargoPersonalizacion;
 
-  // Pasa el carrito v2 al checkout legacy (clave `carrito`) y navega.
-  const irACheckout = () => {
-    localStorage.setItem('carrito', JSON.stringify(items));
-    navigate('/cart');
-  };
+  // Navega al checkout v2 propio (mobile-first, BlueExpress inline). Aislado.
+  const irACheckout = () => navigate('/CheckoutNuevo');
 
   if (items.length === 0) {
     return (
-      <div className="min-h-screen bg-[#FBF7EF] font-inter text-[#2A2420]">
+      <div className="min-h-screen bg-[#FAF7F2] font-inter text-[#2A2420]">
         <ShopV2Header />
         <div className="max-w-md mx-auto text-center py-24 px-4">
-          <div className="w-20 h-20 rounded-3xl bg-white border border-[#E7D8C6] flex items-center justify-center mx-auto mb-5">
+          <div className="w-20 h-20 rounded-3xl bg-white border border-[#EBE3D6] flex items-center justify-center mx-auto mb-5">
             <ShoppingBag className="w-8 h-8 text-[#A78B6F]" />
           </div>
           <h1 className="font-fraunces text-2xl mb-2">Tu carrito está vacío</h1>
@@ -53,7 +50,7 @@ export default function CarritoNuevo() {
   }
 
   return (
-    <div className="min-h-screen bg-[#FBF7EF] font-inter text-[#2A2420]">
+    <div className="min-h-screen bg-[#FAF7F2] font-inter text-[#2A2420]">
       <ShopV2Header />
 
       <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6">
@@ -71,11 +68,11 @@ export default function CarritoNuevo() {
               const gratis = item.personalizacion && (item.cantidad || 1) >= moq;
               const lineaProducto = (item.precio || 0) * (item.cantidad || 1);
               return (
-                <div key={item.id} className="flex gap-3.5 bg-white rounded-2xl border border-[#E7D8C6] p-3.5">
+                <div key={item.id} className="flex gap-3.5 bg-white rounded-2xl border border-[#EBE3D6] p-3.5">
                   <img
                     src={item.imagen}
                     alt={item.nombre}
-                    className="w-20 h-20 sm:w-24 sm:h-24 rounded-xl object-cover border border-[#E7D8C6] flex-shrink-0"
+                    className="w-20 h-20 sm:w-24 sm:h-24 rounded-xl object-cover border border-[#EBE3D6] flex-shrink-0"
                     referrerPolicy="no-referrer"
                   />
                   <div className="flex-1 min-w-0">
@@ -87,7 +84,7 @@ export default function CarritoNuevo() {
                     </div>
                     <div className="flex flex-wrap gap-1.5 mt-1.5">
                       {item.color && (
-                        <span className="text-[10px] font-semibold bg-[#FBF7EF] border border-[#E7D8C6] text-[#4B4F54] px-2 py-0.5 rounded-full">{item.color}</span>
+                        <span className="text-[10px] font-semibold bg-[#FAF7F2] border border-[#EBE3D6] text-[#4B4F54] px-2 py-0.5 rounded-full">{item.color}</span>
                       )}
                       {item.tipo_personalizacion && (
                         <span className="text-[10px] font-semibold bg-[#D96B4D]/10 text-[#D96B4D] px-2 py-0.5 rounded-full">
@@ -111,7 +108,7 @@ export default function CarritoNuevo() {
 
           {/* Resumen */}
           <div className="lg:sticky lg:top-24 self-start">
-            <div className="bg-white rounded-2xl border border-[#E7D8C6] p-5 space-y-3">
+            <div className="bg-white rounded-2xl border border-[#EBE3D6] p-5 space-y-3">
               <h2 className="font-fraunces text-xl">Resumen</h2>
               <div className="flex justify-between text-sm text-[#4B4F54]">
                 <span>Subtotal</span>
@@ -127,7 +124,7 @@ export default function CarritoNuevo() {
                 <span>Envío</span>
                 <span className="text-[#A78B6F]">Se calcula al pagar</span>
               </div>
-              <div className="flex justify-between pt-3 border-t border-[#E7D8C6]">
+              <div className="flex justify-between pt-3 border-t border-[#EBE3D6]">
                 <span className="font-bold text-[#2A2420]">Total</span>
                 <span className="font-poppins font-bold text-xl text-[#0F8B6C]">{fmtCLP(total)}</span>
               </div>
@@ -148,7 +145,7 @@ export default function CarritoNuevo() {
         </div>
       </div>
 
-      <footer className="border-t border-[#E7D8C6] py-8 text-center text-xs text-[#A78B6F] mt-8 flex items-center justify-center gap-1.5">
+      <footer className="border-t border-[#EBE3D6] py-8 text-center text-xs text-[#A78B6F] mt-8 flex items-center justify-center gap-1.5">
         <Recycle className="w-3.5 h-3.5 text-[#0F8B6C]" /> PEYU Chile · Hecho con plástico reciclado 🇨🇱
       </footer>
     </div>

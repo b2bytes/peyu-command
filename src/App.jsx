@@ -52,6 +52,7 @@ import TiendaNueva from './pages/TiendaNueva';
 import CatalogoNuevo from './pages/CatalogoNuevo';
 import ProductoNuevo from './pages/ProductoNuevo';
 import CarritoNuevo from './pages/CarritoNuevo';
+import CheckoutNuevo from './pages/CheckoutNuevo';
 
 // ── ADMIN PAGES (lazy + retry) ───────────────────────────────────────
 // Cargadas on-demand. Cada lazy() está envuelto en lazyWithRetry para
@@ -258,6 +259,7 @@ function App() {
               <Route path="/CatalogoNuevo" element={<CatalogoNuevo />} />
               <Route path="/ProductoNuevo" element={<ProductoNuevo />} />
               <Route path="/CarritoNuevo" element={<CarritoNuevo />} />
+              <Route path="/CheckoutNuevo" element={<CheckoutNuevo />} />
 
               {/* Presentación a fundadores - 22 layouts del design system */}
               <Route path="/founders-presentation" element={<FoundersPresentation />} />
