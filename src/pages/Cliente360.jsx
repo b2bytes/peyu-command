@@ -2,23 +2,44 @@ import { useState, useEffect } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { ArrowLeft, Mail, Phone, MapPin, Package, TrendingUp, Award, Clock, Sparkles, DollarSign, Loader2 } from 'lucide-react';
+import PersonalizedProductsSummary from '@/components/cliente/PersonalizedProductsSummary';
+import RecentQuotesSummary from '@/components/cliente/RecentQuotesSummary';
 
 export default function Cliente360() {
   const [params] = useSearchParams();
   const email = params.get('email');
   const [cliente, setCliente] = useState(null);
   const [pedidos, setPedidos] = useState([]);
+  const [cotizaciones, setCotizaciones] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!email) { setLoading(false); return; }
     (async () => {
-      const [clientes, historialPedidos] = await Promise.all([
+      const [clientes, historialPedidos, propuestas, cotis] = await Promise.all([
         base44.entities.Cliente.filter({ email }),
         base44.entities.PedidoWeb.filter({ cliente_email: email }, '-fecha', 50),
+        base44.entities.CorporateProposal.filter({ email }, '-created_date', 25),
+        base44.entities.Cotizacion.filter({ email }, '-created_date', 25),
       ]);
       setCliente(clientes[0] || null);
       setPedidos(historialPedidos || []);
+      // Unifica propuestas B2B y cotizaciones en una sola lista ordenada.
+      const unificadas = [
+        ...(propuestas || []).map((p) => ({
+          id: p.id, origen: 'B2B', numero: p.numero, estado: p.status,
+          fecha: p.fecha_envio || (p.created_date || '').slice(0, 10),
+          total: p.total, detalle: p.empresa,
+          _t: new Date(p.created_date || 0).getTime(),
+        })),
+        ...(cotis || []).map((c) => ({
+          id: c.id, origen: 'Cotización', numero: c.numero, estado: c.estado,
+          fecha: c.fecha_envio || (c.created_date || '').slice(0, 10),
+          total: c.total, detalle: c.sku,
+          _t: new Date(c.created_date || 0).getTime(),
+        })),
+      ].sort((a, b) => b._t - a._t);
+      setCotizaciones(unificadas);
       setLoading(false);
     })();
   }, [email]);
@@ -124,6 +145,12 @@ export default function Cliente360() {
               ))}
             </div>
           )}
+        </div>
+
+        {/* Resumen: productos personalizados (con archivos) + cotizaciones */}
+        <div className="grid lg:grid-cols-2 gap-5 mt-5">
+          <PersonalizedProductsSummary pedidos={pedidos} />
+          <RecentQuotesSummary cotizaciones={cotizaciones} />
         </div>
 
         {/* Notas */}
