@@ -6,7 +6,17 @@
 
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.27';
 
-const BLUEX_API_BASE = Deno.env.get('BLUEX_API_BASE_URL') || '';
+// Normaliza el secret del host: garantiza https://, quita '/' final y descarta
+// valores inválidos (ej. el secret trae el token suelto sin dominio).
+function normalizeBluexBase(raw) {
+  let h = String(raw || '').trim().replace(/\/+$/, '');
+  if (!h) return '';
+  if (!h.includes('.') && !h.startsWith('http')) return '';
+  if (!/^https?:\/\//i.test(h)) h = `https://${h}`;
+  return h;
+}
+
+const BLUEX_API_BASE = normalizeBluexBase(Deno.env.get('BLUEX_API_BASE_URL'));
 const LABEL_ENDPOINT = '/admision/etiqueta';
 
 Deno.serve(async (req) => {

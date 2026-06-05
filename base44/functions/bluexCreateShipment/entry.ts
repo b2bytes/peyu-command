@@ -22,7 +22,18 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.27';
 
 // La URL oficial cambia según el plan partner. Configurable por secret.
 // Si no está seteado → modo manual.
-const BLUEX_API_BASE = Deno.env.get('BLUEX_API_BASE_URL') || '';
+// Normaliza el secret del host: garantiza https://, quita '/' final y descarta
+// valores inválidos (ej. el secret trae el token suelto sin dominio). Así la URL
+// final SIEMPRE es `https://<host>/admision/...` y nunca un "Invalid URL".
+function normalizeBluexBase(raw) {
+  let h = String(raw || '').trim().replace(/\/+$/, '');
+  if (!h) return '';
+  if (!h.includes('.') && !h.startsWith('http')) return '';
+  if (!/^https?:\/\//i.test(h)) h = `https://${h}`;
+  return h;
+}
+
+const BLUEX_API_BASE = normalizeBluexBase(Deno.env.get('BLUEX_API_BASE_URL'));
 const SHIPMENT_ENDPOINT = '/admision/ot';
 
 const ORIGIN = {
