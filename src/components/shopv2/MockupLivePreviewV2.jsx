@@ -222,7 +222,7 @@ export default function MockupLivePreviewV2({ productImageUrl, capas = [], onPla
               width: `${AREA_W}%`, height: `${AREA_H}%`,
             }}
           >
-            <span className="absolute -top-[16px] left-1/2 -translate-x-1/2 text-[8px] font-bold tracking-wider text-[#0F8B6C]/70 uppercase whitespace-nowrap">
+            <span className="absolute top-1 left-1/2 -translate-x-1/2 text-[7px] sm:text-[8px] font-bold tracking-wider text-[#0F8B6C]/70 uppercase whitespace-nowrap">
               Área de grabado
             </span>
           </div>
@@ -245,6 +245,7 @@ export default function MockupLivePreviewV2({ productImageUrl, capas = [], onPla
                   fontSize: `${pl.size * 0.42}px`, fontFamily: 'monospace', fontWeight: 'bold',
                   color: tint === 'light' ? 'rgba(245,245,245,0.95)' : 'rgba(18,18,18,0.92)',
                   letterSpacing: '0.14em', whiteSpace: 'nowrap',
+                  maxWidth: '38vw', overflow: 'hidden', textOverflow: 'ellipsis', display: 'inline-block',
                   textShadow: tint === 'light'
                     ? '0 1px 0 rgba(0,0,0,0.55), 0 -1px 0 rgba(255,255,255,0.15)'
                     : '0 1px 0 rgba(255,255,255,0.5), 0 -1px 0 rgba(0,0,0,0.2)',
@@ -321,16 +322,16 @@ export default function MockupLivePreviewV2({ productImageUrl, capas = [], onPla
               <div
                 key={c.id}
                 onClick={() => setActiveId(c.id)}
-                className={`flex items-center gap-2.5 rounded-xl border px-3 py-2 cursor-pointer transition-all ${
+                className={`flex items-center gap-2 sm:gap-2.5 rounded-xl border px-2.5 sm:px-3 py-2 cursor-pointer transition-all ${
                   isActive ? 'border-[#0F8B6C] bg-[#0F8B6C]/5' : 'border-[#EBE3D6] bg-white'
                 }`}
               >
                 <Icon className={`w-3.5 h-3.5 flex-shrink-0 ${isActive ? 'text-[#0F8B6C]' : 'text-[#A78B6F]'}`} />
-                <span className="text-[11px] font-bold text-[#2A2420] w-20 flex-shrink-0 truncate">{NOMBRE[c.tipo]}</span>
+                <span className="text-[11px] font-bold text-[#2A2420] w-14 sm:w-20 flex-shrink-0 truncate">{NOMBRE[c.tipo]}</span>
                 <input
                   type="range" min="12" max={c.tipo === 'frase' ? 40 : 34} value={pl.size}
                   onChange={(e) => { setActiveId(c.id); setSize(c.id, Number(e.target.value)); }}
-                  className="flex-1 accent-[#0F8B6C]"
+                  className="flex-1 min-w-0 accent-[#0F8B6C]"
                   onClick={(e) => e.stopPropagation()}
                 />
               </div>
