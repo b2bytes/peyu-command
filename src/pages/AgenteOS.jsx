@@ -18,6 +18,7 @@ import AgentHeader from '@/components/agente-os/AgentHeader';
 import CommandBar from '@/components/agente-os/CommandBar';
 import WelcomeScreen from '@/components/agente-os/WelcomeScreen';
 import MessageBubble from '@/components/agente-os/MessageBubble';
+import AgentMobileDrawer from '@/components/agente-os/AgentMobileDrawer';
 import { detectCards } from '@/components/agente-os/intent';
 
 const PEYU_OS_PROMPT = `Eres Peyu, el Agent OS interno de PEYU Chile (marca sustentable: "Hasta que el plástico deje de ser basura"). Hablas en español, cálido pero directo y breve. El founder te habla para administrar TODO el negocio desde este chat. Cuando te pregunten por una métrica o registros, responde con UNA o DOS frases cálidas que resuman lo clave y NOMBRA los registros concretos si los tienes en "DETALLE CONCRETO" — la pantalla mostrará automáticamente una TARJETA RICA debajo de tu mensaje con la lista completa y BOTONES DE ACCIÓN (responder consulta, avanzar pedido, marcar lead, reponer stock, reenviar propuesta). Nunca digas "te las muestro" sin nombrarlas: usa el detalle que te paso. Si no se entiende la pregunta, pide aclaración y sugiere qué puedes hacer (ventas, pedidos, stock, cotizaciones, leads, consultas, clientes).`;
@@ -32,6 +33,7 @@ export default function AgenteOS() {
   const [input, setInput] = useState('');
   const [thinking, setThinking] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [mobileDrawer, setMobileDrawer] = useState(false);
   const bottomRef = useRef(null);
 
   const loadData = async (isRefresh = false) => {
@@ -120,11 +122,18 @@ Stock bajo (<10u): ${m.stock_bajo} SKUs · consultas sin responder: ${m.consulta
         onNewThread={() => setMessages([])}
       />
 
+      <AgentMobileDrawer
+        open={mobileDrawer}
+        onClose={() => setMobileDrawer(false)}
+        onAsk={sendMessage}
+        onNewThread={() => setMessages([])}
+      />
+
       <div className="flex-1 flex flex-col min-w-0">
         <AgentHeader
           onRefresh={() => loadData(true)}
           refreshing={refreshing}
-          onMobileMenu={() => sendMessage('Resumen del día')}
+          onMobileMenu={() => setMobileDrawer(true)}
         />
 
         {loading ? (
