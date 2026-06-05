@@ -10,7 +10,7 @@ import { Recycle, ShieldCheck, Truck, Award, ArrowRight, Gift, Building2 } from 
 const SIGNALS = [
   { icon: Recycle,     label: 'Sustentables',     desc: 'Reciclado y compostable' },
   { icon: ShieldCheck, label: '10 años garantía', desc: 'Sin letra chica' },
-  { icon: Truck,       label: 'Envío Bluex',      desc: 'Todo Chile' },
+  { icon: Truck,       label: 'Despacho BlueExpress', desc: '1 día hábil en RM (antes 14:00)' },
   { icon: Award,       label: 'Hecho en Chile',   desc: 'Producción local' },
 ];
 

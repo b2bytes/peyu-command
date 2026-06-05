@@ -202,13 +202,16 @@ export const HERO_IMAGES = [
   'https://i0.wp.com/peyuchile.cl/wp-content/uploads/2025/12/CachosBannerOficial-1.jpg?fit=1920%2C640&ssl=1',
 ];
 
-// Category showcase with unique real images
+// Category showcase — taxonomía oficial PEYU (4 categorías canónicas B2C).
+// "Cachos" se renombró a "Entretenimiento". "Corporativo" es canal B2B y NO
+// aparece como tarjeta B2C aquí. Los `count` son referenciales (la UI real
+// recalcula el conteo desde la BD). Las imágenes se resuelven desde la BD vía
+// ShopCategoryCards; estas URLs quedan solo como fallback legacy.
 export const CATEGORY_SHOWCASE = [
-  { label: 'Carcasas', count: 26, img: 'https://i0.wp.com/peyuchile.cl/wp-content/uploads/2025/04/carcasas-500x500-1.webp?fit=600%2C600&ssl=1', cat: 'Carcasas B2C' },
-  { label: 'Cachos', count: 10, img: 'https://i0.wp.com/peyuchile.cl/wp-content/uploads/2025/04/4-mixto-1024x1024-1.webp?fit=600%2C600&ssl=1', cat: 'Entretenimiento' },
-  { label: 'Escritorio', count: 4, img: 'https://i0.wp.com/peyuchile.cl/wp-content/uploads/2025/09/dce80c23-7441-4922-a656-8627018c1e5d-1.jpeg?fit=600%2C600&ssl=1', cat: 'Hogar' },
-  { label: 'Maceteros', count: 5, img: 'https://i0.wp.com/peyuchile.cl/wp-content/uploads/2022/11/potfinal_porta-Photoroom-1.jpg?fit=600%2C600&ssl=1', cat: 'Hogar' },
-  { label: 'Corporativo', count: 15, img: 'https://i0.wp.com/peyuchile.cl/wp-content/uploads/2025/12/greenpal-3.jpg?fit=600%2C600&ssl=1', cat: 'Corporativo' },
+  { label: 'Carcasas',        count: 69, img: 'https://i0.wp.com/peyuchile.cl/wp-content/uploads/2025/04/carcasas-500x500-1.webp?fit=600%2C600&ssl=1', cat: 'Carcasas B2C' },
+  { label: 'Hogar',           count: 8,  img: 'https://i0.wp.com/peyuchile.cl/wp-content/uploads/2022/11/potfinal_porta-Photoroom-1.jpg?fit=600%2C600&ssl=1', cat: 'Hogar' },
+  { label: 'Entretenimiento', count: 10, img: 'https://i0.wp.com/peyuchile.cl/wp-content/uploads/2025/04/4-mixto-1024x1024-1.webp?fit=600%2C600&ssl=1', cat: 'Entretenimiento' },
+  { label: 'Escritorio',      count: 7,  img: 'https://i0.wp.com/peyuchile.cl/wp-content/uploads/2025/09/dce80c23-7441-4922-a656-8627018c1e5d-1.jpeg?fit=600%2C600&ssl=1', cat: 'Escritorio' },
 ];
 
 /**

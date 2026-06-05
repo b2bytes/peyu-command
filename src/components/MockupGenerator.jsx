@@ -104,9 +104,15 @@ export default function MockupGenerator({
 
   if (mockupType === 'none') return null;
 
+  // ✅ Item G · El cliente "acepta" el mockup generado → cierra el modal
+  // conservando el resultado (ya se propagó vía onGenerated al generarlo).
+  const handleAccept = () => onOpenChange(false);
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="w-[95vw] sm:w-[92vw] max-w-lg max-h-[90vh] overflow-y-auto peyu-scrollbar bg-slate-900 border-white/15 text-white p-4 sm:p-6">
+      <DialogContent className="w-[95vw] sm:w-[92vw] max-w-lg max-h-[90vh] overflow-y-auto peyu-scrollbar bg-slate-900 border-white/15 text-white p-4 sm:p-6 pb-24 sm:pb-6">
+        {/* Botón X siempre visible (item G) — el DialogContent de shadcn ya
+            incluye una X, pero la reforzamos accesible en móvil arriba-derecha. */}
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 font-poppins">
             <span className="text-xl">{config.icon}</span> {config.title}
@@ -207,6 +213,28 @@ export default function MockupGenerator({
             La generación toma 5-10 segundos. El mockup es referencial — el resultado final puede variar ligeramente.
           </p>
         </div>
+
+        {/* ✅ Item G · Barra de acción STICKY en móvil cuando hay mockup generado.
+            "Aceptar mockup" (cierra conservando el resultado) + "Regenerar". En
+            desktop también aparece, anclada al fondo del modal. */}
+        {resultUrl && (
+          <div className="sticky bottom-0 -mx-4 sm:-mx-6 -mb-24 sm:-mb-6 px-4 sm:px-6 py-3 bg-slate-900/95 backdrop-blur border-t border-white/15 flex items-center gap-2 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+            <Button
+              onClick={handleGenerate}
+              disabled={generating || logoUploading}
+              variant="ghost"
+              className="flex-1 h-11 rounded-xl text-white/80 hover:text-white hover:bg-white/10 font-semibold gap-2 border border-white/15"
+            >
+              <Sparkles className="w-4 h-4" /> Regenerar
+            </Button>
+            <Button
+              onClick={handleAccept}
+              className="flex-[1.4] h-11 rounded-xl bg-gradient-to-r from-teal-500 to-emerald-500 hover:from-teal-600 hover:to-emerald-600 text-white font-bold gap-2"
+            >
+              <Check className="w-4 h-4" /> Aceptar mockup
+            </Button>
+          </div>
+        )}
       </DialogContent>
     </Dialog>
   );

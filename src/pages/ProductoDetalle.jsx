@@ -788,6 +788,35 @@ export default function ProductoDetalle() {
                       userInteractedRef.current = true;
                       setVistaActiva(i);
                       setColorMatchFeedback(null);
+                      // 🎨 FIX C · Sincronizar chip/label de color con la miniatura.
+                      // Si esta imagen corresponde a un color del producto (vía
+                      // imagenes_por_color o match por filename), actualizamos el
+                      // color seleccionado para que el chip marcado = foto visible
+                      // = color que va al carrito. Evita el bug "foto rosada con
+                      // Azul marcado".
+                      if (!packSize && colores.length > 0) {
+                        const mapa = producto.imagenes_por_color || {};
+                        let colorDeImagen = null;
+                        // 1) Match exacto contra imagenes_por_color
+                        for (const c of colores) {
+                          const url = getProductImageForColor(producto, c);
+                          if (url && url === img && url !== getProductImage(producto)) {
+                            colorDeImagen = c; break;
+                          }
+                        }
+                        // 2) Match por filename de la galería (turquesa, azul, etc.)
+                        if (!colorDeImagen) {
+                          // findColorImageMatch valida un solo color; probamos todos
+                          for (const c of colores) {
+                            const mm = findColorImageMatch([img], c);
+                            if (mm) { colorDeImagen = c; break; }
+                          }
+                        }
+                        if (colorDeImagen && colorDeImagen.id !== colorSeleccionado) {
+                          setColorSeleccionado(colorDeImagen.id);
+                          setColorError(false);
+                        }
+                      }
                     }}
                     className={`relative aspect-square rounded-2xl overflow-hidden border-2 transition-all bg-white ${vistaActiva === i ? 'shadow-lg scale-[1.03]' : 'opacity-70 hover:opacity-100'}`}
                     style={{ borderColor: vistaActiva === i ? 'var(--ld-action)' : 'var(--ld-border)' }}>

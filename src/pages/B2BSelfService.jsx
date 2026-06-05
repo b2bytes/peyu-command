@@ -730,6 +730,13 @@ export default function B2BSelfService() {
                 </div>
               )}
 
+              {/* Item K · Bloque explicativo del grabado láser — SIEMPRE visible
+                  cuando se elige personalizar: gratis ≥10u, grises tono opuesto,
+                  no a color, + nota mockup referencial 24h. */}
+              {personalizar && (
+                <GrabadoLaserInfo variant="dark" />
+              )}
+
               {/* Posición del grabado — clave para que el logo no quede donde no es */}
               {personalizar && (
                 <div className="bg-white/[0.04] border border-white/10 rounded-3xl p-5 backdrop-blur-sm">

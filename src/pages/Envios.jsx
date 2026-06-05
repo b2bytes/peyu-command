@@ -34,6 +34,9 @@ export default function Envios() {
         </p>
 
         <h2>Plazos por zona</h2>
+        <p style={{ background: 'var(--ld-action-soft)', color: 'var(--ld-action)', padding: '0.75rem 1rem', borderRadius: '0.75rem', fontWeight: 600 }}>
+          🚚 <strong>Región Metropolitana</strong>: entrega en <strong>1 día hábil</strong> si compras antes de las {CUTOFF_TIME} hrs vía BlueExpress Express.
+        </p>
         <ul>
           {SHIPPING_ZONES.map((z) => {
             const total = totalDeliveryRange(z.id);
