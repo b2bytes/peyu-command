@@ -1,8 +1,8 @@
 import { Check } from 'lucide-react';
 import { fmtCLP } from '@/lib/shop-v2-cart';
 
-// Tarjeta toggle de un tipo de personalización (combinable). Click = activa/
-// desactiva. Muestra check verde cuando está activo. Cada tipo suma su cargo.
+// Tarjeta de un tipo de personalización (EXCLUYENTE / radio). Click = elige
+// esta opción (deselecciona las otras). Indicador redondo verde cuando activo.
 export default function PersToggleCardV2({ Icon, label, precio, active, onToggle, gratis }) {
   return (
     <button
@@ -21,7 +21,7 @@ export default function PersToggleCardV2({ Icon, label, precio, active, onToggle
         </div>
       </div>
       <span
-        className={`flex-shrink-0 w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all ${
+        className={`flex-shrink-0 w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${
           active ? 'bg-[#0F8B6C] border-[#0F8B6C]' : 'border-[#E7D8C6] bg-white'
         }`}
       >

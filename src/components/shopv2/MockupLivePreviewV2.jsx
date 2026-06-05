@@ -65,8 +65,11 @@ function clampToArea(x, y, sizePct, tipo) {
   };
 }
 
-export default function MockupLivePreviewV2({ productImageUrl, capas = [], onPlacementChange }) {
+export default function MockupLivePreviewV2({ productImageUrl, capas = [], onPlacementChange, fallbackUrl }) {
   const containerRef = useRef(null);
+  // Imagen base efectiva: si la principal falla (CORS/rota), cae al fallback
+  // (imagen_url del producto) → la carcasa NUNCA queda en blanco/gris vacío.
+  const [imgSrc, setImgSrc] = useState(productImageUrl || fallbackUrl || null);
   const [placements, setPlacements] = useState({}); // id -> {size,x,y}
   const [engraved, setEngraved] = useState({});       // "url::tint" -> {dataUrl, ok}
   const [processing, setProcessing] = useState(false);
@@ -78,15 +81,20 @@ export default function MockupLivePreviewV2({ productImageUrl, capas = [], onPla
 
   const capasKey = capas.map((c) => c.id).join('|');
 
+  // Mantiene la imagen base sincronizada con la prop (al cambiar color/modelo).
+  useEffect(() => {
+    setImgSrc(productImageUrl || fallbackUrl || null);
+  }, [productImageUrl, fallbackUrl]);
+
   // Detecta el tono del producto → define la tinta del grabado:
   //   producto OSCURO  → grabado CLARO (light), intenso.
   //   producto CLARO   → grabado OSCURO (dark), intenso.
   useEffect(() => {
     let cancelled = false;
-    if (!productImageUrl) return;
-    detectImageTone(productImageUrl).then((t) => { if (!cancelled) setTint(t); });
+    if (!imgSrc) return;
+    detectImageTone(imgSrc).then((t) => { if (!cancelled) setTint(t); });
     return () => { cancelled = true; };
-  }, [productImageUrl]);
+  }, [imgSrc]);
 
   // Inicializa/auto-acomoda las capas. Las que el usuario NO ha tocado se
   // recalculan con autoLayout (para que al combinar no se apilen). Las tocadas
@@ -186,8 +194,18 @@ export default function MockupLivePreviewV2({ productImageUrl, capas = [], onPla
         onTouchMove={(e) => dragging && e.touches[0] && moveTo(e.touches[0].clientX, e.touches[0].clientY)}
         onTouchEnd={endDrag}
       >
-        {productImageUrl ? (
-          <img src={productImageUrl} alt="Producto" referrerPolicy="no-referrer" draggable={false} className="w-full h-full object-cover" />
+        {imgSrc ? (
+          <img
+            src={imgSrc}
+            alt="Producto"
+            referrerPolicy="no-referrer"
+            draggable={false}
+            className="w-full h-full object-cover"
+            onError={() => {
+              // Si la imagen principal falla y existe un fallback distinto, úsalo.
+              if (fallbackUrl && imgSrc !== fallbackUrl) setImgSrc(fallbackUrl);
+            }}
+          />
         ) : (
           <div className="w-full h-full bg-gradient-to-br from-[#F0EAE0] to-[#E7D8C6]" />
         )}

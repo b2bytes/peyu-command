@@ -91,13 +91,12 @@ export default function ProductoNuevo() {
     [producto, color, displayImg]
   );
 
-  // Capas combinables para el mockup en vivo (frase + diseño PEYU + logo).
+  // Capa (única) para el mockup en vivo: frase, diseño PEYU o logo propio.
   const capas = useMemo(() => {
-    const out = [];
-    if (pers.frase && pers.texto.trim()) out.push({ id: 'frase', tipo: 'frase', texto: pers.texto });
-    if (pers.peyu && pers.disenoPeyuUrl) out.push({ id: 'peyu', tipo: 'peyu', url: pers.disenoPeyuUrl });
-    if (pers.archivo && pers.logoUrl) out.push({ id: 'archivo', tipo: 'archivo', url: pers.logoUrl });
-    return out;
+    if (pers.tipo === 'frase' && pers.texto.trim()) return [{ id: 'frase', tipo: 'frase', texto: pers.texto }];
+    if (pers.tipo === 'peyu' && pers.disenoPeyuUrl) return [{ id: 'peyu', tipo: 'peyu', url: pers.disenoPeyuUrl }];
+    if (pers.tipo === 'archivo' && pers.logoUrl) return [{ id: 'archivo', tipo: 'archivo', url: pers.logoUrl }];
+    return [];
   }, [pers]);
 
   // ¿La personalización elegida está completa? (cada tipo activado con su dato)
@@ -230,6 +229,7 @@ export default function ProductoNuevo() {
                 <div className="mt-4">
                   <MockupLivePreviewV2
                     productImageUrl={colorImg}
+                    fallbackUrl={getProductImage(producto)}
                     capas={capas}
                     onPlacementChange={setPlacements}
                   />

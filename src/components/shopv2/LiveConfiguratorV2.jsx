@@ -64,13 +64,12 @@ export default function LiveConfiguratorV2({ carcasas = [] }) {
   const feeTotal = gratis ? 0 : feeUnit * cantidad;
   const total = precioUnit * cantidad + feeTotal;
 
-  // Capas combinables para el mockup (frase + diseño PEYU + logo).
+  // Capa (única) para el mockup: frase, diseño PEYU o logo propio.
   const capas = useMemo(() => {
-    const out = [];
-    if (pers.frase && pers.texto.trim()) out.push({ id: 'frase', tipo: 'frase', texto: pers.texto });
-    if (pers.peyu && pers.disenoPeyuUrl) out.push({ id: 'peyu', tipo: 'peyu', url: pers.disenoPeyuUrl });
-    if (pers.archivo && pers.logoUrl) out.push({ id: 'archivo', tipo: 'archivo', url: pers.logoUrl });
-    return out;
+    if (pers.tipo === 'frase' && pers.texto.trim()) return [{ id: 'frase', tipo: 'frase', texto: pers.texto }];
+    if (pers.tipo === 'peyu' && pers.disenoPeyuUrl) return [{ id: 'peyu', tipo: 'peyu', url: pers.disenoPeyuUrl }];
+    if (pers.tipo === 'archivo' && pers.logoUrl) return [{ id: 'archivo', tipo: 'archivo', url: pers.logoUrl }];
+    return [];
   }, [pers]);
 
   const persOk = persCompleta(pers);
@@ -129,6 +128,7 @@ export default function LiveConfiguratorV2({ carcasas = [] }) {
             {muestraMockup ? (
               <MockupLivePreviewV2
                 productImageUrl={previewImg}
+                fallbackUrl={getProductImage(producto)}
                 capas={capas}
                 onPlacementChange={setPlacements}
               />
