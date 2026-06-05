@@ -24,7 +24,7 @@ export default function ShopV2Header() {
   }, [count]);
 
   return (
-    <header className="sticky top-0 z-40 bg-[#FBF7EF]/85 backdrop-blur-xl border-b border-[#E7D8C6]">
+    <header className="sticky top-0 z-40 bg-[#FAF7F2]/85 backdrop-blur-xl border-b border-[#EBE3D6]">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-3">
         <Link to="/TiendaNueva" className="flex items-center gap-2.5 group">
           <div className="w-9 h-9 rounded-xl bg-[#0F8B6C] flex items-center justify-center shadow-sm group-hover:scale-105 transition-transform">
@@ -43,7 +43,7 @@ export default function ShopV2Header() {
 
         <button
           onClick={() => navigate('/CarritoNuevo')}
-          className="relative flex items-center gap-2 bg-white border border-[#E7D8C6] hover:border-[#0F8B6C] text-[#2A2420] font-bold text-sm px-4 py-2.5 rounded-xl transition-all hover:shadow-sm"
+          className="relative flex items-center gap-2 bg-white border border-[#EBE3D6] hover:border-[#0F8B6C] text-[#2A2420] font-bold text-sm px-4 py-2.5 rounded-xl transition-all hover:shadow-sm"
         >
           <ShoppingBag className="w-4 h-4 text-[#0F8B6C]" />
           <span className="hidden sm:inline">Carrito</span>

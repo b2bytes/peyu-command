@@ -1,14 +1,15 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useLocation } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
-import { Search, SlidersHorizontal, PackageOpen } from 'lucide-react';
+import { Search, SlidersHorizontal, PackageOpen, Smartphone } from 'lucide-react';
 import ShopV2Header from '@/components/shopv2/ShopV2Header';
 import ProductCardV2 from '@/components/shopv2/ProductCardV2';
 import { CATEGORIAS_V2 } from '@/lib/shop-v2-config';
+import { modeloDe, modelosDisponibles } from '@/lib/phone-models-v2';
 
 // ════════════════════════════════════════════════════════════════════════
-// /CatalogoNuevo — Grilla del Shop v2. Filtro por categoría (chips) + búsqueda.
-// Lee ?cat= de la URL para entrar pre-filtrado desde el Home.
+// /CatalogoNuevo — Grilla del Shop v2 (Tema 6). Filtro por categoría (chips) +
+// búsqueda + filtro por MODELO de teléfono visible (Baymard) en carcasas.
 // ════════════════════════════════════════════════════════════════════════
 export default function CatalogoNuevo() {
   const location = useLocation();
@@ -16,6 +17,7 @@ export default function CatalogoNuevo() {
   const [loading, setLoading] = useState(true);
   const [cat, setCat] = useState('Todos');
   const [q, setQ] = useState('');
+  const [modelo, setModelo] = useState('Todos');
 
   useEffect(() => {
     base44.entities.Producto.filter({ activo: true }, '-updated_date', 300)
@@ -35,9 +37,21 @@ export default function CatalogoNuevo() {
     if (preCat) setCat(preCat);
   }, [location.search]);
 
+  // Reset filtro de modelo al cambiar de categoría.
+  useEffect(() => { setModelo('Todos'); }, [cat]);
+
+  const esCarcasas = cat === 'Carcasas B2C';
+
+  // Modelos de teléfono disponibles (solo en carcasas).
+  const modelos = useMemo(() => {
+    if (!esCarcasas) return [];
+    return modelosDisponibles(productos.filter((p) => p.categoria === 'Carcasas B2C'));
+  }, [productos, esCarcasas]);
+
   const filtrados = useMemo(() => {
     let list = productos;
     if (cat !== 'Todos') list = list.filter((p) => p.categoria === cat);
+    if (esCarcasas && modelo !== 'Todos') list = list.filter((p) => modeloDe(p) === modelo);
     if (q.trim()) {
       const n = q.toLowerCase().trim();
       list = list.filter(
@@ -48,19 +62,19 @@ export default function CatalogoNuevo() {
       );
     }
     return list;
-  }, [productos, cat, q]);
+  }, [productos, cat, q, esCarcasas, modelo]);
 
   const chips = ['Todos', ...CATEGORIAS_V2.map((c) => c.cat)];
   const chipLabel = (c) =>
     c === 'Todos' ? 'Todos' : CATEGORIAS_V2.find((x) => x.cat === c)?.label || c;
 
   return (
-    <div className="min-h-screen bg-[#FBF7EF] font-inter text-[#2A2420]">
+    <div className="min-h-screen bg-[#FAF7F2] font-inter text-[#2A2420]">
       <ShopV2Header />
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-7">
         <div className="mb-6">
-          <h1 className="font-fraunces text-3xl sm:text-4xl mb-1">Nuestra tienda</h1>
+          <h1 className="font-fraunces text-3xl sm:text-4xl mb-1.5">Nuestra tienda</h1>
           <p className="text-[#4B4F54] text-sm">Productos de plástico 100% reciclado, hechos en Chile.</p>
         </div>
 
@@ -71,12 +85,12 @@ export default function CatalogoNuevo() {
             value={q}
             onChange={(e) => setQ(e.target.value)}
             placeholder="Buscar carcasas, cachos, maceteros..."
-            className="w-full h-12 pl-11 pr-4 rounded-2xl bg-white border border-[#E7D8C6] text-sm text-[#2A2420] placeholder:text-[#A78B6F] focus:outline-none focus:border-[#0F8B6C] focus:ring-2 focus:ring-[#0F8B6C]/15 transition-all"
+            className="w-full h-12 pl-11 pr-4 rounded-2xl bg-white border border-[#EBE3D6] text-sm text-[#2A2420] placeholder:text-[#A78B6F] focus:outline-none focus:border-[#0F8B6C] focus:ring-2 focus:ring-[#0F8B6C]/15 transition-all"
           />
         </div>
 
         {/* Chips de categoría */}
-        <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide pb-1 mb-6">
+        <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide pb-1 mb-4">
           <SlidersHorizontal className="w-4 h-4 text-[#A78B6F] flex-shrink-0" />
           {chips.map((c) => (
             <button
@@ -85,7 +99,7 @@ export default function CatalogoNuevo() {
               className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-bold transition-all ${
                 cat === c
                   ? 'bg-[#0F8B6C] text-white shadow-sm'
-                  : 'bg-white border border-[#E7D8C6] text-[#4B4F54] hover:border-[#0F8B6C]/40'
+                  : 'bg-white border border-[#EBE3D6] text-[#4B4F54] hover:border-[#0F8B6C]/40'
               }`}
             >
               {chipLabel(c)}
@@ -93,11 +107,31 @@ export default function CatalogoNuevo() {
           ))}
         </div>
 
+        {/* Filtro por MODELO de teléfono (visible en carcasas — Baymard) */}
+        {esCarcasas && modelos.length > 0 && (
+          <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide pb-1 mb-6">
+            <Smartphone className="w-4 h-4 text-[#A78B6F] flex-shrink-0" />
+            {['Todos', ...modelos].map((m) => (
+              <button
+                key={m}
+                onClick={() => setModelo(m)}
+                className={`flex-shrink-0 px-3.5 py-1.5 rounded-full text-xs font-bold transition-all ${
+                  modelo === m
+                    ? 'bg-[#D96B4D] text-white shadow-sm'
+                    : 'bg-white border border-[#EBE3D6] text-[#4B4F54] hover:border-[#D96B4D]/40'
+                }`}
+              >
+                {m === 'Todos' ? 'Todos los modelos' : m}
+              </button>
+            ))}
+          </div>
+        )}
+
         {/* Grilla */}
         {loading ? (
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
             {Array.from({ length: 12 }).map((_, i) => (
-              <div key={i} className="aspect-[3/4] rounded-2xl bg-white border border-[#E7D8C6] animate-pulse" />
+              <div key={i} className="aspect-[3/4] rounded-2xl bg-white border border-[#EBE3D6] animate-pulse" />
             ))}
           </div>
         ) : filtrados.length === 0 ? (
@@ -109,14 +143,14 @@ export default function CatalogoNuevo() {
         ) : (
           <>
             <p className="text-xs text-[#A78B6F] mb-3 font-semibold">{filtrados.length} productos</p>
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
               {filtrados.map((p, i) => <ProductCardV2 key={p.id} producto={p} index={i} />)}
             </div>
           </>
         )}
       </div>
 
-      <footer className="border-t border-[#E7D8C6] py-8 text-center text-xs text-[#A78B6F] mt-6">
+      <footer className="border-t border-[#EBE3D6] py-8 text-center text-xs text-[#A78B6F] mt-6">
         PEYU Chile · Plástico reciclado · Hecho en Santiago 🇨🇱
       </footer>
     </div>
