@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { engraveLogo, detectImageTone } from '@/lib/logo-engraver';
+import EngravedLayer from '@/components/shopv2/EngravedLayer';
 
 // ════════════════════════════════════════════════════════════════════════
 // CartItemThumbV2 — Miniatura del carrito que RECONSTRUYE el grabado del
@@ -49,12 +50,18 @@ export default function CartItemThumbV2({ imagen, capas = [], alt }) {
         <img src={imagen} alt={alt} referrerPolicy="no-referrer" className="absolute inset-0 w-full h-full object-cover" />
       )}
 
-      {/* Viñeteado sutil: profundidad de superficie para asentar el grabado. */}
+      {/* Iluminación de estudio: highlight especular + viñeteado → volumen real. */}
       {capas.length > 0 && (
-        <div className="absolute inset-0 pointer-events-none" style={{
-          background: 'radial-gradient(115% 90% at 50% 42%, transparent 55%, rgba(0,0,0,0.10) 100%)',
-          mixBlendMode: 'multiply',
-        }} />
+        <>
+          <div className="absolute inset-0 pointer-events-none" style={{
+            background: 'radial-gradient(70% 55% at 32% 28%, rgba(255,255,255,0.14) 0%, transparent 60%)',
+            mixBlendMode: 'screen',
+          }} />
+          <div className="absolute inset-0 pointer-events-none" style={{
+            background: 'radial-gradient(120% 95% at 50% 44%, transparent 52%, rgba(0,0,0,0.13) 100%)',
+            mixBlendMode: 'multiply',
+          }} />
+        </>
       )}
 
       {capas.map((c, i) => {
@@ -62,55 +69,28 @@ export default function CartItemThumbV2({ imagen, capas = [], alt }) {
         const y = typeof c.y === 'number' ? c.y : 50;
         const size = typeof c.size === 'number' ? c.size : 26;
 
-        // Frase grabada.
-        if (c.tipo === 'frase') {
-          if (!c.texto?.trim()) return null;
-          return (
-            <span key={i} className="absolute" style={{
-              left: `${x}%`, top: `${y}%`, transform: 'translate(-50%, -50%)',
-              fontSize: `${size * 0.34}px`, fontFamily: '"Hanken Grotesk", sans-serif', fontWeight: 600,
-              color: tint === 'light' ? 'rgba(236,236,236,0.9)' : 'rgba(34,34,34,0.9)',
-              letterSpacing: '0.1em', whiteSpace: 'nowrap', maxWidth: '70%',
-              overflow: 'hidden', textOverflow: 'ellipsis',
-              textShadow: tint === 'light'
-                ? '0 0.5px 0.5px rgba(0,0,0,0.5), 0 -0.5px 0.5px rgba(255,255,255,0.2)'
-                : '0 0.5px 0.5px rgba(255,255,255,0.45), 0 -0.5px 0.5px rgba(0,0,0,0.25)',
-              mixBlendMode: tint === 'light' ? 'soft-light' : 'multiply',
-            }}>{c.texto.toUpperCase()}</span>
-          );
+        let eng = null;
+        if (c.tipo !== 'frase') {
+          eng = c.url ? engraved[c.url] : null;
+          if (!eng) return null;
         }
 
-        // Gráfico (logo / diseño PEYU).
-        const eng = c.url ? engraved[c.url] : null;
-        if (!eng) return null;
-
-        // Surco del láser: sombra abajo + reflejo arriba → relieve real, sutil.
-        const engraveFx = tint === 'light'
-          ? 'drop-shadow(0 0.5px 0.5px rgba(0,0,0,0.5)) drop-shadow(0 -0.5px 0.5px rgba(255,255,255,0.22))'
-          : 'drop-shadow(0 0.5px 0.5px rgba(255,255,255,0.45)) drop-shadow(0 -0.5px 0.5px rgba(0,0,0,0.3))';
-
-        if (eng.svg) {
-          const ink = tint === 'light' ? 'rgba(236,236,236,0.9)' : 'rgba(38,38,38,0.88)';
-          return (
-            <div key={i} className="absolute" style={{
-              left: `${x}%`, top: `${y}%`, width: `${size}%`, aspectRatio: '1 / 1',
-              transform: 'translate(-50%, -50%)', backgroundColor: ink,
-              WebkitMaskImage: `url("${eng.dataUrl}")`, maskImage: `url("${eng.dataUrl}")`,
-              WebkitMaskRepeat: 'no-repeat', maskRepeat: 'no-repeat',
-              WebkitMaskPosition: 'center', maskPosition: 'center',
-              WebkitMaskSize: 'contain', maskSize: 'contain',
-              filter: engraveFx, mixBlendMode: tint === 'light' ? 'soft-light' : 'multiply', opacity: 0.92,
-            }} />
-          );
-        }
-
-        const blend = !eng.ok ? 'normal' : (tint === 'light' ? 'soft-light' : 'multiply');
-        const fx = !eng.ok ? 'contrast(1.05)' : (tint === 'light' ? `brightness(1.35) contrast(1.08) ${engraveFx}` : `contrast(1.12) ${engraveFx}`);
         return (
-          <img key={i} src={eng.dataUrl} alt="" draggable={false} className="absolute" style={{
-            left: `${x}%`, top: `${y}%`, width: `${size}%`, transform: 'translate(-50%, -50%)',
-            mixBlendMode: blend, opacity: 0.92, filter: fx,
-          }} />
+          <div key={i} className="absolute" style={{
+            left: `${x}%`, top: `${y}%`,
+            width: c.tipo === 'frase' ? undefined : `${size}%`,
+            transform: 'translate(-50%, -50%)',
+          }}>
+            {/* Mismo motor de montaje de alta calidad que el preview en vivo. */}
+            <EngravedLayer
+              eng={eng}
+              tipo={c.tipo}
+              texto={c.texto}
+              sizePct={size * 0.8}
+              tint={tint}
+              productImg={imagen}
+            />
+          </div>
         );
       })}
     </div>

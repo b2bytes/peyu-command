@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { Move, Sparkles, Loader2, Type, Palette, Upload, Wand2 } from 'lucide-react';
 import { engraveLogo, detectImageTone } from '@/lib/logo-engraver';
+import EngravedLayer from '@/components/shopv2/EngravedLayer';
 
 // ════════════════════════════════════════════════════════════════════════
 // MockupLivePreviewV2 — Preview de grabado láser EN VIVO, piel Tema 6 (cream).
@@ -228,13 +229,20 @@ export default function MockupLivePreviewV2({ productImageUrl, capas = [], onPla
           </div>
         )}
 
-        {/* Viñeteado sutil: da profundidad a la superficie para que el grabado
-            se asiente con realismo (no flote plano). Solo si hay capas. */}
+        {/* Iluminación de estudio: highlight especular arriba-izq + viñeteado de
+            sombra → da volumen real a la superficie para que el grabado se asiente
+            con profundidad (no flote plano). Solo si hay capas. */}
         {capas.length > 0 && (
-          <div className="absolute inset-0 pointer-events-none" style={{
-            background: 'radial-gradient(115% 90% at 50% 42%, transparent 55%, rgba(0,0,0,0.10) 100%)',
-            mixBlendMode: 'multiply',
-          }} />
+          <>
+            <div className="absolute inset-0 pointer-events-none" style={{
+              background: 'radial-gradient(70% 55% at 32% 28%, rgba(255,255,255,0.14) 0%, transparent 60%)',
+              mixBlendMode: 'screen',
+            }} />
+            <div className="absolute inset-0 pointer-events-none" style={{
+              background: 'radial-gradient(120% 95% at 50% 44%, transparent 52%, rgba(0,0,0,0.13) 100%)',
+              mixBlendMode: 'multiply',
+            }} />
+          </>
         )}
 
         {capas.map((c) => {
@@ -243,84 +251,34 @@ export default function MockupLivePreviewV2({ productImageUrl, capas = [], onPla
           const isActive = activeId === c.id;
           const startDrag = (e) => { e.stopPropagation(); setActiveId(c.id); setDragging(true); };
 
-          // Capa de frase (texto grabado).
-          if (c.tipo === 'frase') {
-            if (!c.texto?.trim()) return null;
-            return (
-              <div key={c.id} className="absolute cursor-move" style={{ left: `${pl.x}%`, top: `${pl.y}%`, transform: 'translate(-50%, -50%)', zIndex: isActive ? 20 : 10 }}
-                onMouseDown={startDrag} onTouchStart={startDrag}>
-                {isActive && <span className="absolute -inset-2 rounded-lg border border-dashed border-[#0F8B6C]/70 pointer-events-none" />}
-                <span style={{
-                  fontSize: `${pl.size * 0.42}px`, fontFamily: '"Hanken Grotesk", sans-serif', fontWeight: 600,
-                  color: tint === 'light' ? 'rgba(236,236,236,0.9)' : 'rgba(34,34,34,0.9)',
-                  letterSpacing: '0.12em', whiteSpace: 'nowrap',
-                  maxWidth: '38vw', overflow: 'hidden', textOverflow: 'ellipsis', display: 'inline-block',
-                  // Surco del láser: sombra hacia abajo + reflejo arriba (relieve real, sutil).
-                  textShadow: tint === 'light'
-                    ? '0 1px 0.5px rgba(0,0,0,0.5), 0 -0.5px 0.5px rgba(255,255,255,0.2)'
-                    : '0 1px 0.5px rgba(255,255,255,0.45), 0 -0.5px 0.5px rgba(0,0,0,0.25)',
-                  mixBlendMode: tint === 'light' ? 'soft-light' : 'multiply',
-                }}>{c.texto.toUpperCase()}</span>
-              </div>
-            );
+          // Grabado (logo/diseño): resuelve el resultado del engraver con
+          // anti-parpadeo (mantiene el último válido mientras procesa el nuevo).
+          let eng = null;
+          if (c.tipo !== 'frase') {
+            const fresh = c.url ? engraved[`${c.url}::${tint}`] : null;
+            if (fresh) lastEngRef.current[c.id] = fresh;
+            eng = fresh || lastEngRef.current[c.id];
+            if (!eng) return null;
           }
 
-          // Capa gráfica (diseño PEYU / logo) — grabado láser inteligente según el
-          // tono del producto. Blend distinto si la tinta es clara u oscura.
-          // Anti-parpadeo: si el nuevo aún procesa, mantenemos el último válido.
-          const fresh = c.url ? engraved[`${c.url}::${tint}`] : null;
-          if (fresh) lastEngRef.current[c.id] = fresh;
-          const eng = fresh || lastEngRef.current[c.id];
-          if (!eng) return null;
+          // El ancho del wrapper define la escala; la frase no necesita width fijo.
+          const wrapperW = c.tipo === 'frase' ? undefined : `${pl.size}%`;
 
-          // Surco del láser: sombra hacia abajo + reflejo arriba → el grabado se
-          // "hunde" en la superficie (relieve real, no calcomanía pegada).
-          const engraveFx = tint === 'light'
-            ? 'drop-shadow(0 1px 0.5px rgba(0,0,0,0.5)) drop-shadow(0 -0.5px 0.5px rgba(255,255,255,0.22))'
-            : 'drop-shadow(0 1px 0.5px rgba(255,255,255,0.45)) drop-shadow(0 -0.5px 0.5px rgba(0,0,0,0.3))';
-
-          // SVG line-art: teñido completo con máscara CSS → grabado vectorial nítido.
-          if (eng.svg) {
-            const inkColor = tint === 'light' ? 'rgba(236,236,236,0.9)' : 'rgba(38,38,38,0.88)';
-            return (
-              <div key={c.id} className="absolute cursor-move"
-                style={{ left: `${pl.x}%`, top: `${pl.y}%`, width: `${pl.size}%`, transform: 'translate(-50%, -50%)', zIndex: isActive ? 20 : 10 }}
-                onMouseDown={startDrag} onTouchStart={startDrag}>
-                {isActive && <span className="absolute -inset-1.5 rounded-lg border border-dashed border-[#0F8B6C]/70 pointer-events-none" />}
-                <div className="w-full pointer-events-none" style={{
-                  aspectRatio: '1 / 1', backgroundColor: inkColor,
-                  WebkitMaskImage: `url("${eng.dataUrl}")`, maskImage: `url("${eng.dataUrl}")`,
-                  WebkitMaskRepeat: 'no-repeat', maskRepeat: 'no-repeat',
-                  WebkitMaskPosition: 'center', maskPosition: 'center',
-                  WebkitMaskSize: 'contain', maskSize: 'contain',
-                  filter: engraveFx,
-                  mixBlendMode: tint === 'light' ? 'soft-light' : 'multiply',
-                  opacity: 0.92,
-                }} />
-              </div>
-            );
-          }
-
-          // Raster procesado: blend soft-light integra el grabado con la textura
-          // del producto (en vez del brillo plano que se veía "pegado").
-          const blend = !eng.ok ? 'normal' : (tint === 'light' ? 'soft-light' : 'multiply');
-          const fx = !eng.ok
-            ? 'contrast(1.05) drop-shadow(0 1px 1px rgba(0,0,0,0.2))'
-            : (tint === 'light'
-              ? `brightness(1.35) contrast(1.08) ${engraveFx}`
-              : `contrast(1.12) ${engraveFx}`);
           return (
             <div key={c.id} className="absolute cursor-move"
-              style={{
-                left: `${pl.x}%`, top: `${pl.y}%`, width: `${pl.size}%`, transform: 'translate(-50%, -50%)',
-                zIndex: isActive ? 20 : 10,
-                mixBlendMode: blend,
-                opacity: 0.92,
-                filter: fx,
-              }}
+              style={{ left: `${pl.x}%`, top: `${pl.y}%`, width: wrapperW, transform: 'translate(-50%, -50%)', zIndex: isActive ? 20 : 10 }}
               onMouseDown={startDrag} onTouchStart={startDrag}>
-              {isActive && <span className="absolute -inset-1.5 rounded-lg border border-dashed border-[#0F8B6C]/70 pointer-events-none" style={{ mixBlendMode: 'normal' }} />}
-              <img src={eng.dataUrl} alt="Tu diseño" draggable={false} className="w-full h-auto pointer-events-none" />
+              {isActive && <span className="absolute -inset-1.5 rounded-lg border border-dashed border-[#0F8B6C]/70 pointer-events-none" />}
+              {/* Motor de montaje de alta calidad: alinea el grabado con la
+                  textura real del material (tinta + textura + bisel del láser). */}
+              <EngravedLayer
+                eng={eng}
+                tipo={c.tipo}
+                texto={c.texto}
+                sizePct={pl.size}
+                tint={tint}
+                productImg={imgSrc}
+              />
             </div>
           );
         })}
