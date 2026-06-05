@@ -1,108 +1,99 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
-import { Recycle, Sparkles, ArrowRight, Leaf, Truck, ShieldCheck } from 'lucide-react';
+import { ArrowRight, Recycle, ShieldCheck, Truck, Sparkles } from 'lucide-react';
 import ShopV2Header from '@/components/shopv2/ShopV2Header';
 import ProductCardV2 from '@/components/shopv2/ProductCardV2';
-import { CATEGORIAS_V2, PEYU_LOGO_CREMA } from '@/lib/shop-v2-config';
+import { CATEGORIAS_V2 } from '@/lib/shop-v2-config';
 
 // ════════════════════════════════════════════════════════════════════════
-// /TiendaNueva — Home del Shop B2C v2 (página NUEVA, paralela). Fondo crema,
-// hero PEYU sostenible/lúdico, categorías, productos estrella, CTA carcasa.
+// /TiendaNueva — Home del Shop B2C v2 (estética crema). Hero + categorías +
+// destacados. AISLADO: usa carrito_v2 y no toca la tienda viva.
 // ════════════════════════════════════════════════════════════════════════
 export default function TiendaNueva() {
-  const [estrella, setEstrella] = useState([]);
+  const [productos, setProductos] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     base44.entities.Producto.filter({ activo: true }, '-updated_date', 200)
       .then((data) => {
-        const b2c = (data || []).filter((p) => p.canal !== 'B2B Exclusivo' && p.categoria !== 'Gift Card');
-        setEstrella(b2c.filter((p) => p.precio_b2c).slice(0, 8));
+        const b2c = (data || []).filter(
+          (p) => p.canal !== 'B2B Exclusivo' && p.categoria !== 'Gift Card' && p.precio_b2c
+        );
+        setProductos(b2c);
       })
       .finally(() => setLoading(false));
   }, []);
+
+  const destacados = useMemo(() => productos.slice(0, 8), [productos]);
 
   return (
     <div className="min-h-screen bg-[#FBF7EF] font-inter text-[#2A2420]">
       <ShopV2Header />
 
       {/* HERO */}
-      <section className="relative overflow-hidden">
-        <div className="absolute -top-24 -right-24 w-96 h-96 rounded-full bg-[#0F8B6C]/10 blur-3xl" aria-hidden />
-        <div className="absolute -bottom-32 -left-24 w-96 h-96 rounded-full bg-[#D96B4D]/10 blur-3xl" aria-hidden />
-        <div className="relative max-w-6xl mx-auto px-4 sm:px-6 py-12 sm:py-20 grid lg:grid-cols-2 gap-10 items-center">
-          <div className="space-y-6">
-            <span className="inline-flex items-center gap-2 bg-white/70 border border-[#E7D8C6] text-[#0F8B6C] text-xs font-bold px-3 py-1.5 rounded-full">
-              <Recycle className="w-3.5 h-3.5" /> Hecho con plástico 100% reciclado
-            </span>
-            <h1 className="font-fraunces text-4xl sm:text-5xl lg:text-6xl leading-[1.05] text-[#2A2420]">
-              Diseño chileno que <span className="text-[#0F8B6C] italic">cuida el planeta</span> 🌱
-            </h1>
-            <p className="text-[#4B4F54] text-base sm:text-lg max-w-md leading-relaxed">
-              Carcasas, cachos, maceteros y más — fabricados con plástico rescatado.
-              Lúdicos, únicos y personalizables con tu logo.
-            </p>
-            <div className="flex flex-wrap gap-3">
-              <Link to="/CatalogoNuevo">
-                <button className="inline-flex items-center gap-2 bg-[#0F8B6C] hover:bg-[#0B6E55] text-white font-bold px-6 py-3.5 rounded-2xl shadow-lg shadow-[#0F8B6C]/20 transition-all hover:scale-[1.02]">
-                  Ver la tienda <ArrowRight className="w-4 h-4" />
-                </button>
-              </Link>
-              <Link to="/CatalogoNuevo?cat=Carcasas B2C">
-                <button className="inline-flex items-center gap-2 bg-white border border-[#E7D8C6] hover:border-[#0F8B6C] text-[#2A2420] font-bold px-6 py-3.5 rounded-2xl transition-all">
-                  <Sparkles className="w-4 h-4 text-[#D96B4D]" /> Personaliza tu carcasa
-                </button>
-              </Link>
-            </div>
-            <div className="flex flex-wrap gap-4 pt-2">
-              {[
-                { icon: Leaf, t: '100% reciclado' },
-                { icon: Truck, t: 'Envío a todo Chile' },
-                { icon: ShieldCheck, t: 'Hecho en Chile' },
-              ].map((b, i) => (
-                <div key={i} className="flex items-center gap-1.5 text-xs font-semibold text-[#4B4F54]">
-                  <b.icon className="w-4 h-4 text-[#0F8B6C]" /> {b.t}
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="relative">
-            <div className="aspect-square rounded-3xl bg-white border border-[#E7D8C6] shadow-2xl overflow-hidden flex items-center justify-center p-10">
-              <img src={PEYU_LOGO_CREMA} alt="PEYU" className="w-full h-full object-contain" referrerPolicy="no-referrer" />
-            </div>
-            <div className="absolute -bottom-4 -right-4 bg-[#D96B4D] text-white text-sm font-bold px-4 py-2.5 rounded-2xl shadow-xl rotate-3">
-              ♻️ +50.000 tapas rescatadas
-            </div>
+      <section className="max-w-6xl mx-auto px-4 sm:px-6 pt-10 pb-8">
+        <div className="text-center max-w-2xl mx-auto">
+          <span className="inline-flex items-center gap-1.5 bg-[#0F8B6C]/10 text-[#0F8B6C] text-xs font-bold px-3 py-1.5 rounded-full mb-4">
+            <Recycle className="w-3.5 h-3.5" /> Plástico 100% reciclado · Hecho en Chile
+          </span>
+          <h1 className="font-fraunces text-4xl sm:text-5xl leading-[1.05] mb-3">
+            Productos que <span className="text-[#0F8B6C]">cuidan</span> el planeta
+          </h1>
+          <p className="text-[#4B4F54] text-base sm:text-lg mb-6">
+            Carcasas, juegos y decoración hechos con plástico reciclado. Personalízalos con grabado láser.
+          </p>
+          <div className="flex items-center justify-center gap-3">
+            <Link to="/CatalogoNuevo">
+              <button className="inline-flex items-center gap-2 bg-[#0F8B6C] hover:bg-[#0B6E55] text-white font-bold px-6 py-3.5 rounded-2xl shadow-lg shadow-[#0F8B6C]/20 transition-all hover:scale-[1.02]">
+                Ver la tienda <ArrowRight className="w-4 h-4" />
+              </button>
+            </Link>
           </div>
         </div>
       </section>
 
+      {/* TRUST STRIP */}
+      <section className="max-w-6xl mx-auto px-4 sm:px-6 mb-10">
+        <div className="grid grid-cols-3 gap-3">
+          {[
+            { icon: Recycle, t: 'Plástico reciclado', d: 'Cada producto reutiliza residuos' },
+            { icon: Sparkles, t: 'Personalizable', d: 'Grabado láser permanente' },
+            { icon: ShieldCheck, t: 'Garantía 10 años', d: 'Calidad asegurada' },
+          ].map((b, i) => (
+            <div key={i} className="bg-white border border-[#E7D8C6] rounded-2xl p-4 text-center">
+              <b.icon className="w-5 h-5 text-[#0F8B6C] mx-auto mb-2" />
+              <p className="text-xs font-bold text-[#2A2420]">{b.t}</p>
+              <p className="text-[10px] text-[#A78B6F] mt-0.5 hidden sm:block">{b.d}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
       {/* CATEGORÍAS */}
-      <section className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
-        <h2 className="font-fraunces text-2xl sm:text-3xl mb-5">Explora por categoría</h2>
+      <section className="max-w-6xl mx-auto px-4 sm:px-6 mb-10">
+        <h2 className="font-fraunces text-2xl mb-4">Explora por categoría</h2>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
           {CATEGORIAS_V2.map((c) => (
             <Link
-              key={c.label}
+              key={c.cat}
               to={`/CatalogoNuevo?cat=${encodeURIComponent(c.cat)}`}
-              className="group bg-white rounded-2xl border border-[#E7D8C6] p-5 text-center hover:-translate-y-1 hover:shadow-lg hover:border-[#0F8B6C]/40 transition-all"
+              className="bg-white border border-[#E7D8C6] rounded-2xl p-4 text-center hover:border-[#0F8B6C]/40 hover:shadow-md hover:-translate-y-0.5 transition-all"
             >
-              <div className="text-4xl mb-2 group-hover:scale-110 transition-transform">{c.emoji}</div>
+              <div className="text-3xl mb-2">{c.emoji}</div>
               <p className="font-bold text-sm text-[#2A2420]">{c.label}</p>
-              <p className="text-[11px] text-[#A78B6F] mt-0.5">{c.desc}</p>
+              <p className="text-[10px] text-[#A78B6F] mt-0.5">{c.desc}</p>
             </Link>
           ))}
         </div>
       </section>
 
-      {/* PRODUCTOS ESTRELLA */}
-      <section className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
-        <div className="flex items-end justify-between mb-5">
-          <h2 className="font-fraunces text-2xl sm:text-3xl">Productos estrella</h2>
-          <Link to="/CatalogoNuevo" className="flex items-center gap-1.5 text-sm font-bold text-[#0F8B6C] hover:gap-2.5 transition-all">
-            Ver todo <ArrowRight className="w-4 h-4" />
+      {/* DESTACADOS */}
+      <section className="max-w-6xl mx-auto px-4 sm:px-6 mb-12">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="font-fraunces text-2xl">Destacados</h2>
+          <Link to="/CatalogoNuevo" className="text-sm font-bold text-[#0F8B6C] hover:underline inline-flex items-center gap-1">
+            Ver todo <ArrowRight className="w-3.5 h-3.5" />
           </Link>
         </div>
         {loading ? (
@@ -113,30 +104,13 @@ export default function TiendaNueva() {
           </div>
         ) : (
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-            {estrella.map((p) => <ProductCardV2 key={p.id} producto={p} />)}
+            {destacados.map((p) => <ProductCardV2 key={p.id} producto={p} />)}
           </div>
         )}
       </section>
 
-      {/* CTA FINAL */}
-      <section className="max-w-6xl mx-auto px-4 sm:px-6 py-12">
-        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#0F8B6C] to-[#0B6E55] p-8 sm:p-12 text-center text-white">
-          <div className="absolute -top-12 -right-12 w-48 h-48 rounded-full bg-white/10 blur-2xl" aria-hidden />
-          <Sparkles className="w-8 h-8 mx-auto mb-4 text-[#FBE9E1]" />
-          <h2 className="font-fraunces text-2xl sm:text-3xl mb-2">Personaliza con tu logo o frase</h2>
-          <p className="text-white/85 max-w-md mx-auto mb-6">
-            Grabado láser UV permanente. Gratis desde 10 unidades. Ideal para regalos y empresas.
-          </p>
-          <Link to="/CatalogoNuevo?cat=Carcasas B2C">
-            <button className="inline-flex items-center gap-2 bg-white text-[#0F8B6C] font-bold px-6 py-3.5 rounded-2xl shadow-lg hover:scale-[1.02] transition-all">
-              Empieza ahora <ArrowRight className="w-4 h-4" />
-            </button>
-          </Link>
-        </div>
-      </section>
-
-      <footer className="border-t border-[#E7D8C6] py-8 text-center text-xs text-[#A78B6F]">
-        PEYU Chile · Plástico reciclado · Hecho en Santiago 🇨🇱
+      <footer className="border-t border-[#E7D8C6] py-8 text-center text-xs text-[#A78B6F] flex items-center justify-center gap-1.5">
+        <Recycle className="w-3.5 h-3.5 text-[#0F8B6C]" /> PEYU Chile · Plástico reciclado · Hecho en Santiago 🇨🇱
       </footer>
     </div>
   );
