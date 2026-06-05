@@ -30,12 +30,19 @@ const COLORES_OFICIALES = [
   { label: 'Azul',     desc: 'medium royal blue' },
 ];
 
-// Extrae el modelo del nombre ("Carcasa para Huawei P40 pro" → "Huawei P40 pro").
+// Extrae el nombre limpio del producto ("Carcasa para Huawei P40 pro" → "Huawei
+// P40 pro"; "Cacho unitario PEYU | Plástico Reciclado" → "Cacho unitario PEYU").
 function extraerModelo(nombre = '') {
   return String(nombre)
     .replace(/^carcasa\s+(para\s+)?/i, '')
     .replace(/\s*\|.*$/, '')
-    .trim() || 'phone';
+    .trim() || 'product';
+}
+
+// ¿Es una carcasa? (define qué prompt usar). Cualquier otro producto usa el
+// prompt genérico de producto, recoloreado manteniendo forma/textura.
+function esCarcasa(p) {
+  return p?.categoria === 'Carcasas B2C' || /carcasa|funda/i.test(p?.nombre || '');
 }
 
 // Imagen raster válida como referencia para GenerateImage.
@@ -52,8 +59,13 @@ function mejorFoto(p) {
   return null;
 }
 
-function buildPrompt(modelo, colorName, colorDesc) {
-  return `Product photo of an eco-friendly biodegradable phone case for ${modelo}, exact same case model, same shape, same camera cutout, same angle, same lighting, same matte recycled-plastic texture and PEYU embossed logo as the reference image. Change ONLY the color of the case to ${colorName} (${colorDesc}). Keep the white studio background, same composition and framing. Photorealistic e-commerce product shot, identical to reference but ${colorName} colored.`;
+function buildPrompt(modelo, colorName, colorDesc, carcasa) {
+  if (carcasa) {
+    return `Product photo of an eco-friendly biodegradable phone case for ${modelo}, exact same case model, same shape, same camera cutout, same angle, same lighting, same matte recycled-plastic texture and PEYU embossed logo as the reference image. Change ONLY the color of the case to ${colorName} (${colorDesc}). Keep the white studio background, same composition and framing. Photorealistic e-commerce product shot, identical to reference but ${colorName} colored.`;
+  }
+  // Prompt genérico para cualquier producto PEYU (cachos, maceteros, etc.):
+  // mismo objeto, ángulo, luz y textura de plástico reciclado; SOLO cambia color.
+  return `Product photo of "${modelo}", an eco-friendly product made of 100% recycled plastic. Keep the EXACT same object, same shape, same proportions, same angle, same lighting, same matte recycled-plastic texture and same PEYU embossed logo as the reference image. Change ONLY the color of the product to ${colorName} (${colorDesc}). Keep the white studio background, same composition and framing. Photorealistic e-commerce product shot, identical to reference but ${colorName} colored.`;
 }
 
 // Genera una imagen con reintento. Devuelve url o null.
@@ -76,6 +88,7 @@ async function procesarProducto(base44, p, coloresObjetivo, sobrescribir) {
     return { sku: p.sku, nombre: p.nombre, ok: false, motivo: 'sin foto de referencia raster' };
   }
   const modelo = extraerModelo(p.nombre);
+  const carcasa = esCarcasa(p);
   const mapaExistente = (p.imagenes_por_color && typeof p.imagenes_por_color === 'object') ? { ...p.imagenes_por_color } : {};
 
   const generados = [];
@@ -83,7 +96,7 @@ async function procesarProducto(base44, p, coloresObjetivo, sobrescribir) {
 
   for (const c of coloresObjetivo) {
     if (!sobrescribir && mapaExistente[c.label]) { saltados.push(c.label); continue; }
-    const url = await genColor(base44, refUrl, buildPrompt(modelo, c.label, c.desc));
+    const url = await genColor(base44, refUrl, buildPrompt(modelo, c.label, c.desc, carcasa));
     if (url) {
       mapaExistente[c.label] = url;
       generados.push(c.label);
