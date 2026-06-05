@@ -19,9 +19,11 @@ const ICONO = { frase: Type, peyu: Palette, archivo: Upload };
 const NOMBRE = { frase: 'Frase', peyu: 'Diseño PEYU', archivo: 'Tu logo' };
 
 // ── ÁREA TÉCNICA DE GRABADO (en % del lienzo cuadrado) ───────────────────
-// Es la zona oscura central de la carcasa donde el láser UV puede grabar.
-// Todas las capas se restringen aquí dentro. Ajustada a la foto referencial.
-const AREA = { left: 30, right: 70, top: 34, bottom: 68 };
+// Zona centrada y contenida donde se compone el grabado. Pensada para servir
+// a CUALQUIER producto (carcasas, set de escritorio, bolsos, etc.): el diseño
+// siempre queda centrado y dentro del cuadro, nunca descolocado sobre el resto
+// de la foto. Todas las capas se restringen aquí dentro.
+const AREA = { left: 28, right: 72, top: 30, bottom: 70 };
 const AREA_W = AREA.right - AREA.left; // 40
 const AREA_H = AREA.bottom - AREA.top; // 34
 const AREA_CX = (AREA.left + AREA.right) / 2; // 50
