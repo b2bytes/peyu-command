@@ -1,4 +1,4 @@
-import { Target, FileText, ChevronRight } from 'lucide-react';
+import { Target, ChevronRight, Trash2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import ActionButton from '../ActionButton';
 
@@ -53,6 +53,7 @@ export default function LeadsCard({ leads = [], onDone }) {
                 <ActionButton action="updateLeadEstado" payload={{ id: l.id, status: 'Contactado' }} label="Marcar contactado" confirm={false} onDone={onDone} />
               )}
               <ActionButton action="updateLeadEstado" payload={{ id: l.id, status: 'En revisión' }} label="A revisión" confirm={false} onDone={onDone} />
+              <ActionButton action="eliminarLead" payload={{ id: l.id }} label="Eliminar" icon={Trash2} confirm={true} onDone={onDone} className="ml-auto bg-ld-highlight-soft text-ld-highlight hover:text-ld-highlight" />
             </div>
           </div>
         ))}

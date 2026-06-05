@@ -95,6 +95,12 @@ Deno.serve(async (req) => {
         return Response.json({ ok: true, message: `Lead actualizado a ${payload.status}` });
       }
 
+      case 'eliminarLead': {
+        if (!payload.id) throw new Error('Falta id de lead');
+        await svc.B2BLead.delete(payload.id);
+        return Response.json({ ok: true, message: 'Lead eliminado' });
+      }
+
       case 'updatePropuestaEstado': {
         if (!payload.id || !payload.status) throw new Error('Falta id o status');
         await svc.CorporateProposal.update(payload.id, { status: payload.status });
