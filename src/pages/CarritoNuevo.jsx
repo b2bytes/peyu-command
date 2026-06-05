@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { ShoppingBag, Trash2, ArrowRight, Recycle, ArrowLeft, ShieldCheck } from 'lucide-react';
 import ShopV2Header from '@/components/shopv2/ShopV2Header';
 import QtyStepperV2 from '@/components/shopv2/QtyStepperV2';
+import CartItemThumbV2 from '@/components/shopv2/CartItemThumbV2';
 import {
   getCartV2, updateCartItemV2, removeFromCartV2, fmtCLP,
 } from '@/lib/shop-v2-cart';
@@ -70,14 +71,13 @@ export default function CarritoNuevo() {
               return (
                 <div key={item.id} className="flex gap-3.5 bg-white rounded-2xl border border-[#EBE3D6] p-3.5">
                   <div className="relative flex-shrink-0">
-                    <img
-                      src={item.mockupUrl || item.imagen}
+                    <CartItemThumbV2
+                      imagen={item.mockupUrl || item.imagen}
+                      capas={item.capas_grabado || []}
                       alt={item.nombre}
-                      className="w-20 h-20 sm:w-24 sm:h-24 rounded-xl object-cover border border-[#EBE3D6]"
-                      referrerPolicy="no-referrer"
                     />
-                    {(item.logoUrl || item.mockupUrl) && (
-                      <span className="absolute -top-1.5 -right-1.5 bg-[#D96B4D] text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full shadow">
+                    {(item.capas_grabado?.length > 0 || item.logoUrl || item.personalizacion) && (
+                      <span className="absolute -top-1.5 -right-1.5 bg-[#D96B4D] text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full shadow z-10">
                         Diseño
                       </span>
                     )}
