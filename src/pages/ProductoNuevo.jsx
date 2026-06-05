@@ -17,6 +17,7 @@ import { getProductImage, getProductImageForColor } from '@/utils/productImages'
 import { getColoresProducto } from '@/lib/color-parser';
 import { MOQ_PERSONALIZACION_GRATIS } from '@/lib/personalizacion-config';
 import { addToCartV2, fmtCLP } from '@/lib/shop-v2-cart';
+import { saveDraftV2, loadDraftV2, clearDraftV2 } from '@/lib/shop-v2-draft';
 import {
   PERS_VACIO, tiposActivos, feeUnitarioCombinado, labelCombinada,
   resumenPersonalizacion, persCompleta, hayAlgunoActivado,
@@ -56,11 +57,31 @@ export default function ProductoNuevo() {
   const requiereColor = colores.length > 1;
   const color = useMemo(() => colores.find((c) => c.id === colorId), [colores, colorId]);
 
-  // Inicializa color: si solo hay 1, lo fija; si hay varios, deja sin elegir.
+  // Inicializa: restaura el borrador auto-guardado de este producto si existe
+  // (color, personalización, posiciones, cantidad). Si no, estado limpio. Así la
+  // configuración sobrevive a recargas o salir/volver, y llega intacta al carrito.
   useEffect(() => {
-    if (colores.length === 1) setColorId(colores[0].id);
-    else setColorId(null);
-  }, [colores]);
+    if (!producto) return;
+    const draft = loadDraftV2(producto.id);
+    if (draft) {
+      const colorValido = draft.colorId && colores.some((c) => c.id === draft.colorId);
+      setColorId(colorValido ? draft.colorId : (colores.length === 1 ? colores[0].id : null));
+      setPers(draft.pers || PERS_VACIO);
+      setPlacements(draft.placements || {});
+      setCantidad(draft.cantidad || 1);
+    } else {
+      setColorId(colores.length === 1 ? colores[0].id : null);
+      setPers(PERS_VACIO);
+      setPlacements({});
+      setCantidad(1);
+    }
+  }, [producto, colores]);
+
+  // Auto-guardado: persiste el borrador del producto actual en cada cambio.
+  useEffect(() => {
+    if (!producto) return;
+    saveDraftV2(producto.id, { colorId, pers, placements, cantidad });
+  }, [producto, colorId, pers, placements, cantidad]);
 
   // Galería: imagen por color elegido (1ª) + ángulos extra de galeria_urls.
   const galleryImages = useMemo(() => {
@@ -143,6 +164,8 @@ export default function ProductoNuevo() {
       capas_grabado: capas.map((c) => ({ tipo: c.tipo, url: c.url || null, texto: c.texto || null, ...(placements[c.id] || {}) })),
       imagen: colorImg,
     });
+    // La config completa ya viajó al item del carrito → limpiamos el borrador.
+    clearDraftV2(producto.id);
     setAdded(true);
     setTimeout(() => navigate('/CarritoNuevo'), 700);
   };

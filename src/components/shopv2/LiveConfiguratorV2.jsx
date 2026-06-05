@@ -11,6 +11,7 @@ import { getColoresProducto } from '@/lib/color-parser';
 import { modeloDe, modelosDisponibles } from '@/lib/phone-models-v2';
 import { MOQ_PERSONALIZACION_GRATIS } from '@/lib/personalizacion-config';
 import { addToCartV2, fmtCLP } from '@/lib/shop-v2-cart';
+import { saveDraftV2, loadDraftV2, clearDraftV2 } from '@/lib/shop-v2-draft';
 import {
   PERS_VACIO, tiposActivos, feeUnitarioCombinado, labelCombinada,
   resumenPersonalizacion, persCompleta, hayAlgunoActivado,
@@ -48,13 +49,34 @@ export default function LiveConfiguratorV2({ carcasas = [] }) {
   const requiereColor = colores.length > 1;
   const color = useMemo(() => colores.find((c) => c.id === colorId), [colores, colorId]);
 
-  // Al cambiar de producto/modelo, resetea color (1 solo → fija) y personalización.
+  // Al cambiar de producto/modelo: restaura el borrador guardado de ESE producto
+  // si existe (auto-guardado), o resetea a estado limpio. Así la configuración
+  // sobrevive recargas y cambios de modelo sin perderse.
   useEffect(() => {
-    if (colores.length === 1) setColorId(colores[0].id);
-    else setColorId(null);
+    if (!producto) return;
+    const draft = loadDraftV2(producto.id);
+    if (draft) {
+      // Validamos que el color guardado siga existiendo en este producto.
+      const colorValido = draft.colorId && colores.some((c) => c.id === draft.colorId);
+      setColorId(colorValido ? draft.colorId : (colores.length === 1 ? colores[0].id : null));
+      setPers(draft.pers || PERS_VACIO);
+      setPlacements(draft.placements || {});
+      setCantidad(draft.cantidad || 1);
+    } else {
+      setColorId(colores.length === 1 ? colores[0].id : null);
+      setPers(PERS_VACIO);
+      setPlacements({});
+      setCantidad(1);
+    }
     setColorError(false);
-    setPers(PERS_VACIO);
-  }, [colores]);
+  }, [producto, colores]);
+
+  // Auto-guardado: cada cambio de configuración persiste el borrador del producto
+  // actual. Garantiza que al pasar al carrito (o recargar) nada se pierda.
+  useEffect(() => {
+    if (!producto) return;
+    saveDraftV2(producto.id, { colorId, pers, placements, cantidad });
+  }, [producto, colorId, pers, placements, cantidad]);
 
   const precioUnit = producto?.precio_b2c || 9990;
   const moq = producto?.personalizacion_gratis_desde || producto?.moq_personalizacion || MOQ_PERSONALIZACION_GRATIS;
@@ -108,6 +130,9 @@ export default function LiveConfiguratorV2({ carcasas = [] }) {
       capas_grabado: capas.map((c) => ({ tipo: c.tipo, url: c.url || null, texto: c.texto || null, ...(placements[c.id] || {}) })),
       imagen: previewImg,
     });
+    // La configuración ya viajó completa al item del carrito → limpiamos el
+    // borrador de este producto para no re-restaurarlo al volver.
+    clearDraftV2(producto.id);
     setAdded(true);
     setTimeout(() => navigate('/CarritoNuevo'), 700);
   };
