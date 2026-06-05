@@ -1,25 +1,26 @@
 import { useRef, useState } from 'react';
 import { base44 } from '@/api/base44Client';
-import { Sparkles, Upload, X, Check, Loader2 } from 'lucide-react';
-import PersonalizacionPickerV2 from '@/components/shopv2/PersonalizacionPickerV2';
+import { Sparkles, Upload, X, Check, Loader2, Type, Palette } from 'lucide-react';
+import { fmtCLP } from '@/lib/shop-v2-cart';
+import PersToggleCardV2 from '@/components/shopv2/PersToggleCardV2';
 import DisenosPeyuPickerB2C from '@/components/personalizacion/DisenosPeyuPickerB2C';
+import { PRECIO_PERSONALIZACION } from '@/lib/personalizacion-config';
+import { tiposActivos, feeUnitarioCombinado, labelCombinada } from '@/lib/pers-combinable';
 
 // ════════════════════════════════════════════════════════════════════════
-// PersonalizadorV2 — Circuito de personalización del Shop v2 (piel Tema 6).
-// Tipos excluyentes (frase / Diseño PEYU / Tu logo), galería real DisenoPeyu,
-// upload de imagen propia. Es CONTROLADO: recibe `pers` y `setPers` del padre,
-// que mantiene { opcion, texto, logoUrl, disenoPeyuUrl } para el mockup y cart.
+// PersonalizadorV2 — Circuito COMBINABLE del Shop v2 (piel Tema 6).
+// El cliente puede activar VARIOS tipos a la vez: Frase + Diseño PEYU + Tu logo.
+// Cada tipo activo suma su cargo por unidad. Es CONTROLADO: recibe `pers` y
+// `setPers` del padre, con flags { frase, texto, peyu, disenoPeyuUrl, archivo, logoUrl }.
 // ════════════════════════════════════════════════════════════════════════
 export default function PersonalizadorV2({ pers, setPers, gratis, moq = 10 }) {
-  const { opcion, texto, logoUrl } = pers;
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState('');
   const fileRef = useRef(null);
 
-  const setOpcion = (o) => {
+  const toggle = (key) => {
     setError('');
-    // Al cambiar de tipo, limpia los datos de los otros tipos.
-    setPers({ opcion: o, texto: '', logoUrl: '', disenoPeyuUrl: '' });
+    setPers({ ...pers, [key]: !pers[key] });
   };
 
   const handleUpload = async (e) => {
@@ -30,8 +31,7 @@ export default function PersonalizadorV2({ pers, setPers, gratis, moq = 10 }) {
     setUploading(true);
     try {
       const res = await base44.integrations.Core.UploadFile({ file });
-      const url = res.file_url || '';
-      setPers({ ...pers, logoUrl: url, disenoPeyuUrl: '' });
+      setPers({ ...pers, logoUrl: res.file_url || '' });
     } catch {
       setError('No se pudo subir el archivo. Intenta de nuevo.');
     } finally {
@@ -39,44 +39,63 @@ export default function PersonalizadorV2({ pers, setPers, gratis, moq = 10 }) {
     }
   };
 
+  const activos = tiposActivos(pers);
+  const feeUnit = feeUnitarioCombinado(pers);
+
   return (
-    <div>
-      <div className="flex items-center gap-2 mb-2.5">
+    <div data-personalizador>
+      <div className="flex items-center gap-2 mb-1">
         <Sparkles className="w-4 h-4 text-[#D96B4D]" />
         <label className="text-sm font-bold text-[#2A2420]">Personalización (opcional)</label>
       </div>
+      <p className="text-[11px] text-[#A78B6F] mb-2.5">Combina los que quieras: cada uno suma su grabado.</p>
 
-      <PersonalizacionPickerV2 value={opcion} onSelect={setOpcion} gratis={gratis} moq={moq} />
+      {/* Toggles combinables */}
+      <div className="grid grid-cols-3 gap-2">
+        <PersToggleCardV2 Icon={Type} label="Frase" precio={PRECIO_PERSONALIZACION.frase} active={!!pers.frase} onToggle={() => toggle('frase')} gratis={gratis} />
+        <PersToggleCardV2 Icon={Palette} label="Diseño PEYU" precio={PRECIO_PERSONALIZACION.peyu} active={!!pers.peyu} onToggle={() => toggle('peyu')} gratis={gratis} />
+        <PersToggleCardV2 Icon={Upload} label="Tu logo" precio={PRECIO_PERSONALIZACION.archivo} active={!!pers.archivo} onToggle={() => toggle('archivo')} gratis={gratis} />
+      </div>
+
+      {/* Resumen del combo activo */}
+      {activos.length > 0 && (
+        <div className="flex items-center justify-between mt-2.5 bg-[#0F8B6C]/5 border border-[#0F8B6C]/20 rounded-xl px-3 py-2">
+          <span className="text-[11px] font-bold text-[#0F8B6C] truncate">{labelCombinada(pers)}</span>
+          <span className="text-[11px] font-bold text-[#0F8B6C] flex-shrink-0 ml-2">
+            {gratis ? `GRATIS desde ${moq}u` : `+${fmtCLP(feeUnit)}/u`}
+          </span>
+        </div>
+      )}
 
       {/* FRASE */}
-      {opcion === 'frase' && (
+      {pers.frase && (
         <div className="mt-3">
           <input
-            value={texto}
+            value={pers.texto}
             onChange={(e) => setPers({ ...pers, texto: e.target.value.slice(0, 20) })}
             placeholder="Tu nombre, frase o empresa..."
             className="w-full h-11 px-4 rounded-xl bg-white border border-[#EBE3D6] text-center font-bold tracking-wide text-[#2A2420] placeholder:text-[#A78B6F] focus:outline-none focus:border-[#0F8B6C] focus:ring-2 focus:ring-[#0F8B6C]/15"
           />
-          <p className="text-[11px] text-right text-[#A78B6F] mt-1 font-bold">{texto.length}/20</p>
+          <p className="text-[11px] text-right text-[#A78B6F] mt-1 font-bold">{pers.texto.length}/20</p>
         </div>
       )}
 
       {/* DISEÑO PEYU — galería real (entidad DisenoPeyu) */}
-      {opcion === 'peyu' && (
+      {pers.peyu && (
         <div className="mt-3 bg-white border border-[#EBE3D6] rounded-2xl p-3.5">
           <DisenosPeyuPickerB2C
-            selectedUrl={logoUrl}
-            onSelect={(url) => setPers({ ...pers, logoUrl: url, disenoPeyuUrl: url })}
+            selectedUrl={pers.disenoPeyuUrl}
+            onSelect={(url) => setPers({ ...pers, disenoPeyuUrl: url })}
           />
         </div>
       )}
 
       {/* TU LOGO — upload del cliente */}
-      {opcion === 'archivo' && (
+      {pers.archivo && (
         <div className="mt-3">
-          {logoUrl ? (
+          {pers.logoUrl ? (
             <div className="flex items-center gap-3 bg-white border border-[#EBE3D6] rounded-xl p-3">
-              <img src={logoUrl} alt="Subido" className="w-12 h-12 object-contain rounded-lg bg-[#FAF7F2]" />
+              <img src={pers.logoUrl} alt="Subido" className="w-12 h-12 object-contain rounded-lg bg-[#FAF7F2]" />
               <div className="flex-1 text-xs">
                 <p className="text-[#0F8B6C] font-bold flex items-center gap-1"><Check className="w-3 h-3" /> Logo cargado</p>
                 <p className="text-[#A78B6F]">Listo para grabar</p>

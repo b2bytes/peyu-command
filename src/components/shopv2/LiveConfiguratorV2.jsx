@@ -9,10 +9,12 @@ import QtyStepperV2 from '@/components/shopv2/QtyStepperV2';
 import { getProductImage, getProductImageForColor } from '@/utils/productImages';
 import { getColoresProducto } from '@/lib/color-parser';
 import { modeloDe, modelosDisponibles } from '@/lib/phone-models-v2';
-import {
-  PRECIO_PERSONALIZACION, PERSONALIZACION_LABEL, MOQ_PERSONALIZACION_GRATIS,
-} from '@/lib/personalizacion-config';
+import { MOQ_PERSONALIZACION_GRATIS } from '@/lib/personalizacion-config';
 import { addToCartV2, fmtCLP } from '@/lib/shop-v2-cart';
+import {
+  PERS_VACIO, tiposActivos, feeUnitarioCombinado, labelCombinada,
+  resumenPersonalizacion, persCompleta,
+} from '@/lib/pers-combinable';
 
 // ════════════════════════════════════════════════════════════════════════
 // Configurador EN VIVO de la home v2 (Tema 6). Modelo → color real → tipo de
@@ -36,13 +38,11 @@ export default function LiveConfiguratorV2({ carcasas = [] }) {
 
   // Estado del configurador
   const [colorId, setColorId] = useState(null);
-  const [pers, setPers] = useState({ opcion: 'none', texto: '', logoUrl: '', disenoPeyuUrl: '' });
-  const [placement, setPlacement] = useState(null);
+  const [pers, setPers] = useState(PERS_VACIO);
+  const [placements, setPlacements] = useState({});
   const [cantidad, setCantidad] = useState(1);
   const [colorError, setColorError] = useState(false);
   const [added, setAdded] = useState(false);
-
-  const opcion = pers.opcion;
 
   const colores = useMemo(() => (producto ? getColoresProducto(producto) : []), [producto]);
   const requiereColor = colores.length > 1;
@@ -53,23 +53,28 @@ export default function LiveConfiguratorV2({ carcasas = [] }) {
     if (colores.length === 1) setColorId(colores[0].id);
     else setColorId(null);
     setColorError(false);
-    setPers({ opcion: 'none', texto: '', logoUrl: '', disenoPeyuUrl: '' });
+    setPers(PERS_VACIO);
   }, [colores]);
 
   const precioUnit = producto?.precio_b2c || 9990;
   const moq = producto?.personalizacion_gratis_desde || producto?.moq_personalizacion || MOQ_PERSONALIZACION_GRATIS;
-  const tipo = opcion === 'none' ? null : opcion;
-  const feeUnit = tipo ? (PRECIO_PERSONALIZACION[tipo] || 0) : 0;
+  const activos = useMemo(() => tiposActivos(pers), [pers]);
+  const feeUnit = useMemo(() => feeUnitarioCombinado(pers), [pers]);
   const gratis = cantidad >= moq;
   const feeTotal = gratis ? 0 : feeUnit * cantidad;
   const total = precioUnit * cantidad + feeTotal;
 
-  const diseñoUrl = pers.logoUrl || pers.disenoPeyuUrl || '';
-  const persOk =
-    opcion === 'none' ||
-    (opcion === 'frase' && pers.texto.trim().length > 0) ||
-    ((opcion === 'peyu' || opcion === 'archivo') && !!diseñoUrl);
-  const muestraMockup = (opcion === 'frase' && pers.texto.trim()) || ((opcion === 'peyu' || opcion === 'archivo') && diseñoUrl);
+  // Capas combinables para el mockup (frase + diseño PEYU + logo).
+  const capas = useMemo(() => {
+    const out = [];
+    if (pers.frase && pers.texto.trim()) out.push({ id: 'frase', tipo: 'frase', texto: pers.texto });
+    if (pers.peyu && pers.disenoPeyuUrl) out.push({ id: 'peyu', tipo: 'peyu', url: pers.disenoPeyuUrl });
+    if (pers.archivo && pers.logoUrl) out.push({ id: 'archivo', tipo: 'archivo', url: pers.logoUrl });
+    return out;
+  }, [pers]);
+
+  const persOk = persCompleta(pers);
+  const muestraMockup = capas.length > 0;
 
   // Preview en vivo: imagen del color elegido o principal.
   const previewImg = useMemo(() => {
@@ -87,16 +92,18 @@ export default function LiveConfiguratorV2({ carcasas = [] }) {
       nombre: producto.nombre,
       precio: precioUnit,
       cargo_personalizacion: feeUnit,
-      tipo_personalizacion: tipo,
+      tipo_personalizacion: activos.length > 1 ? 'mixto' : (activos[0] || null),
+      tipos_personalizacion: activos,
       moq_personalizacion: moq,
       personalizacion_gratis_desde: moq,
       cantidad,
       color: color?.label || null,
-      personalizacion: opcion === 'frase' ? pers.texto : (tipo ? PERSONALIZACION_LABEL[tipo] : null),
-      logoUrl: diseñoUrl || null,
+      personalizacion: resumenPersonalizacion(pers),
+      texto: pers.texto || null,
+      logoUrl: pers.logoUrl || null,
       disenoPeyuUrl: pers.disenoPeyuUrl || null,
       mockupUrl: muestraMockup ? previewImg : null,
-      posicion_grabado: placement ? `size:${Math.round(placement.size)}% x:${Math.round(placement.x)}% y:${Math.round(placement.y)}%` : '',
+      capas_grabado: capas.map((c) => ({ tipo: c.tipo, url: c.url || null, texto: c.texto || null, ...(placements[c.id] || {}) })),
       imagen: previewImg,
     });
     setAdded(true);
@@ -122,9 +129,8 @@ export default function LiveConfiguratorV2({ carcasas = [] }) {
             {muestraMockup ? (
               <MockupLivePreviewV2
                 productImageUrl={previewImg}
-                logoUrl={diseñoUrl}
-                texto={opcion === 'frase' ? pers.texto : ''}
-                onPlacementChange={setPlacement}
+                capas={capas}
+                onPlacementChange={setPlacements}
               />
             ) : (
               <div className="relative aspect-square rounded-[1.75rem] overflow-hidden bg-[#FAF7F2] border border-[#EBE3D6]">
@@ -183,7 +189,7 @@ export default function LiveConfiguratorV2({ carcasas = [] }) {
             <div className="flex items-center justify-between">
               <div>
                 <span className="text-sm font-bold text-[#2A2420]">Cantidad</span>
-                {tipo && (
+                {activos.length > 0 && (
                   <p className={`text-[11px] mt-0.5 font-semibold ${gratis ? 'text-[#0F8B6C]' : 'text-[#A78B6F]'}`}>
                     {gratis ? `✓ Grabado GRATIS desde ${moq}u` : `Faltan ${moq - cantidad}u para grabado gratis`}
                   </p>
@@ -196,7 +202,7 @@ export default function LiveConfiguratorV2({ carcasas = [] }) {
             <PriceBreakdownV2
               precioUnit={precioUnit}
               cantidad={cantidad}
-              tipoLabel={tipo ? PERSONALIZACION_LABEL[tipo] : null}
+              tipoLabel={labelCombinada(pers)}
               feeUnit={feeUnit}
               feeTotal={feeTotal}
               gratis={gratis}

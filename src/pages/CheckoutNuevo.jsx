@@ -94,17 +94,34 @@ export default function CheckoutNuevo() {
       cliente.codigo_postal ? `CP ${cliente.codigo_postal}` : null,
     ].filter(Boolean).join(' · ');
 
+    // Tipo combinado de una línea: 'mixto' si hay más de un tipo activo.
+    const tipoLineaCombinado = (i) => {
+      const t = Array.isArray(i.tipos_personalizacion) ? i.tipos_personalizacion : [];
+      if (t.length > 1) return 'mixto';
+      if (t.length === 1) return t[0];
+      return i.personalizacion ? getTipoPersonalizacion(i) : '';
+    };
+    // Posición resumida de las capas combinadas para producción.
+    const posicionLinea = (i) => {
+      if (Array.isArray(i.capas_grabado) && i.capas_grabado.length) {
+        return i.capas_grabado
+          .map((c) => `${c.tipo}: size:${Math.round(c.size || 0)}% x:${Math.round(c.x || 0)}% y:${Math.round(c.y || 0)}%`)
+          .join(' | ');
+      }
+      return i.posicion_grabado || '';
+    };
+
     const itemsDetalle = carrito.map(i => ({
       sku: i.sku || '',
       nombre: i.nombre || '',
       color: i.color || '',
       pack_resumen: i.pack_resumen || '',
       personalizacion: i.personalizacion || '',
-      tipo_personalizacion: i.personalizacion ? getTipoPersonalizacion(i) : '',
+      tipo_personalizacion: i.personalizacion ? tipoLineaCombinado(i) : '',
       fee_personalizacion: feePersItem(i),
       logo_url: i.logoUrl || i.logo_url || '',
       mockup_url: i.mockupUrl || i.mockup_url || '',
-      posicion_grabado: i.posicion_grabado || '',
+      posicion_grabado: posicionLinea(i),
       precio_unitario: i.precio || 0,
       cantidad: i.cantidad || 1,
     }));
@@ -296,6 +313,9 @@ export default function CheckoutNuevo() {
                     <div className="flex-1 min-w-0">
                       <p className="text-xs font-semibold text-[#2A2420] truncate">{item.nombre}</p>
                       <p className="text-[10px] text-[#A78B6F]">x{item.cantidad}{item.color ? ` · ${item.color}` : ''}</p>
+                      {item.personalizacion && (
+                        <p className="text-[10px] text-[#D96B4D] font-semibold truncate">✦ {item.personalizacion}</p>
+                      )}
                     </div>
                     <span className="text-xs font-bold text-[#2A2420]">{fmtCLP((item.precio || 0) * (item.cantidad || 1))}</span>
                   </div>

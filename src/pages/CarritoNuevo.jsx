@@ -6,7 +6,7 @@ import QtyStepperV2 from '@/components/shopv2/QtyStepperV2';
 import {
   getCartV2, updateCartItemV2, removeFromCartV2, fmtCLP,
 } from '@/lib/shop-v2-cart';
-import { calcularCargoPersonalizacionCarrito, PERSONALIZACION_LABEL } from '@/lib/personalizacion-config';
+import { calcularCargoPersonalizacionCarrito } from '@/lib/personalizacion-config';
 
 // ════════════════════════════════════════════════════════════════════════
 // /CarritoNuevo — Carrito del Shop v2 (carrito_v2 aislado). Edita cantidades,
@@ -93,10 +93,9 @@ export default function CarritoNuevo() {
                       {item.color && (
                         <span className="text-[10px] font-semibold bg-[#FAF7F2] border border-[#EBE3D6] text-[#4B4F54] px-2 py-0.5 rounded-full">{item.color}</span>
                       )}
-                      {item.tipo_personalizacion && (
+                      {item.personalizacion && (
                         <span className="text-[10px] font-semibold bg-[#D96B4D]/10 text-[#D96B4D] px-2 py-0.5 rounded-full">
-                          {PERSONALIZACION_LABEL[item.tipo_personalizacion]}
-                          {item.personalizacion && item.tipo_personalizacion === 'frase' ? `: "${item.personalizacion}"` : ''}
+                          {item.personalizacion}
                         </span>
                       )}
                       {gratis && (

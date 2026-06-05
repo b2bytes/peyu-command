@@ -66,8 +66,12 @@ export function calcularCargoPersonalizacion(item, moqGratis = MOQ_PERSONALIZACI
   const qty = item.cantidad || 0;
   const moq = moqGratis || MOQ_PERSONALIZACION_GRATIS;
   if (qty >= moq) return 0; // gratis desde el MOQ
-  const tipo = getTipoPersonalizacion(item);
-  return getPrecioPersonalizacion(tipo) * qty; // cargo POR UNIDAD
+  // Combinable: si la línea ya trae el cargo unitario combinado (frase + PEYU +
+  // logo), úsalo. Si no, cae al cargo de un solo tipo (retrocompat).
+  const feeUnit = typeof item.cargo_personalizacion === 'number' && item.cargo_personalizacion > 0
+    ? item.cargo_personalizacion
+    : getPrecioPersonalizacion(getTipoPersonalizacion(item));
+  return feeUnit * qty; // cargo POR UNIDAD
 }
 
 /**

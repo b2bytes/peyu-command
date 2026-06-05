@@ -15,13 +15,12 @@ import ProductIncludesV2 from '@/components/shopv2/ProductIncludesV2';
 import StickyBuyBarV2 from '@/components/shopv2/StickyBuyBarV2';
 import { getProductImage, getProductImageForColor } from '@/utils/productImages';
 import { getColoresProducto } from '@/lib/color-parser';
-import {
-  PRECIO_PERSONALIZACION, PERSONALIZACION_LABEL, MOQ_PERSONALIZACION_GRATIS,
-} from '@/lib/personalizacion-config';
+import { MOQ_PERSONALIZACION_GRATIS } from '@/lib/personalizacion-config';
 import { addToCartV2, fmtCLP } from '@/lib/shop-v2-cart';
-
-// Estado inicial del circuito de personalización (unificado).
-const PERS_INICIAL = { opcion: 'none', texto: '', logoUrl: '', disenoPeyuUrl: '' };
+import {
+  PERS_VACIO, tiposActivos, feeUnitarioCombinado, labelCombinada,
+  resumenPersonalizacion, persCompleta,
+} from '@/lib/pers-combinable';
 
 // ════════════════════════════════════════════════════════════════════════
 // /ProductoNuevo?id= — Ficha de producto del Shop v2 (Tema 6 Conversion Machine).
@@ -38,14 +37,12 @@ export default function ProductoNuevo() {
 
   // Estado del configurador
   const [colorId, setColorId] = useState(null);
-  const [pers, setPers] = useState(PERS_INICIAL);
-  const [placement, setPlacement] = useState(null); // { size, x, y } del mockup
+  const [pers, setPers] = useState(PERS_VACIO);
+  const [placements, setPlacements] = useState({}); // { [capaId]: {size,x,y} }
   const [cantidad, setCantidad] = useState(1);
   const [colorError, setColorError] = useState(false);
   const [added, setAdded] = useState(false);
   const [galIdx, setGalIdx] = useState(0);
-
-  const opcion = pers.opcion;
 
   useEffect(() => {
     if (!id) { setLoading(false); return; }
@@ -82,8 +79,8 @@ export default function ProductoNuevo() {
 
   const precioUnit = producto?.precio_b2c || 9990;
   const moq = producto?.personalizacion_gratis_desde || producto?.moq_personalizacion || MOQ_PERSONALIZACION_GRATIS;
-  const tipo = opcion === 'none' ? null : opcion;
-  const feeUnit = tipo ? (PRECIO_PERSONALIZACION[tipo] || 0) : 0;
+  const activos = useMemo(() => tiposActivos(pers), [pers]);
+  const feeUnit = useMemo(() => feeUnitarioCombinado(pers), [pers]);
   const gratis = cantidad >= moq;
   const feeTotal = gratis ? 0 : feeUnit * cantidad;
   const total = precioUnit * cantidad + feeTotal;
@@ -94,14 +91,18 @@ export default function ProductoNuevo() {
     [producto, color, displayImg]
   );
 
-  // ¿La opción de personalización elegida está completa?
-  const diseñoUrl = pers.logoUrl || pers.disenoPeyuUrl || '';
-  const persOk =
-    opcion === 'none' ||
-    (opcion === 'frase' && pers.texto.trim().length > 0) ||
-    ((opcion === 'peyu' || opcion === 'archivo') && !!diseñoUrl);
-  // ¿Mostramos el mockup en vivo? Solo cuando hay diseño que componer.
-  const muestraMockup = (opcion === 'frase' && pers.texto.trim()) || ((opcion === 'peyu' || opcion === 'archivo') && diseñoUrl);
+  // Capas combinables para el mockup en vivo (frase + diseño PEYU + logo).
+  const capas = useMemo(() => {
+    const out = [];
+    if (pers.frase && pers.texto.trim()) out.push({ id: 'frase', tipo: 'frase', texto: pers.texto });
+    if (pers.peyu && pers.disenoPeyuUrl) out.push({ id: 'peyu', tipo: 'peyu', url: pers.disenoPeyuUrl });
+    if (pers.archivo && pers.logoUrl) out.push({ id: 'archivo', tipo: 'archivo', url: pers.logoUrl });
+    return out;
+  }, [pers]);
+
+  // ¿La personalización elegida está completa? (cada tipo activado con su dato)
+  const persOk = persCompleta(pers);
+  const muestraMockup = capas.length > 0;
 
   // Stock/urgencia sutil (Baymard #6): solo si el dato existe y es bajo.
   const stock = producto?.stock_actual;
@@ -119,24 +120,26 @@ export default function ProductoNuevo() {
     }
 
     // El mockup que viaja al carrito/pedido = imagen del color con el diseño.
-    // Como el preview es interactivo, guardamos el logo/diseño + posición y la
-    // foto base del color; producción reconstruye el grabado a partir de esto.
+    // Guardamos cada capa (frase/diseño/logo) + su posición; producción
+    // reconstruye el grabado combinado a partir de esto.
     addToCartV2({
       productoId: producto.id,
       sku: producto.sku || null,
       nombre: producto.nombre,
       precio: precioUnit,
       cargo_personalizacion: feeUnit,
-      tipo_personalizacion: tipo,
+      tipo_personalizacion: activos.length > 1 ? 'mixto' : (activos[0] || null),
+      tipos_personalizacion: activos,
       moq_personalizacion: moq,
       personalizacion_gratis_desde: moq,
       cantidad,
       color: color?.label || null,
-      personalizacion: opcion === 'frase' ? pers.texto : (tipo ? PERSONALIZACION_LABEL[tipo] : null),
-      logoUrl: diseñoUrl || null,
+      personalizacion: resumenPersonalizacion(pers),
+      texto: pers.texto || null,
+      logoUrl: pers.logoUrl || null,
       disenoPeyuUrl: pers.disenoPeyuUrl || null,
       mockupUrl: muestraMockup ? colorImg : null,
-      posicion_grabado: placement ? `size:${Math.round(placement.size)}% x:${Math.round(placement.x)}% y:${Math.round(placement.y)}%` : '',
+      capas_grabado: capas.map((c) => ({ tipo: c.tipo, url: c.url || null, texto: c.texto || null, ...(placements[c.id] || {}) })),
       imagen: colorImg,
     });
     setAdded(true);
@@ -222,14 +225,13 @@ export default function ProductoNuevo() {
             <div data-personalizador>
               <PersonalizadorV2 pers={pers} setPers={setPers} gratis={gratis} moq={moq} />
 
-              {/* Mockup EN VIVO: aparece cuando hay diseño que componer */}
+              {/* Mockup EN VIVO: compone todas las capas combinadas */}
               {muestraMockup && (
                 <div className="mt-4">
                   <MockupLivePreviewV2
                     productImageUrl={colorImg}
-                    logoUrl={diseñoUrl}
-                    texto={opcion === 'frase' ? pers.texto : ''}
-                    onPlacementChange={setPlacement}
+                    capas={capas}
+                    onPlacementChange={setPlacements}
                   />
                 </div>
               )}
@@ -239,7 +241,7 @@ export default function ProductoNuevo() {
             <div className="flex items-center justify-between">
               <div>
                 <span className="text-sm font-bold text-[#2A2420]">Cantidad</span>
-                {tipo && (
+                {activos.length > 0 && (
                   <p className={`text-[11px] mt-0.5 font-semibold ${gratis ? 'text-[#0F8B6C]' : 'text-[#A78B6F]'}`}>
                     {gratis ? `✓ Grabado GRATIS desde ${moq}u` : `Faltan ${moq - cantidad}u para grabado gratis`}
                   </p>
@@ -252,7 +254,7 @@ export default function ProductoNuevo() {
             <PriceBreakdownV2
               precioUnit={precioUnit}
               cantidad={cantidad}
-              tipoLabel={tipo ? PERSONALIZACION_LABEL[tipo] : null}
+              tipoLabel={labelCombinada(pers)}
               feeUnit={feeUnit}
               feeTotal={feeTotal}
               gratis={gratis}
