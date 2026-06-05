@@ -30,7 +30,7 @@ export default function CardDispatcher({ card, crm, metrics, lists = {}, onAsk, 
     case 'consultas':
       return <ConsultasCard consultas={lists.consultas_pendientes || crm.consultas} onDone={onDone} />;
     case 'clients':
-      return <ClientsCard clientes={crm.clientes} />;
+      return <ClientsCard clientes={lists.clientes_top || crm.clientes} />;
     default:
       return null;
   }

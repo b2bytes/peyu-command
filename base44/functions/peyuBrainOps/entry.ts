@@ -34,7 +34,7 @@ Deno.serve(async (req) => {
     const since7d = daysAgoISO(7);
 
     // ── Cargar data viva en paralelo ────────────────────────────────────────
-    const [pedidos, leads, consultas, ailogs, envios, propuestas, productos] = await Promise.all([
+    const [pedidos, leads, consultas, ailogs, envios, propuestas, productos, clientes] = await Promise.all([
       base44.asServiceRole.entities.PedidoWeb.list('-created_date', 200),
       base44.asServiceRole.entities.B2BLead.list('-created_date', 100),
       base44.asServiceRole.entities.Consulta.list('-created_date', 300),
@@ -42,6 +42,7 @@ Deno.serve(async (req) => {
       base44.asServiceRole.entities.Envio.list('-created_date', 100),
       base44.asServiceRole.entities.CorporateProposal.list('-created_date', 100),
       base44.asServiceRole.entities.Producto.filter({ activo: true }, null, 500),
+      base44.asServiceRole.entities.Cliente.list('-total_compras_clp', 100).catch(() => []),
     ]);
 
     // ── Filtros temporales ──────────────────────────────────────────────────
@@ -134,6 +135,16 @@ Deno.serve(async (req) => {
       })),
       stock_bajo_list: stockBajo.slice(0, 10).map(p => ({
         id: p.id, sku: p.sku, nombre: p.nombre, stock_actual: p.stock_actual,
+      })),
+      // vCard inteligente: TODA la info del cliente para la página agente.
+      clientes_top: (clientes || []).slice(0, 12).map(c => ({
+        id: c.id, empresa: c.empresa, contacto: c.contacto, email: c.email,
+        telefono: c.telefono, rut: c.rut, tipo: c.tipo, segmento: c.segmento,
+        estado: c.estado, total_compras_clp: c.total_compras_clp, num_pedidos: c.num_pedidos,
+        ticket_promedio: c.ticket_promedio, nps_score: c.nps_score, sku_favorito: c.sku_favorito,
+        canal_preferido: c.canal_preferido, pagos_al_dia: c.pagos_al_dia,
+        fecha_ultima_compra: c.fecha_ultima_compra, proximo_recontacto: c.proximo_recontacto,
+        notas: c.notas,
       })),
     };
 
