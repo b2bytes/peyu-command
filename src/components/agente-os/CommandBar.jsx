@@ -22,10 +22,10 @@ export default function CommandBar({ value, onChange, onSend, onChip, loading })
   };
 
   return (
-    <div className="flex-shrink-0 px-4 pb-4 pt-2 bg-gradient-to-t from-ld-bg to-transparent">
-      <div className="max-w-[820px] mx-auto">
-        {/* Chips */}
-        <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-2.5">
+    <div className="flex-shrink-0 px-3 sm:px-4 pb-3 sm:pb-4 pt-2 pb-safe bg-gradient-to-t from-ld-bg to-transparent">
+      <div className="max-w-[820px] mx-auto w-full">
+        {/* Chips — envuelven en móvil (sin scroll lateral) */}
+        <div className="flex flex-wrap gap-2 pb-2.5">
           {CHIPS.map((c) => (
             <button
               key={c}

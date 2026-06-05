@@ -142,8 +142,8 @@ Stock bajo (<10u): ${m.stock_bajo} SKUs · consultas sin responder: ${m.consulta
             <span className="text-sm">Cargando tu negocio…</span>
           </div>
         ) : (
-          <div className="flex-1 overflow-y-auto peyu-scrollbar px-4 py-6">
-            <div className="max-w-[820px] mx-auto space-y-6">
+          <div className="flex-1 overflow-y-auto peyu-scrollbar px-3 sm:px-4 py-5 sm:py-6">
+            <div className="max-w-[820px] mx-auto w-full space-y-6">
               {messages.length === 0 ? (
                 <WelcomeScreen metrics={metrics} onAsk={sendMessage} />
               ) : (
