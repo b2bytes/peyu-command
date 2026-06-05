@@ -64,15 +64,15 @@ export default function QuoteProductModal({ producto, onClose, onAdd, yaAgregado
           animate={{ y: 0, opacity: 1, scale: 1 }}
           exit={{ y: 40, opacity: 0, scale: 0.98 }}
           transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-          className="relative bg-[#FAF7F2] w-full sm:max-w-lg rounded-t-3xl sm:rounded-3xl shadow-2xl max-h-[92vh] overflow-hidden flex flex-col"
+          className="relative bg-[#FAF7F2] w-full sm:max-w-md rounded-t-3xl sm:rounded-3xl shadow-2xl max-h-[90vh] sm:max-h-[88vh] overflow-hidden flex flex-col"
         >
-          {/* Imagen + cerrar */}
-          <div className="relative">
-            <div className="aspect-[16/10] bg-white overflow-hidden">
+          {/* Imagen + cerrar (altura contenida para no comerse el modal) */}
+          <div className="relative flex-shrink-0">
+            <div className="h-44 sm:h-48 bg-white overflow-hidden">
               <img
                 src={getProductImage(producto)}
                 alt={producto.nombre}
-                className="w-full h-full object-cover"
+                className="w-full h-full object-contain"
                 onError={(e) => { e.target.style.visibility = 'hidden'; }}
               />
             </div>
@@ -81,25 +81,30 @@ export default function QuoteProductModal({ producto, onClose, onAdd, yaAgregado
               className="absolute top-3 right-3 w-9 h-9 rounded-full bg-white/90 backdrop-blur flex items-center justify-center text-[#2A2420] shadow-sm hover:bg-white transition-colors"
               aria-label="Cerrar"
             >
-              <X className="w-4.5 h-4.5" />
+              <X className="w-5 h-5" />
             </button>
             <span className="absolute top-3 left-3 inline-flex items-center gap-1 bg-white/90 backdrop-blur text-[10px] font-bold px-2.5 py-1 rounded-full text-[#0F8B6C] shadow-sm">
               <Recycle className="w-3 h-3" /> {esCompostable ? 'Compostable' : '100% Reciclado'}
             </span>
-            {ahorroMax > 0 && (
-              <span className="absolute bottom-3 left-3 inline-flex items-center gap-1 bg-[#D96B4D] text-white text-[11px] font-bold px-2.5 py-1 rounded-full shadow">
-                <TrendingDown className="w-3 h-3" /> Hasta −{ahorroMax}% por volumen
-              </span>
-            )}
           </div>
 
           {/* Cuerpo scrolleable */}
           <div className="flex-1 overflow-y-auto peyu-scrollbar p-5 sm:p-6">
-            <p className="text-[11px] font-bold uppercase tracking-wider text-[#A78B6F] mb-1">
-              {producto.categoria?.replace(' B2C', '')}
-            </p>
-            <h2 className="font-fraunces text-2xl leading-tight text-[#2A2420] mb-1.5">{producto.nombre}</h2>
-            <p className="font-poppins font-bold text-lg text-[#0F8B6C] mb-3">desde {fmtCLP(base)}/u</p>
+            {/* Encabezado: categoría + nombre + precio + badge ahorro */}
+            <div className="flex items-start justify-between gap-3 mb-3">
+              <div className="min-w-0">
+                <p className="text-[11px] font-bold uppercase tracking-wider text-[#A78B6F] mb-1">
+                  {producto.categoria?.replace(' B2C', '')}
+                </p>
+                <h2 className="font-fraunces text-xl sm:text-2xl leading-tight text-[#2A2420]">{producto.nombre}</h2>
+                <p className="font-poppins font-bold text-base text-[#0F8B6C] mt-1">desde {fmtCLP(base)}/u</p>
+              </div>
+              {ahorroMax > 0 && (
+                <span className="flex-shrink-0 inline-flex items-center gap-1 bg-[#D96B4D] text-white text-[11px] font-bold px-2.5 py-1.5 rounded-full shadow-sm">
+                  <TrendingDown className="w-3 h-3" /> −{ahorroMax}%
+                </span>
+              )}
+            </div>
 
             {producto.descripcion && (
               <p className="text-sm text-[#4B4F54] leading-relaxed mb-4">{producto.descripcion}</p>
@@ -111,7 +116,7 @@ export default function QuoteProductModal({ producto, onClose, onAdd, yaAgregado
                 <p className="text-xs font-bold text-[#2A2420] mb-2 flex items-center gap-1.5">
                   <Package className="w-3.5 h-3.5 text-[#0F8B6C]" /> Qué incluye
                 </p>
-                <ul className="space-y-1">
+                <ul className="space-y-1.5">
                   {incluye.map((item, i) => (
                     <li key={i} className="flex items-start gap-2 text-sm text-[#4B4F54]">
                       <Check className="w-3.5 h-3.5 text-[#0F8B6C] mt-0.5 flex-shrink-0" /> {item}
@@ -121,26 +126,26 @@ export default function QuoteProductModal({ producto, onClose, onAdd, yaAgregado
               </div>
             )}
 
-            {/* Tabla de precios por volumen */}
+            {/* Tabla de precios por volumen — fila completa, legible en mobile */}
             {tramos.length > 0 && (
               <div className="mb-4">
                 <p className="text-xs font-bold text-[#2A2420] mb-2 flex items-center gap-1.5">
                   <TrendingDown className="w-3.5 h-3.5 text-[#0F8B6C]" /> Precio por volumen
                 </p>
-                <div className="grid grid-cols-2 gap-1.5">
+                <div className="bg-white border border-[#EBE3D6] rounded-2xl overflow-hidden divide-y divide-[#EBE3D6]">
                   {tramos.map((t) => (
-                    <div key={t.min} className="flex items-center justify-between bg-white border border-[#EBE3D6] rounded-xl px-3 py-2">
-                      <span className="text-[11px] text-[#A78B6F] font-semibold">{t.label}</span>
-                      <span className="text-sm font-bold text-[#2A2420]">
-                        {fmtCLP(t.b2b.precio)}
+                    <div key={t.min} className="flex items-center justify-between px-4 py-2.5">
+                      <span className="text-xs text-[#4B4F54] font-semibold">{t.label}</span>
+                      <span className="flex items-center gap-2">
+                        <span className="text-sm font-bold text-[#2A2420]">{fmtCLP(t.b2b.precio)}</span>
                         {t.b2b.ahorroPct > 0 && (
-                          <span className="text-[10px] text-[#D96B4D] ml-1">−{t.b2b.ahorroPct}%</span>
+                          <span className="text-[10px] font-bold text-[#D96B4D] bg-[#D96B4D]/10 px-1.5 py-0.5 rounded-md">−{t.b2b.ahorroPct}%</span>
                         )}
                       </span>
                     </div>
                   ))}
                 </div>
-                <p className="text-[10px] text-[#A78B6F] mt-1.5">Precios netos referenciales (sin IVA).</p>
+                <p className="text-[10px] text-[#A78B6F] mt-1.5 px-1">Precios netos referenciales (sin IVA).</p>
               </div>
             )}
 
