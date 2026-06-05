@@ -18,8 +18,10 @@ import { fmtCLP } from '@/lib/shop-v2-cart';
 // El backend crea un B2BLead y devuelve el desglose. AISLADO del flujo B2C.
 // ════════════════════════════════════════════════════════════════════════
 const FORM_INICIAL = {
-  company_name: '', contact_name: '', email: '', phone: '',
-  delivery_date: '', personalization_needs: false,
+  company_name: '', rut: '', giro: '',
+  contact_name: '', cargo: '', email: '', phone: '',
+  direccion: '', comuna: '', delivery_date: '',
+  urgency: 'Normal', personalization_needs: false, notes: '',
 };
 
 const trans = { duration: 0.35, ease: [0.22, 1, 0.36, 1] };
@@ -60,7 +62,7 @@ export default function CotizacionRapida() {
   const setQty = (sku, qty) => setItems((prev) => prev.map((it) => it.producto.sku === sku ? { ...it, qty } : it));
   const removeItem = (sku) => setItems((prev) => prev.filter((it) => it.producto.sku !== sku));
 
-  const datosOk = form.company_name.trim() && form.contact_name.trim() && form.email.trim();
+  const datosOk = form.company_name.trim() && form.rut.trim() && form.contact_name.trim() && form.email.trim() && form.phone.trim();
   // El paso máximo alcanzable: necesita productos para pasar de 0, y datos para llegar a 2.
   const maxStep = items.length === 0 ? 0 : datosOk ? 2 : 1;
 
@@ -68,7 +70,7 @@ export default function CotizacionRapida() {
   const next = () => {
     setError('');
     if (step === 0 && items.length === 0) { setError('Agrega al menos un producto para continuar.'); return; }
-    if (step === 1 && !datosOk) { setError('Completa empresa, nombre y email.'); return; }
+    if (step === 1 && !datosOk) { setError('Completa los campos obligatorios: empresa, RUT, nombre, email y teléfono.'); return; }
     goTo(step + 1);
   };
   const back = () => goTo(Math.max(0, step - 1));

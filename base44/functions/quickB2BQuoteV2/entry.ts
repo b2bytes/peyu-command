@@ -65,7 +65,14 @@ Deno.serve(async (req) => {
     const company_name = (body.company_name || '').toString().slice(0, 200).trim();
     const email = (body.email || '').toString().slice(0, 200).trim();
     const phone = (body.phone || '').toString().slice(0, 60).trim() || undefined;
+    const rut = (body.rut || '').toString().slice(0, 40).trim() || undefined;
+    const giro = (body.giro || '').toString().slice(0, 200).trim() || undefined;
+    const cargo = (body.cargo || '').toString().slice(0, 120).trim() || undefined;
+    const direccion = (body.direccion || '').toString().slice(0, 300).trim() || undefined;
+    const comuna = (body.comuna || '').toString().slice(0, 120).trim() || undefined;
     const delivery_date = (body.delivery_date || '').toString().slice(0, 60) || undefined;
+    const urgency = ['Alta', 'Normal', 'Baja'].includes(body.urgency) ? body.urgency : 'Normal';
+    const clientNotes = (body.notes || '').toString().slice(0, 1000).trim();
     const personalization_needs = !!body.personalization_needs;
     const items = Array.isArray(body.items) ? body.items : [];
 
@@ -123,9 +130,16 @@ Deno.serve(async (req) => {
     const resumenItems = lineas
       .map((l) => `${l.cantidad}× ${l.nombre} @ $${l.precio_unitario.toLocaleString('es-CL')} (${l.tramo})`)
       .join(' · ');
+    const datosNegocio = [
+      giro && `Giro: ${giro}`,
+      cargo && `Cargo: ${cargo}`,
+      (direccion || comuna) && `Despacho: ${[direccion, comuna].filter(Boolean).join(', ')}`,
+      clientNotes && `Nota del cliente: ${clientNotes}`,
+    ].filter(Boolean).join('. ');
     const notes = `Cotización rápida por volumen desde plataforma nueva (Shop v2). ` +
       `${resumenItems}. Total neto: $${totalNeto.toLocaleString('es-CL')} (sin IVA). ` +
-      `Fecha requerida: ${delivery_date || 'N/D'}.`;
+      `Fecha requerida: ${delivery_date || 'N/D'}. Urgencia: ${urgency}.` +
+      (datosNegocio ? ` ${datosNegocio}.` : '');
 
     const histEntry = {
       at: nowIso,
@@ -152,10 +166,12 @@ Deno.serve(async (req) => {
         contact_name,
         company_name,
         phone: phone ?? existing.phone,
+        rut: rut ?? existing.rut,
         qty_estimate: qtyTotal,
         product_interest: productInterest || existing.product_interest,
         delivery_date: delivery_date ?? existing.delivery_date,
         personalization_needs,
+        urgency,
         lead_score,
         notes,
         historial: [...prevHist, { ...histEntry, type: 'note', detail: 'Re-cotización rápida (Shop v2)' }],
@@ -168,13 +184,14 @@ Deno.serve(async (req) => {
         company_name,
         email,
         phone,
+        rut,
         qty_estimate: qtyTotal,
         product_interest: productInterest,
         delivery_date,
         personalization_needs,
         lead_score,
         status: 'Nuevo',
-        urgency: 'Normal',
+        urgency,
         notes,
         historial: [histEntry],
       });
