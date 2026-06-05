@@ -117,10 +117,11 @@ export async function engraveLogo(input, tint = 'dark') {
       hasSolidBg = true; br = 255; bg = 255; bb = 255;
     }
 
-    // Tono de tinta del grabado (1 sola tinta) — intenso modo láser.
-    // light = grabado casi blanco sobre producto oscuro.
-    // dark  = grabado casi negro sobre producto claro.
-    const ink = tint === 'light' ? 250 : 18;
+    // Tono de tinta del grabado láser inteligente (1 sola tinta), gris profesional:
+    // light = GRIS CLARO (#E8E8E8 ≈ 232) sobre producto oscuro → grabado realista.
+    // dark  = GRIS OSCURO (#2E2E2E ≈ 46) sobre producto claro  → contraste legible.
+    // Grises (no blanco/negro puro) imitan el grabado láser UV real sobre plástico.
+    const ink = tint === 'light' ? 232 : 46;
     // Umbral de similitud al fondo para volverlo transparente.
     const KEY_THRESHOLD = 60;
 
