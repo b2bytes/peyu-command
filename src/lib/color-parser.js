@@ -111,8 +111,15 @@ export function getColoresProducto(producto) {
   }
 
   // Resto del catálogo (Escritorio, Hogar, Entretenimiento, Corporativo):
-  // Solo 4 colores oficiales → Turquesa, Negro, Azul, Rosado.
-  return PEYU_COLOR_CATALOG.filter(c =>
-    ['turquesa', 'negro', 'azul', 'rosa'].includes(c.id)
-  );
+  // SOLO mostramos selector de color si el producto realmente tiene fotos por
+  // color (imagenes_por_color). Así cambiar de color SIEMPRE cambia la imagen,
+  // igual que las carcasas. Si no hay fotos por color, no inventamos colores.
+  const mapa = producto.imagenes_por_color;
+  if (!mapa || typeof mapa !== 'object') return [];
+
+  const norm = (s) => normalize(s);
+  const colores = Object.keys(mapa)
+    .map((k) => PEYU_COLOR_CATALOG.find((c) => c.aliases.some((a) => norm(a) === norm(k))))
+    .filter(Boolean);
+  return colores;
 }
