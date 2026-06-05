@@ -64,7 +64,8 @@ function getGarantiaPorMaterial(producto) {
   const anios = producto.garantia_anios;
 
   if (esCarcasa) {
-    return { icon: Recycle, label: 'Compostable', sub: '2-3 años industrial' };
+    // Carcasas: garantía 2 años (NO los 10 años del plástico reciclado general).
+    return { icon: Shield, label: 'Garantía 2 años', sub: 'Carcasa biodegradable' };
   }
   if (esFibra) {
     return { icon: Recycle, label: 'Compostable', sub: 'Fibra de trigo' };
@@ -1139,7 +1140,7 @@ export default function ProductoDetalle() {
                 <div className="ld-card p-4 space-y-3.5" style={{ background: 'var(--ld-highlight-soft)' }}>
                   <div className="flex items-center justify-between gap-2">
                     <label className="text-sm font-bold text-ld-fg flex items-center gap-2">
-                      <Sparkles className="w-4 h-4" style={{ color: 'var(--ld-highlight)' }} /> Personalización láser UV
+                      <Sparkles className="w-4 h-4" style={{ color: 'var(--ld-highlight)' }} /> Grabado láser (escala de grises)
                     </label>
                     {personalizacionGratis ? (
                       <span className="text-[10px] font-bold px-2 py-0.5 rounded-full text-white flex items-center gap-1" style={{ background: 'var(--ld-action)' }}>
@@ -1167,13 +1168,13 @@ export default function ProductoDetalle() {
                         placeholder="Tu nombre, empresa o frase..."
                         className="ld-input text-sm rounded-xl h-11 font-medium tracking-wide bg-ld-bg text-ld-fg placeholder:text-ld-fg-muted" />
                       <div className="flex items-center justify-between">
-                        <p className="text-xs text-ld-fg-soft">Área: {producto.area_laser_mm || '40×25mm'} · Grabado permanente</p>
+                        <p className="text-xs text-ld-fg-soft">Área: {producto.area_laser_mm || '40×25mm'} · Grabado permanente en escala de grises, tono opuesto al color</p>
                         <span className="text-xs font-bold" style={{ color: personalizacion.length >= 22 ? 'var(--ld-highlight)' : 'var(--ld-fg-muted)' }}>{personalizacion.length}/25</span>
                       </div>
                       {personalizacion && (
-                        <div className="rounded-xl px-4 py-2 text-center bg-slate-900 border border-yellow-500/40">
-                          <p className="font-bold tracking-[0.2em] text-sm text-yellow-400" style={{ fontFamily: 'monospace' }}>{personalizacion.toUpperCase()}</p>
-                          <p className="text-white/40 text-[9px] mt-0.5">Preview del grabado láser</p>
+                        <div className="rounded-xl px-4 py-2 text-center bg-slate-900 border border-white/20">
+                          <p className="font-bold tracking-[0.2em] text-sm text-gray-200" style={{ fontFamily: 'monospace' }}>{personalizacion.toUpperCase()}</p>
+                          <p className="text-white/40 text-[9px] mt-0.5">Preview del grabado láser · escala de grises, tono opuesto al color</p>
                         </div>
                       )}
                     </div>
@@ -1288,7 +1289,7 @@ export default function ProductoDetalle() {
                     <p className="text-xs font-bold uppercase tracking-wide" style={{ color: 'var(--ld-action)' }}>Canal Corporativo B2B</p>
                   </div>
                   <p className="relative text-xs text-ld-fg-soft leading-relaxed">
-                    ¿Necesitas +10 unidades con tu logo? Cotización con mockup en menos de 24 horas. Precios por volumen y personalización láser gratis.
+                    ¿Necesitas +10 unidades con tu logo? Cotización con mockup en menos de 24 horas. Precios por volumen y grabado láser GRATIS desde 10u, en escala de grises (tono opuesto al color, no a color).
                   </p>
                   <div className="relative grid grid-cols-2 gap-2">
                     <Link
@@ -1385,15 +1386,15 @@ export default function ProductoDetalle() {
                   <ul className="space-y-2">
                     {[
                       `Material: ${producto.material}`,
-                      // Garantía contextual: carcasas/fibra son compostables, plástico reciclado lleva años.
+                      // Garantía contextual: carcasas 2 años; fibra compostable; plástico reciclado 10 años.
                       producto.categoria === 'Carcasas B2C'
-                        ? 'Compostable industrial: 2-3 años'
+                        ? 'Garantía: 2 años contra defectos'
                         : producto.material?.includes('Trigo') || producto.material?.includes('Compostable')
                           ? 'Material compostable (fibra de trigo)'
                           : `Garantía: ${producto.garantia_anios || 10} años contra defectos`,
                       producto.area_laser_mm && `Área grabado láser: ${producto.area_laser_mm}`,
                       'Fabricado en Santiago, Chile',
-                      producto.moq_personalizacion && 'Compatible con personalización UV',
+                      producto.moq_personalizacion && 'Grabado láser en escala de grises (tono opuesto)',
                     ].filter(Boolean).map((f, i) => (
                       <li key={i} className="flex items-start gap-2 text-sm text-ld-fg-soft">
                         <Check className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: 'var(--ld-action)' }} />
@@ -1416,7 +1417,7 @@ export default function ProductoDetalle() {
                     ['Canal', producto.canal],
                     ['Garantía',
                       producto.categoria === 'Carcasas B2C'
-                        ? 'Compostable 2-3 años (industrial)'
+                        ? '2 años contra defectos'
                         : (producto.material?.includes('Trigo') || producto.material?.includes('Compostable'))
                           ? 'Material compostable'
                           : `${producto.garantia_anios || 10} años contra defectos`,
@@ -1439,12 +1440,12 @@ export default function ProductoDetalle() {
             {tabActiva === 'faq' && (
               <div className="space-y-3 max-w-2xl">
                 {[
-                  ['¿Cuánto demora el despacho?', `Sin personalización: ${producto.lead_time_sin_personal || 7} días hábiles. Con grabado láser UV: ${producto.lead_time_con_personal || 9} días hábiles. Todo Chile vía Starken, Chilexpress o BlueExpress.`],
-                  ['¿Puedo personalizar con mi logo?', `Sí. Ofrecemos grabado láser UV permanente en área de ${producto.area_laser_mm || '40×25mm'}. Gratis desde ${producto.moq_personalizacion || 10} unidades.`],
+                  ['¿Cuánto demora el despacho?', `Despacho BlueExpress: 1 día hábil en la Región Metropolitana si compras antes de las 14:00. Resto del país: 1 a 3 días hábiles. Priority aéreo solo en comunas extremas (Arica, Iquique, Punta Arenas, Coyhaique). Con grabado, suma el tiempo de personalización (${producto.lead_time_con_personal || 9} días hábiles).`],
+                  ['¿Puedo personalizar con mi logo?', `Sí. Grabado láser permanente en escala de grises, en tonalidad opuesta al color del producto (no se imprime a color), en área de ${producto.area_laser_mm || '40×25mm'}. Gratis desde ${producto.moq_personalizacion || 10} unidades.`],
                   ['¿El color marmolado es exactamente igual al de la foto?', 'El marmolado es un proceso artesanal, por lo que cada pieza tiene variaciones únicas. Los colores base son los mismos pero el patrón nunca se repite.'],
                   ['¿Qué pasa si el producto llega dañado?',
                     producto.categoria === 'Carcasas B2C'
-                      ? 'Ofrecemos 30 días de devolución sin preguntas. Las carcasas tienen garantía contra defectos de fabricación durante toda su vida útil esperada (2-3 años de uso normal antes de iniciar su compostaje industrial).'
+                      ? 'Ofrecemos 30 días de devolución sin preguntas. Las carcasas tienen 2 años de garantía contra defectos de fabricación.'
                       : 'Ofrecemos 30 días de devolución sin preguntas. Además, los productos de plástico reciclado tienen garantía de 10 años contra defectos de fabricación.',
                   ],
                   ['¿Tienen precios especiales para empresas?', `Sí. Desde ${producto.moq_personalizacion || 10} unidades accedes a precios B2B. Desde 50 unidades, descuento adicional.`],

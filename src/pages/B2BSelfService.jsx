@@ -651,7 +651,7 @@ export default function B2BSelfService() {
                     ¿Llevas tu logo grabado?
                   </h2>
                   <p className="text-white/65 text-sm mt-1.5 leading-relaxed">
-                    Grabado láser UV <span className="text-amber-300 font-semibold">gratis</span> desde 10 unidades. Acabado profesional, permanente y sostenible.
+                    Grabado láser <span className="text-amber-300 font-semibold">gratis</span> desde 10 unidades. En escala de grises, tono opuesto al color. No se imprime a color.
                   </p>
                 </div>
               </div>

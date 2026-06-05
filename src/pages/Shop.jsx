@@ -18,13 +18,16 @@ import ShopSearchBar from '@/components/shop/ShopSearchBar';
 import ShopCategoryCards from '@/components/shop/ShopCategoryCards';
 import { ordenarCarcasas } from '@/lib/carcasa-sort';
 
+// FIX 2 · "Corporativo" es un CANAL B2B, no una categoría de producto. Se quita
+// del filtro (tenía 0 productos y confundía). El acceso B2B vive en el botón
+// "Cotizar B2B", no como filtro. Categorías reales: Carcasas, Hogar,
+// Entretenimiento, Escritorio.
 const CATEGORIAS_META = [
   { id: 'Todos',           label: 'Todos',           icon: '🌍' },
-  { id: 'Escritorio',      label: 'Escritorio',      icon: '💼' },
+  { id: 'Carcasas B2C',    label: 'Carcasas',        icon: '📱' },
   { id: 'Hogar',           label: 'Hogar',           icon: '🏠' },
   { id: 'Entretenimiento', label: 'Entretenimiento', icon: '🎲' },
-  { id: 'Corporativo',     label: 'Corporativo',     icon: '🏢' },
-  { id: 'Carcasas B2C',    label: 'Carcasas',        icon: '📱' },
+  { id: 'Escritorio',      label: 'Escritorio',      icon: '💼' },
 ];
 
 const PRICE_RANGES = [
@@ -272,13 +275,17 @@ export default function Shop() {
               </span>
             </h1>
             <p className="text-ld-fg-muted text-base sm:text-lg leading-relaxed max-w-lg">
-              Fabricados en Santiago con plástico recuperado. Personalización láser UV y garantía 10 años.
+              Fabricados en Santiago con plástico recuperado. Grabado láser en escala de grises, tono opuesto al color del producto.
             </p>
-            {/* Trust badges Liquid Dual */}
+            {/* Despacho BlueExpress — plazo real (FIX 3) */}
+            <p className="text-ld-fg-muted text-sm leading-relaxed max-w-lg -mt-2">
+              <span className="font-semibold text-ld-fg">Despacho BlueExpress</span> · 1 día hábil en RM si compras antes de las 14:00. Resto del país: 1 a 3 días hábiles.
+            </p>
+            {/* Trust badges Liquid Dual — envío con plazo (FIX 3), sin "10 años" genérico (FIX 1) */}
             <div className="flex gap-2 flex-wrap pt-2">
               {[
-                { icon: Shield, label: '10 años', sub: 'garantía' },
                 { icon: Truck, label: 'Envío gratis', sub: 'sobre $40K' },
+                { icon: Truck, label: '1 día RM', sub: 'antes 14:00' },
                 { icon: Check, label: '500+', sub: 'reseñas 5★' },
               ].map((b, i) => (
                 <div key={i} className="ld-glass flex-shrink-0 rounded-2xl px-3.5 py-2.5 flex items-center gap-2">
@@ -487,7 +494,7 @@ export default function Shop() {
               </span>
             </h2>
             <p className="text-ld-fg-muted text-sm md:text-base mb-5 leading-relaxed">
-              Cotización con mockup en menos de 24 horas. Precios por volumen y personalización láser UV gratis desde 10 unidades.
+              Cotización con mockup en menos de 24 horas. Precios por volumen y grabado láser gratis desde 10 unidades — en escala de grises, tono opuesto al color. No se imprime a color.
             </p>
             <div className="flex gap-2 flex-wrap">
               <Link to="/b2b/contacto" className="flex-1 sm:flex-initial">
