@@ -18,6 +18,7 @@ import PhoneCountryInput from '@/components/b2b/selfservice/PhoneCountryInput';
 import EngravingPositionPicker from '@/components/producto/EngravingPositionPicker';
 import DeliveryMethodPicker from '@/components/b2b/selfservice/DeliveryMethodPicker';
 import MobileOrderBar from '@/components/b2b/selfservice/MobileOrderBar';
+import MobileNextFab from '@/components/b2b/selfservice/MobileNextFab';
 import GrabadoLaserInfo from '@/components/personalizacion/GrabadoLaserInfo';
 
 const STEPS = ['Productos', 'Empresa', 'Personalización', 'Propuesta'];
@@ -980,6 +981,12 @@ export default function B2BSelfService() {
           onOpen={() => setCartOpen(true)}
           onContinue={() => setStep(1)}
         />
+      )}
+
+      {/* FAB flotante "Siguiente" — centrado, siempre visible, sobre la barra,
+          para que el avance nunca quede tapado en móvil (step 0 con productos). */}
+      {step === 0 && !cartOpen && (
+        <MobileNextFab visible={cart.length > 0} onContinue={() => setStep(1)} />
       )}
 
       {/* Drawer del carrito (solo móvil) — premium glass */}
