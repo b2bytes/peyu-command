@@ -48,6 +48,10 @@ import Gracias from './pages/Gracias';
 import FoundersPresentation from './pages/FoundersPresentation';
 import BrandLab from './pages/BrandLab';
 import PeyuV2 from './pages/PeyuV2';
+import TiendaNueva from './pages/TiendaNueva';
+import CatalogoNuevo from './pages/CatalogoNuevo';
+import ProductoNuevo from './pages/ProductoNuevo';
+import CarritoNuevo from './pages/CarritoNuevo';
 
 // ── ADMIN PAGES (lazy + retry) ───────────────────────────────────────
 // Cargadas on-demand. Cada lazy() está envuelto en lazyWithRetry para
@@ -248,6 +252,12 @@ function App() {
 
               {/* Peyu Commerce OS (Fase 2) - Standalone AISLADA, no toca la tienda viva */}
               <Route path="/v2" element={<PeyuV2 />} />
+
+              {/* Shop B2C v2 - Standalone, AISLADO (carrito_v2). No toca la tienda viva */}
+              <Route path="/TiendaNueva" element={<TiendaNueva />} />
+              <Route path="/CatalogoNuevo" element={<CatalogoNuevo />} />
+              <Route path="/ProductoNuevo" element={<ProductoNuevo />} />
+              <Route path="/CarritoNuevo" element={<CarritoNuevo />} />
 
               {/* Presentación a fundadores - 22 layouts del design system */}
               <Route path="/founders-presentation" element={<FoundersPresentation />} />
