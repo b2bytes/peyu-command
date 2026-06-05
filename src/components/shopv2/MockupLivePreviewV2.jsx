@@ -192,19 +192,21 @@ export default function MockupLivePreviewV2({ productImageUrl, capas = [], onPla
           <div className="w-full h-full bg-gradient-to-br from-[#F0EAE0] to-[#E7D8C6]" />
         )}
 
-        {/* Marco del área técnica de grabado — guía visual del láser */}
-        <div
-          className="absolute pointer-events-none rounded-md border border-dashed border-white/25"
-          style={{
-            left: `${AREA.left}%`, top: `${AREA.top}%`,
-            width: `${AREA_W}%`, height: `${AREA_H}%`,
-            boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.06)',
-          }}
-        >
-          <span className="absolute -top-[18px] left-1/2 -translate-x-1/2 text-[8px] font-bold tracking-wider text-white/45 uppercase whitespace-nowrap">
-            Área de grabado
-          </span>
-        </div>
+        {/* Marco del área técnica de grabado — guía sutil del láser (solo visible
+            al arrastrar). Sin relleno: nunca crea un "cuadrado" sobre el producto. */}
+        {dragging && (
+          <div
+            className="absolute pointer-events-none rounded-md border border-dashed border-[#0F8B6C]/40"
+            style={{
+              left: `${AREA.left}%`, top: `${AREA.top}%`,
+              width: `${AREA_W}%`, height: `${AREA_H}%`,
+            }}
+          >
+            <span className="absolute -top-[16px] left-1/2 -translate-x-1/2 text-[8px] font-bold tracking-wider text-[#0F8B6C]/70 uppercase whitespace-nowrap">
+              Área de grabado
+            </span>
+          </div>
+        )}
 
         {capas.map((c) => {
           const pl = placements[c.id];
