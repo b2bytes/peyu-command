@@ -64,12 +64,13 @@ export default function LiveConfiguratorV2({ carcasas = [] }) {
   const feeTotal = gratis ? 0 : feeUnit * cantidad;
   const total = precioUnit * cantidad + feeTotal;
 
-  // Capas (combinables) para el mockup: frase + diseño PEYU + logo propio.
+  // Capas (combinables) para el mockup. ORDEN FIJO de apilado (arriba→abajo):
+  // 1) Tu logo  2) Diseño PEYU  3) Frase. Mismo orden en mockup y controles.
   const capas = useMemo(() => {
     const out = [];
-    if (pers.frase && pers.texto.trim()) out.push({ id: 'frase', tipo: 'frase', texto: pers.texto });
-    if (pers.peyu && pers.disenoPeyuUrl) out.push({ id: 'peyu', tipo: 'peyu', url: pers.disenoPeyuUrl });
     if (pers.archivo && pers.logoUrl) out.push({ id: 'archivo', tipo: 'archivo', url: pers.logoUrl });
+    if (pers.peyu && pers.disenoPeyuUrl) out.push({ id: 'peyu', tipo: 'peyu', url: pers.disenoPeyuUrl });
+    if (pers.frase && pers.texto.trim()) out.push({ id: 'frase', tipo: 'frase', texto: pers.texto });
     return out;
   }, [pers]);
 

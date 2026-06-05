@@ -91,12 +91,13 @@ export default function ProductoNuevo() {
     [producto, color, displayImg]
   );
 
-  // Capas (combinables) para el mockup en vivo: frase + diseño PEYU + logo propio.
+  // Capas (combinables) para el mockup en vivo. ORDEN FIJO de apilado
+  // (arriba→abajo): 1) Tu logo  2) Diseño PEYU  3) Frase.
   const capas = useMemo(() => {
     const out = [];
-    if (pers.frase && pers.texto.trim()) out.push({ id: 'frase', tipo: 'frase', texto: pers.texto });
-    if (pers.peyu && pers.disenoPeyuUrl) out.push({ id: 'peyu', tipo: 'peyu', url: pers.disenoPeyuUrl });
     if (pers.archivo && pers.logoUrl) out.push({ id: 'archivo', tipo: 'archivo', url: pers.logoUrl });
+    if (pers.peyu && pers.disenoPeyuUrl) out.push({ id: 'peyu', tipo: 'peyu', url: pers.disenoPeyuUrl });
+    if (pers.frase && pers.texto.trim()) out.push({ id: 'frase', tipo: 'frase', texto: pers.texto });
     return out;
   }, [pers]);
 
