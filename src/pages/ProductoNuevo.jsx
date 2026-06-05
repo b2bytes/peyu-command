@@ -2,13 +2,16 @@ import { useState, useEffect, useMemo } from 'react';
 import { useLocation, Link, useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import {
-  ArrowLeft, Recycle, ShieldCheck, Truck, Check, Loader2, ShoppingBag, Sparkles,
+  ArrowLeft, Recycle, ShieldCheck, Truck, Check, Loader2, ShoppingBag, Sparkles, Lock,
 } from 'lucide-react';
 import ShopV2Header from '@/components/shopv2/ShopV2Header';
 import ColorSwatchesV2 from '@/components/shopv2/ColorSwatchesV2';
 import PersonalizacionPickerV2 from '@/components/shopv2/PersonalizacionPickerV2';
 import PriceBreakdownV2 from '@/components/shopv2/PriceBreakdownV2';
 import QtyStepperV2 from '@/components/shopv2/QtyStepperV2';
+import ProductGalleryV2 from '@/components/shopv2/ProductGalleryV2';
+import ProductIncludesV2 from '@/components/shopv2/ProductIncludesV2';
+import StickyBuyBarV2 from '@/components/shopv2/StickyBuyBarV2';
 import { getProductImage, getProductImageForColor } from '@/utils/productImages';
 import { getColoresProducto } from '@/lib/color-parser';
 import {
@@ -17,9 +20,9 @@ import {
 import { addToCartV2, fmtCLP } from '@/lib/shop-v2-cart';
 
 // ════════════════════════════════════════════════════════════════════════
-// /ProductoNuevo?id= — Ficha de producto del Shop v2. Coordina:
-// foto por color real · personalización excluyente · cantidad · precio en vivo
-// · add-to-cart al carrito_v2 (aislado). NO toca lógica legacy.
+// /ProductoNuevo?id= — Ficha de producto del Shop v2 (Tema 6 Conversion Machine).
+// Galería con zoom · swatches con foto real · personalización en vivo · breakdown
+// IVA · incluye/impacto · sticky móvil. Add-to-cart al carrito_v2 (aislado).
 // ════════════════════════════════════════════════════════════════════════
 export default function ProductoNuevo() {
   const location = useLocation();
@@ -36,6 +39,7 @@ export default function ProductoNuevo() {
   const [cantidad, setCantidad] = useState(1);
   const [colorError, setColorError] = useState(false);
   const [added, setAdded] = useState(false);
+  const [galIdx, setGalIdx] = useState(0);
 
   useEffect(() => {
     if (!id) { setLoading(false); return; }
@@ -55,13 +59,20 @@ export default function ProductoNuevo() {
     else setColorId(null);
   }, [colores]);
 
-  // Foto = variante del color elegido (real, NO IA). Si no hay color elegido,
-  // muestra la imagen principal del producto.
-  const displayImg = useMemo(() => {
-    if (!producto) return null;
-    if (color) return getProductImageForColor(producto, color);
-    return getProductImage(producto);
+  // Galería: imagen por color elegido (1ª) + ángulos extra de galeria_urls.
+  const galleryImages = useMemo(() => {
+    if (!producto) return [];
+    const main = color ? getProductImageForColor(producto, color) : getProductImage(producto);
+    const extra = Array.isArray(producto.galeria_urls)
+      ? producto.galeria_urls.filter((u) => typeof u === 'string' && u.startsWith('http') && u !== main)
+      : [];
+    return [main, ...extra].slice(0, 6);
   }, [producto, color]);
+
+  // Al cambiar de color, vuelve a la 1ª imagen (la del color elegido).
+  useEffect(() => { setGalIdx(0); }, [colorId]);
+
+  const displayImg = galleryImages[0] || (producto ? getProductImage(producto) : null);
 
   const precioUnit = producto?.precio_b2c || 9990;
   const moq = producto?.personalizacion_gratis_desde || producto?.moq_personalizacion || MOQ_PERSONALIZACION_GRATIS;
@@ -73,6 +84,10 @@ export default function ProductoNuevo() {
 
   // ¿La opción de personalización elegida está completa?
   const persOk = opcion === 'none' || opcion !== 'frase' || texto.trim().length > 0;
+
+  // Stock/urgencia sutil (Baymard #6): solo si el dato existe y es bajo.
+  const stock = producto?.stock_actual;
+  const stockBajo = typeof stock === 'number' && stock > 0 && stock <= 8;
 
   const handleAdd = () => {
     if (requiereColor && !colorId) {
@@ -102,7 +117,7 @@ export default function ProductoNuevo() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#FBF7EF]">
+      <div className="min-h-screen bg-[#FAF7F2]">
         <ShopV2Header />
         <div className="flex items-center justify-center py-32">
           <Loader2 className="w-8 h-8 text-[#0F8B6C] animate-spin" />
@@ -113,7 +128,7 @@ export default function ProductoNuevo() {
 
   if (!producto) {
     return (
-      <div className="min-h-screen bg-[#FBF7EF] font-inter">
+      <div className="min-h-screen bg-[#FAF7F2] font-inter">
         <ShopV2Header />
         <div className="text-center py-32 px-4">
           <p className="font-bold text-[#2A2420] mb-2">Producto no encontrado</p>
@@ -126,7 +141,7 @@ export default function ProductoNuevo() {
   const esCompostable = producto.material?.includes('Trigo') || producto.categoria === 'Carcasas B2C';
 
   return (
-    <div className="min-h-screen bg-[#FBF7EF] font-inter text-[#2A2420]">
+    <div className="min-h-screen bg-[#FAF7F2] font-inter text-[#2A2420] pb-24 lg:pb-0">
       <ShopV2Header />
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6">
@@ -134,22 +149,16 @@ export default function ProductoNuevo() {
           <ArrowLeft className="w-4 h-4" /> Volver a la tienda
         </Link>
 
-        <div className="grid lg:grid-cols-2 gap-6 lg:gap-10">
-          {/* GALERÍA */}
+        <div className="grid lg:grid-cols-2 gap-6 lg:gap-12">
+          {/* GALERÍA con zoom */}
           <div className="lg:sticky lg:top-24 self-start">
-            <div className="relative aspect-square rounded-3xl overflow-hidden bg-white border border-[#E7D8C6] shadow-lg">
-              <img
-                src={displayImg}
-                alt={producto.nombre}
-                className="w-full h-full object-cover"
-                referrerPolicy="no-referrer"
-                onError={(e) => { e.target.src = getProductImage(producto); }}
-              />
-              <span className="absolute top-3 left-3 inline-flex items-center gap-1 bg-white/90 backdrop-blur text-[11px] font-bold px-2.5 py-1.5 rounded-full text-[#0F8B6C] shadow-sm">
-                <Recycle className="w-3.5 h-3.5" />
-                {esCompostable ? 'Compostable' : '100% Reciclado'}
-              </span>
-            </div>
+            <ProductGalleryV2
+              images={galleryImages}
+              active={galIdx}
+              onSelect={setGalIdx}
+              badge={esCompostable ? 'Compostable' : '100% Reciclado'}
+              fallback={getProductImage(producto)}
+            />
           </div>
 
           {/* CONFIGURADOR */}
@@ -158,24 +167,30 @@ export default function ProductoNuevo() {
               <p className="text-xs font-bold uppercase tracking-wider text-[#A78B6F] mb-1.5">
                 {producto.categoria?.replace(' B2C', '')}
               </p>
-              <h1 className="font-fraunces text-3xl sm:text-4xl leading-tight mb-2">{producto.nombre}</h1>
+              <h1 className="font-fraunces text-3xl sm:text-4xl leading-[1.1] mb-2.5">{producto.nombre}</h1>
               <p className="font-poppins font-bold text-2xl text-[#0F8B6C]">{fmtCLP(precioUnit)}</p>
+              {stockBajo && (
+                <p className="inline-flex items-center gap-1.5 mt-2 text-xs font-bold text-[#D96B4D] bg-[#D96B4D]/10 px-2.5 py-1 rounded-full">
+                  🔥 Solo quedan {stock} unidades
+                </p>
+              )}
               {producto.descripcion && (
                 <p className="text-sm text-[#4B4F54] leading-relaxed mt-3">{producto.descripcion}</p>
               )}
             </div>
 
-            {/* Color */}
+            {/* Color — swatches visibles (Baymard #1) */}
             {colores.length > 0 && (
               <ColorSwatchesV2
                 colores={colores}
                 value={colorId}
                 onSelect={(v) => { setColorId(v); setColorError(false); }}
                 error={colorError}
+                producto={producto}
               />
             )}
 
-            {/* Personalización */}
+            {/* Personalización en vivo (Baymard #5) */}
             <div>
               <div className="flex items-center gap-2 mb-2.5">
                 <Sparkles className="w-4 h-4 text-[#D96B4D]" />
@@ -193,7 +208,7 @@ export default function ProductoNuevo() {
                     value={texto}
                     onChange={(e) => setTexto(e.target.value.slice(0, 20))}
                     placeholder="Tu nombre, frase o empresa..."
-                    className="w-full h-11 px-4 rounded-xl bg-white border border-[#E7D8C6] text-center font-bold tracking-wide text-[#2A2420] placeholder:text-[#A78B6F] focus:outline-none focus:border-[#0F8B6C] focus:ring-2 focus:ring-[#0F8B6C]/15"
+                    className="w-full h-11 px-4 rounded-xl bg-white border border-[#EBE3D6] text-center font-bold tracking-wide text-[#2A2420] placeholder:text-[#A78B6F] focus:outline-none focus:border-[#0F8B6C] focus:ring-2 focus:ring-[#0F8B6C]/15"
                   />
                   <p className="text-[11px] text-right text-[#A78B6F] mt-1 font-bold">{texto.length}/20</p>
                 </div>
@@ -218,7 +233,7 @@ export default function ProductoNuevo() {
               <QtyStepperV2 value={cantidad} onChange={setCantidad} min={1} />
             </div>
 
-            {/* Precio en vivo */}
+            {/* Precio en vivo con desglose IVA (Baymard #4) */}
             <PriceBreakdownV2
               precioUnit={precioUnit}
               cantidad={cantidad}
@@ -228,11 +243,11 @@ export default function ProductoNuevo() {
               gratis={gratis}
             />
 
-            {/* CTA */}
+            {/* CTA desktop */}
             <button
               onClick={handleAdd}
               disabled={added || !persOk}
-              className="w-full h-14 rounded-2xl bg-[#0F8B6C] hover:bg-[#0B6E55] text-white font-bold text-base flex items-center justify-center gap-2 shadow-lg shadow-[#0F8B6C]/20 transition-all hover:scale-[1.01] disabled:opacity-60 disabled:hover:scale-100"
+              className="hidden lg:flex w-full h-14 rounded-2xl bg-[#0F8B6C] hover:bg-[#0B6E55] text-white font-bold text-base items-center justify-center gap-2 shadow-lg shadow-[#0F8B6C]/20 transition-all hover:scale-[1.01] disabled:opacity-60 disabled:hover:scale-100"
             >
               {added ? (
                 <><Check className="w-5 h-5" /> ¡Agregado!</>
@@ -241,22 +256,28 @@ export default function ProductoNuevo() {
               )}
             </button>
 
-            {/* Trust */}
-            <div className="grid grid-cols-3 gap-2 pt-1">
+            {/* Trust badges (Baymard #6) */}
+            <div className="grid grid-cols-3 gap-2">
               {[
-                { icon: ShieldCheck, t: 'Garantía 10 años' },
-                { icon: Truck, t: 'Envío a todo Chile' },
-                { icon: Recycle, t: 'Plástico reciclado' },
+                { icon: Recycle, t: '100% reciclado' },
+                { icon: Truck, t: 'Envío BlueExpress' },
+                { icon: Lock, t: 'Pago seguro' },
               ].map((b, i) => (
-                <div key={i} className="flex flex-col items-center gap-1.5 bg-white border border-[#E7D8C6] rounded-xl p-3 text-center">
+                <div key={i} className="flex flex-col items-center gap-1.5 bg-white border border-[#EBE3D6] rounded-xl p-3 text-center">
                   <b.icon className="w-4 h-4 text-[#0F8B6C]" />
                   <span className="text-[10px] font-bold text-[#4B4F54] leading-tight">{b.t}</span>
                 </div>
               ))}
             </div>
+
+            {/* Incluye + impacto ambiental (Baymard #7) */}
+            <ProductIncludesV2 producto={producto} cantidad={cantidad} />
           </div>
         </div>
       </div>
+
+      {/* Sticky precio + CTA móvil (Baymard #2) */}
+      <StickyBuyBarV2 total={total} onAdd={handleAdd} added={added} disabled={!persOk} />
     </div>
   );
 }
