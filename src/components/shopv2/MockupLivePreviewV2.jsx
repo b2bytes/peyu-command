@@ -228,6 +228,15 @@ export default function MockupLivePreviewV2({ productImageUrl, capas = [], onPla
           </div>
         )}
 
+        {/* Viñeteado sutil: da profundidad a la superficie para que el grabado
+            se asiente con realismo (no flote plano). Solo si hay capas. */}
+        {capas.length > 0 && (
+          <div className="absolute inset-0 pointer-events-none" style={{
+            background: 'radial-gradient(115% 90% at 50% 42%, transparent 55%, rgba(0,0,0,0.10) 100%)',
+            mixBlendMode: 'multiply',
+          }} />
+        )}
+
         {capas.map((c) => {
           const pl = placements[c.id];
           if (!pl) return null;
@@ -242,14 +251,15 @@ export default function MockupLivePreviewV2({ productImageUrl, capas = [], onPla
                 onMouseDown={startDrag} onTouchStart={startDrag}>
                 {isActive && <span className="absolute -inset-2 rounded-lg border border-dashed border-[#0F8B6C]/70 pointer-events-none" />}
                 <span style={{
-                  fontSize: `${pl.size * 0.42}px`, fontFamily: 'monospace', fontWeight: 'bold',
-                  color: tint === 'light' ? 'rgba(245,245,245,0.95)' : 'rgba(18,18,18,0.92)',
-                  letterSpacing: '0.14em', whiteSpace: 'nowrap',
+                  fontSize: `${pl.size * 0.42}px`, fontFamily: '"Hanken Grotesk", sans-serif', fontWeight: 600,
+                  color: tint === 'light' ? 'rgba(236,236,236,0.9)' : 'rgba(34,34,34,0.9)',
+                  letterSpacing: '0.12em', whiteSpace: 'nowrap',
                   maxWidth: '38vw', overflow: 'hidden', textOverflow: 'ellipsis', display: 'inline-block',
+                  // Surco del láser: sombra hacia abajo + reflejo arriba (relieve real, sutil).
                   textShadow: tint === 'light'
-                    ? '0 1px 0 rgba(0,0,0,0.55), 0 -1px 0 rgba(255,255,255,0.15)'
-                    : '0 1px 0 rgba(255,255,255,0.5), 0 -1px 0 rgba(0,0,0,0.2)',
-                  mixBlendMode: tint === 'light' ? 'screen' : 'multiply',
+                    ? '0 1px 0.5px rgba(0,0,0,0.5), 0 -0.5px 0.5px rgba(255,255,255,0.2)'
+                    : '0 1px 0.5px rgba(255,255,255,0.45), 0 -0.5px 0.5px rgba(0,0,0,0.25)',
+                  mixBlendMode: tint === 'light' ? 'soft-light' : 'multiply',
                 }}>{c.texto.toUpperCase()}</span>
               </div>
             );
@@ -262,21 +272,50 @@ export default function MockupLivePreviewV2({ productImageUrl, capas = [], onPla
           if (fresh) lastEngRef.current[c.id] = fresh;
           const eng = fresh || lastEngRef.current[c.id];
           if (!eng) return null;
-          // Si el procesado NO logró limpiar el fondo (CORS/tainted), NO aplicamos
-          // blend ennegrecedor → mostramos el diseño limpio (sin caja negra).
-          const blend = !eng.ok ? 'normal' : (tint === 'light' ? 'screen' : 'multiply');
+
+          // Surco del láser: sombra hacia abajo + reflejo arriba → el grabado se
+          // "hunde" en la superficie (relieve real, no calcomanía pegada).
+          const engraveFx = tint === 'light'
+            ? 'drop-shadow(0 1px 0.5px rgba(0,0,0,0.5)) drop-shadow(0 -0.5px 0.5px rgba(255,255,255,0.22))'
+            : 'drop-shadow(0 1px 0.5px rgba(255,255,255,0.45)) drop-shadow(0 -0.5px 0.5px rgba(0,0,0,0.3))';
+
+          // SVG line-art: teñido completo con máscara CSS → grabado vectorial nítido.
+          if (eng.svg) {
+            const inkColor = tint === 'light' ? 'rgba(236,236,236,0.9)' : 'rgba(38,38,38,0.88)';
+            return (
+              <div key={c.id} className="absolute cursor-move"
+                style={{ left: `${pl.x}%`, top: `${pl.y}%`, width: `${pl.size}%`, transform: 'translate(-50%, -50%)', zIndex: isActive ? 20 : 10 }}
+                onMouseDown={startDrag} onTouchStart={startDrag}>
+                {isActive && <span className="absolute -inset-1.5 rounded-lg border border-dashed border-[#0F8B6C]/70 pointer-events-none" />}
+                <div className="w-full pointer-events-none" style={{
+                  aspectRatio: '1 / 1', backgroundColor: inkColor,
+                  WebkitMaskImage: `url("${eng.dataUrl}")`, maskImage: `url("${eng.dataUrl}")`,
+                  WebkitMaskRepeat: 'no-repeat', maskRepeat: 'no-repeat',
+                  WebkitMaskPosition: 'center', maskPosition: 'center',
+                  WebkitMaskSize: 'contain', maskSize: 'contain',
+                  filter: engraveFx,
+                  mixBlendMode: tint === 'light' ? 'soft-light' : 'multiply',
+                  opacity: 0.92,
+                }} />
+              </div>
+            );
+          }
+
+          // Raster procesado: blend soft-light integra el grabado con la textura
+          // del producto (en vez del brillo plano que se veía "pegado").
+          const blend = !eng.ok ? 'normal' : (tint === 'light' ? 'soft-light' : 'multiply');
           const fx = !eng.ok
-            ? 'contrast(1.05) drop-shadow(0 1px 2px rgba(0,0,0,0.25))'
+            ? 'contrast(1.05) drop-shadow(0 1px 1px rgba(0,0,0,0.2))'
             : (tint === 'light'
-              ? 'brightness(1.7) contrast(1.05) drop-shadow(0 1px 0 rgba(0,0,0,0.45))'
-              : 'contrast(1.15) drop-shadow(0 1px 1px rgba(255,255,255,0.35))');
+              ? `brightness(1.35) contrast(1.08) ${engraveFx}`
+              : `contrast(1.12) ${engraveFx}`);
           return (
             <div key={c.id} className="absolute cursor-move"
               style={{
                 left: `${pl.x}%`, top: `${pl.y}%`, width: `${pl.size}%`, transform: 'translate(-50%, -50%)',
                 zIndex: isActive ? 20 : 10,
                 mixBlendMode: blend,
-                opacity: 0.9,
+                opacity: 0.92,
                 filter: fx,
               }}
               onMouseDown={startDrag} onTouchStart={startDrag}>

@@ -71,6 +71,15 @@ function colorDist(r1, g1, b1, r2, g2, b2) {
  */
 export async function engraveLogo(input, tint = 'dark') {
   const srcUrl = typeof input === 'string' ? input : URL.createObjectURL(input);
+
+  // SVG line-art: NO se rasteriza ni se procesa por píxeles. Se devuelve tal cual
+  // marcado como isSvg → el compositor lo tiñe por completo con una máscara CSS,
+  // logrando un grabado vectorial nítido (sin fondo, sin caja, sin pixelado).
+  const isSvg = typeof input === 'string' && /\.svg(\?|$)/i.test(input);
+  if (isSvg) {
+    return { dataUrl: srcUrl, processed: true, isSvg: true };
+  }
+
   try {
     const img = await loadImage(srcUrl);
 
@@ -169,12 +178,12 @@ export async function engraveLogo(input, tint = 'dark') {
     // toDataURL lanza SecurityError si el canvas quedó "tainted" (logo remoto sin
     // CORS). En ese caso NO podemos limpiar el fondo → devolvemos processed:false
     // para que el preview NO aplique blend ennegrecedor (evita la caja negra).
-    return { dataUrl: canvas.toDataURL('image/png'), processed: true };
+    return { dataUrl: canvas.toDataURL('image/png'), processed: true, isSvg: false };
   } catch (e) {
     // Fallback: nunca devolvemos caja negra — devolvemos el logo tal cual y
     // marcamos processed:false para que el preview lo muestre limpio (sin blend
     // multiply que lo volvería un bloque oscuro).
     console.warn('engraveLogo falló, usando logo original:', e?.message);
-    return { dataUrl: srcUrl, processed: false };
+    return { dataUrl: srcUrl, processed: false, isSvg: false };
   }
 }

@@ -49,6 +49,14 @@ export default function CartItemThumbV2({ imagen, capas = [], alt }) {
         <img src={imagen} alt={alt} referrerPolicy="no-referrer" className="absolute inset-0 w-full h-full object-cover" />
       )}
 
+      {/* Viñeteado sutil: profundidad de superficie para asentar el grabado. */}
+      {capas.length > 0 && (
+        <div className="absolute inset-0 pointer-events-none" style={{
+          background: 'radial-gradient(115% 90% at 50% 42%, transparent 55%, rgba(0,0,0,0.10) 100%)',
+          mixBlendMode: 'multiply',
+        }} />
+      )}
+
       {capas.map((c, i) => {
         const x = typeof c.x === 'number' ? c.x : 50;
         const y = typeof c.y === 'number' ? c.y : 50;
@@ -60,12 +68,14 @@ export default function CartItemThumbV2({ imagen, capas = [], alt }) {
           return (
             <span key={i} className="absolute" style={{
               left: `${x}%`, top: `${y}%`, transform: 'translate(-50%, -50%)',
-              fontSize: `${size * 0.34}px`, fontFamily: 'monospace', fontWeight: 'bold',
-              color: tint === 'light' ? 'rgba(245,245,245,0.95)' : 'rgba(18,18,18,0.92)',
+              fontSize: `${size * 0.34}px`, fontFamily: '"Hanken Grotesk", sans-serif', fontWeight: 600,
+              color: tint === 'light' ? 'rgba(236,236,236,0.9)' : 'rgba(34,34,34,0.9)',
               letterSpacing: '0.1em', whiteSpace: 'nowrap', maxWidth: '70%',
               overflow: 'hidden', textOverflow: 'ellipsis',
-              textShadow: tint === 'light' ? '0 1px 0 rgba(0,0,0,0.5)' : '0 1px 0 rgba(255,255,255,0.4)',
-              mixBlendMode: tint === 'light' ? 'screen' : 'multiply',
+              textShadow: tint === 'light'
+                ? '0 0.5px 0.5px rgba(0,0,0,0.5), 0 -0.5px 0.5px rgba(255,255,255,0.2)'
+                : '0 0.5px 0.5px rgba(255,255,255,0.45), 0 -0.5px 0.5px rgba(0,0,0,0.25)',
+              mixBlendMode: tint === 'light' ? 'soft-light' : 'multiply',
             }}>{c.texto.toUpperCase()}</span>
           );
         }
@@ -74,8 +84,13 @@ export default function CartItemThumbV2({ imagen, capas = [], alt }) {
         const eng = c.url ? engraved[c.url] : null;
         if (!eng) return null;
 
+        // Surco del láser: sombra abajo + reflejo arriba → relieve real, sutil.
+        const engraveFx = tint === 'light'
+          ? 'drop-shadow(0 0.5px 0.5px rgba(0,0,0,0.5)) drop-shadow(0 -0.5px 0.5px rgba(255,255,255,0.22))'
+          : 'drop-shadow(0 0.5px 0.5px rgba(255,255,255,0.45)) drop-shadow(0 -0.5px 0.5px rgba(0,0,0,0.3))';
+
         if (eng.svg) {
-          const ink = tint === 'light' ? 'rgba(238,238,238,0.92)' : 'rgba(40,40,40,0.9)';
+          const ink = tint === 'light' ? 'rgba(236,236,236,0.9)' : 'rgba(38,38,38,0.88)';
           return (
             <div key={i} className="absolute" style={{
               left: `${x}%`, top: `${y}%`, width: `${size}%`, aspectRatio: '1 / 1',
@@ -83,17 +98,18 @@ export default function CartItemThumbV2({ imagen, capas = [], alt }) {
               WebkitMaskImage: `url("${eng.dataUrl}")`, maskImage: `url("${eng.dataUrl}")`,
               WebkitMaskRepeat: 'no-repeat', maskRepeat: 'no-repeat',
               WebkitMaskPosition: 'center', maskPosition: 'center',
-              WebkitMaskSize: 'contain', maskSize: 'contain', opacity: 0.95,
+              WebkitMaskSize: 'contain', maskSize: 'contain',
+              filter: engraveFx, mixBlendMode: tint === 'light' ? 'soft-light' : 'multiply', opacity: 0.92,
             }} />
           );
         }
 
-        const blend = !eng.ok ? 'normal' : (tint === 'light' ? 'screen' : 'multiply');
-        const fx = !eng.ok ? 'contrast(1.05)' : (tint === 'light' ? 'brightness(1.7) contrast(1.05)' : 'contrast(1.15)');
+        const blend = !eng.ok ? 'normal' : (tint === 'light' ? 'soft-light' : 'multiply');
+        const fx = !eng.ok ? 'contrast(1.05)' : (tint === 'light' ? `brightness(1.35) contrast(1.08) ${engraveFx}` : `contrast(1.12) ${engraveFx}`);
         return (
           <img key={i} src={eng.dataUrl} alt="" draggable={false} className="absolute" style={{
             left: `${x}%`, top: `${y}%`, width: `${size}%`, transform: 'translate(-50%, -50%)',
-            mixBlendMode: blend, opacity: 0.9, filter: fx,
+            mixBlendMode: blend, opacity: 0.92, filter: fx,
           }} />
         );
       })}
