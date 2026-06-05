@@ -15,7 +15,7 @@ export default function MobileOrderBar({ cart, subtotalEstimado, onOpen, onConti
 
   return (
     <div
-      className="lg:hidden fixed bottom-0 inset-x-0 z-40 ld-glass-strong border-t border-white/15 shadow-[0_-8px_24px_-8px_rgba(0,0,0,0.45)]"
+      className="lg:hidden fixed bottom-0 inset-x-0 z-[60] bg-slate-900/95 backdrop-blur-2xl border-t border-white/15 shadow-[0_-8px_24px_-8px_rgba(0,0,0,0.45)]"
       style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 0.625rem)' }}
     >
       <div className="px-3 pt-2.5 flex items-center gap-2.5">

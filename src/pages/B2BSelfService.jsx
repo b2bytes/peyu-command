@@ -435,7 +435,7 @@ export default function B2BSelfService() {
 
       </div>
 
-      <div className="max-w-7xl mx-auto px-3 sm:px-6 py-4 sm:py-6 space-y-5 pb-28 lg:pb-28">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 py-4 sm:py-6 space-y-5 pb-32 lg:pb-28">
         {/* Steps indicator premium */}
         <StepperProgress steps={STEPS} current={step} />
 
