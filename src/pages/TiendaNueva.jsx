@@ -104,7 +104,7 @@ export default function TiendaNueva() {
           </div>
         ) : (
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-            {destacados.map((p) => <ProductCardV2 key={p.id} producto={p} />)}
+            {destacados.map((p, i) => <ProductCardV2 key={p.id} producto={p} index={i} />)}
           </div>
         )}
       </section>

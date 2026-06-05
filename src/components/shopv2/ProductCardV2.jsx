@@ -4,7 +4,7 @@ import { getProductImage } from '@/utils/productImages';
 import { fmtCLP } from '@/lib/shop-v2-cart';
 
 // Card de producto del Shop v2 (estética crema). Linkea a /ProductoNuevo?id=
-export default function ProductCardV2({ producto }) {
+export default function ProductCardV2({ producto, index = 0 }) {
   if (!producto) return null;
   const precio = producto.precio_b2c || 9990;
   const esCompostable = producto.material?.includes('Trigo') || producto.categoria === 'Carcasas B2C';
@@ -12,7 +12,8 @@ export default function ProductCardV2({ producto }) {
   return (
     <Link
       to={`/ProductoNuevo?id=${producto.id}`}
-      className="group block bg-white rounded-2xl border border-[#E7D8C6] overflow-hidden hover:shadow-lg hover:border-[#0F8B6C]/40 transition-all hover:-translate-y-0.5"
+      style={{ animationDelay: `${Math.min(index, 11) * 50}ms` }}
+      className="peyu-card-enter group block bg-white rounded-2xl border border-[#E7D8C6] overflow-hidden hover:shadow-lg hover:border-[#0F8B6C]/40 transition-all hover:-translate-y-0.5"
     >
       <div className="relative aspect-square bg-[#FBF7EF] overflow-hidden">
         <img

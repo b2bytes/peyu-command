@@ -110,7 +110,7 @@ export default function CatalogoNuevo() {
           <>
             <p className="text-xs text-[#A78B6F] mb-3 font-semibold">{filtrados.length} productos</p>
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-              {filtrados.map((p) => <ProductCardV2 key={p.id} producto={p} />)}
+              {filtrados.map((p, i) => <ProductCardV2 key={p.id} producto={p} index={i} />)}
             </div>
           </>
         )}

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ShoppingBag, Recycle } from 'lucide-react';
 import { cartCountV2, subscribeCartV2 } from '@/lib/shop-v2-cart';
@@ -7,11 +7,21 @@ import { cartCountV2, subscribeCartV2 } from '@/lib/shop-v2-cart';
 export default function ShopV2Header() {
   const navigate = useNavigate();
   const [count, setCount] = useState(0);
+  const [pulse, setPulse] = useState(false);
+  const first = useRef(true);
 
   useEffect(() => {
     setCount(cartCountV2());
     return subscribeCartV2(() => setCount(cartCountV2()));
   }, []);
+
+  // Pulso del bubble cuando cambia el contador (salta al agregar al carrito).
+  useEffect(() => {
+    if (first.current) { first.current = false; return; }
+    setPulse(true);
+    const t = setTimeout(() => setPulse(false), 400);
+    return () => clearTimeout(t);
+  }, [count]);
 
   return (
     <header className="sticky top-0 z-40 bg-[#FBF7EF]/85 backdrop-blur-xl border-b border-[#E7D8C6]">
@@ -38,7 +48,7 @@ export default function ShopV2Header() {
           <ShoppingBag className="w-4 h-4 text-[#0F8B6C]" />
           <span className="hidden sm:inline">Carrito</span>
           {count > 0 && (
-            <span className="absolute -top-1.5 -right-1.5 min-w-5 h-5 px-1 rounded-full bg-[#D96B4D] text-white text-[11px] font-bold flex items-center justify-center shadow">
+            <span className={`absolute -top-1.5 -right-1.5 min-w-5 h-5 px-1 rounded-full bg-[#D96B4D] text-white text-[11px] font-bold flex items-center justify-center shadow transition-transform ${pulse ? 'scale-125' : 'scale-100'}`}>
               {count}
             </span>
           )}
