@@ -14,7 +14,9 @@ export default function B2BLogoMockup({ producto }) {
   const [error, setError] = useState('');
   const inputRef = useRef(null);
 
-  const productImg = getProductImage(producto);
+  // Para el mockup siempre usamos la imagen BASE LIMPIA (sin logo PEYU grabado de fábrica).
+  // Si aún no se generó la versión limpia, caemos a la imagen principal.
+  const productImg = producto?.imagen_base_limpia_url || getProductImage(producto);
 
   const handleFile = async (file) => {
     if (!file) return;
