@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback, forwardRef, useImperativeHandle } from 'react';
-import { Move, Sparkles, Loader2, Type, Palette, Upload, Wand2 } from 'lucide-react';
+import { Move, Sparkles, Loader2, Type, Palette, Upload, Wand2, Maximize2, X } from 'lucide-react';
 import { engraveLogo, detectImageTone } from '@/lib/logo-engraver';
 import EngravedLayer from '@/components/shopv2/EngravedLayer';
 import html2canvas from 'html2canvas';
@@ -226,8 +226,39 @@ const MockupLivePreviewV2 = forwardRef(function MockupLivePreviewV2({ productIma
   const hasContent = capas.length > 0;
   const multiCapas = capas.length > 1;
 
+  const [modalOpen, setModalOpen] = useState(false);
+
   return (
     <div className="space-y-3">
+      {/* Modal de preview grande (mobile) */}
+      {modalOpen && (
+        <div
+          className="fixed inset-0 z-[100] flex items-center justify-center p-4"
+          style={{ background: 'rgba(44,24,16,.7)', backdropFilter: 'blur(8px)' }}
+          onClick={() => setModalOpen(false)}
+        >
+          <div
+            className="relative w-full max-w-sm rounded-3xl overflow-hidden"
+            style={{ background: '#FAF7F2', border: '1.5px solid #D4C4B0' }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              onClick={() => setModalOpen(false)}
+              className="absolute top-3 right-3 z-10 w-8 h-8 rounded-full flex items-center justify-center"
+              style={{ background: 'rgba(248,243,237,.9)', border: '1px solid #D4C4B0' }}
+            >
+              <X className="w-4 h-4" style={{ color: '#7A6050' }} />
+            </button>
+            <div className="aspect-square">
+              {imgSrc && <img src={imgSrc} alt="Mockup" className="w-full h-full object-cover" />}
+            </div>
+            <div className="px-4 py-3">
+              <p className="text-xs font-bold text-center" style={{ color: '#7A6050' }}>Vista previa referencial · El grabado láser real puede variar ligeramente</p>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div
         ref={containerRef}
         className="relative aspect-square rounded-[1.5rem] overflow-hidden bg-[#FAF7F2] border border-[#EBE3D6] select-none touch-none"
@@ -327,6 +358,16 @@ const MockupLivePreviewV2 = forwardRef(function MockupLivePreviewV2({ productIma
           <Sparkles className="w-3 h-3" /> Vista previa
         </span>
 
+        {/* Botón "Ver grande" en mobile */}
+        <button
+          type="button"
+          onClick={() => setModalOpen(true)}
+          className="sm:hidden absolute top-3 right-3 w-8 h-8 rounded-full flex items-center justify-center shadow-sm"
+          style={{ background: 'rgba(255,255,255,.9)', border: '1px solid #D4C4B0' }}
+        >
+          <Maximize2 className="w-3.5 h-3.5" style={{ color: '#7A6050' }} />
+        </button>
+
         {processing && (
           <div className="absolute bottom-3 left-3 bg-white/90 backdrop-blur px-2 py-1 rounded-md flex items-center gap-1.5 shadow-sm">
             <Loader2 className="w-3 h-3 text-[#0F8B6C] animate-spin" />
@@ -338,46 +379,53 @@ const MockupLivePreviewV2 = forwardRef(function MockupLivePreviewV2({ productIma
         </span>
       </div>
 
-      {/* Controles por capa: selecciona, ajusta tamaño y centra cada una */}
+      {/* Controles por capa: compactos en mobile */}
       {hasContent && (
-        <div className="space-y-2">
+        <div className="rounded-2xl overflow-hidden" style={{ border: '1.5px solid #D4C4B0', background: 'white' }}>
           {multiCapas && (
             <button
               type="button"
               onClick={autoAcomodar}
-              className="w-full flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-[#0F8B6C]/8 border border-[#0F8B6C]/25 text-[#0F8B6C] hover:bg-[#0F8B6C]/12 text-[11px] font-bold transition-all"
+              className="w-full flex items-center justify-center gap-1.5 px-4 py-2.5 text-[11px] font-bold transition-all"
+              style={{ borderBottom: '1px solid #EDE3D6', color: '#8BAD8A', background: 'rgba(139,173,138,.06)' }}
             >
               <Wand2 className="w-3.5 h-3.5" /> Acomodar automáticamente
             </button>
           )}
-          {capas.map((c) => {
-            const pl = placements[c.id];
-            if (!pl) return null;
-            const Icon = ICONO[c.tipo] || Palette;
-            const isActive = activeId === c.id;
-            return (
-              <div
-                key={c.id}
-                onClick={() => setActiveId(c.id)}
-                className={`flex items-center gap-2 sm:gap-2.5 rounded-xl border px-2.5 sm:px-3 py-2 cursor-pointer transition-all ${
-                  isActive ? 'border-[#0F8B6C] bg-[#0F8B6C]/5' : 'border-[#EBE3D6] bg-white'
-                }`}
-              >
-                <Icon className={`w-3.5 h-3.5 flex-shrink-0 ${isActive ? 'text-[#0F8B6C]' : 'text-[#A78B6F]'}`} />
-                <span className="text-[11px] font-bold text-[#2A2420] w-14 sm:w-20 flex-shrink-0 truncate">{NOMBRE[c.tipo]}</span>
-                <input
-                  type="range" min="12" max={c.tipo === 'frase' ? (esCarcasa ? 40 : 55) : (esCarcasa ? 34 : 52)} value={pl.size}
-                  onChange={(e) => { setActiveId(c.id); setSize(c.id, Number(e.target.value)); }}
-                  className="flex-1 min-w-0 accent-[#0F8B6C]"
-                  onClick={(e) => e.stopPropagation()}
-                />
-              </div>
-            );
-          })}
-          <p className="text-[10px] text-[#A78B6F] leading-relaxed flex items-start gap-1">
-            <Move className="w-3 h-3 mt-0.5 flex-shrink-0" />
-            Arrastra cada capa dentro del <strong>área de grabado</strong>. El grabado láser UV real respeta exactamente esta zona.
-          </p>
+          <div className="divide-y" style={{ '--tw-divide-color': '#EDE3D6' }}>
+            {capas.map((c) => {
+              const pl = placements[c.id];
+              if (!pl) return null;
+              const Icon = ICONO[c.tipo] || Palette;
+              const isActive = activeId === c.id;
+              return (
+                <div
+                  key={c.id}
+                  onClick={() => setActiveId(c.id)}
+                  className="flex items-center gap-2 px-3 py-2.5 cursor-pointer transition-colors"
+                  style={{ background: isActive ? 'rgba(15,139,108,.04)' : 'white' }}
+                >
+                  <Icon className="w-3.5 h-3.5 flex-shrink-0" style={{ color: isActive ? '#0F8B6C' : '#A08070' }} />
+                  <span className="text-[11px] font-bold w-12 flex-shrink-0" style={{ color: '#2C1810' }}>{NOMBRE[c.tipo]}</span>
+                  <input
+                    type="range" min="12"
+                    max={c.tipo === 'frase' ? (esCarcasa ? 40 : 55) : (esCarcasa ? 34 : 52)}
+                    value={pl.size}
+                    onChange={(e) => { setActiveId(c.id); setSize(c.id, Number(e.target.value)); }}
+                    className="flex-1 min-w-0 h-1.5 accent-[#0F8B6C]"
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                  <span className="text-[9px] font-bold w-6 text-right flex-shrink-0" style={{ color: '#A08070' }}>{Math.round(pl.size)}</span>
+                </div>
+              );
+            })}
+          </div>
+          <div className="px-3 py-2.5 flex items-center gap-1.5" style={{ borderTop: '1px solid #EDE3D6' }}>
+            <Move className="w-3 h-3 flex-shrink-0" style={{ color: '#A08070' }} />
+            <p className="text-[10px]" style={{ color: '#A08070' }}>
+              Arrastra sobre la imagen para posicionar · Toca <strong style={{ color: '#2C1810' }}>Ver grande</strong> para zoom
+            </p>
+          </div>
         </div>
       )}
     </div>

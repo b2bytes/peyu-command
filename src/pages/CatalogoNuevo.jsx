@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { useLocation } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { Search, SlidersHorizontal, PackageOpen, Smartphone } from 'lucide-react';
+import MobileNavBarV2 from '@/components/shopv2/MobileNavBarV2';
 import ShopV2Header from '@/components/shopv2/ShopV2Header';
 import CheckoutStepperV2 from '@/components/shopv2/CheckoutStepperV2';
 import ProductCardV2 from '@/components/shopv2/ProductCardV2';
@@ -70,7 +71,7 @@ export default function CatalogoNuevo() {
     c === 'Todos' ? 'Todos' : CATEGORIAS_V2.find((x) => x.cat === c)?.label || c;
 
   return (
-    <div className="min-h-screen font-inter" style={{ background: '#F8F3ED', color: '#2C1810' }}>
+    <div className="min-h-screen font-inter pb-16 lg:pb-0" style={{ background: '#F8F3ED', color: '#2C1810' }}>
       <ShopV2Header />
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-7">
@@ -161,6 +162,8 @@ export default function CatalogoNuevo() {
       <footer className="py-8 text-center text-xs mt-6" style={{ borderTop: '1px solid #D4C4B0', color: '#A08070' }}>
         PEYU Chile · Plástico reciclado · Hecho en Santiago 🇨🇱
       </footer>
+
+      <MobileNavBarV2 />
     </div>
   );
 }

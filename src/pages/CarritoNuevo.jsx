@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ShoppingBag, Trash2, ArrowRight, Recycle, ArrowLeft, ShieldCheck, Tag } from 'lucide-react';
+import { ShoppingBag, Trash2, ArrowRight, Recycle, ArrowLeft, ShieldCheck } from 'lucide-react';
+import MobileNavBarV2 from '@/components/shopv2/MobileNavBarV2';
 import ShopV2Header from '@/components/shopv2/ShopV2Header';
 import CheckoutStepperV2 from '@/components/shopv2/CheckoutStepperV2';
 import StepNavV2 from '@/components/shopv2/StepNavV2';
@@ -62,7 +63,8 @@ export default function CarritoNuevo() {
 
       <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6">
         <CheckoutStepperV2 current="carrito" />
-        <Link to="/CatalogoNuevo" className="inline-flex items-center gap-1.5 text-sm font-bold mb-5 transition-colors lg:hidden" style={{ color: '#7A6050' }}>
+        {/* Link solo desktop — mobile usa el navbar inferior */}
+        <Link to="/CatalogoNuevo" className="hidden lg:inline-flex items-center gap-1.5 text-sm font-bold mb-5 transition-colors" style={{ color: '#7A6050' }}>
           <ArrowLeft className="w-4 h-4" /> Seguir comprando
         </Link>
 
@@ -135,8 +137,8 @@ export default function CarritoNuevo() {
             </div>
           </div>
 
-          {/* Resumen */}
-          <div className="lg:sticky lg:top-24 self-start">
+          {/* Resumen — solo visible en desktop */}
+          <div className="hidden lg:block lg:sticky lg:top-24 self-start">
             <div className="bg-white rounded-3xl p-5 space-y-3" style={{ border: '1.5px solid #D4C4B0', boxShadow: '0 4px 24px rgba(44,24,16,.08)' }}>
               <h2 className="font-fraunces text-xl" style={{ color: '#2C1810' }}>Resumen</h2>
               <div className="flex justify-between text-sm" style={{ color: '#7A6050' }}>
@@ -193,22 +195,37 @@ export default function CarritoNuevo() {
         <Recycle className="w-3.5 h-3.5" style={{ color: '#8BAD8A' }} /> PEYU Chile · Hecho con plástico reciclado 🇨🇱
       </footer>
 
-      {/* Sticky CTA mobile */}
-      <div className="lg:hidden fixed bottom-0 inset-x-0 z-40 backdrop-blur-xl px-4 py-3 pb-safe" style={{ background: 'rgba(248,243,237,.96)', borderTop: '1px solid #D4C4B0', boxShadow: '0 -6px 24px rgba(44,24,16,.1)' }}>
-        <div className="flex items-center gap-3">
-          <div className="flex-shrink-0">
-            <p className="text-[10px] font-bold uppercase tracking-wide leading-none" style={{ color: '#A08070' }}>Total</p>
-            <p className="font-poppins font-bold text-lg leading-tight" style={{ color: '#2C1810' }}>{fmtCLP(total)}</p>
+      {/* Resumen mobile inline (antes del footer, solo mobile) */}
+      <div className="lg:hidden max-w-4xl mx-auto px-4 sm:px-6 pb-4">
+        <div className="bg-white rounded-3xl p-4 space-y-2.5" style={{ border: '1.5px solid #D4C4B0' }}>
+          <div className="flex justify-between text-sm" style={{ color: '#7A6050' }}>
+            <span>Subtotal</span><span className="font-semibold">{fmtCLP(subtotal)}</span>
           </div>
-          <button
-            onClick={irACheckout}
-            className="flex-1 h-12 rounded-2xl text-white font-bold text-sm flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
-            style={{ background: 'linear-gradient(135deg,#C0785C,#A86440)', boxShadow: '0 4px 16px rgba(192,120,92,.3)' }}
-          >
-            <ShieldCheck className="w-4 h-4" /> Ir a pagar
-          </button>
+          {cargoPersonalizacion > 0 && (
+            <div className="flex justify-between text-sm" style={{ color: '#7A6050' }}>
+              <span>Personalización</span><span className="font-semibold">+{fmtCLP(cargoPersonalizacion)}</span>
+            </div>
+          )}
+          {ahorroTotal > 0 && (
+            <div className="flex justify-between text-sm font-bold rounded-xl px-3 py-2" style={{ color: '#5B7D5A', background: 'rgba(139,173,138,.1)', border: '1px solid rgba(139,173,138,.25)' }}>
+              <span>Descuento por cantidad</span><span>−{fmtCLP(ahorroTotal)}</span>
+            </div>
+          )}
+          <div className="flex justify-between pt-2.5" style={{ borderTop: '1px solid #D4C4B0' }}>
+            <span className="font-bold text-base" style={{ color: '#2C1810' }}>Total</span>
+            <span className="font-poppins font-bold text-xl" style={{ color: '#C0785C' }}>{fmtCLP(total)}</span>
+          </div>
+          <p className="text-[10px]" style={{ color: '#A08070' }}>IVA incluido · envío se calcula al pagar</p>
         </div>
       </div>
+
+      <MobileNavBarV2
+        backTo="/CatalogoNuevo"
+        backLabel="Tienda"
+        ctaLabel="Ir a pagar"
+        onCta={irACheckout}
+        total={total}
+      />
     </div>
   );
 }

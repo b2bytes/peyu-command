@@ -2,6 +2,7 @@ import { useState, useMemo, useEffect, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { ArrowLeft, Lock, ShieldCheck, Recycle, AlertCircle, Gift } from 'lucide-react';
+import MobileNavBarV2 from '@/components/shopv2/MobileNavBarV2';
 import ShopV2Header from '@/components/shopv2/ShopV2Header';
 import CheckoutStepperV2 from '@/components/shopv2/CheckoutStepperV2';
 import StepNavV2 from '@/components/shopv2/StepNavV2';
@@ -359,7 +360,8 @@ export default function CheckoutNuevo() {
 
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6">
         <CheckoutStepperV2 current="pago" />
-        <Link to="/CarritoNuevo" className="inline-flex items-center gap-1.5 text-sm font-bold mb-5 transition-colors lg:hidden" style={{ color: '#7A6050' }}>
+        {/* Link solo desktop — mobile usa navbar inferior */}
+        <Link to="/CarritoNuevo" className="hidden lg:inline-flex items-center gap-1.5 text-sm font-bold mb-5 transition-colors" style={{ color: '#7A6050' }}>
           <ArrowLeft className="w-4 h-4" /> Volver al carrito
         </Link>
 
@@ -528,25 +530,15 @@ export default function CheckoutNuevo() {
         </div>
       </div>
 
-      {/* CTA sticky mobile */}
-      <div className="lg:hidden fixed bottom-0 inset-x-0 z-40 backdrop-blur-xl px-4 py-3 pb-safe" style={{ background: 'rgba(248,243,237,.96)', borderTop: '1px solid #D4C4B0' }}>
-        <div className="flex items-center justify-between mb-2">
-          <span className="text-xs font-semibold" style={{ color: '#A08070' }}>Total {envioBluex ? '' : '(sin envío)'}</span>
-          <span className="font-poppins font-bold text-lg" style={{ color: '#C0785C' }}>{fmtCLP(total)}</span>
-        </div>
-        <button
-          onClick={crearPedido}
-          disabled={creando}
-          className="w-full h-13 py-3.5 rounded-2xl disabled:opacity-60 text-white font-bold flex items-center justify-center gap-2 transition-all"
-          style={{ background: 'linear-gradient(135deg,#C0785C,#A86440)', boxShadow: '0 6px 20px rgba(192,120,92,.25)' }}
-        >
-          {creando ? (
-            <><div className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" /> Procesando…</>
-          ) : (
-            <><Lock className="w-4 h-4" /> {medioPago === 'Transferencia' ? 'Confirmar' : 'Pagar'} {fmtCLP(total)}</>
-          )}
-        </button>
-      </div>
+      {/* Barra inferior mobile */}
+      <MobileNavBarV2
+        backTo="/CarritoNuevo"
+        backLabel="Carrito"
+        ctaLabel={medioPago === 'Transferencia' ? 'Confirmar pedido' : 'Pagar ahora'}
+        onCta={crearPedido}
+        ctaLoading={creando}
+        total={total}
+      />
 
       <footer className="py-8 text-center text-xs hidden lg:flex items-center justify-center gap-1.5" style={{ borderTop: '1px solid #D4C4B0', color: '#A08070' }}>
         <Recycle className="w-3.5 h-3.5" style={{ color: '#8BAD8A' }} /> PEYU Chile · Pago seguro · Garantía 10 años

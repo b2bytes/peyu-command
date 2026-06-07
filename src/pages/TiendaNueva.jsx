@@ -1,7 +1,8 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
-import { ArrowRight, Recycle, Sparkles } from 'lucide-react';
+import { ArrowRight, Recycle } from 'lucide-react';
+import MobileNavBarV2 from '@/components/shopv2/MobileNavBarV2';
 import ShopV2Header from '@/components/shopv2/ShopV2Header';
 import HeroBoldV2 from '@/components/shopv2/HeroBoldV2';
 import TrustSocialBarV2 from '@/components/shopv2/TrustSocialBarV2';
@@ -43,7 +44,7 @@ export default function TiendaNueva() {
   };
 
   return (
-    <div className="min-h-screen font-inter pb-20 lg:pb-0" style={{ background: '#F8F3ED', color: '#2C1810' }}>
+    <div className="min-h-screen font-inter pb-16 lg:pb-0" style={{ background: '#F8F3ED', color: '#2C1810' }}>
       <ShopV2Header />
 
       {/* 1 · HERO BOLD */}
@@ -102,16 +103,8 @@ export default function TiendaNueva() {
         <Recycle className="w-3.5 h-3.5" style={{ color: '#8BAD8A' }} /> PEYU Chile · Plástico reciclado · Hecho en Santiago 🇨🇱
       </footer>
 
-      {/* 4 · STICKY móvil: CTA al configurador siempre visible */}
-      <div className="lg:hidden fixed bottom-0 inset-x-0 z-40 backdrop-blur-xl px-4 py-3 pb-safe" style={{ background: 'rgba(248,243,237,.95)', borderTop: '1px solid #D4C4B0' }}>
-        <button
-          onClick={scrollToConfig}
-          className="w-full h-13 py-3.5 rounded-2xl text-white font-bold flex items-center justify-center gap-2 shadow-lg transition-all active:scale-[0.99]"
-          style={{ background: 'linear-gradient(135deg,#C0785C,#A86440)', boxShadow: '0 8px 24px rgba(192,120,92,.3)' }}
-        >
-          <Sparkles className="w-4 h-4" /> Personaliza tu carcasa
-        </button>
-      </div>
+      {/* Menú inferior mobile */}
+      <MobileNavBarV2 />
     </div>
   );
 }

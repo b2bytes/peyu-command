@@ -13,7 +13,7 @@ import PriceBreakdownV2 from '@/components/shopv2/PriceBreakdownV2';
 import QtyStepperV2 from '@/components/shopv2/QtyStepperV2';
 import ProductGalleryV2 from '@/components/shopv2/ProductGalleryV2';
 import ProductIncludesV2 from '@/components/shopv2/ProductIncludesV2';
-import StickyBuyBarV2 from '@/components/shopv2/StickyBuyBarV2';
+import MobileNavBarV2 from '@/components/shopv2/MobileNavBarV2';
 import { getProductImage, getProductImageForColor } from '@/utils/productImages';
 import { getColoresProducto } from '@/lib/color-parser';
 import { MOQ_PERSONALIZACION_GRATIS } from '@/lib/personalizacion-config';
@@ -244,12 +244,13 @@ export default function ProductoNuevo() {
   const esCompostable = producto.material?.includes('Trigo') || producto.categoria === 'Carcasas B2C';
 
   return (
-    <div className="min-h-screen font-inter pb-24 lg:pb-0" style={{ background: '#F8F3ED', color: '#2C1810' }}>
+    <div className="min-h-screen font-inter pb-20 lg:pb-0" style={{ background: '#F8F3ED', color: '#2C1810' }}>
       <ShopV2Header />
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6">
         <CheckoutStepperV2 current="producto" />
-        <Link to="/CatalogoNuevo" className="inline-flex items-center gap-1.5 text-sm font-bold mb-4 transition-colors" style={{ color: '#7A6050' }}>
+        {/* Link de vuelta solo visible en desktop (mobile usa el navbar inferior) */}
+        <Link to="/CatalogoNuevo" className="hidden lg:inline-flex items-center gap-1.5 text-sm font-bold mb-4 transition-colors" style={{ color: '#7A6050' }}>
           <ArrowLeft className="w-4 h-4" /> Volver a la tienda
         </Link>
 
@@ -376,8 +377,15 @@ export default function ProductoNuevo() {
         </div>
       </div>
 
-      {/* Sticky precio + CTA móvil (Baymard #2) */}
-      <StickyBuyBarV2 total={total} onAdd={handleAdd} added={added} disabled={!persOk} />
+      {/* Barra inferior mobile: back + agregar al carrito */}
+      <MobileNavBarV2
+        backTo="/CatalogoNuevo"
+        backLabel="Tienda"
+        ctaLabel={added ? '✓ ¡Agregado!' : hayAlgunoActivado(pers) && !pers.aprobada ? 'Aprueba tu diseño' : 'Agregar al carrito'}
+        onCta={handleAdd}
+        ctaDisabled={added || !persOk}
+        total={added ? null : total}
+      />
     </div>
   );
 }
