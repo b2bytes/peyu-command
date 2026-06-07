@@ -45,15 +45,20 @@ export default function CartItemThumbV2({ imagen, capas = [], alt, fallback }) {
   }, [capas, tint]);
 
   return (
-    <div className="relative w-full aspect-square rounded-xl overflow-hidden border border-[#EBE3D6] bg-[#FAF7F2]">
+    <div className="relative w-full aspect-square rounded-xl overflow-hidden border border-[#D8CFC0] bg-[#FAF7F2]">
+      {/* Fondo con patrón sutil para profundidad */}
+      <div className="absolute inset-0 opacity-[0.02]" style={{
+        backgroundImage: 'radial-gradient(circle at 20% 50%, #000 0.5px, transparent 0.5px)',
+        backgroundSize: '40px 40px',
+      }} />
+
       {imagen && (
         <img
           src={imagen}
           alt={alt}
           referrerPolicy="no-referrer"
-          className="absolute inset-0 w-full h-full object-cover"
+          className="absolute inset-0 w-full h-full object-contain bg-white/40"
           onError={(e) => {
-            // Reintenta una vez con cache-buster; si falla y hay fallback, úsalo.
             const el = e.currentTarget;
             if (!el.dataset.retried) {
               el.dataset.retried = '1';
@@ -65,24 +70,31 @@ export default function CartItemThumbV2({ imagen, capas = [], alt, fallback }) {
         />
       )}
 
-      {/* Iluminación de estudio: highlight especular + viñeteado → volumen real. */}
+      {/* Efectos de iluminación profesional */}
       {capas.length > 0 && (
         <>
+          {/* Luz especular de estudio (alto izquierda) */}
           <div className="absolute inset-0 pointer-events-none" style={{
-            background: 'radial-gradient(70% 55% at 32% 28%, rgba(255,255,255,0.14) 0%, transparent 60%)',
+            background: 'radial-gradient(60% 50% at 30% 25%, rgba(255,255,255,0.18) 0%, transparent 55%)',
             mixBlendMode: 'screen',
           }} />
+          {/* Sombra suave (viñeta abajo) */}
           <div className="absolute inset-0 pointer-events-none" style={{
-            background: 'radial-gradient(120% 95% at 50% 44%, transparent 52%, rgba(0,0,0,0.13) 100%)',
+            background: 'radial-gradient(110% 100% at 50% 50%, transparent 45%, rgba(0,0,0,0.08) 100%)',
             mixBlendMode: 'multiply',
+          }} />
+          {/* Brillo periférico sutil */}
+          <div className="absolute inset-0 pointer-events-none" style={{
+            background: 'radial-gradient(ellipse 90% 80% at 50% 50%, transparent 0%, rgba(0,0,0,0.02) 100%)',
           }} />
         </>
       )}
 
+      {/* Capas de grabado (logo, diseño, frase) */}
       {capas.map((c, i) => {
         const x = typeof c.x === 'number' ? c.x : 50;
         const y = typeof c.y === 'number' ? c.y : 50;
-        const size = typeof c.size === 'number' ? c.size : 26;
+        const size = typeof c.size === 'number' ? c.size : 32;
 
         let eng = null;
         if (c.tipo !== 'frase') {
@@ -92,22 +104,32 @@ export default function CartItemThumbV2({ imagen, capas = [], alt, fallback }) {
 
         return (
           <div key={i} className="absolute" style={{
-            left: `${x}%`, top: `${y}%`,
-            width: c.tipo === 'frase' ? undefined : `${size}%`,
+            left: `${x}%`,
+            top: `${y}%`,
+            width: c.tipo === 'frase' ? 'auto' : `${size}%`,
             transform: 'translate(-50%, -50%)',
+            zIndex: i + 1,
           }}>
-            {/* Mismo motor de montaje de alta calidad que el preview en vivo. */}
             <EngravedLayer
               eng={eng}
               tipo={c.tipo}
               texto={c.texto}
-              sizePct={size * 0.8}
+              sizePct={size * 0.85}
               tint={tint}
               productImg={imagen}
             />
           </div>
         );
       })}
+
+      {/* Indicador sutil si no tiene grabado */}
+      {capas.length === 0 && (
+        <div className="absolute inset-0 flex items-center justify-center opacity-5 pointer-events-none">
+          <div className="text-center text-[#4B4F54] text-xs font-semibold">
+            {alt || 'Producto'}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
