@@ -1,20 +1,39 @@
 import { useState, useMemo } from 'react';
-import { Search, Plus, TrendingDown, Eye } from 'lucide-react';
+import { Search, Plus, TrendingDown, Weight, Ruler, Sparkles } from 'lucide-react';
 import { getProductImage } from '@/utils/productImages';
 import { fmtCLP } from '@/lib/shop-v2-cart';
 import { getUnitBasePrice, getB2BPriceForQty } from '@/lib/catalog-pricing';
 
-// Buscador de productos para agregar a la cotización B2B. Lista el catálogo
-// activo, permite filtrar por categoría y agregar con un click. Muestra el
-// ahorro máximo por volumen para incentivar pedidos grandes. Tocar el card
-// abre la ficha emergente (onView); el botón + agrega directo (onAdd).
+// Mapa de colores → hex para swatches
+const SWATCH_MAP = {
+  'azul':'#3B7DD8','negro':'#1A1A1A','rojo':'#D63B3B','verde':'#2E8B57',
+  'blanco':'#E8E8E8','amarillo':'#F5C518','naranja':'#E07020','gris':'#9CA3AF',
+  'turquesa':'#0E9C9C','rosa':'#E05A8A','celeste':'#5AACE0','café':'#7B4F2E',
+  'beige':'#D4C4A0','morado':'#7B3FA0',
+};
+function swatchColor(name) {
+  if (!name) return '#D4C4B0';
+  const k = name.toLowerCase();
+  for (const [key, val] of Object.entries(SWATCH_MAP)) {
+    if (k.includes(key)) return val;
+  }
+  return '#D4C4B0';
+}
+
+function getColores(p) {
+  if (Array.isArray(p.colores_v2) && p.colores_v2.length) return p.colores_v2;
+  if (Array.isArray(p.colores) && p.colores.length) return p.colores;
+  return [];
+}
+
+// Buscador de productos para agregar a la cotización B2B.
+// Muestra cards ricos: imagen, colores, dimensiones, precio por tramo real.
 export default function QuoteProductPicker({ productos, selectedSkus, onAdd, onView }) {
   const [q, setQ] = useState('');
   const [cat, setCat] = useState('Todos');
 
-  // Categorías disponibles (chips de filtro rápido).
   const categorias = useMemo(() => {
-    const set = new Set(productos.map((p) => p.categoria).filter(Boolean));
+    const set = new Set(productos.map((p) => p.categoria?.replace(' B2C', '')).filter(Boolean));
     return ['Todos', ...Array.from(set)];
   }, [productos]);
 
@@ -22,26 +41,27 @@ export default function QuoteProductPicker({ productos, selectedSkus, onAdd, onV
     const term = q.trim().toLowerCase();
     return productos
       .filter((p) => !selectedSkus.includes(p.sku))
-      .filter((p) => cat === 'Todos' || p.categoria === cat)
+      .filter((p) => cat === 'Todos' || p.categoria?.replace(' B2C', '') === cat)
       .filter((p) => !term || (p.nombre || '').toLowerCase().includes(term) || (p.categoria || '').toLowerCase().includes(term))
-      .slice(0, 12);
+      .slice(0, 16);
   }, [productos, selectedSkus, q, cat]);
 
   return (
     <div>
+      {/* Buscador */}
       <div className="relative mb-3">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#A78B6F]" />
         <input
           value={q}
           onChange={(e) => setQ(e.target.value)}
-          placeholder="Busca un producto para cotizar..."
+          placeholder="Busca producto para cotizar..."
           className="w-full h-11 pl-10 pr-4 rounded-xl bg-white border border-[#EBE3D6] text-sm text-[#2A2420] placeholder:text-[#A78B6F] focus:outline-none focus:border-[#0F8B6C] focus:ring-2 focus:ring-[#0F8B6C]/15"
         />
       </div>
 
       {/* Chips de categoría */}
       {categorias.length > 2 && (
-        <div className="flex gap-1.5 mb-3 overflow-x-auto scrollbar-hide pb-0.5">
+        <div className="flex gap-1.5 mb-4 overflow-x-auto scrollbar-hide pb-0.5">
           {categorias.map((c) => (
             <button
               key={c}
@@ -59,48 +79,102 @@ export default function QuoteProductPicker({ productos, selectedSkus, onAdd, onV
       )}
 
       {filtrados.length === 0 ? (
-        <p className="text-xs text-[#A78B6F] text-center py-4">
+        <p className="text-xs text-[#A78B6F] text-center py-6">
           {q ? 'Sin resultados.' : 'Todos los productos ya están en tu cotización.'}
         </p>
       ) : (
-        <div className="space-y-2 max-h-80 overflow-y-auto peyu-scrollbar pr-1">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[420px] overflow-y-auto peyu-scrollbar pr-1">
           {filtrados.map((p) => {
-            // Ahorro máximo (tramo de mayor volumen) para incentivar volumen.
-            const maxVol = getB2BPriceForQty(p, 2000);
+            const precioDesde = getB2BPriceForQty(p, 10)?.precio ?? getUnitBasePrice(p);
+            const maxVol = getB2BPriceForQty(p, 2000) || getB2BPriceForQty(p, 1000);
             const ahorroMax = maxVol?.ahorroPct || 0;
+            const colores = getColores(p);
+            const moq = p.personalizacion_gratis_desde || p.moq_personalizacion || 10;
+            const dim = p.dim_detalle_v2 || p.dimensiones;
+            const pesoPack = p.peso_pack_gr ? `${p.peso_pack_gr}gr/pack` : p.peso_kg ? `${(p.peso_kg * 1000).toFixed(0)}gr/u` : null;
+            const tapitas = p.tapitas_aprox;
+
             return (
               <div
                 key={p.id}
                 onClick={() => onView?.(p)}
-                className="w-full flex items-center gap-3 bg-white border border-[#EBE3D6] hover:border-[#0F8B6C]/40 rounded-xl p-2.5 text-left transition-colors group cursor-pointer"
+                className="group bg-white border border-[#EBE3D6] hover:border-[#0F8B6C]/50 rounded-2xl overflow-hidden cursor-pointer transition-all hover:shadow-md"
               >
-                <div className="relative flex-shrink-0">
+                {/* Imagen */}
+                <div className="relative h-32 bg-[#F8F4EE] overflow-hidden">
                   <img
                     src={getProductImage(p)}
                     alt={p.nombre}
-                    className="w-10 h-10 object-cover rounded-lg bg-[#FAF7F2]"
-                    onError={(e) => { e.target.style.visibility = 'hidden'; }}
+                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                    onError={(e) => { e.target.style.opacity = '0.3'; }}
                   />
-                  <span className="absolute inset-0 rounded-lg bg-[#2A2420]/0 group-hover:bg-[#2A2420]/40 flex items-center justify-center transition-colors">
-                    <Eye className="w-4 h-4 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+                  {ahorroMax > 0 && (
+                    <span className="absolute top-2 left-2 inline-flex items-center gap-0.5 text-[9px] font-bold text-white bg-[#D96B4D] px-1.5 py-0.5 rounded-full">
+                      <TrendingDown className="w-2.5 h-2.5" /> −{ahorroMax}%
+                    </span>
+                  )}
+                  <span className="absolute top-2 right-2 text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-white/90 text-[#7A6050]">
+                    {p.material?.includes('Trigo') ? 'Compostable' : '100% Reciclado'}
                   </span>
                 </div>
-                <div className="flex-1 min-w-0">
-                  <p className="font-bold text-sm text-[#2A2420] truncate">{p.nombre}</p>
-                  <p className="text-[11px] text-[#A78B6F]">{p.categoria} · desde {fmtCLP(getUnitBasePrice(p))}/u</p>
+
+                {/* Info */}
+                <div className="p-3">
+                  <p className="text-[10px] font-bold uppercase tracking-wide text-[#A78B6F] mb-0.5">
+                    {p.categoria?.replace(' B2C', '')}
+                  </p>
+                  <p className="font-bold text-sm text-[#2A2420] leading-snug mb-2">{p.nombre}</p>
+
+                  {/* Specs rápidas */}
+                  <div className="flex flex-wrap gap-x-3 gap-y-0.5 mb-2">
+                    {dim && (
+                      <span className="inline-flex items-center gap-0.5 text-[10px] text-[#A78B6F]">
+                        <Ruler className="w-2.5 h-2.5" /> {dim}
+                      </span>
+                    )}
+                    {pesoPack && (
+                      <span className="inline-flex items-center gap-0.5 text-[10px] text-[#A78B6F]">
+                        <Weight className="w-2.5 h-2.5" /> {pesoPack}
+                      </span>
+                    )}
+                    {tapitas && (
+                      <span className="text-[10px] text-[#0F8B6C] font-semibold">♻ ~{tapitas} tapas/u</span>
+                    )}
+                  </div>
+
+                  {/* Colores */}
+                  {colores.length > 0 && (
+                    <div className="flex items-center gap-1 mb-2">
+                      {colores.slice(0, 5).map((c) => (
+                        <span key={c} title={c} className="w-3.5 h-3.5 rounded-full ring-1 ring-black/10 flex-shrink-0"
+                          style={{ background: swatchColor(c) }} />
+                      ))}
+                      {colores.length > 5 && (
+                        <span className="text-[9px] text-[#A78B6F] font-bold">+{colores.length - 5}</span>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Precio + botón */}
+                  <div className="flex items-center justify-between mt-2 pt-2 border-t border-[#EBE3D6]">
+                    <div>
+                      <span className="text-[9px] text-[#A78B6F]">desde 10u</span>
+                      <p className="font-bold text-sm text-[#0F8B6C] leading-tight">{fmtCLP(precioDesde)}/u</p>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <span className="hidden sm:inline-flex items-center gap-0.5 text-[9px] font-bold text-[#0F8B6C] bg-[#0F8B6C]/8 px-1.5 py-0.5 rounded-full">
+                        <Sparkles className="w-2.5 h-2.5" /> logo ≥{moq}u
+                      </span>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); onAdd(p); }}
+                        className="w-8 h-8 rounded-xl bg-[#0F8B6C]/10 hover:bg-[#0F8B6C] text-[#0F8B6C] hover:text-white flex items-center justify-center flex-shrink-0 transition-colors"
+                        aria-label="Agregar"
+                      >
+                        <Plus className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
                 </div>
-                {ahorroMax > 0 && (
-                  <span className="hidden sm:inline-flex items-center gap-0.5 text-[10px] font-bold text-[#0F8B6C] bg-[#0F8B6C]/10 px-1.5 py-0.5 rounded-md flex-shrink-0">
-                    <TrendingDown className="w-3 h-3" /> -{ahorroMax}%
-                  </span>
-                )}
-                <button
-                  onClick={(e) => { e.stopPropagation(); onAdd(p); }}
-                  className="w-8 h-8 rounded-lg bg-[#0F8B6C]/8 hover:bg-[#0F8B6C] text-[#0F8B6C] hover:text-white flex items-center justify-center flex-shrink-0 transition-colors"
-                  aria-label="Agregar"
-                >
-                  <Plus className="w-4 h-4" />
-                </button>
               </div>
             );
           })}
