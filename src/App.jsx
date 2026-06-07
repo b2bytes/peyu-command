@@ -54,6 +54,8 @@ import ProductoNuevo from './pages/ProductoNuevo';
 import CarritoNuevo from './pages/CarritoNuevo';
 import CheckoutNuevo from './pages/CheckoutNuevo';
 import CotizacionRapida from './pages/CotizacionRapida';
+import EmpresasNuevo from './pages/EmpresasNuevo';
+import EmpresaProducto from './pages/EmpresaProducto';
 import FunnelDesignLab from './pages/FunnelDesignLab';
 
 // ── ADMIN PAGES (lazy + retry) ───────────────────────────────────────
@@ -255,7 +257,7 @@ function App() {
                   al flujo nuevo en vez de caer en pantalla negra / PageNotFound. */}
               <Route path="/Inicio" element={<Navigate to="/TiendaNueva" replace />} />
               <Route path="/Tienda" element={<Navigate to="/CatalogoNuevo" replace />} />
-              <Route path="/Empresas" element={<Navigate to="/CotizacionRapida" replace />} />
+              <Route path="/Empresas" element={<Navigate to="/EmpresasNuevo" replace />} />
 
               {/* Brand Lab (Fase 0) - Standalone, ruta nueva paralela */}
               <Route path="/brand" element={<BrandLab />} />
@@ -270,6 +272,8 @@ function App() {
               <Route path="/CarritoNuevo" element={<CarritoNuevo />} />
               <Route path="/CheckoutNuevo" element={<CheckoutNuevo />} />
               <Route path="/CotizacionRapida" element={<CotizacionRapida />} />
+              <Route path="/EmpresasNuevo" element={<EmpresasNuevo />} />
+              <Route path="/EmpresaProducto" element={<EmpresaProducto />} />
               <Route path="/design-lab" element={<FunnelDesignLab />} />
 
               {/* Presentación a fundadores - 22 layouts del design system */}

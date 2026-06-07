@@ -1,0 +1,186 @@
+// ════════════════════════════════════════════════════════════════════════
+// /EmpresasNuevo — Canal B2B completo: catálogo corporativo + embudo.
+// Solo productos NO-carcasa, con precios por volumen, mockup de logo,
+// diseño Warm Clay alineado al Shop v2 B2C.
+// ════════════════════════════════════════════════════════════════════════
+import { useState, useEffect, useMemo } from 'react';
+import { Link } from 'react-router-dom';
+import { base44 } from '@/api/base44Client';
+import {
+  Building2, Loader2, Search, Recycle, TrendingDown, Sparkles,
+  ShieldCheck, Truck, FileText, ArrowRight, Star,
+} from 'lucide-react';
+import B2BHeader from '@/components/b2b/B2BHeader';
+import B2BCatalogCard from '@/components/b2b/B2BCatalogCard';
+
+const CATEGORIAS = ['Todos', 'Corporativo', 'Escritorio', 'Hogar', 'Entretenimiento'];
+
+const TRUST = [
+  { icon: TrendingDown, t: 'Hasta −33%', s: 'por volumen de compra' },
+  { icon: Sparkles,    t: 'Logo gratis', s: 'grabado láser desde 10u' },
+  { icon: FileText,    t: 'Factura',     s: 'datos de empresa + IVA' },
+  { icon: Recycle,     t: '100% Reciclado', s: 'reporte ESG incluido' },
+  { icon: ShieldCheck, t: '3 años',      s: 'garantía del producto' },
+  { icon: Truck,       t: 'Despacho',    s: 'a todo Chile' },
+];
+
+export default function EmpresasNuevo() {
+  const [productos, setProductos] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState('');
+  const [cat, setCat] = useState('Todos');
+
+  useEffect(() => {
+    base44.entities.Producto.filter({ activo: true }, '-updated_date', 200)
+      .then(data => {
+        // Solo productos B2B: excluir carcasas, GiftCards y B2C exclusivo
+        const b2b = (data || []).filter(p =>
+          p.sku &&
+          p.canal !== 'B2C Exclusivo' &&
+          p.categoria !== 'Carcasas B2C' &&
+          p.categoria !== 'Gift Card' &&
+          !p.nombre?.toLowerCase().includes('gift card')
+        );
+        setProductos(b2b);
+      })
+      .finally(() => setLoading(false));
+  }, []);
+
+  const filtrados = useMemo(() => {
+    let list = productos;
+    if (cat !== 'Todos') list = list.filter(p => p.categoria === cat);
+    if (search.trim()) {
+      const q = search.toLowerCase();
+      list = list.filter(p => (p.nombre || '').toLowerCase().includes(q) || (p.descripcion || '').toLowerCase().includes(q));
+    }
+    return list;
+  }, [productos, cat, search]);
+
+  const catCounts = useMemo(() => {
+    const map = { 'Todos': productos.length };
+    CATEGORIAS.slice(1).forEach(c => { map[c] = productos.filter(p => p.categoria === c).length; });
+    return map;
+  }, [productos]);
+
+  return (
+    <div className="min-h-screen font-inter pb-8" style={{ background: '#F8F3ED', color: '#2C1810' }}>
+      <B2BHeader />
+
+      {/* ── HERO ── */}
+      <section className="max-w-6xl mx-auto px-4 sm:px-6 pt-10 pb-8">
+        <div className="text-center max-w-2xl mx-auto mb-8">
+          <span className="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full mb-4"
+            style={{ background: '#0F8B6C15', color: '#0F8B6C', border: '1px solid #0F8B6C30' }}>
+            <Building2 className="w-3.5 h-3.5" /> Corporativo · Regalos empresariales
+          </span>
+          <h1 className="font-fraunces text-4xl sm:text-5xl leading-[1.05] mb-4" style={{ color: '#2C1810' }}>
+            Productos sustentables<br />
+            <span style={{ color: '#0F8B6C' }}>con tu logo</span>
+          </h1>
+          <p className="text-base leading-relaxed mb-6" style={{ color: '#7A6050' }}>
+            100% plástico reciclado chileno. Grabado láser de tu logo gratis desde 10 unidades.
+            Descuentos por volumen hasta −33%. Factura disponible.
+          </p>
+          <Link
+            to="/CotizacionRapida"
+            className="inline-flex items-center gap-2 font-bold text-base px-7 py-3.5 rounded-2xl transition-all hover:scale-[1.02] hover:shadow-xl"
+            style={{ background: 'linear-gradient(135deg,#0F8B6C,#0B6E55)', color: 'white', boxShadow: '0 6px 24px rgba(15,139,108,.3)' }}
+          >
+            Solicitar cotización <ArrowRight className="w-5 h-5" />
+          </Link>
+        </div>
+
+        {/* Trust strip */}
+        <div className="grid grid-cols-3 sm:grid-cols-6 gap-3 mb-10">
+          {TRUST.map(({ icon: IconComp, t, s }) => (
+            <div key={t} className="flex flex-col items-center text-center p-3 rounded-2xl" style={{ background: 'white', border: '1.5px solid #EDE3D6' }}>
+              <div className="w-8 h-8 rounded-xl flex items-center justify-center mb-1.5" style={{ background: '#0F8B6C10' }}>
+                <IconComp className="w-4 h-4" style={{ color: '#0F8B6C' }} />
+              </div>
+              <p className="text-xs font-bold leading-tight" style={{ color: '#2C1810' }}>{t}</p>
+              <p className="text-[10px] leading-tight mt-0.5" style={{ color: '#A08070' }}>{s}</p>
+            </div>
+          ))}
+        </div>
+
+        {/* ── CATÁLOGO ── */}
+        <div className="mb-5 flex flex-col sm:flex-row gap-3">
+          {/* Buscador */}
+          <div className="relative flex-1 max-w-md">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: '#A08070' }} />
+            <input
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              placeholder="Buscar productos…"
+              className="w-full h-11 pl-10 pr-4 rounded-xl text-sm focus:outline-none focus:ring-2"
+              style={{ background: 'white', border: '1.5px solid #D4C4B0', color: '#2C1810', focusRingColor: '#0F8B6C' }}
+            />
+          </div>
+
+          {/* Chips de categoría */}
+          <div className="flex gap-1.5 overflow-x-auto scrollbar-hide">
+            {CATEGORIAS.map(c => {
+              const count = catCounts[c] || 0;
+              if (c !== 'Todos' && count === 0) return null;
+              return (
+                <button
+                  key={c}
+                  onClick={() => setCat(c)}
+                  className="flex-shrink-0 px-3.5 py-2 rounded-xl text-xs font-bold transition-all"
+                  style={{
+                    background: cat === c ? '#0F8B6C' : 'white',
+                    color: cat === c ? 'white' : '#7A6050',
+                    border: cat === c ? '1.5px solid #0F8B6C' : '1.5px solid #D4C4B0',
+                    boxShadow: cat === c ? '0 2px 8px rgba(15,139,108,.2)' : 'none',
+                  }}
+                >
+                  {c} {count > 0 ? `(${count})` : ''}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Grid */}
+        {loading ? (
+          <div className="flex items-center justify-center py-24">
+            <Loader2 className="w-8 h-8 animate-spin" style={{ color: '#0F8B6C' }} />
+          </div>
+        ) : filtrados.length === 0 ? (
+          <div className="text-center py-20">
+            <p className="text-sm font-semibold" style={{ color: '#A08070' }}>Sin productos con estos filtros.</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+            {filtrados.map(p => (
+              <B2BCatalogCard key={p.id} producto={p} />
+            ))}
+          </div>
+        )}
+      </section>
+
+      {/* ── CTA FINAL ── */}
+      <section className="max-w-3xl mx-auto px-4 sm:px-6 py-8">
+        <div className="rounded-3xl p-8 text-center" style={{ background: 'linear-gradient(135deg,#0F8B6C,#0B6E55)' }}>
+          <Star className="w-8 h-8 text-white/70 mx-auto mb-3" />
+          <h2 className="font-fraunces text-2xl sm:text-3xl text-white mb-3">¿Tienes un evento o proyecto corporativo?</h2>
+          <p className="text-sm text-white/80 mb-6 max-w-md mx-auto">
+            Arma tu pedido personalizado, elige los productos, sube tu logo y recibe tu cotización formal con factura en 24h hábiles.
+          </p>
+          <Link
+            to="/CotizacionRapida"
+            className="inline-flex items-center gap-2 font-bold text-sm px-7 py-3.5 rounded-2xl transition-all hover:scale-[1.02]"
+            style={{ background: 'white', color: '#0F8B6C', boxShadow: '0 4px 16px rgba(0,0,0,.15)' }}
+          >
+            Solicitar cotización gratuita <ArrowRight className="w-4 h-4" />
+          </Link>
+        </div>
+      </section>
+
+      <footer className="border-t py-6 text-center text-xs" style={{ borderColor: '#D4C4B0', color: '#A08070' }}>
+        <Recycle className="w-3.5 h-3.5 inline mr-1.5" style={{ color: '#0F8B6C' }} />
+        PEYU Chile · Plástico reciclado · Hecho en Santiago 🇨🇱
+      </footer>
+    </div>
+  );
+}

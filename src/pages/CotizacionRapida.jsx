@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { Building2, Loader2, ArrowRight, ArrowLeft, Recycle, Package, ShoppingCart, Sparkles, TrendingDown } from 'lucide-react';
@@ -35,6 +35,12 @@ export default function CotizacionRapida() {
   const [error, setError] = useState('');
   const [result, setResult] = useState(null);
   const [preview, setPreview] = useState(null); // producto en ficha emergente
+  const prefilledRef = useRef(false);
+
+  // Lee ?sku=&qty= desde la URL para pre-llenar desde EmpresaProducto
+  const urlParams = new URLSearchParams(window.location.search);
+  const urlSku = urlParams.get('sku');
+  const urlQty = parseInt(urlParams.get('qty'), 10) || 50;
 
   useEffect(() => {
     base44.entities.Producto.filter({ activo: true }, '-updated_date', 200)
@@ -43,8 +49,16 @@ export default function CotizacionRapida() {
           (p) => p.sku && p.canal !== 'B2C Exclusivo' && p.categoria !== 'Gift Card'
         );
         setProductos(cotizables);
+        // Pre-llenar si viene desde EmpresaProducto
+        if (urlSku && !prefilledRef.current) {
+          const match = cotizables.find(p => p.sku === urlSku);
+          if (match) {
+            setItems([{ producto: match, qty: urlQty }]);
+            prefilledRef.current = true;
+          }
+        }
       });
-  }, []);
+  }, []); // eslint-disable-line
 
   const selectedSkus = useMemo(() => items.map((i) => i.producto.sku), [items]);
 
