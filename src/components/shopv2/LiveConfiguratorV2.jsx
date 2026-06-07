@@ -10,6 +10,7 @@ import { getProductImage, getProductImageForColor } from '@/utils/productImages'
 import { getColoresProducto } from '@/lib/color-parser';
 import { modeloDe, modelosDisponibles } from '@/lib/phone-models-v2';
 import { MOQ_PERSONALIZACION_GRATIS } from '@/lib/personalizacion-config';
+import { getQtyDiscountPct } from '@/lib/volume-discount';
 import { addToCartV2, fmtCLP } from '@/lib/shop-v2-cart';
 import { saveDraftV2, loadDraftV2, clearDraftV2 } from '@/lib/shop-v2-draft';
 import {
@@ -84,7 +85,10 @@ export default function LiveConfiguratorV2({ carcasas = [] }) {
   const feeUnit = useMemo(() => feeUnitarioCombinado(pers), [pers]);
   const gratis = cantidad >= moq;
   const feeTotal = gratis ? 0 : feeUnit * cantidad;
-  const total = precioUnit * cantidad + feeTotal;
+  // Descuento automático B2C por cantidad del mismo producto (2u → 10% · 3+u → 15%).
+  const descuentoPct = getQtyDiscountPct(cantidad);
+  const descuentoMonto = Math.floor(precioUnit * cantidad * (descuentoPct / 100));
+  const total = precioUnit * cantidad + feeTotal - descuentoMonto;
 
   // Capas (combinables) para el mockup. ORDEN FIJO de apilado (arriba→abajo):
   // 1) Tu logo  2) Diseño PEYU  3) Frase. Mismo orden en mockup y controles.
@@ -222,6 +226,11 @@ export default function LiveConfiguratorV2({ carcasas = [] }) {
                     {gratis ? `✓ Grabado GRATIS desde ${moq}u` : `Faltan ${moq - cantidad}u para grabado gratis`}
                   </p>
                 )}
+                {descuentoPct > 0 ? (
+                  <p className="text-[11px] mt-0.5 font-bold text-[#0F8B6C]">✓ Descuento {descuentoPct}% por {cantidad}u aplicado</p>
+                ) : (
+                  <p className="text-[11px] mt-0.5 font-semibold text-[#A78B6F]">Lleva 2u y ahorra 10% · 3u → 15%</p>
+                )}
               </div>
               <QtyStepperV2 value={cantidad} onChange={setCantidad} min={1} />
             </div>
@@ -234,6 +243,8 @@ export default function LiveConfiguratorV2({ carcasas = [] }) {
               feeUnit={feeUnit}
               feeTotal={feeTotal}
               gratis={gratis}
+              descuentoPct={descuentoPct}
+              descuentoMonto={descuentoMonto}
             />
 
             {/* CTA */}

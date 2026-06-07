@@ -3,7 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { X, Mail, Phone, MapPin, Package, CreditCard, Sparkles, Loader2, ExternalLink, CheckCircle2, Clock } from 'lucide-react';
+import { X, Mail, Phone, MapPin, Package, CreditCard, Sparkles, Loader2, ExternalLink, CheckCircle2, Clock, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import BluexShipmentButton from './BluexShipmentButton';
 import BluexManualDispatchCard from './BluexManualDispatchCard';
@@ -18,6 +18,21 @@ export default function PedidoDetailDrawer({ pedido, onClose, onUpdate }) {
   const [tracking, setTracking] = useState(pedido.tracking || '');
   const [courier, setCourier] = useState(pedido.courier || '');
   const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+
+  const handleDelete = async () => {
+    if (!confirm(`¿Eliminar el pedido ${pedido.numero_pedido || pedido.id.slice(-8)}? Esta acción no se puede deshacer.`)) return;
+    setDeleting(true);
+    try {
+      await base44.entities.PedidoWeb.delete(pedido.id);
+      toast.success('Pedido eliminado');
+      onUpdate?.();
+      onClose();
+    } catch (e) {
+      toast.error('Error al eliminar: ' + e.message);
+      setDeleting(false);
+    }
+  };
 
   const handleSave = async () => {
     setSaving(true);
@@ -310,6 +325,18 @@ export default function PedidoDetailDrawer({ pedido, onClose, onUpdate }) {
               Ver perfil 360° del cliente <ExternalLink className="w-3.5 h-3.5" />
             </a>
           )}
+
+          {/* Eliminar pedido (útil en pruebas / limpieza de registros de prueba) */}
+          <div className="pt-2 border-t border-gray-200">
+            <button
+              onClick={handleDelete}
+              disabled={deleting}
+              className="w-full flex items-center justify-center gap-1.5 text-sm text-red-600 hover:text-white hover:bg-red-600 border border-red-200 hover:border-red-600 rounded-lg py-2.5 font-semibold transition-colors disabled:opacity-60"
+            >
+              {deleting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+              Eliminar pedido
+            </button>
+          </div>
         </div>
       </div>
     </div>

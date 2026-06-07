@@ -4,9 +4,10 @@ import { fmtCLP } from '@/lib/shop-v2-cart';
 // producto × cantidad + personalización = total, con neto + IVA 19% desglosado.
 export default function PriceBreakdownV2({
   precioUnit, cantidad, tipoLabel, feeUnit = 0, feeTotal = 0, gratis,
+  descuentoPct = 0, descuentoMonto = 0,
 }) {
   const subtotal = precioUnit * cantidad;
-  const total = subtotal + feeTotal;
+  const total = subtotal + feeTotal - descuentoMonto;
   // Los precios B2C ya incluyen IVA: lo desglosamos hacia atrás para transparencia.
   const neto = Math.round(total / 1.19);
   const iva = total - neto;
@@ -25,6 +26,12 @@ export default function PriceBreakdownV2({
           <span className={`font-semibold flex-shrink-0 ${gratis ? 'text-[#0F8B6C]' : ''}`}>
             {gratis ? 'GRATIS' : `+${fmtCLP(feeTotal)}`}
           </span>
+        </div>
+      )}
+      {descuentoMonto > 0 && (
+        <div className="flex justify-between text-sm font-bold text-[#0F8B6C]">
+          <span>Descuento {cantidad}u · −{descuentoPct}%</span>
+          <span>−{fmtCLP(descuentoMonto)}</span>
         </div>
       )}
       <div className="pt-2 border-t border-[#EBE3D6] space-y-1.5">

@@ -6,6 +6,7 @@ import ShopV2Header from '@/components/shopv2/ShopV2Header';
 import CheckoutStepperV2 from '@/components/shopv2/CheckoutStepperV2';
 import StepNavV2 from '@/components/shopv2/StepNavV2';
 import CartItemThumbV2 from '@/components/shopv2/CartItemThumbV2';
+import CollapsibleSectionV2 from '@/components/shopv2/CollapsibleSectionV2';
 import ShippingAddressForm, { validarShippingForm } from '@/components/cart/ShippingAddressForm';
 import BillingSection, { validarBilling } from '@/components/cart/BillingSection';
 import ShippingSelector from '@/components/cart/ShippingSelector';
@@ -53,6 +54,9 @@ export default function CheckoutNuevo() {
   const { lineas: descLineas, ahorroTotal } = computeQtyDiscountBySku({ carrito });
   const envio = envioBluex ? envioBluex.costo : 0;
   const total = Math.max(0, subtotal + cargoPersonalizacion - ahorroTotal + envio);
+
+  // Sección de envío "completa" → marca el check verde y muestra resumen al cerrarla.
+  const envioCompleto = Object.keys(validarShippingForm(cliente)).length === 0;
 
   const feePersItem = (item) => {
     const moq = item.moq_personalizacion || item.personalizacion_gratis_desde || MOQ_PERSONALIZACION_GRATIS;
@@ -262,9 +266,11 @@ export default function CheckoutNuevo() {
       }
     }
 
-    // Transferencia → gracias
-    clearCartV2();
-    clearShopCheckout();
+    // Transferencia → gracias.
+    // NO limpiamos el carrito ni los datos del checkout: el pago aún no está
+    // confirmado (queda "por confirmar transferencia"). Si el cliente vuelve
+    // atrás conserva todo para reintentar. El carrito se vacía recién al
+    // confirmar el pago en la página Gracias, igual que con Mercado Pago.
     trackPurchase({ transactionId: numero, total, shipping: envio, cart: carrito });
     setCreando(false);
     navigate(`/gracias?numero=${encodeURIComponent(numero)}&email=${encodeURIComponent(cliente.email)}&total=${total}&pago=${encodeURIComponent(medioPago)}`);
@@ -338,54 +344,57 @@ export default function CheckoutNuevo() {
         <h1 className="font-fraunces text-3xl sm:text-4xl mb-6">Finaliza tu compra</h1>
 
         <div className="grid lg:grid-cols-3 gap-6">
-          {/* FORM — 1 sola página, agrupado en 2 columnas para aprovechar el ancho */}
-          <div className="lg:col-span-2 space-y-4">
+          {/* FORM — secciones colapsables para que el checkout no sea tan largo */}
+          <div className="lg:col-span-2 space-y-3">
             {/* 1 · Envío */}
-            <section className="bg-white rounded-2xl border border-[#EBE3D6] p-5 sm:p-6">
-              <div className="flex items-center gap-3 mb-5">
-                <span className="w-8 h-8 rounded-xl bg-[#0F8B6C] text-white flex items-center justify-center font-bold text-sm">1</span>
-                <h2 className="font-fraunces text-xl">Datos de envío</h2>
-              </div>
+            <CollapsibleSectionV2
+              step={1}
+              title="Datos de envío"
+              subtitle="¿A dónde enviamos tu pedido?"
+              defaultOpen
+              complete={envioCompleto}
+              summary={envioCompleto ? `${cliente.nombre} · ${cliente.ciudad}, ${cliente.region}` : null}
+            >
               <ShippingAddressForm
                 cliente={cliente}
                 setCliente={(c) => { setCliente(c); setErrors({}); }}
                 errors={errors}
               />
-            </section>
+            </CollapsibleSectionV2>
 
-            {/* Fila 2 columnas: Forma de envío + Método de pago (aprovecha el ancho) */}
-            <div className="grid md:grid-cols-2 gap-4 items-start">
-              {/* 2 · Forma de envío (BlueExpress inline) */}
-              <section className="bg-white rounded-2xl border border-[#EBE3D6] p-5 sm:p-6">
-                <div className="flex items-center gap-3 mb-5">
-                  <span className="w-8 h-8 rounded-xl bg-[#0F8B6C] text-white flex items-center justify-center font-bold text-sm">2</span>
-                  <div>
-                    <h2 className="font-fraunces text-xl">Forma de envío</h2>
-                    <p className="text-xs text-[#A78B6F]">Tarifa BlueExpress según tu comuna</p>
-                  </div>
-                </div>
-                <div data-shipping-selector>
-                  <ShippingSelector
-                    variant="light"
-                    items={itemsEnvio}
-                    comuna={cliente.ciudad}
-                    region={cliente.region}
-                    subtotal={subtotal}
-                    umbralEnvioGratis={40000}
-                    onSelect={setEnvioBluex}
-                  />
-                </div>
-              </section>
-
-              {/* 3 · Pago */}
-              <section className="bg-white rounded-2xl border border-[#EBE3D6] p-5 sm:p-6">
-                <div className="flex items-center gap-3 mb-5">
-                  <span className="w-8 h-8 rounded-xl bg-[#0F8B6C] text-white flex items-center justify-center font-bold text-sm">3</span>
-                  <h2 className="font-fraunces text-xl">Método de pago</h2>
-                </div>
-                <PaymentMethodSelector value={medioPago} onChange={setMedioPago} totalCubiertoConGC={false} />
-              </section>
+            {/* 2 · Forma de envío (BlueExpress inline) */}
+            <div data-shipping-selector>
+              <CollapsibleSectionV2
+                step={2}
+                title="Forma de envío"
+                subtitle="Tarifa BlueExpress según tu comuna"
+                defaultOpen
+                complete={!!envioBluex}
+                summary={envioBluex ? `BlueExpress ${envioBluex.servicio} · ${envio === 0 ? 'GRATIS' : fmtCLP(envio)}` : null}
+              >
+                <ShippingSelector
+                  variant="light"
+                  items={itemsEnvio}
+                  comuna={cliente.ciudad}
+                  region={cliente.region}
+                  subtotal={subtotal}
+                  umbralEnvioGratis={40000}
+                  onSelect={setEnvioBluex}
+                />
+              </CollapsibleSectionV2>
             </div>
+
+            {/* 3 · Pago */}
+            <CollapsibleSectionV2
+              step={3}
+              title="Método de pago"
+              subtitle="Elige cómo quieres pagar"
+              defaultOpen
+              complete={!!medioPago}
+              summary={medioPago ? (medioPago === 'Transferencia' ? 'Transferencia bancaria' : 'Mercado Pago') : null}
+            >
+              <PaymentMethodSelector value={medioPago} onChange={setMedioPago} totalCubiertoConGC={false} />
+            </CollapsibleSectionV2>
 
             {/* 4 · Facturación (full width, plegable interno) */}
             <div data-billing-section>
