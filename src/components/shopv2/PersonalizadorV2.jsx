@@ -14,7 +14,7 @@ import { tiposActivos, feeUnitarioCombinado, labelCombinada, persCompleta, hayAl
 // personalización". Es CONTROLADO: recibe `pers` y `setPers` del padre con
 // { frase, peyu, archivo, texto, disenoPeyuUrl, logoUrl, aprobada }.
 // ════════════════════════════════════════════════════════════════════════
-export default function PersonalizadorV2({ pers, setPers, gratis, moq = 10 }) {
+export default function PersonalizadorV2({ pers, setPers, gratis, moq = 10, soloArchivo = false }) {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState('');
   const fileRef = useRef(null);
@@ -61,14 +61,25 @@ export default function PersonalizadorV2({ pers, setPers, gratis, moq = 10 }) {
         <Sparkles className="w-4 h-4 text-[#D96B4D]" />
         <label className="text-sm font-bold text-[#2A2420]">Personalización (opcional)</label>
       </div>
-      <p className="text-[11px] text-[#A78B6F] mb-2.5">Combina las opciones de grabado láser que quieras. Gratis desde {moq}u.</p>
+      <p className="text-[11px] text-[#A78B6F] mb-2.5">
+        {soloArchivo
+          ? `Graba tu diseño con láser en este producto. Gratis desde ${moq}u.`
+          : `Combina las opciones de grabado láser que quieras. Gratis desde ${moq}u.`}
+      </p>
 
-      {/* Opciones COMBINABLES (multi-toggle, se suman) */}
-      <div className="grid grid-cols-3 gap-2">
-        <PersToggleCardV2 Icon={Type} label="Frase" precio={PRECIO_PERSONALIZACION.frase} active={pers.frase} onToggle={() => toggle('frase')} gratis={gratis} />
-        <PersToggleCardV2 Icon={Palette} label="Diseño PEYU" precio={PRECIO_PERSONALIZACION.peyu} active={pers.peyu} onToggle={() => toggle('peyu')} gratis={gratis} />
-        <PersToggleCardV2 Icon={Upload} label="Tu diseño" precio={PRECIO_PERSONALIZACION.archivo} active={pers.archivo} onToggle={() => toggle('archivo')} gratis={gratis} />
-      </div>
+      {/* Opciones de personalización. En carcasas se permiten las 3 (combinables);
+          en el resto de productos SOLO "Tu diseño". */}
+      {soloArchivo ? (
+        <div className="grid grid-cols-1 gap-2">
+          <PersToggleCardV2 Icon={Upload} label="Tu diseño" precio={PRECIO_PERSONALIZACION.archivo} active={pers.archivo} onToggle={() => toggle('archivo')} gratis={gratis} />
+        </div>
+      ) : (
+        <div className="grid grid-cols-3 gap-2">
+          <PersToggleCardV2 Icon={Type} label="Frase" precio={PRECIO_PERSONALIZACION.frase} active={pers.frase} onToggle={() => toggle('frase')} gratis={gratis} />
+          <PersToggleCardV2 Icon={Palette} label="Diseño PEYU" precio={PRECIO_PERSONALIZACION.peyu} active={pers.peyu} onToggle={() => toggle('peyu')} gratis={gratis} />
+          <PersToggleCardV2 Icon={Upload} label="Tu diseño" precio={PRECIO_PERSONALIZACION.archivo} active={pers.archivo} onToggle={() => toggle('archivo')} gratis={gratis} />
+        </div>
+      )}
 
       {/* Resumen de las opciones activas (suma de cargos) */}
       {activos.length > 0 && (

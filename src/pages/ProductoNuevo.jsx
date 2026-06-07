@@ -52,6 +52,11 @@ export default function ProductoNuevo() {
     }).finally(() => setLoading(false));
   }, [id]);
 
+  // ¿Es carcasa? Solo en carcasas se permiten las 3 personalizaciones
+  // (Frase + Diseño PEYU + Tu diseño). En el resto: SOLO "Tu diseño".
+  const esCarcasa = producto?.categoria === 'Carcasas B2C';
+  const soloArchivo = !!producto && !esCarcasa;
+
   // Colores reales del producto (carcasas = 5 colores, resto = 4, etc.)
   const colores = useMemo(() => (producto ? getColoresProducto(producto) : []), [producto]);
   const requiereColor = colores.length > 1;
@@ -66,7 +71,12 @@ export default function ProductoNuevo() {
     if (draft) {
       const colorValido = draft.colorId && colores.some((c) => c.id === draft.colorId);
       setColorId(colorValido ? draft.colorId : (colores.length === 1 ? colores[0].id : null));
-      setPers(draft.pers || PERS_VACIO);
+      // En productos NO-carcasa solo se permite "Tu diseño": descartamos frase/peyu
+      // que pudieran venir en un borrador para mantener la regla consistente.
+      const draftPers = draft.pers || PERS_VACIO;
+      setPers(esCarcasa
+        ? draftPers
+        : { ...draftPers, frase: false, peyu: false, texto: '', disenoPeyuUrl: '' });
       setPlacements(draft.placements || {});
       setCantidad(draft.cantidad || 1);
     } else {
@@ -75,7 +85,7 @@ export default function ProductoNuevo() {
       setPlacements({});
       setCantidad(1);
     }
-  }, [producto, colores]);
+  }, [producto, colores, esCarcasa]);
 
   // Auto-guardado: persiste el borrador del producto actual en cada cambio.
   useEffect(() => {
@@ -106,11 +116,15 @@ export default function ProductoNuevo() {
   const feeTotal = gratis ? 0 : feeUnit * cantidad;
   const total = precioUnit * cantidad + feeTotal;
 
-  // Imagen de la carcasa para el color elegido (lienzo del mockup).
-  const colorImg = useMemo(
-    () => (color ? getProductImageForColor(producto, color) : displayImg),
-    [producto, color, displayImg]
-  );
+  // Imagen base (lienzo) del mockup.
+  // • Carcasas: foto del color elegido.
+  // • Resto de productos: imagen base LIMPIA (sin el logo PEYU grabado de fábrica)
+  //   si existe, para montar el diseño del cliente sin superposiciones. Cae a la
+  //   foto normal si aún no se generó la versión limpia.
+  const colorImg = useMemo(() => {
+    if (!esCarcasa && producto?.imagen_base_limpia_url) return producto.imagen_base_limpia_url;
+    return color ? getProductImageForColor(producto, color) : displayImg;
+  }, [producto, color, displayImg, esCarcasa]);
 
   // Capas (combinables) para el mockup en vivo. ORDEN FIJO de apilado
   // (arriba→abajo): 1) Tu logo  2) Diseño PEYU  3) Frase.
@@ -247,7 +261,7 @@ export default function ProductoNuevo() {
 
             {/* Personalización en vivo (Baymard #5) — circuito completo */}
             <div data-personalizador>
-              <PersonalizadorV2 pers={pers} setPers={setPers} gratis={gratis} moq={moq} />
+              <PersonalizadorV2 pers={pers} setPers={setPers} gratis={gratis} moq={moq} soloArchivo={soloArchivo} />
 
               {/* Mockup EN VIVO: compone todas las capas combinadas */}
               {muestraMockup && (
