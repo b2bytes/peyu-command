@@ -223,7 +223,7 @@ export default function ProductoNuevo() {
       <div className="min-h-screen" style={{ background: '#F8F3ED' }}>
         <ShopV2Header />
         <div className="flex items-center justify-center py-32">
-          <Loader2 className="w-8 h-8 text-[#0F8B6C] animate-spin" />
+          <Loader2 className="w-8 h-8 animate-spin" style={{ color: '#C0785C' }} />
         </div>
       </div>
     );
@@ -234,8 +234,8 @@ export default function ProductoNuevo() {
       <div className="min-h-screen font-inter" style={{ background: '#F8F3ED' }}>
         <ShopV2Header />
         <div className="text-center py-32 px-4">
-          <p className="font-bold text-[#2A2420] mb-2">Producto no encontrado</p>
-          <Link to="/CatalogoNuevo" className="text-[#0F8B6C] font-bold text-sm">← Volver a la tienda</Link>
+          <p className="font-bold mb-2" style={{ color: '#2C1810' }}>Producto no encontrado</p>
+          <Link to="/CatalogoNuevo" className="font-bold text-sm" style={{ color: '#C0785C' }}>← Volver a la tienda</Link>
         </div>
       </div>
     );
@@ -249,13 +249,14 @@ export default function ProductoNuevo() {
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6">
         <CheckoutStepperV2 current="producto" />
-        <Link to="/CatalogoNuevo" className="inline-flex items-center gap-1.5 text-sm font-bold text-[#4B4F54] hover:text-[#0F8B6C] mb-5 transition-colors lg:hidden">
+        <Link to="/CatalogoNuevo" className="inline-flex items-center gap-1.5 text-sm font-bold mb-4 transition-colors" style={{ color: '#7A6050' }}>
           <ArrowLeft className="w-4 h-4" /> Volver a la tienda
         </Link>
 
-        <div className="grid lg:grid-cols-2 gap-6 lg:gap-12">
-          {/* GALERÍA con zoom */}
-          <div className="lg:sticky lg:top-24 self-start">
+        {/* Layout: galería sticky izquierda · configurador scroll derecha */}
+        <div className="grid lg:grid-cols-2 gap-6 lg:gap-10 lg:items-start">
+          {/* GALERÍA sticky — fija en desktop mientras scrolleas el configurador */}
+          <div className="lg:sticky lg:top-24 lg:self-start">
             <ProductGalleryV2
               images={galleryImages}
               active={galIdx}
@@ -265,13 +266,13 @@ export default function ProductoNuevo() {
             />
           </div>
 
-          {/* CONFIGURADOR */}
-          <div className="space-y-6">
+          {/* CONFIGURADOR — scroll libre en desktop */}
+          <div className="space-y-5 lg:pb-12">
             <div>
-              <p className="text-xs font-bold uppercase tracking-wider text-[#A78B6F] mb-1.5">
+              <p className="text-xs font-bold uppercase tracking-wider mb-1.5" style={{ color: '#A08070' }}>
                 {producto.categoria?.replace(' B2C', '')}
               </p>
-              <h1 className="font-fraunces text-3xl sm:text-4xl leading-[1.1] mb-2.5">{producto.nombre}</h1>
+              <h1 className="font-fraunces text-3xl sm:text-4xl leading-[1.05] mb-2.5" style={{ color: '#2C1810' }}>{producto.nombre}</h1>
               <p className="font-poppins font-bold text-2xl" style={{ color: '#C0785C' }}>{fmtCLP(precioUnit)}</p>
               {stockBajo && (
                 <p className="inline-flex items-center gap-1.5 mt-2 text-xs font-bold px-2.5 py-1 rounded-full" style={{ color: '#C0785C', background: 'rgba(192,120,92,.1)' }}>
@@ -279,7 +280,7 @@ export default function ProductoNuevo() {
                 </p>
               )}
               {producto.descripcion && (
-                <p className="text-sm text-[#4B4F54] leading-relaxed mt-3">{producto.descripcion}</p>
+                <p className="text-sm leading-relaxed mt-3" style={{ color: '#7A6050' }}>{producto.descripcion}</p>
               )}
             </div>
 
@@ -317,9 +318,9 @@ export default function ProductoNuevo() {
             {/* Cantidad */}
             <div className="flex items-center justify-between">
               <div>
-                <span className="text-sm font-bold text-[#2A2420]">Cantidad</span>
+                <span className="text-sm font-bold" style={{ color: '#2C1810' }}>Cantidad</span>
                 {activos.length > 0 && (
-                  <p className={`text-[11px] mt-0.5 font-semibold ${gratis ? 'text-[#0F8B6C]' : 'text-[#A78B6F]'}`}>
+                  <p className="text-[11px] mt-0.5 font-semibold" style={{ color: gratis ? '#8BAD8A' : '#A08070' }}>
                     {gratis ? `✓ Grabado GRATIS desde ${moq}u` : `Faltan ${moq - cantidad}u para grabado gratis`}
                   </p>
                 )}

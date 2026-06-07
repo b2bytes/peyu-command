@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ShoppingBag, Trash2, ArrowRight, Recycle, ArrowLeft, ShieldCheck } from 'lucide-react';
+import { ShoppingBag, Trash2, ArrowRight, Recycle, ArrowLeft, ShieldCheck, Tag } from 'lucide-react';
 import ShopV2Header from '@/components/shopv2/ShopV2Header';
 import CheckoutStepperV2 from '@/components/shopv2/CheckoutStepperV2';
 import StepNavV2 from '@/components/shopv2/StepNavV2';
@@ -57,7 +57,7 @@ export default function CarritoNuevo() {
   }
 
   return (
-    <div className="min-h-screen font-inter" style={{ background: '#F8F3ED', color: '#2C1810' }}>
+    <div className="min-h-screen font-inter pb-24 lg:pb-0" style={{ background: '#F8F3ED', color: '#2C1810' }}>
       <ShopV2Header />
 
       <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6">
@@ -116,8 +116,8 @@ export default function CarritoNuevo() {
                       )}
                     </div>
                     {teaser && (
-                      <p className="text-[10px] text-[#D96B4D] font-bold mt-1.5">
-                        ¡Agrega {teaser.necesita} más y obtén −{teaser.pctSiguiente}% en este producto!
+                      <p className="text-[10px] font-bold mt-1.5" style={{ color: '#C0785C' }}>
+                        🎁 Agrega {teaser.necesita} más y obtén −{teaser.pctSiguiente}% en este producto
                       </p>
                     )}
                     <div className="flex items-center justify-between mt-3">
@@ -192,6 +192,23 @@ export default function CarritoNuevo() {
       <footer className="py-8 text-center text-xs mt-8 flex items-center justify-center gap-1.5" style={{ borderTop: '1px solid #D4C4B0', color: '#A08070' }}>
         <Recycle className="w-3.5 h-3.5" style={{ color: '#8BAD8A' }} /> PEYU Chile · Hecho con plástico reciclado 🇨🇱
       </footer>
+
+      {/* Sticky CTA mobile */}
+      <div className="lg:hidden fixed bottom-0 inset-x-0 z-40 backdrop-blur-xl px-4 py-3 pb-safe" style={{ background: 'rgba(248,243,237,.96)', borderTop: '1px solid #D4C4B0', boxShadow: '0 -6px 24px rgba(44,24,16,.1)' }}>
+        <div className="flex items-center gap-3">
+          <div className="flex-shrink-0">
+            <p className="text-[10px] font-bold uppercase tracking-wide leading-none" style={{ color: '#A08070' }}>Total</p>
+            <p className="font-poppins font-bold text-lg leading-tight" style={{ color: '#2C1810' }}>{fmtCLP(total)}</p>
+          </div>
+          <button
+            onClick={irACheckout}
+            className="flex-1 h-12 rounded-2xl text-white font-bold text-sm flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
+            style={{ background: 'linear-gradient(135deg,#C0785C,#A86440)', boxShadow: '0 4px 16px rgba(192,120,92,.3)' }}
+          >
+            <ShieldCheck className="w-4 h-4" /> Ir a pagar
+          </button>
+        </div>
+      </div>
     </div>
   );
 }

@@ -14,7 +14,7 @@ export default function PriceBreakdownV2({
   const iva = total - neto;
 
   return (
-    <div className="bg-white rounded-2xl border border-[#EBE3D6] p-4 space-y-2">
+    <div className="bg-white rounded-2xl p-4 space-y-2" style={{ border: '1.5px solid #D4C4B0' }}>
       {/* Resumen de lo que estás comprando (producto · color · cantidad) */}
       {productoNombre && (
         <div className="pb-2 mb-1 border-b border-[#EBE3D6]">
@@ -25,41 +25,39 @@ export default function PriceBreakdownV2({
           </p>
         </div>
       )}
-      <div className="flex justify-between text-sm text-[#4B4F54]">
+      <div className="flex justify-between text-sm" style={{ color: '#7A6050' }}>
         <span>{fmtCLP(precioUnit)} × {cantidad}</span>
         <span className="font-semibold">{fmtCLP(subtotal)}</span>
       </div>
       {tipoLabel && (
-        <div className="flex justify-between text-sm text-[#4B4F54]">
+        <div className="flex justify-between text-sm" style={{ color: '#7A6050' }}>
           <span className="truncate pr-2">
             {tipoLabel}{!gratis && feeUnit > 0 ? ` · ${fmtCLP(feeUnit)} × ${cantidad}` : ''}
           </span>
-          <span className={`font-semibold flex-shrink-0 ${gratis ? 'text-[#0F8B6C]' : ''}`}>
+          <span className="font-semibold flex-shrink-0" style={{ color: gratis ? '#8BAD8A' : undefined }}>
             {gratis ? 'GRATIS' : `+${fmtCLP(feeTotal)}`}
           </span>
         </div>
       )}
       {descuentoMonto > 0 && (
-        <div className="flex justify-between text-sm font-bold text-[#0F8B6C]">
+        <div className="flex justify-between text-sm font-bold rounded-lg px-2 py-1" style={{ color: '#8BAD8A', background: 'rgba(139,173,138,.1)' }}>
           <span>Descuento {cantidad}u · −{descuentoPct}%</span>
           <span>−{fmtCLP(descuentoMonto)}</span>
         </div>
       )}
-      <div className="pt-2 border-t border-[#EBE3D6] space-y-1.5">
-        <div className="flex justify-between text-xs text-[#A78B6F]">
-          <span>Neto</span>
-          <span>{fmtCLP(neto)}</span>
+      <div className="pt-2 space-y-1.5" style={{ borderTop: '1px solid #EDE3D6' }}>
+        <div className="flex justify-between text-xs" style={{ color: '#A08070' }}>
+          <span>Neto</span><span>{fmtCLP(neto)}</span>
         </div>
-        <div className="flex justify-between text-xs text-[#A78B6F]">
-          <span>IVA 19%</span>
-          <span>{fmtCLP(iva)}</span>
+        <div className="flex justify-between text-xs" style={{ color: '#A08070' }}>
+          <span>IVA 19%</span><span>{fmtCLP(iva)}</span>
         </div>
-        <div className="flex justify-between pt-1.5 border-t border-[#EBE3D6]">
-          <span className="font-bold text-[#2A2420]">Total</span>
-          <span className="font-poppins font-bold text-lg text-[#0F8B6C]">{fmtCLP(total)}</span>
+        <div className="flex justify-between pt-1.5" style={{ borderTop: '1px solid #EDE3D6' }}>
+          <span className="font-bold" style={{ color: '#2C1810' }}>Total</span>
+          <span className="font-poppins font-bold text-lg" style={{ color: '#C0785C' }}>{fmtCLP(total)}</span>
         </div>
       </div>
-      <p className="text-[10px] text-[#A78B6F]">IVA incluido · envío se calcula al pagar</p>
+      <p className="text-[10px]" style={{ color: '#A08070' }}>IVA incluido · envío se calcula al pagar</p>
     </div>
   );
 }

@@ -1,20 +1,13 @@
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
 
-// ════════════════════════════════════════════════════════════════════════
-// StepNavV2 — Botonera Atrás / Siguiente consistente para el flujo de compra.
-// • backTo  : ruta del paso anterior (si falta, usa navigate(-1))
-// • nextLabel + onNext (o nextTo): acción primaria del paso.
-// • nextDisabled: deshabilita el botón primario.
-// Diseño Warm Dusk. Pensado para pie de página en escritorio.
-// ════════════════════════════════════════════════════════════════════════
+// StepNavV2 — Botonera Atrás / Siguiente. Warm Clay 2027.
 export default function StepNavV2({
   backTo, backLabel = 'Atrás',
   nextTo, onNext, nextLabel = 'Siguiente', nextDisabled = false, nextLoading = false,
   hideNext = false,
 }) {
   const navigate = useNavigate();
-
   const goBack = () => (backTo ? navigate(backTo) : navigate(-1));
   const goNext = () => { if (onNext) onNext(); else if (nextTo) navigate(nextTo); };
 
@@ -22,7 +15,8 @@ export default function StepNavV2({
     <div className="flex items-center justify-between gap-3 pt-2">
       <button
         onClick={goBack}
-        className="inline-flex items-center gap-2 px-5 py-3 rounded-2xl bg-white border border-[#EBE3D6] text-[#4B4F54] font-bold text-sm hover:border-[#0F8B6C]/40 hover:text-[#0F8B6C] transition-all"
+        className="inline-flex items-center gap-2 px-5 py-3 rounded-2xl font-bold text-sm transition-all hover:bg-[#EDE3D6]"
+        style={{ background: 'white', border: '1.5px solid #D4C4B0', color: '#7A6050' }}
       >
         <ArrowLeft className="w-4 h-4" /> {backLabel}
       </button>
@@ -31,7 +25,11 @@ export default function StepNavV2({
         <button
           onClick={goNext}
           disabled={nextDisabled || nextLoading}
-          className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl bg-[#0F8B6C] hover:bg-[#0B6E55] text-white font-bold text-sm shadow-lg shadow-[#0F8B6C]/20 transition-all hover:scale-[1.01] disabled:opacity-50 disabled:hover:scale-100"
+          className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl text-white font-bold text-sm transition-all hover:scale-[1.01] disabled:opacity-50 disabled:hover:scale-100"
+          style={{
+            background: 'linear-gradient(135deg,#C0785C,#A86440)',
+            boxShadow: '0 6px 20px rgba(192,120,92,.28)',
+          }}
         >
           {nextLoading ? (
             <><div className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" /> Procesando…</>
