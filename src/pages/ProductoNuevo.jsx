@@ -24,6 +24,7 @@ import {
   resumenPersonalizacion, persCompleta, hayAlgunoActivado,
 } from '@/lib/pers-combinable';
 import { getProductEngraggingArea, isProductoCarcasa } from '@/lib/product-engraving-areas';
+import { applyAutoPlacement } from '@/lib/auto-placement';
 
 // ════════════════════════════════════════════════════════════════════════
 // /ProductoNuevo?id= — Ficha de producto del Shop v2 (Tema 6 Conversion Machine).
@@ -97,6 +98,14 @@ export default function ProductoNuevo() {
     if (!producto) return;
     saveDraftV2(producto.id, { colorId, pers, placements, cantidad });
   }, [producto, colorId, pers, placements, cantidad]);
+
+  // Auto-placement: cuando se cambia la personalización, auto-asigna las posiciones.
+  // Cada vez que el usuario selecciona un logo/diseño, automáticamente se coloca
+  // en la posición predeterminada del producto sin requerir ajuste manual.
+  useEffect(() => {
+    if (!producto || !pers) return;
+    applyAutoPlacement(producto, pers, setPlacements);
+  }, [producto, pers.logoUrl, pers.disenoPeyuUrl, pers.texto]);
 
   // Galería: imagen por color elegido (1ª) + ángulos extra de galeria_urls.
   const galleryImages = useMemo(() => {

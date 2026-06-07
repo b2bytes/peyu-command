@@ -18,6 +18,7 @@ import {
   resumenPersonalizacion, persCompleta, hayAlgunoActivado,
 } from '@/lib/pers-combinable';
 import { getProductEngraggingArea, isProductoCarcasa } from '@/lib/product-engraving-areas';
+import { applyAutoPlacement } from '@/lib/auto-placement';
 
 // ════════════════════════════════════════════════════════════════════════
 // Configurador EN VIVO de la home v2 (Tema 6). Modelo → color real → tipo de
@@ -83,6 +84,13 @@ export default function LiveConfiguratorV2({ carcasas = [] }) {
     if (!producto) return;
     saveDraftV2(producto.id, { colorId, pers, placements, cantidad });
   }, [producto, colorId, pers, placements, cantidad]);
+
+  // Auto-placement: cuando se selecciona un logo/diseño, automáticamente se coloca
+  // en la posición predeterminada del producto (carcasa = centro siempre).
+  useEffect(() => {
+    if (!producto) return;
+    applyAutoPlacement(producto, pers, setPlacements);
+  }, [producto, pers.logoUrl, pers.disenoPeyuUrl, pers.texto]);
 
   const precioUnit = producto?.precio_b2c || 9990;
   const moq = producto?.personalizacion_gratis_desde || producto?.moq_personalizacion || MOQ_PERSONALIZACION_GRATIS;
