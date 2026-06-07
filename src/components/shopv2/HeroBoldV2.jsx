@@ -1,47 +1,44 @@
-import { Recycle, ArrowRight, Sparkles, Leaf } from 'lucide-react';
+import { ArrowRight, Sparkles, Leaf, Recycle } from 'lucide-react';
 
-// Imágenes de respaldo desde base44 (siempre disponibles aunque WordPress esté caído)
-const FALLBACK_IMGS = [
+// Imágenes siempre disponibles en CDN base44 — úsalas aunque WordPress esté caído
+const HERO_IMGS = [
   'https://media.base44.com/images/public/69d99b9d61f699701129c103/7b59fad60_generated_image.png',
   'https://i0.wp.com/peyuchile.cl/wp-content/uploads/2025/04/4-mixto-1024x1024-1.webp?fit=600%2C600&ssl=1',
-  'https://i0.wp.com/peyuchile.cl/wp-content/uploads/2025/11/Kit-Escritorio-Pro-2.jpg?fit=600%2C600&ssl=1',
+  'https://i0.wp.com/peyuchile.cl/wp-content/uploads/2022/11/potfinal_porta-Photoroom-1.jpg?fit=600%2C600&ssl=1',
+  'https://i0.wp.com/peyuchile.cl/wp-content/uploads/2022/09/greencel-1.jpg?fit=600%2C600&ssl=1',
 ];
 
-// Imágenes extra de producto que van en los 3 stickers del hero
-const MINI_IMGS = [
-  { src: 'https://i0.wp.com/peyuchile.cl/wp-content/uploads/2022/07/1-2.jpg?fit=600%2C600&ssl=1', label: 'Cachos reciclados' },
-  { src: 'https://i0.wp.com/peyuchile.cl/wp-content/uploads/2022/09/greencel-1.jpg?fit=600%2C600&ssl=1', label: 'Porta celular' },
-  { src: 'https://i0.wp.com/peyuchile.cl/wp-content/uploads/2022/11/potfinal_porta-Photoroom-1.jpg?fit=600%2C600&ssl=1', label: 'Macetero' },
-];
+const BASE44_MAIN = 'https://media.base44.com/images/public/69d99b9d61f699701129c103/7b59fad60_generated_image.png';
 
-// Hero BOLD del Shop v2 — Tema Warm Clay 2027. Full-width, imagen grande.
+// Hero BOLD del Shop v2 — full-width, imagen grande con collage lateral.
 export default function HeroBoldV2({ heroImg, onPersonaliza }) {
-  // Usa la imagen del producto si cargó, o un fallback confiable
-  const mainImg = heroImg || FALLBACK_IMGS[1];
+  // Prioriza la imagen del producto si está en base44, si no usa el fallback garantizado
+  const isBase44 = heroImg && heroImg.includes('media.base44.com');
+  const mainImg = isBase44 ? heroImg : BASE44_MAIN;
 
   return (
-    <section className="w-full px-4 sm:px-8 lg:px-12 pt-6 pb-4">
-      <div className="max-w-screen-xl mx-auto">
-        <div className="grid lg:grid-cols-[1fr_1fr] gap-8 lg:gap-16 items-center min-h-[520px]">
+    <section className="w-full px-4 sm:px-8 lg:px-16 xl:px-20 pt-8 pb-6">
+      <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
+        <div className="grid lg:grid-cols-2 gap-10 xl:gap-20 items-center" style={{ minHeight: '500px' }}>
 
-          {/* COPY — izquierda */}
+          {/* ── COPY ── */}
           <div className="order-2 lg:order-1 flex flex-col justify-center">
-            <span className="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full mb-5 self-start" style={{ background: 'rgba(139,173,138,.18)', color: '#5B7D5A' }}>
+            <span className="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full mb-6 self-start" style={{ background: 'rgba(139,173,138,.18)', color: '#5B7D5A' }}>
               <Leaf className="w-3.5 h-3.5" /> Fabricado con tapitas de Santiago · 100% reciclado
             </span>
 
-            <h1 className="font-fraunces leading-[0.95] tracking-tight mb-5" style={{ fontSize: 'clamp(2.6rem,5.5vw,4.5rem)', color: '#2C1810' }}>
+            <h1 className="font-fraunces leading-[0.93] tracking-tight mb-5" style={{ fontSize: 'clamp(2.8rem,5.5vw,5rem)', color: '#2C1810' }}>
               Objetos que<br />
               <em className="not-italic" style={{ color: '#C0785C' }}>cuidan</em>{' '}
               el planeta.
             </h1>
 
-            <p className="text-base lg:text-lg leading-relaxed mb-4" style={{ color: '#7A6050', maxWidth: '480px' }}>
+            <p className="text-base lg:text-lg leading-relaxed mb-3" style={{ color: '#7A6050', maxWidth: '500px' }}>
               Cada PEYU nace de tapitas plásticas recolectadas en Santiago. Las fundimos, las moldeamos y las convertimos en piezas únicas con textura marmolada irrepetible.
             </p>
 
-            <p className="text-sm leading-relaxed mb-7" style={{ color: '#A08070', maxWidth: '400px' }}>
-              Personalizables con grabado láser permanente — tu frase, logo o diseño para siempre. Gratis desde 10 unidades.
+            <p className="text-sm leading-relaxed mb-8" style={{ color: '#A08070', maxWidth: '420px' }}>
+              Personalizables con grabado láser permanente — tu frase, logo o diseño. Gratis desde 10 unidades.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-3 mb-8">
@@ -61,59 +58,77 @@ export default function HeroBoldV2({ heroImg, onPersonaliza }) {
               </a>
             </div>
 
-            {/* Stats row */}
+            {/* Stats */}
             <div className="flex items-center gap-8 pt-5" style={{ borderTop: '1px solid #D4C4B0' }}>
-              {[['~30 g', 'plástico rescatado/pieza'], ['Marmolado', 'único e irrepetible'], ['10 años', 'de garantía']].map(([n, l]) => (
+              {[['~30 g', 'plástico rescatado'], ['Marmolado', 'único e irrepetible'], ['10 años', 'de garantía']].map(([n, l]) => (
                 <div key={n}>
-                  <p className="font-poppins font-bold text-lg" style={{ color: '#2C1810' }}>{n}</p>
+                  <p className="font-poppins font-bold text-xl" style={{ color: '#2C1810' }}>{n}</p>
                   <p className="text-[11px] leading-tight mt-0.5" style={{ color: '#A08070' }}>{l}</p>
                 </div>
               ))}
             </div>
           </div>
 
-          {/* IMAGEN — derecha, grande */}
-          <div className="relative order-1 lg:order-2 flex items-center justify-center">
+          {/* ── IMAGEN principal + collage lateral ── */}
+          <div className="order-1 lg:order-2 relative flex items-center justify-end gap-4">
             {/* Glow ambiental */}
-            <div className="absolute -inset-8 rounded-[4rem] blur-3xl pointer-events-none" style={{ background: 'linear-gradient(135deg,rgba(192,120,92,.15),rgba(139,173,138,.12))' }} />
+            <div className="absolute -inset-10 rounded-[4rem] blur-3xl pointer-events-none opacity-60"
+              style={{ background: 'linear-gradient(135deg,rgba(192,120,92,.18),rgba(139,173,138,.14))' }} />
+
+            {/* Columna de mini imágenes (solo xl) */}
+            <div className="hidden xl:flex flex-col gap-3 flex-shrink-0">
+              {HERO_IMGS.slice(1, 3).map((src, i) => (
+                <div key={i} className="w-24 h-24 rounded-2xl overflow-hidden flex-shrink-0"
+                  style={{ border: '1.5px solid #D4C4B0', background: '#EDE3D6' }}>
+                  <img src={src} alt="" className="w-full h-full object-cover"
+                    onError={(e) => { e.target.style.opacity = '0'; }} />
+                </div>
+              ))}
+              <div className="w-24 h-24 rounded-2xl flex-shrink-0 flex items-center justify-center text-center"
+                style={{ background: 'rgba(139,173,138,.15)', border: '1.5px dashed #8BAD8A' }}>
+                <div>
+                  <Recycle className="w-5 h-5 mx-auto mb-1" style={{ color: '#8BAD8A' }} />
+                  <p className="text-[9px] font-bold leading-tight" style={{ color: '#5B7D5A' }}>♻️ Reciclado</p>
+                </div>
+              </div>
+            </div>
 
             {/* Imagen principal grande */}
-            <div className="relative w-full" style={{ maxWidth: '520px' }}>
-              <div className="relative rounded-[2.5rem] overflow-hidden" style={{ aspectRatio: '1/1', background: '#EDE3D6', border: '2px solid #D4C4B0', boxShadow: '0 32px 80px -24px rgba(44,24,16,.28)' }}>
+            <div className="relative flex-1" style={{ maxWidth: '500px' }}>
+              <div className="relative rounded-[2.5rem] overflow-hidden"
+                style={{ aspectRatio: '1/1', background: '#EDE3D6', border: '2px solid #D4C4B0', boxShadow: '0 32px 80px -24px rgba(44,24,16,.28)' }}>
                 <img
                   src={mainImg}
                   alt="Producto PEYU de plástico reciclado marmolado"
                   className="w-full h-full object-cover"
-                  onError={(e) => { e.target.src = FALLBACK_IMGS[1]; }}
+                  onError={(e) => {
+                    // Nunca debería llegar acá porque mainImg es base44, pero por si acaso:
+                    e.target.style.display = 'none';
+                    e.target.parentElement.style.background = '#EDE3D6';
+                  }}
                 />
-                {/* Overlay sutil para que los badges sean legibles */}
-                <div className="absolute inset-0 pointer-events-none" style={{ background: 'linear-gradient(to top, rgba(44,24,16,.18) 0%, transparent 50%)' }} />
+                <div className="absolute inset-0 pointer-events-none"
+                  style={{ background: 'linear-gradient(to top, rgba(44,24,16,.20) 0%, transparent 55%)' }} />
               </div>
 
-              {/* Badge inferior izquierda */}
-              <div className="absolute bottom-5 left-5 bg-white/92 backdrop-blur-xl rounded-2xl px-4 py-3 shadow-lg" style={{ border: '1px solid rgba(212,196,176,.7)' }}>
+              {/* Badge inferior */}
+              <div className="absolute bottom-5 left-5 bg-white/93 backdrop-blur-xl rounded-2xl px-4 py-3 shadow-lg"
+                style={{ border: '1px solid rgba(212,196,176,.7)' }}>
                 <p className="text-[9px] font-bold uppercase tracking-wider mb-0.5" style={{ color: '#A08070' }}>Cada pieza es única</p>
                 <p className="font-poppins font-bold text-sm" style={{ color: '#C0785C' }}>Marmolado irrepetible ♻️</p>
               </div>
 
-              {/* Badge superior derecha */}
-              <div className="absolute top-5 right-5 bg-white/92 backdrop-blur-xl rounded-xl px-3 py-2 shadow-md" style={{ border: '1px solid rgba(212,196,176,.7)' }}>
+              {/* Badge superior */}
+              <div className="absolute top-5 right-5 bg-white/93 backdrop-blur-xl rounded-xl px-3 py-2 shadow-md"
+                style={{ border: '1px solid rgba(212,196,176,.7)' }}>
                 <div className="flex items-center gap-1.5">
                   <Recycle className="w-3.5 h-3.5" style={{ color: '#8BAD8A' }} />
                   <span className="text-[10px] font-bold" style={{ color: '#5B7D5A' }}>Tapitas recicladas</span>
                 </div>
               </div>
-
-              {/* Mini galería lateral — 3 productos extra */}
-              <div className="absolute -right-14 top-1/2 -translate-y-1/2 hidden xl:flex flex-col gap-3">
-                {MINI_IMGS.map((m, i) => (
-                  <div key={i} className="w-16 h-16 rounded-2xl overflow-hidden shadow-md" style={{ border: '1.5px solid #D4C4B0', background: '#EDE3D6' }}>
-                    <img src={m.src} alt={m.label} className="w-full h-full object-cover" onError={(e) => { e.target.style.display = 'none'; }} />
-                  </div>
-                ))}
-              </div>
             </div>
           </div>
+
         </div>
       </div>
     </section>

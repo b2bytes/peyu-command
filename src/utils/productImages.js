@@ -3,6 +3,14 @@
 // Each SKU mapped to its real product photo
 // ============================================================
 
+// Imágenes base44 (siempre disponibles, CDN propio) — úsalas como fallback final
+export const BASE44_FALLBACK = 'https://media.base44.com/images/public/69d99b9d61f699701129c103/7b59fad60_generated_image.png';
+export const BASE44_PRODUCT_IMGS = [
+  'https://media.base44.com/images/public/69d99b9d61f699701129c103/7b59fad60_generated_image.png',
+  'https://media.base44.com/images/public/69d99b9d61f699701129c103/4a2230d61_generated_image.png',
+  'https://media.base44.com/images/public/69d99b9d61f699701129c103/19448ad58_generated_image.png',
+];
+
 export const SKU_IMAGES = {
   // ── CARCASAS ──────────────────────────────────────────────
   'CARC-AIRP-12':   'https://i0.wp.com/peyuchile.cl/wp-content/uploads/2025/06/negro-2-1.webp?fit=600%2C600&ssl=1',
@@ -252,11 +260,11 @@ export function getProductImage(skuOrProducto, categoria) {
     if (byName) return byName;
 
     // 5. Categoría
-    return CATEGORY_IMAGES[p.categoria] || CATEGORY_IMAGES['Hogar'];
+    return CATEGORY_IMAGES[p.categoria] || BASE44_FALLBACK;
   }
 
   // Firma legacy: getProductImage(sku, categoria)
   const sku = skuOrProducto;
   if (sku && SKU_IMAGES[sku]) return SKU_IMAGES[sku];
-  return CATEGORY_IMAGES[categoria] || CATEGORY_IMAGES['Hogar'];
+  return CATEGORY_IMAGES[categoria] || BASE44_FALLBACK;
 }
