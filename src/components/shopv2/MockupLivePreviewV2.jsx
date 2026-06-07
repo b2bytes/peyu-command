@@ -41,22 +41,31 @@ const AREA_CX = (AREA.left + AREA.right) / 2;
 const AREA_CY = (AREA.top + AREA.bottom) / 2;
 
 // Tamaño base por tipo de capa (en % del lienzo).
-const SIZE_BASE = { frase: 30, peyu: 26, archivo: 26 };
+// Para productos NO-carcasa usamos tamaños más grandes porque el área es mayor.
+const SIZE_BASE_CARCASA = { frase: 30, peyu: 26, archivo: 26 };
+const SIZE_BASE_LIBRE   = { frase: 42, peyu: 38, archivo: 38 };
 
 // Auto-layout: distribuye N capas en filas dentro del área técnica, centradas
 // verticalmente y sin solaparse. Devuelve { [id]: {size,x,y} }.
-function autoLayout(capas, area) {
+function autoLayout(capas, area, esCarcasa = true) {
   const A = area || AREA_CARCASA;
   const cx = (A.left + A.right) / 2;
+  const cy = (A.top + A.bottom) / 2;
+  const SIZE_BASE = esCarcasa ? SIZE_BASE_CARCASA : SIZE_BASE_LIBRE;
   const n = capas.length;
   if (n === 0) return {};
+  // Para 1 sola capa, centrar exactamente en el centroide del área.
+  if (n === 1) {
+    const baseSize = SIZE_BASE[capas[0].tipo] || 38;
+    return { [capas[0].id]: { size: baseSize, x: cx, y: cy } };
+  }
   const usableTop = A.top + 4;
   const usableBottom = A.bottom - 4;
   const slotH = (usableBottom - usableTop) / n;
   const out = {};
   capas.forEach((c, i) => {
     const baseSize = SIZE_BASE[c.tipo] || 26;
-    const size = n === 1 ? baseSize : Math.max(14, Math.min(baseSize, slotH * 0.95));
+    const size = Math.max(14, Math.min(baseSize, slotH * 0.9));
     const y = usableTop + slotH * (i + 0.5);
     out[c.id] = { size, x: cx, y };
   });
@@ -134,7 +143,7 @@ const MockupLivePreviewV2 = forwardRef(function MockupLivePreviewV2({ productIma
   // a mano conservan su posición.
   useEffect(() => {
     setPlacements((prev) => {
-      const auto = autoLayout(capas, area);
+      const auto = autoLayout(capas, area, esCarcasa);
       const next = {};
       capas.forEach((c) => {
         next[c.id] = touched[c.id] && prev[c.id] ? prev[c.id] : auto[c.id];
@@ -209,7 +218,7 @@ const MockupLivePreviewV2 = forwardRef(function MockupLivePreviewV2({ productIma
 
   // Re-acomoda TODO automáticamente (botón mágico) — limpia los "touched".
   const autoAcomodar = () => {
-    setPlacements(autoLayout(capas, area));
+    setPlacements(autoLayout(capas, area, esCarcasa));
     setTouched({});
   };
 
@@ -356,7 +365,7 @@ const MockupLivePreviewV2 = forwardRef(function MockupLivePreviewV2({ productIma
                 <Icon className={`w-3.5 h-3.5 flex-shrink-0 ${isActive ? 'text-[#0F8B6C]' : 'text-[#A78B6F]'}`} />
                 <span className="text-[11px] font-bold text-[#2A2420] w-14 sm:w-20 flex-shrink-0 truncate">{NOMBRE[c.tipo]}</span>
                 <input
-                  type="range" min="12" max={c.tipo === 'frase' ? 40 : 34} value={pl.size}
+                  type="range" min="12" max={c.tipo === 'frase' ? (esCarcasa ? 40 : 55) : (esCarcasa ? 34 : 52)} value={pl.size}
                   onChange={(e) => { setActiveId(c.id); setSize(c.id, Number(e.target.value)); }}
                   className="flex-1 min-w-0 accent-[#0F8B6C]"
                   onClick={(e) => e.stopPropagation()}

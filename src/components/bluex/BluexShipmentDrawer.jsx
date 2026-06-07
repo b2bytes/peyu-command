@@ -173,12 +173,23 @@ export default function BluexShipmentDrawer({ envio: envioInicial, onClose, onUp
           {/* Datos destino */}
           <div className="bg-white border border-border rounded-xl p-4 space-y-2">
             <p className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground mb-1">Destinatario</p>
-            <Row icon={User} val={envio.cliente_nombre} />
-            <Row icon={Phone} val={envio.cliente_telefono} />
-            <Row icon={Mail} val={envio.cliente_email} />
-            <Row icon={MapPin} val={envio.direccion_destino} />
-            <Row icon={Package} val={`${envio.peso_kg}kg · $${(envio.valor_declarado_clp || 0).toLocaleString('es-CL')} declarado`} />
+            <Row icon={User} val={envio.cliente_nombre} fallback="Sin nombre registrado" />
+            <Row icon={Phone} val={envio.cliente_telefono} fallback="Sin teléfono" />
+            <Row icon={Mail} val={envio.cliente_email} fallback="Sin email" />
+            <Row icon={MapPin} val={[envio.direccion_destino, envio.comuna_destino, envio.region_destino].filter(Boolean).join(', ')} fallback="Sin dirección" />
+            <Row icon={Package} val={envio.peso_kg ? `${envio.peso_kg}kg · $${(envio.valor_declarado_clp || 0).toLocaleString('es-CL')} declarado` : null} fallback="Sin datos de peso" />
           </div>
+
+          {/* Info estado "Etiqueta Generada" */}
+          {envio.estado === 'Etiqueta Generada' && (
+            <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 flex items-start gap-2.5">
+              <FileText className="w-4 h-4 text-blue-600 flex-shrink-0 mt-0.5" />
+              <div className="text-xs text-blue-900">
+                <p className="font-bold">Etiqueta generada · pendiente retiro</p>
+                <p className="text-blue-700 mt-0.5">La OT fue registrada en Bluex. El tracking se actualizará cuando el courier retire el paquete. Pulsa "Refrescar" para consultar el estado en tiempo real.</p>
+              </div>
+            </div>
+          )}
 
           {/* Timeline */}
           <div className="bg-white border border-border rounded-xl p-4">
@@ -250,12 +261,14 @@ export default function BluexShipmentDrawer({ envio: envioInicial, onClose, onUp
   );
 }
 
-function Row({ icon: Icon, val }) {
-  if (!val) return null;
+function Row({ icon: Icon, val, fallback }) {
+  const display = val || null;
   return (
-    <div className="flex items-start gap-2 text-sm text-foreground">
-      <Icon className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0 mt-0.5" />
-      <span className="break-words">{val}</span>
+    <div className="flex items-start gap-2 text-sm">
+      <Icon className={`w-3.5 h-3.5 flex-shrink-0 mt-0.5 ${display ? 'text-muted-foreground' : 'text-muted-foreground/40'}`} />
+      <span className={`break-words ${display ? 'text-foreground' : 'text-muted-foreground/50 italic text-xs'}`}>
+        {display || fallback || '—'}
+      </span>
     </div>
   );
 }

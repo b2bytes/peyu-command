@@ -1,17 +1,31 @@
 import { Truck, AlertTriangle, Clock, MapPin, FileText, Eye } from 'lucide-react';
 
 const ESTADO_STYLES = {
-  'Pendiente Emisión': 'bg-slate-100 text-slate-700 border-slate-200',
-  'Etiqueta Generada': 'bg-blue-100 text-blue-800 border-blue-200',
-  'En Bodega': 'bg-blue-100 text-blue-800 border-blue-200',
-  'Retirado por Courier': 'bg-cyan-100 text-cyan-800 border-cyan-200',
-  'En Tránsito': 'bg-cyan-100 text-cyan-800 border-cyan-200',
-  'En Reparto': 'bg-violet-100 text-violet-800 border-violet-200',
-  'Entregado': 'bg-emerald-100 text-emerald-800 border-emerald-200',
-  'No Entregado': 'bg-amber-100 text-amber-800 border-amber-200',
-  'Devuelto': 'bg-red-100 text-red-800 border-red-200',
-  'Anulado': 'bg-slate-200 text-slate-600 border-slate-300',
-  'Excepción': 'bg-red-100 text-red-800 border-red-200',
+  'Pendiente Emisión': 'bg-slate-100 text-slate-600 border-slate-300',
+  'Etiqueta Generada': 'bg-indigo-100 text-indigo-800 border-indigo-300',
+  'En Bodega':         'bg-blue-100 text-blue-800 border-blue-300',
+  'Retirado por Courier': 'bg-cyan-100 text-cyan-800 border-cyan-300',
+  'En Tránsito':       'bg-sky-100 text-sky-800 border-sky-300',
+  'En Reparto':        'bg-violet-100 text-violet-800 border-violet-300',
+  'Entregado':         'bg-emerald-100 text-emerald-800 border-emerald-300',
+  'No Entregado':      'bg-amber-100 text-amber-800 border-amber-300',
+  'Devuelto':          'bg-red-100 text-red-800 border-red-300',
+  'Anulado':           'bg-slate-200 text-slate-500 border-slate-300',
+  'Excepción':         'bg-red-100 text-red-800 border-red-300',
+};
+
+const ESTADO_ICON = {
+  'Pendiente Emisión':    '⏳',
+  'Etiqueta Generada':    '🏷️',
+  'En Bodega':            '📦',
+  'Retirado por Courier': '🚚',
+  'En Tránsito':          '🛣️',
+  'En Reparto':           '🏃',
+  'Entregado':            '✅',
+  'No Entregado':         '⚠️',
+  'Devuelto':             '↩️',
+  'Anulado':              '❌',
+  'Excepción':            '🚨',
 };
 
 const TIPO_ICONS = {
@@ -43,20 +57,25 @@ export default function BluexShipmentRow({ envio, onClick }) {
         </div>
       </td>
       <td className="px-3 py-3">
-        <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full border ${ESTADO_STYLES[envio.estado] || ESTADO_STYLES['Pendiente Emisión']}`}>
-          {envio.estado}
-        </span>
-        {envio.tiene_excepcion && (
-          <AlertTriangle className="w-3.5 h-3.5 text-red-500 inline ml-1.5" />
-        )}
-        {envio.atrasado && envio.estado !== 'Entregado' && (
-          <Clock className="w-3.5 h-3.5 text-orange-500 inline ml-1" />
-        )}
+        <div className="flex items-center gap-1">
+          <span className={`inline-flex items-center gap-1 text-[10px] font-bold px-2 py-1 rounded-full border ${ESTADO_STYLES[envio.estado] || ESTADO_STYLES['Pendiente Emisión']}`}>
+            <span>{ESTADO_ICON[envio.estado] || '📍'}</span>
+            {envio.estado}
+          </span>
+          {envio.tiene_excepcion && <AlertTriangle className="w-3.5 h-3.5 text-red-500" />}
+          {envio.atrasado && envio.estado !== 'Entregado' && <Clock className="w-3.5 h-3.5 text-orange-500" />}
+        </div>
       </td>
       <td className="px-3 py-3 text-[11px]">
-        <p className="text-foreground line-clamp-1">{envio.ultimo_evento_descripcion || '—'}</p>
-        {ago !== null && (
-          <p className="text-muted-foreground">{ago < 1 ? 'hace minutos' : ago < 24 ? `hace ${ago}h` : `hace ${Math.floor(ago / 24)}d`}</p>
+        {envio.ultimo_evento_descripcion ? (
+          <>
+            <p className="text-foreground line-clamp-1">{envio.ultimo_evento_descripcion}</p>
+            {ago !== null && (
+              <p className="text-muted-foreground">{ago < 1 ? 'hace minutos' : ago < 24 ? `hace ${ago}h` : `hace ${Math.floor(ago / 24)}d`}</p>
+            )}
+          </>
+        ) : (
+          <p className="text-muted-foreground/60 italic">Pendiente retiro courier</p>
         )}
       </td>
       <td className="px-3 py-3 text-right text-xs tabular-nums">
