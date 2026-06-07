@@ -3,8 +3,9 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import {
   Building2, Loader2, ArrowRight, ArrowLeft, Recycle, Package,
-  ShoppingCart, Sparkles, TrendingDown, Upload, X, Image, Check,
+  ShoppingCart, Sparkles, TrendingDown, Upload, X, Check,
 } from 'lucide-react';
+import LogoMockupPreview from '@/components/cotizacion/LogoMockupPreview';
 import ShopV2Header from '@/components/shopv2/ShopV2Header';
 import QuoteProductPicker from '@/components/cotizacion/QuoteProductPicker';
 import QuoteItemRow from '@/components/cotizacion/QuoteItemRow';
@@ -29,7 +30,7 @@ const FORM_INICIAL = {
 
 const trans = { duration: 0.35, ease: [0.22, 1, 0.36, 1] };
 
-// Panel flotante de branding: muestra el logo subido sobre la imagen del primer producto
+// Panel flotante de branding: mockup inteligente con grabado láser simulado
 function LogoBrandingPanel({ logoUrl, onLogoChange, primerProducto }) {
   const inputRef = useRef(null);
   const [uploading, setUploading] = useState(false);
@@ -41,7 +42,6 @@ function LogoBrandingPanel({ logoUrl, onLogoChange, primerProducto }) {
       const { file_url } = await base44.integrations.Core.UploadFile({ file });
       onLogoChange(file_url);
     } catch {
-      // fallback: usar object URL local
       onLogoChange(URL.createObjectURL(file));
     } finally {
       setUploading(false);
@@ -58,96 +58,47 @@ function LogoBrandingPanel({ logoUrl, onLogoChange, primerProducto }) {
 
   return (
     <div className="bg-white border border-[#EBE3D6] rounded-2xl overflow-hidden">
-      {/* Preview del mockup */}
+      {/* Mockup inteligente */}
       <div
-        className="relative h-32 bg-[#F8F4EE] flex items-center justify-center overflow-hidden"
+        className="cursor-pointer"
         onDragOver={(e) => e.preventDefault()}
         onDrop={onDrop}
+        onClick={() => !logoUrl && inputRef.current?.click()}
       >
-        {productImg && (
-          <img src={productImg} alt="producto" className="absolute inset-0 w-full h-full object-cover opacity-80" />
-        )}
-        {!productImg && (
-          <div className="absolute inset-0 flex items-center justify-center">
-            <Image className="w-10 h-10 text-[#D4C4B0]" />
-          </div>
-        )}
-        {/* Logo superpuesto */}
-        {logoUrl && (
-          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-            <div className="w-20 h-20 flex items-center justify-center">
-              <div className="absolute inset-0 scale-110 rounded-lg opacity-15 bg-black blur-md" />
-              <img
-                src={logoUrl}
-                alt="Tu logo"
-                className="relative max-w-full max-h-full object-contain"
-                style={{
-                  filter: 'grayscale(100%) contrast(200%) brightness(0.35)',
-                  mixBlendMode: 'multiply',
-                  opacity: 0.8,
-                }}
-              />
-            </div>
-          </div>
-        )}
-        {/* Sin logo: zona de drop */}
-        {!logoUrl && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center gap-1 bg-black/0 hover:bg-black/5 transition-colors cursor-pointer"
-            onClick={() => inputRef.current?.click()}>
-            <Upload className="w-5 h-5 text-[#A78B6F]" />
-            <span className="text-[10px] font-bold text-[#A78B6F]">Sube tu logo aquí</span>
-          </div>
-        )}
-        {uploading && (
-          <div className="absolute inset-0 bg-white/70 flex items-center justify-center">
-            <Loader2 className="w-6 h-6 animate-spin text-[#0F8B6C]" />
-          </div>
-        )}
+        <LogoMockupPreview logoUrl={logoUrl} productImg={productImg} size="md" />
       </div>
 
       <div className="p-3">
         <div className="flex items-center justify-between mb-2">
           <p className="text-xs font-bold text-[#2A2420]">
-            {logoUrl ? '✓ Logo listo para mockup' : 'Tu logo en el producto'}
+            {logoUrl ? <span className="text-[#0F8B6C]">✓ Mockup listo</span> : 'Tu logo grabado en el producto'}
           </p>
           {logoUrl && (
-            <button
-              onClick={() => onLogoChange(null)}
-              className="w-6 h-6 rounded-full bg-[#FAF7F2] border border-[#EBE3D6] flex items-center justify-center text-[#A78B6F] hover:text-[#D96B4D] transition-colors"
-            >
+            <button onClick={() => onLogoChange(null)}
+              className="w-6 h-6 rounded-full bg-[#FAF7F2] border border-[#EBE3D6] flex items-center justify-center text-[#A78B6F] hover:text-[#D96B4D] transition-colors">
               <X className="w-3.5 h-3.5" />
             </button>
           )}
         </div>
 
-        {logoUrl ? (
-          <button
-            onClick={() => inputRef.current?.click()}
-            className="w-full text-[11px] font-semibold text-[#0F8B6C] border border-[#0F8B6C]/30 rounded-xl py-1.5 hover:bg-[#0F8B6C]/5 transition-colors"
-          >
+        {uploading ? (
+          <div className="h-9 flex items-center justify-center gap-2 text-xs text-[#0F8B6C]">
+            <Loader2 className="w-4 h-4 animate-spin" /> Subiendo...
+          </div>
+        ) : logoUrl ? (
+          <button onClick={() => inputRef.current?.click()}
+            className="w-full text-[11px] font-semibold text-[#0F8B6C] border border-[#0F8B6C]/30 rounded-xl py-1.5 hover:bg-[#0F8B6C]/5 transition-colors">
             Cambiar logo
           </button>
         ) : (
-          <button
-            onClick={() => inputRef.current?.click()}
-            disabled={uploading}
-            className="w-full h-9 rounded-xl bg-[#0F8B6C] hover:bg-[#0B6E55] text-white text-xs font-bold flex items-center justify-center gap-1.5 transition-colors shadow-sm shadow-[#0F8B6C]/20"
-          >
-            {uploading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Upload className="w-3.5 h-3.5" />}
-            Subir logo (PNG/SVG)
+          <button onClick={() => inputRef.current?.click()}
+            className="w-full h-9 rounded-xl bg-[#0F8B6C] hover:bg-[#0B6E55] text-white text-xs font-bold flex items-center justify-center gap-1.5 transition-colors shadow-sm">
+            <Upload className="w-3.5 h-3.5" /> Subir logo (PNG/SVG/JPG)
           </button>
         )}
-        <p className="text-[9px] text-[#A78B6F] text-center mt-1.5">
-          PNG transparente recomendado · Se simula grabado láser
-        </p>
-
-        <input
-          ref={inputRef}
-          type="file"
-          accept="image/*"
-          className="hidden"
-          onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f); }}
-        />
+        <p className="text-[9px] text-[#A78B6F] text-center mt-1.5">PNG transparente · Simula grabado láser UV real</p>
+        <input ref={inputRef} type="file" accept="image/*" className="hidden"
+          onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f); }} />
       </div>
     </div>
   );
@@ -377,19 +328,14 @@ export default function CotizacionRapida() {
                             return (
                               <div key={it.producto.sku} className="bg-[#FAF7F2] border border-[#EBE3D6] rounded-xl p-3">
                                 <div className="flex items-center gap-3">
-                                  {/* Thumb con logo */}
-                                  <div className="relative w-12 h-12 rounded-xl overflow-hidden bg-white flex-shrink-0">
-                                    <img src={productImg} alt={it.producto.nombre} className="w-full h-full object-cover" />
-                                    {logoUrl && (
-                                      <div className="absolute inset-0 flex items-center justify-center p-1.5">
-                                        <img
-                                          src={logoUrl}
-                                          alt="logo"
-                                          className="max-w-full max-h-full object-contain"
-                                          style={{ filter: 'grayscale(100%) contrast(180%) brightness(0.4)', mixBlendMode: 'multiply', opacity: 0.75 }}
-                                        />
-                                      </div>
-                                    )}
+                                  {/* Thumb con mockup inteligente */}
+                                  <div className="flex-shrink-0" style={{ width: '48px', height: '48px' }}>
+                                    <LogoMockupPreview
+                                      logoUrl={logoUrl}
+                                      productImg={productImg}
+                                      size="sm"
+                                      className="!w-full !h-full !aspect-auto !rounded-xl"
+                                    />
                                   </div>
 
                                   <div className="flex-1 min-w-0">

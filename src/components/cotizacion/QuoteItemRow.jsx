@@ -3,6 +3,7 @@ import { Trash2, Sparkles, ChevronDown, ChevronUp, Ruler, Weight } from 'lucide-
 import { getProductImage } from '@/utils/productImages';
 import { getB2BPriceForQty, getUnitBasePrice } from '@/lib/catalog-pricing';
 import { fmtCLP } from '@/lib/shop-v2-cart';
+import LogoMockupPreview from '@/components/cotizacion/LogoMockupPreview';
 
 // Mapa de colores → hex para swatches
 const SWATCH_MAP = {
@@ -60,24 +61,14 @@ export default function QuoteItemRow({ producto, qty, onQty, onRemove, logoUrl }
     <div className="bg-white border border-[#EBE3D6] rounded-2xl overflow-hidden">
       {/* Fila principal */}
       <div className="flex items-stretch gap-0">
-        {/* Imagen con mockup de logo si existe */}
-        <div className="relative w-20 h-20 flex-shrink-0 bg-[#F8F4EE] m-3 rounded-xl overflow-hidden">
-          <img
-            src={getProductImage(producto)}
-            alt={producto.nombre}
-            className="w-full h-full object-cover"
-            onError={(e) => { e.target.style.opacity = '0.3'; }}
+        {/* Mockup inteligente de logo */}
+        <div className="m-3 flex-shrink-0" style={{ width: '80px', height: '80px' }}>
+          <LogoMockupPreview
+            logoUrl={logoUrl}
+            productImg={getProductImage(producto)}
+            size="sm"
+            className="!w-full !h-full !aspect-auto"
           />
-          {logoUrl && (
-            <div className="absolute inset-0 flex items-center justify-center p-2">
-              <img
-                src={logoUrl}
-                alt="Tu logo"
-                className="max-w-full max-h-full object-contain opacity-80 mix-blend-multiply"
-                style={{ filter: 'grayscale(100%) contrast(150%)' }}
-              />
-            </div>
-          )}
         </div>
 
         {/* Info central */}
