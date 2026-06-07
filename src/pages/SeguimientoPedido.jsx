@@ -9,7 +9,6 @@ import {
 } from 'lucide-react';
 import TrackingTimeline from '@/components/seguimiento/TrackingTimeline';
 import PedidoRatingForm from '@/components/seguimiento/PedidoRatingForm';
-import MockupClientePreview from '@/components/pedidos/MockupClientePreview';
 import PublicSEO from '@/components/PublicSEO';
 import { track } from '@/lib/activity-tracker';
 import PublicHero from '@/components/public/PublicHero';
@@ -294,9 +293,6 @@ export default function SeguimientoPedido() {
                 </p>
               </div>
             )}
-
-            {/* Arte del cliente para estampar (mockup + logo subido) */}
-            <MockupClientePreview pedido={pedido} variant="public" />
 
             {/* Ayuda */}
             <div className="ld-card p-5 flex flex-col sm:flex-row items-center justify-between gap-4">

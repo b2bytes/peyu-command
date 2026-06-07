@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Sparkles, ShoppingBag, Check, Smartphone, Wand2 } from 'lucide-react';
 import ColorSwatchesV2 from '@/components/shopv2/ColorSwatchesV2';
@@ -45,6 +45,7 @@ export default function LiveConfiguratorV2({ carcasas = [] }) {
   const [cantidad, setCantidad] = useState(1);
   const [colorError, setColorError] = useState(false);
   const [added, setAdded] = useState(false);
+  const mockupRef = useRef(null);
 
   const colores = useMemo(() => (producto ? getColoresProducto(producto) : []), [producto]);
   const requiereColor = colores.length > 1;
@@ -110,10 +111,18 @@ export default function LiveConfiguratorV2({ carcasas = [] }) {
     return color ? getProductImageForColor(producto, color) : getProductImage(producto);
   }, [producto, color]);
 
-  const handleAdd = () => {
+  const handleAdd = async () => {
     if (!producto) return;
     if (requiereColor && !colorId) { setColorError(true); return; }
     if (!persOk) return;
+
+    // Captura el snapshot del canvas (foto base + grabado) como mockupUrl real.
+    let mockupUrl = muestraMockup ? previewImg : null;
+    if (muestraMockup && mockupRef.current?.captureSnapshot) {
+      const snap = await mockupRef.current.captureSnapshot();
+      if (snap) mockupUrl = snap;
+    }
+
     addToCartV2({
       productoId: producto.id,
       sku: producto.sku || null,
@@ -130,12 +139,11 @@ export default function LiveConfiguratorV2({ carcasas = [] }) {
       texto: pers.texto || null,
       logoUrl: pers.logoUrl || null,
       disenoPeyuUrl: pers.disenoPeyuUrl || null,
-      mockupUrl: muestraMockup ? previewImg : null,
+      mockupUrl,
       capas_grabado: capas.map((c) => ({ tipo: c.tipo, url: c.url || null, texto: c.texto || null, ...(placements[c.id] || {}) })),
+      imagen_base: previewImg,
       imagen: previewImg,
     });
-    // La configuración ya viajó completa al item del carrito → limpiamos el
-    // borrador de este producto para no re-restaurarlo al volver.
     clearDraftV2(producto.id);
     setAdded(true);
     setTimeout(() => navigate('/CarritoNuevo'), 700);
@@ -159,6 +167,7 @@ export default function LiveConfiguratorV2({ carcasas = [] }) {
           <div className="lg:sticky lg:top-24 self-start">
             {muestraMockup ? (
               <MockupLivePreviewV2
+                ref={mockupRef}
                 productImageUrl={previewImg}
                 fallbackUrl={getProductImage(producto)}
                 capas={capas}

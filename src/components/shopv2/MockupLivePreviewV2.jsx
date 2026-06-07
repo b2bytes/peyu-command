@@ -1,7 +1,8 @@
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useEffect, useCallback, forwardRef, useImperativeHandle } from 'react';
 import { Move, Sparkles, Loader2, Type, Palette, Upload, Wand2 } from 'lucide-react';
 import { engraveLogo, detectImageTone } from '@/lib/logo-engraver';
 import EngravedLayer from '@/components/shopv2/EngravedLayer';
+import html2canvas from 'html2canvas';
 
 // ════════════════════════════════════════════════════════════════════════
 // MockupLivePreviewV2 — Preview de grabado láser EN VIVO, piel Tema 6 (cream).
@@ -73,7 +74,10 @@ function clampToArea(x, y, sizePct, tipo) {
   };
 }
 
-export default function MockupLivePreviewV2({ productImageUrl, capas = [], onPlacementChange, fallbackUrl }) {
+// captureSnapshot(): captura el canvas del preview en vivo como dataURL PNG.
+// Se expone via forwardRef para que el padre (ProductoNuevo, LiveConfiguratorV2)
+// lo llame al agregar al carrito y guarde el mockup REAL (foto base + grabado).
+const MockupLivePreviewV2 = forwardRef(function MockupLivePreviewV2({ productImageUrl, capas = [], onPlacementChange, fallbackUrl }, ref) {
   const containerRef = useRef(null);
   // Imagen base efectiva: si la principal falla (CORS/rota), cae al fallback
   // (imagen_url del producto) → la carcasa NUNCA queda en blanco/gris vacío.
@@ -88,6 +92,25 @@ export default function MockupLivePreviewV2({ productImageUrl, capas = [], onPla
   const lastEngRef = useRef({});                       // id -> último {dataUrl,ok} válido (anti-parpadeo)
 
   const capasKey = capas.map((c) => c.id).join('|');
+
+  // Expone captureSnapshot() al padre via ref.
+  useImperativeHandle(ref, () => ({
+    captureSnapshot: async () => {
+      if (!containerRef.current) return null;
+      try {
+        const canvas = await html2canvas(containerRef.current, {
+          useCORS: true,
+          allowTaint: true,
+          scale: 1.5,
+          logging: false,
+        });
+        return canvas.toDataURL('image/jpeg', 0.88);
+      } catch (e) {
+        console.warn('MockupLivePreviewV2 captureSnapshot falló:', e?.message);
+        return null;
+      }
+    },
+  }));
 
   // Mantiene la imagen base sincronizada con la prop (al cambiar color/modelo).
   useEffect(() => {
@@ -347,4 +370,6 @@ export default function MockupLivePreviewV2({ productImageUrl, capas = [], onPla
       )}
     </div>
   );
-}
+});
+
+export default MockupLivePreviewV2;

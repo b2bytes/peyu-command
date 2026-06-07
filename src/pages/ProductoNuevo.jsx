@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { useLocation, Link, useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import {
@@ -45,6 +45,7 @@ export default function ProductoNuevo() {
   const [colorError, setColorError] = useState(false);
   const [added, setAdded] = useState(false);
   const [galIdx, setGalIdx] = useState(0);
+  const mockupRef = useRef(null);
 
   useEffect(() => {
     if (!id) { setLoading(false); return; }
@@ -145,7 +146,7 @@ export default function ProductoNuevo() {
   const stock = producto?.stock_actual;
   const stockBajo = typeof stock === 'number' && stock > 0 && stock <= 8;
 
-  const handleAdd = () => {
+  const handleAdd = async () => {
     if (requiereColor && !colorId) {
       setColorError(true);
       document.querySelector('[data-color-selector]')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -156,9 +157,14 @@ export default function ProductoNuevo() {
       return;
     }
 
-    // El mockup que viaja al carrito/pedido = imagen del color con el diseño.
-    // Guardamos cada capa (frase/diseño/logo) + su posición; producción
-    // reconstruye el grabado combinado a partir de esto.
+    // Captura el snapshot del canvas en vivo (foto base + grabado) como mockupUrl real.
+    // Si falla (CORS, etc.) cae a colorImg como antes.
+    let mockupUrl = muestraMockup ? colorImg : null;
+    if (muestraMockup && mockupRef.current?.captureSnapshot) {
+      const snap = await mockupRef.current.captureSnapshot();
+      if (snap) mockupUrl = snap;
+    }
+
     addToCartV2({
       productoId: producto.id,
       sku: producto.sku || null,
@@ -175,11 +181,11 @@ export default function ProductoNuevo() {
       texto: pers.texto || null,
       logoUrl: pers.logoUrl || null,
       disenoPeyuUrl: pers.disenoPeyuUrl || null,
-      mockupUrl: muestraMockup ? colorImg : null,
+      mockupUrl,
       capas_grabado: capas.map((c) => ({ tipo: c.tipo, url: c.url || null, texto: c.texto || null, ...(placements[c.id] || {}) })),
+      imagen_base: colorImg,
       imagen: colorImg,
     });
-    // La config completa ya viajó al item del carrito → limpiamos el borrador.
     clearDraftV2(producto.id);
     setAdded(true);
     setTimeout(() => navigate('/CarritoNuevo'), 700);
@@ -269,6 +275,7 @@ export default function ProductoNuevo() {
               {muestraMockup && (
                 <div className="mt-4">
                   <MockupLivePreviewV2
+                    ref={mockupRef}
                     productImageUrl={colorImg}
                     fallbackUrl={getProductImage(producto)}
                     capas={capas}

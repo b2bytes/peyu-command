@@ -125,6 +125,25 @@ export default function CheckoutNuevo() {
     setCreando(true);
     const numero = `WEB-${Date.now()}`;
 
+    // Sube los dataURLs de mockup (capturados del canvas) a Base44 para obtener
+    // URLs persistentes antes de guardar en el pedido. Sin esto, el mockup sería
+    // un string base64 masivo que rompería la DB. Best-effort: si falla, cae al
+    // imagen_base (foto del color) que siempre existe.
+    const uploadedMockups = {};
+    await Promise.all(carrito.map(async (item) => {
+      const mu = item.mockupUrl || item.mockup_url || '';
+      if (!mu.startsWith('data:')) return; // ya es URL, no necesita subir
+      try {
+        const res = await fetch(mu);
+        const blob = await res.blob();
+        const file = new File([blob], `mockup-${item.id || Date.now()}.jpg`, { type: 'image/jpeg' });
+        const uploaded = await base44.integrations.Core.UploadFile({ file });
+        if (uploaded?.file_url) uploadedMockups[item.id] = uploaded.file_url;
+      } catch (e) {
+        console.warn('No se pudo subir mockup dataURL para item:', item.nombre, e?.message);
+      }
+    }));
+
     const items = carrito.map(i => {
       const partes = [`${i.nombre} x${i.cantidad}`];
       if (i.color) partes.push(`Color: ${i.color}`);
@@ -159,27 +178,30 @@ export default function CheckoutNuevo() {
       return i.posicion_grabado || '';
     };
 
-    const itemsDetalle = carrito.map(i => ({
-      sku: i.sku || '',
-      nombre: i.nombre || '',
-      color: i.color || '',
-      pack_resumen: i.pack_resumen || '',
-      personalizacion: i.personalizacion || '',
-      tipo_personalizacion: i.personalizacion ? tipoLineaCombinado(i) : '',
-      fee_personalizacion: feePersItem(i),
-      logo_url: i.logoUrl || i.logo_url || '',
-      mockup_url: i.mockupUrl || i.mockup_url || '',
-      posicion_grabado: posicionLinea(i),
-      precio_unitario: i.precio || 0,
-      cantidad: i.cantidad || 1,
-      // Imagen base + capas guardadas → permiten RECONSTRUIR el diseño exacto del
-      // cliente en el seguimiento (igual que el thumb del carrito), sin perder nada.
-      imagen_base: i.mockupUrl || i.imagen || '',
-      capas_grabado: Array.isArray(i.capas_grabado) ? i.capas_grabado : [],
-    }));
+    const itemsDetalle = carrito.map(i => {
+      // Usa la URL subida si existe (mockup capturado del canvas), sino la original.
+      const mockupFinal = uploadedMockups[i.id] || (!(i.mockupUrl || '').startsWith('data:') ? (i.mockupUrl || i.mockup_url || '') : '');
+      const imagenBase = i.imagen_base || i.imagen || '';
+      return {
+        sku: i.sku || '',
+        nombre: i.nombre || '',
+        color: i.color || '',
+        pack_resumen: i.pack_resumen || '',
+        personalizacion: i.personalizacion || '',
+        tipo_personalizacion: i.personalizacion ? tipoLineaCombinado(i) : '',
+        fee_personalizacion: feePersItem(i),
+        logo_url: i.logoUrl || i.logo_url || '',
+        mockup_url: mockupFinal,
+        posicion_grabado: posicionLinea(i),
+        precio_unitario: i.precio || 0,
+        cantidad: i.cantidad || 1,
+        imagen_base: imagenBase,
+        capas_grabado: Array.isArray(i.capas_grabado) ? i.capas_grabado : [],
+      };
+    });
     const colorTopLevel = carrito.length === 1 ? (carrito[0]?.color || '') : '';
     const itemConLogo = carrito.find(i => i.logoUrl || i.logo_url);
-    const itemConMockup = carrito.find(i => i.mockupUrl || i.mockup_url);
+    const itemConMockup = carrito.find(i => uploadedMockups[i.id] || (i.mockupUrl && !i.mockupUrl.startsWith('data:')) || i.mockup_url);
 
     const datosPedido = {
       numero_pedido: numero,
@@ -216,7 +238,7 @@ export default function CheckoutNuevo() {
       requiere_personalizacion: carrito.some(i => i.personalizacion),
       texto_personalizacion: carrito.filter(i => i.personalizacion).map(i => i.personalizacion).join(', '),
       logo_url: itemConLogo ? (itemConLogo.logoUrl || itemConLogo.logo_url) : '',
-      mockup_url: itemConMockup ? (itemConMockup.mockupUrl || itemConMockup.mockup_url) : '',
+      mockup_url: itemConMockup ? (uploadedMockups[itemConMockup.id] || (!(itemConMockup.mockupUrl || '').startsWith('data:') ? (itemConMockup.mockupUrl || itemConMockup.mockup_url || '') : '')) : '',
       logo_recibido: !!(itemConLogo || itemConMockup),
       courier: `BlueExpress ${envioBluex.servicio}`,
       // Nota en el formato que el admin (BluexManualDispatchCard) sabe parsear:
