@@ -103,7 +103,7 @@ export default function CentroLogistico() {
   };
 
   return (
-    <div className="p-4 sm:p-6 space-y-5 max-w-[1600px] mx-auto">
+    <div className="p-3 sm:p-4 md:p-6 space-y-4 sm:space-y-5 w-full">
       {/* Hero header */}
       <div className="bg-gradient-to-br from-blue-700 via-cyan-700 to-teal-700 rounded-3xl p-5 sm:p-6 text-white relative overflow-hidden">
         <div className="absolute -top-20 -right-20 w-72 h-72 rounded-full bg-cyan-400/20 blur-3xl pointer-events-none" />

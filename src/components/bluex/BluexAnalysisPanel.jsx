@@ -51,7 +51,7 @@ export default function BluexAnalysisPanel({ analysis }) {
         )}
 
         {/* Stats inline */}
-        <div className="grid grid-cols-4 gap-2 mt-4 pt-4 border-t border-cyan-200/60">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-4 pt-4 border-t border-cyan-200/60">
           <Stat label="Total" val={stats.total} />
           <Stat label="OTIF" val={`${(stats.otif_pct || 0).toFixed(0)}%`} accent="emerald" />
           <Stat label="Excepciones" val={stats.con_excepcion} accent={stats.con_excepcion > 0 ? 'red' : 'slate'} />
