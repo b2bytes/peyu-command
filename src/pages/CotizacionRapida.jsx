@@ -191,27 +191,66 @@ export default function CotizacionRapida() {
                       {items.map((it) => {
                         const b2b = getB2BPriceForQty(it.producto, it.qty);
                         const unit = b2b?.precio ?? getUnitBasePrice(it.producto);
+                        const baseUnit = b2b?.baseUnit ?? getUnitBasePrice(it.producto);
+                        const ahorro = b2b?.ahorroPct ?? 0;
+                        const label = b2b?.label;
+                        const subtotalLinea = unit * it.qty;
                         return (
-                          <div key={it.producto.sku} className="flex items-center justify-between gap-2 text-sm bg-[#FAF7F2] rounded-xl px-3.5 py-2.5">
-                            <span className="text-[#2A2420] truncate">
-                              <span className="font-bold">{it.qty}×</span> {it.producto.nombre}
-                              <span className="text-[#A78B6F] text-[11px] ml-1">({fmtCLP(unit)}/u)</span>
-                            </span>
-                            <span className="font-bold text-[#2A2420] flex-shrink-0">{fmtCLP(unit * it.qty)}</span>
+                          <div key={it.producto.sku} className="bg-[#FAF7F2] rounded-xl px-3.5 py-3">
+                            <div className="flex items-start justify-between gap-2">
+                              <div className="min-w-0">
+                                <p className="text-sm font-bold text-[#2A2420] truncate">
+                                  {it.qty}× {it.producto.nombre}
+                                </p>
+                                <div className="flex items-center flex-wrap gap-1.5 mt-1">
+                                  <span className="text-[12px] font-bold text-[#0F8B6C]">{fmtCLP(unit)}/u</span>
+                                  {ahorro > 0 && baseUnit !== unit && (
+                                    <span className="text-[10px] text-[#A78B6F] line-through">{fmtCLP(baseUnit)}</span>
+                                  )}
+                                  {ahorro > 0 && (
+                                    <span className="text-[10px] font-bold text-white bg-[#D96B4D] px-1.5 py-0.5 rounded-full">
+                                      −{ahorro}%
+                                    </span>
+                                  )}
+                                  {label && (
+                                    <span className="text-[10px] text-[#A78B6F] bg-[#0F8B6C]/8 px-1.5 py-0.5 rounded-full">
+                                      {label}
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+                              <span className="font-bold text-[#2A2420] flex-shrink-0 text-sm pt-0.5">{fmtCLP(subtotalLinea)}</span>
+                            </div>
                           </div>
                         );
                       })}
                     </div>
 
-                    <div className="border-t border-[#EBE3D6] pt-3 space-y-1.5 mb-2">
-                      <div className="flex justify-between text-sm text-[#4B4F54]">
-                        <span>Unidades totales</span><span className="font-bold">{qtyTotal.toLocaleString('es-CL')}</span>
-                      </div>
-                      <div className="flex justify-between items-end">
-                        <span className="text-sm font-bold text-[#2A2420]">Estimado neto</span>
-                        <span className="font-fraunces text-2xl text-[#0F8B6C]">{fmtCLP(totalNeto)}</span>
-                      </div>
-                    </div>
+                    {/* Resumen totales con ahorro total si aplica */}
+                    {(() => {
+                      const totalSinDesc = items.reduce((acc, it) => {
+                        const base = getUnitBasePrice(it.producto);
+                        return acc + base * it.qty;
+                      }, 0);
+                      const ahorroTotal = totalSinDesc - totalNeto;
+                      return (
+                        <div className="border-t border-[#EBE3D6] pt-3 space-y-1.5 mb-2">
+                          <div className="flex justify-between text-sm text-[#4B4F54]">
+                            <span>Unidades totales</span><span className="font-bold">{qtyTotal.toLocaleString('es-CL')}</span>
+                          </div>
+                          {ahorroTotal > 0 && (
+                            <div className="flex justify-between text-sm">
+                              <span className="text-[#D96B4D]">Descuento por volumen</span>
+                              <span className="font-bold text-[#D96B4D]">−{fmtCLP(ahorroTotal)}</span>
+                            </div>
+                          )}
+                          <div className="flex justify-between items-end">
+                            <span className="text-sm font-bold text-[#2A2420]">Estimado neto</span>
+                            <span className="font-fraunces text-2xl text-[#0F8B6C]">{fmtCLP(totalNeto)}</span>
+                          </div>
+                        </div>
+                      );
+                    })()}
 
                     <div className="flex items-center gap-2 text-[11px] text-[#A78B6F] bg-[#0F8B6C]/5 rounded-xl px-3 py-2">
                       <Building2 className="w-3.5 h-3.5 text-[#0F8B6C] flex-shrink-0" />
