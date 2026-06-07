@@ -5,6 +5,7 @@ import { fmtCLP } from '@/lib/shop-v2-cart';
 export default function PriceBreakdownV2({
   precioUnit, cantidad, tipoLabel, feeUnit = 0, feeTotal = 0, gratis,
   descuentoPct = 0, descuentoMonto = 0,
+  productoNombre, colorLabel,
 }) {
   const subtotal = precioUnit * cantidad;
   const total = subtotal + feeTotal - descuentoMonto;
@@ -14,6 +15,16 @@ export default function PriceBreakdownV2({
 
   return (
     <div className="bg-white rounded-2xl border border-[#EBE3D6] p-4 space-y-2">
+      {/* Resumen de lo que estás comprando (producto · color · cantidad) */}
+      {productoNombre && (
+        <div className="pb-2 mb-1 border-b border-[#EBE3D6]">
+          <p className="text-sm font-bold text-[#2A2420] leading-tight">{productoNombre}</p>
+          <p className="text-[11px] text-[#A78B6F] mt-0.5">
+            {colorLabel ? `Color: ${colorLabel} · ` : ''}{cantidad} {cantidad === 1 ? 'unidad' : 'unidades'}
+            {tipoLabel ? ` · ${tipoLabel}` : ''}
+          </p>
+        </div>
+      )}
       <div className="flex justify-between text-sm text-[#4B4F54]">
         <span>{fmtCLP(precioUnit)} × {cantidad}</span>
         <span className="font-semibold">{fmtCLP(subtotal)}</span>

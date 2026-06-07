@@ -13,7 +13,7 @@ import EngravedLayer from '@/components/shopv2/EngravedLayer';
 //   capas    : item.capas_grabado → [{ tipo, url?, texto?, size, x, y }]
 //   alt      : nombre del producto
 // ════════════════════════════════════════════════════════════════════════
-export default function CartItemThumbV2({ imagen, capas = [], alt }) {
+export default function CartItemThumbV2({ imagen, capas = [], alt, fallback }) {
   const [tint, setTint] = useState('light');
   const [engraved, setEngraved] = useState({}); // url -> { dataUrl, ok, svg }
 
@@ -47,7 +47,22 @@ export default function CartItemThumbV2({ imagen, capas = [], alt }) {
   return (
     <div className="relative w-full aspect-square rounded-xl overflow-hidden border border-[#EBE3D6] bg-[#FAF7F2]">
       {imagen && (
-        <img src={imagen} alt={alt} referrerPolicy="no-referrer" className="absolute inset-0 w-full h-full object-cover" />
+        <img
+          src={imagen}
+          alt={alt}
+          referrerPolicy="no-referrer"
+          className="absolute inset-0 w-full h-full object-cover"
+          onError={(e) => {
+            // Reintenta una vez con cache-buster; si falla y hay fallback, úsalo.
+            const el = e.currentTarget;
+            if (!el.dataset.retried) {
+              el.dataset.retried = '1';
+              el.src = imagen + (imagen.includes('?') ? '&' : '?') + 'r=1';
+            } else if (fallback && el.src !== fallback) {
+              el.src = fallback;
+            }
+          }}
+        />
       )}
 
       {/* Iluminación de estudio: highlight especular + viñeteado → volumen real. */}

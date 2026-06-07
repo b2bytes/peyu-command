@@ -245,6 +245,8 @@ export default function LiveConfiguratorV2({ carcasas = [] }) {
               gratis={gratis}
               descuentoPct={descuentoPct}
               descuentoMonto={descuentoMonto}
+              productoNombre={producto.nombre}
+              colorLabel={color?.label || null}
             />
 
             {/* CTA */}

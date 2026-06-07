@@ -1,4 +1,5 @@
 import { Sparkles, FileImage, Image as ImageIcon, Type, Palette, Upload, Download } from 'lucide-react';
+import CartItemThumbV2 from '@/components/shopv2/CartItemThumbV2';
 
 // ════════════════════════════════════════════════════════════════════════
 // Resumen de productos personalizados del cliente. Extrae de los pedidos las
@@ -29,6 +30,8 @@ function extraerLineasPersonalizadas(pedidos) {
           tipo: it.tipo_personalizacion,
           logo_url: it.logo_url,
           mockup_url: it.mockup_url,
+          imagen_base: it.imagen_base || '',
+          capas: Array.isArray(it.capas_grabado) ? it.capas_grabado : [],
         });
       });
     } else if (p.requiere_personalizacion || p.logo_url || p.mockup_url) {
@@ -42,6 +45,8 @@ function extraerLineasPersonalizadas(pedidos) {
         tipo: p.tipo_personalizacion,
         logo_url: p.logo_url,
         mockup_url: p.mockup_url,
+        imagen_base: '',
+        capas: [],
       });
     }
   });
@@ -82,9 +87,17 @@ export default function PersonalizedProductsSummary({ pedidos }) {
             const TipoIcon = TIPO_ICON[l.tipo] || Sparkles;
             return (
               <div key={l.key} className="flex gap-3 p-3 bg-gray-50 rounded-xl border border-gray-100">
-                {/* Mockup / preview */}
+                {/* Mockup / preview — reconstruye el diseño exacto (base + capas)
+                    si está disponible; si no, muestra el mockup guardado. */}
                 <div className="w-16 h-16 rounded-lg bg-white border border-gray-200 flex-shrink-0 overflow-hidden flex items-center justify-center">
-                  {l.mockup_url ? (
+                  {l.capas.length > 0 && (l.imagen_base || l.mockup_url) ? (
+                    <CartItemThumbV2
+                      imagen={l.imagen_base || l.mockup_url}
+                      fallback={l.mockup_url || l.imagen_base}
+                      capas={l.capas}
+                      alt="Mockup"
+                    />
+                  ) : l.mockup_url ? (
                     <img src={l.mockup_url} alt="Mockup" referrerPolicy="no-referrer" className="w-full h-full object-cover" />
                   ) : (
                     <ImageIcon className="w-6 h-6 text-gray-300" />

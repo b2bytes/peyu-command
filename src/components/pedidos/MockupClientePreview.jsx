@@ -72,10 +72,16 @@ export default function MockupClientePreview({ pedido, variant = 'admin' }) {
         {piezas.map((p, i) => (
           <div key={i} className={`rounded-xl overflow-hidden border ${isPublic ? 'border-ld-border bg-white' : 'border-purple-200 bg-white'}`}>
             {/* Diseño v2 reconstruido (foto base + capas) — prioridad: muestra el
-                grabado EXACTO que eligió el cliente. */}
-            {p.capas.length > 0 && p.imagenBase ? (
+                grabado EXACTO que eligió el cliente. Usa imagenBase y, si no
+                existe, el mockup como base para no perder nunca el grabado. */}
+            {p.capas.length > 0 && (p.imagenBase || p.mockup) ? (
               <div className="relative">
-                <CartItemThumbV2 imagen={p.imagenBase} capas={p.capas} alt={`Arte de ${p.nombre}`} />
+                <CartItemThumbV2
+                  imagen={p.imagenBase || p.mockup}
+                  fallback={p.mockup || p.imagenBase}
+                  capas={p.capas}
+                  alt={`Arte de ${p.nombre}`}
+                />
                 <span className="absolute top-2 left-2 text-[10px] font-bold px-2 py-0.5 rounded-full bg-black/55 text-white z-10">
                   ✨ Tu diseño
                 </span>
