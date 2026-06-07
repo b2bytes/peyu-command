@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { ArrowLeft, Lock, ShieldCheck, Recycle, AlertCircle, Gift } from 'lucide-react';
@@ -9,6 +9,7 @@ import BillingSection, { validarBilling } from '@/components/cart/BillingSection
 import ShippingSelector from '@/components/cart/ShippingSelector';
 import PaymentMethodSelector from '@/components/cart/PaymentMethodSelector';
 import { getCartV2, clearCartV2, fmtCLP } from '@/lib/shop-v2-cart';
+import { readShopCheckout, mergeShopCheckout, clearShopCheckout } from '@/lib/shop-v2-checkout-store';
 import { calcularCargoPersonalizacionCarrito, calcularCargoPersonalizacion, getTipoPersonalizacion, MOQ_PERSONALIZACION_GRATIS } from '@/lib/personalizacion-config';
 import { computeQtyDiscountBySku } from '@/lib/volume-discount';
 import { normalizarRut } from '@/lib/rut-chile';
@@ -23,17 +24,22 @@ export default function CheckoutNuevo() {
   const navigate = useNavigate();
   const [carrito] = useState(() => getCartV2());
 
+  // Datos persistidos del checkout (sobreviven recargas / navegación atrás).
+  const saved = useRef(readShopCheckout()).current;
+
   const [cliente, setCliente] = useState({
-    nombre: '', email: '', telefono: '',
-    region: '', ciudad: '', direccion: '', referencia: '', codigo_postal: '',
+    nombre: saved.nombre, email: saved.email, telefono: saved.telefono,
+    region: saved.region, ciudad: saved.ciudad, direccion: saved.direccion,
+    referencia: saved.referencia, codigo_postal: saved.codigo_postal,
   });
   const [errors, setErrors] = useState({});
   const [billing, setBilling] = useState({
-    tipo_documento: 'Boleta', razon_social: '', rut_empresa: '', giro: '',
-    direccion_facturacion: '', comuna_facturacion: '',
+    tipo_documento: saved.tipo_documento, razon_social: saved.razon_social,
+    rut_empresa: saved.rut_empresa, giro: saved.giro,
+    direccion_facturacion: saved.direccion_facturacion, comuna_facturacion: saved.comuna_facturacion,
   });
   const [billingErrors, setBillingErrors] = useState({});
-  const [medioPago, setMedioPago] = useState('MercadoPago');
+  const [medioPago, setMedioPago] = useState(saved.medio_pago || 'MercadoPago');
   const [envioBluex, setEnvioBluex] = useState(null);
   const [creando, setCreando] = useState(false);
   const [errorPago, setErrorPago] = useState(null);
@@ -50,6 +56,38 @@ export default function CheckoutNuevo() {
     const moq = item.moq_personalizacion || item.personalizacion_gratis_desde || MOQ_PERSONALIZACION_GRATIS;
     return calcularCargoPersonalizacion(item, moq);
   };
+
+  // ── Persistencia progresiva: guarda TODOS los datos del cliente en cada cambio
+  // (envío + facturación + medio de pago) para que nada se pierda hasta pagar.
+  useEffect(() => {
+    mergeShopCheckout({ ...cliente, ...billing, medio_pago: medioPago });
+  }, [cliente, billing, medioPago]);
+
+  // ── Captura progresiva del carrito abandonado: en cuanto el cliente escribe un
+  // email válido, registramos su carrito + datos en el backend (con debounce).
+  // Si no completa el pago, dispara el recordatorio automático.
+  const lastCapturaRef = useRef('');
+  useEffect(() => {
+    const email = (cliente.email || '').trim().toLowerCase();
+    if (!/\S+@\S+\.\S+/.test(email) || carrito.length === 0) return;
+    const t = setTimeout(() => {
+      const firma = `${email}|${cliente.nombre}|${cliente.telefono}|${carrito.length}|${total}`;
+      if (firma === lastCapturaRef.current) return;
+      lastCapturaRef.current = firma;
+      base44.functions.invoke('capturarCarritoAbandonado', {
+        email,
+        nombre: cliente.nombre || '',
+        telefono: cliente.telefono || '',
+        carrito_items: carrito.map((i) => ({
+          nombre: i.nombre, cantidad: i.cantidad, precio: i.precio,
+          imagen: i.mockupUrl || i.imagen, personalizacion: i.personalizacion || '',
+        })),
+        subtotal,
+        total,
+      }).catch(() => { /* best-effort, no romper checkout */ });
+    }, 1500);
+    return () => clearTimeout(t);
+  }, [cliente.email, cliente.nombre, cliente.telefono, carrito, subtotal, total]);
 
   const crearPedido = async () => {
     if (creando) return;
@@ -195,6 +233,7 @@ export default function CheckoutNuevo() {
         const initUrl = mp?.data?.init_point || mp?.data?.sandbox_init_point;
         if (initUrl) {
           clearCartV2();
+          clearShopCheckout();
           trackPurchase({ transactionId: numero, total, shipping: envio, cart: carrito });
           window.location.href = initUrl;
           return;
@@ -212,6 +251,7 @@ export default function CheckoutNuevo() {
 
     // Transferencia → gracias
     clearCartV2();
+    clearShopCheckout();
     trackPurchase({ transactionId: numero, total, shipping: envio, cart: carrito });
     setCreando(false);
     navigate(`/gracias?numero=${encodeURIComponent(numero)}&email=${encodeURIComponent(cliente.email)}&total=${total}&pago=${encodeURIComponent(medioPago)}`);
