@@ -20,64 +20,66 @@ import html2canvas from 'html2canvas';
 const ICONO = { frase: Type, peyu: Palette, archivo: Upload };
 const NOMBRE = { frase: 'Frase', peyu: 'Diseño PEYU', archivo: 'Tu diseño' };
 
-// ── ÁREA TÉCNICA DE GRABADO (en % del lienzo cuadrado) ───────────────────
-// Zona centrada y contenida donde se compone el grabado. Pensada para servir
-// a CUALQUIER producto (carcasas, set de escritorio, bolsos, etc.): el diseño
-// siempre queda centrado y dentro del cuadro, nunca descolocado sobre el resto
-// de la foto. Todas las capas se restringen aquí dentro.
-// Área vertical AMPLIA: el grabado puede ubicarse desde bastante arriba hasta
-// muy abajo de la carcasa (el cliente pedía poder bajar más la frase). El
-// ancho se mantiene contenido para que el diseño no se salga por los costados.
-const AREA = { left: 26, right: 74, top: 18, bottom: 86 };
-const AREA_W = AREA.right - AREA.left; // 48
-const AREA_H = AREA.bottom - AREA.top; // 68
-const AREA_CX = (AREA.left + AREA.right) / 2; // 50
-const AREA_CY = (AREA.top + AREA.bottom) / 2;  // 51
+// ── ÁREAS TÉCNICAS DE GRABADO (en % del lienzo cuadrado) ────────────────
+// CARCASAS: área contenida (la forma de la carcasa limita el láser).
+// OTROS PRODUCTOS (posavasos, cachos, kits, etc.): área LIBRE que cubre casi
+// toda la imagen — el cliente puede posicionar el logo donde quiera sobre
+// cualquier pieza del producto (posavaso hexagonal, cacho individual, etc.).
+const AREA_CARCASA    = { left: 26, right: 74, top: 18, bottom: 86 };
+const AREA_LIBRE      = { left: 8,  right: 92, top: 8,  bottom: 92 };
+
+function getArea(esCarcasa) {
+  return esCarcasa ? AREA_CARCASA : AREA_LIBRE;
+}
+
+// Usamos AREA_LIBRE como default para los cálculos de constantes (se recalcula
+// inline en los helpers que reciben el area como parámetro).
+const AREA = AREA_CARCASA; // solo para retrocompatibilidad — no se usa directo
+const AREA_W = AREA.right - AREA.left;
+const AREA_H = AREA.bottom - AREA.top;
+const AREA_CX = (AREA.left + AREA.right) / 2;
+const AREA_CY = (AREA.top + AREA.bottom) / 2;
 
 // Tamaño base por tipo de capa (en % del lienzo).
 const SIZE_BASE = { frase: 30, peyu: 26, archivo: 26 };
 
 // Auto-layout: distribuye N capas en filas dentro del área técnica, centradas
 // verticalmente y sin solaparse. Devuelve { [id]: {size,x,y} }.
-function autoLayout(capas) {
+function autoLayout(capas, area) {
+  const A = area || AREA_CARCASA;
+  const cx = (A.left + A.right) / 2;
   const n = capas.length;
   if (n === 0) return {};
-  // Altura por slot dentro del área (deja un pequeño margen arriba/abajo).
-  const usableTop = AREA.top + 4;
-  const usableBottom = AREA.bottom - 4;
+  const usableTop = A.top + 4;
+  const usableBottom = A.bottom - 4;
   const slotH = (usableBottom - usableTop) / n;
   const out = {};
   capas.forEach((c, i) => {
     const baseSize = SIZE_BASE[c.tipo] || 26;
-    // Si hay varias capas, reduce el tamaño para que quepan apiladas.
     const size = n === 1 ? baseSize : Math.max(14, Math.min(baseSize, slotH * 0.95));
     const y = usableTop + slotH * (i + 0.5);
-    out[c.id] = { size, x: AREA_CX, y };
+    out[c.id] = { size, x: cx, y };
   });
   return out;
 }
 
 // Restringe el centro de una capa para que su caja quede dentro del área.
-function clampToArea(x, y, sizePct, tipo) {
-  // Frase es ancha pero baja; gráficos son ~cuadrados. Aproximamos media-caja.
-  const halfW = tipo === 'frase' ? Math.min(sizePct * 0.9, AREA_W / 2) : sizePct / 2;
-  // Media-altura de la frase pequeña → permite acercarla mucho a los bordes
-  // superior e inferior del área (poder "bajar" la frase como pidió el cliente).
+function clampToArea(x, y, sizePct, tipo, area) {
+  const A = area || AREA_CARCASA;
+  const aw = A.right - A.left;
+  const halfW = tipo === 'frase' ? Math.min(sizePct * 0.9, aw / 2) : sizePct / 2;
   const halfH = tipo === 'frase' ? sizePct * 0.18 : sizePct / 2;
-  const minX = AREA.left + halfW;
-  const maxX = AREA.right - halfW;
-  const minY = AREA.top + halfH;
-  const maxY = AREA.bottom - halfH;
   return {
-    x: Math.max(minX, Math.min(maxX, x)),
-    y: Math.max(minY, Math.min(maxY, y)),
+    x: Math.max(A.left + halfW, Math.min(A.right - halfW, x)),
+    y: Math.max(A.top + halfH, Math.min(A.bottom - halfH, y)),
   };
 }
 
 // captureSnapshot(): captura el canvas del preview en vivo como dataURL PNG.
 // Se expone via forwardRef para que el padre (ProductoNuevo, LiveConfiguratorV2)
 // lo llame al agregar al carrito y guarde el mockup REAL (foto base + grabado).
-const MockupLivePreviewV2 = forwardRef(function MockupLivePreviewV2({ productImageUrl, capas = [], onPlacementChange, fallbackUrl }, ref) {
+const MockupLivePreviewV2 = forwardRef(function MockupLivePreviewV2({ productImageUrl, capas = [], onPlacementChange, fallbackUrl, esCarcasa = false }, ref) {
+  const area = getArea(esCarcasa);
   const containerRef = useRef(null);
   // Imagen base efectiva: si la principal falla (CORS/rota), cae al fallback
   // (imagen_url del producto) → la carcasa NUNCA queda en blanco/gris vacío.
@@ -132,7 +134,7 @@ const MockupLivePreviewV2 = forwardRef(function MockupLivePreviewV2({ productIma
   // a mano conservan su posición.
   useEffect(() => {
     setPlacements((prev) => {
-      const auto = autoLayout(capas);
+      const auto = autoLayout(capas, area);
       const next = {};
       capas.forEach((c) => {
         next[c.id] = touched[c.id] && prev[c.id] ? prev[c.id] : auto[c.id];
@@ -186,7 +188,7 @@ const MockupLivePreviewV2 = forwardRef(function MockupLivePreviewV2({ productIma
       const cur = prev[activeId];
       if (!cur) return prev;
       const capa = capas.find((c) => c.id === activeId);
-      const { x, y } = clampToArea(rawX, rawY, cur.size, capa?.tipo);
+      const { x, y } = clampToArea(rawX, rawY, cur.size, capa?.tipo, area);
       return { ...prev, [activeId]: { ...cur, x, y } };
     });
     setTouched((prev) => ({ ...prev, [activeId]: true }));
@@ -199,7 +201,7 @@ const MockupLivePreviewV2 = forwardRef(function MockupLivePreviewV2({ productIma
       const cur = prev[id];
       if (!cur) return prev;
       const capa = capas.find((c) => c.id === id);
-      const { x, y } = clampToArea(cur.x, cur.y, size, capa?.tipo);
+      const { x, y } = clampToArea(cur.x, cur.y, size, capa?.tipo, area);
       return { ...prev, [id]: { ...cur, size, x, y } };
     });
     setTouched((prev) => ({ ...prev, [id]: true }));
@@ -207,7 +209,7 @@ const MockupLivePreviewV2 = forwardRef(function MockupLivePreviewV2({ productIma
 
   // Re-acomoda TODO automáticamente (botón mágico) — limpia los "touched".
   const autoAcomodar = () => {
-    setPlacements(autoLayout(capas));
+    setPlacements(autoLayout(capas, area));
     setTouched({});
   };
 
@@ -247,12 +249,12 @@ const MockupLivePreviewV2 = forwardRef(function MockupLivePreviewV2({ productIma
           <div
             className="absolute pointer-events-none rounded-md border border-dashed border-[#0F8B6C]/40"
             style={{
-              left: `${AREA.left}%`, top: `${AREA.top}%`,
-              width: `${AREA_W}%`, height: `${AREA_H}%`,
+              left: `${area.left}%`, top: `${area.top}%`,
+              width: `${area.right - area.left}%`, height: `${area.bottom - area.top}%`,
             }}
           >
             <span className="absolute top-1 left-1/2 -translate-x-1/2 text-[7px] sm:text-[8px] font-bold tracking-wider text-[#0F8B6C]/70 uppercase whitespace-nowrap">
-              Área de grabado
+              {esCarcasa ? 'Área de grabado' : 'Arrastra libremente'}
             </span>
           </div>
         )}

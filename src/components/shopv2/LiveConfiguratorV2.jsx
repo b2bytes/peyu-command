@@ -172,6 +172,7 @@ export default function LiveConfiguratorV2({ carcasas = [] }) {
                 fallbackUrl={getProductImage(producto)}
                 capas={capas}
                 onPlacementChange={setPlacements}
+                esCarcasa={true}
               />
             ) : (
               <div className="relative aspect-square rounded-[1.75rem] overflow-hidden bg-[#FAF7F2] border border-[#EBE3D6]">

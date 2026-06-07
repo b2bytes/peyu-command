@@ -280,6 +280,7 @@ export default function ProductoNuevo() {
                     fallbackUrl={getProductImage(producto)}
                     capas={capas}
                     onPlacementChange={setPlacements}
+                    esCarcasa={esCarcasa}
                   />
                 </div>
               )}

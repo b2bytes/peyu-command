@@ -111,15 +111,25 @@ export function getColoresProducto(producto) {
   }
 
   // Resto del catálogo (Escritorio, Hogar, Entretenimiento, Corporativo):
-  // SOLO mostramos selector de color si el producto realmente tiene fotos por
-  // color (imagenes_por_color). Así cambiar de color SIEMPRE cambia la imagen,
-  // igual que las carcasas. Si no hay fotos por color, no inventamos colores.
+  // Si el producto tiene fotos por color (imagenes_por_color), las usamos como
+  // fuente de verdad (igual que carcasas: cambiar color cambia la imagen).
   const mapa = producto.imagenes_por_color;
-  if (!mapa || typeof mapa !== 'object') return [];
+  if (mapa && typeof mapa === 'object' && Object.keys(mapa).length > 0) {
+    const norm = (s) => normalize(s);
+    const colores = Object.keys(mapa)
+      .map((k) => PEYU_COLOR_CATALOG.find((c) => c.aliases.some((a) => norm(a) === norm(k))))
+      .filter(Boolean);
+    if (colores.length > 0) return colores;
+  }
 
-  const norm = (s) => normalize(s);
-  const colores = Object.keys(mapa)
-    .map((k) => PEYU_COLOR_CATALOG.find((c) => c.aliases.some((a) => norm(a) === norm(k))))
-    .filter(Boolean);
-  return colores;
+  // Si no tiene fotos por color pero es plástico reciclado, mostramos los
+  // 4 colores oficiales PEYU (azul, verde, rojo, negro). Son colores reales del
+  // producto aunque no tengan foto individual — el cliente igual debe elegir.
+  if (producto.material === 'Plástico 100% Reciclado') {
+    return PEYU_COLOR_CATALOG.filter((c) =>
+      ['azul', 'verde', 'rojo', 'negro'].includes(c.id)
+    );
+  }
+
+  return [];
 }
