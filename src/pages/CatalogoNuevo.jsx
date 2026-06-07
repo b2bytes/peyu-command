@@ -70,14 +70,14 @@ export default function CatalogoNuevo() {
     c === 'Todos' ? 'Todos' : CATEGORIAS_V2.find((x) => x.cat === c)?.label || c;
 
   return (
-    <div className="min-h-screen bg-[#FAF7F2] font-inter text-[#2A2420]">
+    <div className="min-h-screen font-inter" style={{ background: '#F8F3ED', color: '#2C1810' }}>
       <ShopV2Header />
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-7">
         <CheckoutStepperV2 current="tienda" />
         <div className="mb-6">
-          <h1 className="font-fraunces text-3xl sm:text-4xl mb-1.5">Nuestra tienda</h1>
-          <p className="text-[#4B4F54] text-sm">Productos de plástico 100% reciclado, hechos en Chile.</p>
+          <h1 className="font-fraunces text-3xl sm:text-4xl mb-1.5" style={{ color: '#2C1810' }}>Nuestra tienda</h1>
+          <p className="text-sm" style={{ color: '#7A6050' }}>Productos de plástico 100% reciclado, hechos en Chile.</p>
         </div>
 
         {/* Buscador */}
@@ -87,7 +87,10 @@ export default function CatalogoNuevo() {
             value={q}
             onChange={(e) => setQ(e.target.value)}
             placeholder="Buscar carcasas, cachos, maceteros..."
-            className="w-full h-12 pl-11 pr-4 rounded-2xl bg-white border border-[#EBE3D6] text-sm text-[#2A2420] placeholder:text-[#A78B6F] focus:outline-none focus:border-[#0F8B6C] focus:ring-2 focus:ring-[#0F8B6C]/15 transition-all"
+            className="w-full h-12 pl-11 pr-4 rounded-2xl text-sm focus:outline-none transition-all"
+            style={{ background: 'white', border: '1.5px solid #D4C4B0', color: '#2C1810' }}
+            onFocus={e => { e.target.style.borderColor = '#C0785C'; e.target.style.boxShadow = '0 0 0 3px rgba(192,120,92,.12)'; }}
+            onBlur={e => { e.target.style.borderColor = '#D4C4B0'; e.target.style.boxShadow = 'none'; }}
           />
         </div>
 
@@ -98,11 +101,13 @@ export default function CatalogoNuevo() {
             <button
               key={c}
               onClick={() => setCat(c)}
-              className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-bold transition-all ${
-                cat === c
-                  ? 'bg-[#0F8B6C] text-white shadow-sm'
-                  : 'bg-white border border-[#EBE3D6] text-[#4B4F54] hover:border-[#0F8B6C]/40'
-              }`}
+              className="flex-shrink-0 px-4 py-2 rounded-full text-sm font-bold transition-all"
+              style={{
+                background: cat === c ? '#C0785C' : 'white',
+                color: cat === c ? 'white' : '#7A6050',
+                border: `1.5px solid ${cat === c ? '#C0785C' : '#D4C4B0'}`,
+                boxShadow: cat === c ? '0 4px 12px rgba(192,120,92,.25)' : 'none',
+              }}
             >
               {chipLabel(c)}
             </button>
@@ -117,11 +122,12 @@ export default function CatalogoNuevo() {
               <button
                 key={m}
                 onClick={() => setModelo(m)}
-                className={`flex-shrink-0 px-3.5 py-1.5 rounded-full text-xs font-bold transition-all ${
-                  modelo === m
-                    ? 'bg-[#D96B4D] text-white shadow-sm'
-                    : 'bg-white border border-[#EBE3D6] text-[#4B4F54] hover:border-[#D96B4D]/40'
-                }`}
+                className="flex-shrink-0 px-3.5 py-1.5 rounded-full text-xs font-bold transition-all"
+                style={{
+                  background: modelo === m ? '#8BAD8A' : 'white',
+                  color: modelo === m ? 'white' : '#7A6050',
+                  border: `1.5px solid ${modelo === m ? '#8BAD8A' : '#D4C4B0'}`,
+                }}
               >
                 {m === 'Todos' ? 'Todos los modelos' : m}
               </button>
@@ -133,14 +139,14 @@ export default function CatalogoNuevo() {
         {loading ? (
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
             {Array.from({ length: 12 }).map((_, i) => (
-              <div key={i} className="aspect-[3/4] rounded-2xl bg-white border border-[#EBE3D6] animate-pulse" />
+              <div key={i} className="aspect-[3/4] rounded-3xl animate-pulse" style={{ background: '#EDE3D6', border: '1px solid #D4C4B0' }} />
             ))}
           </div>
         ) : filtrados.length === 0 ? (
           <div className="text-center py-20">
-            <PackageOpen className="w-12 h-12 text-[#A78B6F] mx-auto mb-3" />
-            <p className="font-bold text-[#2A2420]">No encontramos productos</p>
-            <p className="text-sm text-[#4B4F54] mt-1">Prueba con otra categoría o búsqueda.</p>
+            <PackageOpen className="w-12 h-12 mx-auto mb-3" style={{ color: '#A08070' }} />
+            <p className="font-bold" style={{ color: '#2C1810' }}>No encontramos productos</p>
+            <p className="text-sm mt-1" style={{ color: '#7A6050' }}>Prueba con otra categoría o búsqueda.</p>
           </div>
         ) : (
           <>
@@ -152,7 +158,7 @@ export default function CatalogoNuevo() {
         )}
       </div>
 
-      <footer className="border-t border-[#EBE3D6] py-8 text-center text-xs text-[#A78B6F] mt-6">
+      <footer className="py-8 text-center text-xs mt-6" style={{ borderTop: '1px solid #D4C4B0', color: '#A08070' }}>
         PEYU Chile · Plástico reciclado · Hecho en Santiago 🇨🇱
       </footer>
     </div>

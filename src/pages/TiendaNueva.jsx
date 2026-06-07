@@ -43,7 +43,7 @@ export default function TiendaNueva() {
   };
 
   return (
-    <div className="min-h-screen bg-[#FAF7F2] font-inter text-[#2A2420] pb-20 lg:pb-0">
+    <div className="min-h-screen font-inter pb-20 lg:pb-0" style={{ background: '#F8F3ED', color: '#2C1810' }}>
       <ShopV2Header />
 
       {/* 1 · HERO BOLD */}
@@ -66,11 +66,12 @@ export default function TiendaNueva() {
             <Link
               key={c.cat}
               to={`/CatalogoNuevo?cat=${encodeURIComponent(c.cat)}`}
-              className="group flex-shrink-0 w-36 sm:w-auto bg-white border border-[#EBE3D6] rounded-2xl p-5 text-center hover:border-[#0F8B6C]/40 hover:shadow-lg hover:-translate-y-1 transition-all"
+              className="group flex-shrink-0 w-36 sm:w-auto bg-white rounded-3xl p-5 text-center hover:shadow-lg hover:-translate-y-1 transition-all"
+            style={{ border: '1.5px solid #D4C4B0' }}
             >
               <div className="text-3xl mb-2 group-hover:scale-110 transition-transform">{c.emoji}</div>
-              <p className="font-bold text-sm text-[#2A2420]">{c.label}</p>
-              <p className="text-[10px] text-[#A78B6F] mt-0.5">{c.desc}</p>
+              <p className="font-bold text-sm" style={{ color: '#2C1810' }}>{c.label}</p>
+              <p className="text-[10px] mt-0.5" style={{ color: '#A08070' }}>{c.desc}</p>
             </Link>
           ))}
         </div>
@@ -80,14 +81,14 @@ export default function TiendaNueva() {
       <section className="max-w-6xl mx-auto px-4 sm:px-6 mb-14">
         <div className="flex items-center justify-between mb-5">
           <h2 className="font-fraunces text-2xl sm:text-3xl">Destacados</h2>
-          <Link to="/CatalogoNuevo" className="text-sm font-bold text-[#0F8B6C] hover:underline inline-flex items-center gap-1">
+          <Link to="/CatalogoNuevo" className="text-sm font-bold hover:underline inline-flex items-center gap-1" style={{ color: '#C0785C' }}>
             Ver todo <ArrowRight className="w-3.5 h-3.5" />
           </Link>
         </div>
         {loading ? (
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
             {Array.from({ length: 8 }).map((_, i) => (
-              <div key={i} className="aspect-[3/4] rounded-2xl bg-white border border-[#EBE3D6] animate-pulse" />
+              <div key={i} className="aspect-[3/4] rounded-3xl animate-pulse" style={{ background: '#EDE3D6', border: '1px solid #D4C4B0' }} />
             ))}
           </div>
         ) : (
@@ -97,15 +98,16 @@ export default function TiendaNueva() {
         )}
       </section>
 
-      <footer className="border-t border-[#EBE3D6] py-8 text-center text-xs text-[#A78B6F] flex items-center justify-center gap-1.5">
-        <Recycle className="w-3.5 h-3.5 text-[#0F8B6C]" /> PEYU Chile · Plástico reciclado · Hecho en Santiago 🇨🇱
+      <footer className="py-8 text-center text-xs flex items-center justify-center gap-1.5" style={{ borderTop: '1px solid #D4C4B0', color: '#A08070' }}>
+        <Recycle className="w-3.5 h-3.5" style={{ color: '#8BAD8A' }} /> PEYU Chile · Plástico reciclado · Hecho en Santiago 🇨🇱
       </footer>
 
       {/* 4 · STICKY móvil: CTA al configurador siempre visible */}
-      <div className="lg:hidden fixed bottom-0 inset-x-0 z-40 bg-[#FAF7F2]/95 backdrop-blur-xl border-t border-[#EBE3D6] px-4 py-3 pb-safe">
+      <div className="lg:hidden fixed bottom-0 inset-x-0 z-40 backdrop-blur-xl px-4 py-3 pb-safe" style={{ background: 'rgba(248,243,237,.95)', borderTop: '1px solid #D4C4B0' }}>
         <button
           onClick={scrollToConfig}
-          className="w-full h-13 py-3.5 rounded-2xl bg-[#0F8B6C] hover:bg-[#0B6E55] text-white font-bold flex items-center justify-center gap-2 shadow-lg shadow-[#0F8B6C]/25 transition-all active:scale-[0.99]"
+          className="w-full h-13 py-3.5 rounded-2xl text-white font-bold flex items-center justify-center gap-2 shadow-lg transition-all active:scale-[0.99]"
+          style={{ background: 'linear-gradient(135deg,#C0785C,#A86440)', boxShadow: '0 8px 24px rgba(192,120,92,.3)' }}
         >
           <Sparkles className="w-4 h-4" /> Personaliza tu carcasa
         </button>

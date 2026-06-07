@@ -220,7 +220,7 @@ export default function ProductoNuevo() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#FAF7F2]">
+      <div className="min-h-screen" style={{ background: '#F8F3ED' }}>
         <ShopV2Header />
         <div className="flex items-center justify-center py-32">
           <Loader2 className="w-8 h-8 text-[#0F8B6C] animate-spin" />
@@ -231,7 +231,7 @@ export default function ProductoNuevo() {
 
   if (!producto) {
     return (
-      <div className="min-h-screen bg-[#FAF7F2] font-inter">
+      <div className="min-h-screen font-inter" style={{ background: '#F8F3ED' }}>
         <ShopV2Header />
         <div className="text-center py-32 px-4">
           <p className="font-bold text-[#2A2420] mb-2">Producto no encontrado</p>
@@ -244,7 +244,7 @@ export default function ProductoNuevo() {
   const esCompostable = producto.material?.includes('Trigo') || producto.categoria === 'Carcasas B2C';
 
   return (
-    <div className="min-h-screen bg-[#FAF7F2] font-inter text-[#2A2420] pb-24 lg:pb-0">
+    <div className="min-h-screen font-inter pb-24 lg:pb-0" style={{ background: '#F8F3ED', color: '#2C1810' }}>
       <ShopV2Header />
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6">
@@ -272,9 +272,9 @@ export default function ProductoNuevo() {
                 {producto.categoria?.replace(' B2C', '')}
               </p>
               <h1 className="font-fraunces text-3xl sm:text-4xl leading-[1.1] mb-2.5">{producto.nombre}</h1>
-              <p className="font-poppins font-bold text-2xl text-[#0F8B6C]">{fmtCLP(precioUnit)}</p>
+              <p className="font-poppins font-bold text-2xl" style={{ color: '#C0785C' }}>{fmtCLP(precioUnit)}</p>
               {stockBajo && (
-                <p className="inline-flex items-center gap-1.5 mt-2 text-xs font-bold text-[#D96B4D] bg-[#D96B4D]/10 px-2.5 py-1 rounded-full">
+                <p className="inline-flex items-center gap-1.5 mt-2 text-xs font-bold px-2.5 py-1 rounded-full" style={{ color: '#C0785C', background: 'rgba(192,120,92,.1)' }}>
                   🔥 Solo quedan {stock} unidades
                 </p>
               )}
@@ -343,7 +343,8 @@ export default function ProductoNuevo() {
             <button
               onClick={handleAdd}
               disabled={added || !persOk}
-              className="hidden lg:flex w-full h-14 rounded-2xl bg-[#0F8B6C] hover:bg-[#0B6E55] text-white font-bold text-base items-center justify-center gap-2 shadow-lg shadow-[#0F8B6C]/20 transition-all hover:scale-[1.01] disabled:opacity-60 disabled:hover:scale-100"
+              className="hidden lg:flex w-full h-14 rounded-2xl text-white font-bold text-base items-center justify-center gap-2 transition-all hover:scale-[1.01] disabled:opacity-60 disabled:hover:scale-100"
+              style={{ background: 'linear-gradient(135deg,#C0785C,#A86440)', boxShadow: '0 8px 28px rgba(192,120,92,.28)' }}
             >
               {added ? (
                 <><Check className="w-5 h-5" /> ¡Agregado!</>
@@ -361,9 +362,9 @@ export default function ProductoNuevo() {
                 { icon: Truck, t: 'Envío BlueExpress' },
                 { icon: Lock, t: 'Pago seguro' },
               ].map((b, i) => (
-                <div key={i} className="flex flex-col items-center gap-1.5 bg-white border border-[#EBE3D6] rounded-xl p-3 text-center">
-                  <b.icon className="w-4 h-4 text-[#0F8B6C]" />
-                  <span className="text-[10px] font-bold text-[#4B4F54] leading-tight">{b.t}</span>
+                <div key={i} className="flex flex-col items-center gap-1.5 bg-white rounded-xl p-3 text-center" style={{ border: '1.5px solid #D4C4B0' }}>
+                  <b.icon className="w-4 h-4" style={{ color: '#8BAD8A' }} />
+                  <span className="text-[10px] font-bold leading-tight" style={{ color: '#7A6050' }}>{b.t}</span>
                 </div>
               ))}
             </div>

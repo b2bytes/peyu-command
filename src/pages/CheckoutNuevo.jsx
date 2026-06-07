@@ -313,26 +313,26 @@ export default function CheckoutNuevo() {
     } catch { /* noop */ }
 
     return (
-      <div className="min-h-screen bg-[#FAF7F2] font-inter text-[#2A2420]">
+      <div className="min-h-screen font-inter" style={{ background: '#F8F3ED', color: '#2C1810' }}>
         <ShopV2Header />
         <div className="max-w-md mx-auto text-center py-24 px-4">
           {ultimaCompra ? (
             <>
-              <div className="w-16 h-16 mx-auto rounded-3xl bg-[#0F8B6C] flex items-center justify-center mb-5">
+              <div className="w-16 h-16 mx-auto rounded-3xl flex items-center justify-center mb-5" style={{ background: 'linear-gradient(135deg,#C0785C,#A86440)' }}>
                 <ShieldCheck className="w-8 h-8 text-white" />
               </div>
               <h1 className="font-fraunces text-2xl mb-2">¡Tu compra ya está hecha!</h1>
-              <p className="text-sm text-[#4B4F54] mb-6">
-                El pedido <span className="font-mono font-bold text-[#0F8B6C]">{ultimaCompra.numero}</span> fue creado. No necesitas volver a pagar.
+              <p className="text-sm mb-6" style={{ color: '#7A6050' }}>
+                El pedido <span className="font-mono font-bold" style={{ color: '#C0785C' }}>{ultimaCompra.numero}</span> fue creado. No necesitas volver a pagar.
               </p>
               <div className="flex flex-col gap-2.5">
                 <Link to={`/seguimiento?pedido=${encodeURIComponent(ultimaCompra.numero)}`}>
-                  <button className="w-full bg-[#0F8B6C] hover:bg-[#0B6E55] text-white font-bold px-6 py-3.5 rounded-2xl transition-all">
+                  <button className="w-full text-white font-bold px-6 py-3.5 rounded-2xl transition-all" style={{ background: 'linear-gradient(135deg,#C0785C,#A86440)' }}>
                     Seguir mi pedido
                   </button>
                 </Link>
                 <Link to="/CatalogoNuevo">
-                  <button className="w-full bg-white border border-[#EBE3D6] hover:border-[#0F8B6C] text-[#2A2420] font-bold px-6 py-3.5 rounded-2xl transition-all">
+                  <button className="w-full font-bold px-6 py-3.5 rounded-2xl transition-all" style={{ background: 'white', border: '1.5px solid #D4C4B0', color: '#2C1810' }}>
                     Seguir comprando
                   </button>
                 </Link>
@@ -342,7 +342,7 @@ export default function CheckoutNuevo() {
             <>
               <h1 className="font-fraunces text-2xl mb-3">Tu carrito está vacío</h1>
               <Link to="/CatalogoNuevo">
-                <button className="bg-[#0F8B6C] hover:bg-[#0B6E55] text-white font-bold px-6 py-3.5 rounded-2xl transition-all">
+                <button className="text-white font-bold px-6 py-3.5 rounded-2xl transition-all" style={{ background: 'linear-gradient(135deg,#C0785C,#A86440)' }}>
                   Ir a la tienda
                 </button>
               </Link>
@@ -354,12 +354,12 @@ export default function CheckoutNuevo() {
   }
 
   return (
-    <div className="min-h-screen bg-[#FAF7F2] font-inter text-[#2A2420] pb-32 lg:pb-12">
+    <div className="min-h-screen font-inter pb-32 lg:pb-12" style={{ background: '#F8F3ED', color: '#2C1810' }}>
       <ShopV2Header />
 
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6">
         <CheckoutStepperV2 current="pago" />
-        <Link to="/CarritoNuevo" className="inline-flex items-center gap-1.5 text-sm font-bold text-[#4B4F54] hover:text-[#0F8B6C] mb-5 transition-colors lg:hidden">
+        <Link to="/CarritoNuevo" className="inline-flex items-center gap-1.5 text-sm font-bold mb-5 transition-colors lg:hidden" style={{ color: '#7A6050' }}>
           <ArrowLeft className="w-4 h-4" /> Volver al carrito
         </Link>
 
@@ -441,8 +441,8 @@ export default function CheckoutNuevo() {
 
           {/* RESUMEN sticky */}
           <div className="lg:sticky lg:top-24 self-start space-y-3">
-            <div className="bg-white rounded-2xl border border-[#EBE3D6] p-5">
-              <h2 className="font-fraunces text-xl mb-4">Tu pedido</h2>
+            <div className="bg-white rounded-3xl p-5" style={{ border: '1.5px solid #D4C4B0', boxShadow: '0 4px 24px rgba(44,24,16,.08)' }}>
+              <h2 className="font-fraunces text-xl mb-4" style={{ color: '#2C1810' }}>Tu pedido</h2>
 
               <div className="space-y-2.5 max-h-52 overflow-y-auto peyu-scrollbar pr-1 mb-4">
                 {carrito.map((item) => (
@@ -454,7 +454,7 @@ export default function CheckoutNuevo() {
                       <p className="text-xs font-semibold text-[#2A2420] truncate">{item.nombre}</p>
                       <p className="text-[10px] text-[#A78B6F]">x{item.cantidad}{item.color ? ` · ${item.color}` : ''}</p>
                       {item.personalizacion && (
-                        <p className="text-[10px] text-[#D96B4D] font-semibold truncate">✦ {item.personalizacion}</p>
+                        <p className="text-[10px] font-semibold truncate" style={{ color: '#C0785C' }}>✦ {item.personalizacion}</p>
                       )}
                     </div>
                     <span className="text-xs font-bold text-[#2A2420]">{fmtCLP((item.precio || 0) * (item.cantidad || 1))}</span>
@@ -462,45 +462,45 @@ export default function CheckoutNuevo() {
                 ))}
               </div>
 
-              <div className="space-y-2 pt-3 border-t border-[#EBE3D6] text-sm">
-                <div className="flex justify-between text-[#4B4F54]">
+              <div className="space-y-2 pt-3 text-sm" style={{ borderTop: '1px solid #D4C4B0' }}>
+                <div className="flex justify-between" style={{ color: '#7A6050' }}>
                   <span>Subtotal</span><span className="font-semibold">{fmtCLP(subtotal)}</span>
                 </div>
                 {cargoPersonalizacion > 0 && (
-                  <div className="flex justify-between text-[#4B4F54]">
+                  <div className="flex justify-between" style={{ color: '#7A6050' }}>
                     <span>Personalización</span><span className="font-semibold">+{fmtCLP(cargoPersonalizacion)}</span>
                   </div>
                 )}
                 {ahorroTotal > 0 && (
-                  <div className="bg-[#0F8B6C]/5 border border-[#0F8B6C]/20 rounded-xl p-2.5 space-y-1">
-                    <div className="flex justify-between font-bold text-[#0F8B6C]">
+                  <div className="rounded-xl p-2.5 space-y-1" style={{ background: 'rgba(139,173,138,.1)', border: '1px solid rgba(139,173,138,.3)' }}>
+                    <div className="flex justify-between font-bold" style={{ color: '#5B7D5A' }}>
                       <span>Descuento por cantidad</span><span>−{fmtCLP(ahorroTotal)}</span>
                     </div>
                     {descLineas.filter((l) => l.ahorro > 0).map((l) => (
-                      <div key={l.sku || l.nombre} className="flex justify-between text-[11px] text-[#4B4F54]">
+                      <div key={l.sku || l.nombre} className="flex justify-between text-[11px]" style={{ color: '#7A6050' }}>
                         <span className="truncate pr-2">{l.nombre} ({l.unidades}u · −{l.pct}%)</span>
                         <span className="font-semibold flex-shrink-0">−{fmtCLP(l.ahorro)}</span>
                       </div>
                     ))}
                   </div>
                 )}
-                <div className="flex justify-between text-[#4B4F54]">
+                <div className="flex justify-between" style={{ color: '#7A6050' }}>
                   <span>Envío</span>
                   {envioBluex
-                    ? (envio === 0 ? <span className="text-[#0F8B6C] font-bold">GRATIS</span> : <span className="font-semibold">{fmtCLP(envio)}</span>)
-                    : <span className="text-[#A78B6F] text-xs">Elige arriba</span>}
+                    ? (envio === 0 ? <span className="font-bold" style={{ color: '#8BAD8A' }}>GRATIS</span> : <span className="font-semibold">{fmtCLP(envio)}</span>)
+                    : <span className="text-xs" style={{ color: '#A08070' }}>Elige arriba</span>}
                 </div>
-                <div className="flex justify-between pt-2 border-t border-[#EBE3D6]">
-                  <span className="font-bold text-[#2A2420]">Total</span>
-                  <span className="font-poppins font-bold text-xl text-[#0F8B6C]">{fmtCLP(total)}</span>
+                <div className="flex justify-between pt-2" style={{ borderTop: '1px solid #D4C4B0' }}>
+                  <span className="font-bold" style={{ color: '#2C1810' }}>Total</span>
+                  <span className="font-poppins font-bold text-xl" style={{ color: '#C0785C' }}>{fmtCLP(total)}</span>
                 </div>
-                <p className="text-[10px] text-[#A78B6F]">IVA incluido</p>
+                <p className="text-[10px]" style={{ color: '#A08070' }}>IVA incluido</p>
               </div>
 
               {errorPago && (
-                <div className="mt-3 bg-[#D96B4D]/10 border border-[#D96B4D]/30 rounded-xl p-3 flex items-start gap-2">
-                  <AlertCircle className="w-4 h-4 text-[#D96B4D] flex-shrink-0 mt-0.5" />
-                  <p className="text-xs text-[#D96B4D] font-semibold">{errorPago}</p>
+                <div className="mt-3 rounded-xl p-3 flex items-start gap-2" style={{ background: 'rgba(192,120,92,.08)', border: '1px solid rgba(192,120,92,.3)' }}>
+                  <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: '#C0785C' }} />
+                  <p className="text-xs font-semibold" style={{ color: '#C0785C' }}>{errorPago}</p>
                 </div>
               )}
 
@@ -508,7 +508,8 @@ export default function CheckoutNuevo() {
               <button
                 onClick={crearPedido}
                 disabled={creando}
-                className="hidden lg:flex w-full mt-4 h-13 py-3.5 rounded-2xl bg-[#0F8B6C] hover:bg-[#0B6E55] disabled:opacity-60 text-white font-bold items-center justify-center gap-2 shadow-lg shadow-[#0F8B6C]/20 transition-all hover:scale-[1.01]"
+                className="hidden lg:flex w-full mt-4 h-13 py-3.5 rounded-2xl disabled:opacity-60 text-white font-bold items-center justify-center gap-2 transition-all hover:scale-[1.01]"
+                style={{ background: 'linear-gradient(135deg,#C0785C,#A86440)', boxShadow: '0 8px 24px rgba(192,120,92,.28)' }}
               >
                 {creando ? (
                   <><div className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" /> Procesando…</>
@@ -519,8 +520,8 @@ export default function CheckoutNuevo() {
                 )}
               </button>
 
-              <div className="hidden lg:flex items-center justify-center gap-1.5 text-[11px] text-[#A78B6F] pt-3">
-                <ShieldCheck className="w-3.5 h-3.5 text-[#0F8B6C]" /> Pago seguro · {medioPago === 'Transferencia' ? 'Transferencia' : 'Mercado Pago'}
+              <div className="hidden lg:flex items-center justify-center gap-1.5 text-[11px] pt-3" style={{ color: '#A08070' }}>
+                <ShieldCheck className="w-3.5 h-3.5" style={{ color: '#8BAD8A' }} /> Pago seguro · {medioPago === 'Transferencia' ? 'Transferencia' : 'Mercado Pago'}
               </div>
             </div>
           </div>
@@ -528,15 +529,16 @@ export default function CheckoutNuevo() {
       </div>
 
       {/* CTA sticky mobile */}
-      <div className="lg:hidden fixed bottom-0 inset-x-0 z-40 bg-white/95 backdrop-blur-xl border-t border-[#EBE3D6] px-4 py-3 pb-safe">
+      <div className="lg:hidden fixed bottom-0 inset-x-0 z-40 backdrop-blur-xl px-4 py-3 pb-safe" style={{ background: 'rgba(248,243,237,.96)', borderTop: '1px solid #D4C4B0' }}>
         <div className="flex items-center justify-between mb-2">
-          <span className="text-xs text-[#A78B6F] font-semibold">Total {envioBluex ? '' : '(sin envío)'}</span>
-          <span className="font-poppins font-bold text-lg text-[#0F8B6C]">{fmtCLP(total)}</span>
+          <span className="text-xs font-semibold" style={{ color: '#A08070' }}>Total {envioBluex ? '' : '(sin envío)'}</span>
+          <span className="font-poppins font-bold text-lg" style={{ color: '#C0785C' }}>{fmtCLP(total)}</span>
         </div>
         <button
           onClick={crearPedido}
           disabled={creando}
-          className="w-full h-13 py-3.5 rounded-2xl bg-[#0F8B6C] hover:bg-[#0B6E55] disabled:opacity-60 text-white font-bold flex items-center justify-center gap-2 shadow-lg transition-all"
+          className="w-full h-13 py-3.5 rounded-2xl disabled:opacity-60 text-white font-bold flex items-center justify-center gap-2 transition-all"
+          style={{ background: 'linear-gradient(135deg,#C0785C,#A86440)', boxShadow: '0 6px 20px rgba(192,120,92,.25)' }}
         >
           {creando ? (
             <><div className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" /> Procesando…</>
@@ -546,8 +548,8 @@ export default function CheckoutNuevo() {
         </button>
       </div>
 
-      <footer className="border-t border-[#EBE3D6] py-8 text-center text-xs text-[#A78B6F] hidden lg:flex items-center justify-center gap-1.5">
-        <Recycle className="w-3.5 h-3.5 text-[#0F8B6C]" /> PEYU Chile · Pago seguro · Garantía 10 años
+      <footer className="py-8 text-center text-xs hidden lg:flex items-center justify-center gap-1.5" style={{ borderTop: '1px solid #D4C4B0', color: '#A08070' }}>
+        <Recycle className="w-3.5 h-3.5" style={{ color: '#8BAD8A' }} /> PEYU Chile · Pago seguro · Garantía 10 años
       </footer>
     </div>
   );
