@@ -87,8 +87,9 @@ function clampToArea(x, y, sizePct, tipo, area) {
 // captureSnapshot(): captura el canvas del preview en vivo como dataURL PNG.
 // Se expone via forwardRef para que el padre (ProductoNuevo, LiveConfiguratorV2)
 // lo llame al agregar al carrito y guarde el mockup REAL (foto base + grabado).
-const MockupLivePreviewV2 = forwardRef(function MockupLivePreviewV2({ productImageUrl, capas = [], onPlacementChange, fallbackUrl, esCarcasa = false }, ref) {
-  const area = getArea(esCarcasa);
+const MockupLivePreviewV2 = forwardRef(function MockupLivePreviewV2({ productImageUrl, capas = [], onPlacementChange, fallbackUrl, esCarcasa = false, customArea = null }, ref) {
+  // Usa customArea si está disponible (asignada por ProductoNuevo), sino deduce de esCarcasa.
+  const area = customArea || getArea(esCarcasa);
   const containerRef = useRef(null);
   // Imagen base efectiva: si la principal falla (CORS/rota), cae al fallback
   // (imagen_url del producto) → la carcasa NUNCA queda en blanco/gris vacío.

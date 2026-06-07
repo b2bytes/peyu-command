@@ -17,6 +17,7 @@ import {
   PERS_VACIO, tiposActivos, feeUnitarioCombinado, labelCombinada,
   resumenPersonalizacion, persCompleta, hayAlgunoActivado,
 } from '@/lib/pers-combinable';
+import { getProductEngraggingArea, isProductoCarcasa } from '@/lib/product-engraving-areas';
 
 // ════════════════════════════════════════════════════════════════════════
 // Configurador EN VIVO de la home v2 (Tema 6). Modelo → color real → tipo de
@@ -37,6 +38,9 @@ export default function LiveConfiguratorV2({ carcasas = [] }) {
     () => carcasas.find((p) => modeloDe(p) === modelo) || carcasas[0] || null,
     [carcasas, modelo]
   );
+  
+  // Deduce automáticamente el área de estampado del producto.
+  const engraggingArea = useMemo(() => getProductEngraggingArea(producto), [producto]);
 
   // Estado del configurador
   const [colorId, setColorId] = useState(null);
@@ -173,6 +177,7 @@ export default function LiveConfiguratorV2({ carcasas = [] }) {
                 capas={capas}
                 onPlacementChange={setPlacements}
                 esCarcasa={true}
+                customArea={engraggingArea}
               />
             ) : (
               <div className="relative aspect-square rounded-[1.75rem] overflow-hidden bg-[#FAF7F2] border border-[#EBE3D6]">

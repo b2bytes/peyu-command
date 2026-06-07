@@ -23,6 +23,7 @@ import {
   PERS_VACIO, tiposActivos, feeUnitarioCombinado, labelCombinada,
   resumenPersonalizacion, persCompleta, hayAlgunoActivado,
 } from '@/lib/pers-combinable';
+import { getProductEngraggingArea, isProductoCarcasa } from '@/lib/product-engraving-areas';
 
 // ════════════════════════════════════════════════════════════════════════
 // /ProductoNuevo?id= — Ficha de producto del Shop v2 (Tema 6 Conversion Machine).
@@ -54,9 +55,11 @@ export default function ProductoNuevo() {
     }).finally(() => setLoading(false));
   }, [id]);
 
-  // ¿Es carcasa? Solo en carcasas se permiten las 3 personalizaciones
-  // (Frase + Diseño PEYU + Tu diseño). En el resto: SOLO "Tu diseño".
-  const esCarcasa = producto?.categoria === 'Carcasas B2C';
+  // ¿Es carcasa? Usa la función inteligente que deduce de categoría/nombre/BD.
+  // Solo en carcasas se permiten las 3 personalizaciones (Frase + Diseño PEYU + Tu diseño).
+  // En el resto: SOLO "Tu diseño".
+  const esCarcasa = producto ? isProductoCarcasa(producto) : false;
+  const engraggingArea = producto ? getProductEngraggingArea(producto) : null;
   const soloArchivo = !!producto && !esCarcasa;
 
   // Colores reales del producto (carcasas = 5 colores, resto = 4, etc.)
@@ -281,6 +284,7 @@ export default function ProductoNuevo() {
                     capas={capas}
                     onPlacementChange={setPlacements}
                     esCarcasa={esCarcasa}
+                    customArea={engraggingArea}
                   />
                 </div>
               )}
