@@ -5,6 +5,7 @@ import {
   ArrowLeft, Recycle, ShieldCheck, Truck, Check, Loader2, ShoppingBag, Sparkles, Lock,
 } from 'lucide-react';
 import ShopV2Header from '@/components/shopv2/ShopV2Header';
+import CheckoutStepperV2 from '@/components/shopv2/CheckoutStepperV2';
 import ColorSwatchesV2 from '@/components/shopv2/ColorSwatchesV2';
 import PersonalizadorV2 from '@/components/shopv2/PersonalizadorV2';
 import MockupLivePreviewV2 from '@/components/shopv2/MockupLivePreviewV2';
@@ -214,7 +215,8 @@ export default function ProductoNuevo() {
       <ShopV2Header />
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6">
-        <Link to="/CatalogoNuevo" className="inline-flex items-center gap-1.5 text-sm font-bold text-[#4B4F54] hover:text-[#0F8B6C] mb-5 transition-colors">
+        <CheckoutStepperV2 current="producto" />
+        <Link to="/CatalogoNuevo" className="inline-flex items-center gap-1.5 text-sm font-bold text-[#4B4F54] hover:text-[#0F8B6C] mb-5 transition-colors lg:hidden">
           <ArrowLeft className="w-4 h-4" /> Volver a la tienda
         </Link>
 

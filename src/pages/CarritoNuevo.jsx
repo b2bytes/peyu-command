@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ShoppingBag, Trash2, ArrowRight, Recycle, ArrowLeft, ShieldCheck } from 'lucide-react';
 import ShopV2Header from '@/components/shopv2/ShopV2Header';
+import CheckoutStepperV2 from '@/components/shopv2/CheckoutStepperV2';
+import StepNavV2 from '@/components/shopv2/StepNavV2';
 import QtyStepperV2 from '@/components/shopv2/QtyStepperV2';
 import CartItemThumbV2 from '@/components/shopv2/CartItemThumbV2';
 import {
@@ -59,7 +61,8 @@ export default function CarritoNuevo() {
       <ShopV2Header />
 
       <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6">
-        <Link to="/CatalogoNuevo" className="inline-flex items-center gap-1.5 text-sm font-bold text-[#4B4F54] hover:text-[#0F8B6C] mb-5 transition-colors">
+        <CheckoutStepperV2 current="carrito" />
+        <Link to="/CatalogoNuevo" className="inline-flex items-center gap-1.5 text-sm font-bold text-[#4B4F54] hover:text-[#0F8B6C] mb-5 transition-colors lg:hidden">
           <ArrowLeft className="w-4 h-4" /> Seguir comprando
         </Link>
 
@@ -125,6 +128,11 @@ export default function CarritoNuevo() {
                 </div>
               );
             })}
+
+            {/* Navegación Atrás / Siguiente (desktop) */}
+            <div className="hidden lg:block">
+              <StepNavV2 backTo="/CatalogoNuevo" backLabel="Seguir comprando" onNext={irACheckout} nextLabel="Ir a pagar" />
+            </div>
           </div>
 
           {/* Resumen */}

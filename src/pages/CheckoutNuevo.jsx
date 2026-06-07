@@ -3,6 +3,8 @@ import { useNavigate, Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { ArrowLeft, Lock, ShieldCheck, Recycle, AlertCircle, Gift } from 'lucide-react';
 import ShopV2Header from '@/components/shopv2/ShopV2Header';
+import CheckoutStepperV2 from '@/components/shopv2/CheckoutStepperV2';
+import StepNavV2 from '@/components/shopv2/StepNavV2';
 import CartItemThumbV2 from '@/components/shopv2/CartItemThumbV2';
 import ShippingAddressForm, { validarShippingForm } from '@/components/cart/ShippingAddressForm';
 import BillingSection, { validarBilling } from '@/components/cart/BillingSection';
@@ -287,7 +289,8 @@ export default function CheckoutNuevo() {
       <ShopV2Header />
 
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6">
-        <Link to="/CarritoNuevo" className="inline-flex items-center gap-1.5 text-sm font-bold text-[#4B4F54] hover:text-[#0F8B6C] mb-5 transition-colors">
+        <CheckoutStepperV2 current="pago" />
+        <Link to="/CarritoNuevo" className="inline-flex items-center gap-1.5 text-sm font-bold text-[#4B4F54] hover:text-[#0F8B6C] mb-5 transition-colors lg:hidden">
           <ArrowLeft className="w-4 h-4" /> Volver al carrito
         </Link>
 
@@ -349,6 +352,17 @@ export default function CheckoutNuevo() {
                 billing={billing}
                 setBilling={(b) => { setBilling(b); setBillingErrors({}); }}
                 errors={billingErrors}
+              />
+            </div>
+
+            {/* Navegación Atrás / Pagar (desktop) */}
+            <div className="hidden lg:block">
+              <StepNavV2
+                backTo="/CarritoNuevo"
+                backLabel="Volver al carrito"
+                onNext={crearPedido}
+                nextLabel={medioPago === 'Transferencia' ? `Confirmar · ${fmtCLP(total)}` : `Pagar ${fmtCLP(total)}`}
+                nextLoading={creando}
               />
             </div>
           </div>

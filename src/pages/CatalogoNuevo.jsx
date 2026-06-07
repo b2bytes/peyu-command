@@ -3,6 +3,7 @@ import { useLocation } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { Search, SlidersHorizontal, PackageOpen, Smartphone } from 'lucide-react';
 import ShopV2Header from '@/components/shopv2/ShopV2Header';
+import CheckoutStepperV2 from '@/components/shopv2/CheckoutStepperV2';
 import ProductCardV2 from '@/components/shopv2/ProductCardV2';
 import { CATEGORIAS_V2 } from '@/lib/shop-v2-config';
 import { modeloDe, modelosDisponibles } from '@/lib/phone-models-v2';
@@ -73,6 +74,7 @@ export default function CatalogoNuevo() {
       <ShopV2Header />
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-7">
+        <CheckoutStepperV2 current="tienda" />
         <div className="mb-6">
           <h1 className="font-fraunces text-3xl sm:text-4xl mb-1.5">Nuestra tienda</h1>
           <p className="text-[#4B4F54] text-sm">Productos de plástico 100% reciclado, hechos en Chile.</p>
