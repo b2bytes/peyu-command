@@ -98,24 +98,24 @@ export default function BluexShipmentDrawer({ envio: envioInicial, onClose, onUp
       <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
       <aside
         onClick={e => e.stopPropagation()}
-        className="relative w-full max-w-2xl bg-background h-full overflow-y-auto shadow-2xl"
+        className="relative w-full md:max-w-2xl bg-background h-full overflow-y-auto shadow-2xl"
       >
         {/* Header */}
-        <div className="sticky top-0 z-10 bg-gradient-to-r from-blue-600 to-cyan-600 text-white px-5 py-4 flex items-start justify-between">
-          <div className="min-w-0">
+        <div className="sticky top-0 z-10 bg-gradient-to-r from-blue-600 to-cyan-600 text-white px-4 sm:px-5 py-3 sm:py-4 flex items-start justify-between gap-3">
+          <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2 mb-1">
-              <Truck className="w-4 h-4" />
-              <span className="text-[10px] uppercase tracking-wider font-bold opacity-80">BlueExpress</span>
+              <Truck className="w-3.5 sm:w-4 h-3.5 sm:h-4" />
+              <span className="text-[8px] sm:text-[10px] uppercase tracking-wider font-bold opacity-80">BlueExpress</span>
             </div>
-            <h2 className="font-poppins font-extrabold text-xl truncate">{envio.numero_pedido}</h2>
-            <p className="text-xs opacity-90 font-mono mt-0.5">{envio.tracking_number}</p>
+            <h2 className="font-poppins font-extrabold text-base sm:text-xl truncate">{envio.numero_pedido}</h2>
+            <p className="text-[11px] sm:text-xs opacity-90 font-mono mt-0.5 truncate">{envio.tracking_number}</p>
           </div>
-          <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-lg">
-            <X className="w-5 h-5" />
+          <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-lg flex-shrink-0">
+            <X className="w-4 sm:w-5 h-4 sm:h-5" />
           </button>
         </div>
 
-        <div className="p-5 space-y-4">
+        <div className="p-3 sm:p-5 space-y-3 sm:space-y-4">
           {/* Alertas */}
           {envio.tiene_excepcion && (
             <div className="bg-red-50 border border-red-200 rounded-xl p-3 flex items-start gap-2">
@@ -149,24 +149,26 @@ export default function BluexShipmentDrawer({ envio: envioInicial, onClose, onUp
           </div>
 
           {/* Acciones */}
-          <div className="grid grid-cols-2 gap-2">
-            <Button onClick={refreshTracking} disabled={refreshing} variant="outline" className="gap-2 h-11">
-              {refreshing ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
-              Refrescar
+          <div className="grid grid-cols-2 gap-1.5 sm:gap-2">
+            <Button onClick={refreshTracking} disabled={refreshing} variant="outline" className="gap-1.5 sm:gap-2 h-9 sm:h-10 text-xs sm:text-sm">
+              {refreshing ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RefreshCw className="w-3.5 h-3.5" />}
+              <span className="hidden sm:inline">Refrescar</span>
+              <span className="sm:hidden">Refr.</span>
             </Button>
-            <Button onClick={verEtiqueta} disabled={labelLoading} variant="outline" className="gap-2 h-11">
-              {labelLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileText className="w-4 h-4" />}
-              Ver etiqueta
+            <Button onClick={verEtiqueta} disabled={labelLoading} variant="outline" className="gap-1.5 sm:gap-2 h-9 sm:h-10 text-xs sm:text-sm">
+              {labelLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <FileText className="w-3.5 h-3.5" />}
+              <span className="hidden sm:inline">Etiqueta</span>
+              <span className="sm:hidden">Eti.</span>
             </Button>
-            <Button onClick={contactarWhatsApp} variant="outline" className="gap-2 h-11">
-              <MessageCircle className="w-4 h-4" /> WhatsApp cliente
+            <Button onClick={contactarWhatsApp} variant="outline" className="gap-1.5 sm:gap-2 h-9 sm:h-10 text-xs sm:text-sm">
+              <MessageCircle className="w-3.5 h-3.5" /> <span className="hidden sm:inline">WhatsApp</span>
             </Button>
             <a
               href={envio.tracking_url || `https://www.bluex.cl/seguimiento?n=${envio.tracking_number}`}
               target="_blank" rel="noreferrer"
-              className="flex items-center justify-center gap-2 h-11 rounded-md border border-input text-sm font-medium hover:bg-accent"
+              className="flex items-center justify-center gap-1.5 sm:gap-2 h-9 sm:h-10 rounded-md border border-input text-xs sm:text-sm font-medium hover:bg-accent"
             >
-              <ExternalLink className="w-4 h-4" /> Tracking público
+              <ExternalLink className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Tracking</span>
             </a>
           </div>
 
