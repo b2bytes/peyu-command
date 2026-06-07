@@ -81,12 +81,21 @@ export default function MockupClientePreview({ pedido, variant = 'admin' }) {
                 </span>
               </div>
             ) : (p.mockup || p.logo || p.imagenBase) ? (
-              <div className="relative bg-gray-50">
+              <div className="relative bg-gray-50 min-h-[120px] flex items-center justify-center">
                 <img
                   src={p.mockup || p.imagenBase || p.logo}
                   alt={`Arte de ${p.nombre}`}
+                  referrerPolicy="no-referrer"
                   className="w-full h-auto max-h-56 object-contain"
                   loading="lazy"
+                  onError={(e) => {
+                    // Si falla por CDN/referrer, reintenta con cache-buster una vez.
+                    if (!e.currentTarget.dataset.retried) {
+                      e.currentTarget.dataset.retried = '1';
+                      const base = p.mockup || p.imagenBase || p.logo;
+                      e.currentTarget.src = base + (base.includes('?') ? '&' : '?') + 'r=1';
+                    }
+                  }}
                 />
                 <span className="absolute top-2 left-2 text-[10px] font-bold px-2 py-0.5 rounded-full bg-black/55 text-white">
                   {p.mockup ? '✨ Mockup' : p.imagenBase ? '✨ Tu diseño' : '🖼️ Logo'}
