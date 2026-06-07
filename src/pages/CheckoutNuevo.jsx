@@ -166,6 +166,10 @@ export default function CheckoutNuevo() {
       posicion_grabado: posicionLinea(i),
       precio_unitario: i.precio || 0,
       cantidad: i.cantidad || 1,
+      // Imagen base + capas guardadas → permiten RECONSTRUIR el diseño exacto del
+      // cliente en el seguimiento (igual que el thumb del carrito), sin perder nada.
+      imagen_base: i.mockupUrl || i.imagen || '',
+      capas_grabado: Array.isArray(i.capas_grabado) ? i.capas_grabado : [],
     }));
     const colorTopLevel = carrito.length === 1 ? (carrito[0]?.color || '') : '';
     const itemConLogo = carrito.find(i => i.logoUrl || i.logo_url);
@@ -290,7 +294,7 @@ export default function CheckoutNuevo() {
         <h1 className="font-fraunces text-3xl sm:text-4xl mb-6">Finaliza tu compra</h1>
 
         <div className="grid lg:grid-cols-3 gap-6">
-          {/* FORM — 1 sola página */}
+          {/* FORM — 1 sola página, agrupado en 2 columnas para aprovechar el ancho */}
           <div className="lg:col-span-2 space-y-4">
             {/* 1 · Envío */}
             <section className="bg-white rounded-2xl border border-[#EBE3D6] p-5 sm:p-6">
@@ -305,7 +309,41 @@ export default function CheckoutNuevo() {
               />
             </section>
 
-            {/* 2 · Facturación */}
+            {/* Fila 2 columnas: Forma de envío + Método de pago (aprovecha el ancho) */}
+            <div className="grid md:grid-cols-2 gap-4 items-start">
+              {/* 2 · Forma de envío (BlueExpress inline) */}
+              <section className="bg-white rounded-2xl border border-[#EBE3D6] p-5 sm:p-6">
+                <div className="flex items-center gap-3 mb-5">
+                  <span className="w-8 h-8 rounded-xl bg-[#0F8B6C] text-white flex items-center justify-center font-bold text-sm">2</span>
+                  <div>
+                    <h2 className="font-fraunces text-xl">Forma de envío</h2>
+                    <p className="text-xs text-[#A78B6F]">Tarifa BlueExpress según tu comuna</p>
+                  </div>
+                </div>
+                <div data-shipping-selector>
+                  <ShippingSelector
+                    variant="light"
+                    items={itemsEnvio}
+                    comuna={cliente.ciudad}
+                    region={cliente.region}
+                    subtotal={subtotal}
+                    umbralEnvioGratis={40000}
+                    onSelect={setEnvioBluex}
+                  />
+                </div>
+              </section>
+
+              {/* 3 · Pago */}
+              <section className="bg-white rounded-2xl border border-[#EBE3D6] p-5 sm:p-6">
+                <div className="flex items-center gap-3 mb-5">
+                  <span className="w-8 h-8 rounded-xl bg-[#0F8B6C] text-white flex items-center justify-center font-bold text-sm">3</span>
+                  <h2 className="font-fraunces text-xl">Método de pago</h2>
+                </div>
+                <PaymentMethodSelector value={medioPago} onChange={setMedioPago} totalCubiertoConGC={false} />
+              </section>
+            </div>
+
+            {/* 4 · Facturación (full width, plegable interno) */}
             <div data-billing-section>
               <BillingSection
                 billing={billing}
@@ -313,37 +351,6 @@ export default function CheckoutNuevo() {
                 errors={billingErrors}
               />
             </div>
-
-            {/* 3 · Forma de envío (BlueExpress inline) */}
-            <section className="bg-white rounded-2xl border border-[#EBE3D6] p-5 sm:p-6">
-              <div className="flex items-center gap-3 mb-5">
-                <span className="w-8 h-8 rounded-xl bg-[#0F8B6C] text-white flex items-center justify-center font-bold text-sm">2</span>
-                <div>
-                  <h2 className="font-fraunces text-xl">Forma de envío</h2>
-                  <p className="text-xs text-[#A78B6F]">Tarifa real BlueExpress según tu comuna</p>
-                </div>
-              </div>
-              <div data-shipping-selector>
-                <ShippingSelector
-                  variant="light"
-                  items={itemsEnvio}
-                  comuna={cliente.ciudad}
-                  region={cliente.region}
-                  subtotal={subtotal}
-                  umbralEnvioGratis={40000}
-                  onSelect={setEnvioBluex}
-                />
-              </div>
-            </section>
-
-            {/* 4 · Pago */}
-            <section className="bg-white rounded-2xl border border-[#EBE3D6] p-5 sm:p-6">
-              <div className="flex items-center gap-3 mb-5">
-                <span className="w-8 h-8 rounded-xl bg-[#0F8B6C] text-white flex items-center justify-center font-bold text-sm">3</span>
-                <h2 className="font-fraunces text-xl">Método de pago</h2>
-              </div>
-              <PaymentMethodSelector value={medioPago} onChange={setMedioPago} totalCubiertoConGC={false} />
-            </section>
           </div>
 
           {/* RESUMEN sticky */}

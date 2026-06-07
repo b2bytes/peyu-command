@@ -1,4 +1,5 @@
 import { Sparkles, ImageIcon, ExternalLink, Download } from 'lucide-react';
+import CartItemThumbV2 from '@/components/shopv2/CartItemThumbV2';
 
 /**
  * Muestra el arte que el cliente subió/generó para estampar:
@@ -17,13 +18,17 @@ export default function MockupClientePreview({ pedido, variant = 'admin' }) {
   const items = Array.isArray(pedido.items_detalle) ? pedido.items_detalle : [];
   const piezas = [];
   items.forEach((it) => {
-    if (it.mockup_url || it.logo_url) {
+    const tieneCapas = Array.isArray(it.capas_grabado) && it.capas_grabado.length > 0;
+    if (it.mockup_url || it.logo_url || tieneCapas) {
       piezas.push({
         nombre: it.nombre || 'Producto',
         mockup: it.mockup_url || '',
         logo: it.logo_url || '',
         texto: it.personalizacion || '',
         posicion: it.posicion_grabado || '',
+        // Reconstrucción del diseño v2 (foto base + capas) — igual que el carrito.
+        imagenBase: it.imagen_base || '',
+        capas: tieneCapas ? it.capas_grabado : [],
       });
     }
   });
@@ -61,8 +66,16 @@ export default function MockupClientePreview({ pedido, variant = 'admin' }) {
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {piezas.map((p, i) => (
           <div key={i} className={`rounded-xl overflow-hidden border ${isPublic ? 'border-ld-border bg-white' : 'border-purple-200 bg-white'}`}>
-            {/* Imagen principal: mockup si existe, sino el logo */}
-            {(p.mockup || p.logo) && (
+            {/* Diseño v2 reconstruido (foto base + capas) — prioridad: muestra el
+                grabado EXACTO que eligió el cliente. */}
+            {p.capas.length > 0 && p.imagenBase ? (
+              <div className="relative">
+                <CartItemThumbV2 imagen={p.imagenBase} capas={p.capas} alt={`Arte de ${p.nombre}`} />
+                <span className="absolute top-2 left-2 text-[10px] font-bold px-2 py-0.5 rounded-full bg-black/55 text-white z-10">
+                  ✨ Tu diseño
+                </span>
+              </div>
+            ) : (p.mockup || p.logo) ? (
               <div className="relative bg-gray-50">
                 <img
                   src={p.mockup || p.logo}
@@ -74,7 +87,7 @@ export default function MockupClientePreview({ pedido, variant = 'admin' }) {
                   {p.mockup ? '✨ Mockup' : '🖼️ Logo'}
                 </span>
               </div>
-            )}
+            ) : null}
             <div className="p-2.5 space-y-1.5">
               <p className={`text-xs font-semibold ${isPublic ? 'text-ld-fg' : 'text-gray-900'} line-clamp-1`}>{p.nombre}</p>
               {p.texto && (

@@ -47,20 +47,19 @@ export default function ShippingAddressForm({ cliente, setCliente, errors = {}, 
     <div className="space-y-5">
       {/* ── SECCIÓN 1 · CONTACTO ──────────────────────────────────── */}
       <Section icon={User} title="Contacto" subtitle="Te enviaremos el comprobante y tracking aquí">
-        <FormField
-          label="Nombre completo"
-          name="nombre"
-          autoComplete="name"
-          value={cliente.nombre}
-          onChange={update('nombre')}
-          onBlur={validateField('nombre')}
-          placeholder="María González"
-          required
-          error={fieldError('nombre')}
-          isValid={fieldValid('nombre')}
-        />
-
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <FormField
+            label="Nombre completo"
+            name="nombre"
+            autoComplete="name"
+            value={cliente.nombre}
+            onChange={update('nombre')}
+            onBlur={validateField('nombre')}
+            placeholder="María González"
+            required
+            error={fieldError('nombre')}
+            isValid={fieldValid('nombre')}
+          />
           <FormField
             label="Email"
             name="email"
@@ -76,18 +75,18 @@ export default function ShippingAddressForm({ cliente, setCliente, errors = {}, 
             isValid={fieldValid('email')}
             hint="No spam · solo confirmación y tracking"
           />
-          <PhoneInput
-            label="Teléfono · WhatsApp"
-            name="telefono"
-            value={cliente.telefono}
-            onChange={update('telefono')}
-            onBlur={validateField('telefono')}
-            required
-            error={fieldError('telefono')}
-            isValid={fieldValid('telefono')}
-            hint="Para coordinar el despacho"
-          />
         </div>
+        <PhoneInput
+          label="Teléfono · WhatsApp"
+          name="telefono"
+          value={cliente.telefono}
+          onChange={update('telefono')}
+          onBlur={validateField('telefono')}
+          required
+          error={fieldError('telefono')}
+          isValid={fieldValid('telefono')}
+          hint="Para coordinar el despacho"
+        />
       </Section>
 
       {/* ── SECCIÓN 2 · DIRECCIÓN ─────────────────────────────────── */}

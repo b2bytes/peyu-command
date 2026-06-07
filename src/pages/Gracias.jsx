@@ -145,7 +145,7 @@ export default function Gracias() {
 
           {/* CTAs */}
           <div className="mt-6 grid sm:grid-cols-2 gap-3">
-            <Link to="/seguimiento" className="block">
+            <Link to={numero ? `/seguimiento?pedido=${encodeURIComponent(numero)}` : '/seguimiento'} className="block">
               <Button className="ld-btn-primary w-full h-12 rounded-full text-white font-bold gap-2">
                 <Package className="w-4 h-4" /> Seguir mi pedido
               </Button>
