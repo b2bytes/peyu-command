@@ -25,6 +25,7 @@ import {
 } from '@/lib/pers-combinable';
 import { getProductEngraggingArea, isProductoCarcasa } from '@/lib/product-engraving-areas';
 import { applyAutoPlacement } from '@/lib/auto-placement';
+import { getQtyDiscountPct } from '@/lib/volume-discount';
 
 // ════════════════════════════════════════════════════════════════════════
 // /ProductoNuevo?id= — Ficha de producto del Shop v2 (Tema 6 Conversion Machine).
@@ -111,16 +112,25 @@ export default function ProductoNuevo() {
   const galleryImages = useMemo(() => {
     if (!producto) return [];
     const main = color ? getProductImageForColor(producto, color) : getProductImage(producto);
-    const extra = Array.isArray(producto.galeria_urls)
+    let extra = Array.isArray(producto.galeria_urls)
       ? producto.galeria_urls.filter((u) => typeof u === 'string' && u.startsWith('http') && u !== main)
       : [];
+    
+    // Filtro especial: cacho unitario no muestra imagen amarilla
+    if (producto.sku === 'ENT-CACH-1') {
+      extra = extra.filter((u) => !u.toLowerCase().includes('amarillo') && !u.includes('1-2.jpg'));
+    }
+    
     return [main, ...extra].slice(0, 6);
   }, [producto, color]);
 
   // Al cambiar de color, vuelve a la 1ª imagen (la del color elegido).
   useEffect(() => { setGalIdx(0); }, [colorId]);
 
-  const displayImg = galleryImages[0] || (producto ? getProductImage(producto) : null);
+  // IMPORTANTE: la imagen principal SIEMPRE es la del color elegido (galleryImages[0]),
+  // sin importar qué thumbnail se seleccione en la galería. Los thumbnails solo permiten
+  // ver ángulos alternativos, pero el color elegido prevalece siempre.
+  const displayImg = color ? getProductImageForColor(producto, color) : getProductImage(producto);
 
   const precioUnit = producto?.precio_b2c || 9990;
   const moq = producto?.personalizacion_gratis_desde || producto?.moq_personalizacion || MOQ_PERSONALIZACION_GRATIS;
@@ -128,7 +138,12 @@ export default function ProductoNuevo() {
   const feeUnit = useMemo(() => feeUnitarioCombinado(pers), [pers]);
   const gratis = cantidad >= moq;
   const feeTotal = gratis ? 0 : feeUnit * cantidad;
-  const total = precioUnit * cantidad + feeTotal;
+  
+  // Descuento por cantidad: 2u → 10% · 3+u → 15%
+  const descuentoPct = getQtyDiscountPct(cantidad);
+  const descuentoMonto = Math.floor(precioUnit * cantidad * (descuentoPct / 100));
+  
+  const total = precioUnit * cantidad + feeTotal - descuentoMonto;
 
   // Imagen base (lienzo) del mockup.
   // • Carcasas: foto del color elegido.
@@ -320,6 +335,8 @@ export default function ProductoNuevo() {
               feeUnit={feeUnit}
               feeTotal={feeTotal}
               gratis={gratis}
+              descuentoPct={descuentoPct}
+              descuentoMonto={descuentoMonto}
             />
 
             {/* CTA desktop */}
