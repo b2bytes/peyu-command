@@ -11,7 +11,7 @@ export default function TrustSocialBarV2() {
   ];
 
   return (
-    <section className="max-w-6xl mx-auto px-4 sm:px-6 mb-10">
+    <section className="w-full px-4 sm:px-8 lg:px-12 mb-10"><div className="max-w-screen-xl mx-auto">
       <div className="bg-white rounded-2xl px-4 sm:px-6 py-4" style={{ border: '1.5px solid #D4C4B0' }}>
         {/* Mobile: scroll horizontal · Desktop: flex wrap */}
         <div className="flex items-center gap-0 overflow-x-auto scrollbar-hide -mx-1 sm:flex-wrap sm:justify-between sm:gap-y-2">
@@ -43,6 +43,6 @@ export default function TrustSocialBarV2() {
           </p>
         </div>
       </div>
-    </section>
+    </div></section>
   );
 }

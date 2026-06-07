@@ -24,8 +24,11 @@ export default function ProductCardV2({ producto, index = 0 }) {
           alt={producto.nombre}
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
           loading="lazy"
-          referrerPolicy="no-referrer"
-          onError={(e) => { e.target.src = 'https://i0.wp.com/peyuchile.cl/wp-content/uploads/2025/04/carcasas-500x500-1.webp?fit=600%2C600&ssl=1'; }}
+          onError={(e) => {
+            // Fallback a imagen base44 siempre disponible
+            e.target.src = 'https://media.base44.com/images/public/69d99b9d61f699701129c103/4a2230d61_generated_image.png';
+            e.target.onerror = null;
+          }}
         />
         <span className="absolute top-2 left-2 inline-flex items-center gap-1 bg-white/90 backdrop-blur text-[10px] font-bold px-2 py-1 rounded-full shadow-sm" style={{ color: '#8BAD8A' }}>
           <Recycle className="w-3 h-3" />
