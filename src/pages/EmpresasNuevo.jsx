@@ -17,19 +17,20 @@ const CATEGORIAS = ['Todos', 'Corporativo', 'Escritorio', 'Hogar', 'Entretenimie
 
 const TRUST = [
   { icon: TrendingDown, t: 'Hasta −54%', s: 'descuento por volumen' },
-  { icon: Sparkles,    t: 'Logo gratis', s: 'grabado láser UV desde 10u' },
-  { icon: FileText,    t: 'Factura',     s: 'datos empresa + IVA desglosado' },
-  { icon: Recycle,     t: '100% Reciclado', s: 'certificado ESG incluido' },
-  { icon: ShieldCheck, t: 'Sin que se borre', s: 'tecnología láser UV permanente' },
-  { icon: Truck,       t: 'Despacho', s: 'a todo Chile vía Bluex' },
+  { icon: Sparkles,    t: 'Logo gratis', s: 'grabado láser desde 10u' },
+  { icon: FileText,    t: 'Factura',     s: 'datos de empresa + IVA' },
+  { icon: Recycle,     t: '100% Reciclado', s: 'plástico post-consumo' },
+  { icon: ShieldCheck, t: '10 años',     s: 'garantía del producto' },
+  { icon: Truck,       t: 'Despacho',    s: 'a todo Chile vía Bluex' },
 ];
 
-// Clientes reales extraídos del catálogo corporativo oficial PEYU
+// Clientes reales del catálogo oficial
 const CLIENTES = [
-  'Nestlé', 'Entel', 'Metro de Santiago', 'Adidas', 'Siemens', 'Puma',
-  'Booking.com', 'Zurich', 'Santander', 'CBRE', 'Aguas Andinas', 'Teletón',
-  'Abastible', 'DuocUC', 'Lucchetti', 'Corona', 'Enel', 'Motorola',
-  'Dockers', 'Salfa', 'Princess', 'Cachantun', 'W Santiago',
+  'Cachantún', 'Entel', 'Metro de Santiago', 'Nestlé', 'Lucchetti',
+  'Enel', 'DuocUC', 'Adidas', 'Salfa', 'Siemens', 'Puma', 'CBRE',
+  'Booking.com', 'Zurich', 'Santander', 'Aguas Andinas', 'Teletón',
+  'Motorola', 'Dockers', 'W Santiago', 'Marley Coffee', 'Abastible',
+  'Universidad Adolfo Ibáñez', 'Alto del Carmen', 'Antofagasta Minerals',
 ];
 
 export default function EmpresasNuevo() {
@@ -82,25 +83,13 @@ export default function EmpresasNuevo() {
             <Building2 className="w-3.5 h-3.5" /> Corporativo · Regalos empresariales
           </span>
           <h1 className="font-fraunces text-4xl sm:text-5xl leading-[1.05] mb-4" style={{ color: '#2C1810' }}>
-            Productos sustentables<br />
-            <span style={{ color: '#0F8B6C' }}>con tu logo</span>
+            Regalos corporativos<br />
+            <span style={{ color: '#0F8B6C' }}>100% reciclados</span>
           </h1>
-          <p className="text-base leading-relaxed mb-5" style={{ color: '#7A6050' }}>
-            Productos hechos 100% con plástico reciclado post-consumo, fabricados en Santiago. 
-            Logo grabado con láser UV <strong style={{ color: '#2C1810' }}>gratis desde 10 unidades</strong> — no se borra, trabaja en tonalidad de grises. Descuentos reales por volumen hasta −54%. Factura disponible.
+          <p className="text-base leading-relaxed mb-6" style={{ color: '#7A6050' }}>
+            Plástico reciclado chileno transformado en productos únicos con tu logo grabado láser.
+            Gratis desde 10 unidades · Hasta −54% por volumen · Factura disponible.
           </p>
-
-          {/* Clientes que confiaron */}
-          <div className="mb-6">
-            <p className="text-[10px] font-bold uppercase tracking-widest mb-2.5" style={{ color: '#A08070' }}>Confiaron en nosotros</p>
-            <div className="flex flex-wrap gap-1.5 justify-center">
-              {CLIENTES.map(c => (
-                <span key={c} className="text-[11px] font-semibold px-2.5 py-1 rounded-full" style={{ background: 'white', border: '1.5px solid #D4C4B0', color: '#7A6050' }}>
-                  {c}
-                </span>
-              ))}
-            </div>
-          </div>
           <Link
             to="/CotizacionRapida"
             className="inline-flex items-center gap-2 font-bold text-base px-7 py-3.5 rounded-2xl transition-all hover:scale-[1.02] hover:shadow-xl"
@@ -179,13 +168,28 @@ export default function EmpresasNuevo() {
         )}
       </section>
 
+      {/* ── CLIENTES ── */}
+      <section className="max-w-6xl mx-auto px-4 sm:px-6 pb-8">
+        <p className="text-[10px] font-bold uppercase tracking-widest text-center mb-4" style={{ color: '#A08070' }}>
+          Confiaron en PEYU
+        </p>
+        <div className="flex flex-wrap justify-center gap-2">
+          {CLIENTES.map(c => (
+            <span key={c} className="text-xs font-semibold px-3 py-1.5 rounded-full" style={{ background: 'white', border: '1.5px solid #EDE3D6', color: '#7A6050' }}>
+              {c}
+            </span>
+          ))}
+        </div>
+      </section>
+
       {/* ── CTA FINAL ── */}
       <section className="max-w-3xl mx-auto px-4 sm:px-6 py-8">
         <div className="rounded-3xl p-8 text-center" style={{ background: 'linear-gradient(135deg,#0F8B6C,#0B6E55)' }}>
           <Star className="w-8 h-8 text-white/70 mx-auto mb-3" />
-          <h2 className="font-fraunces text-2xl sm:text-3xl text-white mb-3">¿Tienes un evento, proyecto o programa corporativo?</h2>
+          <h2 className="font-fraunces text-2xl sm:text-3xl text-white mb-3">¿Tienes un evento o proyecto corporativo?</h2>
           <p className="text-sm text-white/80 mb-6 max-w-md mx-auto">
-            Arma tu pedido, elige productos y cantidades, y recibe tu cotización con precios reales por volumen en minutos. Desde 10 unidades. Factura disponible. Hacemos el picking y envío a todo Chile.
+            Arma tu pedido, elige cantidades y recibe tu cotización con precios por volumen reales en menos de 24h hábiles.
+            Grabado láser gratis · Factura · Despacho a todo Chile.
           </p>
           <Link
             to="/CotizacionRapida"
