@@ -56,6 +56,7 @@ import CheckoutNuevo from './pages/CheckoutNuevo';
 import CotizacionRapida from './pages/CotizacionRapida';
 import EmpresasNuevo from './pages/EmpresasNuevo';
 import EmpresaProducto from './pages/EmpresaProducto';
+import B2BPropuestaPublica from './pages/B2BPropuesta';
 import FunnelDesignLab from './pages/FunnelDesignLab';
 
 // ── ADMIN PAGES (lazy + retry) ───────────────────────────────────────
@@ -274,6 +275,7 @@ function App() {
               <Route path="/CotizacionRapida" element={<CotizacionRapida />} />
               <Route path="/EmpresasNuevo" element={<EmpresasNuevo />} />
               <Route path="/EmpresaProducto" element={<EmpresaProducto />} />
+              <Route path="/b2b/propuesta" element={<B2BPropuestaPublica />} />
               <Route path="/design-lab" element={<FunnelDesignLab />} />
 
               {/* Presentación a fundadores - 22 layouts del design system */}

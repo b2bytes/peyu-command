@@ -1,512 +1,482 @@
+// ════════════════════════════════════════════════════════════════════════
+// /b2b/propuesta?id= — Propuesta técnica y económica B2B pública.
+// El cliente recibe el link por email, puede aceptar, ajustar o descargar.
+// Diseño extraordinario, mobile-first, estilo PEYU Warm Clay.
+// ════════════════════════════════════════════════════════════════════════
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
-import { Button } from '@/components/ui/button';
-import { CheckCircle, XCircle, FileText, Clock, Package, MessageCircle, Recycle, Download, Sparkles, Shield, Truck, Building2, Calendar, Hash } from 'lucide-react';
-import SEO from '@/components/SEO';
-import { track } from '@/lib/activity-tracker';
+import {
+  CheckCircle2, Clock, FileText, Recycle, ShieldCheck, Truck,
+  Loader2, Star, Package, ArrowRight, MessageCircle, Download,
+  Leaf, Building2, Zap, AlertCircle, ChevronDown, ChevronUp,
+} from 'lucide-react';
+import { fmtCLP } from '@/lib/shop-v2-cart';
 
-export default function B2BPropuesta() {
-  const urlParams = new URLSearchParams(window.location.search);
-  const proposalId = urlParams.get('id');
-  const actionParam = urlParams.get('action'); // 'accept' | 'adjust' (desde email)
+const IVA = 0.19;
 
-  const [propuesta, setPropuesta] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [accion, setAccion] = useState(null);
-  const [done, setDone] = useState(null);
-  const [downloadingPdf, setDownloadingPdf] = useState(false);
-
-  useEffect(() => {
-    if (!proposalId) { setLoading(false); return; }
-    base44.entities.CorporateProposal.filter({ id: proposalId })
-      .then(list => {
-        if (list?.length > 0) {
-          setPropuesta(list[0]);
-          // Trazabilidad 360°: registrar la vista de la propuesta
-          track.b2bProposalView({ proposalId, empresa: list[0].empresa });
-
-          // Si viene desde el email con ?action=accept y la propuesta NO está
-          // ya respondida → scroll suave al CTA + highlight sutil
-          if (actionParam === 'accept' && !['Aceptada', 'Rechazada', 'Vencida'].includes(list[0].status)) {
-            setTimeout(() => {
-              const el = document.getElementById('peyu-accept-cta');
-              if (el) {
-                el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                el.classList.add('ring-4', 'ring-teal-400/40');
-                setTimeout(() => el.classList.remove('ring-4', 'ring-teal-400/40'), 2400);
-              }
-            }, 600);
-          }
-        }
-      })
-      .finally(() => setLoading(false));
-  }, [proposalId, actionParam]);
-
-  const handleAccion = async (tipo) => {
-    setAccion(tipo === 'aceptar' ? 'aceptando' : 'rechazando');
-    await base44.entities.CorporateProposal.update(proposalId, {
-      status: tipo === 'aceptar' ? 'Aceptada' : 'Rechazada',
-    });
-    // Trazabilidad 360°: aceptación / rechazo de propuesta
-    if (tipo === 'aceptar') {
-      track.b2bProposalAccept({ proposalId, total: propuesta?.total });
-    } else {
-      track.b2bProposalReject({ proposalId, reason: 'cliente_web' });
-    }
-    setDone(tipo === 'aceptar' ? 'aceptada' : 'rechazada');
-    setAccion(null);
-  };
-
-  const handleDownloadPdf = async () => {
-    setDownloadingPdf(true);
-    try {
-      const res = await base44.functions.invoke('generateProposalPDF', { proposalId });
-      const { pdf_base64, filename } = res.data;
-      const byteChars = atob(pdf_base64);
-      const byteNumbers = new Array(byteChars.length);
-      for (let i = 0; i < byteChars.length; i++) byteNumbers[i] = byteChars.charCodeAt(i);
-      const blob = new Blob([new Uint8Array(byteNumbers)], { type: 'application/pdf' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = filename || `PEYU-Propuesta-${propuesta?.numero || ''}.pdf`;
-      a.click();
-      URL.revokeObjectURL(url);
-    } catch (e) {
-      alert('No se pudo generar el PDF. Intenta nuevamente o contáctanos por WhatsApp.');
-    }
-    setDownloadingPdf(false);
-  };
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-[#FAFAF8]">
-        <div className="w-10 h-10 border-4 border-teal-600 border-t-transparent rounded-full animate-spin" />
-      </div>
-    );
-  }
-
-  if (!proposalId || !propuesta) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-[#FAFAF8] font-inter p-4">
-        <div className="text-center space-y-4 max-w-sm">
-          <div className="text-6xl">🔍</div>
-          <h2 className="text-2xl font-poppins font-bold text-gray-900">Propuesta no encontrada</h2>
-          <p className="text-gray-500 text-sm">Verifica el enlace o contáctanos por WhatsApp.</p>
-          <a href="https://wa.me/56935040242" target="_blank" rel="noopener noreferrer">
-            <Button className="gap-2 mt-4 rounded-xl w-full font-semibold bg-green-500 hover:bg-green-600 text-white">
-              <MessageCircle className="w-4 h-4" /> WhatsApp Peyu
-            </Button>
-          </a>
-        </div>
-      </div>
-    );
-  }
-
-  if (done) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-[#FAFAF8] font-inter p-4">
-        <div className="max-w-md w-full text-center space-y-6">
-          <div className={`w-20 h-20 rounded-3xl flex items-center justify-center mx-auto shadow-xl ${done === 'aceptada' ? 'bg-gradient-to-br from-teal-500 to-emerald-600' : 'bg-gradient-to-br from-red-400 to-red-500'}`}>
-            {done === 'aceptada'
-              ? <CheckCircle className="w-12 h-12 text-white" />
-              : <XCircle className="w-12 h-12 text-white" />
-            }
-          </div>
-          <h2 className="text-3xl font-poppins font-bold text-gray-900">
-            {done === 'aceptada' ? '¡Propuesta aceptada!' : 'Propuesta rechazada'}
-          </h2>
-          {done === 'aceptada' ? (
-            <div className="bg-white border border-gray-100 rounded-2xl p-5 text-sm text-left space-y-4 shadow-sm">
-              <p className="text-gray-600 leading-relaxed font-medium">El equipo de Peyu fue notificado. Carlos te contactará en los próximos minutos para coordinar el anticipo y el brief de producción.</p>
-              <div className="bg-teal-50 border border-teal-200 rounded-xl p-4 text-teal-800 text-xs space-y-2">
-                <p className="font-bold text-sm">Próximos pasos:</p>
-                <ol className="space-y-1.5 ml-2">
-                  <li>✓ Anticipo del {propuesta.anticipo_pct || 50}% para iniciar producción</li>
-                  <li>✓ Validación final del archivo de logo</li>
-                  <li>✓ Producción en {propuesta.lead_time_dias || 7} días hábiles</li>
-                  <li>✓ Despacho a la dirección indicada</li>
-                </ol>
-              </div>
-            </div>
-          ) : (
-            <p className="text-gray-500 text-sm">Entendemos. Si quieres ajustar la propuesta, escríbenos y buscamos una solución.</p>
-          )}
-          <a href="https://wa.me/56935040242" target="_blank" rel="noopener noreferrer">
-            <Button className="gap-2 w-full rounded-xl font-semibold h-12 bg-green-500 hover:bg-green-600 text-white">
-              <MessageCircle className="w-4 h-4" /> Hablar con Carlos
-            </Button>
-          </a>
-        </div>
-      </div>
-    );
-  }
-
-  const items = (() => { try { return propuesta.items_json ? JSON.parse(propuesta.items_json) : []; } catch { return []; } })();
-  const yaRespondida = ['Aceptada', 'Rechazada', 'Vencida'].includes(propuesta.status);
-  const descuento = propuesta.descuento_pct > 0 ? Math.round((propuesta.subtotal || 0) * propuesta.descuento_pct / 100) : 0;
-
-  // Garantía contextual: si TODOS los items son carcasas/compostables, no
-  // aplicamos el discurso "10 años" (queda inconsistente con producto/carrito).
-  const esSoloCompostable = items.length > 0 && items.every(it => {
-    const txt = `${it?.nombre || it?.name || ''} ${it?.sku || ''} ${it?.material || ''} ${it?.categoria || ''}`.toLowerCase();
-    return /carcasa|compostable|trigo|fibra/.test(txt);
-  });
-  const garantiaTitulo = esSoloCompostable ? 'Material compostable' : 'Garantía 10 años';
-  const garantiaDesc = esSoloCompostable
-    ? 'Carcasas y productos de fibra de trigo: compostables industriales en 2-3 años al fin de su vida útil.'
-    : 'Cobertura total contra defectos de fabricación en plástico reciclado.';
-  const garantiaTerminoLista = esSoloCompostable
-    ? 'Material compostable industrial. Carcasas y productos de fibra de trigo se compostan en 2-3 años al fin de su vida útil.'
-    : 'Garantía de 10 años contra defectos de fabricación en plástico 100% reciclado.';
-  const esgGarantiaItem = esSoloCompostable
-    ? ['🌱', 'Material compostable industrial']
-    : ['🛡️', 'Garantía de 10 años'];
-  const esgMaterialItem = esSoloCompostable
-    ? ['🌾', 'Fibra de trigo / material compostable']
-    : ['♻️', 'Plástico 100% reciclado post-consumo'];
+function StatusBadge({ status }) {
+  const cfg = {
+    Borrador:   { bg: '#F2ECE2', color: '#A08070', dot: '#C4B09A' },
+    Enviada:    { bg: '#EFF9F5', color: '#0F8B6C', dot: '#0F8B6C' },
+    Aceptada:   { bg: '#E8F5E9', color: '#2E7D32', dot: '#4CAF50' },
+    Rechazada:  { bg: '#FBE9E7', color: '#C62828', dot: '#EF5350' },
+    Vencida:    { bg: '#FFF3E0', color: '#E65100', dot: '#FF9800' },
+  }[status] || { bg: '#F2ECE2', color: '#A08070', dot: '#C4B09A' };
 
   return (
-    <div className="min-h-screen bg-[#FAFAF8] font-inter">
-      <SEO
-        title={`Propuesta Comercial${propuesta?.numero ? ' ' + propuesta.numero : ''} · ${propuesta?.empresa || 'PEYU Chile'}`}
-        description="Propuesta comercial PEYU con detalle de productos, mockups, condiciones y términos."
-        canonical={`https://peyuchile.cl/b2b/propuesta?id=${proposalId || ''}`}
-        noindex
-      />
-      {/* NAVBAR */}
-      <nav className="bg-white/95 backdrop-blur-xl border-b border-black/5 shadow-sm sticky top-0 z-40">
-        <div className="max-w-5xl mx-auto px-5 py-3 flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2.5 hover:opacity-80 transition">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-teal-500 to-emerald-600 flex items-center justify-center shadow-md">
-              <span className="text-white text-sm font-bold">P</span>
-            </div>
-            <div>
-              <p className="text-sm font-poppins font-bold text-gray-900 leading-none">PEYU Chile</p>
-              <p className="text-[10px] text-gray-500 leading-none mt-0.5">Propuesta Comercial</p>
-            </div>
-          </Link>
-          <div className="flex items-center gap-2">
-            {propuesta.numero && (
-              <span className="hidden sm:flex items-center gap-1 text-xs text-gray-500 font-mono bg-gray-100 px-2.5 py-1.5 rounded-lg">
-                <Hash className="w-3 h-3" />{propuesta.numero}
-              </span>
-            )}
-            <Button onClick={handleDownloadPdf} disabled={downloadingPdf}
-              size="sm" className="gap-1.5 rounded-xl bg-gray-900 hover:bg-gray-800 text-white text-xs font-semibold">
-              <Download className="w-3.5 h-3.5" />
-              {downloadingPdf ? 'Generando...' : 'PDF'}
-            </Button>
+    <span className="inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1 rounded-full"
+      style={{ background: cfg.bg, color: cfg.color }}>
+      <span className="w-1.5 h-1.5 rounded-full" style={{ background: cfg.dot }} />
+      {status}
+    </span>
+  );
+}
+
+// eslint-disable-next-line -- Icon is used dynamically via map
+function ImpactBar({ qtyTotal }) {
+  const kg = Math.round(qtyTotal * 0.05 * 10) / 10;
+  const litros = Math.round(qtyTotal * 12.5);
+  const tapitas = Math.round(qtyTotal * 8);
+  return (
+    <div className="rounded-3xl p-6 text-white"
+      style={{ background: 'linear-gradient(135deg,#0F8B6C 0%,#0B6E55 100%)' }}>
+      <div className="flex items-center gap-2 mb-4">
+        <Leaf className="w-5 h-5 text-white/70" />
+        <p className="font-bold text-sm tracking-wide uppercase text-white/90">Impacto de tu pedido</p>
+      </div>
+      <div className="grid grid-cols-3 gap-4">
+        {[
+          { v: `~${kg}kg`, l: 'plástico rescatado' },
+          { v: `${litros.toLocaleString('es-CL')}L`, l: 'agua ahorrada' },
+          { v: `~${tapitas.toLocaleString('es-CL')}`, l: 'tapitas transformadas' },
+        ].map((s) => (
+          <div key={s.l} className="text-center">
+            <p className="font-fraunces text-2xl font-bold text-white leading-none mb-1">{s.v}</p>
+            <p className="text-[10px] text-white/70 leading-snug">{s.l}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function LineaProducto({ linea, idx }) {
+  const [open, setOpen] = useState(false);
+  const descPct = linea.descuento_pct || linea.ahorro_pct || 0;
+  return (
+    <div className="rounded-2xl overflow-hidden" style={{ border: '1.5px solid #EDE3D6', background: idx % 2 === 0 ? 'white' : '#FAF7F2' }}>
+      <button
+        onClick={() => setOpen(o => !o)}
+        className="w-full flex items-center justify-between gap-3 px-4 py-3.5 text-left"
+      >
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0"
+            style={{ background: '#0F8B6C15' }}>
+            <Package className="w-4 h-4" style={{ color: '#0F8B6C' }} />
+          </div>
+          <div className="min-w-0">
+            <p className="text-sm font-bold truncate" style={{ color: '#2C1810' }}>
+              {linea.cantidad || linea.qty}× {linea.nombre || linea.name}
+            </p>
+            <p className="text-[11px]" style={{ color: '#A08070' }}>
+              {fmtCLP(linea.precio_unitario)}/u · {linea.tier || linea.tramo}
+              {descPct > 0 && <span className="ml-1.5 text-[#D96B4D]">−{descPct}%</span>}
+            </p>
           </div>
         </div>
-      </nav>
-
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 space-y-6">
-
-        {/* STATUS BANNER */}
-        {yaRespondida && (
-          <div className={`rounded-2xl px-5 py-4 flex items-center gap-3 border-2 font-medium text-sm ${propuesta.status === 'Aceptada' ? 'bg-green-50 text-green-800 border-green-200' : propuesta.status === 'Rechazada' ? 'bg-red-50 text-red-800 border-red-200' : 'bg-yellow-50 text-yellow-800 border-yellow-200'}`}>
-            {propuesta.status === 'Aceptada' ? <CheckCircle className="w-5 h-5 flex-shrink-0" /> : <Clock className="w-5 h-5 flex-shrink-0" />}
-            <span>Esta propuesta ya fue {propuesta.status.toLowerCase()}.</span>
+        <div className="flex items-center gap-2.5 flex-shrink-0">
+          <span className="font-bold" style={{ color: '#2C1810' }}>
+            {fmtCLP(linea.line_total || linea.subtotal)}
+          </span>
+          {open ? <ChevronUp className="w-4 h-4" style={{ color: '#A08070' }} /> : <ChevronDown className="w-4 h-4" style={{ color: '#A08070' }} />}
+        </div>
+      </button>
+      {open && (
+        <div className="px-4 pb-4 pt-0">
+          <div className="h-px mb-3" style={{ background: '#EDE3D6' }} />
+          <div className="grid grid-cols-2 gap-2 text-[11px]">
+            {[
+              { l: 'Cantidad', v: `${linea.cantidad || linea.qty} unidades` },
+              { l: 'Precio unitario (neto)', v: fmtCLP(linea.precio_unitario) },
+              { l: 'Tramo aplicado', v: linea.tier || linea.tramo || '—' },
+              { l: 'Subtotal neto', v: fmtCLP(linea.line_total || linea.subtotal) },
+              { l: 'Logo láser', v: (linea.cantidad || linea.qty) >= 10 ? '✓ Gratis' : 'Aplica cargo' },
+            ].map(({ l, v }) => (
+              <div key={l} className="rounded-xl p-2.5" style={{ background: '#F8F3ED' }}>
+                <p style={{ color: '#A08070' }}>{l}</p>
+                <p className="font-bold mt-0.5" style={{ color: '#2C1810' }}>{v}</p>
+              </div>
+            ))}
           </div>
-        )}
+        </div>
+      )}
+    </div>
+  );
+}
 
-        {/* HERO CARD — Premium proposal style */}
-        <div className="relative bg-gradient-to-br from-slate-900 via-slate-800 to-teal-900 rounded-3xl overflow-hidden shadow-2xl">
-          <div className="absolute top-0 left-0 w-32 h-32 bg-teal-500/20 rounded-br-full blur-2xl" />
-          <div className="absolute bottom-0 right-0 w-48 h-48 bg-cyan-500/10 rounded-tl-full blur-3xl" />
+function AcceptForm({ proposalId, empresa, onDone }) {
+  const [nombre, setNombre] = useState('');
+  const [cargo, setCargo] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [done, setDone] = useState(false);
 
-          <div className="relative p-7 md:p-10 text-white">
-            <div className="flex items-start justify-between flex-wrap gap-4 mb-8">
-              <div>
-                <p className="text-xs uppercase tracking-[0.2em] text-teal-300 font-bold mb-2">Propuesta Comercial</p>
-                <h1 className="text-3xl md:text-4xl font-poppins font-bold leading-tight">
-                  Preparada para<br/>
-                  <span className="text-cyan-300">{propuesta.empresa}</span>
-                </h1>
-                <p className="text-white/60 text-sm mt-3">
-                  Hola {propuesta.contacto}, aquí está tu propuesta personalizada con regalos corporativos 100% reciclados.
-                </p>
-              </div>
-              <div className="flex items-center gap-1.5 bg-teal-500/20 border border-teal-400/30 backdrop-blur px-3 py-1.5 rounded-full text-xs font-semibold text-teal-200">
-                <Sparkles className="w-3.5 h-3.5" /> Propuesta N° {propuesta.numero || '—'}
-              </div>
+  const accept = async () => {
+    if (!nombre.trim()) return;
+    setLoading(true);
+    try {
+      await base44.functions.invoke('onProposalAccepted', { proposalId, nombre, cargo });
+      setDone(true);
+      if (onDone) onDone();
+    } catch { /* best-effort */ } finally { setLoading(false); }
+  };
+
+  if (done) return (
+    <div className="rounded-3xl p-6 text-center" style={{ background: '#EFF9F5', border: '1.5px solid #C8E6DA' }}>
+      <CheckCircle2 className="w-10 h-10 mx-auto mb-3" style={{ color: '#0F8B6C' }} />
+      <h3 className="font-fraunces text-xl font-bold mb-1" style={{ color: '#2C1810' }}>¡Propuesta aceptada!</h3>
+      <p className="text-sm" style={{ color: '#4B4F54' }}>Nuestro equipo te contactará en las próximas horas para coordinar el anticipo e iniciar producción.</p>
+    </div>
+  );
+
+  return (
+    <div className="rounded-3xl overflow-hidden" style={{ border: '1.5px solid #D4C4B0' }}>
+      <div className="px-6 py-4" style={{ background: 'linear-gradient(135deg,#0F8B6C,#0B6E55)' }}>
+        <h3 className="font-bold text-white text-base">Aceptar esta propuesta</h3>
+        <p className="text-xs text-white/80 mt-0.5">Completa los datos para confirmar y entramos a producción.</p>
+      </div>
+      <div className="p-5 space-y-3" style={{ background: 'white' }}>
+        <div>
+          <label className="text-xs font-bold block mb-1.5" style={{ color: '#7A6050' }}>Nombre de quien acepta *</label>
+          <input
+            value={nombre}
+            onChange={e => setNombre(e.target.value)}
+            placeholder="Tu nombre completo"
+            className="w-full h-11 px-4 rounded-xl text-sm focus:outline-none focus:ring-2"
+            style={{ border: '1.5px solid #D4C4B0', color: '#2C1810', background: '#FAF7F2' }}
+          />
+        </div>
+        <div>
+          <label className="text-xs font-bold block mb-1.5" style={{ color: '#7A6050' }}>Cargo (opcional)</label>
+          <input
+            value={cargo}
+            onChange={e => setCargo(e.target.value)}
+            placeholder="Ej: Jefe de Marketing"
+            className="w-full h-11 px-4 rounded-xl text-sm focus:outline-none focus:ring-2"
+            style={{ border: '1.5px solid #D4C4B0', color: '#2C1810', background: '#FAF7F2' }}
+          />
+        </div>
+        <button
+          onClick={accept}
+          disabled={loading || !nombre.trim()}
+          className="w-full h-12 rounded-2xl text-white font-bold text-sm flex items-center justify-center gap-2 transition-all disabled:opacity-40"
+          style={{ background: 'linear-gradient(135deg,#0F8B6C,#0B6E55)', boxShadow: '0 6px 20px rgba(15,139,108,.28)' }}
+        >
+          {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
+          Aceptar propuesta y confirmar pedido
+        </button>
+        <p className="text-[10px] text-center" style={{ color: '#A08070' }}>
+          Al aceptar nos comprometemos a coordinar contigo el 50% de anticipo para iniciar producción.
+        </p>
+      </div>
+    </div>
+  );
+}
+
+export default function B2BPropuesta() {
+  const location = useLocation();
+  const params = new URLSearchParams(location.search);
+  const proposalId = params.get('id');
+  const action = params.get('action'); // 'accept' | 'adjust'
+
+  const [prop, setProp] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [accepted, setAccepted] = useState(false);
+  const [showAccept, setShowAccept] = useState(action === 'accept');
+
+  useEffect(() => {
+    if (!proposalId) { setLoading(false); setError('Sin ID de propuesta.'); return; }
+    base44.entities.CorporateProposal.filter({ id: proposalId })
+      .then(rows => {
+        if (!rows || !rows[0]) { setError('Propuesta no encontrada.'); return; }
+        setProp(rows[0]);
+        if (rows[0].status === 'Aceptada') setAccepted(true);
+      })
+      .catch(() => setError('No se pudo cargar la propuesta.'))
+      .finally(() => setLoading(false));
+  }, [proposalId]);
+
+  if (loading) return (
+    <div className="min-h-screen flex items-center justify-center" style={{ background: '#F8F3ED' }}>
+      <Loader2 className="w-8 h-8 animate-spin" style={{ color: '#0F8B6C' }} />
+    </div>
+  );
+
+  if (error) return (
+    <div className="min-h-screen flex flex-col items-center justify-center px-4" style={{ background: '#F8F3ED' }}>
+      <AlertCircle className="w-10 h-10 mb-3" style={{ color: '#D96B4D' }} />
+      <p className="font-bold text-center" style={{ color: '#2C1810' }}>{error}</p>
+    </div>
+  );
+
+  const items = (() => { try { return prop.items_json ? JSON.parse(prop.items_json) : []; } catch { return []; } })();
+  const subtotal = prop.subtotal || 0;
+  const feePersonalizacion = prop.fee_personalizacion || 0;
+  const neto = subtotal + feePersonalizacion;
+  const iva = Math.round(neto * IVA);
+  const total = prop.total || (neto + iva);
+  const qtyTotal = items.reduce((a, l) => a + (l.cantidad || l.qty || 0), 0);
+  const hasPersonalizacion = items.some(l => l.personalizacion || l.tipo_personalizacion);
+  const vencimiento = prop.fecha_vencimiento
+    ? new Date(prop.fecha_vencimiento).toLocaleDateString('es-CL', { day: 'numeric', month: 'long', year: 'numeric' })
+    : null;
+
+  const whatsappMsg = encodeURIComponent(`Hola PEYU, soy de ${prop.empresa}. Quiero avanzar con la propuesta ${prop.numero || ''}.`);
+
+  return (
+    <div className="min-h-screen font-inter pb-28 sm:pb-12" style={{ background: '#F8F3ED', color: '#2C1810' }}>
+
+      {/* ── HERO HEADER ── */}
+      <div className="relative overflow-hidden">
+        <div className="absolute inset-0" style={{ background: 'linear-gradient(135deg,#0F172A 0%,#0A4A3D 60%,#0F8B6C 100%)' }} />
+        <div className="relative max-w-3xl mx-auto px-4 sm:px-6 pt-10 pb-12">
+          {/* Logo */}
+          <div className="flex items-center gap-2 mb-8">
+            <img
+              src="https://media.base44.com/images/public/69d99b9d61f699701129c103/b67ed29f9_image.png"
+              alt="PEYU"
+              className="h-7 w-auto brightness-0 invert object-contain"
+            />
+            <span className="text-white/60 text-xs font-bold tracking-widest uppercase">· Corporate</span>
+          </div>
+
+          <div className="flex items-start justify-between gap-4 mb-6">
+            <div>
+              <p className="text-[11px] font-bold tracking-widest uppercase mb-2" style={{ color: 'rgba(167,217,201,0.9)' }}>
+                Propuesta técnica y económica
+              </p>
+              <h1 className="font-fraunces text-3xl sm:text-4xl text-white leading-tight mb-2">
+                {prop.empresa}
+              </h1>
+              <p className="text-sm text-white/70">Para: {prop.contacto}</p>
             </div>
+            <StatusBadge status={accepted ? 'Aceptada' : prop.status} />
+          </div>
 
-            {/* Metrics grid */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              {[
-                { label: 'Total', value: `$${(propuesta.total || 0).toLocaleString('es-CL')}`, sub: 'CLP · IVA incl.', accent: true },
-                { label: 'Lead Time', value: `${propuesta.lead_time_dias || 7}`, sub: 'días hábiles', icon: Clock },
-                { label: 'Validez', value: `${propuesta.validity_days || 15}`, sub: 'días corridos', icon: Calendar },
-                { label: 'Anticipo', value: `${propuesta.anticipo_pct || 50}%`, sub: 'para iniciar', icon: Building2 },
-              ].map((m, i) => (
-                <div key={i} className={`rounded-2xl p-4 backdrop-blur-sm border ${m.accent ? 'bg-gradient-to-br from-teal-400/30 to-cyan-400/20 border-teal-400/50' : 'bg-white/5 border-white/15'}`}>
-                  <div className="flex items-center gap-1.5 mb-1">
-                    {m.icon && <m.icon className="w-3 h-3 text-white/50" />}
-                    <p className="text-[10px] text-white/50 uppercase tracking-wider font-bold">{m.label}</p>
-                  </div>
-                  <p className={`font-poppins font-bold leading-tight ${m.accent ? 'text-2xl text-white' : 'text-xl text-white'}`}>{m.value}</p>
-                  <p className="text-[10px] text-white/40 mt-0.5">{m.sub}</p>
+          {/* Info grid */}
+          <div className="grid grid-cols-3 gap-2.5">
+            {[
+              { icon: FileText, label: 'N° propuesta', val: prop.numero || `—` },
+              { icon: Clock, label: 'Lead time', val: `${prop.lead_time_dias || 7} días háb.` },
+              { icon: Star, label: 'Validez', val: vencimiento || `${prop.validity_days || 15} días` },
+            ].map(({ icon: Icon, label, val }) => (
+              <div key={label} className="rounded-2xl px-3 py-3 text-center"
+                style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)' }}>
+                <Icon className="w-4 h-4 mx-auto mb-1.5" style={{ color: 'rgba(167,217,201,0.7)' }} />
+                <p className="text-[9px] uppercase tracking-wide mb-0.5" style={{ color: 'rgba(255,255,255,0.5)' }}>{label}</p>
+                <p className="text-xs font-bold text-white leading-tight">{val}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* ── CUERPO ── */}
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 -mt-2 space-y-4 pt-6">
+
+        {/* Total destacado */}
+        <div className="rounded-3xl p-6" style={{ background: 'white', border: '1.5px solid #D4C4B0', boxShadow: '0 8px 32px rgba(44,24,16,.08)' }}>
+          <p className="text-[10px] font-bold uppercase tracking-widest mb-1" style={{ color: '#A08070' }}>Inversión total</p>
+          <p className="font-fraunces text-5xl font-bold leading-none mb-1" style={{ color: '#0F8B6C' }}>{fmtCLP(total)}</p>
+          <p className="text-xs" style={{ color: '#A08070' }}>CLP · IVA incluido · {qtyTotal.toLocaleString('es-CL')} unidades</p>
+
+          <div className="h-px my-4" style={{ background: '#EDE3D6' }} />
+
+          <div className="space-y-1.5">
+            <div className="flex justify-between text-sm">
+              <span style={{ color: '#7A6050' }}>Subtotal neto</span>
+              <span className="font-semibold" style={{ color: '#2C1810' }}>{fmtCLP(subtotal)}</span>
+            </div>
+            {feePersonalizacion > 0 && (
+              <div className="flex justify-between text-sm">
+                <span style={{ color: '#7A6050' }}>Fee personalización láser</span>
+                <span className="font-semibold" style={{ color: '#2C1810' }}>{fmtCLP(feePersonalizacion)}</span>
+              </div>
+            )}
+            {hasPersonalizacion && feePersonalizacion === 0 && (
+              <div className="flex justify-between text-sm">
+                <span style={{ color: '#0F8B6C' }}>✓ Logo láser</span>
+                <span className="font-bold" style={{ color: '#0F8B6C' }}>GRATIS</span>
+              </div>
+            )}
+            <div className="flex justify-between text-sm">
+              <span style={{ color: '#7A6050' }}>IVA (19%)</span>
+              <span style={{ color: '#A08070' }}>{fmtCLP(iva)}</span>
+            </div>
+            <div className="flex justify-between font-bold text-base pt-1 border-t" style={{ borderColor: '#EDE3D6', color: '#0F8B6C' }}>
+              <span>Total con IVA</span>
+              <span>{fmtCLP(total)}</span>
+            </div>
+          </div>
+
+          <div className="mt-4 p-3 rounded-xl flex items-center gap-2.5 text-xs" style={{ background: '#FBE9E1', color: '#D96B4D' }}>
+            <Zap className="w-3.5 h-3.5 flex-shrink-0" />
+            <span>50% anticipo al confirmar · 50% contra despacho. Factura disponible.</span>
+          </div>
+        </div>
+
+        {/* Detalle de productos */}
+        <div>
+          <p className="text-[10px] font-bold uppercase tracking-widest mb-2.5 px-1" style={{ color: '#A08070' }}>Detalle del pedido</p>
+          <div className="space-y-2">
+            {items.map((linea, i) => (
+              <LineaProducto key={i} linea={linea} idx={i} />
+            ))}
+          </div>
+        </div>
+
+        {/* Mockups */}
+        {Array.isArray(prop.mockup_urls) && prop.mockup_urls.length > 0 && (
+          <div>
+            <p className="text-[10px] font-bold uppercase tracking-widest mb-2.5 px-1" style={{ color: '#A08070' }}>Mockups con tu logo</p>
+            <div className="grid grid-cols-2 gap-2.5">
+              {prop.mockup_urls.map((url, i) => (
+                <div key={i} className="aspect-square rounded-2xl overflow-hidden" style={{ border: '1.5px solid #D4C4B0' }}>
+                  <img src={url} alt={`Mockup ${i + 1}`} className="w-full h-full object-cover" />
                 </div>
               ))}
             </div>
-
-            {propuesta.fecha_vencimiento && (
-              <p className="text-[11px] text-white/40 mt-5 flex items-center gap-1.5">
-                <Clock className="w-3 h-3" />
-                Esta propuesta vence el <span className="font-semibold text-white/70">{propuesta.fecha_vencimiento}</span>
-              </p>
-            )}
-          </div>
-        </div>
-
-        {/* MOCKUPS + ESG */}
-        <div className="grid md:grid-cols-2 gap-4">
-          <div className="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm space-y-3">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-purple-50 flex items-center justify-center">
-                <Sparkles className="w-4 h-4 text-purple-600" />
-              </div>
-              <div>
-                <h3 className="font-poppins font-bold text-gray-900 text-sm">Vista previa con tu logo</h3>
-                <p className="text-[10px] text-gray-500">Mockup generado con grabado láser UV simulado</p>
-              </div>
-            </div>
-            {propuesta.mockup_urls?.length > 0 ? (
-              <div className="grid grid-cols-2 gap-2">
-                {propuesta.mockup_urls.slice(0, 4).map((url, i) => (
-                  <a key={i} href={url} target="_blank" rel="noopener noreferrer" className="group">
-                    <img src={url} alt={`Mockup ${i + 1}`}
-                      className="w-full aspect-square object-cover rounded-xl border border-gray-100 group-hover:border-teal-400 group-hover:shadow-lg transition-all" />
-                  </a>
-                ))}
-              </div>
-            ) : (
-              <div className="aspect-[2/1] bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl flex items-center justify-center border border-dashed border-gray-200">
-                <div className="text-center">
-                  <Package className="w-8 h-8 text-gray-300 mx-auto mb-2" />
-                  <p className="text-xs text-gray-400">Los mockups se generan al confirmar el brief</p>
-                </div>
-              </div>
-            )}
-            <p className="text-[10px] text-gray-400 italic leading-relaxed">Los mockups son referenciales. El grabado final puede variar levemente según ángulo y acabado del material.</p>
-          </div>
-
-          <div className="bg-gradient-to-br from-teal-600 to-emerald-700 rounded-2xl p-6 text-white shadow-lg space-y-3 relative overflow-hidden">
-            <div className="absolute -top-8 -right-8 w-32 h-32 bg-white/10 rounded-full blur-2xl" />
-            <div className="relative">
-              <div className="flex items-center gap-2 mb-3">
-                <Recycle className="w-5 h-5" />
-                <h3 className="font-poppins font-bold text-sm">Impacto ESG</h3>
-              </div>
-              <p className="text-white/80 text-xs leading-relaxed mb-4">
-                Cada unidad de este pedido rescata plástico post-consumo del circuito de residuos y lo transforma en un producto de alta durabilidad.
-              </p>
-              <ul className="space-y-2 text-xs">
-                {[
-                  esgMaterialItem,
-                  ['🏭', 'Fabricación local en Santiago, Chile'],
-                  ['🔋', 'Proceso con energía renovable'],
-                  esgGarantiaItem,
-                ].map(([e, l], i) => (
-                  <li key={i} className="flex items-center gap-2">
-                    <span>{e}</span>
-                    <span className="text-white/90">{l}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
-        </div>
-
-        {/* DETALLE TÉCNICO-ECONÓMICO */}
-        {items.length > 0 && (
-          <div className="bg-white border border-gray-100 rounded-2xl shadow-sm overflow-hidden">
-            <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between flex-wrap gap-2">
-              <div>
-                <h3 className="font-poppins font-bold text-gray-900 flex items-center gap-2 text-base">
-                  <Package className="w-4 h-4 text-teal-600" /> Detalle técnico y económico
-                </h3>
-                <p className="text-xs text-gray-500 mt-0.5">{items.length} ítem{items.length !== 1 ? 's' : ''} cotizado{items.length !== 1 ? 's' : ''}</p>
-              </div>
-              <span className="text-[10px] font-bold text-teal-700 bg-teal-50 border border-teal-200 px-2.5 py-1 rounded-full">Precios por volumen aplicados</span>
-            </div>
-
-            {/* Table */}
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead className="bg-gray-50 text-gray-500">
-                  <tr>
-                    <th className="px-6 py-3 text-left font-bold text-[10px] uppercase tracking-wider">Producto</th>
-                    <th className="px-4 py-3 text-center font-bold text-[10px] uppercase tracking-wider">Cant.</th>
-                    <th className="px-4 py-3 text-right font-bold text-[10px] uppercase tracking-wider">P. Unit.</th>
-                    <th className="px-4 py-3 text-center font-bold text-[10px] uppercase tracking-wider">Desc.</th>
-                    <th className="px-6 py-3 text-right font-bold text-[10px] uppercase tracking-wider">Subtotal</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-100">
-                  {items.map((item, i) => (
-                    <tr key={i} className="hover:bg-gray-50 transition-colors">
-                      <td className="px-6 py-4">
-                        <p className="font-semibold text-gray-900 text-sm">{item.nombre || item.name || item.producto}</p>
-                        {item.personalizacion && (
-                          <p className="text-[11px] text-purple-600 font-medium mt-0.5 flex items-center gap-1">
-                            <Sparkles className="w-2.5 h-2.5" /> Personalización láser UV incluida
-                          </p>
-                        )}
-                        {item.sku && <p className="text-[10px] text-gray-400 font-mono mt-0.5">{item.sku}</p>}
-                      </td>
-                      <td className="px-4 py-4 text-center font-bold text-gray-900">{item.cantidad || item.qty || 0}</td>
-                      <td className="px-4 py-4 text-right text-gray-700">${(item.precio_unitario || 0).toLocaleString('es-CL')}</td>
-                      <td className="px-4 py-4 text-center">
-                        {item.descuento_pct > 0 ? (
-                          <span className="text-[11px] font-bold text-teal-700 bg-teal-50 border border-teal-100 px-2 py-0.5 rounded-full">−{item.descuento_pct}%</span>
-                        ) : (
-                          <span className="text-gray-300 text-xs">—</span>
-                        )}
-                      </td>
-                      <td className="px-6 py-4 text-right font-bold text-gray-900">
-                        ${(item.line_total || (item.precio_unitario * (item.cantidad || item.qty)) || 0).toLocaleString('es-CL')}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-
-            {/* Totals */}
-            <div className="bg-gradient-to-br from-gray-50 to-teal-50/30 border-t border-gray-100 px-6 py-5">
-              <div className="max-w-sm ml-auto space-y-2 text-sm">
-                {propuesta.subtotal && (
-                  <div className="flex justify-between text-gray-600">
-                    <span>Subtotal</span>
-                    <span className="font-medium">${propuesta.subtotal.toLocaleString('es-CL')}</span>
-                  </div>
-                )}
-                {descuento > 0 && (
-                  <div className="flex justify-between text-teal-700 font-semibold">
-                    <span>Descuento por volumen ({propuesta.descuento_pct}%)</span>
-                    <span>−${descuento.toLocaleString('es-CL')}</span>
-                  </div>
-                )}
-                {propuesta.fee_personalizacion > 0 && (
-                  <div className="flex justify-between text-gray-600">
-                    <span>Personalización</span>
-                    <span className="font-medium">${propuesta.fee_personalizacion.toLocaleString('es-CL')}</span>
-                  </div>
-                )}
-                {propuesta.fee_packaging > 0 && (
-                  <div className="flex justify-between text-gray-600">
-                    <span>Packaging</span>
-                    <span className="font-medium">${propuesta.fee_packaging.toLocaleString('es-CL')}</span>
-                  </div>
-                )}
-                <div className="pt-3 border-t-2 border-teal-600 flex justify-between font-poppins font-bold text-lg text-teal-700">
-                  <span>Total</span>
-                  <span>${(propuesta.total || 0).toLocaleString('es-CL')} CLP</span>
-                </div>
-                <p className="text-[10px] text-gray-400 text-right">IVA incluido</p>
-              </div>
-            </div>
           </div>
         )}
 
-        {/* CONDICIONES GRID */}
-        <div className="grid md:grid-cols-3 gap-3">
+        {/* Impacto ambiental */}
+        {qtyTotal > 0 && <ImpactBar qtyTotal={qtyTotal} />}
+
+        {/* Trust badges */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
           {[
-            { icon: Shield, title: garantiaTitulo, desc: garantiaDesc, color: 'teal' },
-            { icon: Truck, title: 'Despacho a todo Chile', desc: 'Vía Starken, Chilexpress o BlueExpress. Costo calculado según destino.', color: 'blue' },
-            { icon: Building2, title: `Anticipo ${propuesta.anticipo_pct || 50}%`, desc: `El saldo se paga contra despacho o 30 días con factura.`, color: 'purple' },
-          ].map((c, i) => {
-            const colors = {
-              teal: { bg: 'bg-teal-50', text: 'text-teal-700', border: 'border-teal-100' },
-              blue: { bg: 'bg-blue-50', text: 'text-blue-700', border: 'border-blue-100' },
-              purple: { bg: 'bg-purple-50', text: 'text-purple-700', border: 'border-purple-100' },
-            }[c.color];
-            return (
-              <div key={i} className="bg-white border border-gray-100 rounded-2xl p-4 shadow-sm">
-                <div className={`w-9 h-9 rounded-xl ${colors.bg} ${colors.border} border flex items-center justify-center mb-3`}>
-                  <c.icon className={`w-4 h-4 ${colors.text}`} />
-                </div>
-                <p className="font-bold text-sm text-gray-900">{c.title}</p>
-                <p className="text-xs text-gray-500 mt-1 leading-relaxed">{c.desc}</p>
-              </div>
-            );
-          })}
+            { IconComp: Recycle, t: '100% Reciclado', s: 'Plástico post-consumo' },
+            { IconComp: ShieldCheck, t: '10 años garantía', s: 'Sin preguntas' },
+            { IconComp: Zap, t: 'Láser UV gratis', s: 'Desde 10 unidades' },
+            { IconComp: Truck, t: 'Despacho Chile', s: 'Vía BlueExpress' },
+          ].map(({ IconComp: Icon, t, s }) => (
+            <div key={t} className="rounded-2xl p-3 text-center" style={{ background: 'white', border: '1.5px solid #EDE3D6' }}>
+              <Icon className="w-4 h-4 mx-auto mb-1.5" style={{ color: '#0F8B6C' }} />
+              <p className="text-[10px] font-bold leading-tight" style={{ color: '#2C1810' }}>{t}</p>
+              <p className="text-[9px] mt-0.5" style={{ color: '#A08070' }}>{s}</p>
+            </div>
+          ))}
         </div>
 
-        {/* TÉRMINOS COMPLETOS */}
-        <div className="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm space-y-3">
-          <h3 className="font-poppins font-bold text-gray-900 flex items-center gap-2 text-base">
-            <FileText className="w-4 h-4 text-gray-700" /> Términos y condiciones
-          </h3>
-          <ul className="text-sm text-gray-600 space-y-2">
-            {[
-              `Anticipo ${propuesta.anticipo_pct || 50}% para iniciar producción. Saldo contra despacho o 30 días con factura.`,
-              `Entrega en ${propuesta.lead_time_dias || 7} días hábiles desde pago de anticipo y aprobación de mockup.`,
-              'Grabado láser UV incluido gratis desde 10 unidades (área estándar 40×25mm).',
-              garantiaTerminoLista,
-              'Fabricación 100% local en Santiago, Chile.',
-              `Propuesta válida por ${propuesta.validity_days || 15} días corridos desde la emisión.`,
-            ].map((l, i) => (
-              <li key={i} className="flex items-start gap-2">
-                <CheckCircle className="w-3.5 h-3.5 text-teal-600 flex-shrink-0 mt-0.5" />
-                <span>{l}</span>
-              </li>
-            ))}
-          </ul>
-          {propuesta.terms && (
-            <p className="text-xs text-gray-500 italic border-t border-gray-100 pt-3 leading-relaxed">{propuesta.terms}</p>
+        {/* Términos */}
+        {prop.terms && (
+          <div className="rounded-2xl p-4" style={{ background: 'white', border: '1.5px solid #EDE3D6' }}>
+            <p className="text-[10px] font-bold uppercase tracking-wider mb-2" style={{ color: '#A08070' }}>Condiciones comerciales</p>
+            <p className="text-xs leading-relaxed" style={{ color: '#4B4F54' }}>{prop.terms}</p>
+          </div>
+        )}
+
+        {/* Notas producción */}
+        {prop.production_notes && (
+          <div className="rounded-2xl p-4" style={{ background: '#FBF7EF', border: '1.5px solid #EDE3D6' }}>
+            <p className="text-[10px] font-bold uppercase tracking-wider mb-2" style={{ color: '#A08070' }}>Notas de producción</p>
+            <p className="text-xs leading-relaxed" style={{ color: '#4B4F54' }}>{prop.production_notes}</p>
+          </div>
+        )}
+
+        {/* Aceptar propuesta */}
+        {!accepted && prop.status !== 'Vencida' && prop.status !== 'Rechazada' && (
+          <div>
+            {showAccept ? (
+              <AcceptForm
+                proposalId={proposalId}
+                empresa={prop.empresa}
+                onDone={() => { setAccepted(true); setShowAccept(false); }}
+              />
+            ) : (
+              <button
+                onClick={() => setShowAccept(true)}
+                className="w-full h-14 rounded-3xl text-white font-bold text-base flex items-center justify-center gap-2 transition-all hover:scale-[1.01]"
+                style={{ background: 'linear-gradient(135deg,#0F8B6C,#0B6E55)', boxShadow: '0 8px 28px rgba(15,139,108,.3)' }}
+              >
+                <CheckCircle2 className="w-5 h-5" /> Aceptar propuesta <ArrowRight className="w-4 h-4" />
+              </button>
+            )}
+          </div>
+        )}
+
+        {accepted && (
+          <div className="rounded-3xl p-6 text-center" style={{ background: '#EFF9F5', border: '2px solid #0F8B6C' }}>
+            <CheckCircle2 className="w-10 h-10 mx-auto mb-2" style={{ color: '#0F8B6C' }} />
+            <h3 className="font-fraunces text-xl font-bold mb-1" style={{ color: '#2C1810' }}>¡Propuesta aceptada!</h3>
+            <p className="text-sm" style={{ color: '#4B4F54' }}>El equipo PEYU te contactará en las próximas horas para coordinar el inicio de producción.</p>
+          </div>
+        )}
+
+        {/* CTA WhatsApp + ajustar */}
+        {!accepted && (
+          <div className="grid grid-cols-2 gap-2.5">
+            <a
+              href={`https://wa.me/56935040242?text=${whatsappMsg}`}
+              target="_blank" rel="noopener noreferrer"
+              className="h-12 rounded-2xl text-white font-bold text-sm flex items-center justify-center gap-2"
+              style={{ background: '#25D366' }}
+            >
+              <MessageCircle className="w-4 h-4" /> WhatsApp
+            </a>
+            <a
+              href={`mailto:ventas@peyuchile.cl?subject=Ajuste propuesta ${prop.numero || ''}&body=Hola PEYU, quisiera ajustar la propuesta ${prop.numero || ''} de ${prop.empresa}.`}
+              className="h-12 rounded-2xl font-bold text-sm flex items-center justify-center gap-2"
+              style={{ background: 'white', border: '1.5px solid #D4C4B0', color: '#2C1810' }}
+            >
+              Ajustar propuesta
+            </a>
+          </div>
+        )}
+
+        {/* Firma */}
+        <div className="text-center py-4">
+          <p className="text-xs" style={{ color: '#A08070' }}>
+            PEYU Chile SpA · ventas@peyuchile.cl · +56 9 3504 0242
+          </p>
+          <p className="text-[10px] mt-1" style={{ color: '#C4B09A' }}>
+            Válida hasta: {vencimiento || `${prop.validity_days || 15} días desde la emisión`}
+          </p>
+        </div>
+
+      </div>
+
+      {/* ── BARRA MOBILE ── */}
+      <div className="lg:hidden fixed bottom-0 inset-x-0 z-50 pb-safe px-4 py-3"
+        style={{ background: 'rgba(248,243,237,.97)', borderTop: '1.5px solid #D4C4B0', backdropFilter: 'blur(20px)' }}>
+        <div className="flex gap-2.5 max-w-lg mx-auto">
+          <a
+            href={`https://wa.me/56935040242?text=${whatsappMsg}`}
+            target="_blank" rel="noopener noreferrer"
+            className="flex-shrink-0 h-12 px-4 rounded-2xl text-white font-bold text-sm flex items-center gap-1.5"
+            style={{ background: '#25D366' }}
+          >
+            <MessageCircle className="w-4 h-4" />
+          </a>
+          {!accepted && prop.status !== 'Vencida' ? (
+            <button
+              onClick={() => setShowAccept(true)}
+              className="flex-1 h-12 rounded-2xl text-white font-bold text-sm flex items-center justify-center gap-2"
+              style={{ background: 'linear-gradient(135deg,#0F8B6C,#0B6E55)' }}
+            >
+              <CheckCircle2 className="w-4 h-4" /> Aceptar propuesta
+            </button>
+          ) : (
+            <div className="flex-1 h-12 rounded-2xl flex items-center justify-center gap-2 font-bold text-sm"
+              style={{ background: accepted ? '#EFF9F5' : '#F2ECE2', color: accepted ? '#0F8B6C' : '#A08070' }}>
+              <CheckCircle2 className="w-4 h-4" />
+              {accepted ? 'Propuesta aceptada' : prop.status}
+            </div>
           )}
         </div>
-
-        {/* DOWNLOAD PDF BIG */}
-        <button onClick={handleDownloadPdf} disabled={downloadingPdf}
-          className="w-full bg-gradient-to-r from-slate-900 to-slate-800 hover:from-slate-800 hover:to-slate-700 text-white rounded-2xl p-5 flex items-center justify-between shadow-lg transition-all hover:scale-[1.01] disabled:opacity-50">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center">
-              <FileText className="w-6 h-6" />
-            </div>
-            <div className="text-left">
-              <p className="font-poppins font-bold">Descargar propuesta en PDF</p>
-              <p className="text-xs text-white/60">Formato oficial listo para compartir internamente</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-2 bg-white/10 hover:bg-white/20 rounded-xl px-4 py-2 transition-colors">
-            <Download className="w-4 h-4" />
-            <span className="text-sm font-semibold">{downloadingPdf ? 'Generando...' : 'Descargar'}</span>
-          </div>
-        </button>
-
-        {/* CTAs aceptar / rechazar */}
-        {!yaRespondida && (
-          <div id="peyu-accept-cta" className="sticky bottom-4 bg-white border-2 border-gray-100 rounded-2xl p-4 shadow-2xl grid grid-cols-[1fr_2fr] gap-3 transition-all">
-            <Button onClick={() => handleAccion('rechazar')} variant="outline" disabled={!!accion}
-              className="gap-2 rounded-xl border-red-200 text-red-600 hover:bg-red-50 font-semibold h-12">
-              <XCircle className="w-4 h-4" />
-              {accion === 'rechazando' ? 'Rechazando...' : 'Rechazar'}
-            </Button>
-            <Button onClick={() => handleAccion('aceptar')} disabled={!!accion}
-              className="gap-2 font-bold rounded-xl shadow-lg text-white bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 h-12 text-base">
-              <CheckCircle className="w-5 h-5" />
-              {accion === 'aceptando' ? 'Confirmando...' : `Aceptar propuesta · $${(propuesta.total || 0).toLocaleString('es-CL')}`}
-            </Button>
-          </div>
-        )}
-
-        {/* WhatsApp */}
-        <div className="text-center pb-8 pt-4">
-          <p className="text-sm text-gray-500 mb-3 font-medium">¿Necesitas ajustar algo o tienes dudas?</p>
-          <a href={`https://wa.me/56935040242?text=${encodeURIComponent(`Hola Carlos, tengo dudas sobre la propuesta ${propuesta.numero ? '#' + propuesta.numero + ' ' : ''}para ${propuesta.empresa}. `)}`}
-            target="_blank" rel="noopener noreferrer">
-            <Button className="gap-2 rounded-xl font-bold h-12 px-6 bg-green-500 hover:bg-green-600 text-white shadow-md">
-              <MessageCircle className="w-4 h-4" /> Hablar con Carlos por WhatsApp
-            </Button>
-          </a>
-        </div>
       </div>
+
     </div>
   );
 }
