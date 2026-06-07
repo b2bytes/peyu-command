@@ -67,7 +67,7 @@ export default function PersonalizadorV2({ pers, setPers, gratis, moq = 10 }) {
       <div className="grid grid-cols-3 gap-2">
         <PersToggleCardV2 Icon={Type} label="Frase" precio={PRECIO_PERSONALIZACION.frase} active={pers.frase} onToggle={() => toggle('frase')} gratis={gratis} />
         <PersToggleCardV2 Icon={Palette} label="Diseño PEYU" precio={PRECIO_PERSONALIZACION.peyu} active={pers.peyu} onToggle={() => toggle('peyu')} gratis={gratis} />
-        <PersToggleCardV2 Icon={Upload} label="Tu logo" precio={PRECIO_PERSONALIZACION.archivo} active={pers.archivo} onToggle={() => toggle('archivo')} gratis={gratis} />
+        <PersToggleCardV2 Icon={Upload} label="Tu diseño" precio={PRECIO_PERSONALIZACION.archivo} active={pers.archivo} onToggle={() => toggle('archivo')} gratis={gratis} />
       </div>
 
       {/* Resumen de las opciones activas (suma de cargos) */}
@@ -110,7 +110,7 @@ export default function PersonalizadorV2({ pers, setPers, gratis, moq = 10 }) {
             <div className="flex items-center gap-3 bg-white border border-[#EBE3D6] rounded-xl p-3">
               <img src={pers.logoUrl} alt="Subido" className="w-12 h-12 object-contain rounded-lg bg-[#FAF7F2]" />
               <div className="flex-1 text-xs">
-                <p className="text-[#0F8B6C] font-bold flex items-center gap-1"><Check className="w-3 h-3" /> Logo cargado</p>
+                <p className="text-[#0F8B6C] font-bold flex items-center gap-1"><Check className="w-3 h-3" /> Diseño cargado</p>
                 <p className="text-[#A78B6F]">Listo para grabar</p>
               </div>
               <button
@@ -130,7 +130,7 @@ export default function PersonalizadorV2({ pers, setPers, gratis, moq = 10 }) {
               {uploading ? (
                 <><Loader2 className="w-4 h-4 animate-spin text-[#0F8B6C]" /> <span className="text-sm text-[#4B4F54]">Subiendo...</span></>
               ) : (
-                <><Upload className="w-4 h-4 text-[#A78B6F]" /> <span className="text-sm text-[#4B4F54] font-semibold">Sube tu logo o imagen (PNG, JPG, SVG)</span></>
+                <><Upload className="w-4 h-4 text-[#A78B6F]" /> <span className="text-sm text-[#4B4F54] font-semibold">Sube tu diseño o imagen (PNG, JPG, SVG)</span></>
               )}
             </button>
           )}

@@ -17,16 +17,19 @@ import EngravedLayer from '@/components/shopv2/EngravedLayer';
 // ════════════════════════════════════════════════════════════════════════
 
 const ICONO = { frase: Type, peyu: Palette, archivo: Upload };
-const NOMBRE = { frase: 'Frase', peyu: 'Diseño PEYU', archivo: 'Tu logo' };
+const NOMBRE = { frase: 'Frase', peyu: 'Diseño PEYU', archivo: 'Tu diseño' };
 
 // ── ÁREA TÉCNICA DE GRABADO (en % del lienzo cuadrado) ───────────────────
 // Zona centrada y contenida donde se compone el grabado. Pensada para servir
 // a CUALQUIER producto (carcasas, set de escritorio, bolsos, etc.): el diseño
 // siempre queda centrado y dentro del cuadro, nunca descolocado sobre el resto
 // de la foto. Todas las capas se restringen aquí dentro.
-const AREA = { left: 28, right: 72, top: 30, bottom: 70 };
-const AREA_W = AREA.right - AREA.left; // 40
-const AREA_H = AREA.bottom - AREA.top; // 34
+// Área vertical AMPLIA: el grabado puede ubicarse desde bastante arriba hasta
+// muy abajo de la carcasa (el cliente pedía poder bajar más la frase). El
+// ancho se mantiene contenido para que el diseño no se salga por los costados.
+const AREA = { left: 26, right: 74, top: 18, bottom: 86 };
+const AREA_W = AREA.right - AREA.left; // 48
+const AREA_H = AREA.bottom - AREA.top; // 68
 const AREA_CX = (AREA.left + AREA.right) / 2; // 50
 const AREA_CY = (AREA.top + AREA.bottom) / 2;  // 51
 
@@ -57,7 +60,9 @@ function autoLayout(capas) {
 function clampToArea(x, y, sizePct, tipo) {
   // Frase es ancha pero baja; gráficos son ~cuadrados. Aproximamos media-caja.
   const halfW = tipo === 'frase' ? Math.min(sizePct * 0.9, AREA_W / 2) : sizePct / 2;
-  const halfH = tipo === 'frase' ? sizePct * 0.28 : sizePct / 2;
+  // Media-altura de la frase pequeña → permite acercarla mucho a los bordes
+  // superior e inferior del área (poder "bajar" la frase como pidió el cliente).
+  const halfH = tipo === 'frase' ? sizePct * 0.18 : sizePct / 2;
   const minX = AREA.left + halfW;
   const maxX = AREA.right - halfW;
   const minY = AREA.top + halfH;
