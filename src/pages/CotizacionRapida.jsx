@@ -6,6 +6,7 @@ import {
   ShoppingCart, Sparkles, TrendingDown, Upload, X, Check,
 } from 'lucide-react';
 import LogoMockupPreview from '@/components/cotizacion/LogoMockupPreview';
+import MockupGalleryB2B from '@/components/cotizacion/MockupGalleryB2B';
 import ShopV2Header from '@/components/shopv2/ShopV2Header';
 import QuoteProductPicker from '@/components/cotizacion/QuoteProductPicker';
 import QuoteItemRow from '@/components/cotizacion/QuoteItemRow';
@@ -274,15 +275,13 @@ export default function CotizacionRapida() {
                         </div>
                       )}
 
-                      {/* Panel de logo en mobile (bajo los productos) */}
+                      {/* Panel mockup en mobile */}
                       <div className="sm:hidden mt-4">
-                        <p className="text-xs font-bold text-[#2A2420] mb-2 flex items-center gap-1.5">
-                          <Sparkles className="w-3.5 h-3.5 text-[#D96B4D]" /> Tu logo en los productos
-                        </p>
-                        <LogoBrandingPanel
+                        <MockupGalleryB2B
+                          items={items.length > 0 ? items.slice(0, 3) : (primerProducto ? [{ producto: primerProducto }] : [])}
                           logoUrl={logoUrl}
                           onLogoChange={setLogoUrl}
-                          primerProducto={primerProducto}
+                          showUploader={true}
                         />
                       </div>
                     </motion.div>
@@ -300,9 +299,14 @@ export default function CotizacionRapida() {
                         </p>
                         <QuoteContactForm form={form} setForm={setForm} />
                       </div>
-                      {/* Panel de logo en mobile paso 2 */}
+                      {/* Panel mockup mobile paso 2 */}
                       <div className="sm:hidden mt-4">
-                        <LogoBrandingPanel logoUrl={logoUrl} onLogoChange={setLogoUrl} primerProducto={primerProducto} />
+                        <MockupGalleryB2B
+                          items={items.slice(0, 2)}
+                          logoUrl={logoUrl}
+                          onLogoChange={setLogoUrl}
+                          showUploader={true}
+                        />
                       </div>
                     </motion.div>
                   )}
@@ -484,18 +488,14 @@ export default function CotizacionRapida() {
                 </div>
               </div>
 
-              {/* ── PANEL LATERAL DE LOGO (desktop, sticky) ── */}
-              <div className="hidden sm:block w-56 flex-shrink-0 sticky top-24 self-start space-y-3">
-                <div>
-                  <p className="text-xs font-bold text-[#2A2420] mb-2 flex items-center gap-1.5">
-                    <Sparkles className="w-3.5 h-3.5 text-[#D96B4D]" /> Branding corporativo
-                  </p>
-                  <LogoBrandingPanel
-                    logoUrl={logoUrl}
-                    onLogoChange={setLogoUrl}
-                    primerProducto={primerProducto}
-                  />
-                </div>
+              {/* ── PANEL LATERAL: GALERÍA DE MOCKUPS (desktop, sticky) ── */}
+              <div className="hidden sm:block w-64 flex-shrink-0 sticky top-24 self-start space-y-3">
+                <MockupGalleryB2B
+                  items={items.length > 0 ? items : (primerProducto ? [{ producto: primerProducto, qty: 1 }] : [])}
+                  logoUrl={logoUrl}
+                  onLogoChange={setLogoUrl}
+                  showUploader={true}
+                />
 
                 {/* Mini resumen lateral */}
                 {items.length > 0 && (
@@ -507,7 +507,7 @@ export default function CotizacionRapida() {
                         const unit = b2b?.precio ?? getUnitBasePrice(it.producto);
                         return (
                           <div key={it.producto.sku} className="flex justify-between text-[11px]">
-                            <span className="text-[#4B4F54] truncate max-w-[100px]">{it.qty}× {it.producto.nombre}</span>
+                            <span className="text-[#4B4F54] truncate max-w-[110px]">{it.qty}× {it.producto.nombre}</span>
                             <span className="font-bold text-[#2A2420] flex-shrink-0">{fmtCLP(unit * it.qty)}</span>
                           </div>
                         );
