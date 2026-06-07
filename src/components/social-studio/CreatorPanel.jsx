@@ -4,9 +4,10 @@
 // ============================================================================
 import { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
-import { Image as ImageIcon, Video, Loader2, Download, Copy, Sparkles, RefreshCw, Check, FolderOpen } from 'lucide-react';
+import { Image as ImageIcon, Video, Loader2, Download, Copy, Sparkles, RefreshCw, Check, FolderOpen, Camera } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import CreatorGallery from './CreatorGallery';
+import ProductPhotoLibrary from './ProductPhotoLibrary';
 
 const IMAGE_STYLES = [
   { id: 'product_hero', label: '📸 Hero producto', desc: 'Foto editorial clean sobre fondo sustentable' },
@@ -35,9 +36,10 @@ export default function CreatorPanel() {
   const [copied, setCopied] = useState(false);
   const [videoDuration, setVideoDuration] = useState(6);
   const [videoRatio, setVideoRatio] = useState('9:16');
-  const [view, setView] = useState('create'); // 'create' | 'gallery'
+  const [view, setView] = useState('create'); // 'create' | 'gallery' | 'photos'
   const [gallery, setGallery] = useState([]);
   const [loadingGallery, setLoadingGallery] = useState(true);
+  const [refPhotoUrl, setRefPhotoUrl] = useState(null); // foto real seleccionada como referencia IA
 
   // Cargar galería de assets IA
   const loadGallery = async () => {
@@ -75,13 +77,14 @@ export default function CreatorPanel() {
   const buildImagePrompt = () => {
     const base = `Promotional photo for PEYU Chile, a sustainable brand that makes products from 100% recycled ocean plastic and compostable wheat fiber. Made in Chile. Brand colors: green #0F8B6C, sand #E7D8C6, terracotta #D96B4D.`;
     const product = productContext ? ` Product context: ${productContext}.` : '';
+    const refNote = refPhotoUrl ? ` Use the provided reference photo as the base product — replicate the exact product, shape, color and details faithfully, only change the scene/style/lighting as described.` : '';
 
     const stylePrompts = {
-      product_hero: `Clean editorial product photography on a minimalist natural background (recycled wood, kraft paper, plant leaves). Soft directional lighting, slight shadow. Modern, premium feel. Square format.${product}`,
-      social_promo: `Bold social media promotional image, 1:1 square format. Vibrant yet natural color palette with PEYU green accents. Eye-catching typography-friendly composition with space for text overlay. Dynamic angle.${product}`,
-      lifestyle: `Lifestyle photography showing the product being used naturally in a modern Chilean home/office. Warm natural lighting, candid feel. Person interacting with the product. Authentic, not staged.${product}`,
-      behind_scenes: `Documentary-style photo of the sustainable manufacturing process. Raw recycled plastic pellets transforming into finished products. Industrial yet clean aesthetic. Circular economy in action.${product}`,
-      infographic: `Clean data visualization infographic about environmental impact of recycled products. Modern flat design, PEYU green palette. Stats about ocean plastic rescued, CO2 saved. Square format for Instagram.${product}`,
+      product_hero: `Clean editorial product photography on a minimalist natural background (recycled wood, kraft paper, plant leaves). Soft directional lighting, slight shadow. Modern, premium feel. Square format.${product}${refNote}`,
+      social_promo: `Bold social media promotional image, 1:1 square format. Vibrant yet natural color palette with PEYU green accents. Eye-catching typography-friendly composition with space for text overlay. Dynamic angle.${product}${refNote}`,
+      lifestyle: `Lifestyle photography showing the product being used naturally in a modern Chilean home/office. Warm natural lighting, candid feel. Person interacting with the product. Authentic, not staged.${product}${refNote}`,
+      behind_scenes: `Documentary-style photo of the sustainable manufacturing process. Raw recycled plastic pellets transforming into finished products. Industrial yet clean aesthetic. Circular economy in action.${product}${refNote}`,
+      infographic: `Clean data visualization infographic about environmental impact of recycled products. Modern flat design, PEYU green palette. Stats about ocean plastic rescued, CO2 saved. Square format for Instagram.${product}${refNote}`,
       custom: customPrompt,
     };
 
@@ -110,7 +113,9 @@ export default function CreatorPanel() {
     try {
       if (mode === 'image') {
         const prompt = buildImagePrompt();
-        const res = await base44.integrations.Core.GenerateImage({ prompt });
+        const params = { prompt };
+        if (refPhotoUrl) params.existing_image_urls = [refPhotoUrl];
+        const res = await base44.integrations.Core.GenerateImage(params);
         setResult({ type: 'image', url: res.url });
         await saveToGallery('image', res.url, prompt);
       } else {
@@ -166,18 +171,64 @@ export default function CreatorPanel() {
             </button>
           </div>
 
-            <button
-              onClick={() => setView(view === 'create' ? 'gallery' : 'create')}
-              className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition-all ${
-                view === 'gallery'
-                  ? 'bg-amber-500/20 text-amber-300 border border-amber-400/30'
-                  : 'bg-white/5 text-white/50 hover:text-white/80 border border-white/10'
-              }`}
-            >
-              <FolderOpen className="w-3.5 h-3.5" />
-              Galería ({gallery.length})
-            </button>
+            <div className="flex items-center gap-1.5">
+              <button
+                onClick={() => setView('photos')}
+                className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition-all ${
+                  view === 'photos'
+                    ? 'bg-violet-500/20 text-violet-300 border border-violet-400/30'
+                    : 'bg-white/5 text-white/50 hover:text-white/80 border border-white/10'
+                }`}
+              >
+                <Camera className="w-3.5 h-3.5" />
+                Catálogo{refPhotoUrl ? ' ✓' : ''}
+              </button>
+              <button
+                onClick={() => setView(view === 'gallery' ? 'create' : 'gallery')}
+                className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition-all ${
+                  view === 'gallery'
+                    ? 'bg-amber-500/20 text-amber-300 border border-amber-400/30'
+                    : 'bg-white/5 text-white/50 hover:text-white/80 border border-white/10'
+                }`}
+              >
+                <FolderOpen className="w-3.5 h-3.5" />
+                Galería IA ({gallery.length})
+              </button>
+            </div>
           </div>
+
+          {/* Product photo library */}
+          {view === 'photos' && (
+            <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-3">
+              <div className="flex items-center justify-between mb-3">
+                <p className="text-[10px] font-bold text-violet-300 uppercase tracking-wider flex items-center gap-1.5">
+                  <Camera className="w-3 h-3" /> Selecciona una foto real como referencia IA
+                </p>
+                <button
+                  onClick={() => setView('create')}
+                  className="text-[10px] text-white/40 hover:text-white/70 px-2 py-1 rounded-lg bg-white/5 hover:bg-white/10 transition-colors"
+                >
+                  ← Volver a crear
+                </button>
+              </div>
+              {refPhotoUrl && (
+                <div className="mb-3 p-2 bg-violet-500/10 border border-violet-400/20 rounded-xl flex items-center gap-2">
+                  <img src={refPhotoUrl} alt="" className="w-10 h-10 rounded-lg object-cover border border-violet-400/40" />
+                  <div>
+                    <p className="text-[10px] font-bold text-violet-300">Foto de referencia seleccionada</p>
+                    <p className="text-[10px] text-white/40">La IA usará esta imagen como base del producto</p>
+                  </div>
+                </div>
+              )}
+              <ProductPhotoLibrary
+                selectedUrl={refPhotoUrl}
+                onSelect={(url) => {
+                  setRefPhotoUrl(url);
+                  if (url) setView('create');
+                }}
+              />
+            </div>
+          )}
 
           {/* Gallery view */}
           {view === 'gallery' && (
