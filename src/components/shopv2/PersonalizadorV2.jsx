@@ -172,7 +172,11 @@ export default function PersonalizadorV2({ pers, setPers, gratis, moq = 10, solo
             type="button"
             onClick={() => setPers({ ...pers, aprobada: true })}
             disabled={!completa}
-            className="w-full mt-3 h-11 rounded-xl bg-[#2A2420] hover:bg-[#1a1714] text-white font-bold text-sm flex items-center justify-center gap-2 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            className={`w-full mt-3 h-11 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-colors ${
+              completa
+                ? 'bg-[#0F8B6C] hover:bg-[#0B6E55] text-white'
+                : 'bg-[#EBE3D6] text-[#A78B6F] cursor-not-allowed'
+            }`}
           >
             <CheckCircle2 className="w-4 h-4" />
             {completa ? 'Aprobar personalización' : 'Completa tu personalización'}

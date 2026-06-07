@@ -75,16 +75,16 @@ export default function MockupClientePreview({ pedido, variant = 'admin' }) {
                   ✨ Tu diseño
                 </span>
               </div>
-            ) : (p.mockup || p.logo) ? (
+            ) : (p.mockup || p.logo || p.imagenBase) ? (
               <div className="relative bg-gray-50">
                 <img
-                  src={p.mockup || p.logo}
+                  src={p.mockup || p.imagenBase || p.logo}
                   alt={`Arte de ${p.nombre}`}
                   className="w-full h-auto max-h-56 object-contain"
                   loading="lazy"
                 />
                 <span className="absolute top-2 left-2 text-[10px] font-bold px-2 py-0.5 rounded-full bg-black/55 text-white">
-                  {p.mockup ? '✨ Mockup' : '🖼️ Logo'}
+                  {p.mockup ? '✨ Mockup' : p.imagenBase ? '✨ Tu diseño' : '🖼️ Logo'}
                 </span>
               </div>
             ) : null}

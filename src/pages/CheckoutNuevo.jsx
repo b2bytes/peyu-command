@@ -230,7 +230,12 @@ export default function CheckoutNuevo() {
       return;
     }
 
-    try { localStorage.setItem('peyu_last_purchase', JSON.stringify(carrito)); } catch {}
+    try {
+      localStorage.setItem('peyu_last_purchase', JSON.stringify(carrito));
+      // Marca de compra reciente: si el cliente vuelve atrás al checkout tras
+      // pagar, mostramos "compra completada" en vez de "carrito vacío".
+      localStorage.setItem('peyu_v2_last_order', JSON.stringify({ numero, at: Date.now() }));
+    } catch {}
 
     // MercadoPago: crear preferencia y redirigir
     if (medioPago === 'MercadoPago' && total > 0) {
@@ -238,8 +243,10 @@ export default function CheckoutNuevo() {
         const mp = await base44.functions.invoke('mpCreatePreference', { pedido_id: pedido.id });
         const initUrl = mp?.data?.init_point || mp?.data?.sandbox_init_point;
         if (initUrl) {
-          clearCartV2();
-          clearShopCheckout();
+          // NO limpiamos el carrito aún: si el cliente cancela en Mercado Pago y
+          // vuelve atrás, conserva su carrito y datos para reintentar. El pedido
+          // queda pendiente y se reconcilia/expira solo. Solo registramos la marca
+          // de "intento de compra" para el mensaje post-pago.
           trackPurchase({ transactionId: numero, total, shipping: envio, cart: carrito });
           window.location.href = initUrl;
           return;
@@ -269,16 +276,50 @@ export default function CheckoutNuevo() {
   );
 
   if (carrito.length === 0) {
+    // ¿Volvió atrás tras una compra reciente (< 30 min)? Mostramos confirmación,
+    // no un genérico "carrito vacío" que parece un error.
+    let ultimaCompra = null;
+    try {
+      const raw = JSON.parse(localStorage.getItem('peyu_v2_last_order') || 'null');
+      if (raw?.numero && Date.now() - (raw.at || 0) < 30 * 60 * 1000) ultimaCompra = raw;
+    } catch { /* noop */ }
+
     return (
       <div className="min-h-screen bg-[#FAF7F2] font-inter text-[#2A2420]">
         <ShopV2Header />
         <div className="max-w-md mx-auto text-center py-24 px-4">
-          <h1 className="font-fraunces text-2xl mb-3">Tu carrito está vacío</h1>
-          <Link to="/CatalogoNuevo">
-            <button className="bg-[#0F8B6C] hover:bg-[#0B6E55] text-white font-bold px-6 py-3.5 rounded-2xl transition-all">
-              Ir a la tienda
-            </button>
-          </Link>
+          {ultimaCompra ? (
+            <>
+              <div className="w-16 h-16 mx-auto rounded-3xl bg-[#0F8B6C] flex items-center justify-center mb-5">
+                <ShieldCheck className="w-8 h-8 text-white" />
+              </div>
+              <h1 className="font-fraunces text-2xl mb-2">¡Tu compra ya está hecha!</h1>
+              <p className="text-sm text-[#4B4F54] mb-6">
+                El pedido <span className="font-mono font-bold text-[#0F8B6C]">{ultimaCompra.numero}</span> fue creado. No necesitas volver a pagar.
+              </p>
+              <div className="flex flex-col gap-2.5">
+                <Link to={`/seguimiento?pedido=${encodeURIComponent(ultimaCompra.numero)}`}>
+                  <button className="w-full bg-[#0F8B6C] hover:bg-[#0B6E55] text-white font-bold px-6 py-3.5 rounded-2xl transition-all">
+                    Seguir mi pedido
+                  </button>
+                </Link>
+                <Link to="/CatalogoNuevo">
+                  <button className="w-full bg-white border border-[#EBE3D6] hover:border-[#0F8B6C] text-[#2A2420] font-bold px-6 py-3.5 rounded-2xl transition-all">
+                    Seguir comprando
+                  </button>
+                </Link>
+              </div>
+            </>
+          ) : (
+            <>
+              <h1 className="font-fraunces text-2xl mb-3">Tu carrito está vacío</h1>
+              <Link to="/CatalogoNuevo">
+                <button className="bg-[#0F8B6C] hover:bg-[#0B6E55] text-white font-bold px-6 py-3.5 rounded-2xl transition-all">
+                  Ir a la tienda
+                </button>
+              </Link>
+            </>
+          )}
         </div>
       </div>
     );
