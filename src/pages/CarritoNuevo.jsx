@@ -8,6 +8,7 @@ import {
   getCartV2, updateCartItemV2, removeFromCartV2, fmtCLP,
 } from '@/lib/shop-v2-cart';
 import { calcularCargoPersonalizacionCarrito } from '@/lib/personalizacion-config';
+import { computeQtyDiscountBySku, getNextQtyTeaserForSku, getQtyDiscountPct } from '@/lib/volume-discount';
 
 // ════════════════════════════════════════════════════════════════════════
 // /CarritoNuevo — Carrito del Shop v2 (carrito_v2 aislado). Edita cantidades,
@@ -25,7 +26,10 @@ export default function CarritoNuevo() {
 
   const subtotal = items.reduce((s, i) => s + (i.precio || 0) * (i.cantidad || 1), 0);
   const cargoPersonalizacion = calcularCargoPersonalizacionCarrito(items);
-  const total = subtotal + cargoPersonalizacion;
+  // Descuento automático B2C por cantidad del mismo SKU (2u → 10% · 3+u → 15%).
+  // Siempre se calcula y se muestra el detalle en el resumen.
+  const { lineas: descLineas, ahorroTotal } = computeQtyDiscountBySku({ carrito: items });
+  const total = subtotal + cargoPersonalizacion - ahorroTotal;
 
   // Navega al checkout v2 propio (mobile-first, BlueExpress inline). Aislado.
   const irACheckout = () => navigate('/CheckoutNuevo');
@@ -67,7 +71,10 @@ export default function CarritoNuevo() {
             {items.map((item) => {
               const moq = item.moq_personalizacion || item.personalizacion_gratis_desde || 10;
               const gratis = item.personalizacion && (item.cantidad || 1) >= moq;
-              const lineaProducto = (item.precio || 0) * (item.cantidad || 1);
+              const cant = item.cantidad || 1;
+              const lineaProducto = (item.precio || 0) * cant;
+              const pctLinea = item.cyber ? 0 : getQtyDiscountPct(cant);
+              const teaser = item.cyber ? null : getNextQtyTeaserForSku(cant);
               return (
                 <div key={item.id} className="flex gap-3.5 bg-white rounded-2xl border border-[#EBE3D6] p-3.5">
                   <div className="relative flex-shrink-0 w-20 h-20 sm:w-24 sm:h-24">
@@ -101,9 +108,17 @@ export default function CarritoNuevo() {
                       {gratis && (
                         <span className="text-[10px] font-bold bg-[#0F8B6C]/10 text-[#0F8B6C] px-2 py-0.5 rounded-full">Grabado gratis</span>
                       )}
+                      {pctLinea > 0 && (
+                        <span className="text-[10px] font-bold bg-[#0F8B6C] text-white px-2 py-0.5 rounded-full">−{pctLinea}% x cantidad</span>
+                      )}
                     </div>
+                    {teaser && (
+                      <p className="text-[10px] text-[#D96B4D] font-bold mt-1.5">
+                        ¡Agrega {teaser.necesita} más y obtén −{teaser.pctSiguiente}% en este producto!
+                      </p>
+                    )}
                     <div className="flex items-center justify-between mt-3">
-                      <QtyStepperV2 value={item.cantidad || 1} onChange={(v) => setQty(item.id, v)} min={1} />
+                      <QtyStepperV2 value={cant} onChange={(v) => setQty(item.id, v)} min={1} />
                       <span className="font-poppins font-bold text-[#2A2420]">{fmtCLP(lineaProducto)}</span>
                     </div>
                   </div>
@@ -124,6 +139,21 @@ export default function CarritoNuevo() {
                 <div className="flex justify-between text-sm text-[#4B4F54]">
                   <span>Personalización</span>
                   <span className="font-semibold">+{fmtCLP(cargoPersonalizacion)}</span>
+                </div>
+              )}
+              {/* Descuento automático por cantidad (B2C) — detalle por SKU */}
+              {ahorroTotal > 0 && (
+                <div className="bg-[#0F8B6C]/5 border border-[#0F8B6C]/20 rounded-xl p-3 space-y-1.5">
+                  <div className="flex justify-between text-sm font-bold text-[#0F8B6C]">
+                    <span>Descuento por cantidad</span>
+                    <span>−{fmtCLP(ahorroTotal)}</span>
+                  </div>
+                  {descLineas.filter((l) => l.ahorro > 0).map((l) => (
+                    <div key={l.sku || l.nombre} className="flex justify-between text-[11px] text-[#4B4F54]">
+                      <span className="truncate pr-2">{l.nombre} ({l.unidades}u · −{l.pct}%)</span>
+                      <span className="font-semibold flex-shrink-0">−{fmtCLP(l.ahorro)}</span>
+                    </div>
+                  ))}
                 </div>
               )}
               <div className="flex justify-between text-sm text-[#4B4F54]">

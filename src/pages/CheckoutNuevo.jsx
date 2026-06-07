@@ -10,6 +10,7 @@ import ShippingSelector from '@/components/cart/ShippingSelector';
 import PaymentMethodSelector from '@/components/cart/PaymentMethodSelector';
 import { getCartV2, clearCartV2, fmtCLP } from '@/lib/shop-v2-cart';
 import { calcularCargoPersonalizacionCarrito, calcularCargoPersonalizacion, getTipoPersonalizacion, MOQ_PERSONALIZACION_GRATIS } from '@/lib/personalizacion-config';
+import { computeQtyDiscountBySku } from '@/lib/volume-discount';
 import { normalizarRut } from '@/lib/rut-chile';
 import { trackPurchase } from '@/lib/analytics-peyu';
 
@@ -40,8 +41,10 @@ export default function CheckoutNuevo() {
   // ── CÁLCULOS ───────────────────────────────────────────────────────
   const subtotal = carrito.reduce((s, i) => s + (i.precio || 0) * (i.cantidad || 1), 0);
   const cargoPersonalizacion = calcularCargoPersonalizacionCarrito(carrito);
+  // Descuento automático B2C por cantidad del mismo SKU (2u → 10% · 3+u → 15%).
+  const { lineas: descLineas, ahorroTotal } = computeQtyDiscountBySku({ carrito });
   const envio = envioBluex ? envioBluex.costo : 0;
-  const total = Math.max(0, subtotal + cargoPersonalizacion + envio);
+  const total = Math.max(0, subtotal + cargoPersonalizacion - ahorroTotal + envio);
 
   const feePersItem = (item) => {
     const moq = item.moq_personalizacion || item.personalizacion_gratis_desde || MOQ_PERSONALIZACION_GRATIS;
@@ -156,7 +159,7 @@ export default function CheckoutNuevo() {
         const tipos = Array.from(new Set(carrito.filter(i => i.personalizacion).map(i => getTipoPersonalizacion(i)).filter(Boolean)));
         return tipos.length === 1 ? tipos[0] : (tipos.length > 1 ? 'mixto' : '');
       })(),
-      descuento: 0,
+      descuento: ahorroTotal,
       total,
       medio_pago: medioPago,
       estado: 'Nuevo',
@@ -333,6 +336,19 @@ export default function CheckoutNuevo() {
                 {cargoPersonalizacion > 0 && (
                   <div className="flex justify-between text-[#4B4F54]">
                     <span>Personalización</span><span className="font-semibold">+{fmtCLP(cargoPersonalizacion)}</span>
+                  </div>
+                )}
+                {ahorroTotal > 0 && (
+                  <div className="bg-[#0F8B6C]/5 border border-[#0F8B6C]/20 rounded-xl p-2.5 space-y-1">
+                    <div className="flex justify-between font-bold text-[#0F8B6C]">
+                      <span>Descuento por cantidad</span><span>−{fmtCLP(ahorroTotal)}</span>
+                    </div>
+                    {descLineas.filter((l) => l.ahorro > 0).map((l) => (
+                      <div key={l.sku || l.nombre} className="flex justify-between text-[11px] text-[#4B4F54]">
+                        <span className="truncate pr-2">{l.nombre} ({l.unidades}u · −{l.pct}%)</span>
+                        <span className="font-semibold flex-shrink-0">−{fmtCLP(l.ahorro)}</span>
+                      </div>
+                    ))}
                   </div>
                 )}
                 <div className="flex justify-between text-[#4B4F54]">
