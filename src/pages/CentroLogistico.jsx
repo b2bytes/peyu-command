@@ -77,11 +77,14 @@ export default function CentroLogistico() {
     setRefreshingAll(true);
     try {
       const res = await base44.functions.invoke('bluexTrackingPollerCRON', {});
+      if (!res || !res.data) throw new Error('Sin respuesta del servidor');
       if (res.data?.error) throw new Error(res.data.error);
-      toast.success(`✓ ${res.data.polled} envíos actualizados · ${res.data.notifs_sent} avisos enviados`);
+      toast.success(`✓ ${res.data.polled || 0} envíos actualizados · ${res.data.notifs_sent || 0} avisos enviados`);
       await load();
     } catch (e) {
-      toast.error(e.message || 'Error al refrescar');
+      const errMsg = e?.message || e?.toString() || 'Error de conexión al refrescar';
+      console.error('Error en refrescarTodos:', errMsg);
+      toast.error(errMsg);
     } finally {
       setRefreshingAll(false);
     }
@@ -91,12 +94,15 @@ export default function CentroLogistico() {
     setAnalyzing(true);
     try {
       const res = await base44.functions.invoke('bluexAnalyzeShipments', { dias: 30 });
+      if (!res || !res.data) throw new Error('Sin respuesta del servidor');
       if (res.data?.error) throw new Error(res.data.error);
       setAnalysis(res.data);
       setTab('analisis');
       toast.success('Análisis IA listo');
     } catch (e) {
-      toast.error(e.message || 'Error análisis');
+      const errMsg = e?.message || e?.toString() || 'Error de conexión en análisis';
+      console.error('Error en analizarIA:', errMsg);
+      toast.error(errMsg);
     } finally {
       setAnalyzing(false);
     }
