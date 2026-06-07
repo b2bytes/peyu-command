@@ -156,7 +156,7 @@ export default function Gracias() {
           {/* CTAs */}
           <div className="mt-6 grid sm:grid-cols-2 gap-3">
             <Link to={numero ? `/seguimiento?pedido=${encodeURIComponent(numero)}` : '/seguimiento'} className="block">
-              <Button className="ld-btn-primary w-full h-12 rounded-full text-white font-bold gap-2">
+              <Button variant="ghost" className="ld-btn-primary w-full h-12 rounded-full !text-white font-bold gap-2">
                 <Package className="w-4 h-4" /> Seguir mi pedido
               </Button>
             </Link>
@@ -166,7 +166,7 @@ export default function Gracias() {
               rel="noreferrer"
               className="block"
             >
-              <Button className="ld-btn-ghost w-full h-12 rounded-full text-ld-fg font-bold gap-2">
+              <Button variant="ghost" className="ld-btn-ghost w-full h-12 rounded-full !text-ld-fg font-bold gap-2 border border-ld-border">
                 <MessageCircle className="w-4 h-4" /> Consultar por WhatsApp
               </Button>
             </a>
@@ -190,12 +190,12 @@ export default function Gracias() {
               <p className="text-xs text-ld-fg-muted mt-1.5 mb-4">Cuéntale a tu equipo o tu empresa. Cada pedido nos ayuda a sacar más plástico del vertedero.</p>
               <div className="flex justify-center gap-2 flex-wrap">
                 <Link to="/shop">
-                  <Button className="ld-btn-ghost rounded-full text-ld-fg" size="sm">
+                  <Button variant="ghost" className="ld-btn-ghost rounded-full !text-ld-fg border border-ld-border" size="sm">
                     Seguir explorando
                   </Button>
                 </Link>
                 <a href="mailto:?subject=Mira%20PEYU%20Chile&body=Acabo%20de%20comprar%20regalos%20sostenibles%20en%20peyuchile.cl%20%F0%9F%90%A2">
-                  <Button className="ld-btn-ghost rounded-full text-ld-fg gap-1.5" size="sm">
+                  <Button variant="ghost" className="ld-btn-ghost rounded-full !text-ld-fg gap-1.5 border border-ld-border" size="sm">
                     <Mail className="w-3.5 h-3.5" /> Compartir
                   </Button>
                 </a>

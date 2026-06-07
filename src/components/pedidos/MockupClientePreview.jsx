@@ -32,14 +32,19 @@ export default function MockupClientePreview({ pedido, variant = 'admin' }) {
       });
     }
   });
-  // Top-level como respaldo si no hubo nada en items_detalle (pedidos simples).
-  if (piezas.length === 0 && (pedido.mockup_url || pedido.logo_url)) {
+  // Top-level como respaldo si NINGUNA pieza tiene arte visible (mockup/logo/capas).
+  // Cubre tanto pedidos simples (sin items_detalle) como pedidos cuyos items no
+  // traen el arte por línea pero sí en los campos rápidos del pedido.
+  const algunaConArte = piezas.some((p) => p.mockup || p.logo || p.imagenBase || (p.capas && p.capas.length));
+  if (!algunaConArte && (pedido.mockup_url || pedido.logo_url)) {
     piezas.push({
-      nombre: pedido.sku || 'Pedido',
+      nombre: pedido.sku || pedido.descripcion_items || 'Pedido',
       mockup: pedido.mockup_url || '',
       logo: pedido.logo_url || '',
       texto: pedido.texto_personalizacion || '',
       posicion: '',
+      imagenBase: '',
+      capas: [],
     });
   }
 
