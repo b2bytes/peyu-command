@@ -14,6 +14,7 @@ import BluexShipmentRow from '@/components/bluex/BluexShipmentRow';
 import BluexShipmentDrawer from '@/components/bluex/BluexShipmentDrawer';
 import BluexAnalysisPanel from '@/components/bluex/BluexAnalysisPanel';
 import BluexSecuenciasPanel from '@/components/bluex/BluexSecuenciasPanel';
+import BluexDashboardPanel from '@/components/bluex/BluexDashboardPanel';
 
 /**
  * Centro Logístico BlueExpress · Comando central de toda la operación de envíos.
@@ -35,7 +36,7 @@ export default function CentroLogistico() {
   const [analyzing, setAnalyzing] = useState(false);
   const [analysis, setAnalysis] = useState(null);
   const [tab, setTab] = useState('listado');
-  const [generandoEtiqueta, setGenerandoEtiqueta] = useState(false);
+  const [sincronizando, setSincronizando] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -212,52 +213,63 @@ export default function CentroLogistico() {
         </TabsList>
 
         <TabsContent value="listado" className="mt-4 space-y-4">
-          <BluexFilters
-            filtro={filtro} setFiltro={setFiltro}
-            search={search} setSearch={setSearch}
-            counts={counts}
-          />
+          {/* Panel Dashboard Centralizado */}
+          <BluexDashboardPanel envios={filtered.length > 0 ? filtered : envios} />
 
-          <div className="bg-white border border-border rounded-2xl shadow-sm overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead className="bg-muted/40">
-                  <tr className="text-[10px] uppercase tracking-wider text-muted-foreground">
-                    <th className="text-left px-4 py-3 font-bold">Pedido / OT</th>
-                    <th className="text-left px-4 py-3 font-bold">Cliente</th>
-                    <th className="text-left px-3 py-3 font-bold">Destino</th>
-                    <th className="text-left px-3 py-3 font-bold">Estado</th>
-                    <th className="text-left px-3 py-3 font-bold">Última novedad</th>
-                    <th className="text-right px-3 py-3 font-bold">Servicio</th>
-                    <th className="px-3 py-3"></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {loading && (
-                    <tr><td colSpan={7} className="text-center py-12 text-muted-foreground">
-                      <Loader2 className="w-5 h-5 animate-spin mx-auto" />
-                    </td></tr>
-                  )}
-                  {!loading && filtered.length === 0 && (
-                    <tr><td colSpan={7} className="text-center py-12">
-                      <Truck className="w-10 h-10 text-muted-foreground/30 mx-auto mb-2" />
-                      <p className="text-sm font-semibold text-foreground">Sin envíos en este filtro</p>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        Genera tu primera etiqueta desde "Procesar Pedidos"
-                      </p>
-                    </td></tr>
-                  )}
-                  {filtered.map(e => (
-                    <BluexShipmentRow
-                      key={e.id}
-                      envio={e}
-                      onClick={() => setSelected(e)}
-                    />
-                  ))}
-                </tbody>
-              </table>
-            </div>
+          {/* Botón sincronización rápida */}
+          <div className="flex justify-end">
+            <Button
+              onClick={async () => {
+                setSincronizando(true);
+                try {
+                  const res = await base44.functions.invoke('bluexSyncAllShipments', {});
+                  toast.success(`✓ ${res.data?.synced || 0} envíos sincronizados`);
+                  await load();
+                } catch (e) {
+                  toast.error('Error sincronizando envíos');
+                } finally {
+                  setSincronizando(false);
+                }
+              }}
+              disabled={sincronizando}
+              size="sm"
+              variant="outline"
+              className="gap-2"
+            >
+              {sincronizando ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
+              Sincronizar todo
+            </Button>
           </div>
+
+          {/* Fallback a tabla original para compatibilidad */}
+          {search || filtro !== 'activos' ? (
+            <div className="bg-white border border-border rounded-2xl shadow-sm overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead className="bg-muted/40">
+                    <tr className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                      <th className="text-left px-4 py-3 font-bold">Pedido / OT</th>
+                      <th className="text-left px-4 py-3 font-bold">Cliente</th>
+                      <th className="text-left px-3 py-3 font-bold">Destino</th>
+                      <th className="text-left px-3 py-3 font-bold">Estado</th>
+                      <th className="text-left px-3 py-3 font-bold">Última novedad</th>
+                      <th className="text-right px-3 py-3 font-bold">Servicio</th>
+                      <th className="px-3 py-3"></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filtered.map(e => (
+                      <BluexShipmentRow
+                        key={e.id}
+                        envio={e}
+                        onClick={() => setSelected(e)}
+                      />
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          ) : null}
         </TabsContent>
 
         <TabsContent value="secuencias" className="mt-4">
