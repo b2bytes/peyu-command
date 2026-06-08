@@ -72,27 +72,22 @@ export default function LogoMockupPreview({
       {/* Overlay de grabado láser — aplica logo a TODOS los productos */}
       {logoUrl && (
         <>
-          {/* Área de grabado inteligente — ampliada para mejor visibilidad */}
+          {/* Área de grabado inteligente — reemplaza marca PEYU con logo cliente */}
           <div
             style={{
               position: 'absolute',
-              width: Math.max(zone.size, '28%'),
+              width: zone.size,
               aspectRatio: '1',
               top: zone.top,
               left: zone.left,
               transform: 'translate(-50%, -50%)',
               borderRadius: isCircle ? '50%' : '14%',
-              overflow: 'visible',
+              overflow: 'hidden',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              // Efecto grabado mejorado: más visible en todos los fondos
-              background: tone === 'dark'
-                ? 'rgba(255,255,255,0.05)'
-                : 'rgba(0,0,0,0.05)',
-              boxShadow: tone === 'dark'
-                ? '0 0 0 0.5px rgba(255,255,255,0.1), 0 3px 10px rgba(0,0,0,0.35) inset'
-                : '0 0 0 0.5px rgba(0,0,0,0.1), 0 3px 10px rgba(0,0,0,0.12) inset',
+              // Mix-blend-mode: darken reemplaza visualmente la marca PEYU
+              mixBlendMode: 'darken',
             }}
           >
             {/* Logo grabado con filtro inteligente + sombra realista */}
@@ -103,13 +98,11 @@ export default function LogoMockupPreview({
                 src={logoUrl}
                 alt="Logo grabado"
                 style={{
-                  width: '82%',
-                  height: '82%',
+                  width: '95%',
+                  height: '95%',
                   objectFit: 'contain',
                   filter: logoFilter,
-                  opacity: 0.95,
-                  // Profundidad del grabado láser
-                  filter: `${logoFilter} drop-shadow(0 0.5px 2px ${tone === 'dark' ? 'rgba(0,0,0,0.6)' : 'rgba(0,0,0,0.1)'})`,
+                  opacity: 1,
                 }}
               />
             )}

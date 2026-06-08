@@ -8,11 +8,11 @@
 // Zonas de grabado por categoría de producto.
 // Cada zona define: top/left en % del contenedor, tamaño % del ancho, y la rotación.
 export const ENGRAVE_ZONES = {
-  // Cachos / pocillos: frente cilíndrico — zona centrada ligeramente alta
+  // Cachos / pocillos: frente cilíndrico — zona centrada donde está la marca PEYU
   Cachos: {
-    top: '42%', left: '50%', size: '36%',
+    top: '40%', left: '50%', size: '32%',
     shape: 'circle',
-    opacity: 0.9,
+    opacity: 1,
     blendLight: 'grayscale(100%) brightness(0) invert(1)',
     blendDark: 'grayscale(100%) brightness(0)',
     areaLabel: 'Frente del producto',
