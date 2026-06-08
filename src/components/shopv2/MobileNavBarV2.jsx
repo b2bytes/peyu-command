@@ -1,5 +1,5 @@
 import { useNavigate, useLocation, Link } from 'react-router-dom';
-import { Home, LayoutGrid, ShoppingBag, ArrowLeft, ArrowRight, Lock, ShieldCheck, Sparkles } from 'lucide-react';
+import { Home, LayoutGrid, ShoppingBag, ArrowLeft, ArrowRight, Lock, ShieldCheck, Sparkles, BookOpen, Briefcase } from 'lucide-react';
 import { cartCountV2 } from '@/lib/shop-v2-cart';
 import { fmtCLP } from '@/lib/shop-v2-cart';
 
@@ -17,6 +17,8 @@ function NavTabs({ cartCount }) {
   const tabs = [
     { to: '/TiendaNueva', icon: Home, label: 'Inicio' },
     { to: '/CatalogoNuevo', icon: LayoutGrid, label: 'Tienda' },
+    { to: '/blog', icon: BookOpen, label: 'Blog' },
+    { to: '/EmpresasNuevo', icon: Briefcase, label: 'B2B' },
     { to: '/CarritoNuevo', icon: ShoppingBag, label: 'Carrito', badge: cartCount },
   ];
 

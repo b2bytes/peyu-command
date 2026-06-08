@@ -41,20 +41,29 @@ export default function HeroBoldV2({ heroImg, onPersonaliza }) {
               Personalizables con grabado láser permanente — tu frase, logo o diseño. Gratis desde 10 unidades.
             </p>
 
-            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 mb-4 sm:mb-8">
-              <button
-                onClick={onPersonaliza}
-                className="inline-flex items-center justify-center gap-2 text-white font-bold text-base px-8 py-4 rounded-2xl transition-all hover:scale-[1.02] active:scale-[0.99]"
-                style={{ background: 'linear-gradient(135deg,#C0785C,#A86440)', boxShadow: '0 8px 28px rgba(192,120,92,.3)' }}
-              >
-                <Sparkles className="w-4 h-4" /> Personaliza ahora <ArrowRight className="w-4 h-4" />
-              </button>
+            <div className="flex flex-col gap-2 sm:gap-3 mb-4 sm:mb-8">
+              <div className="flex gap-2 sm:gap-3">
+                <button
+                  onClick={onPersonaliza}
+                  className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 text-white font-bold text-sm sm:text-base px-4 sm:px-8 py-3 sm:py-4 rounded-2xl transition-all hover:scale-[1.02] active:scale-[0.99]"
+                  style={{ background: 'linear-gradient(135deg,#C0785C,#A86440)', boxShadow: '0 8px 28px rgba(192,120,92,.3)' }}
+                >
+                  <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> <span>Personaliza</span> <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                </button>
+                <a
+                  href="/CatalogoNuevo"
+                  className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 font-bold text-sm sm:text-base px-4 sm:px-8 py-3 sm:py-4 rounded-2xl transition-all hover:bg-[#EDE3D6]"
+                  style={{ background: 'white', border: '1.5px solid #D4C4B0', color: '#2C1810' }}
+                >
+                  Ver tienda
+                </a>
+              </div>
               <a
-                href="/CatalogoNuevo"
-                className="inline-flex items-center justify-center gap-2 font-bold text-base px-8 py-4 rounded-2xl transition-all hover:bg-[#EDE3D6]"
-                style={{ background: 'white', border: '1.5px solid #D4C4B0', color: '#2C1810' }}
+                href="/EmpresasNuevo"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 font-bold text-sm sm:text-base px-4 sm:px-8 py-3 sm:py-4 rounded-2xl transition-all hover:shadow-md"
+                style={{ background: 'rgba(139,173,138,.15)', border: '1.5px solid #8BAD8A', color: '#5B7D5A' }}
               >
-                Ver tienda
+                Para empresas
               </a>
             </div>
 
