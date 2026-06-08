@@ -3,6 +3,8 @@ import PublicSEO from '@/components/PublicSEO';
 import PublicHero from '@/components/public/PublicHero';
 import PublicSection from '@/components/public/PublicSection';
 import PublicCTA from '@/components/public/PublicCTA';
+import ShopV2Header from '@/components/shopv2/ShopV2Header';
+import MobileNavBarV2 from '@/components/shopv2/MobileNavBarV2';
 
 const VALORES = [
   { icon: Recycle, title: 'Economía Circular', desc: 'Transformamos residuos plásticos post-consumo en productos de alta calidad. Cada producto equivale a sacar plástico del vertedero.' },
@@ -36,7 +38,10 @@ const IMPACTO = [
 
 export default function Nosotros() {
   return (
-    <div className="ld-canvas flex-1 overflow-auto pb-20 lg:pb-0 font-inter">
+    <div className="min-h-screen font-inter pb-16 lg:pb-0" style={{ background: '#F8F3ED', color: '#2C1810' }}>
+      <ShopV2Header />
+      
+      <div className="ld-canvas flex-1 overflow-auto pb-20 lg:pb-0 font-inter">
       <PublicSEO
         pageKey="nosotros"
         breadcrumbs={[
@@ -156,6 +161,9 @@ export default function Nosotros() {
         highlight="misión?"
         subtitle="Cada regalo PEYU es un paso hacia un Chile con menos plástico en el vertedero y más diseño con propósito."
       />
+      </div>
+
+      <MobileNavBarV2 />
     </div>
   );
 }
