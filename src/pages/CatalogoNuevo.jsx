@@ -6,6 +6,7 @@ import MobileNavBarV2 from '@/components/shopv2/MobileNavBarV2';
 import PublicNavBar from '@/components/PublicNavBar';
 import CheckoutStepperV2 from '@/components/shopv2/CheckoutStepperV2';
 import ProductCardV2 from '@/components/shopv2/ProductCardV2';
+import PhoneModelsModal from '@/components/shopv2/PhoneModelsModal';
 import { CATEGORIAS_V2 } from '@/lib/shop-v2-config';
 import { modeloDe, modelosDisponibles } from '@/lib/phone-models-v2';
 
@@ -24,6 +25,7 @@ export default function CatalogoNuevo() {
   const [q, setQ] = useState('');
   const [modelo, setModelo] = useState('Todos');
   const [retry, setRetry] = useState(0);
+  const [openModelsModal, setOpenModelsModal] = useState(false);
 
   useEffect(() => {
     const cargar = async () => {
@@ -151,24 +153,55 @@ export default function CatalogoNuevo() {
         </div>
 
         {/* Filtro por MODELO de teléfono (visible en carcasas — Baymard) */}
-        {esCarcasas && modelos.length > 0 && (
-          <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto scrollbar-hide pb-2 sm:pb-1 mb-4 sm:mb-6 -mx-3 sm:mx-0 px-3 sm:px-0">
-            <Smartphone className="w-3 h-3 sm:w-4 sm:h-4 text-[#A78B6F] flex-shrink-0" />
-            {['Todos', ...modelos].map((m) => (
-              <button
-                key={m}
-                onClick={() => setModelo(m)}
-                className="flex-shrink-0 px-3 sm:px-3.5 py-1.5 sm:py-1.5 rounded-full text-[9px] sm:text-xs font-bold transition-all whitespace-nowrap"
-                style={{
-                  background: modelo === m ? '#8BAD8A' : 'white',
-                  color: modelo === m ? 'white' : '#7A6050',
-                  border: `1.5px solid ${modelo === m ? '#8BAD8A' : '#D4C4B0'}`,
-                }}
-              >
-                {m === 'Todos' ? 'Modelos' : m}
-              </button>
-            ))}
-          </div>
+         {esCarcasas && modelos.length > 0 && (
+          <>
+            {/* Mobile: solo botón */}
+            <button
+              onClick={() => setOpenModelsModal(true)}
+              className="lg:hidden w-full mb-4 py-2.5 rounded-2xl text-sm font-bold flex items-center justify-center gap-2 transition-all active:scale-95"
+              style={{ background: 'white', border: '1.5px solid #D4C4B0', color: '#7A6050' }}
+            >
+              <Smartphone className="w-4 h-4" /> {modelo === 'Todos' ? 'Ver modelos' : modelo}
+            </button>
+
+            {/* Desktop: chips horizontal compactos */}
+            <div className="hidden lg:flex items-center gap-1.5 overflow-x-auto scrollbar-hide pb-1 mb-6 -mx-6 px-6">
+              <Smartphone className="w-4 h-4 text-[#A78B6F] flex-shrink-0" />
+              {['Todos', ...modelos.slice(0, 10)].map((m) => (
+                <button
+                  key={m}
+                  onClick={() => setModelo(m)}
+                  className="flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-bold transition-all whitespace-nowrap"
+                  style={{
+                    background: modelo === m ? '#8BAD8A' : 'white',
+                    color: modelo === m ? 'white' : '#7A6050',
+                    border: `1.5px solid ${modelo === m ? '#8BAD8A' : '#D4C4B0'}`,
+                  }}
+                >
+                  {m === 'Todos' ? 'Modelos' : m}
+                </button>
+              ))}
+              {modelos.length > 10 && (
+                <button
+                  onClick={() => setOpenModelsModal(true)}
+                  className="flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-bold transition-all"
+                  style={{ background: '#F2EBE1', color: '#7A6050', border: '1.5px solid #D4C4B0' }}
+                >
+                  +{modelos.length - 10}
+                </button>
+              )}
+            </div>
+
+            {/* Modal de modelos */}
+            {openModelsModal && (
+              <PhoneModelsModal
+                modelos={modelos}
+                selected={modelo}
+                onSelect={setModelo}
+                onClose={() => setOpenModelsModal(false)}
+              />
+            )}
+          </>
         )}
 
         {/* Grilla */}
