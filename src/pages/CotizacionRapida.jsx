@@ -7,7 +7,7 @@ import {
 } from 'lucide-react';
 import LogoMockupPreview from '@/components/cotizacion/LogoMockupPreview';
 import MockupGalleryB2B from '@/components/cotizacion/MockupGalleryB2B';
-import ShopV2Header from '@/components/shopv2/ShopV2Header';
+import PublicNavBar from '@/components/PublicNavBar';
 import QuoteProductPicker from '@/components/cotizacion/QuoteProductPicker';
 import QuoteItemRow from '@/components/cotizacion/QuoteItemRow';
 import QuoteContactForm from '@/components/cotizacion/QuoteContactForm';
@@ -198,7 +198,7 @@ export default function CotizacionRapida() {
 
   return (
     <div className="min-h-screen bg-[#FAF7F2] font-inter text-[#2A2420] pb-28 sm:pb-12">
-      <ShopV2Header />
+      <PublicNavBar />
 
       <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-8">
         {result ? (
