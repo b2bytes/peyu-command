@@ -104,7 +104,8 @@ export default function BluexShipmentDrawer({ envio: envioInicial, onClose, onUp
   };
 
   const puedeAnular = ['Pendiente Emisión', 'Etiqueta Generada', 'En Bodega'].includes(envio.estado);
-  const labelSrc = labelData.base64 ? `data:application/pdf;base64,${labelData.base64}` : labelData.url;
+  const getLabelSrc = (data) => data.base64 ? `data:application/pdf;base64,${data.base64}` : (data.url || null);
+  const labelSrc = getLabelSrc(labelData);
 
   return (
     <div className="fixed inset-0 z-50 flex justify-end" onClick={onClose}>
@@ -265,52 +266,51 @@ export default function BluexShipmentDrawer({ envio: envioInicial, onClose, onUp
               </div>
 
               <div className="p-5 space-y-3">
-                {/* Acción principal: abrir PDF */}
-                {labelSrc ? (
-                  <>
-                    <a
-                      href={labelSrc}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="flex items-center justify-center gap-2 w-full py-3.5 rounded-xl font-bold text-sm text-white transition-all hover:opacity-90"
-                      style={{ background: 'linear-gradient(135deg,#0066CC,#0080FF)', boxShadow: '0 4px 16px rgba(0,102,204,.25)' }}
-                    >
-                      <FileText className="w-4 h-4" /> Abrir etiqueta PDF
-                    </a>
-                    <button
-                      onClick={imprimir}
-                      className="flex items-center justify-center gap-2 w-full py-3 rounded-xl font-semibold text-sm text-blue-700 bg-blue-50 border border-blue-200 hover:bg-blue-100 transition"
-                    >
-                      <Printer className="w-4 h-4" /> Imprimir directamente
-                    </button>
-                  </>
-                ) : (
-                  <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 text-center">
-                    <p className="text-sm font-semibold text-amber-800 mb-1">Etiqueta no disponible localmente</p>
-                    <p className="text-xs text-amber-700 mb-3">Descárgala directamente desde el portal BlueExpress</p>
-                    <a
-                      href={`https://ecommerce.blue.cl/`}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-amber-600 text-white text-sm font-bold hover:bg-amber-700 transition"
-                    >
-                      <ExternalLink className="w-3.5 h-3.5" /> Ir al portal Bluex
-                    </a>
-                  </div>
-                )}
-
-                {/* Tracking info */}
-                <div className="bg-gray-50 rounded-xl p-3 flex items-center justify-between">
-                  <span className="text-xs text-gray-500">OT / Tracking</span>
-                  <span className="font-mono font-bold text-gray-800 text-sm">{envio.tracking_number}</span>
+                {/* Número OT siempre visible */}
+                <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 flex items-center justify-between">
+                  <span className="text-xs font-semibold text-blue-700">OT / Tracking</span>
+                  <span className="font-mono font-bold text-blue-900 text-sm">{envio.tracking_number || '—'}</span>
                 </div>
 
+                {/* PDF local si existe */}
+                {labelSrc && (
+                  <a
+                    href={labelSrc}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="flex items-center justify-center gap-2 w-full py-3.5 rounded-xl font-bold text-sm text-white transition-all hover:opacity-90"
+                    style={{ background: 'linear-gradient(135deg,#0066CC,#0080FF)', boxShadow: '0 4px 16px rgba(0,102,204,.25)' }}
+                  >
+                    <FileText className="w-4 h-4" /> Abrir etiqueta PDF (local)
+                  </a>
+                )}
+
+                {/* Portal BlueExpress — siempre disponible */}
+                <a
+                  href={envio.tracking_number
+                    ? `https://ecommerce.blue.cl/etiquetas/${envio.tracking_number}`
+                    : 'https://ecommerce.blue.cl/'}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="flex items-center justify-center gap-2 w-full py-3 rounded-xl font-bold text-sm text-white transition hover:opacity-90"
+                  style={{ background: 'linear-gradient(135deg,#0F8B6C,#0B6E55)' }}
+                >
+                  <ExternalLink className="w-4 h-4" /> Descargar / Imprimir desde portal Bluex
+                </a>
+
+                {!labelSrc && (
+                  <p className="text-center text-xs text-gray-400">
+                    Sin PDF local — usa el portal Bluex para imprimir la etiqueta
+                  </p>
+                )}
+
+                {/* Tracking público */}
                 <a
                   href={envio.tracking_url || `https://www.bluex.cl/seguimiento?n=${envio.tracking_number}`}
                   target="_blank" rel="noreferrer"
                   className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl text-sm font-semibold text-gray-600 bg-gray-50 border border-gray-200 hover:bg-gray-100 transition"
                 >
-                  <ExternalLink className="w-3.5 h-3.5" /> Ver tracking público del cliente
+                  <Truck className="w-3.5 h-3.5" /> Ver tracking público del cliente
                 </a>
               </div>
             </div>
