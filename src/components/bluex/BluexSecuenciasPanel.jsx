@@ -57,7 +57,7 @@ export default function BluexSecuenciasPanel({ envios }) {
 
       {/* Las 5 secuencias */}
       <div>
-        <h3 className="font-poppins font-bold text-foreground text-sm mb-3 flex items-center gap-2">
+        <h3 className="font-bold text-gray-800 text-sm mb-3 flex items-center gap-2">
           <Mail className="w-4 h-4 text-cyan-600" /> Secuencias activas (5)
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -69,8 +69,8 @@ export default function BluexSecuenciasPanel({ envios }) {
                   <div className="flex items-center gap-2 min-w-0">
                     <span className="text-2xl">{s.icon}</span>
                     <div className="min-w-0">
-                      <p className="font-poppins font-bold text-foreground truncate">{s.label}</p>
-                      <p className="text-[11px] text-muted-foreground truncate">{s.descripcion}</p>
+                      <p className="font-bold text-gray-800 truncate">{s.label}</p>
+                      <p className="text-[11px] text-gray-500 truncate">{s.descripcion}</p>
                     </div>
                   </div>
                   <div className="text-right flex-shrink-0 ml-2">
@@ -81,13 +81,13 @@ export default function BluexSecuenciasPanel({ envios }) {
                   </div>
                 </div>
 
-                <div className="bg-white/60 rounded-lg p-2 mt-2">
-                  <p className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground mb-1">Criterio</p>
-                  <p className="text-[11px] text-foreground leading-relaxed">{s.criterio}</p>
+                <div className="bg-white/70 rounded-lg p-2 mt-2">
+                  <p className="text-[10px] uppercase tracking-wider font-bold text-gray-500 mb-1">Criterio</p>
+                  <p className="text-[11px] text-gray-700 leading-relaxed">{s.criterio}</p>
                 </div>
 
                 <div className="mt-2.5">
-                  <p className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground mb-1.5">Emails que dispara</p>
+                  <p className="text-[10px] uppercase tracking-wider font-bold text-gray-500 mb-1.5">Emails que dispara</p>
                   <div className="flex flex-wrap gap-1">
                     {s.emails.map((tipo, i) => (
                       <span key={tipo} className="inline-flex items-center gap-1 text-[10px] bg-white border border-border rounded-full px-2 py-0.5 font-medium">
@@ -98,9 +98,9 @@ export default function BluexSecuenciasPanel({ envios }) {
                   </div>
                 </div>
 
-                <div className="flex items-center gap-3 mt-2.5 pt-2.5 border-t border-white/60 text-[10px] text-muted-foreground">
-                  <span><strong className="text-foreground tabular-nums">{st.envios}</strong> envíos totales</span>
-                  <span><strong className="text-foreground tabular-nums">{st.emails}</strong> emails enviados</span>
+                <div className="flex items-center gap-3 mt-2.5 pt-2.5 border-t border-white/60 text-[10px] text-gray-500">
+                  <span><strong className="text-gray-800 tabular-nums">{st.envios}</strong> envíos totales</span>
+                  <span><strong className="text-gray-800 tabular-nums">{st.emails}</strong> emails enviados</span>
                 </div>
               </div>
             );
@@ -110,18 +110,18 @@ export default function BluexSecuenciasPanel({ envios }) {
 
       {/* Triggers transversales */}
       <div>
-        <h3 className="font-poppins font-bold text-foreground text-sm mb-3 flex items-center gap-2">
+        <h3 className="font-bold text-gray-800 text-sm mb-3 flex items-center gap-2">
           <AlertCircle className="w-4 h-4 text-amber-600" /> Triggers transversales
         </h3>
-        <p className="text-xs text-muted-foreground mb-3">Aplican <em>en cualquier secuencia</em> cuando se cumplen las condiciones.</p>
+        <p className="text-xs text-gray-500 mb-3">Aplican <em>en cualquier secuencia</em> cuando se cumplen las condiciones.</p>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-2.5">
           {TRIGGERS_TRANSVERSALES.map(t => (
-            <div key={t.key} className="bg-amber-50/40 border border-amber-200 rounded-xl p-3">
+            <div key={t.key} className="bg-amber-50 border border-amber-200 rounded-xl p-3">
               <div className="flex items-center gap-2 mb-1">
                 <span className="text-lg">{t.icon}</span>
-                <p className="font-bold text-sm text-foreground">{t.label}</p>
+                <p className="font-bold text-sm text-amber-900">{t.label}</p>
               </div>
-              <p className="text-[11px] text-muted-foreground leading-relaxed">{t.descripcion}</p>
+              <p className="text-[11px] text-amber-800 leading-relaxed">{t.descripcion}</p>
             </div>
           ))}
         </div>
@@ -129,28 +129,28 @@ export default function BluexSecuenciasPanel({ envios }) {
 
       {/* Últimos emails enviados */}
       <div>
-        <h3 className="font-poppins font-bold text-foreground text-sm mb-3 flex items-center gap-2">
+        <h3 className="font-bold text-gray-800 text-sm mb-3 flex items-center gap-2">
           <Clock className="w-4 h-4 text-cyan-600" /> Últimos emails enviados por el agente
         </h3>
         {ultimosEmails.length === 0 ? (
-          <div className="text-center py-8 bg-muted/30 rounded-2xl border border-dashed border-border">
-            <Mail className="w-8 h-8 text-muted-foreground/40 mx-auto mb-2" />
-            <p className="text-xs text-muted-foreground">El agente aún no ha disparado emails. Apenas haya cambios de estado en Bluex, aparecerán acá.</p>
+          <div className="text-center py-8 bg-gray-50 rounded-2xl border border-dashed border-gray-200">
+            <Mail className="w-8 h-8 text-gray-300 mx-auto mb-2" />
+            <p className="text-xs text-gray-500">El agente aún no ha disparado emails.</p>
           </div>
         ) : (
-          <div className="bg-white border border-border rounded-2xl divide-y divide-border overflow-hidden">
+          <div className="bg-white border border-gray-200 rounded-2xl divide-y divide-gray-100 overflow-hidden">
             {ultimosEmails.map((n, i) => (
-              <div key={i} className="flex items-start gap-3 p-3 hover:bg-muted/30 transition-colors">
+              <div key={i} className="flex items-start gap-3 p-3 hover:bg-gray-50 transition-colors">
                 <div className="w-8 h-8 rounded-lg bg-cyan-100 flex items-center justify-center flex-shrink-0">
                   <Mail className="w-3.5 h-3.5 text-cyan-700" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="font-medium text-sm text-foreground line-clamp-1">{n.subject}</p>
-                  <p className="text-[11px] text-muted-foreground">
+                  <p className="font-semibold text-sm text-gray-800 line-clamp-1">{n.subject}</p>
+                  <p className="text-[11px] text-gray-500">
                     {n.numero_pedido} · {n.cliente} · {n.comuna} · <span className="text-cyan-600 font-semibold">{TIPOS_EMAIL_LABELS[n.tipo] || n.tipo}</span>
                   </p>
                 </div>
-                <span className="text-[10px] text-muted-foreground tabular-nums whitespace-nowrap flex-shrink-0">
+                <span className="text-[10px] text-gray-400 tabular-nums whitespace-nowrap flex-shrink-0">
                   {new Date(n.at).toLocaleString('es-CL', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}
                 </span>
               </div>

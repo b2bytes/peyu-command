@@ -70,124 +70,75 @@ export default function BluexDashboardPanel({ envios = [] }) {
           { label: 'Con excepciones', value: stats.con_excepciones, color: 'text-red-600', icon: AlertCircle },
           { label: 'Atrasados', value: stats.atrasados, color: 'text-orange-600', icon: AlertCircle },
         ].map((stat, i) => (
-          <div key={i} className="bg-white rounded-xl border border-border p-3">
-            <div className={`text-2xl font-bold ${stat.color}`}>{stat.value}</div>
-            <p className="text-xs text-muted-foreground mt-1">{stat.label}</p>
+          <div key={i} className="bg-white rounded-xl border border-gray-200 p-4">
+            <div className={`text-3xl font-extrabold ${stat.color}`}>{stat.value}</div>
+            <p className="text-sm text-gray-500 mt-1 font-medium">{stat.label}</p>
           </div>
         ))}
       </div>
 
       {/* Filtros */}
-      <div className="bg-white rounded-xl border border-border p-4 space-y-3">
+      <div className="bg-white rounded-xl border border-gray-200 p-4 space-y-3">
         <div className="flex items-center gap-2">
-          <Filter className="w-4 h-4 text-muted-foreground" />
-          <h3 className="font-semibold text-sm">Filtros avanzados</h3>
+          <Filter className="w-4 h-4 text-gray-400" />
+          <h3 className="font-bold text-sm text-gray-700">Filtros</h3>
         </div>
 
         <div className="grid md:grid-cols-4 gap-3">
-          {/* Buscar OT */}
           <div className="relative">
-            <Search className="w-4 h-4 absolute left-3 top-3 text-muted-foreground" />
-            <Input
-              placeholder="Buscar OT o pedido..."
-              value={searchOT}
-              onChange={e => setSearchOT(e.target.value)}
-              className="pl-9 h-9 text-sm"
-            />
+            <Search className="w-4 h-4 absolute left-3 top-2.5 text-gray-400" />
+            <Input placeholder="Buscar OT o pedido..." value={searchOT} onChange={e => setSearchOT(e.target.value)} className="pl-9 h-9 text-sm bg-white text-gray-800" />
           </div>
-
-          {/* Buscar cliente */}
           <div className="relative">
-            <Search className="w-4 h-4 absolute left-3 top-3 text-muted-foreground" />
-            <Input
-              placeholder="Buscar cliente..."
-              value={searchCliente}
-              onChange={e => setSearchCliente(e.target.value)}
-              className="pl-9 h-9 text-sm"
-            />
+            <Search className="w-4 h-4 absolute left-3 top-2.5 text-gray-400" />
+            <Input placeholder="Buscar cliente..." value={searchCliente} onChange={e => setSearchCliente(e.target.value)} className="pl-9 h-9 text-sm bg-white text-gray-800" />
           </div>
-
-          {/* Estado */}
-          <select
-            value={filterEstado}
-            onChange={e => setFilterEstado(e.target.value)}
-            className="text-sm border border-input rounded-md px-3 h-9 bg-white"
-          >
+          <select value={filterEstado} onChange={e => setFilterEstado(e.target.value)} className="text-sm border border-gray-200 rounded-md px-3 h-9 bg-white text-gray-800">
             <option value="todos">Todos los estados</option>
-            {Object.keys(ESTADOS).map(est => (
-              <option key={est} value={est}>{ESTADOS[est].label}</option>
-            ))}
+            {Object.keys(ESTADOS).map(est => <option key={est} value={est}>{ESTADOS[est].label}</option>)}
           </select>
-
-          {/* Servicio */}
-          <select
-            value={filterServicio}
-            onChange={e => setFilterServicio(e.target.value)}
-            className="text-sm border border-input rounded-md px-3 h-9 bg-white"
-          >
+          <select value={filterServicio} onChange={e => setFilterServicio(e.target.value)} className="text-sm border border-gray-200 rounded-md px-3 h-9 bg-white text-gray-800">
             <option value="todos">Todos los servicios</option>
             <option value="EXPRESS">Express</option>
             <option value="PRIORITY">Priority</option>
           </select>
         </div>
 
-        {/* Tags de filtros activos */}
         {(searchOT || searchCliente || filterEstado !== 'todos' || filterServicio !== 'todos') && (
           <div className="flex flex-wrap gap-2 pt-2">
-            {searchOT && (
-              <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full flex items-center gap-1">
-                OT: {searchOT}
-                <button onClick={() => setSearchOT('')} className="ml-1 hover:text-blue-900">✕</button>
-              </span>
-            )}
-            {searchCliente && (
-              <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full flex items-center gap-1">
-                Cliente: {searchCliente}
-                <button onClick={() => setSearchCliente('')} className="ml-1 hover:text-green-900">✕</button>
-              </span>
-            )}
-            {filterEstado !== 'todos' && (
-              <span className="text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded-full flex items-center gap-1">
-                {ESTADOS[filterEstado].label}
-                <button onClick={() => setFilterEstado('todos')} className="ml-1 hover:text-purple-900">✕</button>
-              </span>
-            )}
-            {filterServicio !== 'todos' && (
-              <span className="text-xs bg-amber-100 text-amber-700 px-2 py-1 rounded-full flex items-center gap-1">
-                {filterServicio}
-                <button onClick={() => setFilterServicio('todos')} className="ml-1 hover:text-amber-900">✕</button>
-              </span>
-            )}
+            {searchOT && <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full flex items-center gap-1">OT: {searchOT} <button onClick={() => setSearchOT('')}>✕</button></span>}
+            {searchCliente && <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full flex items-center gap-1">Cliente: {searchCliente} <button onClick={() => setSearchCliente('')}>✕</button></span>}
+            {filterEstado !== 'todos' && <span className="text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded-full flex items-center gap-1">{ESTADOS[filterEstado]?.label} <button onClick={() => setFilterEstado('todos')}>✕</button></span>}
+            {filterServicio !== 'todos' && <span className="text-xs bg-amber-100 text-amber-700 px-2 py-1 rounded-full flex items-center gap-1">{filterServicio} <button onClick={() => setFilterServicio('todos')}>✕</button></span>}
           </div>
         )}
       </div>
 
       {/* Resultados */}
-      <div className="bg-white rounded-xl border border-border overflow-hidden">
-        <div className="px-4 py-3 bg-muted/40 flex items-center justify-between">
-          <p className="text-sm font-semibold">
+      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+        <div className="px-4 py-3 bg-gray-50 border-b border-gray-100">
+          <p className="text-sm font-bold text-gray-700">
             {filtered.length} envío{filtered.length !== 1 ? 's' : ''} encontrado{filtered.length !== 1 ? 's' : ''}
           </p>
         </div>
-
         <div className="overflow-x-auto">
-          <table className="w-full text-xs">
-            <thead className="bg-muted/20 border-t border-b border-border">
-              <tr>
-                <th className="text-left px-4 py-3 font-bold">OT / Pedido</th>
-                <th className="text-left px-3 py-3 font-bold">Cliente</th>
-                <th className="text-left px-3 py-3 font-bold">Destino</th>
-                <th className="text-left px-3 py-3 font-bold">Estado</th>
-                <th className="text-left px-3 py-3 font-bold">Última novedad</th>
-                <th className="text-right px-3 py-3 font-bold">Servicio</th>
+          <table className="w-full">
+            <thead className="bg-gray-50 border-b border-gray-100">
+              <tr className="text-xs font-bold text-gray-500 uppercase tracking-wider">
+                <th className="text-left px-4 py-3">OT / Pedido</th>
+                <th className="text-left px-3 py-3">Cliente</th>
+                <th className="text-left px-3 py-3">Destino</th>
+                <th className="text-left px-3 py-3">Estado</th>
+                <th className="text-left px-3 py-3">Última novedad</th>
+                <th className="text-right px-3 py-3">Servicio</th>
               </tr>
             </thead>
             <tbody>
               {filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="text-center py-8 text-muted-foreground">
-                    <Truck className="w-8 h-8 mx-auto mb-2 opacity-20" />
-                    <p className="text-sm">Sin envíos que coincidan con los filtros</p>
+                  <td colSpan={6} className="text-center py-10 text-gray-400">
+                    <Truck className="w-8 h-8 mx-auto mb-2 opacity-30" />
+                    <p className="text-sm font-medium">Sin envíos que coincidan</p>
                   </td>
                 </tr>
               ) : (
@@ -195,36 +146,32 @@ export default function BluexDashboardPanel({ envios = [] }) {
                   const estadoInfo = ESTADOS[env.estado] || ESTADOS['En Tránsito'];
                   const IconEstado = estadoInfo.icon;
                   return (
-                    <tr key={env.id} className="border-t border-border hover:bg-muted/30 transition">
-                      <td className="px-4 py-3">
-                        <div className="font-mono font-bold text-foreground">{env.tracking_number}</div>
-                        {env.numero_pedido && <div className="text-xs text-muted-foreground mt-0.5">Ped: {env.numero_pedido}</div>}
+                    <tr key={env.id} className="border-t border-gray-100 hover:bg-blue-50/50 transition cursor-pointer">
+                      <td className="px-4 py-3.5">
+                        <div className="font-mono font-bold text-gray-900 text-sm">{env.tracking_number || '—'}</div>
+                        {env.numero_pedido && <div className="text-xs text-blue-600 mt-0.5">Ped: {env.numero_pedido}</div>}
                       </td>
-                      <td className="px-3 py-3">
-                        <div className="font-medium text-foreground">{env.cliente_nombre}</div>
-                        {env.cliente_email && <div className="text-xs text-muted-foreground">{env.cliente_email}</div>}
+                      <td className="px-3 py-3.5">
+                        <div className="font-semibold text-gray-800 text-sm">{env.cliente_nombre || '—'}</div>
+                        {env.cliente_email && <div className="text-xs text-gray-500 truncate max-w-[160px]">{env.cliente_email}</div>}
                       </td>
-                      <td className="px-3 py-3">
-                        <div className="text-sm">{env.comuna_destino}</div>
-                        <div className="text-xs text-muted-foreground">{env.region_destino}</div>
+                      <td className="px-3 py-3.5">
+                        <div className="text-sm font-semibold text-gray-800">{env.comuna_destino || '—'}</div>
+                        <div className="text-xs text-gray-400">{env.region_destino}</div>
                       </td>
-                      <td className="px-3 py-3">
-                        <div className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-medium ${estadoInfo.bg}`}>
+                      <td className="px-3 py-3.5">
+                        <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold border ${estadoInfo.bg}`}>
                           <IconEstado className={`w-3 h-3 ${estadoInfo.color}`} />
                           <span className={estadoInfo.color}>{estadoInfo.label}</span>
                         </div>
                         {env.tiene_excepcion && <div className="text-xs text-red-600 font-bold mt-1">⚠️ Excepción</div>}
                       </td>
-                      <td className="px-3 py-3">
-                        <div className="text-xs text-foreground">{env.ultimo_evento_descripcion || '-'}</div>
-                        {env.ultimo_evento_at && (
-                          <div className="text-xs text-muted-foreground mt-0.5">
-                            {new Date(env.ultimo_evento_at).toLocaleDateString('es-CL')}
-                          </div>
-                        )}
+                      <td className="px-3 py-3.5">
+                        <div className="text-sm text-gray-700">{env.ultimo_evento_descripcion || <span className="text-gray-400 italic">Sin novedad</span>}</div>
+                        {env.ultimo_evento_at && <div className="text-xs text-gray-400 mt-0.5">{new Date(env.ultimo_evento_at).toLocaleDateString('es-CL')}</div>}
                       </td>
-                      <td className="px-3 py-3 text-right">
-                        <span className="text-xs font-mono bg-muted px-2 py-1 rounded">
+                      <td className="px-3 py-3.5 text-right">
+                        <span className={`text-xs font-black px-2.5 py-1 rounded-lg text-white ${env.servicio === 'PRIORITY' ? 'bg-purple-600' : 'bg-blue-600'}`}>
                           {env.servicio || 'EXPRESS'}
                         </span>
                       </td>

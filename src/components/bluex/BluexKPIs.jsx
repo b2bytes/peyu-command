@@ -27,13 +27,13 @@ export default function BluexKPIs({ envios }) {
       {cards.map((c, i) => {
         const Icon = c.icon;
         return (
-          <div key={i} className={`bg-gradient-to-br ${c.bg} border ${c.border} rounded-lg sm:rounded-2xl p-2.5 sm:p-3.5 hover:shadow-lg hover:-translate-y-0.5 transition-all ${c.urgent ? 'ring-2 ring-red-300 ring-offset-1' : ''}`}>
-            <div className={`w-7 sm:w-8 h-7 sm:h-8 rounded-lg bg-gradient-to-br ${c.gradient} flex items-center justify-center shadow-sm mb-1.5 sm:mb-2`}>
-              <Icon className="w-3.5 sm:w-4 h-3.5 sm:h-4 text-white" />
+          <div key={i} className={`bg-white border border-gray-200 rounded-xl p-3 sm:p-4 hover:shadow-md hover:-translate-y-0.5 transition-all ${c.urgent ? 'ring-2 ring-red-300 ring-offset-1' : ''}`}>
+            <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${c.gradient} flex items-center justify-center shadow-sm mb-2`}>
+              <Icon className="w-4 h-4 text-white" />
             </div>
-            <p className="text-[8px] sm:text-[10px] uppercase tracking-wider font-bold text-muted-foreground truncate">{c.label}</p>
-            <p className="font-poppins font-extrabold text-lg sm:text-2xl text-foreground tabular-nums leading-none mt-1">{c.val}</p>
-            <p className="text-[8px] sm:text-[10px] text-muted-foreground mt-0.5 sm:mt-1 line-clamp-1">{c.sub}</p>
+            <p className="text-[10px] uppercase tracking-wider font-bold text-gray-400 truncate">{c.label}</p>
+            <p className="font-extrabold text-xl sm:text-2xl text-gray-900 tabular-nums leading-none mt-1">{c.val}</p>
+            <p className="text-[10px] text-gray-500 mt-1 line-clamp-1">{c.sub}</p>
           </div>
         );
       })}

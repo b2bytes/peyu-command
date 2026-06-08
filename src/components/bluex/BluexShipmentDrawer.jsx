@@ -115,7 +115,7 @@ export default function BluexShipmentDrawer({ envio: envioInicial, onClose, onUp
           </button>
         </div>
 
-        <div className="p-3 sm:p-5 space-y-3 sm:space-y-4">
+        <div className="p-4 sm:p-5 space-y-4 bg-gray-50 min-h-full">
           {/* Alertas */}
           {envio.tiene_excepcion && (
             <div className="bg-red-50 border border-red-200 rounded-xl p-3 flex items-start gap-2">
@@ -137,44 +137,42 @@ export default function BluexShipmentDrawer({ envio: envioInicial, onClose, onUp
           )}
 
           {/* Estado actual */}
-          <div className="bg-gradient-to-br from-cyan-50 to-blue-50 border border-cyan-200 rounded-xl p-4">
+          <div className="bg-white border border-gray-200 rounded-xl p-4">
             <div className="flex items-center justify-between mb-2">
-              <p className="text-[10px] uppercase tracking-wider font-bold text-cyan-700">Estado actual</p>
-              <span className="text-[10px] text-cyan-600">{envio.tipo_destino} · {envio.servicio}</span>
+              <p className="text-xs uppercase tracking-wider font-bold text-gray-500">Estado actual</p>
+              <span className="text-xs text-gray-400">{envio.tipo_destino} · {envio.servicio}</span>
             </div>
-            <p className="font-poppins font-extrabold text-foreground text-xl">{envio.estado}</p>
+            <p className="font-extrabold text-gray-900 text-xl">{envio.estado}</p>
             {envio.ultimo_evento_descripcion && (
-              <p className="text-xs text-muted-foreground mt-1">{envio.ultimo_evento_descripcion}</p>
+              <p className="text-sm text-gray-600 mt-1">{envio.ultimo_evento_descripcion}</p>
             )}
           </div>
 
           {/* Acciones */}
-          <div className="grid grid-cols-2 gap-1.5 sm:gap-2">
-            <Button onClick={refreshTracking} disabled={refreshing} variant="outline" className="gap-1.5 sm:gap-2 h-9 sm:h-10 text-xs sm:text-sm">
-              {refreshing ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RefreshCw className="w-3.5 h-3.5" />}
-              <span className="hidden sm:inline">Refrescar</span>
-              <span className="sm:hidden">Refr.</span>
+          <div className="grid grid-cols-2 gap-2">
+            <Button onClick={refreshTracking} disabled={refreshing} variant="outline" className="gap-2 h-10 text-sm bg-white text-gray-700 border-gray-200 hover:bg-gray-50">
+              {refreshing ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
+              Refrescar
             </Button>
-            <Button onClick={verEtiqueta} disabled={labelLoading} variant="outline" className="gap-1.5 sm:gap-2 h-9 sm:h-10 text-xs sm:text-sm">
-              {labelLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <FileText className="w-3.5 h-3.5" />}
-              <span className="hidden sm:inline">Etiqueta</span>
-              <span className="sm:hidden">Eti.</span>
+            <Button onClick={verEtiqueta} disabled={labelLoading} variant="outline" className="gap-2 h-10 text-sm bg-white text-gray-700 border-gray-200 hover:bg-gray-50">
+              {labelLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileText className="w-4 h-4" />}
+              Etiqueta
             </Button>
-            <Button onClick={contactarWhatsApp} variant="outline" className="gap-1.5 sm:gap-2 h-9 sm:h-10 text-xs sm:text-sm">
-              <MessageCircle className="w-3.5 h-3.5" /> <span className="hidden sm:inline">WhatsApp</span>
+            <Button onClick={contactarWhatsApp} variant="outline" className="gap-2 h-10 text-sm bg-white text-gray-700 border-gray-200 hover:bg-gray-50">
+              <MessageCircle className="w-4 h-4" /> WhatsApp
             </Button>
             <a
               href={envio.tracking_url || `https://www.bluex.cl/seguimiento?n=${envio.tracking_number}`}
               target="_blank" rel="noreferrer"
-              className="flex items-center justify-center gap-1.5 sm:gap-2 h-9 sm:h-10 rounded-md border border-input text-xs sm:text-sm font-medium hover:bg-accent"
+              className="flex items-center justify-center gap-2 h-10 rounded-md border border-gray-200 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50"
             >
-              <ExternalLink className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Tracking</span>
+              <ExternalLink className="w-4 h-4" /> Tracking
             </a>
           </div>
 
           {/* Datos destino */}
-          <div className="bg-white border border-border rounded-xl p-4 space-y-2">
-            <p className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground mb-1">Destinatario</p>
+          <div className="bg-white border border-gray-200 rounded-xl p-4 space-y-2.5">
+            <p className="text-xs uppercase tracking-wider font-bold text-gray-500 mb-2">Destinatario</p>
             <Row icon={User} val={envio.cliente_nombre} fallback="Sin nombre registrado" />
             <Row icon={Phone} val={envio.cliente_telefono} fallback="Sin teléfono" />
             <Row icon={Mail} val={envio.cliente_email} fallback="Sin email" />
@@ -182,41 +180,41 @@ export default function BluexShipmentDrawer({ envio: envioInicial, onClose, onUp
             <Row icon={Package} val={envio.peso_kg ? `${envio.peso_kg}kg · $${(envio.valor_declarado_clp || 0).toLocaleString('es-CL')} declarado` : null} fallback="Sin datos de peso" />
           </div>
 
-          {/* Info estado "Etiqueta Generada" */}
+          {/* Info etiqueta */}
           {envio.estado === 'Etiqueta Generada' && (
             <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 flex items-start gap-2.5">
               <FileText className="w-4 h-4 text-blue-600 flex-shrink-0 mt-0.5" />
               <div className="text-xs text-blue-900">
                 <p className="font-bold">Etiqueta generada · pendiente retiro</p>
-                <p className="text-blue-700 mt-0.5">La OT fue registrada en Bluex. El tracking se actualizará cuando el courier retire el paquete. Pulsa "Refrescar" para consultar el estado en tiempo real.</p>
+                <p className="text-blue-700 mt-0.5">La OT fue registrada en Bluex. El tracking se actualizará cuando el courier retire el paquete.</p>
               </div>
             </div>
           )}
 
           {/* Timeline */}
-          <div className="bg-white border border-border rounded-xl p-4">
+          <div className="bg-white border border-gray-200 rounded-xl p-4">
             <div className="flex items-center justify-between mb-3">
-              <h3 className="font-poppins font-bold text-sm text-foreground">Eventos del envío</h3>
-              <span className="text-[10px] text-muted-foreground">{envio.eventos?.length || 0} eventos</span>
+              <h3 className="font-bold text-sm text-gray-800">Eventos del envío</h3>
+              <span className="text-xs text-gray-400">{envio.eventos?.length || 0} eventos</span>
             </div>
             <BluexTimeline eventos={envio.eventos || []} />
           </div>
 
           {/* Notificaciones enviadas */}
           {envio.notificaciones_enviadas?.length > 0 && (
-            <div className="bg-white border border-border rounded-xl p-4">
-              <h3 className="font-poppins font-bold text-sm text-foreground flex items-center gap-2 mb-3">
+            <div className="bg-white border border-gray-200 rounded-xl p-4">
+              <h3 className="font-bold text-sm text-gray-800 flex items-center gap-2 mb-3">
                 <Bell className="w-4 h-4 text-cyan-600" />
-                Notificaciones enviadas al cliente ({envio.notificaciones_enviadas.length})
+                Notificaciones al cliente ({envio.notificaciones_enviadas.length})
               </h3>
-              <ul className="space-y-1.5 text-xs">
+              <ul className="space-y-2 text-xs">
                 {envio.notificaciones_enviadas.slice().reverse().map((n, i) => (
-                  <li key={i} className="flex items-start justify-between gap-2 pb-1.5 border-b border-border/50 last:border-0">
+                  <li key={i} className="flex items-start justify-between gap-2 pb-2 border-b border-gray-100 last:border-0">
                     <div className="min-w-0 flex-1">
-                      <p className="font-medium text-foreground">{n.subject}</p>
-                      <p className="text-[10px] text-muted-foreground">{n.canal} · {n.tipo}</p>
+                      <p className="font-semibold text-gray-800">{n.subject}</p>
+                      <p className="text-gray-500">{n.canal} · {n.tipo}</p>
                     </div>
-                    <span className="text-[10px] text-muted-foreground tabular-nums whitespace-nowrap">
+                    <span className="text-gray-400 tabular-nums whitespace-nowrap">
                       {new Date(n.at).toLocaleDateString('es-CL')}
                     </span>
                   </li>
@@ -267,8 +265,8 @@ function Row({ icon: Icon, val, fallback }) {
   const display = val || null;
   return (
     <div className="flex items-start gap-2 text-sm">
-      <Icon className={`w-3.5 h-3.5 flex-shrink-0 mt-0.5 ${display ? 'text-muted-foreground' : 'text-muted-foreground/40'}`} />
-      <span className={`break-words ${display ? 'text-foreground' : 'text-muted-foreground/50 italic text-xs'}`}>
+      <Icon className={`w-3.5 h-3.5 flex-shrink-0 mt-0.5 ${display ? 'text-gray-400' : 'text-gray-300'}`} />
+      <span className={`break-words ${display ? 'text-gray-800' : 'text-gray-400 italic text-xs'}`}>
         {display || fallback || '—'}
       </span>
     </div>
