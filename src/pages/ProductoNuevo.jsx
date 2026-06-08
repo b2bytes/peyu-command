@@ -244,10 +244,10 @@ export default function ProductoNuevo() {
   const esCompostable = producto.material?.includes('Trigo') || producto.categoria === 'Carcasas B2C';
 
   return (
-    <div className="min-h-screen font-inter pb-20 lg:pb-0 overflow-x-hidden" style={{ background: '#F8F3ED', color: '#2C1810' }}>
+    <div className="min-h-screen font-inter pb-20 lg:pb-0" style={{ background: '#F8F3ED', color: '#2C1810' }}>
       <ShopV2Header />
 
-      <div className="max-w-6xl mx-auto px-3 sm:px-6 py-2 sm:py-4">
+      <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-2 sm:py-4">
         <CheckoutStepperV2 current="producto" />
         {/* Link de vuelta solo visible en desktop (mobile usa el navbar inferior) */}
         <Link to="/CatalogoNuevo" className="hidden lg:inline-flex items-center gap-1.5 text-sm font-bold mb-4 transition-colors" style={{ color: '#7A6050' }}>

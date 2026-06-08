@@ -44,7 +44,7 @@ export default function TiendaNueva() {
   };
 
   return (
-    <div className="min-h-screen font-inter pb-16 lg:pb-0 overflow-x-hidden" style={{ background: '#F8F3ED', color: '#2C1810' }}>
+    <div className="min-h-screen font-inter pb-16 lg:pb-0" style={{ background: '#F8F3ED', color: '#2C1810' }}>
       <ShopV2Header />
 
       {/* 1 · HERO BOLD */}
@@ -60,7 +60,7 @@ export default function TiendaNueva() {
       <ImpactStoryV2 />
 
       {/* CATEGORÍAS MEJORADAS 2027 */}
-      <section className="w-full px-3 sm:px-8 lg:px-12 mb-8 sm:mb-12">
+      <section className="w-full px-3 sm:px-4 lg:px-6 mb-8 sm:mb-12">
         <div className="max-w-screen-xl mx-auto">
           <div className="flex items-center gap-2 mb-3 sm:mb-4">
             <Sparkles className="w-4 sm:w-5 h-4 sm:h-5" style={{ color: '#C0785C' }} />
@@ -83,7 +83,7 @@ export default function TiendaNueva() {
       </section>
 
       {/* GALERÍA DE PRODUCTOS */}
-      <section className="w-full px-3 sm:px-8 lg:px-12 mb-8 sm:mb-12">
+      <section className="w-full px-3 sm:px-4 lg:px-6 mb-8 sm:mb-12">
         <div className="max-w-screen-xl mx-auto">
           <div className="flex items-center justify-between mb-4 sm:mb-6">
             <h2 className="font-fraunces text-lg sm:text-3xl">Catálogo completo</h2>

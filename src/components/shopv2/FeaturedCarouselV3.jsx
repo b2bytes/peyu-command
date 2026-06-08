@@ -28,11 +28,11 @@ export default function FeaturedCarouselV3({ productos = [], onPersonaliza }) {
   const next = () => setCurrent((c) => (c + 1) % items.length);
 
   return (
-    <section className="w-full px-3 sm:px-8 lg:px-12 mb-8 sm:mb-12">
-      <div className="max-w-screen-xl mx-auto">
-        <div className="relative group rounded-2xl sm:rounded-3xl overflow-hidden" style={{ background: '#FAF7F2', border: '1.5px solid #D4C4B0' }}>
+    <section className="w-full px-3 sm:px-4 lg:px-6 mb-8 sm:mb-12">
+      <div className="max-w-7xl mx-auto">
+        <div className="relative group rounded-xl sm:rounded-2xl lg:rounded-3xl overflow-hidden" style={{ background: '#FAF7F2', border: '1.5px solid #D4C4B0' }}>
           {/* Imagen principal con transición suave */}
-          <div className="aspect-video sm:aspect-[16/9] relative overflow-hidden">
+          <div className="aspect-square sm:aspect-video relative overflow-hidden">
             <img
               src={img}
               alt={p.nombre}
