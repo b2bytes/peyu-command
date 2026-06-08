@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Sparkles, ShoppingBag, Check, Smartphone, Wand2 } from 'lucide-react';
+import { Sparkles, ShoppingBag, Check, Smartphone, Wand2, ChevronDown } from 'lucide-react';
+import CarcasaPickerAccordion from '@/components/shopv2/CarcasaPickerAccordion';
 import ColorSwatchesV2 from '@/components/shopv2/ColorSwatchesV2';
 import PersonalizadorV2 from '@/components/shopv2/PersonalizadorV2';
 import MockupLivePreviewV2 from '@/components/shopv2/MockupLivePreviewV2';
@@ -28,16 +29,14 @@ import { applyAutoPlacement } from '@/lib/auto-placement';
 export default function LiveConfiguratorV2({ carcasas = [] }) {
   const navigate = useNavigate();
 
-  // Modelos disponibles desde el catálogo real.
-  const modelos = useMemo(() => modelosDisponibles(carcasas), [carcasas]);
-  const [modelo, setModelo] = useState(null);
+  // Selección desde el accordion: { productoId, producto, colorId, color }
+  const [pickerSelection, setPickerSelection] = useState(null);
+  const [showPicker, setShowPicker] = useState(false);
 
-  useEffect(() => { if (modelos.length && !modelo) setModelo(modelos[0]); }, [modelos, modelo]);
-
-  // Producto carcasa que matchea el modelo elegido.
+  // Producto carcasa activo: viene del picker o es el primero del catálogo.
   const producto = useMemo(
-    () => carcasas.find((p) => modeloDe(p) === modelo) || carcasas[0] || null,
-    [carcasas, modelo]
+    () => pickerSelection?.producto || carcasas[0] || null,
+    [pickerSelection, carcasas]
   );
   
   // Deduce automáticamente el área de estampado del producto.
@@ -55,6 +54,13 @@ export default function LiveConfiguratorV2({ carcasas = [] }) {
   const colores = useMemo(() => (producto ? getColoresProducto(producto) : []), [producto]);
   const requiereColor = colores.length > 1;
   const color = useMemo(() => colores.find((c) => c.id === colorId), [colores, colorId]);
+
+  // Si el picker tiene color seleccionado, sincronízalo al colorId
+  useEffect(() => {
+    if (pickerSelection?.colorId) {
+      setColorId(pickerSelection.colorId);
+    }
+  }, [pickerSelection]);
 
   // Al cambiar de producto/modelo: restaura el borrador guardado de ESE producto
   // si existe (auto-guardado), o resetea a estado limpio. Así la configuración
@@ -201,30 +207,40 @@ export default function LiveConfiguratorV2({ carcasas = [] }) {
 
           {/* CONTROLES */}
           <div className="space-y-5">
-            {/* Modelo */}
-            {modelos.length > 0 && (
-              <div>
-                <div className="flex items-center gap-2 mb-2.5">
+            {/* Modelo — accordion expandible */}
+            <div>
+              <button
+                onClick={() => setShowPicker((v) => !v)}
+                className="w-full flex items-center justify-between px-4 py-3 rounded-2xl transition-all hover:border-[#0F8B6C]/40"
+                style={{ background: 'white', border: '1.5px solid #D4C4B0' }}
+              >
+                <div className="flex items-center gap-2.5">
                   <Smartphone className="w-4 h-4 text-[#0F8B6C]" />
-                  <label className="text-sm font-bold text-[#2A2420]">Modelo</label>
+                  <div className="text-left">
+                    <p className="text-sm font-bold text-[#2A2420]">
+                      {producto ? producto.nombre : 'Elige tu modelo'}
+                    </p>
+                    {pickerSelection?.color && (
+                      <p className="text-[11px] text-[#A08070]">Color: {pickerSelection.color.label}</p>
+                    )}
+                  </div>
                 </div>
-                <div className="flex flex-wrap gap-2">
-                  {modelos.map((m) => (
-                    <button
-                      key={m}
-                      onClick={() => setModelo(m)}
-                      className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all ${
-                        modelo === m
-                          ? 'bg-[#0F8B6C] text-white shadow-sm'
-                          : 'bg-white border border-[#EBE3D6] text-[#4B4F54] hover:border-[#0F8B6C]/40'
-                      }`}
-                    >
-                      {m}
-                    </button>
-                  ))}
+                <ChevronDown className={`w-4 h-4 text-[#A08070] transition-transform duration-200 ${showPicker ? 'rotate-180' : ''}`} />
+              </button>
+
+              {showPicker && (
+                <div className="mt-2">
+                  <CarcasaPickerAccordion
+                    carcasas={carcasas}
+                    selected={pickerSelection}
+                    onSelect={(sel) => {
+                      setPickerSelection(sel);
+                      setShowPicker(false);
+                    }}
+                  />
                 </div>
-              </div>
-            )}
+              )}
+            </div>
 
             {/* Color */}
             {colores.length > 0 && (
