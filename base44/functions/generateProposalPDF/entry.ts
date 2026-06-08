@@ -209,17 +209,25 @@ Deno.serve(async (req) => {
     if (p.giro) { fY += 4.5; T(`Giro: ${p.giro}`.substring(0, 46), cpadX, fY, { size: 7.5, color: STONE }); }
     if (p.direccion_facturacion) { fY += 4.5; T(`Facturacion: ${p.direccion_facturacion}`.substring(0, 46), cpadX, fY, { size: 7.5, color: STONE }); }
 
-    // Logo cliente centrado (si existe)
+    // Logo cliente destacado (si existe)
     if (clientLogo) {
       try {
-        const cl = 18, clx = pw / 2 + 8, cly = y + 8;
+        const cl = 24, clx = pw / 2, cly = y + 5;
+        // Fondo con sombra
+        doc.setFillColor(0, 0, 0);
+        doc.setGlobalAlpha(0.08);
+        doc.roundedRect(clx - cl/2 + 0.5, cly + 0.5, cl, cl, 3, 3, 'F');
+        doc.setGlobalAlpha(1);
+        // Card blanca
         doc.setFillColor(...WHITE);
-        doc.roundedRect(clx, cly, cl, cl, 2, 2, 'F');
-        doc.setDrawColor(...SAND2);
-        doc.setLineWidth(0.3);
-        doc.roundedRect(clx, cly, cl, cl, 2, 2, 'S');
-        doc.addImage(`data:image/${clientLogo.fmt.toLowerCase()};base64,${clientLogo.b64}`, clientLogo.fmt, clx + 1.5, cly + 1.5, cl - 3, cl - 3);
-        T('SU MARCA', clx + cl / 2, cly + cl + 4, { size: 5.5, font: 'bold', color: STONE2, align: 'center' });
+        doc.roundedRect(clx - cl/2, cly, cl, cl, 3, 3, 'F');
+        // Borde teal
+        doc.setDrawColor(...TEAL);
+        doc.setLineWidth(1.2);
+        doc.roundedRect(clx - cl/2, cly, cl, cl, 3, 3, 'S');
+        // Imagen
+        doc.addImage(`data:image/${clientLogo.fmt.toLowerCase()};base64,${clientLogo.b64}`, clientLogo.fmt, clx - cl/2 + 2, cly + 2, cl - 4, cl - 4);
+        T('LOGO CLIENTE', clx, cly + cl + 5, { size: 6, font: 'bold', color: TEAL, align: 'center' });
       } catch { /* sin logo */ }
     }
 
@@ -326,39 +334,50 @@ Deno.serve(async (req) => {
     y += 12;
 
     items.forEach((it, i) => {
-      const rowH = 18;
+      const rowH = 20;
       if (y - 4 + rowH > ph - 38) { doc.addPage(); y = 20; }
 
-      // zebra menta suave
+      // Fondo alternado: blanco / menta suave
       if (i % 2 === 0) {
         doc.setFillColor(...MINT);
         doc.roundedRect(MX, y - 4, CW, rowH, 1.5, 1.5, 'F');
+      } else {
+        doc.setFillColor(...WHITE);
+        doc.roundedRect(MX, y - 4, CW, rowH, 1.5, 1.5, 'F');
       }
 
-      // Thumbnail
-      const imgX = MX + 3, imgY = y - 2, imgS = 14;
+      // Línea divisoria sutil
+      doc.setDrawColor(...SAND2);
+      doc.setLineWidth(0.2);
+      doc.line(MX, y + rowH - 4, RX, y + rowH - 4);
+
+      // Thumbnail premium
+      const imgX = MX + 3, imgY = y - 2, imgS = 16;
       doc.setFillColor(...SAND);
-      doc.roundedRect(imgX, imgY, imgS, imgS, 2, 2, 'F');
+      doc.roundedRect(imgX, imgY, imgS, imgS, 2.5, 2.5, 'F');
+      doc.setDrawColor(...SAND2);
+      doc.setLineWidth(0.4);
+      doc.roundedRect(imgX, imgY, imgS, imgS, 2.5, 2.5, 'S');
       const img = itemImages[i];
       if (img) {
-        try { doc.addImage(`data:image/${img.fmt.toLowerCase()};base64,${img.b64}`, img.fmt, imgX + 0.8, imgY + 0.8, imgS - 1.6, imgS - 1.6); } catch { /* */ }
+        try { doc.addImage(`data:image/${img.fmt.toLowerCase()};base64,${img.b64}`, img.fmt, imgX + 1, imgY + 1, imgS - 2, imgS - 2); } catch { /* */ }
       }
 
-      const tY = y + 3.5;
+      const tY = y + 4;
       // Nombre + meta
-      T(safeTxt(it.nombre || it.name || it.producto || '-').substring(0, 32), COL_PROD, tY - 1, { size: 9.5, font: 'bold', color: INK });
+      T(safeTxt(it.nombre || it.name || it.producto || '-').substring(0, 32), COL_PROD, tY - 1.5, { size: 10, font: 'bold', color: INK });
       const meta = [it.sku ? `SKU ${it.sku}` : '', it.categoria || '', it.tier ? `Tramo ${it.tier}` : ''].filter(Boolean).join('  -  ');
-      if (meta) T(meta.substring(0, 48), COL_PROD, tY + 3.5, { size: 6.5, color: STONE2 });
-      if (it.personalizacion) T('+ Grabado laser UV incluido', COL_PROD, tY + 7, { size: 6.5, font: 'bold', color: TEAL });
+      if (meta) T(meta.substring(0, 48), COL_PROD, tY + 3, { size: 6.8, color: STONE2 });
+      if (it.personalizacion) T('▸ Grabado laser UV incluido', COL_PROD, tY + 6.5, { size: 6.8, font: 'bold', color: TEAL });
 
       // Cant (centrado)
-      T(`${it.cantidad || it.qty || 0}`, COL_CANT, tY, { size: 9.5, color: STONE, align: 'center' });
+      T(`${it.cantidad || it.qty || 0}`, COL_CANT, tY, { size: 10, font: 'bold', color: STONE, align: 'center' });
       // Unitario (derecha)
-      T(fmtCLP(it.precio_unitario), COL_UNIT, tY, { size: 9.5, color: INK, align: 'right' });
+      T(fmtCLP(it.precio_unitario), COL_UNIT, tY, { size: 10, font: 'bold', color: INK, align: 'right' });
       // Descuento (centrado)
-      T(it.descuento_pct ? `-${it.descuento_pct}%` : '-', COL_DESC, tY, { size: 8.5, font: 'bold', color: it.descuento_pct ? TEAL : STONE2, align: 'center' });
-      // Total (derecha)
-      T(fmtCLP(it.line_total || (it.precio_unitario * (it.cantidad || it.qty))), COL_TOT, tY, { size: 9.5, font: 'bold', color: INK, align: 'right' });
+      T(it.descuento_pct ? `-${it.descuento_pct}%` : '-', COL_DESC, tY, { size: 9, font: 'bold', color: it.descuento_pct ? TEAL : STONE2, align: 'center' });
+      // Total (derecha) — resaltado
+      T(fmtCLP(it.line_total || (it.precio_unitario * (it.cantidad || it.qty))), COL_TOT, tY, { size: 10, font: 'bold', color: FOREST, align: 'right' });
 
       y += rowH;
     });
