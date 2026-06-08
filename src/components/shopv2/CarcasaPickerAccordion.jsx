@@ -44,109 +44,95 @@ function agruparPorModelo(carcasas) {
   return result;
 }
 
-// Fila de un producto dentro del accordion (variante + colores)
+// Fila compacta de un producto dentro del accordion (variante + colores)
 function ProductRow({ producto, selected, onSelect }) {
   const colores = useMemo(() => getColoresProducto(producto), [producto]);
   const [colorId, setColorId] = useState(colores[0]?.id || null);
   const color = colores.find((c) => c.id === colorId);
-  const img = color
-    ? getProductImageForColor(producto, color)
-    : getProductImage(producto);
 
-  const isSelected = selected?.productoId === producto.id && selected?.colorId === colorId;
+  const isSelected = selected?.productoId === producto.id;
 
   return (
     <div
       onClick={() => onSelect({ productoId: producto.id, producto, colorId, color })}
-      className={`flex items-center gap-3 p-3 rounded-2xl cursor-pointer transition-all group ${
+      className={`flex items-center gap-2.5 px-3 py-2 rounded-xl cursor-pointer transition-all ${
         isSelected
-          ? 'bg-[#0F8B6C]/8 border-2 border-[#0F8B6C]'
-          : 'bg-white border-2 border-transparent hover:border-[#D4C4B0] hover:shadow-sm'
+          ? 'border border-[#0F8B6C]'
+          : 'border border-transparent hover:border-[#D4C4B0] hover:bg-[#F8F3ED]/60'
       }`}
-      style={{ background: isSelected ? 'rgba(15,139,108,.07)' : 'white' }}
+      style={{ background: isSelected ? 'rgba(15,139,108,.06)' : 'transparent' }}
     >
-      {/* Thumb */}
-      <div className="w-14 h-14 rounded-xl overflow-hidden flex-shrink-0"
-        style={{ background: '#F8F3ED', border: '1px solid #EBE3D6' }}>
-        <img src={img} alt={producto.nombre}
-          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-          onError={(e) => { e.target.style.opacity = '0.3'; }} />
-      </div>
-
       {/* Info */}
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-bold text-[#2A2420] truncate">{producto.nombre}</p>
-        <p className="text-[11px] text-[#A08070] mt-0.5">
-          {producto.precio_b2c ? `$${producto.precio_b2c.toLocaleString('es-CL')}` : 'Precio a consultar'}
-          {producto.material && <span className="ml-1.5 text-[#8BAD8A]">· {producto.material.replace('100% Reciclado', '♻️').replace('Fibra de Trigo (Compostable)', '🌿')}</span>}
-        </p>
+        <p className="text-xs font-semibold text-[#2A2420] truncate leading-tight">{producto.nombre}</p>
 
-        {/* Swatches de color */}
+        {/* Swatches de color inline */}
         {colores.length > 0 && (
-          <div className="flex items-center gap-1 mt-1.5 flex-wrap" onClick={(e) => e.stopPropagation()}>
+          <div className="flex items-center gap-1 mt-1" onClick={(e) => e.stopPropagation()}>
             {colores.map((c) => (
               <button
                 key={c.id}
                 title={c.label}
                 onClick={() => setColorId(c.id)}
-                className="w-5 h-5 rounded-full transition-transform hover:scale-110"
+                className="w-4 h-4 rounded-full flex-shrink-0"
                 style={{
                   background: getColorHex(c.label),
-                  border: colorId === c.id ? '2px solid #0F8B6C' : '2px solid rgba(0,0,0,.08)',
-                  transform: colorId === c.id ? 'scale(1.15)' : undefined,
-                  boxShadow: colorId === c.id ? '0 0 0 2px white, 0 0 0 3px #0F8B6C' : 'none',
+                  border: colorId === c.id ? '2px solid #0F8B6C' : '1.5px solid rgba(0,0,0,.10)',
+                  boxShadow: colorId === c.id ? '0 0 0 1.5px white, 0 0 0 2.5px #0F8B6C' : 'none',
                 }}
               />
             ))}
-            {color && <span className="text-[10px] text-[#A08070] ml-1">{color.label}</span>}
+            {color && <span className="text-[9px] text-[#A08070] ml-0.5">{color.label}</span>}
           </div>
         )}
       </div>
 
-      {/* Check / selector */}
-      <div className={`w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 transition-all ${
-        isSelected ? 'bg-[#0F8B6C]' : 'bg-[#F8F3ED] border border-[#D4C4B0]'
-      }`}>
-        {isSelected && <Check className="w-3.5 h-3.5 text-white" />}
+      {/* Precio + check */}
+      <div className="flex items-center gap-2 flex-shrink-0">
+        {producto.precio_b2c && (
+          <span className="text-[10px] font-bold text-[#0F8B6C]">
+            ${producto.precio_b2c.toLocaleString('es-CL')}
+          </span>
+        )}
+        <div className={`w-5 h-5 rounded-full flex items-center justify-center transition-all ${
+          isSelected ? 'bg-[#0F8B6C]' : 'border border-[#D4C4B0]'
+        }`}>
+          {isSelected && <Check className="w-3 h-3 text-white" />}
+        </div>
       </div>
     </div>
   );
 }
 
-// Grupo expandible por modelo
+// Grupo compacto expandible por modelo
 function ModeloGroup({ modelo, productos, selected, onSelect, defaultOpen }) {
-  const [open, setOpen] = useState(defaultOpen);
-  const selectedCount = productos.filter((p) => selected?.productoId === p.id).length;
+  const hasSelected = productos.some((p) => selected?.productoId === p.id);
+  const [open, setOpen] = useState(defaultOpen || hasSelected);
 
   return (
-    <div className="rounded-2xl overflow-hidden" style={{ border: '1.5px solid #EBE3D6', background: '#FDFAF7' }}>
-      {/* Header del grupo */}
+    <div className="rounded-xl overflow-hidden" style={{ border: '1px solid #EBE3D6' }}>
+      {/* Header compacto */}
       <button
         onClick={() => setOpen((v) => !v)}
-        className="w-full flex items-center justify-between px-4 py-3.5 transition-colors hover:bg-[#F5EFE8]"
+        className="w-full flex items-center justify-between px-3 py-2.5 transition-colors hover:bg-[#F5EFE8]"
+        style={{ background: open ? '#FDFAF7' : 'white' }}
       >
-        <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-xl bg-[#0F8B6C]/10 flex items-center justify-center">
-            <Smartphone className="w-4 h-4 text-[#0F8B6C]" />
-          </div>
-          <div className="text-left">
-            <p className="text-sm font-bold text-[#2A2420]">{modelo}</p>
-            <p className="text-[10px] text-[#A08070]">{productos.length} {productos.length === 1 ? 'variante' : 'variantes'}</p>
-          </div>
-        </div>
         <div className="flex items-center gap-2">
-          {selectedCount > 0 && (
-            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full text-white" style={{ background: '#0F8B6C' }}>
-              ✓ Elegida
-            </span>
+          <Smartphone className="w-3.5 h-3.5 text-[#0F8B6C] flex-shrink-0" />
+          <p className="text-xs font-bold text-[#2A2420]">{modelo}</p>
+          <span className="text-[10px] text-[#A08070] bg-[#F0EBE3] px-1.5 py-0.5 rounded-full">
+            {productos.length}
+          </span>
+          {hasSelected && (
+            <span className="text-[10px] font-bold text-[#0F8B6C]">✓</span>
           )}
-          <ChevronDown className={`w-4 h-4 text-[#A08070] transition-transform duration-300 ${open ? 'rotate-180' : ''}`} />
         </div>
+        <ChevronDown className={`w-3.5 h-3.5 text-[#A08070] transition-transform duration-200 ${open ? 'rotate-180' : ''}`} />
       </button>
 
       {/* Contenido expandible */}
-      <div className={`overflow-hidden transition-all duration-300 ease-in-out ${open ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0'}`}>
-        <div className="px-3 pb-3 space-y-2">
+      <div className={`overflow-hidden transition-all duration-200 ease-in-out ${open ? 'max-h-[800px]' : 'max-h-0'}`}>
+        <div className="px-2 py-1.5 space-y-0.5" style={{ background: '#FDFAF7', borderTop: '1px solid #EBE3D6' }}>
           {productos.map((p) => (
             <ProductRow key={p.id} producto={p} selected={selected} onSelect={onSelect} />
           ))}
@@ -203,7 +189,7 @@ export default function CarcasaPickerAccordion({ carcasas = [], selected, onSele
               productos={g.productos}
               selected={selected}
               onSelect={onSelect}
-              defaultOpen={i === 0}
+              defaultOpen={false}
             />
           ))
         )}

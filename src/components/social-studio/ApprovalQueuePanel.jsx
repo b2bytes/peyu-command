@@ -5,7 +5,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
-import { Loader2, Check, X, Send, Instagram, Linkedin, Facebook, Music2, Twitter, RefreshCw, Sparkles, Clock, ExternalLink, Copy, Image as ImageIcon, Search } from 'lucide-react';
+import { Loader2, Check, X, Send, Instagram, Linkedin, Facebook, Music2, Twitter, RefreshCw, Sparkles, Clock, Image as ImageIcon, Search, Trash2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import PostDetailDrawer from './PostDetailDrawer';
 
@@ -65,6 +65,14 @@ export default function ApprovalQueuePanel({ refreshKey, onChange }) {
       if (action === 'approve')   await base44.entities.ContentPost.update(postId, { estado: 'Aprobado' });
       if (action === 'reject')    await base44.entities.ContentPost.update(postId, { estado: 'Archivado' });
       if (action === 'publish')   await base44.functions.invoke('publishContentPost', { post_id: postId });
+      if (action === 'delete') {
+        if (!window.confirm('¿Eliminar este post? Esta acción no se puede deshacer.')) {
+          setActioning(null);
+          return;
+        }
+        await base44.entities.ContentPost.delete(postId);
+        if (detailPost?.id === postId) setDetailPost(null);
+      }
       await load();
       onChange?.();
     } catch (e) {
@@ -233,6 +241,16 @@ function PostTile({ post, actioning, onAction, onOpen }) {
           {post.tipo_post && <span className="text-white/50">· {post.tipo_post}</span>}
         </div>
       </div>
+
+      {/* Botón eliminar · siempre visible en top-right al hacer hover */}
+      <button
+        onClick={(e) => { e.stopPropagation(); onAction('delete'); }}
+        disabled={actioning}
+        className="absolute top-2 right-2 z-20 w-7 h-7 rounded-full bg-black/60 backdrop-blur-sm flex items-center justify-center text-white/70 hover:text-rose-400 hover:bg-black/80 opacity-0 group-hover:opacity-100 transition-all"
+        title="Eliminar post"
+      >
+        {actioning ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
+      </button>
 
       {/* Hover overlay con acciones */}
       <div className="absolute inset-0 bg-black/50 backdrop-blur-[2px] opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2 p-3">

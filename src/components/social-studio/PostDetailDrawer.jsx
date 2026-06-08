@@ -7,7 +7,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   X, Copy, Check, Send, Loader2, ExternalLink, Hash, Target,
-  Instagram, Linkedin, Facebook, Music2, Twitter, Sparkles, Calendar, Clock, BoxSelect, FileText,
+  Instagram, Linkedin, Facebook, Music2, Twitter, Sparkles, Calendar, Clock, BoxSelect, FileText, Trash2,
 } from 'lucide-react';
 
 const ICONOS_RED = { Instagram, LinkedIn: Linkedin, Facebook, TikTok: Music2, 'Twitter/X': Twitter };
@@ -182,6 +182,17 @@ export default function PostDetailDrawer({ post, onClose, onAction, actioning })
             {copied
               ? <><Check className="w-3.5 h-3.5" style={{ color: 'var(--ld-action)' }} /> Copiado</>
               : <><Copy className="w-3.5 h-3.5" /> Copiar texto</>}
+          </Button>
+
+          <Button
+            onClick={() => onAction('delete')}
+            disabled={actioning}
+            variant="outline"
+            size="sm"
+            className="gap-1.5 border-rose-200 text-rose-600 hover:bg-rose-50 hover:border-rose-300"
+          >
+            {actioning ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
+            Eliminar
           </Button>
 
           <div className="flex-1" />
