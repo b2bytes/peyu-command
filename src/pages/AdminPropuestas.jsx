@@ -319,16 +319,16 @@ export default function AdminPropuestas() {
         <div className="text-center py-16 text-muted-foreground">Cargando pipeline...</div>
       ) : tab === 'leads' ? (
         <div className="space-y-3">
-          {leads.length === 0 ? (
-            <div className="text-center py-16 text-muted-foreground">
-              <Building2 className="w-12 h-12 mx-auto mb-3 opacity-20" />
-              <p className="font-medium">Sin leads B2B aún</p>
-              <p className="text-sm mt-1">Los leads del formulario web y WhatsApp aparecerán aquí.</p>
-            </div>
-          ) : (
-            leads.filter(l => !search || l.company_name?.toLowerCase().includes(search.toLowerCase()) || l.contact_name?.toLowerCase().includes(search.toLowerCase())).map(lead => (
-              <div key={lead.id} className="bg-white rounded-xl border border-border p-4 hover:shadow-sm transition">
-                <div className="flex items-start gap-4">
+           {leads.length === 0 ? (
+             <div className="text-center py-16 text-muted-foreground">
+               <Building2 className="w-12 h-12 mx-auto mb-3 opacity-20" />
+               <p className="font-medium">Sin leads B2B aún</p>
+               <p className="text-sm mt-1">Los leads del formulario web y WhatsApp aparecerán aquí.</p>
+             </div>
+           ) : (
+             leads.filter(l => !search || l.company_name?.toLowerCase().includes(search.toLowerCase()) || l.contact_name?.toLowerCase().includes(search.toLowerCase())).map(lead => (
+               <div key={lead.id} className="bg-white rounded-xl border border-border p-4 hover:shadow-sm transition overflow-hidden">
+                 <div className="flex flex-col lg:flex-row items-start gap-4">
                   <div className="flex-1 min-w-0">
                     {/* Header */}
                     <div className="flex flex-wrap items-center gap-2 mb-1">
@@ -384,50 +384,88 @@ export default function AdminPropuestas() {
                     )}
                   </div>
 
-                  {/* Acciones */}
-                  <div className="flex flex-col gap-2 shrink-0">
-                    {lead.phone && (
-                      <Button size="sm" variant="outline" className="gap-1.5 text-xs" onClick={() => openWhatsApp(lead)}>
-                        <MessageCircle className="w-3 h-3" /> WhatsApp
-                      </Button>
-                    )}
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="gap-1.5 text-xs border-[#006D5B] text-[#006D5B] hover:bg-green-50"
-                      onClick={() => setPropuestaModal(lead)}
-                    >
-                      <Zap className="w-3 h-3" /> Propuesta IA
-                    </Button>
-                    <Button size="sm" variant="ghost" className="gap-1.5 text-xs" onClick={() => scoreLead(lead)} disabled={updating === lead.id}>
-                      <RefreshCw className="w-3 h-3" /> Re-score
-                    </Button>
-                    {lead.logo_url && (
+                  {/* Acciones — horizontales en mobile, verticales en desktop */}
+                  <div className="w-full lg:w-auto lg:shrink-0 flex flex-col gap-2">
+                    <div className="lg:hidden flex gap-2 overflow-x-auto pb-2">
+                      {lead.phone && (
+                        <Button size="sm" variant="outline" className="gap-1 text-xs flex-shrink-0 h-9" onClick={() => openWhatsApp(lead)}>
+                          <MessageCircle className="w-3 h-3" /> WhatsApp
+                        </Button>
+                      )}
                       <Button
                         size="sm"
                         variant="outline"
-                        className="gap-1.5 text-xs"
-                        onClick={() => generarMockup(lead)}
-                        disabled={generatingMockup === lead.id}
+                        className="gap-1 text-xs flex-shrink-0 h-9 border-[#006D5B] text-[#006D5B] hover:bg-green-50"
+                        onClick={() => setPropuestaModal(lead)}
                       >
-                        {generatingMockup === lead.id ? '...' : '🎨 Mockup'}
+                        <Zap className="w-3 h-3" /> IA
                       </Button>
-                    )}
-                    {lead.logo_url && (
-                      <a href={lead.logo_url} target="_blank" rel="noopener noreferrer">
-                        <Button size="sm" variant="ghost" className="gap-1.5 text-xs w-full">
-                          <Eye className="w-3 h-3" /> Logo
+                      <Button size="sm" variant="ghost" className="gap-1 text-xs flex-shrink-0 h-9" onClick={() => scoreLead(lead)} disabled={updating === lead.id}>
+                        <RefreshCw className="w-3 h-3" /> Score
+                      </Button>
+                      {lead.logo_url && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="gap-1 text-xs flex-shrink-0 h-9"
+                          onClick={() => generarMockup(lead)}
+                          disabled={generatingMockup === lead.id}
+                        >
+                          {generatingMockup === lead.id ? '...' : '🎨'}
                         </Button>
-                      </a>
-                    )}
+                      )}
+                      {lead.logo_url && (
+                        <a href={lead.logo_url} target="_blank" rel="noopener noreferrer">
+                          <Button size="sm" variant="ghost" className="gap-1 text-xs flex-shrink-0 h-9">
+                            <Eye className="w-3 h-3" />
+                          </Button>
+                        </a>
+                      )}
+                    </div>
                     <select
                       value={lead.status}
                       onChange={e => updateLead(lead.id, { status: e.target.value })}
                       disabled={updating === lead.id}
-                      className="text-xs border border-input rounded-md px-2 py-1.5 bg-background cursor-pointer"
+                      className="text-xs border border-input rounded-md px-2 py-2 bg-background cursor-pointer h-9"
                     >
                       {LEAD_STATUS.map(s => <option key={s} value={s}>{s}</option>)}
                     </select>
+                    <div className="hidden lg:flex flex-col gap-2">
+                      {lead.phone && (
+                        <Button size="sm" variant="outline" className="gap-1.5 text-xs h-9" onClick={() => openWhatsApp(lead)}>
+                          <MessageCircle className="w-3 h-3" /> WhatsApp
+                        </Button>
+                      )}
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="gap-1.5 text-xs h-9 border-[#006D5B] text-[#006D5B] hover:bg-green-50"
+                        onClick={() => setPropuestaModal(lead)}
+                      >
+                        <Zap className="w-3 h-3" /> Propuesta IA
+                      </Button>
+                      <Button size="sm" variant="ghost" className="gap-1.5 text-xs h-9" onClick={() => scoreLead(lead)} disabled={updating === lead.id}>
+                        <RefreshCw className="w-3 h-3" /> Re-score
+                      </Button>
+                      {lead.logo_url && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="gap-1.5 text-xs h-9"
+                          onClick={() => generarMockup(lead)}
+                          disabled={generatingMockup === lead.id}
+                        >
+                          {generatingMockup === lead.id ? '...' : '🎨 Mockup'}
+                        </Button>
+                      )}
+                      {lead.logo_url && (
+                        <a href={lead.logo_url} target="_blank" rel="noopener noreferrer">
+                          <Button size="sm" variant="ghost" className="gap-1.5 text-xs h-9 w-full">
+                            <Eye className="w-3 h-3" /> Logo
+                          </Button>
+                        </a>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -444,9 +482,9 @@ export default function AdminPropuestas() {
             </div>
           ) : (
             proposals.map(prop => (
-              <div key={prop.id} className="bg-white rounded-xl border border-border p-4 hover:shadow-sm transition">
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex-1">
+              <div key={prop.id} className="bg-white rounded-xl border border-border p-4 hover:shadow-sm transition overflow-hidden">
+                <div className="flex flex-col lg:flex-row items-start justify-between gap-4">
+                  <div className="flex-1 min-w-0">
                     <div className="flex flex-wrap items-center gap-2 mb-1">
                       {prop.numero && <span className="text-xs text-muted-foreground font-mono">#{prop.numero}</span>}
                       <span className="font-semibold">{prop.empresa}</span>
@@ -484,31 +522,47 @@ export default function AdminPropuestas() {
                       </div>
                     )}
                   </div>
-                  <div className="flex flex-col gap-2 shrink-0">
-                    <a href={`/b2b/propuesta?id=${prop.id}`} target="_blank" rel="noopener noreferrer">
-                      <Button size="sm" variant="outline" className="gap-1.5 text-xs w-full">
-                        <ExternalLink className="w-3 h-3" /> Ver propuesta
-                      </Button>
-                    </a>
-                    {prop.pdf_url && (
-                      <a href={prop.pdf_url} target="_blank" rel="noopener noreferrer">
-                        <Button size="sm" variant="outline" className="gap-1.5 text-xs">
-                          <FileText className="w-3 h-3" /> PDF
+                  <div className="w-full lg:w-auto lg:shrink-0 flex flex-col gap-2">
+                    <div className="lg:hidden flex gap-2 overflow-x-auto pb-2">
+                      <a href={`/b2b/propuesta?id=${prop.id}`} target="_blank" rel="noopener noreferrer" className="flex-shrink-0">
+                        <Button size="sm" variant="outline" className="gap-1 text-xs h-9">
+                          <ExternalLink className="w-3 h-3" /> Ver
                         </Button>
                       </a>
-                    )}
+                      {prop.pdf_url && (
+                        <a href={prop.pdf_url} target="_blank" rel="noopener noreferrer" className="flex-shrink-0">
+                          <Button size="sm" variant="outline" className="gap-1 text-xs h-9">
+                            <FileText className="w-3 h-3" /> PDF
+                          </Button>
+                        </a>
+                      )}
+                    </div>
                     <select
                       value={prop.status}
                       onChange={async e => {
                         await base44.entities.CorporateProposal.update(prop.id, { status: e.target.value });
                         setProposals(prev => prev.map(p => p.id === prop.id ? { ...p, status: e.target.value } : p));
                       }}
-                      className="text-xs border border-input rounded-md px-2 py-1.5 bg-background cursor-pointer"
+                      className="text-xs border border-input rounded-md px-2 py-2 bg-background cursor-pointer h-9"
                     >
                       {['Borrador', 'Enviada', 'Aceptada', 'Rechazada', 'Vencida'].map(s => (
                         <option key={s} value={s}>{s}</option>
                       ))}
                     </select>
+                    <div className="hidden lg:flex flex-col gap-2">
+                      <a href={`/b2b/propuesta?id=${prop.id}`} target="_blank" rel="noopener noreferrer">
+                        <Button size="sm" variant="outline" className="gap-1.5 text-xs w-full h-9">
+                          <ExternalLink className="w-3 h-3" /> Ver propuesta
+                        </Button>
+                      </a>
+                      {prop.pdf_url && (
+                        <a href={prop.pdf_url} target="_blank" rel="noopener noreferrer">
+                          <Button size="sm" variant="outline" className="gap-1.5 text-xs h-9 w-full">
+                            <FileText className="w-3 h-3" /> PDF
+                          </Button>
+                        </a>
+                      )}
+                    </div>
                   </div>
                   </div>
                   {/* BlueExpress Panel & Etiqueta */}
