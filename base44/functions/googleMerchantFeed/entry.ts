@@ -14,7 +14,7 @@
 //
 // Hecho para que PEYU aparezca en Google Shopping (Free listings + Ads).
 // ============================================================================
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 
 const SITE_URL = 'https://peyuchile.cl';
 
@@ -81,21 +81,28 @@ const isGmcValidImage = (url) => {
 // Prioriza CDN Base44 con extensión válida (.jpg/.png/.gif). Si nada cumple,
 // retorna null y el producto queda fuera del feed (mejor que enviar basura).
 const pickBestImage = (p) => {
-  const galeria = Array.isArray(p.galeria_urls) ? p.galeria_urls : [];
-  // 1. Galería en CDN Base44 con extensión válida
-  const base44Valid = galeria.find(u => u && u.includes('media.base44.com') && isGmcValidImage(u));
-  if (base44Valid) return base44Valid;
-  // 2. Imagen promo (siempre Base44 CDN) con extensión válida
-  if (p.imagen_promo_url && isGmcValidImage(p.imagen_promo_url)) return p.imagen_promo_url;
-  // 3. Galería en cualquier host con extensión válida (Jetpack limpio)
-  for (const raw of galeria) {
-    const cleaned = cleanImageUrl(raw);
-    if (cleaned && isGmcValidImage(cleaned)) return cleaned;
-  }
-  // 4. imagen_url legacy (WordPress) — solo si tiene extensión válida tras limpiar
-  const fallback = cleanImageUrl(p.imagen_url);
-  if (fallback && isGmcValidImage(fallback)) return fallback;
-  return null;
+   const galeria = Array.isArray(p.galeria_urls) ? p.galeria_urls.filter(Boolean) : [];
+
+   // 1. Galería en CDN Base44 con extensión válida
+   const base44Valid = galeria.find(u => u && u.includes('media.base44.com') && isGmcValidImage(u));
+   if (base44Valid) return base44Valid;
+
+   // 2. Imagen promo (siempre Base44 CDN) con extensión válida
+   if (p.imagen_promo_url && isGmcValidImage(p.imagen_promo_url)) return p.imagen_promo_url;
+
+   // 3. Imagen principal: imagen_url legacy (WordPress) — solo si tiene extensión válida tras limpiar
+   if (p.imagen_url) {
+     const cleaned = cleanImageUrl(p.imagen_url);
+     if (cleaned && isGmcValidImage(cleaned)) return cleaned;
+   }
+
+   // 4. Galería en cualquier host con extensión válida (Jetpack limpio)
+   for (const raw of galeria) {
+     const cleaned = cleanImageUrl(raw);
+     if (cleaned && isGmcValidImage(cleaned)) return cleaned;
+   }
+
+   return null;
 };
 
 function buildItem(p) {
