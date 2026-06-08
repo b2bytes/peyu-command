@@ -6,8 +6,6 @@ import MobileNavBarV2 from '@/components/shopv2/MobileNavBarV2';
 import ShopV2Header from '@/components/shopv2/ShopV2Header';
 import HeroBoldV2 from '@/components/shopv2/HeroBoldV2';
 import TrustSocialBarV2 from '@/components/shopv2/TrustSocialBarV2';
-import LifestyleCarouselV2 from '@/components/shopv2/LifestyleCarouselV2';
-import FeaturedCarouselV3 from '@/components/shopv2/FeaturedCarouselV3';
 import ImpactStoryV2 from '@/components/shopv2/ImpactStoryV2';
 import ProductCardV2 from '@/components/shopv2/ProductCardV2';
 import { CATEGORIAS_V2 } from '@/lib/shop-v2-config';
@@ -54,13 +52,7 @@ export default function TiendaNueva() {
       {/* 1b · TRUST + SOCIAL PROOF */}
       <TrustSocialBarV2 />
 
-      {/* 1c · CARRUSEL DE ESTILO DE VIDA */}
-      <LifestyleCarouselV2 />
-
-      {/* 2 · CARRUSEL DESTACADO V3 */}
-      {destacados.length > 0 && <FeaturedCarouselV3 productos={destacados} onPersonaliza={scrollToConfig} />}
-
-      {/* 3 · STORYTELLING DE IMPACTO */}
+      {/* 2 · STORYTELLING DE IMPACTO */}
       <ImpactStoryV2 />
 
       {/* CATEGORÍAS MEJORADAS 2027 */}
