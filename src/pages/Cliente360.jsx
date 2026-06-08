@@ -4,6 +4,7 @@ import { base44 } from '@/api/base44Client';
 import { ArrowLeft, Mail, Phone, MapPin, Package, TrendingUp, Award, Clock, Sparkles, DollarSign, Loader2 } from 'lucide-react';
 import PersonalizedProductsSummary from '@/components/cliente/PersonalizedProductsSummary';
 import RecentQuotesSummary from '@/components/cliente/RecentQuotesSummary';
+import B2BProposalHistory from '@/components/cliente/B2BProposalHistory';
 
 export default function Cliente360() {
   const [params] = useSearchParams();
@@ -145,6 +146,11 @@ export default function Cliente360() {
               ))}
             </div>
           )}
+        </div>
+
+        {/* Historial B2B propuestas */}
+        <div className="mt-5">
+          <B2BProposalHistory empresa={cliente.empresa || cliente.contacto} />
         </div>
 
         {/* Resumen: productos personalizados (con archivos) + cotizaciones */}
