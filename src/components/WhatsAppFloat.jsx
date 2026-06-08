@@ -10,7 +10,7 @@ export default function WhatsAppFloat() {
   // 🎯 Rutas públicas con AsistenteChat: el dock unificado (FloatingActionDock)
   // ya integra WhatsApp + Peyu IA en una sola pieza. Ocultamos este float
   // standalone para evitar el solapamiento de dos botones flotantes.
-  const isPublicWithDock = (
+  const isPublicRoute = (
     pathname.startsWith('/shop') ||
     pathname.startsWith('/producto') ||
     pathname.startsWith('/b2b') ||
@@ -18,9 +18,16 @@ export default function WhatsAppFloat() {
     pathname.startsWith('/nosotros') ||
     pathname.startsWith('/soporte') ||
     pathname.startsWith('/seguimiento') ||
-    pathname.startsWith('/personalizar')
+    pathname.startsWith('/personalizar') ||
+    pathname.startsWith('/blog') ||
+    pathname.startsWith('/faq') ||
+    pathname.startsWith('/contacto') ||
+    pathname.startsWith('/envios') ||
+    pathname.startsWith('/cambios') ||
+    pathname.startsWith('/privacidad') ||
+    pathname.startsWith('/terminos')
   );
-  if (isPublicWithDock) return null;
+  if (isPublicRoute) return null;
 
   return (
     <a
