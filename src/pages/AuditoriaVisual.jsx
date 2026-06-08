@@ -1,8 +1,4 @@
-// ============================================================================
-// AuditoriaVisual — Página admin que detecta productos con imágenes de baja
-// calidad, rotas o desactualizadas, y permite actuar rápido (análisis IA,
-// abrir Galería Maestra para reemplazar desde Drive).
-// ============================================================================
+// AuditoriaVisual — Detección de imágenes de baja calidad, rotas o desactualizadas.
 import { useState, useMemo, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import AuditFilters from '@/components/auditoria-visual/AuditFilters';
@@ -19,9 +15,7 @@ export default function AuditoriaVisual() {
   const run = async () => {
     setLoading(true);
     try {
-      const res = await base44.functions.invoke('auditVisualQuality', {
-        stale_months: staleMonths,
-      });
+      const res = await base44.functions.invoke('auditVisualQuality', { stale_months: staleMonths });
       setData(res?.data || { stats: null, results: [] });
       setHasRun(true);
     } catch (e) {
@@ -31,19 +25,13 @@ export default function AuditoriaVisual() {
     setLoading(false);
   };
 
-  // Auto-run la primera vez
-  useEffect(() => {
-    run();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  useEffect(() => { run(); }, []); // eslint-disable-line
 
   const results = data.results || [];
 
   const filtered = useMemo(() => {
     if (filter === 'all') return results;
-    if (['alta', 'media', 'baja'].includes(filter)) {
-      return results.filter(r => r.severidad === filter);
-    }
+    if (['alta', 'media', 'baja'].includes(filter)) return results.filter(r => r.severidad === filter);
     return results.filter(r => r.issues?.includes(filter));
   }, [results, filter]);
 
@@ -61,17 +49,16 @@ export default function AuditoriaVisual() {
   const stats = data.stats;
 
   return (
-    <div className="h-full flex flex-col p-4 lg:p-6 gap-4 min-h-0">
+    <div className="h-full flex flex-col p-4 lg:p-6 gap-4 min-h-0 bg-gray-50">
       {/* Header */}
       <div className="flex items-start justify-between flex-wrap gap-3 flex-shrink-0">
         <div>
-          <h1 className="text-xl lg:text-2xl font-poppins font-bold text-white flex items-center gap-2">
-            <Eye className="w-5 h-5 lg:w-6 lg:h-6 text-cyan-400" />
+          <h1 className="text-xl lg:text-2xl font-poppins font-bold text-gray-900 flex items-center gap-2">
+            <Eye className="w-5 h-5 lg:w-6 lg:h-6 text-cyan-600" />
             Auditoría Visual
           </h1>
-          <p className="text-white/60 text-xs lg:text-sm mt-1">
+          <p className="text-gray-500 text-xs lg:text-sm mt-1">
             Detección automática de imágenes rotas, de baja resolución o desactualizadas.
-            Compará con IA y reemplazá desde Drive en un click.
           </p>
         </div>
       </div>
@@ -80,9 +67,9 @@ export default function AuditoriaVisual() {
       {stats && (
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 flex-shrink-0">
           <Kpi label="Productos auditados" value={stats.total_productos} />
-          <Kpi label="Con problemas" value={stats.con_problemas} accent="text-amber-300" />
-          <Kpi label="Críticos" value={stats.alta} accent="text-rose-300" />
-          <Kpi label="Baja resolución" value={stats.baja_resolucion} accent="text-sky-300" />
+          <Kpi label="Con problemas" value={stats.con_problemas} accent="amber" />
+          <Kpi label="Críticos" value={stats.alta} accent="red" />
+          <Kpi label="Baja resolución" value={stats.baja_resolucion} accent="blue" />
         </div>
       )}
 
@@ -100,36 +87,44 @@ export default function AuditoriaVisual() {
       </div>
 
       {/* Lista */}
-      <div className="flex-1 overflow-y-auto peyu-scrollbar-light min-h-0 space-y-2">
+      <div className="flex-1 overflow-y-auto peyu-scrollbar min-h-0 space-y-2">
         {loading && !hasRun ? (
-          <div className="text-center py-16 text-white/60">
+          <div className="text-center py-16 text-gray-400">
             <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2" />
             Inspeccionando todas las imágenes del catálogo…
           </div>
         ) : filtered.length === 0 ? (
-          <div className="text-center py-16 text-white/50">
+          <div className="text-center py-16 text-gray-400">
             <ImageIcon className="w-12 h-12 mx-auto mb-3 opacity-30" />
             <p className="text-sm">
-              {hasRun
-                ? '¡Sin problemas con este filtro! Tu catálogo está limpio. 🎉'
-                : 'Aún no se ha corrido la auditoría.'}
+              {hasRun ? '¡Sin problemas con este filtro! Tu catálogo está limpio. 🎉' : 'Aún no se ha corrido la auditoría.'}
             </p>
           </div>
         ) : (
-          filtered.map((row) => (
-            <AuditRow key={row.producto_id} row={row} />
-          ))
+          filtered.map(row => <AuditRow key={row.producto_id} row={row} />)
         )}
       </div>
     </div>
   );
 }
 
-function Kpi({ label, value, accent = 'text-white' }) {
+function Kpi({ label, value, accent = 'default' }) {
+  const styles = {
+    default: 'bg-white border-gray-200 text-gray-900',
+    amber: 'bg-amber-50 border-amber-200 text-amber-800',
+    red: 'bg-red-50 border-red-200 text-red-800',
+    blue: 'bg-blue-50 border-blue-200 text-blue-800',
+  };
+  const labelStyle = {
+    default: 'text-gray-500',
+    amber: 'text-amber-600',
+    red: 'text-red-600',
+    blue: 'text-blue-600',
+  };
   return (
-    <div className="bg-white/5 border border-white/10 rounded-xl px-3 py-2.5">
-      <p className="text-[11px] text-white/55">{label}</p>
-      <p className={`text-xl font-poppins font-bold ${accent}`}>{value ?? '—'}</p>
+    <div className={`${styles[accent]} border rounded-xl px-3 py-2.5`}>
+      <p className={`text-[11px] font-medium ${labelStyle[accent]}`}>{label}</p>
+      <p className="text-xl font-poppins font-bold mt-0.5">{value ?? '—'}</p>
     </div>
   );
 }
