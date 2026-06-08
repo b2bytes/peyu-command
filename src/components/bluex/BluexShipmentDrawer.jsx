@@ -75,8 +75,8 @@ export default function BluexShipmentDrawer({ envio: envioInicial, onClose, onUp
       window.open('https://ecommerce.blue.cl/', '_blank');
       return;
     }
-    const w = window.open(url, '_blank');
-    setTimeout(() => w?.print?.(), 800);
+    // Abrir en nueva pestaña — el usuario imprime con Ctrl+P desde ahí (evita cross-origin block)
+    window.open(url, '_blank');
   };
 
   const anular = async () => {
