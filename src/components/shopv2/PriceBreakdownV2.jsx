@@ -14,25 +14,24 @@ export default function PriceBreakdownV2({
   const iva = total - neto;
 
   return (
-    <div className="bg-white rounded-2xl p-4 space-y-2" style={{ border: '1.5px solid #D4C4B0' }}>
+    <div className="bg-white rounded-xl sm:rounded-2xl p-3 sm:p-4 space-y-2" style={{ border: '1.5px solid #D4C4B0' }}>
       {/* Resumen de lo que estás comprando (producto · color · cantidad) */}
       {productoNombre && (
         <div className="pb-2 mb-1 border-b border-[#EBE3D6]">
-          <p className="text-sm font-bold text-[#2A2420] leading-tight">{productoNombre}</p>
-          <p className="text-[11px] text-[#A78B6F] mt-0.5">
-            {colorLabel ? `Color: ${colorLabel} · ` : ''}{cantidad} {cantidad === 1 ? 'unidad' : 'unidades'}
-            {tipoLabel ? ` · ${tipoLabel}` : ''}
+          <p className="text-xs sm:text-sm font-bold text-[#2A2420] leading-tight line-clamp-2">{productoNombre}</p>
+          <p className="text-[10px] sm:text-[11px] text-[#A78B6F] mt-0.5">
+            {colorLabel ? `${colorLabel} · ` : ''}{cantidad}u{tipoLabel ? ` · ${tipoLabel}` : ''}
           </p>
         </div>
       )}
-      <div className="flex justify-between text-sm" style={{ color: '#7A6050' }}>
-        <span>{fmtCLP(precioUnit)} × {cantidad}</span>
-        <span className="font-semibold">{fmtCLP(subtotal)}</span>
+      <div className="flex justify-between text-xs sm:text-sm gap-2" style={{ color: '#7A6050' }}>
+        <span className="truncate">{fmtCLP(precioUnit)}×{cantidad}</span>
+        <span className="font-semibold flex-shrink-0">{fmtCLP(subtotal)}</span>
       </div>
       {tipoLabel && (
-        <div className="flex justify-between text-sm" style={{ color: '#7A6050' }}>
-          <span className="truncate pr-2">
-            {tipoLabel}{!gratis && feeUnit > 0 ? ` · ${fmtCLP(feeUnit)} × ${cantidad}` : ''}
+        <div className="flex justify-between text-xs sm:text-sm gap-2" style={{ color: '#7A6050' }}>
+          <span className="truncate min-w-0">
+            {tipoLabel}{!gratis && feeUnit > 0 ? ` ${fmtCLP(feeUnit)}` : ''}
           </span>
           <span className="font-semibold flex-shrink-0" style={{ color: gratis ? '#8BAD8A' : undefined }}>
             {gratis ? 'GRATIS' : `+${fmtCLP(feeTotal)}`}
@@ -40,24 +39,24 @@ export default function PriceBreakdownV2({
         </div>
       )}
       {descuentoMonto > 0 && (
-        <div className="flex justify-between text-sm font-bold rounded-lg px-2 py-1" style={{ color: '#8BAD8A', background: 'rgba(139,173,138,.1)' }}>
-          <span>Descuento {cantidad}u · −{descuentoPct}%</span>
-          <span>−{fmtCLP(descuentoMonto)}</span>
+        <div className="flex justify-between text-xs sm:text-sm font-bold rounded-lg px-2 py-1 gap-2" style={{ color: '#8BAD8A', background: 'rgba(139,173,138,.1)' }}>
+          <span className="truncate">−{descuentoPct}%</span>
+          <span className="flex-shrink-0">−{fmtCLP(descuentoMonto)}</span>
         </div>
       )}
-      <div className="pt-2 space-y-1.5" style={{ borderTop: '1px solid #EDE3D6' }}>
-        <div className="flex justify-between text-xs" style={{ color: '#A08070' }}>
-          <span>Neto</span><span>{fmtCLP(neto)}</span>
+      <div className="pt-2 space-y-1" style={{ borderTop: '1px solid #EDE3D6' }}>
+        <div className="flex justify-between text-[10px] sm:text-xs gap-2" style={{ color: '#A08070' }}>
+          <span>Neto</span><span className="flex-shrink-0">{fmtCLP(neto)}</span>
         </div>
-        <div className="flex justify-between text-xs" style={{ color: '#A08070' }}>
-          <span>IVA 19%</span><span>{fmtCLP(iva)}</span>
+        <div className="flex justify-between text-[10px] sm:text-xs gap-2" style={{ color: '#A08070' }}>
+          <span>IVA 19%</span><span className="flex-shrink-0">{fmtCLP(iva)}</span>
         </div>
-        <div className="flex justify-between pt-1.5" style={{ borderTop: '1px solid #EDE3D6' }}>
+        <div className="flex justify-between pt-1.5 gap-2" style={{ borderTop: '1px solid #EDE3D6' }}>
           <span className="font-bold" style={{ color: '#2C1810' }}>Total</span>
-          <span className="font-poppins font-bold text-lg" style={{ color: '#C0785C' }}>{fmtCLP(total)}</span>
+          <span className="font-poppins font-bold text-base sm:text-lg flex-shrink-0" style={{ color: '#C0785C' }}>{fmtCLP(total)}</span>
         </div>
       </div>
-      <p className="text-[10px]" style={{ color: '#A08070' }}>IVA incluido · envío se calcula al pagar</p>
+      <p className="text-[9px] sm:text-[10px] text-center" style={{ color: '#A08070' }}>IVA incluido</p>
     </div>
   );
 }

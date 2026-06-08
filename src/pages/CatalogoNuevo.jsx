@@ -71,10 +71,10 @@ export default function CatalogoNuevo() {
     c === 'Todos' ? 'Todos' : CATEGORIAS_V2.find((x) => x.cat === c)?.label || c;
 
   return (
-    <div className="min-h-screen font-inter pb-16 lg:pb-0 overflow-x-hidden" style={{ background: '#F8F3ED', color: '#2C1810' }}>
+    <div className="min-h-screen font-inter pb-16 lg:pb-0" style={{ background: '#F8F3ED', color: '#2C1810' }}>
       <ShopV2Header />
 
-      <div className="max-w-6xl mx-auto px-3 sm:px-6 py-3 sm:py-5">
+      <div className="max-w-6xl mx-auto px-3 sm:px-4 lg:px-6 py-3 sm:py-5">
         <CheckoutStepperV2 current="tienda" />
         <div className="mb-2 sm:mb-3">
           <h1 className="font-fraunces text-lg sm:text-4xl mb-0" style={{ color: '#2C1810' }}>Nuestra tienda</h1>
@@ -82,13 +82,13 @@ export default function CatalogoNuevo() {
         </div>
 
         {/* Buscador */}
-        <div className="relative mb-1.5 sm:mb-2.5">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#A78B6F]" />
+        <div className="relative mb-2 sm:mb-3">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3 sm:w-3.5 h-3 sm:h-3.5 text-[#A78B6F]" />
           <input
             value={q}
             onChange={(e) => setQ(e.target.value)}
             placeholder="Buscar..."
-            className="w-full h-9 sm:h-12 pl-9 pr-4 rounded-lg sm:rounded-2xl text-[11px] sm:text-sm focus:outline-none transition-all"
+            className="w-full h-8 sm:h-11 pl-8 sm:pl-9 pr-3 sm:pr-4 rounded-lg sm:rounded-2xl text-[11px] sm:text-sm focus:outline-none transition-all"
             style={{ background: 'white', border: '1.5px solid #D4C4B0', color: '#2C1810' }}
             onFocus={e => { e.target.style.borderColor = '#C0785C'; e.target.style.boxShadow = '0 0 0 3px rgba(192,120,92,.12)'; }}
             onBlur={e => { e.target.style.borderColor = '#D4C4B0'; e.target.style.boxShadow = 'none'; }}
@@ -96,13 +96,13 @@ export default function CatalogoNuevo() {
         </div>
 
         {/* Chips de categoría */}
-        <div className="flex items-center gap-1 sm:gap-2 overflow-x-auto scrollbar-hide pb-1 mb-2 sm:mb-3">
-          <SlidersHorizontal className="w-3.5 h-3.5 text-[#A78B6F] flex-shrink-0" />
+        <div className="flex items-center gap-1 overflow-x-auto scrollbar-hide pb-1 mb-2 sm:mb-3">
+          <SlidersHorizontal className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-[#A78B6F] flex-shrink-0" />
           {chips.map((c) => (
             <button
               key={c}
               onClick={() => setCat(c)}
-              className="flex-shrink-0 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full text-xs sm:text-sm font-bold transition-all"
+              className="flex-shrink-0 px-2.5 py-1 sm:px-4 sm:py-2 rounded-full text-[11px] sm:text-sm font-bold transition-all whitespace-nowrap"
               style={{
                 background: cat === c ? '#C0785C' : 'white',
                 color: cat === c ? 'white' : '#7A6050',
@@ -117,20 +117,20 @@ export default function CatalogoNuevo() {
 
         {/* Filtro por MODELO de teléfono (visible en carcasas — Baymard) */}
         {esCarcasas && modelos.length > 0 && (
-          <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide pb-1 mb-6">
-            <Smartphone className="w-4 h-4 text-[#A78B6F] flex-shrink-0" />
+          <div className="flex items-center gap-1 overflow-x-auto scrollbar-hide pb-1 mb-4 sm:mb-6">
+            <Smartphone className="w-3 h-3 sm:w-4 sm:h-4 text-[#A78B6F] flex-shrink-0" />
             {['Todos', ...modelos].map((m) => (
               <button
                 key={m}
                 onClick={() => setModelo(m)}
-                className="flex-shrink-0 px-3.5 py-1.5 rounded-full text-xs font-bold transition-all"
+                className="flex-shrink-0 px-2.5 py-1 sm:px-3.5 sm:py-1.5 rounded-full text-[10px] sm:text-xs font-bold transition-all whitespace-nowrap"
                 style={{
                   background: modelo === m ? '#8BAD8A' : 'white',
                   color: modelo === m ? 'white' : '#7A6050',
                   border: `1.5px solid ${modelo === m ? '#8BAD8A' : '#D4C4B0'}`,
                 }}
               >
-                {m === 'Todos' ? 'Todos los modelos' : m}
+                {m === 'Todos' ? 'Modelos' : m}
               </button>
             ))}
           </div>
@@ -138,7 +138,7 @@ export default function CatalogoNuevo() {
 
         {/* Grilla */}
         {loading ? (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3 lg:gap-4">
             {Array.from({ length: 8 }).map((_, i) => (
               <div key={i} className="aspect-[3/4] rounded-2xl sm:rounded-3xl animate-pulse" style={{ background: '#EDE3D6', border: '1px solid #D4C4B0' }} />
             ))}
@@ -152,7 +152,7 @@ export default function CatalogoNuevo() {
         ) : (
           <>
             <p className="text-[10px] sm:text-xs text-[#A78B6F] mb-2 sm:mb-3 font-semibold">{filtrados.length} productos</p>
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3 lg:gap-4">
               {filtrados.map((p, i) => <ProductCardV2 key={p.id} producto={p} index={i} />)}
             </div>
           </>

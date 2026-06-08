@@ -68,13 +68,13 @@ export default function PersonalizadorV2({ pers, setPers, gratis, moq = 10, solo
       </p>
 
       {/* Opciones de personalización. En carcasas se permiten las 3 (combinables);
-          en el resto de productos SOLO "Tu diseño". */}
+           en el resto de productos SOLO "Tu diseño". */}
       {soloArchivo ? (
         <div className="grid grid-cols-1 gap-2">
           <PersToggleCardV2 Icon={Upload} label="Tu diseño" precio={PRECIO_PERSONALIZACION.archivo} active={pers.archivo} onToggle={() => toggle('archivo')} gratis={gratis} />
         </div>
       ) : (
-        <div className="grid grid-cols-3 gap-2">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
           <PersToggleCardV2 Icon={Type} label="Frase" precio={PRECIO_PERSONALIZACION.frase} active={pers.frase} onToggle={() => toggle('frase')} gratis={gratis} />
           <PersToggleCardV2 Icon={Palette} label="Diseño PEYU" precio={PRECIO_PERSONALIZACION.peyu} active={pers.peyu} onToggle={() => toggle('peyu')} gratis={gratis} />
           <PersToggleCardV2 Icon={Upload} label="Tu diseño" precio={PRECIO_PERSONALIZACION.archivo} active={pers.archivo} onToggle={() => toggle('archivo')} gratis={gratis} />
@@ -83,10 +83,10 @@ export default function PersonalizadorV2({ pers, setPers, gratis, moq = 10, solo
 
       {/* Resumen de las opciones activas (suma de cargos) */}
       {activos.length > 0 && (
-        <div className="flex items-center justify-between mt-2.5 bg-[#0F8B6C]/5 border border-[#0F8B6C]/20 rounded-xl px-3 py-2">
-          <span className="text-[11px] font-bold text-[#0F8B6C] truncate">{labelCombinada(pers)}</span>
-          <span className="text-[11px] font-bold text-[#0F8B6C] flex-shrink-0 ml-2">
-            {gratis ? `GRATIS desde ${moq}u` : `+${fmtCLP(feeUnit)}/u`}
+        <div className="flex items-center justify-between mt-2.5 bg-[#0F8B6C]/5 border border-[#0F8B6C]/20 rounded-xl px-3 py-2 gap-2">
+          <span className="text-[10px] sm:text-[11px] font-bold text-[#0F8B6C] truncate">{labelCombinada(pers)}</span>
+          <span className="text-[10px] sm:text-[11px] font-bold text-[#0F8B6C] flex-shrink-0">
+            {gratis ? `GRATIS` : `+${fmtCLP(feeUnit)}`}
           </span>
         </div>
       )}

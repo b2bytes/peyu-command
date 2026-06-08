@@ -317,12 +317,12 @@ export default function ProductoNuevo() {
             </div>
 
             {/* Cantidad */}
-            <div className="flex items-center justify-between">
-              <div>
-                <span className="text-sm font-bold" style={{ color: '#2C1810' }}>Cantidad</span>
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex-1 min-w-0">
+                <span className="text-xs sm:text-sm font-bold" style={{ color: '#2C1810' }}>Cantidad</span>
                 {activos.length > 0 && (
-                  <p className="text-[11px] mt-0.5 font-semibold" style={{ color: gratis ? '#8BAD8A' : '#A08070' }}>
-                    {gratis ? `✓ Grabado GRATIS desde ${moq}u` : `Faltan ${moq - cantidad}u para grabado gratis`}
+                  <p className="text-[10px] sm:text-[11px] mt-0.5 font-semibold truncate" style={{ color: gratis ? '#8BAD8A' : '#A08070' }}>
+                    {gratis ? '✓ GRATIS' : `${moq - cantidad}u más`}
                   </p>
                 )}
               </div>

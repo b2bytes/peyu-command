@@ -61,7 +61,7 @@ export default function CarritoNuevo() {
     <div className="min-h-screen font-inter pb-32 lg:pb-0" style={{ background: '#F8F3ED', color: '#2C1810' }}>
       <ShopV2Header />
 
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 py-3 sm:py-5">
+      <div className="max-w-4xl mx-auto px-3 sm:px-4 lg:px-6 py-3 sm:py-5">
         <CheckoutStepperV2 current="carrito" />
         {/* Link solo desktop — mobile usa el navbar inferior */}
         <Link to="/CatalogoNuevo" className="hidden lg:inline-flex items-center gap-1.5 text-sm font-bold mb-5 transition-colors" style={{ color: '#7A6050' }}>
@@ -81,46 +81,46 @@ export default function CarritoNuevo() {
                const pctLinea = item.cyber ? 0 : getQtyDiscountPct(cant);
                const teaser = item.cyber ? null : getNextQtyTeaserForSku(cant);
                return (
-                 <div key={item.id} className="flex gap-2.5 bg-white rounded-2xl p-2.5" style={{ border: '1.5px solid #D4C4B0' }}>
-                   <div className="relative flex-shrink-0 w-16 h-16 sm:w-24 sm:h-24">
+                 <div key={item.id} className="flex gap-2 bg-white rounded-xl sm:rounded-2xl p-2 sm:p-2.5" style={{ border: '1.5px solid #D4C4B0' }}>
+                   <div className="relative flex-shrink-0 w-14 h-14 sm:w-24 sm:h-24">
                     <CartItemThumbV2
                       imagen={item.mockupUrl || item.imagen}
                       capas={item.capas_grabado || []}
                       alt={item.nombre}
                     />
                     {(item.capas_grabado?.length > 0 || item.logoUrl || item.personalizacion) && (
-                      <span className="absolute -top-1.5 -right-1.5 bg-[#D96B4D] text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full shadow z-10">
-                        Diseño
+                      <span className="absolute -top-1 -right-1 bg-[#D96B4D] text-white text-[8px] sm:text-[9px] font-bold px-1 sm:px-1.5 py-0.5 rounded-full shadow z-10">
+                        ✓
                       </span>
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-start justify-between gap-2">
-                       <h3 className="font-semibold text-xs text-[#2A2420] leading-tight line-clamp-2">{item.nombre}</h3>
+                    <div className="flex items-start justify-between gap-1">
+                       <h3 className="font-semibold text-[11px] sm:text-xs text-[#2A2420] leading-tight line-clamp-2">{item.nombre}</h3>
                        <button onClick={() => remove(item.id)} className="transition-colors flex-shrink-0 mt-0.5" style={{ color: '#A08070' }} onMouseOver={e=>e.currentTarget.style.color='#C0785C'} onMouseOut={e=>e.currentTarget.style.color='#A08070'}>
-                         <Trash2 className="w-3.5 h-3.5" />
+                         <Trash2 className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
                        </button>
                      </div>
-                     <div className="flex flex-wrap gap-1 mt-1">
+                     <div className="flex flex-wrap gap-0.5 mt-1">
                        {item.color && (
-                         <span className="text-[9px] font-semibold px-1.5 py-0.25 rounded-full" style={{ background: '#F2EBE1', border: '1px solid #D4C4B0', color: '#7A6050' }}>{item.color}</span>
+                         <span className="text-[8px] sm:text-[9px] font-semibold px-1 sm:px-1.5 py-0.5 rounded-full" style={{ background: '#F2EBE1', border: '1px solid #D4C4B0', color: '#7A6050' }}>{item.color}</span>
                        )}
                        {item.personalizacion && (
-                         <span className="text-[9px] font-semibold px-1.5 py-0.25 rounded-full" style={{ background: 'rgba(192,120,92,.1)', color: '#C0785C' }}>
+                         <span className="text-[8px] sm:text-[9px] font-semibold px-1 sm:px-1.5 py-0.5 rounded-full line-clamp-1" style={{ background: 'rgba(192,120,92,.1)', color: '#C0785C' }}>
                            {item.personalizacion}
                          </span>
                        )}
                        {gratis && (
-                         <span className="text-[9px] font-bold px-1.5 py-0.25 rounded-full" style={{ background: 'rgba(139,173,138,.15)', color: '#5B7D5A' }}>Gratis</span>
+                         <span className="text-[8px] sm:text-[9px] font-bold px-1 sm:px-1.5 py-0.5 rounded-full" style={{ background: 'rgba(139,173,138,.15)', color: '#5B7D5A' }}>✓</span>
                        )}
                        {pctLinea > 0 && (
-                         <span className="text-[9px] font-bold text-white px-1.5 py-0.25 rounded-full" style={{ background: '#8BAD8A' }}>−{pctLinea}%</span>
+                         <span className="text-[8px] sm:text-[9px] font-bold text-white px-1 sm:px-1.5 py-0.5 rounded-full" style={{ background: '#8BAD8A' }}>−{pctLinea}%</span>
                        )}
                      </div>
-                    <div className="flex items-center justify-between mt-3">
+                     <div className="flex items-center justify-between mt-2 gap-2">
                       <QtyStepperV2 value={cant} onChange={(v) => setQty(item.id, v)} min={1} />
-                      <span className="font-poppins font-bold" style={{ color: '#2C1810' }}>{fmtCLP(lineaProducto)}</span>
-                    </div>
+                      <span className="font-poppins font-bold text-sm sm:text-base flex-shrink-0" style={{ color: '#2C1810' }}>{fmtCLP(lineaProducto)}</span>
+                     </div>
                   </div>
                 </div>
               );
