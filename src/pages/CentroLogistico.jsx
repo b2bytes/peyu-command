@@ -213,63 +213,71 @@ export default function CentroLogistico() {
         </TabsList>
 
         <TabsContent value="listado" className="mt-4 space-y-4">
-          {/* Panel Dashboard Centralizado */}
-          <BluexDashboardPanel envios={filtered.length > 0 ? filtered : envios} />
+          {/* Filtros + buscador */}
+          <BluexFilters filtro={filtro} setFiltro={setFiltro} search={search} setSearch={setSearch} counts={counts} />
 
-          {/* Botón sincronización rápida */}
-          <div className="flex justify-end">
-            <Button
-              onClick={async () => {
-                setSincronizando(true);
-                try {
-                  const res = await base44.functions.invoke('bluexSyncAllShipments', {});
-                  toast.success(`✓ ${res.data?.synced || 0} envíos sincronizados`);
-                  await load();
-                } catch (e) {
-                  toast.error('Error sincronizando envíos');
-                } finally {
-                  setSincronizando(false);
-                }
-              }}
-              disabled={sincronizando}
-              size="sm"
-              variant="outline"
-              className="gap-2"
-            >
-              {sincronizando ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
-              Sincronizar todo
-            </Button>
-          </div>
+          {/* Tabla principal */}
+          <div className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
+            <div className="flex items-center justify-between px-5 py-3.5 border-b border-gray-100">
+              <p className="text-sm font-bold text-gray-700">
+                {loading ? 'Cargando...' : `${filtered.length} envío${filtered.length !== 1 ? 's' : ''} encontrado${filtered.length !== 1 ? 's' : ''}`}
+              </p>
+              <Button
+                onClick={async () => {
+                  setSincronizando(true);
+                  try {
+                    const res = await base44.functions.invoke('bluexSyncAllShipments', {});
+                    toast.success(`✓ ${res.data?.synced || 0} envíos sincronizados`);
+                    await load();
+                  } catch (e) {
+                    toast.error('Error sincronizando');
+                  } finally {
+                    setSincronizando(false);
+                  }
+                }}
+                disabled={sincronizando}
+                size="sm"
+                variant="outline"
+                className="gap-2 text-xs"
+              >
+                {sincronizando ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RefreshCw className="w-3.5 h-3.5" />}
+                Sincronizar todo
+              </Button>
+            </div>
 
-          {/* Fallback a tabla original para compatibilidad */}
-          {search || filtro !== 'activos' ? (
-            <div className="bg-white border border-border rounded-2xl shadow-sm overflow-hidden">
+            {loading ? (
+              <div className="flex items-center justify-center py-16 text-gray-400">
+                <Loader2 className="w-6 h-6 animate-spin mr-2" /> Cargando envíos...
+              </div>
+            ) : filtered.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-16 text-gray-400">
+                <Truck className="w-10 h-10 mb-3 opacity-30" />
+                <p className="font-semibold text-gray-500">Sin envíos en esta vista</p>
+                <p className="text-sm mt-1">Cambia el filtro o genera etiquetas desde Procesar Pedidos</p>
+              </div>
+            ) : (
               <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead className="bg-muted/40">
-                    <tr className="text-[10px] uppercase tracking-wider text-muted-foreground">
-                      <th className="text-left px-4 py-3 font-bold">Pedido / OT</th>
-                      <th className="text-left px-4 py-3 font-bold">Cliente</th>
-                      <th className="text-left px-3 py-3 font-bold">Destino</th>
-                      <th className="text-left px-3 py-3 font-bold">Estado</th>
-                      <th className="text-left px-3 py-3 font-bold">Última novedad</th>
-                      <th className="text-right px-3 py-3 font-bold">Servicio</th>
-                      <th className="px-3 py-3"></th>
+                <table className="w-full">
+                  <thead>
+                    <tr className="bg-gray-50 text-xs font-bold text-gray-500 uppercase tracking-wider">
+                      <th className="text-left px-4 py-3">Pedido / OT</th>
+                      <th className="text-left px-4 py-3">Cliente</th>
+                      <th className="text-left px-3 py-3">Destino</th>
+                      <th className="text-left px-3 py-3">Estado</th>
+                      <th className="text-left px-3 py-3">Última novedad</th>
+                      <th className="text-right px-3 py-3">Servicio</th>
+                      <th className="px-3 py-3 w-8"></th>
                     </tr>
                   </thead>
                   <tbody>
                     {filtered.map(e => (
-                      <BluexShipmentRow
-                        key={e.id}
-                        envio={e}
-                        onClick={() => setSelected(e)}
-                      />
+                      <BluexShipmentRow key={e.id} envio={e} onClick={() => setSelected(e)} />
                     ))}
                   </tbody>
                 </table>
               </div>
-            </div>
-          ) : null}
+            )}
+          </div>
         </TabsContent>
 
         <TabsContent value="secuencias" className="mt-4">
