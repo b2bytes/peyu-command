@@ -47,6 +47,9 @@ const SIZE_BASE_LIBRE   = { frase: 42, peyu: 38, archivo: 38 };
 
 // Auto-layout: distribuye N capas en filas dentro del área técnica, centradas
 // verticalmente y sin solaparse. Devuelve { [id]: {size,x,y} }.
+// Estrategia mejorada: si hay un logo de cliente (tipo='archivo'), posiciónalo
+// en el centro de la zona PEYU existente (arriba). Las otras capas se distribuyen
+// debajo o en slots secundarios.
 function autoLayout(capas, area, esCarcasa = true) {
   const A = area || AREA_CARCASA;
   const cx = (A.left + A.right) / 2;
@@ -59,16 +62,32 @@ function autoLayout(capas, area, esCarcasa = true) {
     const baseSize = SIZE_BASE[capas[0].tipo] || 38;
     return { [capas[0].id]: { size: baseSize, x: cx, y: cy } };
   }
-  const usableTop = A.top + 4;
-  const usableBottom = A.bottom - 4;
-  const slotH = (usableBottom - usableTop) / n;
+  
+  // Prioridad: logo del cliente primero (reemplaza PEYU), luego otras capas
+  const clientLogos = capas.filter(c => c.tipo === 'archivo');
+  const otherCapas = capas.filter(c => c.tipo !== 'archivo');
   const out = {};
-  capas.forEach((c, i) => {
-    const baseSize = SIZE_BASE[c.tipo] || 26;
-    const size = Math.max(14, Math.min(baseSize, slotH * 0.9));
-    const y = usableTop + slotH * (i + 0.5);
-    out[c.id] = { size, x: cx, y };
-  });
+  
+  // Si hay logo cliente, lo centramos en zona PEYU (arriba-centro del área)
+  if (clientLogos.length > 0) {
+    const logoSize = SIZE_BASE['archivo'] || 38;
+    const logoCy = A.top + (A.bottom - A.top) * 0.22; // 22% abajo del top = donde está el logo PEYU en fotos
+    out[clientLogos[0].id] = { size: logoSize, x: cx, y: logoCy };
+  }
+  
+  // Otras capas (frases, diseños PEYU) se distribuyen en zona baja
+  const remainingCapas = clientLogos.length > 0 ? otherCapas : capas;
+  if (remainingCapas.length > 0) {
+    const usableTop = clientLogos.length > 0 ? A.top + (A.bottom - A.top) * 0.45 : A.top + 4;
+    const usableBottom = A.bottom - 4;
+    const slotH = (usableBottom - usableTop) / remainingCapas.length;
+    remainingCapas.forEach((c, i) => {
+      const baseSize = SIZE_BASE[c.tipo] || 26;
+      const size = Math.max(14, Math.min(baseSize, slotH * 0.9));
+      const y = usableTop + slotH * (i + 0.5);
+      out[c.id] = { size, x: cx, y };
+    });
+  }
   return out;
 }
 
@@ -130,8 +149,10 @@ const MockupLivePreviewV2 = forwardRef(function MockupLivePreviewV2({ productIma
   }, [productImageUrl, fallbackUrl]);
 
   // Detecta el tono del producto → define la tinta del grabado:
-  //   producto OSCURO  → grabado CLARO (light), intenso.
-  //   producto CLARO   → grabado OSCURO (dark), intenso.
+  //   producto OSCURO  → grabado CLARO (light), intenso + mix-blend-mode darken.
+  //   producto CLARO   → grabado OSCURO (dark), intenso + mix-blend-mode darken.
+  // La tinta se elige para máximo contraste visual, y el blend mode asegura
+  // que reemplace el logo PEYU existente en la foto.
   useEffect(() => {
     let cancelled = false;
     if (!imgSrc) return;
