@@ -12,7 +12,7 @@ export default function PublicNavBar() {
 
   const mainLinks = [
     { label: 'Inicio', path: '/' },
-    { label: 'Tienda', path: '/shop', icon: ShoppingBag },
+    { label: 'Tienda', path: '/TiendaNueva', icon: ShoppingBag },
     {
       label: 'Empresas',
       path: '/EmpresasNuevo',
