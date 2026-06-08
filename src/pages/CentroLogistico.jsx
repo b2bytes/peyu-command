@@ -40,7 +40,7 @@ export default function CentroLogistico() {
 
   const load = useCallback(async () => {
     setLoading(true);
-    const data = await base44.entities.Envio.list('-fecha_emision', 500);
+    const data = await base44.entities.Envio.list('-fecha_emision', 100);
     setEnvios(data || []);
     setLoading(false);
   }, []);
