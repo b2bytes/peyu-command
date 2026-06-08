@@ -40,20 +40,30 @@ export default function BluexShipmentDrawer({ envio: envioInicial, onClose, onUp
   };
 
   const verEtiqueta = async () => {
+    // Si ya tenemos datos, mostrar directamente
     if (labelData.base64 || labelData.url) {
       setShowLabel(true);
+      return;
+    }
+    // Si el envío tiene tracking, intentar obtener la etiqueta
+    if (!envio.tracking_number) {
+      setShowLabel(true); // mostrar panel con fallback al portal
       return;
     }
     setLabelLoading(true);
     try {
       const res = await base44.functions.invoke('bluexGetLabel', { envio_id: envio.id });
-      if (res.data?.error) throw new Error(res.data.error);
-      setLabelData({ base64: res.data.label_base64, url: res.data.label_url });
-      setShowLabel(true);
+      const d = res.data || {};
+      // Aceptar tanto base64 como url, incluso en modo manual/fallback
+      setLabelData({
+        base64: d.label_base64 || null,
+        url: d.label_url || d.portal_url || null,
+      });
     } catch (e) {
-      toast.error(e.message || 'No se pudo obtener etiqueta');
+      // Igual mostrar el panel con botón al portal
     } finally {
       setLabelLoading(false);
+      setShowLabel(true);
     }
   };
 
@@ -61,9 +71,12 @@ export default function BluexShipmentDrawer({ envio: envioInicial, onClose, onUp
     const url = labelData.base64
       ? `data:application/pdf;base64,${labelData.base64}`
       : labelData.url;
-    if (!url) return;
+    if (!url) {
+      window.open('https://ecommerce.blue.cl/', '_blank');
+      return;
+    }
     const w = window.open(url, '_blank');
-    setTimeout(() => w?.print?.(), 1000);
+    setTimeout(() => w?.print?.(), 800);
   };
 
   const anular = async () => {
@@ -237,22 +250,69 @@ export default function BluexShipmentDrawer({ envio: envioInicial, onClose, onUp
           )}
         </div>
 
-        {/* Modal etiqueta */}
-        {showLabel && labelSrc && (
+        {/* Panel etiqueta inline — reemplaza el iframe que no funciona en todos los browsers */}
+        {showLabel && (
           <div className="fixed inset-0 z-[60] bg-black/80 flex items-center justify-center p-4" onClick={() => setShowLabel(false)}>
-            <div onClick={e => e.stopPropagation()} className="bg-white rounded-2xl max-w-3xl w-full h-[85vh] flex flex-col overflow-hidden">
-              <div className="flex items-center justify-between p-3 border-b border-border">
-                <h3 className="font-bold text-foreground">Etiqueta · {envio.tracking_number}</h3>
-                <div className="flex gap-2">
-                  <Button onClick={imprimir} size="sm" className="gap-1.5">
-                    <Printer className="w-3.5 h-3.5" /> Imprimir
-                  </Button>
-                  <Button onClick={() => setShowLabel(false)} size="sm" variant="ghost">
-                    <X className="w-4 h-4" />
-                  </Button>
+            <div onClick={e => e.stopPropagation()} className="bg-white rounded-2xl max-w-md w-full overflow-hidden shadow-2xl">
+              <div className="flex items-center justify-between p-4 border-b border-gray-100">
+                <div>
+                  <h3 className="font-bold text-gray-900">Etiqueta BlueExpress</h3>
+                  <p className="text-xs text-gray-500 font-mono mt-0.5">{envio.tracking_number}</p>
                 </div>
+                <button onClick={() => setShowLabel(false)} className="p-1.5 hover:bg-gray-100 rounded-lg">
+                  <X className="w-4 h-4 text-gray-500" />
+                </button>
               </div>
-              <iframe src={labelSrc} className="flex-1 w-full" title="Etiqueta Bluex" />
+
+              <div className="p-5 space-y-3">
+                {/* Acción principal: abrir PDF */}
+                {labelSrc ? (
+                  <>
+                    <a
+                      href={labelSrc}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="flex items-center justify-center gap-2 w-full py-3.5 rounded-xl font-bold text-sm text-white transition-all hover:opacity-90"
+                      style={{ background: 'linear-gradient(135deg,#0066CC,#0080FF)', boxShadow: '0 4px 16px rgba(0,102,204,.25)' }}
+                    >
+                      <FileText className="w-4 h-4" /> Abrir etiqueta PDF
+                    </a>
+                    <button
+                      onClick={imprimir}
+                      className="flex items-center justify-center gap-2 w-full py-3 rounded-xl font-semibold text-sm text-blue-700 bg-blue-50 border border-blue-200 hover:bg-blue-100 transition"
+                    >
+                      <Printer className="w-4 h-4" /> Imprimir directamente
+                    </button>
+                  </>
+                ) : (
+                  <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 text-center">
+                    <p className="text-sm font-semibold text-amber-800 mb-1">Etiqueta no disponible localmente</p>
+                    <p className="text-xs text-amber-700 mb-3">Descárgala directamente desde el portal BlueExpress</p>
+                    <a
+                      href={`https://ecommerce.blue.cl/`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-amber-600 text-white text-sm font-bold hover:bg-amber-700 transition"
+                    >
+                      <ExternalLink className="w-3.5 h-3.5" /> Ir al portal Bluex
+                    </a>
+                  </div>
+                )}
+
+                {/* Tracking info */}
+                <div className="bg-gray-50 rounded-xl p-3 flex items-center justify-between">
+                  <span className="text-xs text-gray-500">OT / Tracking</span>
+                  <span className="font-mono font-bold text-gray-800 text-sm">{envio.tracking_number}</span>
+                </div>
+
+                <a
+                  href={envio.tracking_url || `https://www.bluex.cl/seguimiento?n=${envio.tracking_number}`}
+                  target="_blank" rel="noreferrer"
+                  className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl text-sm font-semibold text-gray-600 bg-gray-50 border border-gray-200 hover:bg-gray-100 transition"
+                >
+                  <ExternalLink className="w-3.5 h-3.5" /> Ver tracking público del cliente
+                </a>
+              </div>
             </div>
           </div>
         )}
