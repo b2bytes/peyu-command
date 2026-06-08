@@ -1,9 +1,9 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, memo } from 'react';
 import { useLocation } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
-import { Search, SlidersHorizontal, PackageOpen, Smartphone } from 'lucide-react';
+import { Search, SlidersHorizontal, PackageOpen, Smartphone, AlertCircle } from 'lucide-react';
 import MobileNavBarV2 from '@/components/shopv2/MobileNavBarV2';
-import ShopV2Header from '@/components/shopv2/ShopV2Header';
+import PublicNavBar from '@/components/PublicNavBar';
 import CheckoutStepperV2 from '@/components/shopv2/CheckoutStepperV2';
 import ProductCardV2 from '@/components/shopv2/ProductCardV2';
 import { CATEGORIAS_V2 } from '@/lib/shop-v2-config';
@@ -13,24 +13,37 @@ import { modeloDe, modelosDisponibles } from '@/lib/phone-models-v2';
 // /CatalogoNuevo — Grilla del Shop v2 (Tema 6). Filtro por categoría (chips) +
 // búsqueda + filtro por MODELO de teléfono visible (Baymard) en carcasas.
 // ════════════════════════════════════════════════════════════════════════
+const MemoProductCardV2 = memo(ProductCardV2);
+
 export default function CatalogoNuevo() {
   const location = useLocation();
   const [productos, setProductos] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [cat, setCat] = useState('Todos');
   const [q, setQ] = useState('');
   const [modelo, setModelo] = useState('Todos');
+  const [retry, setRetry] = useState(0);
 
   useEffect(() => {
-    base44.entities.Producto.filter({ activo: true }, '-updated_date', 300)
-      .then((data) => {
+    const cargar = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const data = await base44.entities.Producto.filter({ activo: true }, '-updated_date', 150);
         const b2c = (data || []).filter(
           (p) => p.canal !== 'B2B Exclusivo' && p.categoria !== 'Gift Card' && p.precio_b2c
         );
         setProductos(b2c);
-      })
-      .finally(() => setLoading(false));
-  }, []);
+      } catch (err) {
+        console.error('Error cargando productos:', err);
+        setError(true);
+      } finally {
+        setLoading(false);
+      }
+    };
+    cargar();
+  }, [retry]);
 
   // Pre-filtro por ?cat=
   useEffect(() => {
@@ -70,9 +83,31 @@ export default function CatalogoNuevo() {
   const chipLabel = (c) =>
     c === 'Todos' ? 'Todos' : CATEGORIAS_V2.find((x) => x.cat === c)?.label || c;
 
+  if (error) {
+    return (
+      <div className="min-h-screen font-inter" style={{ background: '#F8F3ED', color: '#2C1810' }}>
+        <PublicNavBar />
+        <div className="max-w-md mx-auto text-center py-24 px-4">
+          <div className="w-16 h-16 rounded-3xl flex items-center justify-center mx-auto mb-4" style={{ background: '#FBE9E1', border: '1.5px solid #D96B4D' }}>
+            <AlertCircle className="w-8 h-8" style={{ color: '#D96B4D' }} />
+          </div>
+          <h1 className="font-fraunces text-xl mb-2">Error cargando tienda</h1>
+          <p className="text-sm mb-6" style={{ color: '#7A6050' }}>Intenta de nuevo en unos segundos.</p>
+          <button
+            onClick={() => setRetry(r => r + 1)}
+            className="inline-flex items-center gap-2 text-white font-bold px-6 py-3 rounded-2xl"
+            style={{ background: 'linear-gradient(135deg,#C0785C,#A86440)' }}
+          >
+            Reintentar
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen font-inter pb-16 lg:pb-0" style={{ background: '#F8F3ED', color: '#2C1810' }}>
-      <ShopV2Header />
+      <PublicNavBar />
 
       <div className="max-w-6xl mx-auto px-3 sm:px-4 lg:px-6 py-3 sm:py-5">
         <CheckoutStepperV2 current="tienda" />
@@ -137,26 +172,26 @@ export default function CatalogoNuevo() {
         )}
 
         {/* Grilla */}
-        {loading ? (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3 lg:gap-4">
-            {Array.from({ length: 8 }).map((_, i) => (
-              <div key={i} className="aspect-[3/4] rounded-2xl sm:rounded-3xl animate-pulse" style={{ background: '#EDE3D6', border: '1px solid #D4C4B0' }} />
-            ))}
-          </div>
-        ) : filtrados.length === 0 ? (
-          <div className="text-center py-14 sm:py-20">
-            <PackageOpen className="w-10 sm:w-12 h-10 sm:h-12 mx-auto mb-3" style={{ color: '#A08070' }} />
-            <p className="font-bold text-sm sm:text-base" style={{ color: '#2C1810' }}>No encontramos productos</p>
-            <p className="text-xs sm:text-sm mt-1" style={{ color: '#7A6050' }}>Prueba con otra categoría o búsqueda.</p>
-          </div>
-        ) : (
-          <>
-            <p className="text-[10px] sm:text-xs text-[#A78B6F] mb-2 sm:mb-3 font-semibold">{filtrados.length} productos</p>
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3 lg:gap-4">
-              {filtrados.map((p, i) => <ProductCardV2 key={p.id} producto={p} index={i} />)}
-            </div>
-          </>
-        )}
+         {loading ? (
+           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3 lg:gap-4">
+             {Array.from({ length: 12 }).map((_, i) => (
+               <div key={i} className="aspect-[3/4] rounded-2xl sm:rounded-3xl animate-pulse will-change-auto" style={{ background: '#EDE3D6', border: '1px solid #D4C4B0' }} />
+             ))}
+           </div>
+         ) : filtrados.length === 0 ? (
+           <div className="text-center py-14 sm:py-20">
+             <PackageOpen className="w-10 sm:w-12 h-10 sm:h-12 mx-auto mb-3" style={{ color: '#A08070' }} />
+             <p className="font-bold text-sm sm:text-base" style={{ color: '#2C1810' }}>No encontramos productos</p>
+             <p className="text-xs sm:text-sm mt-1" style={{ color: '#7A6050' }}>Prueba con otra categoría o búsqueda.</p>
+           </div>
+         ) : (
+           <>
+             <p className="text-[10px] sm:text-xs text-[#A78B6F] mb-2 sm:mb-3 font-semibold">{filtrados.length} productos</p>
+             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3 lg:gap-4">
+               {filtrados.map((p, i) => <MemoProductCardV2 key={p.id} producto={p} index={i} />)}
+             </div>
+           </>
+         )}
       </div>
 
       <footer className="py-8 text-center text-xs mt-6" style={{ borderTop: '1px solid #D4C4B0', color: '#A08070' }}>
