@@ -231,12 +231,10 @@ Deno.serve(async (req) => {
       } catch { /* sin logo */ }
     }
 
-    // Columna total (derecha, justificado). Los tramos son NETOS → mostramos el
-    // TOTAL con IVA aquí y el desglose Neto + IVA detallado más abajo. Nada de
-    // "IVA incluido" sobre netos: el IVA va explícito como línea aparte.
-    T('TOTAL CON IVA', RX - 8, y + 9, { size: 7, font: 'bold', color: TEAL, align: 'right', spacing: 1 });
+    // Columna total (derecha, justificado). Claridad total: neto + IVA = total.
+    T('MONTO TOTAL', RX - 8, y + 9, { size: 7, font: 'bold', color: TEAL, align: 'right', spacing: 1 });
     T(fmtCLP(p.total), RX - 8, y + 21, { size: 21, font: 'bold', color: FOREST, align: 'right' });
-    T('CLP - incluye IVA 19% (ver detalle)', RX - 8, y + 27, { size: 7, font: 'normal', color: STONE, align: 'right' });
+    T('CLP (incluye IVA 19% · ver detalle)', RX - 8, y + 27, { size: 7, font: 'normal', color: STONE, align: 'right' });
 
     y += cardH + 6;
 
@@ -316,11 +314,11 @@ Deno.serve(async (req) => {
     T('DETALLE TECNICO Y ECONOMICO', MX, y, { size: 7, font: 'bold', color: STONE2, spacing: 1 });
     y += 6;
 
-    // Columnas (X fijos para alineación perfecta)
+    // Columnas (X fijos para alineación perfecta) — agregamos columna para NETO label
     const COL_PROD = MX + 22;     // nombre tras la miniatura
-    const COL_CANT = MX + 100;    // centrado
-    const COL_UNIT = MX + 138;    // derecha
-    const COL_DESC = MX + 152;    // centrado
+    const COL_CANT = MX + 98;     // centrado
+    const COL_UNIT = MX + 132;    // derecha
+    const COL_DESC = MX + 148;    // centrado
     const COL_TOT  = RX;          // derecha
 
     // Header oscuro
@@ -328,9 +326,9 @@ Deno.serve(async (req) => {
     doc.roundedRect(MX, y, CW, 9, 2, 2, 'F');
     T('PRODUCTO', COL_PROD, y + 6, { size: 7, font: 'bold', color: WHITE, spacing: 0.4 });
     T('CANT.', COL_CANT, y + 6, { size: 7, font: 'bold', color: WHITE, align: 'center' });
-    T('UNITARIO', COL_UNIT, y + 6, { size: 7, font: 'bold', color: WHITE, align: 'right' });
+    T('UNITARIO (NETO)', COL_UNIT, y + 6, { size: 6.5, font: 'bold', color: WHITE, align: 'right' });
     T('DESC.', COL_DESC, y + 6, { size: 7, font: 'bold', color: WHITE, align: 'center' });
-    T('TOTAL', COL_TOT, y + 6, { size: 7, font: 'bold', color: WHITE, align: 'right' });
+    T('TOTAL (NETO)', COL_TOT, y + 6, { size: 6.5, font: 'bold', color: WHITE, align: 'right' });
     y += 12;
 
     items.forEach((it, i) => {
@@ -401,14 +399,26 @@ Deno.serve(async (req) => {
     if (p.subtotal) totRow('Subtotal neto', p.subtotal);
     if (fee > 0) totRow('Fee personalizacion (neto)', fee);
     if (p.fee_packaging > 0) totRow('Fee packaging (neto)', p.fee_packaging);
-    totRow('IVA (19%)', ivaCalc);
+    if (p.descuento_pct > 0) totRow(`Descuento ${p.descuento_pct}% (neto)`, -(p.descuento || 0));
+
+    // Separador antes de IVA
+    y += 2;
+    doc.setDrawColor(...SAND2);
+    doc.setLineWidth(0.5);
+    doc.line(TOT_LABEL_X, y, TOT_VAL_X, y);
+    y += 6;
+
+    // Total neto (resaltado)
+    totRow('Subtotal neto', netoBase, { color: FOREST, valColor: FOREST });
+    // IVA — línea clara
+    totRow('+ IVA 19%', ivaCalc, { color: STONE, valColor: TEAL });
 
     y += 1.5;
     doc.setDrawColor(...TEAL);
     doc.setLineWidth(0.8);
     doc.line(TOT_LABEL_X, y, TOT_VAL_X, y);
     y += 7;
-    totRow('TOTAL CON IVA', p.total, { big: true, color: FOREST, valColor: FOREST });
+    totRow('TOTAL FINAL (CON IVA)', p.total, { big: true, color: FOREST, valColor: FOREST });
 
     // ═══════════════════════════════════════════════════
     //  CTA ACEPTACIÓN DIGITAL

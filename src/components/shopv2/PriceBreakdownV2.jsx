@@ -25,13 +25,13 @@ export default function PriceBreakdownV2({
         </div>
       )}
       <div className="flex justify-between text-xs sm:text-sm gap-2" style={{ color: '#7A6050' }}>
-        <span className="truncate">{fmtCLP(precioUnit)}×{cantidad}</span>
+        <span className="truncate">{fmtCLP(precioUnit)} (neto) × {cantidad}</span>
         <span className="font-semibold flex-shrink-0">{fmtCLP(subtotal)}</span>
       </div>
       {tipoLabel && (
         <div className="flex justify-between text-xs sm:text-sm gap-2" style={{ color: '#7A6050' }}>
           <span className="truncate min-w-0">
-            {tipoLabel}{!gratis && feeUnit > 0 ? ` ${fmtCLP(feeUnit)}` : ''}
+            {tipoLabel}{!gratis && feeUnit > 0 ? ` ${fmtCLP(feeUnit)} neto` : ''}
           </span>
           <span className="font-semibold flex-shrink-0" style={{ color: gratis ? '#8BAD8A' : undefined }}>
             {gratis ? 'GRATIS' : `+${fmtCLP(feeTotal)}`}
@@ -40,23 +40,23 @@ export default function PriceBreakdownV2({
       )}
       {descuentoMonto > 0 && (
         <div className="flex justify-between text-xs sm:text-sm font-bold rounded-lg px-2 py-1 gap-2" style={{ color: '#8BAD8A', background: 'rgba(139,173,138,.1)' }}>
-          <span className="truncate">−{descuentoPct}%</span>
+          <span className="truncate">Descuento −{descuentoPct}%</span>
           <span className="flex-shrink-0">−{fmtCLP(descuentoMonto)}</span>
         </div>
       )}
-      <div className="pt-2 space-y-1" style={{ borderTop: '1px solid #EDE3D6' }}>
-        <div className="flex justify-between text-[10px] sm:text-xs gap-2" style={{ color: '#A08070' }}>
-          <span>Neto</span><span className="flex-shrink-0">{fmtCLP(neto)}</span>
+      <div className="pt-2 space-y-1.5" style={{ borderTop: '1.5px solid #D4C4B0' }}>
+        <div className="flex justify-between text-[10px] sm:text-xs font-semibold gap-2" style={{ color: '#2C1810' }}>
+          <span>Subtotal neto</span><span className="flex-shrink-0">{fmtCLP(neto)}</span>
         </div>
-        <div className="flex justify-between text-[10px] sm:text-xs gap-2" style={{ color: '#A08070' }}>
-          <span>IVA 19%</span><span className="flex-shrink-0">{fmtCLP(iva)}</span>
+        <div className="flex justify-between text-[10px] sm:text-xs gap-2" style={{ color: '#8A7260' }}>
+          <span>+ IVA 19%</span><span className="flex-shrink-0">{fmtCLP(iva)}</span>
         </div>
-        <div className="flex justify-between pt-1.5 gap-2" style={{ borderTop: '1px solid #EDE3D6' }}>
-          <span className="font-bold" style={{ color: '#2C1810' }}>Total</span>
-          <span className="font-poppins font-bold text-base sm:text-lg flex-shrink-0" style={{ color: '#C0785C' }}>{fmtCLP(total)}</span>
+        <div className="flex justify-between pt-1.5 gap-2 font-bold" style={{ borderTop: '1px solid #EDE3D6', color: '#2C1810' }}>
+          <span>Total final</span>
+          <span className="font-poppins text-base sm:text-lg flex-shrink-0" style={{ color: '#C0785C' }}>{fmtCLP(total)}</span>
         </div>
       </div>
-      <p className="text-[9px] sm:text-[10px] text-center" style={{ color: '#A08070' }}>IVA incluido</p>
+      <p className="text-[9px] sm:text-[10px] text-center italic" style={{ color: '#A08070' }}>Todos los precios incluyen IVA</p>
     </div>
   );
 }
