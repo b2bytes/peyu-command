@@ -71,10 +71,10 @@ export default function CatalogoNuevo() {
     c === 'Todos' ? 'Todos' : CATEGORIAS_V2.find((x) => x.cat === c)?.label || c;
 
   return (
-    <div className="min-h-screen font-inter pb-16 lg:pb-0" style={{ background: '#F8F3ED', color: '#2C1810' }}>
+    <div className="min-h-screen font-inter pb-16 lg:pb-0 overflow-x-hidden" style={{ background: '#F8F3ED', color: '#2C1810' }}>
       <ShopV2Header />
 
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-3 sm:py-5">
+      <div className="max-w-6xl mx-auto px-3 sm:px-6 py-3 sm:py-5">
         <CheckoutStepperV2 current="tienda" />
         <div className="mb-2 sm:mb-3">
           <h1 className="font-fraunces text-lg sm:text-4xl mb-0" style={{ color: '#2C1810' }}>Nuestra tienda</h1>

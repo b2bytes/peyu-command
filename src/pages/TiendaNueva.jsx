@@ -44,7 +44,7 @@ export default function TiendaNueva() {
   };
 
   return (
-    <div className="min-h-screen font-inter pb-16 lg:pb-0" style={{ background: '#F8F3ED', color: '#2C1810' }}>
+    <div className="min-h-screen font-inter pb-16 lg:pb-0 overflow-x-hidden" style={{ background: '#F8F3ED', color: '#2C1810' }}>
       <ShopV2Header />
 
       {/* 1 · HERO BOLD */}
@@ -60,7 +60,7 @@ export default function TiendaNueva() {
       <ImpactStoryV2 />
 
       {/* CATEGORÍAS */}
-      <section className="w-full px-4 sm:px-8 lg:px-12 mb-6 sm:mb-10">
+      <section className="w-full px-3 sm:px-8 lg:px-12 mb-4 sm:mb-8">
         <div className="max-w-screen-xl mx-auto">
           <h2 className="font-fraunces text-lg sm:text-3xl mb-2.5 sm:mb-4">Explora por categoría</h2>
           <div className="flex sm:grid sm:grid-cols-3 lg:grid-cols-5 gap-1.5 sm:gap-3 overflow-x-auto scrollbar-hide -mx-4 px-4 sm:mx-0 sm:px-0 pb-1">
@@ -81,7 +81,7 @@ export default function TiendaNueva() {
       </section>
 
       {/* DESTACADOS */}
-      <section className="w-full px-4 sm:px-8 lg:px-12 mb-8 sm:mb-10">
+      <section className="w-full px-3 sm:px-8 lg:px-12 mb-6 sm:mb-8">
         <div className="max-w-screen-xl mx-auto">
           <div className="flex items-center justify-between mb-2.5 sm:mb-4">
             <h2 className="font-fraunces text-lg sm:text-3xl">Destacados</h2>

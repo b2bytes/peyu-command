@@ -72,7 +72,7 @@ export default function EmpresasNuevo() {
   }, [productos]);
 
   return (
-    <div className="min-h-screen font-inter pb-8" style={{ background: '#F8F3ED', color: '#2C1810' }}>
+    <div className="min-h-screen font-inter pb-8 overflow-x-hidden" style={{ background: '#F8F3ED', color: '#2C1810' }}>
       <B2BHeader />
 
       {/* ── HERO ── */}
