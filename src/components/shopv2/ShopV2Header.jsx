@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ShoppingBag } from 'lucide-react';
+import { ShoppingBag, Package } from 'lucide-react';
 import { cartCountV2, subscribeCartV2 } from '@/lib/shop-v2-cart';
 
 // Header sticky crema del Shop v2. Logo PEYU + cart bubble reactivo (carrito_v2).
@@ -42,6 +42,9 @@ export default function ShopV2Header() {
           <Link to="/EmpresasNuevo" className="px-3.5 py-2 text-sm font-semibold rounded-xl transition-colors hover:bg-[#EDE3D6]" style={{ color: '#7A6050' }}>Empresas</Link>
           <Link to="/blog" className="px-3.5 py-2 text-sm font-semibold rounded-xl transition-colors hover:bg-[#EDE3D6]" style={{ color: '#7A6050' }}>Blog</Link>
           <Link to="/nosotros" className="px-3.5 py-2 text-sm font-semibold rounded-xl transition-colors hover:bg-[#EDE3D6]" style={{ color: '#7A6050' }}>Nosotros</Link>
+          <Link to="/seguimiento" className="px-3.5 py-2 text-sm font-semibold rounded-xl transition-colors hover:bg-[#EDE3D6] flex items-center gap-1.5" style={{ color: '#7A6050' }}>
+            <Package className="w-4 h-4" /> Seguimiento
+          </Link>
           <Link to="/contacto" className="px-3.5 py-2 text-sm font-semibold rounded-xl transition-colors hover:bg-[#EDE3D6]" style={{ color: '#7A6050' }}>Contacto</Link>
         </nav>
 
