@@ -620,14 +620,27 @@ export default function PersonalizacionFlow() {
         </div>
       ) : (
         <LaserEngravePreview
-          productImageUrl={displayImg}
-          cleanImageUrl={cleanBaseUrl}
-          logoFile={opcion === 'archivo' ? archivo : null}
-          logoUrl={opcion === 'archivo' ? logoUrlSubido : (opcion === 'peyu' ? disenoPeyuUrl : '')}
-          texto={opcion === 'frase' ? texto : ''}
-          areaLabel={producto?.area_laser_mm}
-          defaultTint={!imagenesPorColor && color?.hex && parseInt(color.hex.replace('#', '').slice(0, 2), 16) < 130 ? 'light' : 'dark'}
-        />
+            productImageUrl={displayImg}
+            cleanImageUrl={cleanBaseUrl}
+            logoFile={opcion === 'archivo' ? archivo : null}
+            logoUrl={opcion === 'archivo' ? logoUrlSubido : (opcion === 'peyu' ? disenoPeyuUrl : '')}
+            texto={opcion === 'frase' ? texto : ''}
+            areaLabel={producto?.area_laser_mm}
+            defaultTint={(() => {
+              // Carcasas con color real: usar nombre del color para detectar oscuridad
+              if (imagenesPorColor && carcasaColorKey) {
+                const nombre = carcasaColorKey.toLowerCase();
+                const esOscuro = ['negro', 'black', 'azul', 'blue', 'verde', 'green', 'morado', 'purple', 'rojo', 'red', 'rosado oscuro', 'dark'].some(d => nombre.includes(d));
+                return esOscuro ? 'light' : 'dark';
+              }
+              // Productos con hex de color marmolado
+              if (!imagenesPorColor && color?.hex) {
+                const r = parseInt(color.hex.replace('#', '').slice(0, 2), 16);
+                return r < 130 ? 'light' : 'dark';
+              }
+              return 'dark';
+            })()}
+          />
       )}
 
       {/* 1 — Las 3 opciones de personalización con sus precios + regla gratis ≥10u */}
