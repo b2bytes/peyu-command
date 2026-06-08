@@ -1,7 +1,12 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
-import { Plus, Search, Edit2, Trash2, MessageSquare, FileText, Users, Clock, AlertTriangle, TrendingUp, DollarSign, Zap, Loader2, ExternalLink, Sparkles } from "lucide-react";
+import {
+  Plus, Search, Edit2, Trash2, MessageSquare, FileText, Users, Clock,
+  AlertTriangle, TrendingUp, DollarSign, Zap, Loader2, Sparkles,
+  Phone, Mail, Package, ChevronRight, Flame, Thermometer, Snowflake,
+  CheckCircle2, XCircle, BarChart3, RefreshCw
+} from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,7 +14,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/components/ui/use-toast";
 
-// SLA: días desde creación/última actualización
 function getDiasEnEtapa(lead) {
   const ref = lead.updated_date || lead.created_date;
   if (!ref) return 0;
@@ -17,32 +21,46 @@ function getDiasEnEtapa(lead) {
 }
 
 const SLA_LIMITS = { Nuevo: 1, Contactado: 2, Cotizado: 3, 'Muestra Enviada': 5, 'Negociación': 7 };
-
 const ESTADOS_LEAD = ["Nuevo", "Contactado", "Cotizado", "Muestra Enviada", "Negociación", "Ganado", "Perdido"];
 const ESTADOS_COT = ["Borrador", "Enviada", "Aceptada", "Rechazada", "Vencida"];
 
-// Badges sólidos con buen contraste tanto en modo día como noche.
-const estadoColor = {
-  Nuevo:            "bg-blue-100 text-blue-800 border border-blue-200",
-  Contactado:       "bg-purple-100 text-purple-800 border border-purple-200",
-  Cotizado:         "bg-amber-100 text-amber-800 border border-amber-200",
-  "Muestra Enviada":"bg-orange-100 text-orange-800 border border-orange-200",
-  Negociación:      "bg-indigo-100 text-indigo-800 border border-indigo-200",
-  Ganado:           "bg-emerald-100 text-emerald-800 border border-emerald-200",
-  Perdido:          "bg-red-100 text-red-800 border border-red-200",
-  Borrador:         "bg-slate-100 text-slate-700 border border-slate-200",
-  Enviada:          "bg-blue-100 text-blue-800 border border-blue-200",
-  Aceptada:         "bg-emerald-100 text-emerald-800 border border-emerald-200",
-  Rechazada:        "bg-red-100 text-red-800 border border-red-200",
-  Vencida:          "bg-slate-100 text-slate-600 border border-slate-200",
+const estadoBadge = {
+  Nuevo:            "bg-blue-100 text-blue-800 border-blue-200",
+  Contactado:       "bg-purple-100 text-purple-800 border-purple-200",
+  Cotizado:         "bg-amber-100 text-amber-800 border-amber-200",
+  "Muestra Enviada":"bg-orange-100 text-orange-800 border-orange-200",
+  Negociación:      "bg-indigo-100 text-indigo-800 border-indigo-200",
+  Ganado:           "bg-emerald-100 text-emerald-800 border-emerald-200",
+  Perdido:          "bg-red-100 text-red-800 border-red-200",
+  Borrador:         "bg-gray-100 text-gray-700 border-gray-200",
+  Enviada:          "bg-blue-100 text-blue-800 border-blue-200",
+  Aceptada:         "bg-emerald-100 text-emerald-800 border-emerald-200",
+  Rechazada:        "bg-red-100 text-red-800 border-red-200",
+  Vencida:          "bg-gray-100 text-gray-600 border-gray-200",
 };
 
-const calidadColor = {
-  Caliente:        "bg-red-100 text-red-800 border border-red-200",
-  Tibio:           "bg-amber-100 text-amber-800 border border-amber-200",
-  Frío:            "bg-sky-100 text-sky-800 border border-sky-200",
-  "No Comercial":  "bg-slate-100 text-slate-600 border border-slate-200",
+const calidadConfig = {
+  Caliente:       { cls: "bg-red-100 text-red-800 border-red-200",     icon: Flame },
+  Tibio:          { cls: "bg-amber-100 text-amber-800 border-amber-200", icon: Thermometer },
+  Frío:           { cls: "bg-sky-100 text-sky-800 border-sky-200",      icon: Snowflake },
+  "No Comercial": { cls: "bg-gray-100 text-gray-600 border-gray-200",   icon: XCircle },
 };
+
+function ScoreBar({ score }) {
+  if (!score) return null;
+  const color = score >= 70 ? '#0F8B6C' : score >= 40 ? '#D97706' : '#64748B';
+  return (
+    <div className="mt-2">
+      <div className="flex items-center justify-between mb-0.5">
+        <span className="text-[10px] text-gray-500 font-medium">Score</span>
+        <span className="text-[10px] font-bold" style={{ color }}>{score}/100</span>
+      </div>
+      <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+        <div className="h-full rounded-full transition-all" style={{ width: `${score}%`, background: color }} />
+      </div>
+    </div>
+  );
+}
 
 function LeadCard({ lead, onEdit, onDelete, onAutoCotizar, generating }) {
   const dias = getDiasEnEtapa(lead);
@@ -50,85 +68,116 @@ function LeadCard({ lead, onEdit, onDelete, onAutoCotizar, generating }) {
   const slaVencido = slaLimit && dias > slaLimit;
   const slaProximo = slaLimit && dias === slaLimit;
   const isGenerating = generating === lead.id;
-
-  const borderClass = slaVencido
-    ? 'border-red-400'
-    : slaProximo
-      ? 'border-amber-400'
-      : 'border-ld-border';
+  const cal = calidadConfig[lead.calidad_lead];
+  const CalIcon = cal?.icon;
 
   return (
-    <div className={`ld-card p-4 transition-all hover:shadow-md ${borderClass}`} style={{ borderWidth: 1 }}>
-      <div className="flex items-start justify-between mb-2 gap-2">
-        <div className="flex-1 min-w-0">
-          <p className="font-poppins font-semibold text-[15px] text-ld-fg truncate">{lead.empresa}</p>
-          <p className="text-xs text-ld-fg-muted truncate">{lead.contacto || 'Sin contacto'}</p>
+    <div className={`bg-white rounded-2xl border shadow-sm hover:shadow-md transition-all flex flex-col ${
+      slaVencido ? 'border-red-300' : slaProximo ? 'border-amber-300' : 'border-gray-200'
+    }`}>
+      {/* Header card */}
+      <div className="p-4 pb-3">
+        <div className="flex items-start justify-between gap-2 mb-2">
+          <div className="flex-1 min-w-0">
+            <p className="font-bold text-gray-900 text-base leading-tight truncate">{lead.empresa}</p>
+            <p className="text-xs text-gray-500 truncate mt-0.5">{lead.contacto || 'Sin contacto'}</p>
+          </div>
+          <div className="flex gap-0.5 flex-shrink-0">
+            <button onClick={() => onEdit(lead)} className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors" title="Editar">
+              <Edit2 className="w-3.5 h-3.5 text-gray-400" />
+            </button>
+            <button onClick={() => onDelete(lead.id)} className="p-1.5 hover:bg-red-50 rounded-lg transition-colors" title="Eliminar">
+              <Trash2 className="w-3.5 h-3.5 text-red-400" />
+            </button>
+          </div>
         </div>
-        <div className="flex gap-0.5 flex-shrink-0">
-          <button onClick={() => onEdit(lead)} className="p-1.5 hover:bg-ld-bg-soft rounded-lg transition-colors" title="Editar">
-            <Edit2 className="w-3.5 h-3.5 text-ld-fg-muted" />
-          </button>
-          <button onClick={() => onDelete(lead.id)} className="p-1.5 hover:bg-red-50 rounded-lg transition-colors" title="Eliminar">
-            <Trash2 className="w-3.5 h-3.5 text-red-500" />
-          </button>
+
+        {/* Badges */}
+        <div className="flex flex-wrap gap-1.5 mb-3">
+          <span className={`text-[11px] px-2 py-0.5 rounded-full font-semibold border ${estadoBadge[lead.estado]}`}>
+            {lead.estado}
+          </span>
+          {cal && (
+            <span className={`text-[11px] px-2 py-0.5 rounded-full font-semibold border flex items-center gap-1 ${cal.cls}`}>
+              <CalIcon className="w-3 h-3" />{lead.calidad_lead}
+            </span>
+          )}
+          {slaVencido && (
+            <span className="text-[11px] px-2 py-0.5 rounded-full font-semibold bg-red-100 text-red-800 border border-red-200 flex items-center gap-1">
+              <AlertTriangle className="w-3 h-3" />{dias}d SLA
+            </span>
+          )}
+          {slaProximo && !slaVencido && (
+            <span className="text-[11px] px-2 py-0.5 rounded-full font-semibold bg-amber-100 text-amber-800 border border-amber-200 flex items-center gap-1">
+              <Clock className="w-3 h-3" />Vence hoy
+            </span>
+          )}
         </div>
-      </div>
 
-      <div className="flex flex-wrap gap-1.5 mb-3">
-        <span className={`text-[11px] px-2 py-0.5 rounded-full font-semibold ${estadoColor[lead.estado]}`}>{lead.estado}</span>
-        {lead.calidad_lead && (
-          <span className={`text-[11px] px-2 py-0.5 rounded-full font-semibold ${calidadColor[lead.calidad_lead] || 'bg-slate-100 text-slate-600 border border-slate-200'}`}>
-            {lead.calidad_lead}
-          </span>
-        )}
-        {slaVencido && (
-          <span className="text-[11px] px-2 py-0.5 rounded-full font-semibold bg-red-100 text-red-800 border border-red-200 flex items-center gap-1">
-            <AlertTriangle className="w-3 h-3" />{dias}d — SLA vencido
-          </span>
-        )}
-        {slaProximo && !slaVencido && (
-          <span className="text-[11px] px-2 py-0.5 rounded-full font-semibold bg-amber-100 text-amber-800 border border-amber-200 flex items-center gap-1">
-            <Clock className="w-3 h-3" />{dias}d — Vence hoy
-          </span>
-        )}
-      </div>
+        {/* Info */}
+        <div className="space-y-1.5 text-xs text-gray-600">
+          {lead.canal && (
+            <div className="flex items-center gap-1.5">
+              <MessageSquare className="w-3 h-3 text-gray-400 flex-shrink-0" />
+              <span>{lead.canal}</span>
+            </div>
+          )}
+          {lead.cantidad_estimada && (
+            <div className="flex items-center gap-1.5">
+              <Package className="w-3 h-3 text-gray-400 flex-shrink-0" />
+              <span>{lead.cantidad_estimada.toLocaleString()} unidades</span>
+            </div>
+          )}
+          {lead.producto_interes && (
+            <div className="flex items-center gap-1.5 truncate">
+              <Sparkles className="w-3 h-3 text-gray-400 flex-shrink-0" />
+              <span className="truncate">{lead.producto_interes}</span>
+            </div>
+          )}
+          {lead.presupuesto_estimado > 0 && (
+            <div className="flex items-center gap-1.5">
+              <DollarSign className="w-3 h-3 text-emerald-600 flex-shrink-0" />
+              <span className="font-bold text-emerald-700">${lead.presupuesto_estimado.toLocaleString('es-CL')}</span>
+            </div>
+          )}
+        </div>
 
-      <div className="space-y-1 text-xs text-ld-fg-soft">
-        {lead.canal && <div className="flex items-center gap-1.5"><MessageSquare className="w-3 h-3 text-ld-fg-muted" />{lead.canal}</div>}
-        {lead.cantidad_estimada && <div className="flex items-center gap-1.5"><FileText className="w-3 h-3 text-ld-fg-muted" />{lead.cantidad_estimada.toLocaleString()} unidades</div>}
-        {lead.producto_interes && <div className="flex items-center gap-1.5 truncate"><Sparkles className="w-3 h-3 text-ld-fg-muted flex-shrink-0" /><span className="truncate">{lead.producto_interes}</span></div>}
-        {lead.presupuesto_estimado > 0 && (
-          <div className="flex items-center gap-1.5">
-            <DollarSign className="w-3 h-3 text-ld-fg-muted" />
-            <span className="font-semibold" style={{ color: 'var(--ld-action)' }}>${lead.presupuesto_estimado.toLocaleString('es-CL')}</span>
+        {/* Score */}
+        <ScoreBar score={lead.lead_score} />
+
+        {/* Next action */}
+        {lead.next_action && (
+          <div className="mt-3 pt-2.5 border-t border-gray-100">
+            <div className="flex items-start gap-1.5 text-xs">
+              <ChevronRight className="w-3.5 h-3.5 text-emerald-600 flex-shrink-0 mt-0.5" />
+              <span className="text-gray-700 leading-tight">{lead.next_action}</span>
+            </div>
+            {lead.next_action_date && (
+              <p className="text-[10px] text-gray-400 mt-0.5 ml-5">{lead.next_action_date}</p>
+            )}
           </div>
         )}
       </div>
 
-      {lead.next_action && (
-        <div className="mt-2 pt-2 border-t border-ld-border text-xs">
-          <span className="font-semibold" style={{ color: 'var(--ld-action)' }}>→ </span>
-          <span className="text-ld-fg-soft">{lead.next_action}</span>
-          {lead.next_action_date && <span className="text-ld-fg-muted ml-1">({lead.next_action_date})</span>}
-        </div>
-      )}
-
+      {/* CTA generar propuesta */}
       {!['Ganado','Perdido'].includes(lead.estado) && (
-        <div className="mt-3 pt-3 border-t border-ld-border">
+        <div className="px-4 pb-4 mt-auto">
           <button
             onClick={() => onAutoCotizar(lead)}
             disabled={isGenerating}
-            className="w-full text-xs font-bold py-2 rounded-lg ld-btn-primary flex items-center justify-center gap-1.5 disabled:opacity-60 disabled:cursor-wait"
+            className={`w-full py-2.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all ${
+              isGenerating
+                ? 'bg-gray-100 text-gray-400 cursor-wait'
+                : 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm hover:shadow-md'
+            }`}
           >
             {isGenerating ? (
-              <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Generando propuesta…</>
+              <><Loader2 className="w-4 h-4 animate-spin" /> Generando propuesta…</>
             ) : (
-              <><Zap className="w-3.5 h-3.5" /> Generar cotización automática</>
+              <><Zap className="w-4 h-4" /> Generar cotización automática</>
             )}
           </button>
-          <p className="text-[10px] text-ld-fg-muted mt-1.5 text-center">
-            IA arma técnica + comercial · PDF listo en {'<'} 30s
-          </p>
+          <p className="text-[10px] text-gray-400 mt-1.5 text-center">IA arma técnica + comercial · PDF listo en {'<'} 30s</p>
         </div>
       )}
     </div>
@@ -138,34 +187,34 @@ function LeadCard({ lead, onEdit, onDelete, onAutoCotizar, generating }) {
 function CotizacionRow({ cot, onEdit, onDelete, onCrearOP }) {
   const total = cot.total || (cot.cantidad * cot.precio_unitario * (1 - (cot.descuento_pct || 0) / 100) + (cot.fee_personalizacion || 0) + (cot.fee_packaging || 0));
   return (
-    <div className="ld-card p-4 hover:shadow-md transition-all flex items-center justify-between gap-3">
-      <div className="flex items-center gap-3 min-w-0">
-        <div className="min-w-0">
-          <p className="font-poppins font-semibold text-sm text-ld-fg truncate">{cot.empresa}</p>
-          <p className="text-xs text-ld-fg-muted truncate">{cot.sku} · {(cot.cantidad || 0).toLocaleString()} u</p>
+    <div className="bg-white rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition-all p-4 flex items-center justify-between gap-3">
+      <div className="flex items-center gap-3 min-w-0 flex-1">
+        <div className="w-10 h-10 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-center flex-shrink-0">
+          <FileText className="w-4 h-4 text-emerald-600" />
         </div>
-        <span className={`text-[11px] px-2 py-0.5 rounded-full font-semibold flex-shrink-0 ${estadoColor[cot.estado] || 'bg-slate-100 text-slate-700 border border-slate-200'}`}>{cot.estado}</span>
+        <div className="min-w-0">
+          <p className="font-bold text-gray-900 text-sm truncate">{cot.empresa}</p>
+          <p className="text-xs text-gray-500 truncate">{cot.sku} · {(cot.cantidad || 0).toLocaleString()} u · {cot.lead_time_dias || '?'}d</p>
+        </div>
+        <span className={`text-[11px] px-2 py-0.5 rounded-full font-semibold border flex-shrink-0 ${estadoBadge[cot.estado] || 'bg-gray-100 text-gray-700 border-gray-200'}`}>{cot.estado}</span>
       </div>
       <div className="flex items-center gap-3 flex-shrink-0">
         <div className="text-right">
-          <p className="font-poppins font-bold text-sm" style={{ color: 'var(--ld-action)' }}>${total.toLocaleString('es-CL')}</p>
-          <p className="text-[11px] text-ld-fg-muted">{cot.lead_time_dias || '?'} días hábiles</p>
+          <p className="font-bold text-emerald-700 text-sm">${total.toLocaleString('es-CL')}</p>
+          <p className="text-[11px] text-gray-400">CLP</p>
         </div>
-        <div className="flex gap-1 items-center">
+        <div className="flex gap-1">
           {cot.estado === 'Aceptada' && (
-            <button
-              onClick={() => onCrearOP(cot)}
-              title="Crear Orden de Producción"
-              className="text-xs font-semibold px-2 py-1 rounded-lg ld-btn-ghost"
-            >
+            <button onClick={() => onCrearOP(cot)} title="Crear Orden de Producción"
+              className="text-xs font-bold px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white transition">
               + OP
             </button>
           )}
-          <button onClick={() => onEdit(cot)} className="p-1.5 hover:bg-ld-bg-soft rounded-lg transition-colors">
-            <Edit2 className="w-3.5 h-3.5 text-ld-fg-muted" />
+          <button onClick={() => onEdit(cot)} className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors">
+            <Edit2 className="w-3.5 h-3.5 text-gray-400" />
           </button>
           <button onClick={() => onDelete(cot.id)} className="p-1.5 hover:bg-red-50 rounded-lg transition-colors">
-            <Trash2 className="w-3.5 h-3.5 text-red-500" />
+            <Trash2 className="w-3.5 h-3.5 text-red-400" />
           </button>
         </div>
       </div>
@@ -176,8 +225,17 @@ function CotizacionRow({ cot, onEdit, onDelete, onCrearOP }) {
 const LEAD_DEFAULTS = { empresa: '', contacto: '', email: '', telefono: '', canal: 'WhatsApp', estado: 'Nuevo', tipo: 'B2B Corporativo', calidad_lead: 'Tibio', logo_recibido: false, personalizacion: true };
 const COT_DEFAULTS = { empresa: '', sku: '', cantidad: 0, precio_unitario: 0, descuento_pct: 0, fee_personalizacion: 0, fee_packaging: 0, estado: 'Borrador', personalizacion_tipo: 'Láser UV', packaging: 'Estándar (stock)', lead_time_dias: 7 };
 
+const KANBAN_COLS = ['Nuevo', 'Contactado', 'Cotizado', 'Muestra Enviada', 'Negociación'];
+
+const COL_COLORS = {
+  Nuevo:            { header: 'bg-blue-50 border-blue-200',    dot: 'bg-blue-500' },
+  Contactado:       { header: 'bg-purple-50 border-purple-200', dot: 'bg-purple-500' },
+  Cotizado:         { header: 'bg-amber-50 border-amber-200',   dot: 'bg-amber-500' },
+  'Muestra Enviada':{ header: 'bg-orange-50 border-orange-200', dot: 'bg-orange-500' },
+  Negociación:      { header: 'bg-indigo-50 border-indigo-200', dot: 'bg-indigo-500' },
+};
+
 export default function PipelineB2B() {
-  const navigate = useNavigate();
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState('leads');
   const [leads, setLeads] = useState([]);
@@ -188,10 +246,8 @@ export default function PipelineB2B() {
   const [showModal, setShowModal] = useState(false);
   const [editing, setEditing] = useState(null);
   const [form, setForm] = useState(LEAD_DEFAULTS);
-  const [generatingId, setGeneratingId] = useState(null); // ID del lead cuya propuesta se está generando
+  const [generatingId, setGeneratingId] = useState(null);
 
-  // Mapea B2BLead (fuente real, viene del formulario web) al shape legacy
-  // que usa esta página, para no reescribir todas las cards y kanban.
   const mapB2BLead = (l) => ({
     id: l.id,
     empresa: l.company_name,
@@ -199,14 +255,7 @@ export default function PipelineB2B() {
     email: l.email,
     telefono: l.phone,
     canal: l.source,
-    estado: ({
-      'Nuevo': 'Nuevo',
-      'Contactado': 'Contactado',
-      'En revisión': 'Cotizado',
-      'Propuesta enviada': 'Negociación',
-      'Aceptado': 'Ganado',
-      'Perdido': 'Perdido',
-    })[l.status] || 'Nuevo',
+    estado: ({ 'Nuevo':'Nuevo','Contactado':'Contactado','En revisión':'Cotizado','Propuesta enviada':'Negociación','Aceptado':'Ganado','Perdido':'Perdido' })[l.status] || 'Nuevo',
     tipo: 'B2B Corporativo',
     calidad_lead: (l.lead_score || 0) >= 70 ? 'Caliente' : (l.lead_score || 0) >= 40 ? 'Tibio' : 'Frío',
     cantidad_estimada: l.qty_estimate,
@@ -235,43 +284,27 @@ export default function PipelineB2B() {
 
   useEffect(() => { loadData(); }, []);
 
-  const openNew = () => {
-    setEditing(null);
-    setForm(activeTab === 'leads' ? LEAD_DEFAULTS : COT_DEFAULTS);
-    setShowModal(true);
-  };
-
-  const openEdit = (item) => {
-    setEditing(item);
-    setForm(item);
-    setShowModal(true);
-  };
+  const openNew = () => { setEditing(null); setForm(activeTab === 'leads' ? LEAD_DEFAULTS : COT_DEFAULTS); setShowModal(true); };
+  const openEdit = (item) => { setEditing(item); setForm(item); setShowModal(true); };
 
   const handleSave = async () => {
     if (activeTab === 'leads') {
-      // Mapear shape legacy → B2BLead real
       const b2bData = {
-        company_name: form.empresa,
-        contact_name: form.contacto,
-        email: form.email,
+        company_name: form.empresa, contact_name: form.contacto, email: form.email,
         phone: form.telefono,
         source: form.canal === 'WhatsApp' ? 'WhatsApp' : form.canal === 'Email' ? 'Email' : form.canal === 'LinkedIn' ? 'LinkedIn' : form.canal === 'Instagram' ? 'Instagram' : 'Formulario Web',
         status: ({ 'Nuevo':'Nuevo','Contactado':'Contactado','Cotizado':'En revisión','Muestra Enviada':'En revisión','Negociación':'Propuesta enviada','Ganado':'Aceptado','Perdido':'Perdido' })[form.estado] || 'Nuevo',
-        product_interest: form.producto_interes,
-        qty_estimate: form.cantidad_estimada,
-        personalization_needs: form.personalizacion,
-        notes: form.notas,
+        product_interest: form.producto_interes, qty_estimate: form.cantidad_estimada,
+        personalization_needs: form.personalizacion, notes: form.notas,
       };
       if (editing) await base44.entities.B2BLead.update(editing.id, b2bData);
       else await base44.entities.B2BLead.create(b2bData);
     } else {
       const total = (form.cantidad || 0) * (form.precio_unitario || 0) * (1 - (form.descuento_pct || 0) / 100) + (form.fee_personalizacion || 0) + (form.fee_packaging || 0);
-      const data = { ...form, total };
-      if (editing) await base44.entities.Cotizacion.update(editing.id, data);
-      else await base44.entities.Cotizacion.create(data);
+      if (editing) await base44.entities.Cotizacion.update(editing.id, { ...form, total });
+      else await base44.entities.Cotizacion.create({ ...form, total });
     }
-    setShowModal(false);
-    loadData();
+    setShowModal(false); loadData();
   };
 
   const handleDelete = async (id) => {
@@ -283,57 +316,30 @@ export default function PipelineB2B() {
 
   const handleCrearOP = async (cot) => {
     await base44.entities.OrdenProduccion.create({
-      empresa: cot.empresa,
-      sku: cot.sku,
-      cantidad: cot.cantidad,
-      estado: 'Pendiente',
-      prioridad: 'Normal',
-      inyectora: 'Sin asignar',
-      laser: cot.personalizacion_tipo && cot.personalizacion_tipo !== 'Sin personalización' ? 'Láser 1' : 'No requiere',
-      personalizacion: cot.personalizacion_tipo !== 'Sin personalización',
-      anticipo_pagado: false,
+      empresa: cot.empresa, sku: cot.sku, cantidad: cot.cantidad, estado: 'Pendiente', prioridad: 'Normal',
+      inyectora: 'Sin asignar', laser: cot.personalizacion_tipo && cot.personalizacion_tipo !== 'Sin personalización' ? 'Láser 1' : 'No requiere',
+      personalizacion: cot.personalizacion_tipo !== 'Sin personalización', anticipo_pagado: false,
       notas_produccion: `Generado automáticamente desde Cotización ${cot.numero || cot.id?.slice(0,8)}`,
     });
-    alert(`✅ Orden de Producción creada para ${cot.empresa} — ${cot.sku}`);
+    toast({ title: `✅ OP creada para ${cot.empresa}` });
   };
 
-  // Genera cotización 100% automática vía IA llamando a createCorporateProposal.
-  // Arma items, pricing por volumen, lead time, mockups y términos comerciales.
-  // Al terminar abre la propuesta pública (técnica + comercial) ya con PDF disponible.
   const handleAutoCotizar = async (lead) => {
     if (generatingId) return;
     setGeneratingId(lead.id);
     try {
-      const item = {
-        sku: lead.producto_interes || 'PEYU-GEN',
-        nombre: lead.producto_interes || 'Producto Peyu',
-        qty: lead.cantidad_estimada || 50,
-        precio_base: 5000, // base — createCorporateProposal aplica volumen
-        personalizacion: !!(lead.personalizacion || lead.logo_recibido),
-      };
       const resp = await base44.functions.invoke('createCorporateProposal', {
         leadId: lead.id,
-        items: [item],
+        items: [{ sku: lead.producto_interes || 'PEYU-GEN', nombre: lead.producto_interes || 'Producto Peyu', qty: lead.cantidad_estimada || 50, precio_base: 5000, personalizacion: !!(lead.personalizacion || lead.logo_recibido) }],
         notes: lead.notas || '',
       });
       const data = resp?.data || resp;
       if (data?.error) throw new Error(data.error);
-
-      toast({
-        title: '✨ Propuesta generada',
-        description: `${data.numero} · ${lead.empresa} · $${(data.total || 0).toLocaleString('es-CL')} CLP · ${data.lead_time_dias}d`,
-      });
+      toast({ title: '✨ Propuesta generada', description: `${data.numero} · ${lead.empresa} · $${(data.total || 0).toLocaleString('es-CL')} CLP · ${data.lead_time_dias}d` });
       await loadData();
-      // Abrir propuesta pública (técnica + comercial) en nueva pestaña
-      if (data?.proposal_url) {
-        window.open(data.proposal_url, '_blank', 'noopener');
-      }
+      if (data?.proposal_url) window.open(data.proposal_url, '_blank', 'noopener');
     } catch (err) {
-      toast({
-        title: 'No se pudo generar la propuesta',
-        description: err?.message || 'Error inesperado. Revisa los datos del lead.',
-        variant: 'destructive',
-      });
+      toast({ title: 'No se pudo generar la propuesta', description: err?.message || 'Revisa los datos del lead.', variant: 'destructive' });
     } finally {
       setGeneratingId(null);
     }
@@ -343,62 +349,56 @@ export default function PipelineB2B() {
     (filterEstado === 'todos' || l.estado === filterEstado) &&
     (l.empresa?.toLowerCase().includes(search.toLowerCase()) || l.contacto?.toLowerCase().includes(search.toLowerCase()))
   );
-
   const filteredCots = cotizaciones.filter(c =>
     (filterEstado === 'todos' || c.estado === filterEstado) &&
     (c.empresa?.toLowerCase().includes(search.toLowerCase()) || c.sku?.toLowerCase().includes(search.toLowerCase()))
   );
 
   const isLead = activeTab === 'leads';
-  const estados = isLead ? ESTADOS_LEAD : ESTADOS_COT;
-
-  // Kanban columns
-  const kanbanCols = ['Nuevo', 'Contactado', 'Cotizado', 'Muestra Enviada', 'Negociación'];
-
-  // Pipeline stats
   const leadsActivos = leads.filter(l => !['Ganado','Perdido'].includes(l.estado));
   const valorPipeline = leadsActivos.reduce((s, l) => s + (l.presupuesto_estimado || 0), 0);
-  const slaVencidos = leadsActivos.filter(l => {
-    const d = getDiasEnEtapa(l);
-    return SLA_LIMITS[l.estado] && d > SLA_LIMITS[l.estado];
-  }).length;
+  const slaVencidos = leadsActivos.filter(l => { const d = getDiasEnEtapa(l); return SLA_LIMITS[l.estado] && d > SLA_LIMITS[l.estado]; }).length;
   const tasaConversion = leads.length > 0 ? ((leads.filter(l => l.estado === 'Ganado').length / leads.length) * 100).toFixed(1) : 0;
 
   return (
-    <div className="p-6 space-y-5 ld-canvas min-h-screen">
+    <div className="p-4 lg:p-6 space-y-5 min-h-screen bg-gray-50">
+
+      {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
-          <h1 className="ld-display text-3xl text-ld-fg">Pipeline B2B</h1>
-          <p className="text-ld-fg-muted text-sm mt-1">{leads.length} leads · {cotizaciones.length} cotizaciones</p>
+          <h1 className="text-2xl lg:text-3xl font-poppins font-extrabold text-gray-900 tracking-tight">Pipeline B2B</h1>
+          <p className="text-gray-500 text-sm mt-1">{leads.length} leads · {cotizaciones.length} cotizaciones</p>
         </div>
-        <Button onClick={openNew} className="ld-btn-primary gap-2 rounded-full">
-          <Plus className="w-4 h-4" />
-          {isLead ? 'Nuevo Lead' : 'Nueva Cotización'}
-        </Button>
+        <div className="flex gap-2">
+          <button onClick={loadData} className="p-2 hover:bg-gray-200 rounded-xl transition" title="Actualizar">
+            <RefreshCw className={`w-4 h-4 text-gray-500 ${loading ? 'animate-spin' : ''}`} />
+          </button>
+          <Button onClick={openNew} className="bg-emerald-600 hover:bg-emerald-700 text-white gap-2 rounded-xl font-bold shadow-sm">
+            <Plus className="w-4 h-4" />
+            {isLead ? 'Nuevo Lead' : 'Nueva Cotización'}
+          </Button>
+        </div>
       </div>
 
-      {/* Pipeline KPIs — alto contraste, sin texto verde tenue */}
+      {/* KPIs */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         {[
-          { label: 'Leads activos',    value: leadsActivos.length,                           sub: `${leads.filter(l=>l.calidad_lead==='Caliente').length} calientes`,                            icon: Users,         tone: 'action' },
-          { label: 'Valor pipeline',   value: valorPipeline > 0 ? `$${(valorPipeline/1000000).toFixed(1)}M` : '$—', sub: 'CLP estimado',                                                              icon: DollarSign,    tone: 'action' },
-          { label: 'SLA vencidos',     value: slaVencidos,                                   sub: 'requieren acción hoy',                                                                      icon: AlertTriangle, tone: slaVencidos > 0 ? 'warn' : 'action' },
-          { label: 'Tasa conversión',  value: `${tasaConversion}%`,                          sub: `Meta: 7% · ${leads.filter(l=>l.estado==='Ganado').length} ganados`,                          icon: TrendingUp,    tone: parseFloat(tasaConversion) >= 7 ? 'action' : 'warn' },
+          { label: 'Leads activos',   value: leadsActivos.length,  sub: `${leads.filter(l=>l.calidad_lead==='Caliente').length} calientes`,           icon: Users,         color: 'text-blue-700',    bg: 'bg-blue-50 border-blue-200' },
+          { label: 'Valor pipeline',  value: valorPipeline > 0 ? `$${(valorPipeline/1000000).toFixed(1)}M` : '$—', sub: 'CLP estimado',              icon: DollarSign,    color: 'text-emerald-700', bg: 'bg-emerald-50 border-emerald-200' },
+          { label: 'SLA vencidos',    value: slaVencidos,          sub: 'requieren acción hoy',                                                      icon: AlertTriangle, color: slaVencidos > 0 ? 'text-red-700' : 'text-gray-500', bg: slaVencidos > 0 ? 'bg-red-50 border-red-200' : 'bg-gray-50 border-gray-200' },
+          { label: 'Conversión',      value: `${tasaConversion}%`, sub: `Meta: 7% · ${leads.filter(l=>l.estado==='Ganado').length} ganados`,         icon: TrendingUp,    color: parseFloat(tasaConversion) >= 7 ? 'text-emerald-700' : 'text-amber-700', bg: parseFloat(tasaConversion) >= 7 ? 'bg-emerald-50 border-emerald-200' : 'bg-amber-50 border-amber-200' },
         ].map((kpi, i) => {
           const Icon = kpi.icon;
-          const tone = kpi.tone === 'warn'
-            ? { color: 'var(--ld-highlight)', bg: 'var(--ld-highlight-soft)' }
-            : { color: 'var(--ld-action)',    bg: 'var(--ld-action-soft)' };
           return (
-            <div key={i} className="ld-card p-4">
+            <div key={i} className={`bg-white border rounded-2xl p-4 shadow-sm ${kpi.bg.split(' ')[1]}`}>
               <div className="flex items-center justify-between gap-3">
                 <div className="min-w-0">
-                  <p className="text-[11px] text-ld-fg-muted uppercase tracking-wider font-semibold">{kpi.label}</p>
-                  <p className="font-poppins font-bold text-2xl mt-1" style={{ color: tone.color }}>{kpi.value}</p>
-                  <p className="text-xs text-ld-fg-soft mt-0.5">{kpi.sub}</p>
+                  <p className="text-[11px] text-gray-500 uppercase tracking-wider font-semibold">{kpi.label}</p>
+                  <p className={`font-poppins font-extrabold text-2xl mt-1 ${kpi.color}`}>{kpi.value}</p>
+                  <p className="text-xs text-gray-400 mt-0.5">{kpi.sub}</p>
                 </div>
-                <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: tone.bg }}>
-                  <Icon className="w-5 h-5" style={{ color: tone.color }} />
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 border ${kpi.bg}`}>
+                  <Icon className={`w-5 h-5 ${kpi.color}`} />
                 </div>
               </div>
             </div>
@@ -406,250 +406,275 @@ export default function PipelineB2B() {
         })}
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <div className="flex items-center gap-4 flex-wrap">
-          <TabsList>
-            <TabsTrigger value="leads">Leads ({leads.length})</TabsTrigger>
-            <TabsTrigger value="cotizaciones">Cotizaciones ({cotizaciones.length})</TabsTrigger>
-            <TabsTrigger value="kanban">Kanban</TabsTrigger>
-          </TabsList>
-          <div className="flex gap-2 ml-auto">
-            <div className="relative">
-              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-              <Input value={search} onChange={e => setSearch(e.target.value)} placeholder="Buscar..." className="pl-9 h-9 w-48" />
-            </div>
-            <Select value={filterEstado} onValueChange={setFilterEstado}>
-              <SelectTrigger className="h-9 w-40">
-                <SelectValue placeholder="Estado" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="todos">Todos los estados</SelectItem>
-                {estados.map(e => <SelectItem key={e} value={e}>{e}</SelectItem>)}
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
+      {/* Tabs */}
+      <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+        <div className="p-4 border-b border-gray-100 flex items-center gap-4 flex-wrap">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1">
+            <div className="flex items-center gap-3 flex-wrap">
+              <TabsList className="bg-gray-100">
+                <TabsTrigger value="leads" className="data-[state=active]:bg-white data-[state=active]:shadow-sm">
+                  <Users className="w-3.5 h-3.5 mr-1.5" /> Leads ({leads.length})
+                </TabsTrigger>
+                <TabsTrigger value="cotizaciones" className="data-[state=active]:bg-white data-[state=active]:shadow-sm">
+                  <FileText className="w-3.5 h-3.5 mr-1.5" /> Cotizaciones ({cotizaciones.length})
+                </TabsTrigger>
+                <TabsTrigger value="kanban" className="data-[state=active]:bg-white data-[state=active]:shadow-sm">
+                  <BarChart3 className="w-3.5 h-3.5 mr-1.5" /> Kanban
+                </TabsTrigger>
+              </TabsList>
 
-        <TabsContent value="leads" className="mt-4">
-          {loading ? <div className="text-center py-12 text-ld-fg-muted">Cargando leads…</div> : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-              {filteredLeads.map(l => (
-                <LeadCard
-                  key={l.id}
-                  lead={l}
-                  onEdit={openEdit}
-                  onDelete={handleDelete}
-                  onAutoCotizar={handleAutoCotizar}
-                  generating={generatingId}
-                />
-              ))}
-              {filteredLeads.length === 0 && (
-                <div className="col-span-3 text-center py-16 text-ld-fg-muted">
-                  <Users className="w-12 h-12 mx-auto mb-3 opacity-30" />
-                  <p>No hay leads. Agrega el primero.</p>
+              <div className="flex gap-2 ml-auto">
+                <div className="relative">
+                  <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                  <Input value={search} onChange={e => setSearch(e.target.value)} placeholder="Buscar..."
+                    className="pl-9 h-9 w-44 bg-gray-50 border-gray-200 text-gray-900 placeholder:text-gray-400" />
+                </div>
+                <Select value={filterEstado} onValueChange={setFilterEstado}>
+                  <SelectTrigger className="h-9 w-40 bg-gray-50 border-gray-200 text-gray-900">
+                    <SelectValue placeholder="Estado" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="todos">Todos los estados</SelectItem>
+                    {(isLead ? ESTADOS_LEAD : ESTADOS_COT).map(e => <SelectItem key={e} value={e}>{e}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            {/* ── Tab: Leads ── */}
+            <TabsContent value="leads" className="mt-4 px-0">
+              {loading ? (
+                <div className="text-center py-12 text-gray-400 flex items-center justify-center gap-2">
+                  <Loader2 className="w-4 h-4 animate-spin" /> Cargando leads…
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 p-4 pt-0">
+                  {filteredLeads.map(l => (
+                    <LeadCard key={l.id} lead={l} onEdit={openEdit} onDelete={handleDelete} onAutoCotizar={handleAutoCotizar} generating={generatingId} />
+                  ))}
+                  {filteredLeads.length === 0 && (
+                    <div className="col-span-3 text-center py-16 text-gray-400">
+                      <Users className="w-12 h-12 mx-auto mb-3 opacity-25" />
+                      <p className="font-medium">No hay leads. Agrega el primero.</p>
+                    </div>
+                  )}
                 </div>
               )}
-            </div>
-          )}
-        </TabsContent>
+            </TabsContent>
 
-        <TabsContent value="cotizaciones" className="mt-4 space-y-3">
-          {loading ? <div className="text-center py-12 text-ld-fg-muted">Cargando…</div> : (
-            <>
-              {filteredCots.map(c => <CotizacionRow key={c.id} cot={c} onEdit={openEdit} onDelete={handleDelete} onCrearOP={handleCrearOP} />)}
-              {filteredCots.length === 0 && (
-                <div className="text-center py-16 text-ld-fg-muted">
-                  <FileText className="w-12 h-12 mx-auto mb-3 opacity-30" />
-                  <p>No hay cotizaciones. Genera una desde un lead activo o crea una manual.</p>
+            {/* ── Tab: Cotizaciones ── */}
+            <TabsContent value="cotizaciones" className="mt-4 space-y-2.5 p-4 pt-0">
+              {loading ? (
+                <div className="text-center py-12 text-gray-400 flex items-center justify-center gap-2">
+                  <Loader2 className="w-4 h-4 animate-spin" /> Cargando…
+                </div>
+              ) : (
+                <>
+                  {filteredCots.map(c => <CotizacionRow key={c.id} cot={c} onEdit={openEdit} onDelete={handleDelete} onCrearOP={handleCrearOP} />)}
+                  {filteredCots.length === 0 && (
+                    <div className="text-center py-16 text-gray-400">
+                      <FileText className="w-12 h-12 mx-auto mb-3 opacity-25" />
+                      <p className="font-medium">No hay cotizaciones. Genera una desde un lead activo.</p>
+                    </div>
+                  )}
+                </>
+              )}
+            </TabsContent>
+
+            {/* ── Tab: Kanban ── */}
+            <TabsContent value="kanban" className="mt-4 p-4 pt-0">
+              {slaVencidos > 0 && (
+                <div className="mb-4 flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold bg-red-50 text-red-800 border border-red-200">
+                  <AlertTriangle className="w-4 h-4 flex-shrink-0" />
+                  {slaVencidos} lead{slaVencidos > 1 ? 's' : ''} con SLA vencido — actuar ahora
                 </div>
               )}
-            </>
-          )}
-        </TabsContent>
-
-        <TabsContent value="kanban" className="mt-4">
-          {slaVencidos > 0 && (
-            <div className="mb-3 flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium bg-red-100 text-red-800 border border-red-200">
-              <AlertTriangle className="w-4 h-4 flex-shrink-0" />
-              {slaVencidos} lead(s) con SLA vencido — actuar ahora (SLA: Nuevo &lt;24h, Cotizado &lt;72h)
-            </div>
-          )}
-          <div className="flex gap-3 overflow-x-auto pb-4">
-            {kanbanCols.map(estado => {
-              const items = leads.filter(l => l.estado === estado);
-              const vencidos = items.filter(l => getDiasEnEtapa(l) > (SLA_LIMITS[estado] || 99)).length;
-              return (
-                <div key={estado} className="flex-shrink-0 w-60">
-                  <div className="flex items-center justify-between mb-2 px-1">
-                    <div>
-                      <h3 className="font-semibold text-sm text-ld-fg">{estado}</h3>
-                      {SLA_LIMITS[estado] && <p className="text-xs text-ld-fg-muted">SLA: &lt;{SLA_LIMITS[estado]}d</p>}
-                    </div>
-                    <div className="flex items-center gap-1">
-                      {vencidos > 0 && <span className="text-xs bg-red-100 text-red-800 border border-red-200 px-1.5 py-0.5 rounded-full font-bold">{vencidos}⚠</span>}
-                      <span className="text-xs bg-ld-bg-soft border border-ld-border px-2 py-0.5 rounded-full text-ld-fg-soft font-medium">{items.length}</span>
-                    </div>
-                  </div>
-                  <div className="space-y-2 min-h-16">
-                    {items.map(l => {
-                      const dias = getDiasEnEtapa(l);
-                      const slaV = SLA_LIMITS[estado] && dias > SLA_LIMITS[estado];
-                      return (
-                        <div
-                          key={l.id}
-                          onClick={() => { setActiveTab('leads'); openEdit(l); }}
-                          className={`ld-card p-3 text-sm cursor-pointer hover:shadow-md transition-all ${slaV ? 'border-red-300' : ''}`}
-                          style={slaV ? { borderColor: '#fca5a5' } : {}}
-                        >
-                          <p className="font-semibold text-ld-fg text-xs leading-tight">{l.empresa}</p>
-                          <p className="text-xs text-ld-fg-muted truncate">{l.contacto}</p>
-                          <div className="flex items-center justify-between mt-2 gap-1">
-                            {l.calidad_lead && (
-                              <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-semibold ${calidadColor[l.calidad_lead]}`}>
-                                {l.calidad_lead}
-                              </span>
-                            )}
-                            <span className={`text-xs font-semibold flex items-center gap-1 ml-auto ${slaV ? 'text-red-700' : 'text-ld-fg-muted'}`}>
-                              {slaV ? <AlertTriangle className="w-3 h-3" /> : <Clock className="w-3 h-3" />}
-                              {dias}d
-                            </span>
+              <div className="flex gap-3 overflow-x-auto pb-2 -mx-1 px-1">
+                {KANBAN_COLS.map(estado => {
+                  const items = leads.filter(l => l.estado === estado);
+                  const vencidos = items.filter(l => getDiasEnEtapa(l) > (SLA_LIMITS[estado] || 99)).length;
+                  const col = COL_COLORS[estado] || {};
+                  return (
+                    <div key={estado} className="flex-shrink-0 w-56">
+                      <div className={`flex items-center justify-between mb-2.5 px-3 py-2 rounded-xl border ${col.header}`}>
+                        <div className="flex items-center gap-2">
+                          <div className={`w-2 h-2 rounded-full ${col.dot}`} />
+                          <div>
+                            <p className="font-bold text-xs text-gray-800">{estado}</p>
+                            {SLA_LIMITS[estado] && <p className="text-[10px] text-gray-500">SLA {'<'}{SLA_LIMITS[estado]}d</p>}
                           </div>
-                          {l.presupuesto_estimado > 0 && (
-                            <p className="text-xs font-bold mt-1" style={{ color: 'var(--ld-action)' }}>${(l.presupuesto_estimado/1000).toFixed(0)}K</p>
-                          )}
                         </div>
-                      );
-                    })}
-                    {items.length === 0 && (
-                      <div className="border-2 border-dashed border-ld-border rounded-xl p-4 text-center text-xs text-ld-fg-muted">Sin leads</div>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
-            {/* Ganado / Perdido */}
-            {['Ganado','Perdido'].map(estado => {
-              const items = leads.filter(l => l.estado === estado);
-              const isWon = estado === 'Ganado';
-              return (
-                <div key={estado} className="flex-shrink-0 w-48">
-                  <div className="flex items-center justify-between mb-2 px-1">
-                    <h3 className={`font-semibold text-sm ${isWon ? 'text-emerald-700' : 'text-red-600'}`}>{estado}</h3>
-                    <span className="text-xs bg-ld-bg-soft border border-ld-border px-2 py-0.5 rounded-full text-ld-fg-soft font-medium">{items.length}</span>
-                  </div>
-                  <div className="space-y-2">
-                    {items.map(l => (
-                      <div key={l.id} className={`rounded-xl p-3 border text-xs ${isWon ? 'bg-emerald-50 border-emerald-200' : 'bg-red-50 border-red-200'}`}>
-                        <p className="font-semibold text-ld-fg">{l.empresa}</p>
-                        {l.presupuesto_estimado > 0 && <p className="text-ld-fg-muted mt-0.5">${(l.presupuesto_estimado/1000).toFixed(0)}K</p>}
+                        <div className="flex items-center gap-1">
+                          {vencidos > 0 && <span className="text-[10px] bg-red-100 text-red-800 border border-red-200 px-1.5 py-0.5 rounded-full font-bold">{vencidos}⚠</span>}
+                          <span className="text-[10px] bg-white border border-gray-200 px-1.5 py-0.5 rounded-full text-gray-600 font-semibold">{items.length}</span>
+                        </div>
                       </div>
-                    ))}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </TabsContent>
-      </Tabs>
+
+                      <div className="space-y-2 min-h-12">
+                        {items.map(l => {
+                          const dias = getDiasEnEtapa(l);
+                          const slaV = SLA_LIMITS[estado] && dias > SLA_LIMITS[estado];
+                          const cal = calidadConfig[l.calidad_lead];
+                          return (
+                            <div key={l.id} onClick={() => { setActiveTab('leads'); openEdit(l); }}
+                              className={`bg-white rounded-xl border shadow-sm p-3 cursor-pointer hover:shadow-md transition-all ${slaV ? 'border-red-300' : 'border-gray-200'}`}>
+                              <p className="font-bold text-gray-900 text-xs leading-tight truncate">{l.empresa}</p>
+                              <p className="text-[11px] text-gray-500 truncate mt-0.5">{l.contacto}</p>
+                              <div className="flex items-center justify-between mt-2 gap-1">
+                                {cal && (
+                                  <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-semibold border flex items-center gap-0.5 ${cal.cls}`}>
+                                    <cal.icon className="w-2.5 h-2.5" />{l.calidad_lead}
+                                  </span>
+                                )}
+                                <span className={`text-[10px] font-bold flex items-center gap-1 ml-auto ${slaV ? 'text-red-700' : 'text-gray-400'}`}>
+                                  {slaV ? <AlertTriangle className="w-3 h-3" /> : <Clock className="w-3 h-3" />}
+                                  {dias}d
+                                </span>
+                              </div>
+                              {l.lead_score > 0 && (
+                                <div className="mt-1.5 h-1 bg-gray-100 rounded-full overflow-hidden">
+                                  <div className="h-full rounded-full" style={{ width: `${l.lead_score}%`, background: l.lead_score >= 70 ? '#0F8B6C' : l.lead_score >= 40 ? '#D97706' : '#94A3B8' }} />
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })}
+                        {items.length === 0 && (
+                          <div className="border-2 border-dashed border-gray-200 rounded-xl p-4 text-center text-xs text-gray-400">Sin leads</div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+
+                {/* Ganado / Perdido */}
+                {['Ganado','Perdido'].map(estado => {
+                  const items = leads.filter(l => l.estado === estado);
+                  const isWon = estado === 'Ganado';
+                  return (
+                    <div key={estado} className="flex-shrink-0 w-44">
+                      <div className={`flex items-center justify-between mb-2.5 px-3 py-2 rounded-xl border ${isWon ? 'bg-emerald-50 border-emerald-200' : 'bg-red-50 border-red-200'}`}>
+                        <div className="flex items-center gap-2">
+                          {isWon ? <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" /> : <XCircle className="w-3.5 h-3.5 text-red-500" />}
+                          <p className={`font-bold text-xs ${isWon ? 'text-emerald-800' : 'text-red-700'}`}>{estado}</p>
+                        </div>
+                        <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-semibold border ${isWon ? 'bg-emerald-100 text-emerald-700 border-emerald-200' : 'bg-red-100 text-red-700 border-red-200'}`}>{items.length}</span>
+                      </div>
+                      <div className="space-y-2">
+                        {items.map(l => (
+                          <div key={l.id} className={`rounded-xl border p-2.5 text-xs ${isWon ? 'bg-emerald-50 border-emerald-200' : 'bg-red-50 border-red-200'}`}>
+                            <p className="font-semibold text-gray-800 truncate">{l.empresa}</p>
+                            {l.presupuesto_estimado > 0 && <p className={`mt-0.5 font-bold ${isWon ? 'text-emerald-700' : 'text-red-600'}`}>${(l.presupuesto_estimado/1000).toFixed(0)}K</p>}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </TabsContent>
+          </Tabs>
+        </div>
+      </div>
 
       {/* Modal */}
       <Dialog open={showModal} onOpenChange={setShowModal}>
-        <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
+        <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto bg-white">
           <DialogHeader>
-            <DialogTitle className="font-poppins">
-              {editing ? 'Editar' : 'Nuevo'} {isLead ? 'Lead' : 'Cotización'}
+            <DialogTitle className="font-poppins font-bold text-gray-900">
+              {editing ? 'Editar' : 'Nuevo'} {isLead ? 'Lead B2B' : 'Cotización'}
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-3 mt-2">
             {isLead ? (
               <>
                 <div className="grid grid-cols-2 gap-3">
-                  <div><label className="text-xs font-medium text-muted-foreground">Empresa *</label><Input value={form.empresa||''} onChange={e=>setForm({...form,empresa:e.target.value})} className="mt-1" /></div>
-                  <div><label className="text-xs font-medium text-muted-foreground">Contacto *</label><Input value={form.contacto||''} onChange={e=>setForm({...form,contacto:e.target.value})} className="mt-1" /></div>
+                  <Field label="Empresa *"><Input value={form.empresa||''} onChange={e=>setForm({...form,empresa:e.target.value})} /></Field>
+                  <Field label="Contacto *"><Input value={form.contacto||''} onChange={e=>setForm({...form,contacto:e.target.value})} /></Field>
                 </div>
                 <div className="grid grid-cols-2 gap-3">
-                  <div><label className="text-xs font-medium text-muted-foreground">Email</label><Input value={form.email||''} onChange={e=>setForm({...form,email:e.target.value})} className="mt-1" /></div>
-                  <div><label className="text-xs font-medium text-muted-foreground">Teléfono</label><Input value={form.telefono||''} onChange={e=>setForm({...form,telefono:e.target.value})} className="mt-1" /></div>
+                  <Field label="Email"><Input value={form.email||''} onChange={e=>setForm({...form,email:e.target.value})} /></Field>
+                  <Field label="Teléfono"><Input value={form.telefono||''} onChange={e=>setForm({...form,telefono:e.target.value})} /></Field>
                 </div>
                 <div className="grid grid-cols-2 gap-3">
-                  <div><label className="text-xs font-medium text-muted-foreground">Canal</label>
+                  <Field label="Canal">
                     <Select value={form.canal||''} onValueChange={v=>setForm({...form,canal:v})}>
-                      <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
                       <SelectContent>{["WhatsApp","Instagram","Email","LinkedIn","Referido","Web","Otro"].map(o=><SelectItem key={o} value={o}>{o}</SelectItem>)}</SelectContent>
                     </Select>
-                  </div>
-                  <div><label className="text-xs font-medium text-muted-foreground">Estado</label>
+                  </Field>
+                  <Field label="Estado">
                     <Select value={form.estado||''} onValueChange={v=>setForm({...form,estado:v})}>
-                      <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
                       <SelectContent>{ESTADOS_LEAD.map(o=><SelectItem key={o} value={o}>{o}</SelectItem>)}</SelectContent>
                     </Select>
-                  </div>
+                  </Field>
                 </div>
                 <div className="grid grid-cols-2 gap-3">
-                  <div><label className="text-xs font-medium text-muted-foreground">Tipo</label>
-                    <Select value={form.tipo||''} onValueChange={v=>setForm({...form,tipo:v})}>
-                      <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
-                      <SelectContent>{["B2B Corporativo","B2B Pyme","B2C"].map(o=><SelectItem key={o} value={o}>{o}</SelectItem>)}</SelectContent>
-                    </Select>
-                  </div>
-                  <div><label className="text-xs font-medium text-muted-foreground">Calidad Lead</label>
+                  <Field label="Calidad Lead">
                     <Select value={form.calidad_lead||''} onValueChange={v=>setForm({...form,calidad_lead:v})}>
-                      <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
                       <SelectContent>{["Frío","Tibio","Caliente","No Comercial"].map(o=><SelectItem key={o} value={o}>{o}</SelectItem>)}</SelectContent>
                     </Select>
-                  </div>
+                  </Field>
+                  <Field label="Cantidad Estimada (u)"><Input type="number" value={form.cantidad_estimada||''} onChange={e=>setForm({...form,cantidad_estimada:+e.target.value})} /></Field>
                 </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div><label className="text-xs font-medium text-muted-foreground">Cantidad Estimada (u)</label><Input type="number" value={form.cantidad_estimada||''} onChange={e=>setForm({...form,cantidad_estimada:+e.target.value})} className="mt-1" /></div>
-                  <div><label className="text-xs font-medium text-muted-foreground">Presupuesto (CLP)</label><Input type="number" value={form.presupuesto_estimado||''} onChange={e=>setForm({...form,presupuesto_estimado:+e.target.value})} className="mt-1" /></div>
-                </div>
-                <div><label className="text-xs font-medium text-muted-foreground">Producto de Interés</label><Input value={form.producto_interes||''} onChange={e=>setForm({...form,producto_interes:e.target.value})} className="mt-1" /></div>
-                <div><label className="text-xs font-medium text-muted-foreground">Próxima Acción</label><Input value={form.next_action||''} onChange={e=>setForm({...form,next_action:e.target.value})} className="mt-1" /></div>
-                <div><label className="text-xs font-medium text-muted-foreground">Notas</label><textarea value={form.notas||''} onChange={e=>setForm({...form,notas:e.target.value})} className="w-full mt-1 border border-input rounded-lg px-3 py-2 text-sm resize-none h-20" /></div>
+                <Field label="Producto de Interés"><Input value={form.producto_interes||''} onChange={e=>setForm({...form,producto_interes:e.target.value})} /></Field>
+                <Field label="Próxima Acción"><Input value={form.next_action||''} onChange={e=>setForm({...form,next_action:e.target.value})} /></Field>
+                <Field label="Notas"><textarea value={form.notas||''} onChange={e=>setForm({...form,notas:e.target.value})} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm resize-none h-20 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/40" /></Field>
               </>
             ) : (
               <>
                 <div className="grid grid-cols-2 gap-3">
-                  <div><label className="text-xs font-medium text-muted-foreground">Empresa *</label><Input value={form.empresa||''} onChange={e=>setForm({...form,empresa:e.target.value})} className="mt-1" /></div>
-                  <div><label className="text-xs font-medium text-muted-foreground">Contacto</label><Input value={form.contacto||''} onChange={e=>setForm({...form,contacto:e.target.value})} className="mt-1" /></div>
+                  <Field label="Empresa *"><Input value={form.empresa||''} onChange={e=>setForm({...form,empresa:e.target.value})} /></Field>
+                  <Field label="Contacto"><Input value={form.contacto||''} onChange={e=>setForm({...form,contacto:e.target.value})} /></Field>
                 </div>
-                <div><label className="text-xs font-medium text-muted-foreground">Producto / SKU *</label><Input value={form.sku||''} onChange={e=>setForm({...form,sku:e.target.value})} className="mt-1" /></div>
+                <Field label="Producto / SKU *"><Input value={form.sku||''} onChange={e=>setForm({...form,sku:e.target.value})} /></Field>
                 <div className="grid grid-cols-3 gap-3">
-                  <div><label className="text-xs font-medium text-muted-foreground">Cantidad</label><Input type="number" value={form.cantidad||''} onChange={e=>setForm({...form,cantidad:+e.target.value})} className="mt-1" /></div>
-                  <div><label className="text-xs font-medium text-muted-foreground">Precio Unitario</label><Input type="number" value={form.precio_unitario||''} onChange={e=>setForm({...form,precio_unitario:+e.target.value})} className="mt-1" /></div>
-                  <div><label className="text-xs font-medium text-muted-foreground">Descuento %</label><Input type="number" value={form.descuento_pct||''} onChange={e=>setForm({...form,descuento_pct:+e.target.value})} className="mt-1" /></div>
+                  <Field label="Cantidad"><Input type="number" value={form.cantidad||''} onChange={e=>setForm({...form,cantidad:+e.target.value})} /></Field>
+                  <Field label="Precio Unitario"><Input type="number" value={form.precio_unitario||''} onChange={e=>setForm({...form,precio_unitario:+e.target.value})} /></Field>
+                  <Field label="Descuento %"><Input type="number" value={form.descuento_pct||''} onChange={e=>setForm({...form,descuento_pct:+e.target.value})} /></Field>
                 </div>
                 <div className="grid grid-cols-2 gap-3">
-                  <div><label className="text-xs font-medium text-muted-foreground">Fee Personalización</label><Input type="number" value={form.fee_personalizacion||''} onChange={e=>setForm({...form,fee_personalizacion:+e.target.value})} className="mt-1" /></div>
-                  <div><label className="text-xs font-medium text-muted-foreground">Fee Packaging</label><Input type="number" value={form.fee_packaging||''} onChange={e=>setForm({...form,fee_packaging:+e.target.value})} className="mt-1" /></div>
+                  <Field label="Fee Personalización"><Input type="number" value={form.fee_personalizacion||''} onChange={e=>setForm({...form,fee_personalizacion:+e.target.value})} /></Field>
+                  <Field label="Fee Packaging"><Input type="number" value={form.fee_packaging||''} onChange={e=>setForm({...form,fee_packaging:+e.target.value})} /></Field>
                 </div>
-                <div className="p-3 rounded-xl font-poppins font-semibold text-sm" style={{ background: '#f0faf7', color: '#0F8B6C' }}>
+                <div className="px-4 py-3 rounded-xl bg-emerald-50 border border-emerald-200 font-bold text-sm text-emerald-800">
                   Total estimado: ${((form.cantidad||0)*(form.precio_unitario||0)*(1-(form.descuento_pct||0)/100)+(form.fee_personalizacion||0)+(form.fee_packaging||0)).toLocaleString('es-CL')} CLP
                 </div>
                 <div className="grid grid-cols-2 gap-3">
-                  <div><label className="text-xs font-medium text-muted-foreground">Personalización</label>
+                  <Field label="Personalización">
                     <Select value={form.personalizacion_tipo||''} onValueChange={v=>setForm({...form,personalizacion_tipo:v})}>
-                      <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
                       <SelectContent>{["Láser UV","Serigrafía","Sin personalización"].map(o=><SelectItem key={o} value={o}>{o}</SelectItem>)}</SelectContent>
                     </Select>
-                  </div>
-                  <div><label className="text-xs font-medium text-muted-foreground">Lead Time (días)</label><Input type="number" value={form.lead_time_dias||''} onChange={e=>setForm({...form,lead_time_dias:+e.target.value})} className="mt-1" /></div>
+                  </Field>
+                  <Field label="Lead Time (días)"><Input type="number" value={form.lead_time_dias||''} onChange={e=>setForm({...form,lead_time_dias:+e.target.value})} /></Field>
                 </div>
-                <div><label className="text-xs font-medium text-muted-foreground">Estado</label>
+                <Field label="Estado">
                   <Select value={form.estado||''} onValueChange={v=>setForm({...form,estado:v})}>
-                    <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>{ESTADOS_COT.map(o=><SelectItem key={o} value={o}>{o}</SelectItem>)}</SelectContent>
                   </Select>
-                </div>
+                </Field>
               </>
             )}
             <div className="flex gap-2 pt-2">
-              <Button onClick={handleSave} className="flex-1 text-white" style={{ background: '#0F8B6C' }}>Guardar</Button>
-              <Button variant="outline" onClick={() => setShowModal(false)} className="flex-1">Cancelar</Button>
+              <Button onClick={handleSave} className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold">Guardar</Button>
+              <Button variant="outline" onClick={() => setShowModal(false)} className="flex-1 border-gray-300 text-gray-700">Cancelar</Button>
             </div>
           </div>
         </DialogContent>
       </Dialog>
+    </div>
+  );
+}
+
+function Field({ label, children }) {
+  return (
+    <div>
+      <label className="text-xs font-semibold text-gray-600 mb-1 block">{label}</label>
+      {children}
     </div>
   );
 }
