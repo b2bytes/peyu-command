@@ -867,7 +867,26 @@ export default function PersonalizacionFlow() {
           {steps[step]}
         </div>
 
-        <div className="mt-6 sticky bottom-4 z-10">
+        <div className="mt-6 sticky bottom-4 z-10 space-y-2">
+          {/* Bubble de mockup: visible desde el paso 2 en adelante cuando hay personalización activa */}
+          {step >= 2 && opcion && opcion !== 'none' && personalizacionCompleta && (
+            <button
+              type="button"
+              onClick={() => step === 2 ? setMockupModalOpen(true) : setStep(2)}
+              className={`w-full flex items-center justify-between gap-2 px-4 py-2.5 rounded-2xl font-bold text-sm transition-all border ${
+                mockupUrl
+                  ? 'bg-teal-500/20 border-teal-400/50 text-teal-200 hover:bg-teal-500/30'
+                  : 'bg-amber-400/20 border-amber-400/50 text-amber-200 hover:bg-amber-400/30 animate-pulse'
+              }`}
+            >
+              <div className="flex items-center gap-2">
+                <Sparkles className="w-4 h-4 flex-shrink-0" />
+                <span>{mockupUrl ? '✓ Mockup aprobado · incluido en pedido' : '⚡ Aprobar mockup antes de pagar'}</span>
+              </div>
+              {!mockupUrl && <span className="text-xs font-semibold opacity-80">Ver →</span>}
+            </button>
+          )}
+
           {step < 3 ? (
             <Button onClick={() => setStep(s => s + 1)} size="lg"
               className="w-full gap-2 font-bold rounded-2xl h-14 text-base bg-gradient-to-r from-teal-500 to-cyan-500 hover:from-teal-600 hover:to-cyan-600 text-white shadow-2xl shadow-teal-500/30 border-0 hover:scale-[1.01] transition-all"

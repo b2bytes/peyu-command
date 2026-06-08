@@ -90,7 +90,7 @@ export default function ShippingAddressForm({ cliente, setCliente, errors = {}, 
       </Section>
 
       {/* ── SECCIÓN 2 · DIRECCIÓN ─────────────────────────────────── */}
-      <Section icon={MapPin} title="Dirección de despacho" subtitle="A todo Chile vía BlueExpress">
+      <Section icon={MapPin} title="Dirección de despacho" subtitle="A todo Chile vía BlueExpress · o retira en tienda">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {/* Región */}
           <div className="w-full min-w-0">
@@ -171,31 +171,15 @@ export default function ShippingAddressForm({ cliente, setCliente, errors = {}, 
           isValid={fieldValid('direccion')}
         />
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <FormField
-            label="Depto / Oficina / Casa"
-            name="referencia"
-            autoComplete="address-line2"
-            value={cliente.referencia || ''}
-            onChange={update('referencia')}
-            placeholder="Depto 502, Torre B (opcional)"
-            hint="Ayuda al courier a encontrarte"
-          />
-          <FormField
-            label="Código postal"
-            name="codigo_postal"
-            autoComplete="postal-code"
-            inputMode="numeric"
-            maxLength={7}
-            value={cliente.codigo_postal}
-            onChange={update('codigo_postal')}
-            onBlur={validateField('codigo_postal')}
-            placeholder="7500000"
-            error={fieldError('codigo_postal')}
-            isValid={fieldValid('codigo_postal')}
-            hint="Opcional · 7 dígitos"
-          />
-        </div>
+        <FormField
+          label="Depto / Oficina / Casa"
+          name="referencia"
+          autoComplete="address-line2"
+          value={cliente.referencia || ''}
+          onChange={update('referencia')}
+          placeholder="Depto 502, Torre B (opcional)"
+          hint="Ayuda al courier a encontrarte"
+        />
       </Section>
 
       {/* Errores agregados al final */}

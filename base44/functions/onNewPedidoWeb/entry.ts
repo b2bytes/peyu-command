@@ -512,18 +512,14 @@ Deno.serve(async (req) => {
     }
 
     // ── 2. EMAIL INTERNO ────────────────────────────────────────
-    // Notifica a todos los buzones del equipo comercial.
-    // alfonsovambe@gmail.com se mantiene como respaldo (founder, owner de
-    // Resend) por si los buzones @peyuchile.cl aún no están verificados.
-    const INTERNAL_EMAILS = [
-      'jnilo@peyuchile.cl',
-      'ventas@peyuchile.cl',
-      'alfonsovambe@gmail.com',
-    ];
-    const internalSubject = `🛒 Nuevo pedido · ${pedido.numero_pedido} · ${fmtCLP(pedido.total)} · ${pedido.medio_pago || 'WebPay'}`;
+    // B2C → ventas@peyuchile.cl · B2B → corporativos@peyuchile.cl
+    // alfonsovambe@gmail.com como respaldo del founder siempre recibe.
+    const esB2B = pedido.tipo_cliente?.includes('B2B') || pedido.tipo_documento === 'Factura';
+    const INTERNAL_EMAILS = esB2B
+      ? ['corporativos@peyuchile.cl', 'jnilo@peyuchile.cl', 'alfonsovambe@gmail.com']
+      : ['ventas@peyuchile.cl', 'jnilo@peyuchile.cl', 'alfonsovambe@gmail.com'];
+    const internalSubject = `${esB2B ? '🏢 Nuevo pedido B2B' : '🛒 Nuevo pedido'} · ${pedido.numero_pedido} · ${fmtCLP(pedido.total)} · ${pedido.medio_pago || 'WebPay'}`;
     const internalHtml = buildInternalHtml(pedido);
-    // Vía Gmail (no Resend): los buzones @peyuchile.cl son externos a la cuenta
-    // Resend sandbox y rebotaban con 403. Gmail sí los entrega.
     tareas.push((async () => {
       try {
         const { accessToken } = await base44.asServiceRole.connectors.getConnection('gmail');
@@ -532,7 +528,7 @@ Deno.serve(async (req) => {
             to,
             subject: internalSubject,
             html: internalHtml,
-            replyTo: 'ventas@peyuchile.cl',
+            replyTo: esB2B ? 'corporativos@peyuchile.cl' : 'ventas@peyuchile.cl',
             fromName: 'PEYU · Nuevos pedidos',
           }).catch(e => console.error(`Email interno (${to}) falló:`, e.message));
         }

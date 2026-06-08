@@ -1,6 +1,18 @@
 import { useEffect, useState, useRef } from 'react';
-import { Truck, Zap, Rocket, Loader2, MapPin, Package, AlertCircle, Check } from 'lucide-react';
+import { Truck, Zap, Rocket, Loader2, MapPin, Package, AlertCircle, Check, Store } from 'lucide-react';
 import { cotizarEnvioCarrito } from '@/lib/bluex-shipping';
+
+const RETIRO_EN_TIENDA = {
+  servicio: 'RETIRO',
+  costo: 0,
+  costo_real: 0,
+  lead_time_dias: 0,
+  comuna: 'Macul',
+  region: 'Región Metropolitana',
+  peso_kg: 0,
+  envio_gratis_aplicado: false,
+  es_retiro: true,
+};
 
 /**
  * Selector de envío Bluex con cotización REAL por comuna y peso del carrito.
@@ -82,7 +94,12 @@ export default function ShippingSelector({
 
   // Notificar opción seleccionada al padre
   useEffect(() => {
-    if (!cotizacion || !onSelect) return;
+    if (!onSelect) return;
+    if (selectedKey === 'retiro') {
+      onSelect(RETIRO_EN_TIENDA);
+      return;
+    }
+    if (!cotizacion) return;
     const opcion = selectedKey === 'priority' ? cotizacion.priority : cotizacion.express;
     if (!opcion) return;
     onSelect({
@@ -104,6 +121,34 @@ export default function ShippingSelector({
 
   return (
     <div className={isDark ? `border rounded-2xl p-5 space-y-4 ${styles.container}` : 'space-y-4'}>
+
+      {/* Opción retiro en tienda — siempre disponible, sin depender de comuna */}
+      <button
+        type="button"
+        onClick={() => setSelectedKey('retiro')}
+        className={`w-full flex items-center gap-3 p-3 border rounded-xl transition-all text-left ${
+          selectedKey === 'retiro'
+            ? (isDark ? 'border-emerald-400 bg-emerald-500/15' : 'border-emerald-500 bg-emerald-50')
+            : (isDark ? 'border-white/15 hover:border-emerald-400/40' : 'border-gray-200 hover:border-emerald-300')
+        }`}
+      >
+        <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${
+          isDark ? 'bg-white/10 text-emerald-300' : 'bg-emerald-100 text-emerald-600'
+        }`}>
+          <Store className="w-4 h-4" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2">
+            <p className={`font-bold text-sm ${styles.title}`}>Retiro en Tienda</p>
+            {selectedKey === 'retiro' && <Check className="w-3.5 h-3.5 text-emerald-500" />}
+          </div>
+          <p className={`text-[11px] ${styles.helper}`}>Pedro de Valdivia 6603, Macul · Lun–Vie 10:00–18:00</p>
+        </div>
+        <div className="text-right">
+          <p className={`font-bold text-sm ${isDark ? 'text-emerald-400' : 'text-emerald-600'}`}>GRATIS</p>
+        </div>
+      </button>
+
       {showHeader && (
         <div className="flex items-center gap-2">
           <Truck className={`w-4 h-4 ${styles.accent}`} />
