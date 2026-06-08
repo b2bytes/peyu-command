@@ -273,10 +273,8 @@ export default function PipelineB2B() {
 
   const loadData = async () => {
     setLoading(true);
-    const [b2b, c] = await Promise.all([
-      base44.entities.B2BLead.list('-created_date', 100),
-      base44.entities.Cotizacion.list('-created_date', 100),
-    ]);
+    const b2b = await base44.entities.B2BLead.list('-created_date', 100);
+    const c = await base44.entities.Cotizacion.list('-created_date', 100);
     setLeads(b2b.map(mapB2BLead));
     setCotizaciones(c);
     setLoading(false);
