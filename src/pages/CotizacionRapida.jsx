@@ -278,7 +278,7 @@ export default function CotizacionRapida() {
                       {/* Panel mockup en mobile */}
                       <div className="sm:hidden mt-4">
                         <MockupGalleryB2B
-                          items={items.length > 0 ? items.slice(0, 3) : (primerProducto ? [{ producto: primerProducto }] : [])}
+                          items={items.length > 0 ? items : (primerProducto ? [{ producto: primerProducto }] : [])}
                           logoUrl={logoUrl}
                           onLogoChange={setLogoUrl}
                           showUploader={true}
@@ -302,7 +302,7 @@ export default function CotizacionRapida() {
                       {/* Panel mockup mobile paso 2 */}
                       <div className="sm:hidden mt-4">
                         <MockupGalleryB2B
-                          items={items.slice(0, 2)}
+                          items={items}
                           logoUrl={logoUrl}
                           onLogoChange={setLogoUrl}
                           showUploader={true}

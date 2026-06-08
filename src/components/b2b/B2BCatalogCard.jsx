@@ -15,11 +15,11 @@ export default function B2BCatalogCard({ producto }) {
   return (
     <Link
       to={`/EmpresaProducto?id=${producto.id}`}
-      className="group flex flex-col bg-white rounded-3xl overflow-hidden transition-all hover:shadow-lg hover:-translate-y-0.5"
+      className="group flex flex-col bg-white rounded-3xl overflow-hidden transition-all hover:shadow-2xl hover:-translate-y-1"
       style={{ border: '1.5px solid #D4C4B0' }}
     >
       {/* Image */}
-      <div className="relative overflow-hidden aspect-square" style={{ background: '#F2ECE2' }}>
+      <div className="relative overflow-hidden" style={{ aspectRatio: '4/5', background: '#F2ECE2' }}>
         <img
           src={img}
           alt={producto.nombre}
@@ -49,27 +49,27 @@ export default function B2BCatalogCard({ producto }) {
       </div>
 
       {/* Info */}
-      <div className="flex flex-col flex-1 p-4">
-        <p className="text-[10px] font-bold uppercase tracking-wider mb-1" style={{ color: '#A08070' }}>
+      <div className="flex flex-col flex-1 p-5">
+        <p className="text-[9px] font-bold uppercase tracking-widest mb-1.5" style={{ color: '#A08070' }}>
           {producto.categoria?.replace(' B2C', '')}
         </p>
-        <h3 className="font-fraunces text-base leading-snug mb-2 flex-1" style={{ color: '#2C1810' }}>
+        <h3 className="font-fraunces text-lg leading-snug mb-3 flex-1" style={{ color: '#2C1810' }}>
           {producto.nombre}
         </h3>
 
-        <div className="space-y-1.5">
+        <div className="space-y-2">
           <div className="flex items-baseline justify-between">
-            <span className="text-[11px]" style={{ color: '#A08070' }}>desde</span>
-            <span className="font-poppins font-bold text-base" style={{ color: '#0F8B6C' }}>{fmtCLP(basePrice)}/u</span>
+            <span className="text-xs" style={{ color: '#A08070' }}>desde</span>
+            <span className="font-poppins font-extrabold text-lg" style={{ color: '#0F8B6C' }}>{fmtCLP(basePrice)}/u</span>
           </div>
           {ahorroMax > 0 && (
-            <p className="text-[10px]" style={{ color: '#A08070' }}>
+            <p className="text-[11px]" style={{ color: '#A08070' }}>
               Hasta <strong style={{ color: '#D96B4D' }}>-{ahorroMax}%</strong> por volumen
             </p>
           )}
-          <div className="flex items-center gap-1 text-[10px] font-semibold mt-2 pt-2"
-            style={{ borderTop: '1px solid #EDE3D6', color: '#8BAD8A' }}>
-            <Sparkles className="w-3 h-3" />
+          <div className="flex items-center gap-1.5 text-xs font-semibold mt-3 pt-3"
+            style={{ borderTop: '1px solid #EDE3D6', color: '#0F8B6C' }}>
+            <Sparkles className="w-3.5 h-3.5" />
             Logo gratis desde {moq}u
           </div>
         </div>
