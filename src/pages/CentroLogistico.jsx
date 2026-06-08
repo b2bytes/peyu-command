@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Truck, Loader2, RefreshCw, Sparkles, ExternalLink, Bell, Zap, BarChart3, Mail,
-  Plus, Settings, FileText, AlertTriangle, TrendingUp, CheckCircle2, Clock, MapPin, DollarSign,
+  Plus, Settings, FileText, AlertTriangle, TrendingUp, CheckCircle2, Clock, MapPin, DollarSign, Printer,
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -133,6 +133,13 @@ export default function CentroLogistico() {
           </div>
 
           <div className="flex flex-wrap gap-2 flex-shrink-0">
+            <a
+              href="/admin/despacho"
+              className="flex items-center gap-2 px-4 h-11 rounded-md font-bold text-sm text-slate-900 hover:opacity-90 transition"
+              style={{ background: 'linear-gradient(135deg,#FFD700,#FFA500)' }}
+            >
+              <Printer className="w-4 h-4" /> Despacho Rápido
+            </a>
             <Button
               onClick={refrescarTodos}
               disabled={refreshingAll}
