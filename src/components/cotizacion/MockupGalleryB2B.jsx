@@ -41,8 +41,12 @@ export default function MockupGalleryB2B({
       setMockupUrls({});
     } finally {
       setUploading(false);
+      // Auto-generar mockups IA para todos los items después de subir logo
+      setTimeout(() => {
+        if (items.length > 0) generateAll();
+      }, 600);
     }
-  }, [onLogoChange]);
+  }, [onLogoChange, items]);
 
   const clearLogo = () => {
     if (onLogoChange) onLogoChange(null);
@@ -141,7 +145,7 @@ export default function MockupGalleryB2B({
 
                 return (
                   <div key={sku || idx} className="relative group">
-                    {/* Mockup */}
+                    {/* Mockup — siempre muestra CSS preview con logo hasta IA */}
                     <div className="relative rounded-2xl overflow-hidden border border-[#EBE3D6]"
                       style={{ aspectRatio: '1', background: '#F8F4EE' }}>
                       {aiMockup && !isGenerating ? (
@@ -157,7 +161,7 @@ export default function MockupGalleryB2B({
                           productImg={productImg}
                           producto={item.producto}
                           size="md"
-                          showBadge={false}
+                          showBadge={true}
                         />
                       )}
                       {isGenerating && (

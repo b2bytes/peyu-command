@@ -69,49 +69,47 @@ export default function LogoMockupPreview({
         </div>
       )}
 
-      {/* Overlay de grabado láser — solo si hay logo */}
+      {/* Overlay de grabado láser — aplica logo a TODOS los productos */}
       {logoUrl && (
         <>
-          {/* Área de grabado inteligente por categoría */}
+          {/* Área de grabado inteligente — ampliada para mejor visibilidad */}
           <div
             style={{
               position: 'absolute',
-              width: zone.size,
+              width: Math.max(zone.size, '28%'),
               aspectRatio: '1',
               top: zone.top,
               left: zone.left,
               transform: 'translate(-50%, -50%)',
-              borderRadius: isCircle ? '50%' : '12%',
-              overflow: 'hidden',
+              borderRadius: isCircle ? '50%' : '14%',
+              overflow: 'visible',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              // Efecto de grabado: área ligeramente quemada
+              // Efecto grabado mejorado: más visible en todos los fondos
               background: tone === 'dark'
-                ? 'rgba(255,255,255,0.04)'
-                : 'rgba(0,0,0,0.06)',
+                ? 'rgba(255,255,255,0.05)'
+                : 'rgba(0,0,0,0.05)',
               boxShadow: tone === 'dark'
-                ? '0 0 0 1px rgba(255,255,255,0.08), 0 4px 12px rgba(0,0,0,0.3) inset'
-                : '0 0 0 1px rgba(0,0,0,0.08), 0 4px 12px rgba(0,0,0,0.15) inset',
+                ? '0 0 0 0.5px rgba(255,255,255,0.1), 0 3px 10px rgba(0,0,0,0.35) inset'
+                : '0 0 0 0.5px rgba(0,0,0,0.1), 0 3px 10px rgba(0,0,0,0.12) inset',
             }}
           >
-            {/* Logo grabado con filtro inteligente */}
+            {/* Logo grabado con filtro inteligente + sombra realista */}
             {!toneReady ? (
-              <Loader2 style={{ width: '30%', height: '30%', color: 'rgba(255,255,255,0.5)', animation: 'spin 1s linear infinite' }} />
+              <Loader2 style={{ width: '40%', height: '40%', color: 'rgba(100,100,100,0.4)', animation: 'spin 1s linear infinite' }} />
             ) : (
               <img
                 src={logoUrl}
                 alt="Logo grabado"
                 style={{
-                  width: '76%',
-                  height: '76%',
+                  width: '82%',
+                  height: '82%',
                   objectFit: 'contain',
                   filter: logoFilter,
-                  opacity: zone.opacity,
-                  // Sombra de profundidad del grabado láser
-                  dropShadow: tone === 'dark'
-                    ? '0 1px 3px rgba(0,0,0,0.8)'
-                    : '0 1px 3px rgba(255,255,255,0.6)',
+                  opacity: 0.95,
+                  // Profundidad del grabado láser
+                  filter: `${logoFilter} drop-shadow(0 0.5px 2px ${tone === 'dark' ? 'rgba(0,0,0,0.6)' : 'rgba(0,0,0,0.1)'})`,
                 }}
               />
             )}
