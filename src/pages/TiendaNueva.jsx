@@ -103,8 +103,8 @@ export default function TiendaNueva() {
         </div>
       </section>
 
-      <footer className="py-8 text-center text-xs flex items-center justify-center gap-1.5" style={{ borderTop: '1px solid #D4C4B0', color: '#A08070' }}>
-        <Recycle className="w-3.5 h-3.5" style={{ color: '#8BAD8A' }} /> PEYU Chile · Plástico reciclado · Hecho en Santiago 🇨🇱
+      <footer className="py-4 sm:py-8 text-center text-[9px] sm:text-xs flex items-center justify-center gap-1 sm:gap-1.5" style={{ borderTop: '1px solid #D4C4B0', color: '#A08070' }}>
+        <Recycle className="w-3 sm:w-3.5 h-3 sm:h-3.5" style={{ color: '#8BAD8A' }} /> PEYU · Reciclado · 🇨🇱
       </footer>
 
       {/* Menú inferior mobile */}

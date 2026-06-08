@@ -76,25 +76,24 @@ export default function EmpresasNuevo() {
       <B2BHeader />
 
       {/* ── HERO ── */}
-      <section className="max-w-6xl mx-auto px-4 sm:px-6 pt-4 sm:pt-8 pb-5 sm:pb-6">
-        <div className="text-center max-w-2xl mx-auto mb-6 sm:mb-8">
-          <span className="inline-flex items-center gap-1.5 text-[10px] sm:text-xs font-bold px-3 py-1.5 rounded-full mb-3 sm:mb-4"
-            style={{ background: '#0F8B6C15', color: '#0F8B6C', border: '1px solid #0F8B6C30' }}>
-            <Building2 className="w-3 sm:w-3.5 h-3 sm:h-3.5" /> Corporativo · Regalos
+      <section className="max-w-6xl mx-auto px-3 sm:px-6 pt-3 sm:pt-8 pb-4 sm:pb-6 bg-gradient-to-br from-white/50 to-transparent rounded-3xl">
+        <div className="text-center max-w-2xl mx-auto mb-3 sm:mb-8">
+          <span className="inline-block text-[8px] sm:text-xs font-bold px-2 py-0.5 rounded-lg mb-1.5 sm:mb-3" style={{ background: '#0F8B6C', color: 'white' }}>
+            ✨ Regalos corporativos
           </span>
-          <h1 className="font-fraunces text-2xl sm:text-5xl leading-[1.1] sm:leading-[1.05] mb-3 sm:mb-4" style={{ color: '#2C1810' }}>
-            Regalos corporativos<br />
-            <span style={{ color: '#0F8B6C' }}>100% reciclados</span>
+          <h1 className="font-fraunces text-base sm:text-5xl leading-[1.15] sm:leading-[1.05] mb-1.5 sm:mb-3 font-bold" style={{ color: '#2C1810' }}>
+            Plástico reciclado<br />
+            <span style={{ color: '#0F8B6C', fontSize: '1.1em' }}>con tu logo grabado</span>
           </h1>
-          <p className="text-xs sm:text-base leading-relaxed mb-5 sm:mb-6" style={{ color: '#7A6050' }}>
-            Plástico reciclado chileno con tu logo grabado láser. Gratis desde 10u · Hasta −54% · Factura.
+          <p className="text-[9px] sm:text-base leading-tight mb-3 sm:mb-5 font-semibold" style={{ color: '#7A6050' }}>
+            Desde 10u • Hasta −54% • Factura + Despacho
           </p>
           <Link
             to="/CotizacionRapida"
-            className="inline-flex items-center gap-1.5 font-bold text-xs sm:text-base px-5 sm:px-7 py-2.5 sm:py-3.5 rounded-xl sm:rounded-2xl transition-all hover:scale-[1.02] hover:shadow-lg"
-            style={{ background: 'linear-gradient(135deg,#0F8B6C,#0B6E55)', color: 'white', boxShadow: '0 4px 16px rgba(15,139,108,.2)' }}
+            className="inline-flex items-center gap-1.5 font-bold text-xs sm:text-base px-6 sm:px-8 py-2.5 sm:py-4 rounded-full sm:rounded-2xl transition-all hover:scale-105 hover:shadow-xl active:scale-95"
+            style={{ background: 'linear-gradient(135deg,#0F8B6C,#0B6E55)', color: 'white', boxShadow: '0 8px 24px rgba(15,139,108,.35)', border: '2px solid white' }}
           >
-            Cotizar <ArrowRight className="w-3.5 sm:w-5 h-3.5 sm:h-5" />
+            Pedir cotización <ArrowRight className="w-4 sm:w-5 h-4 sm:h-5" />
           </Link>
         </div>
 
