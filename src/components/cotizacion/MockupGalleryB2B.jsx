@@ -41,10 +41,10 @@ export default function MockupGalleryB2B({
       setMockupUrls({});
     } finally {
       setUploading(false);
-      // Auto-generar mockups IA para todos los items después de subir logo
-      setTimeout(() => {
-        if (items.length > 0) generateAll();
-      }, 600);
+      // Auto-generar mockups IA para TODOS los items después de subir logo
+      if (items.length > 0) {
+        setTimeout(() => generateAll(), 800);
+      }
     }
   }, [onLogoChange, items]);
 
@@ -81,6 +81,7 @@ export default function MockupGalleryB2B({
 
   const generateAll = async () => {
     if (!logoUrl || !items.length) return;
+    setMockupUrls({}); // resetea antes de generar todos
     for (let i = 0; i < items.length; i++) {
       await generateOne(items[i], i);
     }
@@ -142,17 +143,18 @@ export default function MockupGalleryB2B({
                 const aiMockup = mockupUrls[sku];
                 const isGenerating = generatingIdx === idx;
                 const productImg = item.producto?.imagen_base_limpia_url || getProductImage(item.producto);
+                const hasMockup = !!aiMockup; // True si ya tiene mockup IA
 
                 return (
                   <div key={sku || idx} className="relative group">
-                    {/* Mockup — siempre muestra CSS preview con logo hasta IA */}
+                    {/* Mockup — siempre muestra CSS preview con logo hasta IA genera la versión fotorrealista */}
                     <div className="relative rounded-2xl overflow-hidden border border-[#EBE3D6]"
                       style={{ aspectRatio: '1', background: '#F8F4EE' }}>
-                      {aiMockup && !isGenerating ? (
+                      {hasMockup && !isGenerating ? (
                         <>
                           <img src={aiMockup} alt={item.producto?.nombre} className="w-full h-full object-cover" />
                           <span className="absolute top-2 left-2 inline-flex items-center gap-1 text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-[#0F8B6C] text-white">
-                            <Check className="w-2.5 h-2.5" /> IA
+                            <Check className="w-2.5 h-2.5" /> IA Fotorrealista
                           </span>
                         </>
                       ) : (
@@ -161,7 +163,7 @@ export default function MockupGalleryB2B({
                           productImg={productImg}
                           producto={item.producto}
                           size="md"
-                          showBadge={true}
+                          showBadge={!isGenerating}
                         />
                       )}
                       {isGenerating && (
