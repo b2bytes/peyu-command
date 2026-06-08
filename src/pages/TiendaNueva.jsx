@@ -1,12 +1,12 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
-import { ArrowRight, Recycle } from 'lucide-react';
+import { ArrowRight, Recycle, Sparkles } from 'lucide-react';
 import MobileNavBarV2 from '@/components/shopv2/MobileNavBarV2';
 import ShopV2Header from '@/components/shopv2/ShopV2Header';
 import HeroBoldV2 from '@/components/shopv2/HeroBoldV2';
 import TrustSocialBarV2 from '@/components/shopv2/TrustSocialBarV2';
-
+import FeaturedCarouselV3 from '@/components/shopv2/FeaturedCarouselV3';
 import ImpactStoryV2 from '@/components/shopv2/ImpactStoryV2';
 import ProductCardV2 from '@/components/shopv2/ProductCardV2';
 import { CATEGORIAS_V2 } from '@/lib/shop-v2-config';
@@ -53,49 +53,42 @@ export default function TiendaNueva() {
       {/* 1b · TRUST + SOCIAL PROOF */}
       <TrustSocialBarV2 />
 
-      {/* 2 · CARRUSEL DE DESTACADOS */}
-      {destacados.length > 0 && (
-        <section className="w-full px-3 sm:px-8 lg:px-12 mb-6 sm:mb-8">
-          <div className="max-w-screen-xl mx-auto">
-            <h2 className="font-fraunces text-lg sm:text-3xl mb-2.5 sm:mb-4">Destacados</h2>
-            <div className="flex gap-2 sm:gap-4 overflow-x-auto scrollbar-hide pb-2">
-              {destacados.slice(0, 6).map((p, i) => <ProductCardV2 key={p.id} producto={p} index={i} />)}
-            </div>
-          </div>
-        </section>
-      )}
+      {/* 2 · CARRUSEL DESTACADO V3 */}
+      {destacados.length > 0 && <FeaturedCarouselV3 productos={destacados} onPersonaliza={scrollToConfig} />}
 
       {/* 3 · STORYTELLING DE IMPACTO */}
       <ImpactStoryV2 />
 
-      {/* CATEGORÍAS */}
-      <section className="w-full px-3 sm:px-8 lg:px-12 mb-4 sm:mb-8">
+      {/* CATEGORÍAS MEJORADAS 2027 */}
+      <section className="w-full px-3 sm:px-8 lg:px-12 mb-8 sm:mb-12">
         <div className="max-w-screen-xl mx-auto">
-          <h2 className="font-fraunces text-lg sm:text-3xl mb-2.5 sm:mb-4">Explora por categoría</h2>
-          <div className="flex sm:grid sm:grid-cols-3 lg:grid-cols-5 gap-1.5 sm:gap-3 overflow-x-auto scrollbar-hide -mx-4 px-4 sm:mx-0 sm:px-0 pb-1">
+          <div className="flex items-center gap-2 mb-3 sm:mb-4">
+            <Sparkles className="w-4 sm:w-5 h-4 sm:h-5" style={{ color: '#C0785C' }} />
+            <h2 className="font-fraunces text-lg sm:text-3xl">Explora</h2>
+          </div>
+          <div className="flex sm:grid sm:grid-cols-3 lg:grid-cols-5 gap-1.5 sm:gap-3 overflow-x-auto scrollbar-hide -mx-4 px-4 sm:mx-0 sm:px-0 pb-2">
             {CATEGORIAS_V2.map((c) => (
               <Link
                 key={c.cat}
                 to={`/CatalogoNuevo?cat=${encodeURIComponent(c.cat)}`}
-                className="group flex-shrink-0 w-28 sm:w-auto bg-white rounded-xl sm:rounded-3xl p-2 sm:p-5 text-center hover:shadow-lg hover:-translate-y-1 transition-all"
-                style={{ border: '1.5px solid #D4C4B0' }}
+                className="group flex-shrink-0 w-28 sm:w-auto rounded-2xl sm:rounded-3xl p-3 sm:p-6 text-center hover:shadow-lg hover:-translate-y-0.5 transition-all"
+                style={{ border: '1.5px solid #D4C4B0', background: 'white' }}
               >
-                <div className="text-lg sm:text-3xl mb-0.5 sm:mb-2 group-hover:scale-110 transition-transform">{c.emoji}</div>
-                <p className="font-bold text-[10px] sm:text-sm" style={{ color: '#2C1810' }}>{c.label}</p>
-                <p className="text-[8px] sm:text-[10px] mt-0" style={{ color: '#A08070' }}>{c.desc}</p>
+                <div className="text-2xl sm:text-4xl mb-1.5 sm:mb-3 group-hover:scale-110 transition-transform inline-block">{c.emoji}</div>
+                <p className="font-bold text-[10px] sm:text-sm leading-tight" style={{ color: '#2C1810' }}>{c.label}</p>
               </Link>
             ))}
           </div>
         </div>
       </section>
 
-      {/* DESTACADOS */}
-      <section className="w-full px-3 sm:px-8 lg:px-12 mb-6 sm:mb-8">
+      {/* GALERÍA DE PRODUCTOS */}
+      <section className="w-full px-3 sm:px-8 lg:px-12 mb-8 sm:mb-12">
         <div className="max-w-screen-xl mx-auto">
-          <div className="flex items-center justify-between mb-2.5 sm:mb-4">
-            <h2 className="font-fraunces text-lg sm:text-3xl">Destacados</h2>
-            <Link to="/CatalogoNuevo" className="text-[10px] sm:text-sm font-bold hover:underline inline-flex items-center gap-1" style={{ color: '#C0785C' }}>
-              Ver todo <ArrowRight className="w-2.5 sm:w-3.5 h-2.5 sm:h-3.5" />
+          <div className="flex items-center justify-between mb-4 sm:mb-6">
+            <h2 className="font-fraunces text-lg sm:text-3xl">Catálogo completo</h2>
+            <Link to="/CatalogoNuevo" className="text-[10px] sm:text-sm font-bold hover:underline inline-flex items-center gap-1 transition-colors" style={{ color: '#C0785C' }}>
+              Ver más <ArrowRight className="w-2.5 sm:w-3.5 h-2.5 sm:h-3.5" />
             </Link>
           </div>
           {loading ? (
@@ -112,8 +105,9 @@ export default function TiendaNueva() {
         </div>
       </section>
 
-      <footer className="py-4 sm:py-8 text-center text-[9px] sm:text-xs flex items-center justify-center gap-1 sm:gap-1.5" style={{ borderTop: '1px solid #D4C4B0', color: '#A08070' }}>
-        <Recycle className="w-3 sm:w-3.5 h-3 sm:h-3.5" style={{ color: '#8BAD8A' }} /> PEYU · Reciclado · 🇨🇱
+      <footer className="py-6 sm:py-10 text-center text-[9px] sm:text-xs flex items-center justify-center gap-2 sm:gap-2.5" style={{ borderTop: '1.5px solid #D4C4B0', color: '#A08070' }}>
+        <Recycle className="w-3.5 sm:w-4 h-3.5 sm:h-4" style={{ color: '#8BAD8A' }} />
+        <span className="font-semibold">PEYU · Plástico 100% reciclado · Hecho en Santiago 🇨🇱</span>
       </footer>
 
       {/* Menú inferior mobile */}
