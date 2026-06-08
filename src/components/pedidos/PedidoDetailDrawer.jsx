@@ -227,7 +227,14 @@ export default function PedidoDetailDrawer({ pedido, onClose, onUpdate }) {
         courier: courier || undefined,
       });
       if (res.data?.ok) {
-        toast.success(`Estado → "${estado}"${res.data.email_enviado ? ' · email enviado ✉️' : ''}`);
+        const d = res.data;
+        if (d.bluex?.tracking) {
+          toast.success(`🚚 Etiqueta BlueExpress generada · ${d.bluex.tracking}`);
+          if (d.bluex.tracking) setTracking(d.bluex.tracking);
+          setCourier('BlueExpress');
+        } else {
+          toast.success(`Estado → "${estado}"${d.email_enviado ? ' · email enviado ✉️' : ''}`);
+        }
         onUpdate?.();
         onClose();
       } else {
@@ -359,11 +366,20 @@ export default function PedidoDetailDrawer({ pedido, onClose, onUpdate }) {
                 className="w-full h-10 font-bold gap-2"
                 style={{ background: estadoChanged ? 'linear-gradient(135deg,#0F8B6C,#0B6E55)' : undefined }}
               >
-                {saving ? <><Loader2 className="w-4 h-4 animate-spin" /> Guardando...</> : '✉️ Actualizar y notificar cliente'}
+                {saving
+                  ? <><Loader2 className="w-4 h-4 animate-spin" /> {estado === 'Listo para Despacho' ? 'Generando etiqueta Bluex...' : 'Guardando...'}</>
+                  : estado === 'Listo para Despacho'
+                    ? '🚚 Confirmar + Generar etiqueta BlueExpress'
+                    : '✉️ Actualizar y notificar cliente'
+                }
               </Button>
 
               {estadoChanged && (
-                <p className="text-[11px] text-gray-500 text-center">Se enviará email automático al cliente</p>
+                <p className="text-[11px] text-gray-500 text-center">
+                  {estado === 'Listo para Despacho'
+                    ? '⚡ Se generará la etiqueta BlueExpress automáticamente'
+                    : 'Se enviará email automático al cliente'}
+                </p>
               )}
             </div>
           </section>

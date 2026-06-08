@@ -1,8 +1,8 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 
 /**
  * Cambia el estado de un PedidoWeb y envía email automático al cliente.
- * Soporta: Confirmado, En Producción, Listo para Despacho, Despachado, Entregado.
+ * Si el nuevo estado es "Listo para Despacho", genera automáticamente la etiqueta BlueExpress.
  *
  * Payload: { pedido_id, nuevo_estado, tracking?, courier? }
  */
@@ -24,6 +24,35 @@ Deno.serve(async (req) => {
     if (tracking) updates.tracking = tracking;
     if (courier) updates.courier = courier;
     await base44.asServiceRole.entities.PedidoWeb.update(pedido_id, updates);
+
+    // ── Auto-generar etiqueta BlueExpress al pasar a "Listo para Despacho" ──
+    let bluexResult = null;
+    if (nuevo_estado === 'Listo para Despacho' && pedido.payment_status === 'paid' && !pedido.tracking) {
+      try {
+        const blRes = await base44.asServiceRole.functions.invoke('bluexCreateShipment', {
+          pedido_id,
+          cliente_nombre: pedido.cliente_nombre,
+          cliente_email: pedido.cliente_email,
+          cliente_telefono: pedido.cliente_telefono || '',
+          direccion_destino: pedido.direccion_envio,
+          comuna_destino: pedido.ciudad,
+          peso_kg: 0.5,
+          valor_declarado: pedido.total || 0,
+          print_format: 4,
+          referencia: pedido.numero_pedido,
+          comentarios: `Pedido PEYU ${pedido.numero_pedido}`,
+        });
+        if (blRes?.ok && blRes?.tracking) {
+          bluexResult = blRes;
+          console.log('[updateShippingStatus] BlueExpress OK:', blRes.tracking);
+        } else {
+          console.warn('[updateShippingStatus] BlueExpress no retornó tracking:', blRes?.error);
+        }
+      } catch (blErr) {
+        // No bloquear el flujo si Bluex falla — el operador puede generarla manualmente
+        console.warn('[updateShippingStatus] BlueExpress error (no fatal):', blErr.message);
+      }
+    }
 
     // Plantillas de email por estado
     const templates = {
@@ -59,7 +88,12 @@ Deno.serve(async (req) => {
       });
     }
 
-    return Response.json({ ok: true, estado: nuevo_estado, email_enviado: !!tpl });
+    return Response.json({
+      ok: true,
+      estado: nuevo_estado,
+      email_enviado: !!tpl,
+      bluex: bluexResult ? { tracking: bluexResult.tracking, label_url: bluexResult.label_url } : null,
+    });
   } catch (error) {
     console.error('updateShippingStatus error:', error);
     return Response.json({ error: error.message }, { status: 500 });
