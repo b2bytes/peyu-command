@@ -6,7 +6,7 @@ import MobileNavBarV2 from '@/components/shopv2/MobileNavBarV2';
 import ShopV2Header from '@/components/shopv2/ShopV2Header';
 import HeroBoldV2 from '@/components/shopv2/HeroBoldV2';
 import TrustSocialBarV2 from '@/components/shopv2/TrustSocialBarV2';
-import LiveConfiguratorV2 from '@/components/shopv2/LiveConfiguratorV2';
+
 import ImpactStoryV2 from '@/components/shopv2/ImpactStoryV2';
 import ProductCardV2 from '@/components/shopv2/ProductCardV2';
 import { CATEGORIAS_V2 } from '@/lib/shop-v2-config';
@@ -53,8 +53,17 @@ export default function TiendaNueva() {
       {/* 1b · TRUST + SOCIAL PROOF */}
       <TrustSocialBarV2 />
 
-      {/* 2 · CONFIGURADOR EN VIVO (sección estrella) */}
-      {carcasas.length > 0 && <LiveConfiguratorV2 carcasas={carcasas} />}
+      {/* 2 · CARRUSEL DE DESTACADOS */}
+      {destacados.length > 0 && (
+        <section className="w-full px-3 sm:px-8 lg:px-12 mb-6 sm:mb-8">
+          <div className="max-w-screen-xl mx-auto">
+            <h2 className="font-fraunces text-lg sm:text-3xl mb-2.5 sm:mb-4">Destacados</h2>
+            <div className="flex gap-2 sm:gap-4 overflow-x-auto scrollbar-hide pb-2">
+              {destacados.slice(0, 6).map((p, i) => <ProductCardV2 key={p.id} producto={p} index={i} />)}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* 3 · STORYTELLING DE IMPACTO */}
       <ImpactStoryV2 />
