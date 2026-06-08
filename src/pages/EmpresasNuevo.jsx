@@ -91,22 +91,22 @@ export default function EmpresasNuevo() {
           </p>
           <Link
             to="/CotizacionRapida"
-            className="inline-flex items-center gap-2 font-bold text-base px-7 py-3.5 rounded-2xl transition-all hover:scale-[1.02] hover:shadow-xl"
-            style={{ background: 'linear-gradient(135deg,#0F8B6C,#0B6E55)', color: 'white', boxShadow: '0 6px 24px rgba(15,139,108,.3)' }}
+            className="inline-flex items-center gap-1.5 font-bold text-xs sm:text-base px-5 sm:px-7 py-2.5 sm:py-3.5 rounded-xl sm:rounded-2xl transition-all hover:scale-[1.02] hover:shadow-lg"
+            style={{ background: 'linear-gradient(135deg,#0F8B6C,#0B6E55)', color: 'white', boxShadow: '0 4px 16px rgba(15,139,108,.2)' }}
           >
-            Solicitar cotización <ArrowRight className="w-5 h-5" />
+            Cotizar <ArrowRight className="w-3.5 sm:w-5 h-3.5 sm:h-5" />
           </Link>
         </div>
 
         {/* Trust strip */}
-        <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5 sm:gap-2.5 mb-5 sm:mb-7">
+        <div className="grid grid-cols-3 sm:grid-cols-6 gap-1 sm:gap-2.5 mb-3 sm:mb-6">
           {TRUST.map(({ icon: IconComp, t, s }) => (
-            <div key={t} className="flex flex-col items-center text-center p-2.5 sm:p-3 rounded-xl sm:rounded-2xl" style={{ background: 'white', border: '1.5px solid #EDE3D6' }}>
-              <div className="w-7 sm:w-8 h-7 sm:h-8 rounded-lg sm:rounded-xl flex items-center justify-center mb-1 sm:mb-1.5" style={{ background: '#0F8B6C10' }}>
-                <IconComp className="w-3.5 sm:w-4 h-3.5 sm:h-4" style={{ color: '#0F8B6C' }} />
+            <div key={t} className="flex flex-col items-center text-center p-1.5 sm:p-3 rounded-lg sm:rounded-2xl" style={{ background: 'white', border: '1px solid #EDE3D6' }}>
+              <div className="w-5 sm:w-8 h-5 sm:h-8 rounded-lg sm:rounded-xl flex items-center justify-center mb-0.5 sm:mb-1.5" style={{ background: '#0F8B6C10' }}>
+                <IconComp className="w-2.5 sm:w-4 h-2.5 sm:h-4" style={{ color: '#0F8B6C' }} />
               </div>
-              <p className="text-[10px] sm:text-xs font-bold leading-tight" style={{ color: '#2C1810' }}>{t}</p>
-              <p className="text-[8px] sm:text-[10px] leading-tight mt-0.5" style={{ color: '#A08070' }}>{s}</p>
+              <p className="text-[8px] sm:text-xs font-bold leading-tight" style={{ color: '#2C1810' }}>{t}</p>
+              <p className="text-[7px] sm:text-[10px] leading-tight mt-0" style={{ color: '#A08070' }}>{s}</p>
             </div>
           ))}
         </div>
@@ -114,39 +114,39 @@ export default function EmpresasNuevo() {
         {/* ── CATÁLOGO ── */}
         <div className="mb-3 sm:mb-4 flex flex-col gap-2 sm:gap-2.5">
           {/* Buscador */}
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: '#A08070' }} />
-            <input
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              placeholder="Buscar…"
-              className="w-full h-10 sm:h-11 pl-10 pr-4 rounded-lg sm:rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2"
-              style={{ background: 'white', border: '1.5px solid #D4C4B0', color: '#2C1810', focusRingColor: '#0F8B6C' }}
-            />
-          </div>
+           <div className="relative flex-1">
+             <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5" style={{ color: '#A08070' }} />
+             <input
+               value={search}
+               onChange={e => setSearch(e.target.value)}
+               placeholder="Buscar…"
+               className="w-full h-9 sm:h-11 pl-9 pr-3 rounded-lg sm:rounded-xl text-[10px] sm:text-sm focus:outline-none focus:ring-2"
+               style={{ background: 'white', border: '1px solid #D4C4B0', color: '#2C1810', focusRingColor: '#0F8B6C' }}
+             />
+           </div>
 
           {/* Chips de categoría */}
-          <div className="flex gap-1.5 overflow-x-auto scrollbar-hide">
-            {CATEGORIAS.map(c => {
-              const count = catCounts[c] || 0;
-              if (c !== 'Todos' && count === 0) return null;
-              return (
-                <button
-                  key={c}
-                  onClick={() => setCat(c)}
-                  className="flex-shrink-0 px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-lg sm:rounded-xl text-[10px] sm:text-xs font-bold transition-all"
-                  style={{
-                    background: cat === c ? '#0F8B6C' : 'white',
-                    color: cat === c ? 'white' : '#7A6050',
-                    border: cat === c ? '1.5px solid #0F8B6C' : '1.5px solid #D4C4B0',
-                    boxShadow: cat === c ? '0 2px 8px rgba(15,139,108,.2)' : 'none',
-                  }}
-                >
-                  {c} {count > 0 ? `(${count})` : ''}
-                </button>
-              );
-            })}
-          </div>
+           <div className="flex gap-1 overflow-x-auto scrollbar-hide">
+             {CATEGORIAS.map(c => {
+               const count = catCounts[c] || 0;
+               if (c !== 'Todos' && count === 0) return null;
+               return (
+                 <button
+                   key={c}
+                   onClick={() => setCat(c)}
+                   className="flex-shrink-0 px-2.5 py-1 sm:px-3.5 sm:py-2 rounded-lg sm:rounded-xl text-[9px] sm:text-xs font-bold transition-all"
+                   style={{
+                     background: cat === c ? '#0F8B6C' : 'white',
+                     color: cat === c ? 'white' : '#7A6050',
+                     border: cat === c ? '1px solid #0F8B6C' : '1px solid #D4C4B0',
+                     boxShadow: cat === c ? '0 1px 4px rgba(15,139,108,.15)' : 'none',
+                   }}
+                 >
+                   {c}
+                 </button>
+               );
+             })}
+           </div>
         </div>
 
         {/* Grid */}
@@ -159,7 +159,7 @@ export default function EmpresasNuevo() {
             <p className="text-sm font-semibold" style={{ color: '#A08070' }}>Sin productos con estos filtros.</p>
           </div>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 sm:gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-4">
             {filtrados.map(p => (
               <B2BCatalogCard key={p.id} producto={p} />
             ))}
@@ -169,12 +169,12 @@ export default function EmpresasNuevo() {
 
       {/* ── CLIENTES ── */}
       <section className="max-w-6xl mx-auto px-4 sm:px-6 pb-5">
-        <p className="text-[10px] font-bold uppercase tracking-widest text-center mb-4" style={{ color: '#A08070' }}>
-          Confiaron en PEYU
+        <p className="text-[8px] font-bold uppercase tracking-widest text-center mb-2" style={{ color: '#A08070' }}>
+          Clientes
         </p>
-        <div className="flex flex-wrap justify-center gap-2">
+        <div className="flex flex-wrap justify-center gap-1.5">
           {CLIENTES.map(c => (
-            <span key={c} className="text-xs font-semibold px-3 py-1.5 rounded-full" style={{ background: 'white', border: '1.5px solid #EDE3D6', color: '#7A6050' }}>
+            <span key={c} className="text-[9px] font-semibold px-2.5 py-1 rounded-full" style={{ background: 'white', border: '1px solid #EDE3D6', color: '#7A6050' }}>
               {c}
             </span>
           ))}
@@ -183,26 +183,25 @@ export default function EmpresasNuevo() {
 
       {/* ── CTA FINAL ── */}
       <section className="max-w-3xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
-        <div className="rounded-3xl p-6 sm:p-8 text-center" style={{ background: 'linear-gradient(135deg,#0F8B6C,#0B6E55)' }}>
-          <Star className="w-7 h-7 text-white/70 mx-auto mb-2.5" />
-          <h2 className="font-fraunces text-lg sm:text-3xl text-white mb-2.5">¿Tienes un evento o proyecto corporativo?</h2>
-          <p className="text-xs sm:text-sm text-white/80 mb-5 max-w-md mx-auto">
-            Arma tu pedido, elige cantidades y recibe tu cotización con precios por volumen reales en menos de 24h hábiles.
-            Grabado láser gratis · Factura · Despacho a todo Chile.
+        <div className="rounded-2xl sm:rounded-3xl p-4 sm:p-8 text-center" style={{ background: 'linear-gradient(135deg,#0F8B6C,#0B6E55)' }}>
+          <Star className="w-6 sm:w-8 h-6 sm:h-8 text-white/70 mx-auto mb-2" />
+          <h2 className="font-fraunces text-sm sm:text-3xl text-white mb-2">Pide tu cotización</h2>
+          <p className="text-[10px] sm:text-sm text-white/80 mb-3 sm:mb-4 max-w-md mx-auto">
+            Precios por volumen real · Grabado gratis · 24h hábiles
           </p>
           <Link
             to="/CotizacionRapida"
-            className="inline-flex items-center gap-2 font-bold text-sm px-7 py-3.5 rounded-2xl transition-all hover:scale-[1.02]"
-            style={{ background: 'white', color: '#0F8B6C', boxShadow: '0 4px 16px rgba(0,0,0,.15)' }}
+            className="inline-flex items-center gap-1 font-bold text-xs sm:text-sm px-5 sm:px-7 py-2 sm:py-3.5 rounded-xl sm:rounded-2xl transition-all hover:scale-[1.02]"
+            style={{ background: 'white', color: '#0F8B6C', boxShadow: '0 2px 8px rgba(0,0,0,.1)' }}
           >
-            Solicitar cotización gratuita <ArrowRight className="w-4 h-4" />
+            Cotizar <ArrowRight className="w-3 sm:w-4 h-3 sm:h-4" />
           </Link>
         </div>
       </section>
 
-      <footer className="border-t py-6 text-center text-xs" style={{ borderColor: '#D4C4B0', color: '#A08070' }}>
-        <Recycle className="w-3.5 h-3.5 inline mr-1.5" style={{ color: '#0F8B6C' }} />
-        PEYU Chile · Plástico reciclado · Hecho en Santiago 🇨🇱
+      <footer className="border-t py-3 sm:py-6 text-center text-[9px] sm:text-xs" style={{ borderColor: '#D4C4B0', color: '#A08070' }}>
+        <Recycle className="w-3 sm:w-3.5 h-3 sm:h-3.5 inline mr-1" style={{ color: '#0F8B6C' }} />
+        PEYU · Chile · 🇨🇱
       </footer>
     </div>
   );
