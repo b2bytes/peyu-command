@@ -89,6 +89,15 @@
       ],
       "default": "Normal"
     },
+    "tags": {
+      "type": "array",
+      "title": "Etiquetas",
+      "description": "Clasificaci\u00f3n por sector o etapa del embudo",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    },
     "notes": {
       "type": "string",
       "title": "Notas Internas"
