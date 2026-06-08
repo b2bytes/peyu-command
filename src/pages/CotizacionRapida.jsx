@@ -200,7 +200,7 @@ export default function CotizacionRapida() {
     <div className="min-h-screen bg-[#FAF7F2] font-inter text-[#2A2420] pb-28 sm:pb-12">
       <ShopV2Header />
 
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-4 sm:py-8">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-8">
         {result ? (
           <QuoteResultCard result={result} empresa={form.company_name} email={form.email} onReset={reset} logoUrl={logoUrl} />
         ) : (
@@ -220,19 +220,19 @@ export default function CotizacionRapida() {
 
             <QuoteStepper step={step} onStep={goTo} maxStep={maxStep} />
 
-            {/* Layout con panel de logo persistente en desktop */}
-             <div className="flex gap-6 items-start mt-8">
-               {/* Contenido principal */}
-               <div className="flex-1 min-w-0">
+            {/* Layout responsivo: grid en desktop, stack en mobile */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8 mt-8">
+              {/* Contenido principal: 2 columnas en desktop */}
+              <div className="lg:col-span-2">
                 <AnimatePresence mode="wait">
                   {/* ── PASO 1 · Productos ── */}
                   {step === 0 && (
                     <motion.div key="s0" initial={{ opacity: 0, x: 24 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -24 }} transition={trans}>
-                      <div className="bg-white border border-[#EBE3D6] rounded-3xl p-6 sm:p-7">
-                        <h2 className="font-bold text-lg text-[#2A2420] mb-2 flex items-center gap-2">
-                          <Package className="w-5 h-5 text-[#0F8B6C]" /> Paso 1: Elige productos
+                      <div className="bg-white border border-[#EBE3D6] rounded-2xl sm:rounded-3xl p-4 sm:p-6 lg:p-7">
+                        <h2 className="font-bold text-base sm:text-lg text-[#2A2420] mb-2 flex items-center gap-2">
+                          <Package className="w-4 sm:w-5 h-4 sm:h-5 text-[#0F8B6C]" /> Paso 1: Elige productos
                         </h2>
-                        <p className="text-xs text-[#A78B6F] mb-5">
+                        <p className="text-[11px] sm:text-xs text-[#A78B6F] mb-4 sm:mb-5">
                           Navega el catálogo o busca. Haz clic para ver detalles o <strong>+</strong> para agregar. Precios por volumen en vivo.
                         </p>
                         <QuoteProductPicker
@@ -290,11 +290,11 @@ export default function CotizacionRapida() {
                   {/* ── PASO 2 · Datos ── */}
                   {step === 1 && (
                     <motion.div key="s1" initial={{ opacity: 0, x: 24 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -24 }} transition={trans}>
-                      <div className="bg-white border border-[#EBE3D6] rounded-3xl p-6 sm:p-7">
-                        <h2 className="font-bold text-lg text-[#2A2420] mb-2 flex items-center gap-2">
-                          <Building2 className="w-5 h-5 text-[#0F8B6C]" /> Paso 2: Datos de empresa
+                      <div className="bg-white border border-[#EBE3D6] rounded-2xl sm:rounded-3xl p-4 sm:p-6 lg:p-7">
+                        <h2 className="font-bold text-base sm:text-lg text-[#2A2420] mb-2 flex items-center gap-2">
+                          <Building2 className="w-4 sm:w-5 h-4 sm:h-5 text-[#0F8B6C]" /> Paso 2: Datos de empresa
                         </h2>
-                        <p className="text-xs text-[#A78B6F] mb-5">
+                        <p className="text-[11px] sm:text-xs text-[#A78B6F] mb-4 sm:mb-5">
                           Completa tu empresa, RUT, contacto y email. Un ejecutivo de PEYU te contacta en 24h hábiles.
                         </p>
                         <QuoteContactForm form={form} setForm={setForm} />
@@ -314,9 +314,9 @@ export default function CotizacionRapida() {
                   {/* ── PASO 3 · Revisar ── */}
                   {step === 2 && (
                     <motion.div key="s2" initial={{ opacity: 0, x: 24 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -24 }} transition={trans}>
-                      <div className="bg-white border border-[#EBE3D6] rounded-3xl p-6 sm:p-7">
-                        <h2 className="font-bold text-lg text-[#2A2420] mb-5 flex items-center gap-2">
-                          <ShoppingCart className="w-5 h-5 text-[#0F8B6C]" /> Paso 3: Revisa y solicita
+                      <div className="bg-white border border-[#EBE3D6] rounded-2xl sm:rounded-3xl p-4 sm:p-6 lg:p-7">
+                        <h2 className="font-bold text-base sm:text-lg text-[#2A2420] mb-4 sm:mb-5 flex items-center gap-2">
+                          <ShoppingCart className="w-4 sm:w-5 h-4 sm:h-5 text-[#0F8B6C]" /> Paso 3: Revisa y solicita
                         </h2>
 
                         {/* Líneas con mockup de logo */}
@@ -493,7 +493,7 @@ export default function CotizacionRapida() {
               </div>
 
               {/* ── PANEL LATERAL: GALERÍA DE MOCKUPS (desktop, sticky) ── */}
-              <div className="hidden sm:block w-80 flex-shrink-0 sticky top-20 self-start space-y-4">
+              <div className="hidden lg:flex lg:flex-col lg:col-span-1 sticky top-24 h-fit space-y-4">
                 <MockupGalleryB2B
                   items={items.length > 0 ? items : (primerProducto ? [{ producto: primerProducto, qty: 1 }] : [])}
                   logoUrl={logoUrl}
