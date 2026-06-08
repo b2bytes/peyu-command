@@ -76,19 +76,19 @@ export default function CatalogoNuevo() {
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-3 sm:py-5">
         <CheckoutStepperV2 current="tienda" />
-        <div className="mb-3 sm:mb-4">
-          <h1 className="font-fraunces text-2xl sm:text-4xl mb-0.5" style={{ color: '#2C1810' }}>Nuestra tienda</h1>
-          <p className="text-xs sm:text-sm" style={{ color: '#7A6050' }}>Plástico 100% reciclado · Hecho en Chile.</p>
+        <div className="mb-2 sm:mb-3">
+          <h1 className="font-fraunces text-lg sm:text-4xl mb-0" style={{ color: '#2C1810' }}>Nuestra tienda</h1>
+          <p className="text-[11px] sm:text-sm" style={{ color: '#7A6050' }}>Plástico 100% reciclado · Hecho en Chile.</p>
         </div>
 
         {/* Buscador */}
-        <div className="relative mb-2 sm:mb-3">
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#A78B6F]" />
+        <div className="relative mb-1.5 sm:mb-2.5">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#A78B6F]" />
           <input
             value={q}
             onChange={(e) => setQ(e.target.value)}
-            placeholder="Buscar productos..."
-            className="w-full h-10 sm:h-12 pl-10 pr-4 rounded-xl sm:rounded-2xl text-sm focus:outline-none transition-all"
+            placeholder="Buscar..."
+            className="w-full h-9 sm:h-12 pl-9 pr-4 rounded-lg sm:rounded-2xl text-[11px] sm:text-sm focus:outline-none transition-all"
             style={{ background: 'white', border: '1.5px solid #D4C4B0', color: '#2C1810' }}
             onFocus={e => { e.target.style.borderColor = '#C0785C'; e.target.style.boxShadow = '0 0 0 3px rgba(192,120,92,.12)'; }}
             onBlur={e => { e.target.style.borderColor = '#D4C4B0'; e.target.style.boxShadow = 'none'; }}

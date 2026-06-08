@@ -68,21 +68,21 @@ export default function CarritoNuevo() {
           <ArrowLeft className="w-4 h-4" /> Seguir comprando
         </Link>
 
-        <h1 className="font-fraunces text-2xl sm:text-4xl mb-4 sm:mb-6">Tu carrito</h1>
+        <h1 className="font-fraunces text-lg sm:text-4xl mb-3 sm:mb-5">Tu carrito</h1>
 
         <div className="grid lg:grid-cols-3 gap-6">
           {/* Líneas */}
-          <div className="lg:col-span-2 space-y-3">
-            {items.map((item) => {
-              const moq = item.moq_personalizacion || item.personalizacion_gratis_desde || 10;
-              const gratis = item.personalizacion && (item.cantidad || 1) >= moq;
-              const cant = item.cantidad || 1;
-              const lineaProducto = (item.precio || 0) * cant;
-              const pctLinea = item.cyber ? 0 : getQtyDiscountPct(cant);
-              const teaser = item.cyber ? null : getNextQtyTeaserForSku(cant);
-              return (
-                <div key={item.id} className="flex gap-3.5 bg-white rounded-3xl p-3.5" style={{ border: '1.5px solid #D4C4B0' }}>
-                  <div className="relative flex-shrink-0 w-20 h-20 sm:w-24 sm:h-24">
+          <div className="lg:col-span-2 space-y-2">
+             {items.map((item) => {
+               const moq = item.moq_personalizacion || item.personalizacion_gratis_desde || 10;
+               const gratis = item.personalizacion && (item.cantidad || 1) >= moq;
+               const cant = item.cantidad || 1;
+               const lineaProducto = (item.precio || 0) * cant;
+               const pctLinea = item.cyber ? 0 : getQtyDiscountPct(cant);
+               const teaser = item.cyber ? null : getNextQtyTeaserForSku(cant);
+               return (
+                 <div key={item.id} className="flex gap-2.5 bg-white rounded-2xl p-2.5" style={{ border: '1.5px solid #D4C4B0' }}>
+                   <div className="relative flex-shrink-0 w-16 h-16 sm:w-24 sm:h-24">
                     <CartItemThumbV2
                       imagen={item.mockupUrl || item.imagen}
                       capas={item.capas_grabado || []}
@@ -96,32 +96,27 @@ export default function CarritoNuevo() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between gap-2">
-                      <h3 className="font-semibold text-sm text-[#2A2420] leading-snug line-clamp-2">{item.nombre}</h3>
-                      <button onClick={() => remove(item.id)} className="transition-colors flex-shrink-0" style={{ color: '#A08070' }} onMouseOver={e=>e.currentTarget.style.color='#C0785C'} onMouseOut={e=>e.currentTarget.style.color='#A08070'}>
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
-                    <div className="flex flex-wrap gap-1.5 mt-1.5">
-                      {item.color && (
-                        <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full" style={{ background: '#F2EBE1', border: '1px solid #D4C4B0', color: '#7A6050' }}>{item.color}</span>
-                      )}
-                      {item.personalizacion && (
-                        <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full" style={{ background: 'rgba(192,120,92,.1)', color: '#C0785C' }}>
-                          {item.personalizacion}
-                        </span>
-                      )}
-                      {gratis && (
-                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ background: 'rgba(139,173,138,.15)', color: '#5B7D5A' }}>Grabado gratis</span>
-                      )}
-                      {pctLinea > 0 && (
-                        <span className="text-[10px] font-bold text-white px-2 py-0.5 rounded-full" style={{ background: '#8BAD8A' }}>−{pctLinea}% x cantidad</span>
-                      )}
-                    </div>
-                    {teaser && (
-                      <p className="text-[10px] font-bold mt-1.5" style={{ color: '#C0785C' }}>
-                        🎁 Agrega {teaser.necesita} más y obtén −{teaser.pctSiguiente}% en este producto
-                      </p>
-                    )}
+                       <h3 className="font-semibold text-xs text-[#2A2420] leading-tight line-clamp-2">{item.nombre}</h3>
+                       <button onClick={() => remove(item.id)} className="transition-colors flex-shrink-0 mt-0.5" style={{ color: '#A08070' }} onMouseOver={e=>e.currentTarget.style.color='#C0785C'} onMouseOut={e=>e.currentTarget.style.color='#A08070'}>
+                         <Trash2 className="w-3.5 h-3.5" />
+                       </button>
+                     </div>
+                     <div className="flex flex-wrap gap-1 mt-1">
+                       {item.color && (
+                         <span className="text-[9px] font-semibold px-1.5 py-0.25 rounded-full" style={{ background: '#F2EBE1', border: '1px solid #D4C4B0', color: '#7A6050' }}>{item.color}</span>
+                       )}
+                       {item.personalizacion && (
+                         <span className="text-[9px] font-semibold px-1.5 py-0.25 rounded-full" style={{ background: 'rgba(192,120,92,.1)', color: '#C0785C' }}>
+                           {item.personalizacion}
+                         </span>
+                       )}
+                       {gratis && (
+                         <span className="text-[9px] font-bold px-1.5 py-0.25 rounded-full" style={{ background: 'rgba(139,173,138,.15)', color: '#5B7D5A' }}>Gratis</span>
+                       )}
+                       {pctLinea > 0 && (
+                         <span className="text-[9px] font-bold text-white px-1.5 py-0.25 rounded-full" style={{ background: '#8BAD8A' }}>−{pctLinea}%</span>
+                       )}
+                     </div>
                     <div className="flex items-center justify-between mt-3">
                       <QtyStepperV2 value={cant} onChange={(v) => setQty(item.id, v)} min={1} />
                       <span className="font-poppins font-bold" style={{ color: '#2C1810' }}>{fmtCLP(lineaProducto)}</span>

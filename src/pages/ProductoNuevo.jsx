@@ -270,18 +270,18 @@ export default function ProductoNuevo() {
           {/* CONFIGURADOR — scroll libre en desktop */}
           <div className="space-y-3.5 lg:pb-8">
             <div>
-              <p className="text-xs font-bold uppercase tracking-wider mb-1" style={{ color: '#A08070' }}>
+              <p className="text-[9px] font-bold uppercase tracking-wider mb-0.5" style={{ color: '#A08070' }}>
                 {producto.categoria?.replace(' B2C', '')}
               </p>
-              <h1 className="font-fraunces text-2xl sm:text-4xl leading-[1.05] mb-1.5" style={{ color: '#2C1810' }}>{producto.nombre}</h1>
-              <p className="font-poppins font-bold text-xl sm:text-2xl" style={{ color: '#C0785C' }}>{fmtCLP(precioUnit)}</p>
+              <h1 className="font-fraunces text-lg sm:text-4xl leading-[1.05] mb-1" style={{ color: '#2C1810' }}>{producto.nombre}</h1>
+              <p className="font-poppins font-bold text-lg sm:text-2xl" style={{ color: '#C0785C' }}>{fmtCLP(precioUnit)}</p>
               {stockBajo && (
-                <p className="inline-flex items-center gap-1.5 mt-2 text-xs font-bold px-2.5 py-1 rounded-full" style={{ color: '#C0785C', background: 'rgba(192,120,92,.1)' }}>
-                  🔥 Solo quedan {stock} unidades
+                <p className="inline-flex items-center gap-1 mt-1 text-[9px] font-bold px-2 py-0.5 rounded-full" style={{ color: '#C0785C', background: 'rgba(192,120,92,.1)' }}>
+                  🔥 Solo {stock}u
                 </p>
               )}
               {producto.descripcion && (
-                <p className="text-sm leading-relaxed mt-3" style={{ color: '#7A6050' }}>{producto.descripcion}</p>
+                <p className="text-xs leading-relaxed mt-2" style={{ color: '#7A6050' }}>{producto.descripcion}</p>
               )}
             </div>
 
