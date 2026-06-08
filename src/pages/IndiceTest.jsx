@@ -113,6 +113,13 @@ const GRUPOS = [
 ];
 
 const CAMBIOS_RECIENTES = [
+  // ── Hoy 08/06 ──
+  { area: 'Admin · Etiqueta Bluex', desc: 'Fix: "pedido no pagado" ya no bloquea transferencias confirmadas manualmente (usa getPagoStatus en vez de payment_status directo)', status: 'done' },
+  { area: 'Admin · Etiqueta Bluex', desc: 'Fix: Retiro en tienda no requiere dirección de envío para habilitar el panel de despacho', status: 'done' },
+  { area: 'Tarifas BlueExpress', desc: 'Fix Atacama + todo Chile: tramos de peso sin dato (5kg+) ya no cobran precio mínimo — aplica +15% acumulado por tramo', status: 'done' },
+  { area: 'Tarifas BlueExpress', desc: 'Lead time estimado por región cuando la tabla trae 0 (RM: 1d · Sur: 2-3d · Extremos: 4-5d)', status: 'done' },
+  { area: 'ShippingSelector', desc: 'Muestra días hábiles reales por destino en el subtítulo de EXPRESS', status: 'done' },
+  // ── Anteriores ──
   { area: 'Checkout', desc: 'Código postal eliminado del formulario de envío', status: 'done' },
   { area: 'Envío', desc: 'Retiro en tienda · Pedro de Valdivia 6603, Macul · GRATIS', status: 'done' },
   { area: 'Emails', desc: 'B2C → ventas@peyuchile.cl · B2B → corporativos@peyuchile.cl', status: 'done' },

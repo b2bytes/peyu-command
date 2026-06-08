@@ -11,20 +11,26 @@ import {
 import { toast } from 'sonner';
 import MockupClientePreview from './MockupClientePreview';
 import { getPagoStatus } from '@/lib/pago-status';
+// getPagoStatus también se usa dentro de BluexPanel vía props
 
 const ESTADOS = ['Nuevo', 'Confirmado', 'En Producción', 'Listo para Despacho', 'Despachado', 'Entregado', 'Cancelado'];
 const COURIERS = ['BlueExpress', 'Starken', 'Chilexpress', 'Correos Chile', 'Retiro en Tienda'];
 
 // ── Sub-componente BlueExpress integrado ──────────────────────────────────
 function BluexPanel({ pedido, onDone }) {
+  // eslint-disable-next-line no-unused-vars
+  // Reutilizamos getPagoStatus para que transferencias confirmadas pasen el check
   const [loading, setLoading] = useState(false);
   const [showManual, setShowManual] = useState(false);
   const [manualTracking, setManualTracking] = useState('');
   const [manualLabelUrl, setManualLabelUrl] = useState('');
   const [labelData, setLabelData] = useState(null);
 
-  const isPaid = pedido.payment_status === 'paid';
-  const hasAddress = !!(pedido.direccion_envio && pedido.ciudad);
+  // Usar getPagoStatus en vez de comparar payment_status directo —
+  // así transferencias confirmadas (estado=Confirmado/post) también pasan.
+  const { pagado: isPaid } = getPagoStatus(pedido);
+  const esRetiro = pedido.courier === 'Retiro en Tienda' || (pedido.notas || '').includes('Retiro en tienda');
+  const hasAddress = esRetiro || !!(pedido.direccion_envio && pedido.ciudad);
   const canGenerate = isPaid && hasAddress;
 
   const handleGenerar = async ({ manual = false } = {}) => {
