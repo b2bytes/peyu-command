@@ -1,5 +1,5 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
-import { jsPDF } from 'npm:jspdf@2.5.1';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
+import { jsPDF } from 'npm:jspdf@4.0.0';
 
 // ============================================================================
 // generateProposalPDF — PDF premium ECO de propuesta corporativa PEYU (2026)
@@ -9,17 +9,17 @@ import { jsPDF } from 'npm:jspdf@2.5.1';
 // (verdes naturales + arena), jerarquía tipográfica clara y secciones aireadas.
 // ----------------------------------------------------------------------------
 
-// ─── Paleta ECO PEYU (RGB) ───
-const INK    = [27, 38, 33];     // #1B2621 — verde casi negro (texto)
-const FOREST = [15, 92, 70];     // #0F5C46 — verde bosque profundo
-const TEAL   = [15, 139, 108];   // #0F8B6C — verde PEYU (acento)
-const LEAF   = [52, 168, 128];   // #34A880 — verde hoja claro
-const MINT   = [232, 245, 239];  // #E8F5EF — verde menta muy claro (fondos)
-const SAND   = [245, 241, 233];  // #F5F1E9 — arena cálida (cards)
-const SAND2  = [225, 218, 205];  // #E1DACD — borde arena
-const STONE  = [107, 119, 113];  // #6B7771 — gris piedra (secundario)
-const STONE2 = [148, 158, 153];  // #949E99 — labels suaves
-const CREAM  = [167, 217, 201];  // #A7D9C9 — menta accent (sobre oscuro)
+// ─── Paleta ECO PEYU 2026 (RGB) — mejorada con más contraste ───
+const INK    = [18, 28, 24];     // #121C18 — negro eco más profundo
+const FOREST = [11, 70, 52];     // #0B4634 — verde bosque más saturado
+const TEAL   = [15, 139, 108];   // #0F8B6C — verde PEYU signature
+const LEAF   = [52, 168, 128];   // #34A880 — verde hoja cálido
+const MINT   = [235, 248, 244];  // #EBF8F4 — menta premium (fondos)
+const SAND   = [250, 246, 238];  // #FAF6EE — arena premium (cards)
+const SAND2  = [220, 210, 195];  // #DCD2C3 — borde arena refinado
+const STONE  = [100, 110, 104];  // #646E68 — gris piedra cálido
+const STONE2 = [140, 150, 145];  // #8C9691 — labels premium
+const CREAM  = [170, 220, 205];  // #AADCCD — crema eco refined
 const WHITE  = [255, 255, 255];
 
 // Márgenes del documento (grid consistente)
@@ -116,13 +116,14 @@ Deno.serve(async (req) => {
     const CW = pw - MX * 2;                        // ancho útil (178)
     let y = 0;
 
-    // helper de texto rápido
-    const T = (txt, x, yy, { size = 9, font = 'normal', color = INK, align = 'left', spacing = 0 } = {}) => {
+    // helper de texto rápido con suavizado mejorado
+    const T = (txt, x, yy, { size = 9, font = 'normal', color = INK, align = 'left', spacing = 0, maxWidth = 999 } = {}) => {
       doc.setFont('helvetica', font);
       doc.setFontSize(size);
       doc.setTextColor(color[0], color[1], color[2]);
+      doc.setLineDash([]);
       if (spacing) doc.setCharSpace(spacing);
-      doc.text(safeTxt(txt), x, yy, { align });
+      doc.text(safeTxt(txt), x, yy, { align, maxWidth });
       if (spacing) doc.setCharSpace(0);
     };
 
@@ -137,22 +138,30 @@ Deno.serve(async (req) => {
     doc.circle(pw - 6, 10, 34, 'F');
     doc.setFillColor(...LEAF);
     doc.circle(pw + 6, heroH - 4, 26, 'F');
-    // Banda inferior menta sutil (separa hero del cuerpo)
+    // Banda inferior con gradiente eco (separa hero del cuerpo)
     doc.setFillColor(...CREAM);
-    doc.rect(0, heroH, pw, 1.5, 'F');
+    doc.rect(0, heroH, pw, 2, 'F');
+    doc.setFillColor(...MINT);
+    doc.rect(0, heroH + 2, pw, 1, 'F');
 
-    // Logo PEYU — chip arena cuadrado 20x20, perfectamente alineado al margen.
+    // Logo PEYU — chip arena cuadrado 20x20, con sombra suave
     const lgS = 20, lgX = MX, lgY = 14;
+    // Sombra suave del chip
+    doc.setFillColor(0, 0, 0);
+    doc.setGlobalAlpha(0.08);
+    doc.roundedRect(lgX + 0.5, lgY + 0.5, lgS, lgS, 3, 3, 'F');
+    doc.setGlobalAlpha(1);
+
     if (peyuLogo) {
-      try {
-        doc.setFillColor(...SAND);
-        doc.roundedRect(lgX, lgY, lgS, lgS, 3, 3, 'F');
-        doc.addImage(`data:image/${peyuLogo.fmt.toLowerCase()};base64,${peyuLogo.b64}`, peyuLogo.fmt, lgX + 1.5, lgY + 1.5, lgS - 3, lgS - 3);
-      } catch {
-        T('PEYU', lgX, lgY + 14, { size: 24, font: 'bold', color: WHITE });
-      }
+     try {
+       doc.setFillColor(...SAND);
+       doc.roundedRect(lgX, lgY, lgS, lgS, 3, 3, 'F');
+       doc.addImage(`data:image/${peyuLogo.fmt.toLowerCase()};base64,${peyuLogo.b64}`, peyuLogo.fmt, lgX + 1.5, lgY + 1.5, lgS - 3, lgS - 3);
+     } catch {
+       T('PEYU', lgX, lgY + 14, { size: 24, font: 'bold', color: WHITE });
+     }
     } else {
-      T('PEYU', lgX, lgY + 14, { size: 24, font: 'bold', color: WHITE });
+     T('PEYU', lgX, lgY + 14, { size: 24, font: 'bold', color: WHITE });
     }
 
     // Marca textual al lado del logo
@@ -178,9 +187,15 @@ Deno.serve(async (req) => {
     //  CARD: CLIENTE + TOTAL
     // ═══════════════════════════════════════════════════
     const cardH = 46;
+    // Sombra suave de card
+    doc.setFillColor(0, 0, 0);
+    doc.setGlobalAlpha(0.06);
+    doc.roundedRect(MX + 1, y + 1, CW, cardH, 4, 4, 'F');
+    doc.setGlobalAlpha(1);
+    
     doc.setFillColor(...SAND);
     doc.roundedRect(MX, y, CW, cardH, 4, 4, 'F');
-    // Acento vertical eco a la izquierda
+    // Acento vertical eco a la izquierda con sombra
     doc.setFillColor(...TEAL);
     doc.roundedRect(MX, y, 2.5, cardH, 1, 1, 'F');
 
