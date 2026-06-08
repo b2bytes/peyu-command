@@ -154,6 +154,7 @@ Deno.serve(async (req) => {
       };
       await base44.asServiceRole.entities.ContentPost.update(post_id, {
         estado: 'Publicado',
+        link_publicado: composerLinks[post.red_social] || '',
         notas: `${post.notas || ''}\n[Publicación manual ${new Date().toISOString().slice(0, 10)}]`.trim(),
       });
       return Response.json({
@@ -169,7 +170,8 @@ Deno.serve(async (req) => {
       });
     }
 
-    return Response.json({ ok: false, ...publishResult }, { status: 502 });
+    // Error real: no se pudo auto-publicar ni modo manual
+    return Response.json({ ok: false, error: publishResult.reason, detail: publishResult }, { status: 400 });
   } catch (error) {
     console.error('publishContentPost error:', error);
     return Response.json({ error: error.message }, { status: 500 });

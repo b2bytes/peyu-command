@@ -64,7 +64,12 @@ export default function ApprovalQueuePanel({ refreshKey, onChange }) {
     try {
       if (action === 'approve')   await base44.entities.ContentPost.update(postId, { estado: 'Aprobado' });
       if (action === 'reject')    await base44.entities.ContentPost.update(postId, { estado: 'Archivado' });
-      if (action === 'publish')   await base44.functions.invoke('publishContentPost', { post_id: postId });
+      if (action === 'publish') {
+        const res = await base44.functions.invoke('publishContentPost', { post_id: postId });
+        if (res.data?.modo === 'manual') {
+          alert('✓ Post marcado como publicado.\n\nCopia el texto y la imagen desde el detalle del post y publica manualmente en ' + res.data?.assets?.composer_url || 'la red social');
+        }
+      }
       if (action === 'delete') {
         if (!window.confirm('¿Eliminar este post? Esta acción no se puede deshacer.')) {
           setActioning(null);
