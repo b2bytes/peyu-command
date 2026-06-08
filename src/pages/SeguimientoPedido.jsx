@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
   Search, Package, Truck, MessageCircle, AlertCircle,
-  Sparkles, ExternalLink, Star, Receipt, MapPin, CreditCard,
+  Sparkles, ExternalLink, Star, Receipt, MapPin, CreditCard, Download, FileUp, Clock,
 } from 'lucide-react';
 import TrackingTimeline from '@/components/seguimiento/TrackingTimeline';
 import PedidoRatingForm from '@/components/seguimiento/PedidoRatingForm';
@@ -254,22 +254,44 @@ export default function SeguimientoPedido() {
 
               {/* Tracking */}
               {pedido.tracking && (
-                <div className="mt-4 pt-4 border-t border-ld-border flex items-center justify-between gap-3 flex-wrap">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'var(--ld-action-soft)' }}>
-                      <Truck className="w-5 h-5" style={{ color: 'var(--ld-action)' }} />
+                <div className="mt-4 pt-4 border-t border-ld-border space-y-3">
+                  <div className="flex items-center justify-between gap-3 flex-wrap">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'var(--ld-action-soft)' }}>
+                        <Truck className="w-5 h-5" style={{ color: 'var(--ld-action)' }} />
+                      </div>
+                      <div>
+                        <p className="text-xs text-ld-fg-muted">N° Tracking BlueExpress</p>
+                        <p className="font-mono font-bold text-sm text-ld-fg">{pedido.tracking}</p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="text-xs text-ld-fg-muted">N° Tracking</p>
-                      <p className="font-mono font-bold text-sm text-ld-fg">{pedido.tracking}</p>
-                    </div>
+                    {trackingUrl && (
+                      <a href={trackingUrl} target="_blank" rel="noreferrer">
+                        <Button size="sm" className="ld-btn-primary rounded-full gap-2 text-white">
+                          Rastrear <ExternalLink className="w-3.5 h-3.5" />
+                        </Button>
+                      </a>
+                    )}
                   </div>
-                  {trackingUrl && (
-                    <a href={trackingUrl} target="_blank" rel="noreferrer">
-                      <Button size="sm" className="ld-btn-primary rounded-full gap-2 text-white">
-                        Rastrear en {pedido.courier} <ExternalLink className="w-3.5 h-3.5" />
-                      </Button>
-                    </a>
+
+                  {/* Etiqueta BlueExpress (si está lista) */}
+                  {pedido.estado === 'Listo para Despacho' && (
+                    <div className="rounded-2xl p-4" style={{ background: 'var(--ld-action-soft)', border: `1.5px solid var(--ld-action)` }}>
+                      <div className="flex items-center gap-2 mb-2">
+                        <FileUp className="w-4 h-4" style={{ color: 'var(--ld-action)' }} />
+                        <p className="font-bold text-sm text-ld-fg">Etiqueta de envío lista</p>
+                      </div>
+                      <p className="text-xs text-ld-fg-soft mb-3">Descárgala e imprímela para agilizar el despacho</p>
+                      <a 
+                        href={`https://www.blue.cl/seguimiento?n=${pedido.tracking}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex items-center gap-2 px-4 py-2.5 rounded-full text-white font-bold text-sm transition-all hover:scale-105"
+                        style={{ background: 'var(--ld-action)' }}
+                      >
+                        <Download className="w-4 h-4" /> Ver etiqueta en BlueExpress
+                      </a>
+                    </div>
                   )}
                 </div>
               )}
