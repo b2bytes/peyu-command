@@ -96,13 +96,13 @@ export default function CatalogoNuevo() {
         </div>
 
         {/* Chips de categoría */}
-        <div className="flex items-center gap-1 overflow-x-auto scrollbar-hide pb-1 mb-2 sm:mb-3">
+        <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto scrollbar-hide pb-2 sm:pb-1 mb-3 sm:mb-4 -mx-3 sm:mx-0 px-3 sm:px-0">
           <SlidersHorizontal className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-[#A78B6F] flex-shrink-0" />
           {chips.map((c) => (
             <button
               key={c}
               onClick={() => setCat(c)}
-              className="flex-shrink-0 px-2.5 py-1 sm:px-4 sm:py-2 rounded-full text-[11px] sm:text-sm font-bold transition-all whitespace-nowrap"
+              className="flex-shrink-0 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-[10px] sm:text-sm font-bold transition-all whitespace-nowrap"
               style={{
                 background: cat === c ? '#C0785C' : 'white',
                 color: cat === c ? 'white' : '#7A6050',
@@ -117,13 +117,13 @@ export default function CatalogoNuevo() {
 
         {/* Filtro por MODELO de teléfono (visible en carcasas — Baymard) */}
         {esCarcasas && modelos.length > 0 && (
-          <div className="flex items-center gap-1 overflow-x-auto scrollbar-hide pb-1 mb-4 sm:mb-6">
+          <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto scrollbar-hide pb-2 sm:pb-1 mb-4 sm:mb-6 -mx-3 sm:mx-0 px-3 sm:px-0">
             <Smartphone className="w-3 h-3 sm:w-4 sm:h-4 text-[#A78B6F] flex-shrink-0" />
             {['Todos', ...modelos].map((m) => (
               <button
                 key={m}
                 onClick={() => setModelo(m)}
-                className="flex-shrink-0 px-2.5 py-1 sm:px-3.5 sm:py-1.5 rounded-full text-[10px] sm:text-xs font-bold transition-all whitespace-nowrap"
+                className="flex-shrink-0 px-3 sm:px-3.5 py-1.5 sm:py-1.5 rounded-full text-[9px] sm:text-xs font-bold transition-all whitespace-nowrap"
                 style={{
                   background: modelo === m ? '#8BAD8A' : 'white',
                   color: modelo === m ? 'white' : '#7A6050',
