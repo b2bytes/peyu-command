@@ -221,9 +221,9 @@ export default function CotizacionRapida() {
             <QuoteStepper step={step} onStep={goTo} maxStep={maxStep} />
 
             {/* Layout con panel de logo persistente en desktop */}
-            <div className="flex gap-8 items-start mt-8">
-              {/* Contenido principal */}
-              <div className="flex-1 min-w-0">
+             <div className="flex gap-6 items-start mt-8">
+               {/* Contenido principal */}
+               <div className="flex-1 min-w-0">
                 <AnimatePresence mode="wait">
                   {/* ── PASO 1 · Productos ── */}
                   {step === 0 && (
@@ -332,15 +332,16 @@ export default function CotizacionRapida() {
                             return (
                               <div key={it.producto.sku} className="bg-[#FAF7F2] border border-[#EBE3D6] rounded-xl p-3">
                                 <div className="flex items-center gap-3">
-                                  {/* Thumb con mockup inteligente */}
-                                  <div className="flex-shrink-0" style={{ width: '48px', height: '48px' }}>
-                                    <LogoMockupPreview
-                                      logoUrl={logoUrl}
-                                      productImg={productImg}
-                                      size="sm"
-                                      className="!w-full !h-full !aspect-auto !rounded-xl"
-                                    />
-                                  </div>
+                                           {/* Thumb con mockup inteligente */}
+                                           <div className="flex-shrink-0 rounded-lg overflow-hidden border border-[#EBE3D6]" style={{ width: '52px', height: '52px', background: '#F2ECE2' }}>
+                                             <LogoMockupPreview
+                                               logoUrl={logoUrl}
+                                               productImg={productImg}
+                                               size="sm"
+                                               className="!w-full !h-full !aspect-auto"
+                                               showBadge={false}
+                                             />
+                                           </div>
 
                                   <div className="flex-1 min-w-0">
                                     <p className="text-sm font-bold text-[#2A2420] truncate">
@@ -430,45 +431,45 @@ export default function CotizacionRapida() {
                 )}
 
                 {/* Barra de navegación inferior */}
-                <div className="fixed sm:static bottom-0 inset-x-0 z-30 sm:z-0 bg-[#FAF7F2]/95 sm:bg-transparent backdrop-blur sm:backdrop-blur-0 border-t sm:border-0 border-[#EBE3D6] px-4 sm:px-0 py-3 sm:py-0 sm:mt-8">
-                  <div className="max-w-5xl mx-auto flex items-center gap-4">
-                    {step > 0 && (
-                      <button
-                        onClick={back}
-                        className="h-12 px-4 rounded-2xl bg-white border border-[#EBE3D6] hover:border-[#0F8B6C]/40 text-[#4B4F54] font-bold flex items-center gap-1.5 transition-colors"
-                      >
-                        <ArrowLeft className="w-4 h-4" /> Atrás
-                      </button>
-                    )}
+                 <div className="fixed sm:static bottom-0 inset-x-0 z-30 sm:z-0 bg-[#FAF7F2]/98 sm:bg-transparent backdrop-blur-xl sm:backdrop-blur-0 border-t sm:border-0 border-[#EBE3D6] px-4 sm:px-0 py-3 sm:py-0 sm:mt-10">
+                   <div className="max-w-5xl mx-auto flex items-center gap-3 sm:gap-4">
+                     {step > 0 && (
+                       <button
+                         onClick={back}
+                         className="h-11 px-4 sm:px-5 rounded-xl sm:rounded-2xl bg-white border border-[#EBE3D6] hover:border-[#0F8B6C]/40 hover:bg-[#F8F3ED] text-[#4B4F54] font-bold text-sm flex items-center gap-1.5 transition-colors flex-shrink-0"
+                       >
+                         <ArrowLeft className="w-4 h-4" /> <span className="hidden sm:inline">Atrás</span>
+                       </button>
+                     )}
 
-                    {items.length > 0 && (
-                      <div className="hidden sm:flex flex-col mr-auto pl-1">
-                        <span className="text-[11px] text-[#A78B6F] leading-tight">{qtyTotal.toLocaleString('es-CL')} u · neto</span>
-                        <span className="font-bold text-[#0F8B6C] leading-tight">{fmtCLP(totalNeto)}</span>
-                      </div>
-                    )}
+                     {items.length > 0 && (
+                       <div className="hidden sm:flex flex-col mr-auto pl-2">
+                         <span className="text-[11px] text-[#A78B6F] leading-tight">{qtyTotal.toLocaleString('es-CL')} u · neto</span>
+                         <span className="font-bold text-[#0F8B6C] text-sm leading-tight">{fmtCLP(totalNeto)}</span>
+                       </div>
+                     )}
 
-                    {step < 2 ? (
-                      <button
-                        onClick={next}
-                        className="flex-1 sm:flex-none sm:ml-0 h-12 px-6 rounded-2xl bg-[#0F8B6C] hover:bg-[#0B6E55] text-white font-bold flex items-center justify-center gap-2 shadow-lg shadow-[#0F8B6C]/20 transition-all active:scale-[0.99]"
-                      >
-                        {step === 0 ? 'Continuar' : 'Revisar pedido'} <ArrowRight className="w-4 h-4" />
-                      </button>
-                    ) : (
-                      <button
-                        onClick={enviar}
-                        disabled={enviando}
-                        className="flex-1 sm:flex-none h-12 px-6 rounded-2xl bg-[#0F8B6C] hover:bg-[#0B6E55] disabled:opacity-40 text-white font-bold flex items-center justify-center gap-2 shadow-lg shadow-[#0F8B6C]/20 transition-all active:scale-[0.99]"
-                      >
-                        {enviando
-                          ? <><Loader2 className="w-4 h-4 animate-spin" /> Enviando...</>
-                          : <>Solicitar presupuesto <ArrowRight className="w-4 h-4" /></>
-                        }
-                      </button>
-                    )}
-                  </div>
-                </div>
+                     {step < 2 ? (
+                       <button
+                         onClick={next}
+                         className="flex-1 sm:flex-none h-11 sm:h-12 px-4 sm:px-7 rounded-xl sm:rounded-2xl bg-[#0F8B6C] hover:bg-[#0B6E55] text-white text-sm sm:text-base font-bold flex items-center justify-center gap-2 shadow-lg shadow-[#0F8B6C]/20 transition-all active:scale-[0.98]"
+                       >
+                         {step === 0 ? 'Continuar' : 'Revisar'} <ArrowRight className="w-4 h-4" />
+                       </button>
+                     ) : (
+                       <button
+                         onClick={enviar}
+                         disabled={enviando}
+                         className="flex-1 sm:flex-none h-11 sm:h-12 px-4 sm:px-7 rounded-xl sm:rounded-2xl bg-[#0F8B6C] hover:bg-[#0B6E55] disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm sm:text-base font-bold flex items-center justify-center gap-2 shadow-lg shadow-[#0F8B6C]/20 transition-all active:scale-[0.98]"
+                       >
+                         {enviando
+                           ? <><Loader2 className="w-4 h-4 animate-spin" /> Enviando...</>
+                           : <>Solicitar <span className="hidden sm:inline">presupuesto</span> <ArrowRight className="w-4 h-4" /></>
+                         }
+                       </button>
+                     )}
+                   </div>
+                 </div>
 
                 {/* Trust badges */}
                 <div className="grid grid-cols-3 gap-3 mt-8 sm:mt-10">
@@ -489,7 +490,7 @@ export default function CotizacionRapida() {
               </div>
 
               {/* ── PANEL LATERAL: GALERÍA DE MOCKUPS (desktop, sticky) ── */}
-              <div className="hidden sm:block w-72 flex-shrink-0 sticky top-24 self-start space-y-4">
+              <div className="hidden sm:block w-80 flex-shrink-0 sticky top-20 self-start space-y-4">
                 <MockupGalleryB2B
                   items={items.length > 0 ? items : (primerProducto ? [{ producto: primerProducto, qty: 1 }] : [])}
                   logoUrl={logoUrl}
