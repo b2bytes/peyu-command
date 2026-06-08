@@ -45,13 +45,19 @@ function GenerarPropuestaModal({ lead, onClose, onDone }) {
 
   const generar = async () => {
     setLoading(true);
-    const res = await base44.functions.invoke('createCorporateProposal', {
-      leadId: lead.id,
-      items: items.map(it => ({ ...it, qty: Number(it.qty), precio_base: Number(it.precio_base) })),
-    });
-    setResult(res.data);
-    setLoading(false);
-    onDone();
+    try {
+      const res = await base44.functions.invoke('createCorporateProposal', {
+        leadId: lead.id,
+        items: items.map(it => ({ ...it, qty: Number(it.qty), precio_base: Number(it.precio_base) })),
+      });
+      setResult(res.data || res);
+      onDone();
+    } catch (err) {
+      alert('Error generando propuesta: ' + (err.message || 'Intenta de nuevo'));
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const proposalUrl = result ? `${window.location.origin}/b2b/propuesta?id=${result.proposal_id}` : '';
