@@ -1,4 +1,5 @@
-import { DollarSign, Target, TrendingUp } from 'lucide-react';
+import { DollarSign, Target, TrendingUp, Plus } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const PLATAFORMA_COLORS = {
   'Meta Ads (IG+FB)': 'from-blue-500 to-purple-500',
@@ -20,11 +21,19 @@ const ESTADO_COLORS = {
 };
 
 export default function AdCampaignsList({ campanas }) {
+  const navigate = useNavigate();
+  
   if (campanas.length === 0) {
     return (
       <div className="text-center py-12 text-gray-400">
         <p className="text-sm">Aún no hay campañas pagadas.</p>
         <p className="text-xs mt-1">Pide al Ads Strategist que diseñe tu primera campaña.</p>
+        <button
+          onClick={() => navigate('/admin/ads-command')}
+          className="mt-4 inline-flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold px-4 py-2.5 rounded-lg transition-colors"
+        >
+          <Plus className="w-3 h-3" /> Nueva campaña
+        </button>
       </div>
     );
   }

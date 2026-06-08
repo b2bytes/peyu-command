@@ -1,6 +1,8 @@
 import { TrendingUp, Calendar, Target, Image as ImageIcon } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 export default function MarketingHubStats({ posts, calendarios, campanas, assets }) {
+  const navigate = useNavigate();
   const stats = [
     {
       icon: Calendar,
@@ -35,7 +37,15 @@ export default function MarketingHubStats({ posts, calendarios, campanas, assets
   return (
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
       {stats.map((s) => (
-        <div key={s.label} className="bg-white rounded-2xl border border-gray-100 p-4 shadow-sm">
+        <button
+          key={s.label}
+          onClick={() => {
+            if (s.label === 'Campañas activas') {
+              navigate('/admin/ads-command');
+            }
+          }}
+          className="bg-white rounded-2xl border border-gray-100 p-4 shadow-sm hover:shadow-md hover:border-gray-200 transition-all text-left"
+        >
           <div className={`w-9 h-9 rounded-xl bg-gradient-to-br ${s.color} flex items-center justify-center mb-3 shadow`}>
             <s.icon className="w-4 h-4 text-white" />
           </div>
@@ -44,7 +54,7 @@ export default function MarketingHubStats({ posts, calendarios, campanas, assets
             <span className="text-sm text-gray-400 font-normal ml-1">/ {s.total}</span>
           </div>
           <div className="text-xs text-gray-500 mt-0.5">{s.label}</div>
-        </div>
+        </button>
       ))}
     </div>
   );
