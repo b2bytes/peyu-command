@@ -6,6 +6,7 @@ import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Calendar, Sparkles, Loader2, Check, AlertCircle, Lightbulb, ChevronLeft, ChevronRight, Instagram, Linkedin, Facebook, Music2, Trash2, X } from 'lucide-react';
+import PostEditorModal from './PostEditorModal';
 
 const TEMAS_SUGERIDOS = [
   '🌱 Sostenibilidad y economía circular',
@@ -45,19 +46,23 @@ function isSameDay(a, b) {
   return a.toDateString() === b.toDateString();
 }
 
-// Mini chip de un post en el calendario
-function PostChip({ post, onDelete }) {
+// Mini chip de un post en el calendario — clicable
+function PostChip({ post, onDelete, onEdit }) {
   const Icon = ICONO_RED[post.red_social] || Sparkles;
   const grad = COLOR_RED[post.red_social] || 'from-violet-500 to-pink-500';
   return (
-    <div className={`group relative flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-gradient-to-r ${grad} bg-opacity-90`}>
+    <div
+      onClick={() => onEdit(post)}
+      className={`group cursor-pointer relative flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-gradient-to-r ${grad} bg-opacity-90 hover:bg-opacity-100 transition-all hover:shadow-lg active:scale-[0.98]`}
+    >
       <Icon className="w-2.5 h-2.5 text-white flex-shrink-0" />
-      <span className="text-[9px] text-white font-semibold truncate max-w-[70px]">{post.titulo || post.red_social}</span>
+      <span className="text-[9px] text-white font-semibold truncate max-w-[60px]">{post.titulo || post.red_social}</span>
       <button
         onClick={(e) => { e.stopPropagation(); onDelete(post.id); }}
-        className="ml-0.5 opacity-0 group-hover:opacity-100 transition-opacity text-white/80 hover:text-white"
+        className="ml-auto opacity-0 group-hover:opacity-100 transition-opacity text-white/80 hover:text-white hover:bg-white/20 rounded p-0.5 flex-shrink-0"
+        title="Eliminar post"
       >
-        <X className="w-2.5 h-2.5" />
+        <Trash2 className="w-2.5 h-2.5" />
       </button>
     </div>
   );
@@ -81,6 +86,7 @@ export default function WeeklyPlannerPanel({ onGenerated }) {
   const [loadingPosts, setLoadingPosts] = useState(true);
   const [deletingId, setDeletingId] = useState(null);
   const [showForm, setShowForm] = useState(false);
+  const [selectedPost, setSelectedPost] = useState(null);
 
   const loadPosts = async () => {
     setLoadingPosts(true);
@@ -121,12 +127,26 @@ export default function WeeklyPlannerPanel({ onGenerated }) {
   };
 
   const handleDelete = async (postId) => {
-    if (!window.confirm('¿Eliminar este post del calendario?')) return;
     setDeletingId(postId);
-    await base44.entities.ContentPost.delete(postId);
-    await loadPosts();
-    onGenerated?.();
-    setDeletingId(null);
+    try {
+      await base44.entities.ContentPost.delete(postId);
+      await loadPosts();
+      onGenerated?.();
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
+  const handleEdit = (post) => {
+    setSelectedPost(post);
+  };
+
+  const handleClosEditor = async (updated) => {
+    if (updated) {
+      await loadPosts();
+      onGenerated?.();
+    }
+    setSelectedPost(null);
   };
 
   // Semana visible
@@ -150,6 +170,7 @@ export default function WeeklyPlannerPanel({ onGenerated }) {
 
   return (
     <div className="h-full flex flex-col min-h-0 gap-3">
+      {selectedPost && <PostEditorModal post={selectedPost} onClose={handleClosEditor} />}
       {/* Header del calendario */}
       <div className="flex-shrink-0 flex items-center justify-between gap-3">
         <div className="flex items-center gap-2">
@@ -318,11 +339,11 @@ export default function WeeklyPlannerPanel({ onGenerated }) {
                     <p className="text-[9px] text-white/15 text-center">—</p>
                   </div>
                 ) : (
-                  <div className="space-y-1">
-                    {dayPosts.map((p) => (
-                      <PostChip key={p.id} post={p} onDelete={handleDelete} />
-                    ))}
-                  </div>
+                 <div className="space-y-1">
+                   {dayPosts.map((p) => (
+                     <PostChip key={p.id} post={p} onDelete={handleDelete} onEdit={handleEdit} />
+                   ))}
+                 </div>
                 )}
               </div>
             );
@@ -341,7 +362,7 @@ export default function WeeklyPlannerPanel({ onGenerated }) {
             </div>
           );
         })}
-        <span className="text-[10px] text-white/25 ml-auto">Hover sobre un post para eliminarlo</span>
+        <span className="text-[10px] text-white/25 ml-auto">Clic para editar · Hover para eliminar</span>
       </div>
     </div>
   );
