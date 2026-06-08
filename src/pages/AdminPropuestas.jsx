@@ -3,6 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Building2, Star, Send, FileText, MessageCircle, Eye, RefreshCw, TrendingUp, Clock, Plus, Trash2, Zap, Copy, Check, ExternalLink } from 'lucide-react';
+import BluexShipmentPanel from '@/components/bluex/BluexShipmentPanel';
 
 const LEAD_STATUS = ['Nuevo', 'Contactado', 'En revisión', 'Propuesta enviada', 'Aceptado', 'Perdido'];
 const LEAD_COLORS = {
@@ -503,8 +504,18 @@ export default function AdminPropuestas() {
                       ))}
                     </select>
                   </div>
-                </div>
-              </div>
+                  </div>
+                  {/* BlueExpress Panel */}
+                  {prop.status === 'Aceptada' && (
+                  <div className="mt-3 pt-3 border-t border-border">
+                    <BluexShipmentPanel
+                      proposalId={prop.id}
+                      proposal={prop}
+                      onShipmentCreated={() => cargar()}
+                    />
+                  </div>
+                  )}
+                  </div>
             ))
           )}
         </div>
