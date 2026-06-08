@@ -1,4 +1,6 @@
 import { ArrowRight, Sparkles, Leaf, Recycle } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import CarouselHeroV2 from './CarouselHeroV2';
 
 // Imágenes siempre disponibles en CDN base44 — úsalas aunque WordPress esté caído
 const HERO_IMGS = [
@@ -8,13 +10,9 @@ const HERO_IMGS = [
   'https://i0.wp.com/peyuchile.cl/wp-content/uploads/2022/09/greencel-1.jpg?fit=600%2C600&ssl=1',
 ];
 
-const BASE44_MAIN = 'https://media.base44.com/images/public/69d99b9d61f699701129c103/7b59fad60_generated_image.png';
-
-// Hero BOLD del Shop v2 — full-width, imagen grande con collage lateral.
+// Hero BOLD del Shop v2 — carrusel automático hermoso e inteligente.
 export default function HeroBoldV2({ heroImg, onPersonaliza }) {
-  // Prioriza la imagen del producto si está en base44, si no usa el fallback garantizado
-  const isBase44 = heroImg && heroImg.includes('media.base44.com');
-  const mainImg = isBase44 ? heroImg : BASE44_MAIN;
+  const navigate = useNavigate();
 
   return (
     <section className="w-full px-3 sm:px-8 lg:px-16 xl:px-20 pt-3 sm:pt-8 pb-3 sm:pb-6">
@@ -84,51 +82,25 @@ export default function HeroBoldV2({ heroImg, onPersonaliza }) {
             <div className="absolute -inset-10 rounded-[4rem] blur-3xl pointer-events-none opacity-40 sm:opacity-60"
               style={{ background: 'linear-gradient(135deg,rgba(192,120,92,.18),rgba(139,173,138,.14))' }} />
 
-            {/* Columna de mini imágenes (solo xl) */}
-            <div className="hidden xl:flex flex-col gap-3 flex-shrink-0">
-              {HERO_IMGS.slice(1, 3).map((src, i) => (
-                <div key={i} className="w-24 h-24 rounded-2xl overflow-hidden flex-shrink-0"
-                  style={{ border: '1.5px solid #D4C4B0', background: '#EDE3D6' }}>
-                  <img src={src} alt="" className="w-full h-full object-cover"
-                    onError={(e) => { e.target.style.opacity = '0'; }} />
-                </div>
-              ))}
-              <div className="w-24 h-24 rounded-2xl flex-shrink-0 flex items-center justify-center text-center"
-                style={{ background: 'rgba(139,173,138,.15)', border: '1.5px dashed #8BAD8A' }}>
-                <div>
-                  <Recycle className="w-5 h-5 mx-auto mb-1" style={{ color: '#8BAD8A' }} />
-                  <p className="text-[9px] font-bold leading-tight" style={{ color: '#5B7D5A' }}>♻️ Reciclado</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Imagen principal grande */}
+            {/* Carrusel automático hermoso e inteligente */}
             <div className="relative flex-1" style={{ maxWidth: '500px' }}>
-              <div className="relative rounded-xl sm:rounded-[2.5rem] overflow-hidden"
-                style={{ aspectRatio: '1/1', background: '#EDE3D6', border: '1px sm:border-2 solid #D4C4B0', boxShadow: '0 8px sm:0 32px 80px -24px rgba(44,24,16,.28)' }}>
-                <img
-                  src={mainImg}
-                  alt="Producto PEYU de plástico reciclado marmolado"
-                  className="w-full h-full object-cover"
-                  onError={(e) => {
-                    // Nunca debería llegar acá porque mainImg es base44, pero por si acaso:
-                    e.target.style.display = 'none';
-                    e.target.parentElement.style.background = '#EDE3D6';
-                  }}
-                />
-                <div className="absolute inset-0 pointer-events-none"
-                  style={{ background: 'linear-gradient(to top, rgba(44,24,16,.20) 0%, transparent 55%)' }} />
-              </div>
+              <CarouselHeroV2 
+                images={HERO_IMGS}
+                onImageClick={(img) => {
+                  // Clickeable — navega a catálogo
+                  navigate('/CatalogoNuevo');
+                }}
+              />
 
               {/* Badge inferior */}
-              <div className="hidden sm:block absolute bottom-5 left-5 bg-white/93 backdrop-blur-xl rounded-2xl px-4 py-3 shadow-lg"
+              <div className="hidden sm:block absolute bottom-5 left-5 bg-white/93 backdrop-blur-xl rounded-2xl px-4 py-3 shadow-lg z-10"
                 style={{ border: '1px solid rgba(212,196,176,.7)' }}>
                 <p className="text-[9px] font-bold uppercase tracking-wider mb-0.5" style={{ color: '#A08070' }}>Cada pieza es única</p>
                 <p className="font-poppins font-bold text-sm" style={{ color: '#C0785C' }}>Marmolado irrepetible ♻️</p>
               </div>
 
               {/* Badge superior */}
-              <div className="hidden sm:block absolute top-5 right-5 bg-white/93 backdrop-blur-xl rounded-xl px-3 py-2 shadow-md"
+              <div className="hidden sm:block absolute top-5 right-5 bg-white/93 backdrop-blur-xl rounded-xl px-3 py-2 shadow-md z-10"
                 style={{ border: '1px solid rgba(212,196,176,.7)' }}>
                 <div className="flex items-center gap-1.5">
                   <Recycle className="w-3.5 h-3.5" style={{ color: '#8BAD8A' }} />
