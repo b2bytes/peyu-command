@@ -206,15 +206,15 @@ export default function CotizacionRapida() {
         ) : (
           <>
             {/* Hero compacto */}
-             <div className="text-center mb-10">
+            <div className="text-center mb-8">
               <span className="inline-flex items-center gap-1.5 bg-[#0F8B6C]/10 text-[#0F8B6C] text-xs font-bold px-3 py-1.5 rounded-full mb-3">
                 <Building2 className="w-3.5 h-3.5" /> Cotización para empresas
               </span>
-              <h1 className="font-fraunces text-3xl sm:text-4xl mb-2 leading-tight">
+              <h1 className="font-fraunces text-3xl sm:text-4xl leading-tight mb-3">
                 Tu pedido corporativo, <span className="text-[#0F8B6C]">en 3 pasos</span>
               </h1>
-              <p className="text-sm text-[#4B4F54] max-w-md mx-auto">
-                Arma tu pedido con precios reales por volumen. Hasta −54%. Sin compromiso.
+              <p className="text-sm text-[#4B4F54] max-w-xl mx-auto">
+                Arma tu carrito, completa datos de empresa y recibe presupuesto con precios reales por volumen.
               </p>
             </div>
 
@@ -228,12 +228,12 @@ export default function CotizacionRapida() {
                   {/* ── PASO 1 · Productos ── */}
                   {step === 0 && (
                     <motion.div key="s0" initial={{ opacity: 0, x: 24 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -24 }} transition={trans}>
-                      <div className="bg-white border border-[#EBE3D6] rounded-3xl p-5 sm:p-6">
-                        <h2 className="font-bold text-lg text-[#2A2420] mb-1 flex items-center gap-2">
-                          <Package className="w-5 h-5 text-[#0F8B6C]" /> Elige tus productos
+                      <div className="bg-white border border-[#EBE3D6] rounded-3xl p-6 sm:p-7">
+                        <h2 className="font-bold text-lg text-[#2A2420] mb-2 flex items-center gap-2">
+                          <Package className="w-5 h-5 text-[#0F8B6C]" /> Paso 1: Elige productos
                         </h2>
-                        <p className="text-xs text-[#A78B6F] mb-4">
-                          Haz clic para ver detalles o usa <strong className="text-[#2A2420]">+</strong> para agregar directo. Precio por volumen en vivo.
+                        <p className="text-xs text-[#A78B6F] mb-5">
+                          Navega el catálogo o busca. Haz clic para ver detalles o <strong>+</strong> para agregar. Precios por volumen en vivo.
                         </p>
                         <QuoteProductPicker
                           productos={productos}
@@ -244,10 +244,10 @@ export default function CotizacionRapida() {
                       </div>
 
                       {items.length > 0 && (
-                         <div className="mt-6 space-y-4">
-                          <p className="text-xs font-bold text-[#4B4F54] px-1 flex items-center gap-1.5">
+                       <div className="mt-6 pt-4 border-t border-[#EBE3D6] space-y-3">
+                          <p className="text-xs font-bold text-[#2A2420] flex items-center gap-1.5">
                             <ShoppingCart className="w-3.5 h-3.5 text-[#0F8B6C]" />
-                            En tu cotización ({items.length} {items.length === 1 ? 'producto' : 'productos'} · {qtyTotal} u)
+                            Tu carrito: {items.length} {items.length === 1 ? 'producto' : 'productos'} · {qtyTotal} unidades
                           </p>
                           {items.map((it) => (
                             <QuoteItemRow
@@ -260,16 +260,16 @@ export default function CotizacionRapida() {
                             />
                           ))}
                           {/* Mini resumen */}
-                          <div className="bg-white border border-[#EBE3D6] rounded-2xl px-4 py-3 flex items-center justify-between">
+                          <div className="bg-[#0F8B6C]/5 border border-[#0F8B6C]/15 rounded-2xl px-4 py-3 flex items-center justify-between">
                             <div>
-                              <p className="text-xs text-[#A78B6F]">{qtyTotal} unidades · estimado neto</p>
+                              <p className="text-[11px] font-semibold text-[#4B4F54]">Subtotal ({qtyTotal} u)</p>
                               {ahorroTotal > 0 && (
-                                <p className="text-[10px] text-[#D96B4D] font-bold">Ahorras {fmtCLP(ahorroTotal)} vs precio unitario</p>
+                                <p className="text-[10px] text-[#0F8B6C] font-bold">Ahorras {fmtCLP(ahorroTotal)}</p>
                               )}
                             </div>
                             <div className="text-right">
-                              <p className="font-fraunces text-xl text-[#0F8B6C]">{fmtCLP(totalNeto)}</p>
-                              <p className="text-[10px] text-[#A78B6F]">≈ {fmtCLP(totalConIVA)} c/IVA</p>
+                              <p className="font-fraunces text-xl font-bold text-[#0F8B6C]">{fmtCLP(totalNeto)}</p>
+                              <p className="text-[10px] text-[#A78B6F]">+ IVA = {fmtCLP(totalConIVA)}</p>
                             </div>
                           </div>
                         </div>
@@ -290,12 +290,12 @@ export default function CotizacionRapida() {
                   {/* ── PASO 2 · Datos ── */}
                   {step === 1 && (
                     <motion.div key="s1" initial={{ opacity: 0, x: 24 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -24 }} transition={trans}>
-                      <div className="bg-white border border-[#EBE3D6] rounded-3xl p-5 sm:p-6">
-                        <h2 className="font-bold text-lg text-[#2A2420] mb-1 flex items-center gap-2">
-                          <Building2 className="w-5 h-5 text-[#0F8B6C]" /> Datos de tu empresa
+                      <div className="bg-white border border-[#EBE3D6] rounded-3xl p-6 sm:p-7">
+                        <h2 className="font-bold text-lg text-[#2A2420] mb-2 flex items-center gap-2">
+                          <Building2 className="w-5 h-5 text-[#0F8B6C]" /> Paso 2: Datos de empresa
                         </h2>
-                        <p className="text-xs text-[#A78B6F] mb-4">
-                          Para preparar tu presupuesto formal con factura. Un ejecutivo te contacta en 24h hábiles.
+                        <p className="text-xs text-[#A78B6F] mb-5">
+                          Completa tu empresa, RUT, contacto y email. Un ejecutivo de PEYU te contacta en 24h hábiles.
                         </p>
                         <QuoteContactForm form={form} setForm={setForm} />
                       </div>
@@ -314,9 +314,9 @@ export default function CotizacionRapida() {
                   {/* ── PASO 3 · Revisar ── */}
                   {step === 2 && (
                     <motion.div key="s2" initial={{ opacity: 0, x: 24 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -24 }} transition={trans}>
-                      <div className="bg-white border border-[#EBE3D6] rounded-3xl p-5 sm:p-6">
-                        <h2 className="font-bold text-lg text-[#2A2420] mb-4 flex items-center gap-2">
-                          <ShoppingCart className="w-5 h-5 text-[#0F8B6C]" /> Revisa y solicita
+                      <div className="bg-white border border-[#EBE3D6] rounded-3xl p-6 sm:p-7">
+                        <h2 className="font-bold text-lg text-[#2A2420] mb-5 flex items-center gap-2">
+                          <ShoppingCart className="w-5 h-5 text-[#0F8B6C]" /> Paso 3: Revisa y solicita
                         </h2>
 
                         {/* Líneas con mockup de logo */}
@@ -472,20 +472,23 @@ export default function CotizacionRapida() {
                  </div>
 
                 {/* Trust badges */}
-                <div className="grid grid-cols-3 gap-3 mt-8 sm:mt-10">
-                  {[
-                    { Icon: TrendingDown, t: 'Hasta −54%', s: 'descuento por volumen' },
-                    { Icon: Building2,    t: 'Factura',    s: 'datos de empresa + IVA' },
-                    { Icon: Recycle,      t: '100% reciclado', s: 'reporte ESG incluido' },
-                  ].map(({ Icon, t, s }) => (
-                    <div key={t} className="text-center">
-                      <div className="w-9 h-9 rounded-xl bg-white border border-[#EBE3D6] flex items-center justify-center mx-auto mb-1.5">
-                        <Icon className="w-4 h-4 text-[#0F8B6C]" />
+                <div className="mt-12 pt-8 border-t border-[#EBE3D6]">
+                  <p className="text-xs font-bold text-[#A78B6F] uppercase tracking-wide mb-4">Ventajas PEYU</p>
+                  <div className="grid grid-cols-3 gap-3">
+                    {[
+                      { Icon: TrendingDown, t: 'Hasta −54%', s: 'por volumen' },
+                      { Icon: Building2,    t: 'Factura',    s: 'formalizada' },
+                      { Icon: Recycle,      t: '100% Reciclado', s: 'ESG incluido' },
+                    ].map(({ Icon, t, s }) => (
+                      <div key={t} className="text-center">
+                        <div className="w-9 h-9 rounded-lg bg-[#0F8B6C]/10 flex items-center justify-center mx-auto mb-2">
+                          <Icon className="w-4 h-4 text-[#0F8B6C]" />
+                        </div>
+                        <p className="text-xs font-bold text-[#2A2420] leading-tight">{t}</p>
+                        <p className="text-[10px] text-[#A78B6F]">{s}</p>
                       </div>
-                      <p className="text-xs font-bold text-[#2A2420] leading-tight">{t}</p>
-                      <p className="text-[10px] text-[#A78B6F]">{s}</p>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
               </div>
 
