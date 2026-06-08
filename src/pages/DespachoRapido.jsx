@@ -285,7 +285,33 @@ export default function DespachoRapido() {
     setLoading(false);
   }, []);
 
-  useEffect(() => { loadPedidos(); }, [loadPedidos]);
+  // Suscripción en tiempo real: cuando la automation genera el tracking automáticamente,
+  // el panel se actualiza al instante sin recargar.
+  useEffect(() => {
+    loadPedidos();
+    const unsubscribe = base44.entities.PedidoWeb.subscribe((event) => {
+      if (event.type === 'update' && event.data?.payment_status === 'paid') {
+        // Refrescar lista
+        loadPedidos();
+        // Si el pedido seleccionado fue actualizado, sincronizar estado local
+        setSelected(prev => {
+          if (prev && prev.id === event.id) {
+            const updated = { ...prev, ...event.data };
+            // Si se asignó tracking nuevo, cargar envío automáticamente
+            if (event.data.tracking && !prev.tracking) {
+              setTimeout(async () => {
+                const envios = await base44.entities.Envio.filter({ pedido_id: event.id }, '-created_date', 1);
+                if (envios?.length > 0) setEnvio(envios[0]);
+              }, 800);
+            }
+            return updated;
+          }
+          return prev;
+        });
+      }
+    });
+    return () => unsubscribe();
+  }, [loadPedidos]);
 
   const cargarEnvio = useCallback(async (pedido) => {
     if (!pedido?.tracking) return;
