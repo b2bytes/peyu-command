@@ -57,6 +57,21 @@ export function pickTarifaField(pesoKg) {
 }
 
 /**
+ * Lead time estimado por región cuando la tabla no tiene valor (= 0).
+ * Basado en la promesa comercial BlueExpress Express para PEYU.
+ */
+function estimarLeadTime(region = '') {
+  const r = region.toUpperCase();
+  if (r.includes('METROPOLITANA')) return 1;
+  if (r.includes('VALPARAISO') || r.includes('OHIGGINS') || r.includes('MAULE') || r.includes('BIOBIO')) return 2;
+  if (r.includes('ARAUCANIA') || r.includes('RIOS') || r.includes('LAGOS') || r.includes('NUBLE')) return 3;
+  if (r.includes('ATACAMA') || r.includes('COQUIMBO') || r.includes('ANTOFAGASTA')) return 3;
+  if (r.includes('TARAPACA') || r.includes('ARICA')) return 4;
+  if (r.includes('AYSEN') || r.includes('MAGALLANES')) return 5;
+  return 3; // default
+}
+
+/**
  * Calcula el costo de envío para una comuna y peso dados.
  * @param {Object} params
  * @param {string} params.comuna   - Comuna destino (acepta tildes y mayúsculas)
@@ -80,25 +95,54 @@ export async function cotizarEnvioBluex({ comuna, pesoKg = 0.5, servicio = 'EXPR
   if (!t) return null;
 
   const field = pickTarifaField(pesoKg);
+  const fallbackOrder = ['tarifa_base', 'tarifa_2kg', 'tarifa_3kg', 'tarifa_5kg', 'tarifa_10kg', 'tarifa_15kg', 'tarifa_25kg'];
+  const fieldIdx = fallbackOrder.indexOf(field);
+
   let costo = t[field];
-  // Si el tramo no tiene tarifa cargada (==0), bajamos al inmediato superior disponible
+  let tramoCobrado = field;
+  let esEstimado = false;
+
   if (!costo) {
-    const fallbackOrder = ['tarifa_base', 'tarifa_2kg', 'tarifa_3kg', 'tarifa_5kg', 'tarifa_10kg', 'tarifa_15kg', 'tarifa_25kg'];
-    const startIdx = fallbackOrder.indexOf(field);
-    for (let i = startIdx; i >= 0; i--) {
-      if (t[fallbackOrder[i]]) { costo = t[fallbackOrder[i]]; break; }
+    // El Excel personalizado de Bluex solo tiene los primeros 3 tramos para muchas comunas.
+    // Para pesos mayores: aplicamos un recargo porcentual sobre el último tramo disponible
+    // en vez de cobrar el precio más barato (que subestima el costo real).
+    // Recargo: +15% por cada tramo adicional (aprox. cómo Bluex escala los precios).
+    let baseRef = 0;
+    let baseIdx = -1;
+    for (let i = fieldIdx - 1; i >= 0; i--) {
+      if (t[fallbackOrder[i]]) { baseRef = t[fallbackOrder[i]]; baseIdx = i; break; }
+    }
+    if (!baseRef) {
+      // Último recurso: buscar cualquier tarifa disponible
+      for (let i = 0; i < fallbackOrder.length; i++) {
+        if (t[fallbackOrder[i]]) { baseRef = t[fallbackOrder[i]]; baseIdx = i; break; }
+      }
+    }
+    if (baseRef) {
+      const tramosExtra = fieldIdx - baseIdx;
+      // +15% acumulado por cada tramo de peso adicional sin dato
+      costo = Math.round(baseRef * Math.pow(1.15, tramosExtra));
+      tramoCobrado = field;
+      esEstimado = true;
     }
   }
+
   if (!costo) return null;
+
+  // Lead time: usar el valor de la tabla si existe y es válido (>0), sino estimar por región
+  const leadTime = t.lead_time_dias && t.lead_time_dias > 0
+    ? t.lead_time_dias
+    : estimarLeadTime(t.region);
 
   return {
     servicio,
     comuna: t.comuna,
     region: t.region,
     costo,
-    lead_time_dias: t.lead_time_dias,
-    tramo: field,
+    lead_time_dias: leadTime,
+    tramo: tramoCobrado,
     peso_kg: pesoKg,
+    es_estimado: esEstimado,
   };
 }
 

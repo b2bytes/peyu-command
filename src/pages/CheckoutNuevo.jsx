@@ -102,12 +102,7 @@ export default function CheckoutNuevo() {
 
     if (!carrito.length) { setErrorPago('Tu carrito está vacío.'); return; }
 
-    const errs = validarShippingForm(cliente);
-    setErrors(errs);
-    if (Object.keys(errs).length > 0) {
-      setTimeout(() => document.querySelector('[class*="border-red-300"]')?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 100);
-      return;
-    }
+    // La validación de dirección se hace más abajo (después de detectar retiro en tienda)
 
     const bErrs = validarBilling(billing);
     setBillingErrors(bErrs);
@@ -115,6 +110,18 @@ export default function CheckoutNuevo() {
       setErrorPago('Completa los datos de facturación para emitir la factura.');
       setTimeout(() => document.querySelector('[data-billing-section]')?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 100);
       return;
+    }
+
+    // Retiro en tienda: saltamos validación de dirección y selector de envío
+    const esRetiro = envioBluex?.es_retiro === true;
+
+    if (!esRetiro) {
+      const errs = validarShippingForm(cliente);
+      setErrors(errs);
+      if (Object.keys(errs).length > 0) {
+        setTimeout(() => document.querySelector('[class*="border-red-300"]')?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 100);
+        return;
+      }
     }
 
     if (!envioBluex) {
@@ -155,12 +162,14 @@ export default function CheckoutNuevo() {
     }).join('\n');
 
     const referenciaTrim = (cliente.referencia || '').trim();
-    const direccionCompleta = [
-      cliente.direccion.trim(),
-      referenciaTrim ? `Depto/Ref: ${referenciaTrim}` : null,
-      cliente.ciudad, cliente.region,
-      cliente.codigo_postal ? `CP ${cliente.codigo_postal}` : null,
-    ].filter(Boolean).join(' · ');
+    const esRetiroPedido = envioBluex?.es_retiro === true;
+    const direccionCompleta = esRetiroPedido
+      ? 'Retiro en tienda · Pedro de Valdivia 6603, Macul'
+      : [
+          (cliente.direccion || '').trim(),
+          referenciaTrim ? `Depto/Ref: ${referenciaTrim}` : null,
+          cliente.ciudad, cliente.region,
+        ].filter(Boolean).join(' · ');
 
     // Tipo combinado de una línea: 'mixto' si hay más de un tipo activo.
     const tipoLineaCombinado = (i) => {
@@ -241,10 +250,11 @@ export default function CheckoutNuevo() {
       logo_url: itemConLogo ? (itemConLogo.logoUrl || itemConLogo.logo_url) : '',
       mockup_url: itemConMockup ? (uploadedMockups[itemConMockup.id] || (!(itemConMockup.mockupUrl || '').startsWith('data:') ? (itemConMockup.mockupUrl || itemConMockup.mockup_url || '') : '')) : '',
       logo_recibido: !!(itemConLogo || itemConMockup),
-      courier: `BlueExpress ${envioBluex.servicio}`,
-      // Nota en el formato que el admin (BluexManualDispatchCard) sabe parsear:
-      // "Bluex EXPRESS (1.5kg) → $4.990" — así el despacho muestra servicio/peso/costo.
-      notas: `Carrito v2: ${carrito.length} items${envioBluex ? ` | Bluex ${envioBluex.servicio} (${(envioBluex.peso_kg || 0)}kg) → $${(envioBluex.costo_real || envioBluex.costo).toLocaleString('es-CL')}` : ''}`,
+      courier: esRetiroPedido ? 'Retiro en Tienda' : `BlueExpress ${envioBluex.servicio}`,
+      ciudad: esRetiroPedido ? 'Macul' : cliente.ciudad,
+      notas: esRetiroPedido
+        ? `Carrito v2: ${carrito.length} items | Retiro en tienda Pedro de Valdivia 6603, Macul`
+        : `Carrito v2: ${carrito.length} items | Bluex ${envioBluex.servicio} (${(envioBluex.peso_kg || 0)}kg) → $${(envioBluex.costo_real || envioBluex.costo).toLocaleString('es-CL')}`,
     };
 
     let pedido;

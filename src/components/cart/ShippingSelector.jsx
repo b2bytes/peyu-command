@@ -210,7 +210,9 @@ export default function ShippingSelector({
             <ShippingOption
               icon={Zap}
               title="EXPRESS"
-              subtitle="Estándar · 1 día hábil en RM (compra antes de 14:00) · resto de Chile 1 a 3 días hábiles"
+              subtitle={cotizacion.express.lead_time_dias > 0
+                ? `${cotizacion.express.lead_time_dias} día${cotizacion.express.lead_time_dias > 1 ? 's' : ''} hábil · BlueExpress terrestre`
+                : '1-3 días hábiles · BlueExpress terrestre'}
               costo={cotizacion.express.costo}
               costoFinal={envioGratisAplica ? 0 : cotizacion.express.costo}
               gratis={envioGratisAplica}
