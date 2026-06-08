@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Building2, Star, Send, FileText, MessageCircle, Eye, RefreshCw, TrendingUp, Clock, Plus, Trash2, Zap, Copy, Check, ExternalLink } from 'lucide-react';
+import { Building2, Star, Send, FileText, MessageCircle, Eye, RefreshCw, TrendingUp, Clock, Plus, Trash2, Zap, Copy, Check, ExternalLink, Download, FileUp } from 'lucide-react';
 import BluexShipmentPanel from '@/components/bluex/BluexShipmentPanel';
 
 const LEAD_STATUS = ['Nuevo', 'Contactado', 'En revisión', 'Propuesta enviada', 'Aceptado', 'Perdido'];
@@ -505,14 +505,33 @@ export default function AdminPropuestas() {
                     </select>
                   </div>
                   </div>
-                  {/* BlueExpress Panel */}
-                  {prop.status === 'Aceptada' && (
+                  {/* BlueExpress Panel & Etiqueta */}
+                  {(prop.status === 'Aceptada' || prop.status === 'Listo para Despacho') && (
                   <div className="mt-3 pt-3 border-t border-border">
-                    <BluexShipmentPanel
-                      proposalId={prop.id}
-                      proposal={prop}
-                      onShipmentCreated={() => cargar()}
-                    />
+                    {prop.logo_url?.startsWith('data:') ? (
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-2 text-[#0F8B6C] font-bold text-sm">
+                          <FileUp className="w-4 h-4" /> Etiqueta BlueExpress lista
+                        </div>
+                        <div className="bg-[#F8F3ED] rounded-lg p-3 border border-[#D4C4B0]">
+                          <a 
+                            href={prop.logo_url}
+                            download={`etiqueta-${prop.numero}.pdf`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-2 px-4 py-2 bg-[#0F8B6C] hover:bg-[#0B6E55] text-white font-bold text-sm rounded-lg transition-all"
+                          >
+                            <Download className="w-4 h-4" /> Descargar PDF
+                          </a>
+                        </div>
+                      </div>
+                    ) : prop.status === 'Aceptada' ? (
+                      <BluexShipmentPanel
+                        proposalId={prop.id}
+                        proposal={prop}
+                        onShipmentCreated={() => cargar()}
+                      />
+                    ) : null}
                   </div>
                   )}
                   </div>
