@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Truck, Loader2, RefreshCw, Sparkles, ExternalLink, Bell, Zap, BarChart3, Mail,
+  Plus, Settings, FileText, AlertTriangle, TrendingUp, CheckCircle2, Clock, MapPin, DollarSign,
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -34,6 +35,7 @@ export default function CentroLogistico() {
   const [analyzing, setAnalyzing] = useState(false);
   const [analysis, setAnalysis] = useState(null);
   const [tab, setTab] = useState('listado');
+  const [generandoEtiqueta, setGenerandoEtiqueta] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -136,7 +138,7 @@ export default function CentroLogistico() {
               className="bg-white/15 hover:bg-white/25 border border-white/25 text-white gap-2 h-11 backdrop-blur-md"
             >
               {refreshingAll ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
-              Refrescar todos
+              Refrescar
             </Button>
             <Button
               onClick={analizarIA}
@@ -144,21 +146,39 @@ export default function CentroLogistico() {
               className="bg-gradient-to-br from-cyan-300 to-teal-400 hover:from-cyan-400 hover:to-teal-500 text-slate-900 gap-2 h-11 shadow-lg shadow-cyan-400/30 font-bold"
             >
               {analyzing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
-              Analizar con IA
+              Analizar IA
             </Button>
             <a
               href="https://ecommerce.blue.cl/"
               target="_blank" rel="noreferrer"
-              className="flex items-center gap-2 px-4 h-11 rounded-md bg-white/10 border border-white/20 text-white text-sm font-medium hover:bg-white/20 backdrop-blur-md"
+              className="hidden sm:flex items-center gap-2 px-4 h-11 rounded-md bg-white/10 border border-white/20 text-white text-sm font-medium hover:bg-white/20 backdrop-blur-md"
             >
-              <ExternalLink className="w-4 h-4" /> Portal Bluex
+              <ExternalLink className="w-3.5 h-3.5" /> Portal
             </a>
           </div>
         </div>
       </div>
 
-      {/* KPIs */}
+      {/* KPIs + Stats Cards */}
       <BluexKPIs envios={envios} />
+
+      {/* Quick Stats Grid */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        {[
+          { icon: CheckCircle2, label: 'Entregados hoy', value: envios.filter(e => e.estado === 'Entregado' && e.fecha_entrega_real?.startsWith(new Date().toISOString().split('T')[0])).length, color: 'text-green-600', bg: 'bg-green-50' },
+          { icon: TrendingUp, label: 'En tránsito', value: envios.filter(e => e.estado === 'En Tránsito').length, color: 'text-blue-600', bg: 'bg-blue-50' },
+          { icon: AlertTriangle, label: 'Excepciones', value: envios.filter(e => e.tiene_excepcion).length, color: 'text-red-600', bg: 'bg-red-50' },
+          { icon: Clock, label: 'Atrasados', value: envios.filter(e => e.atrasado && e.estado !== 'Entregado').length, color: 'text-orange-600', bg: 'bg-orange-50' },
+        ].map((stat, i) => (
+          <div key={i} className={`${stat.bg} rounded-xl border border-${stat.color.split('-')[1]}-200 p-3`}>
+            <div className={`w-8 h-8 rounded-lg bg-white/50 flex items-center justify-center mb-2`}>
+              <stat.icon className={`w-4 h-4 ${stat.color}`} />
+            </div>
+            <p className="text-2xl font-bold text-foreground">{stat.value}</p>
+            <p className="text-xs text-muted-foreground mt-0.5">{stat.label}</p>
+          </div>
+        ))}
+      </div>
 
       {/* Banner agente */}
       <div className="bg-gradient-to-r from-cyan-50 to-blue-50 border border-cyan-200 rounded-2xl p-4 flex items-start gap-3">
@@ -176,15 +196,18 @@ export default function CentroLogistico() {
 
       {/* Tabs */}
       <Tabs value={tab} onValueChange={setTab}>
-        <TabsList>
-          <TabsTrigger value="listado" className="gap-1.5">
-            <Truck className="w-3.5 h-3.5" /> Listado
+        <TabsList className="grid w-full max-w-2xl grid-cols-4">
+          <TabsTrigger value="listado" className="gap-1.5 text-xs sm:text-sm">
+            <Truck className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Envíos</span>
           </TabsTrigger>
-          <TabsTrigger value="secuencias" className="gap-1.5">
-            <Mail className="w-3.5 h-3.5" /> Secuencias IA
+          <TabsTrigger value="secuencias" className="gap-1.5 text-xs sm:text-sm">
+            <Mail className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Secuencias</span>
           </TabsTrigger>
-          <TabsTrigger value="analisis" className="gap-1.5">
-            <BarChart3 className="w-3.5 h-3.5" /> Análisis IA
+          <TabsTrigger value="analisis" className="gap-1.5 text-xs sm:text-sm">
+            <BarChart3 className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Análisis</span>
+          </TabsTrigger>
+          <TabsTrigger value="configuracion" className="gap-1.5 text-xs sm:text-sm">
+            <Settings className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Config</span>
           </TabsTrigger>
         </TabsList>
 
@@ -243,6 +266,149 @@ export default function CentroLogistico() {
 
         <TabsContent value="analisis" className="mt-4">
           <BluexAnalysisPanel analysis={analysis} />
+        </TabsContent>
+
+        <TabsContent value="configuracion" className="mt-4 space-y-4">
+          {/* Configuración y Documentación */}
+          <div className="grid md:grid-cols-2 gap-4">
+            {/* Tarifas */}
+            <div className="bg-white border border-border rounded-2xl p-5">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 rounded-xl bg-green-100 flex items-center justify-center">
+                  <DollarSign className="w-5 h-5 text-green-600" />
+                </div>
+                <div>
+                  <h3 className="font-bold">Tarifas BlueExpress</h3>
+                  <p className="text-xs text-muted-foreground">Precios por comuna y servicio</p>
+                </div>
+              </div>
+              <p className="text-sm text-muted-foreground mb-3">
+                Importa las tarifas más recientes desde BlueExpress para cálculos precisos en checkout.
+              </p>
+              <Button 
+                variant="outline" 
+                className="w-full gap-2"
+                onClick={async () => {
+                  try {
+                    const res = await base44.functions.invoke('importBluexTarifas', {});
+                    toast.success(res.data?.message || 'Tarifas importadas');
+                    await load();
+                  } catch (e) {
+                    toast.error('Error importando tarifas');
+                  }
+                }}
+              >
+                <RefreshCw className="w-4 h-4" /> Sincronizar tarifas
+              </Button>
+            </div>
+
+            {/* Análisis de Envíos */}
+            <div className="bg-white border border-border rounded-2xl p-5">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 rounded-xl bg-purple-100 flex items-center justify-center">
+                  <Sparkles className="w-5 h-5 text-purple-600" />
+                </div>
+                <div>
+                  <h3 className="font-bold">Análisis Profundo</h3>
+                  <p className="text-xs text-muted-foreground">OTIF, problemas, oportunidades</p>
+                </div>
+              </div>
+              <p className="text-sm text-muted-foreground mb-3">
+                Ejecuta análisis avanzado de tu operación logística para optimizar entregas.
+              </p>
+              <Button 
+                className="w-full gap-2"
+                style={{ background: 'var(--ld-action)' }}
+                onClick={analizarIA}
+                disabled={analyzing || envios.length === 0}
+              >
+                {analyzing ? <Loader2 className="w-4 h-4 animate-spin" /> : <BarChart3 className="w-4 h-4" />}
+                Analizar operación
+              </Button>
+            </div>
+
+            {/* Documentación */}
+            <div className="bg-white border border-border rounded-2xl p-5">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center">
+                  <FileText className="w-5 h-5 text-blue-600" />
+                </div>
+                <div>
+                  <h3 className="font-bold">Documentación</h3>
+                  <p className="text-xs text-muted-foreground">Guías y referencias</p>
+                </div>
+              </div>
+              <div className="space-y-2 mb-3">
+                <p className="text-sm text-muted-foreground">
+                  • Cómo generar etiquetas desde pedidos<br/>
+                  • Estados de envíos explicados<br/>
+                  • Secuencias de notificación por ciudad<br/>
+                  • Códigos de excepción
+                </p>
+              </div>
+              <a href="/soporte" className="block">
+                <Button variant="outline" className="w-full gap-2">
+                  <ExternalLink className="w-4 h-4" /> Ver documentación
+                </Button>
+              </a>
+            </div>
+
+            {/* Estado de API */}
+            <div className="bg-white border border-border rounded-2xl p-5">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center">
+                  <Zap className="w-5 h-5 text-blue-600" />
+                </div>
+                <div>
+                  <h3 className="font-bold">Estado API</h3>
+                  <p className="text-xs text-muted-foreground">Conexión con BlueExpress</p>
+                </div>
+              </div>
+              <p className="text-sm text-muted-foreground mb-3">
+                Verifica que la conexión a la API de BlueExpress esté funcionando correctamente.
+              </p>
+              <Button 
+                variant="outline" 
+                className="w-full gap-2"
+                onClick={async () => {
+                  try {
+                    const res = await base44.functions.invoke('healthCheck', {});
+                    toast.success('✓ Conexión OK');
+                  } catch (e) {
+                    toast.error('Error verificando conexión');
+                  }
+                }}
+              >
+                <Clock className="w-4 h-4" /> Verificar conexión
+              </Button>
+            </div>
+          </div>
+
+          {/* Secuencias de Notificaciones por Ciudad */}
+          <div className="bg-white border border-border rounded-2xl p-5">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center">
+                <MapPin className="w-5 h-5 text-amber-600" />
+              </div>
+              <div>
+                <h3 className="font-bold">Secuencias por Tipo de Destino</h3>
+                <p className="text-xs text-muted-foreground">Notificaciones automáticas inteligentes</p>
+              </div>
+            </div>
+            <div className="grid md:grid-cols-2 gap-3 text-sm">
+              {[
+                { tipo: 'Urbano (Santiago)', desc: 'Avisos estándar cada 24h', color: 'bg-blue-50' },
+                { tipo: 'Extremo Norte/Sur', desc: 'Lead time largo, avisos preventivos', color: 'bg-red-50' },
+                { tipo: 'Rural', desc: 'Notificaciones cada 48h', color: 'bg-amber-50' },
+                { tipo: 'Alto Valor', desc: 'Atención prioritaria, avisos frecuentes', color: 'bg-purple-50' },
+              ].map((seq, i) => (
+                <div key={i} className={`${seq.color} rounded-xl p-3 border`}>
+                  <p className="font-semibold text-foreground text-xs mb-0.5">{seq.tipo}</p>
+                  <p className="text-xs text-muted-foreground">{seq.desc}</p>
+                </div>
+              ))}
+            </div>
+          </div>
         </TabsContent>
       </Tabs>
 
