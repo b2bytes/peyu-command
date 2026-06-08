@@ -194,16 +194,17 @@ function buildPromptByType({ mockupType, productName, productCategory, hasProduc
       `Vary the orientation slightly per block to look natural (some horizontal, some rotated). Final output: photorealistic, same background/framing/lighting as reference.`;
   }
 
-  // DEFAULT: logo grabado láser sobre cualquier producto
+  // DEFAULT: logo grabado láser sobre cualquier producto (O MULTIPLOS ARTICULOS EN PACK)
   if (hasArtRef) {
     return base +
       `⚠️ SECOND CRITICAL RULE: The SECOND reference image IS the customer's EXACT logo. Reproduce it LITERALLY — same shapes, letters, proportions. DO NOT redesign, simplify or substitute. If it has text, copy character-by-character. Treat it as a stencil to be burned. ` +
-      `TASK: Add a UV laser engraving that is a faithful 1:1 reproduction of the SECOND reference image onto the product surface in the first image. ` +
-      `The engraving MUST look PHYSICALLY ENGRAVED into the recycled plastic: monochrome single tone (lasers engrave in one tone determined by the material), micro depth, subtle darkening or lighter etched tone, tiny shadow inside the strokes, follows curvature and marbled texture. NO floating stickers, NO flat overlay, NO glow, NO color fills. ` +
-      `Keep the logo proportional (~30-40% of the visible flat surface), centered on the natural engraving zone, preserving aspect ratio. ` +
-      (text && text.trim() ? `Engrave the tagline "${text}" in clean sans-serif below the logo, same engraved style, smaller size. Copy character-by-character. ` : '') +
+      `TASK: Add UV laser engravings that are faithful 1:1 reproductions of the SECOND reference image onto EACH PRODUCT OR ARTICLE visible in the first image that has a flat, engravable surface. ` +
+      `⚠️ CRITICAL FOR PACKS: If the image shows multiple items (e.g., bags, cases, hexagons, boxes), engrave the logo on EVERY single item's primary visible surface, not just one. Each item must receive the engraving. ` +
+      `Each engraving MUST look PHYSICALLY ENGRAVED into the recycled plastic: monochrome single tone, micro depth, subtle darkening or lighter etched tone, tiny shadow inside the strokes, follows curvature and marbled texture. NO floating stickers, NO flat overlay, NO glow, NO color fills. ` +
+      `Keep the logo proportional (~30-40% of each visible flat surface), centered on the natural engraving zone of each item, preserving aspect ratio. ` +
+      (text && text.trim() ? `Engrave the tagline "${text}" in clean sans-serif below the logo on each item, same engraved style, smaller size. Copy character-by-character. ` : '') +
       zoneInstruction + laserTone +
-      `\nFinal output: photorealistic, identical background/framing/angle/lighting to the first reference.`;
+      `\nFinal output: photorealistic, identical background/framing/angle/lighting to the first reference, with the engraving applied to every product in the image.`;
   }
   if (text && text.trim()) {
     return base +
