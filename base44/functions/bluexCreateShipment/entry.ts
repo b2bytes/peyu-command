@@ -1,260 +1,221 @@
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
+
 // ─────────────────────────────────────────────────────────────────────────────
-// BlueExpress · Crear envío (emitir Orden de Transporte / OT)
-// Re-deploy: 2026-05-11 (force fresh compile)
+// BlueExpress · Emisión OS (Orden de Servicio) - API Corporativa
+// Endpoint: POST /cmkin/customer/corp/emission/v1/emission
 // ─────────────────────────────────────────────────────────────────────────────
-// Integración con BlueExpress en DOS MODOS:
-//
-//   1) Modo API LIVE (si BLUEX_API_BASE_URL secret está configurado):
-//      → Llama a la API REST oficial Bluex y emite la OT automáticamente.
-//      → Endpoint depende del onboarding partner de cada cliente.
-//
-//   2) Modo MANUAL (default si no hay endpoint configurado):
-//      → El operador genera la OT manualmente en https://b2b.bluex.cl
-//        (portal Bluex), copia el número de tracking y lo pega aquí.
-//      → Crea la entidad Envio igual → habilita tracking, secuencias IA,
-//        emails al cliente y todo el flujo logístico interno.
-//
-// CRÍTICO: este patrón dual es la realidad de la integración Bluex en Chile,
-// donde la API solo se entrega a clientes con cuenta B2B activa y firma manual.
-// ─────────────────────────────────────────────────────────────────────────────
+// Integración con BlueExpress API de Emisión OS para generar OT automáticamente.
+// Soporta:
+//  - Generación automática de números de tracking
+//  - Múltiples formatos de etiqueta (PDF, ZPL, XML, EPL)
+//  - Emisión sin etiqueta
+//  - Dimensiones y peso detallados por paquete
+//  - Geolocalización
+//  - Comentarios y parámetros personalizados
 
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.27';
+const BLUEX_EMISSION_API = 'https://cmkin.api.qa.blue.cl/cmkin/customer/corp/emission/v1/emission';
+const BLUEX_EMISSION_PROD = 'https://cmkin.api.blue.cl/cmkin/customer/corp/emission/v1/emission';
 
-// La URL oficial cambia según el plan partner. Configurable por secret.
-// Si no está seteado → modo manual.
-// Normaliza el secret del host: garantiza https://, quita '/' final y descarta
-// valores inválidos (ej. el secret trae el token suelto sin dominio). Así la URL
-// final SIEMPRE es `https://<host>/admision/...` y nunca un "Invalid URL".
-function normalizeBluexBase(raw) {
-  let h = String(raw || '').trim().replace(/\/+$/, '');
-  if (!h) return '';
-  if (!h.includes('.') && !h.startsWith('http')) return '';
-  if (!/^https?:\/\//i.test(h)) h = `https://${h}`;
-  return h;
-}
-
-const BLUEX_API_BASE = normalizeBluexBase(Deno.env.get('BLUEX_API_BASE_URL'));
-const SHIPMENT_ENDPOINT = '/admision/ot';
-
-const ORIGIN = {
-  name: 'PEYU Chile',
-  rut: '77069974-2',
-  contact: 'Carlos Moscoso',
-  phone: '+56933766573',
-  email: 'cmoscoso@peyuchile.cl',
-  address: 'Santiago',
-  city: 'Santiago',
-  region: 'RM',
+// Mapeo de tipo destino → código distrito BlueExpress
+const TIPOS_DESTINO_DISTRITO = {
+  'Extremo': 'ZLY', // Zona Lejana (default fallback)
+  'Rural': 'ZLY',
+  'Urbano': 'PUD', // Pudahuel (default Santiago)
 };
 
-// Clasificación tipo destino
-const COMUNAS_EXTREMO = ['arica', 'iquique', 'punta arenas', 'coyhaique', 'puerto williams', 'castro', 'puerto natales'];
-const COMUNAS_RURAL_PATTERN = ['rural', 'localidad'];
+const ORIGEN_CORPORATIVO = {
+  districtId: 'PUD',
+  districtName: 'Pudahuel',
+  address: 'Galpón PEYU, Santiago',
+  agencyId: '41',
+  geolocation: [-33.319054, -70.72056],
+};
 
 function clasificarTipoDestino(comuna) {
   const c = (comuna || '').toLowerCase();
-  if (COMUNAS_EXTREMO.some(x => c.includes(x))) return 'Extremo';
-  if (COMUNAS_RURAL_PATTERN.some(x => c.includes(x))) return 'Rural';
+  const extremos = ['arica', 'iquique', 'punta arenas', 'coyhaique', 'puerto williams', 'castro', 'puerto natales'];
+  const rurales = ['rural', 'localidad'];
+  if (extremos.some(x => c.includes(x))) return 'Extremo';
+  if (rurales.some(x => c.includes(x))) return 'Rural';
   return 'Urbano';
 }
 
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-
-    // Validar autenticación SIN tocar la entidad User (que requiere permisos admin para leer).
-    // isAuthenticated() solo verifica el token de sesión.
     const isAuth = await base44.auth.isAuthenticated();
     if (!isAuth) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
     const {
-      pedido_id,
-      servicio = 'EXPRESS',
-      peso_kg,
-      declared_value,
-      // Modo manual: el operador pegó el tracking_number directo desde el portal Bluex
-      manual_tracking_number,
-      manual_label_url,
+      proposal_id, pedido_id, // Pueden ser propuestas O pedidos
+      cliente_nombre,
+      cliente_email,
+      cliente_telefono,
+      direccion_destino,
+      comuna_destino,
+      peso_kg = 1,
+      valor_declarado = 0,
+      servicio = 'PY', // PY: Priority, EX: Express, PR: Premium, MD: Sameday
+      print_format = 2, // 4: PDF, 3: XML, 2: ZPL, 1: EPL
+      dimensiones, // { largo_cm, ancho_cm, alto_cm }
+      referencia,
+      comentarios,
     } = await req.json();
-    if (!pedido_id) return Response.json({ error: 'pedido_id es requerido' }, { status: 400 });
 
-    const sr = base44.asServiceRole;
-    const pedido = await sr.entities.PedidoWeb.get(pedido_id);
-    if (!pedido) return Response.json({ error: 'Pedido no encontrado' }, { status: 404 });
+    const id = proposal_id || pedido_id;
+    if (!id) return Response.json({ error: 'Falta proposal_id o pedido_id' }, { status: 400 });
 
+    // Obtener credenciales Bluex desde secrets
     const clientAccount = Deno.env.get('BLUEX_CLIENT_ACCOUNT');
-    const userCode = Deno.env.get('BLUEX_USER_CODE');
+    const userName = Deno.env.get('BLUEX_USER_CODE');
     const apiKey = Deno.env.get('BLUEX_API_KEY');
     const token = Deno.env.get('BLUEX_TOKEN');
 
-    const pesoFinal = peso_kg || 1;
-    const valorFinal = declared_value || pedido.total || 0;
-
-    let trackingNumber = manual_tracking_number || null;
-    let labelUrl = manual_label_url || null;
-    let labelB64 = null;
-    let modoUsado = 'manual';
-    let rawResponse = null;
-
-    // ── MODO API: solo si BLUEX_API_BASE_URL está configurado y NO se pasó manual ──
-    if (BLUEX_API_BASE && !manual_tracking_number && clientAccount && userCode && apiKey && token) {
-      try {
-        const payload = {
-          clientAccount, userCode,
-          serviceType: servicio,
-          origin: ORIGIN,
-          destination: {
-            name: pedido.cliente_nombre || 'Cliente',
-            rut: pedido.cliente_rut || '',
-            address: pedido.direccion_envio || '',
-            city: pedido.ciudad || '',
-            region: pedido.region || '',
-            phone: pedido.cliente_telefono || '',
-            email: pedido.cliente_email || '',
-          },
-          package: {
-            weight: pesoFinal,
-            declaredValue: valorFinal,
-            reference: pedido.numero_pedido || pedido.id,
-            description: (pedido.descripcion_items || 'Productos PEYU').slice(0, 100),
-            pieces: 1,
-          },
-        };
-
-        const response = await fetch(`${BLUEX_API_BASE}${SHIPMENT_ENDPOINT}`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'apiKey': apiKey, 'token': token,
-            'clientAccount': clientAccount, 'userCode': userCode,
-          },
-          body: JSON.stringify(payload),
-        });
-
-        const data = await response.json().catch(() => ({}));
-
-        if (!response.ok) {
-          console.error('[BluexCreateShipment] API rechazó request:', response.status, data);
-          return Response.json({
-            error: 'Error al crear envío en BlueExpress API',
-            status: response.status,
-            detail: data,
-            hint: 'Si esto persiste, usa el modo manual: genera la OT en https://b2b.bluex.cl y pega el tracking aquí.',
-          }, { status: response.status });
-        }
-
-        trackingNumber = data?.orderTransportNumber || data?.trackingNumber || data?.ot;
-        labelUrl = data?.labelUrl || data?.pdfUrl || `https://ecommerce.blue.cl/etiquetas/${trackingNumber}`;
-        labelB64 = data?.label || data?.pdfBase64 || null;
-        rawResponse = data;
-        modoUsado = 'api';
-      } catch (apiErr) {
-        console.warn('[BluexCreateShipment] API no disponible, requiere modo manual:', apiErr.message);
-        return Response.json({
-          error: 'API BlueExpress no disponible',
-          detail: apiErr.message,
-          hint: 'La API B2B Bluex requiere onboarding partner. Genera la OT manualmente en https://b2b.bluex.cl y reenvía con manual_tracking_number.',
-          fallback_mode: 'manual',
-          portal_url: 'https://b2b.bluex.cl',
-        }, { status: 503 });
-      }
+    if (!clientAccount || !userName || !apiKey || !token) {
+      return Response.json({
+        error: 'Credenciales BlueExpress no configuradas',
+        hint: 'Configura BLUEX_CLIENT_ACCOUNT, BLUEX_USER_CODE, BLUEX_API_KEY, BLUEX_TOKEN en secrets',
+      }, { status: 503 });
     }
 
-    // ── MODO MANUAL: requiere manual_tracking_number ──
+    const tipoDestino = clasificarTipoDestino(comuna_destino);
+    const distritoCode = TIPOS_DESTINO_DISTRITO[tipoDestino] || 'PUD';
+
+    // Construir request de Emisión OS corporativa
+    const payload = {
+      printFormatCode: print_format,
+      clientPromiseDate: new Date(Date.now() + 3 * 86400000).toISOString(),
+      trackingNumber: null, // BlueExpress genera automáticamente
+      clientAccount,
+      clientIdentifier: referencia || `PEYU-${Date.now()}`,
+      quantityPackages: 1,
+      references: [referencia || `PEYU-${id}`],
+      serviceType: servicio,
+      productType: 'P', // P: Paquete
+      productCategory: 'PAQU', // PAQU: Paquete
+      currency: 'CLP',
+      shipmentCost: valor_declarado,
+      extendedClaim: false,
+      companyId: 2000, // Valor fijo requerido
+      userName,
+      pickup: {
+        location: ORIGEN_CORPORATIVO,
+        contact: {
+          fullname: 'PEYU Chile',
+          email: 'logistica@peyuchile.cl',
+          phone: '+56933766573',
+        },
+      },
+      dropoff: {
+        location: {
+          districtId: distritoCode,
+          districtName: comuna_destino || 'Santiago',
+          address: direccion_destino || 'Dirección pendiente',
+          agencyId: '41',
+          geolocation: [-33.3, -70.7], // Aproximado
+        },
+        contact: {
+          fullname: cliente_nombre || 'Cliente',
+          email: cliente_email || 'cliente@ejemplo.com',
+          phone: cliente_telefono || '0',
+        },
+      },
+      packages: [
+        {
+          shipmentCost: valor_declarado,
+          references: [referencia || `PEYU-${id}`],
+          weightUnit: 'KG',
+          lengthUnit: 'CM',
+          weight: parseFloat(peso_kg) || 1,
+          length: dimensiones?.largo_cm || 20,
+          width: dimensiones?.ancho_cm || 15,
+          height: dimensiones?.alto_cm || 10,
+          quantity: 1,
+        },
+      ],
+      comments: comentarios || null,
+      parameters: null,
+    };
+
+    // Llamar a API de Emisión OS
+    const response = await fetch(BLUEX_EMISSION_API, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+        'x-api-key': apiKey,
+      },
+      body: JSON.stringify(payload),
+    });
+
+    const data = await response.json().catch(() => ({}));
+
+    if (!response.ok) {
+      console.error('[BlueExpress Emission] Error:', response.status, data);
+      return Response.json({
+        error: `BlueExpress API error (${response.status})`,
+        detail: data.detail || data.title || 'Error en la emisión OS',
+        trace: data,
+      }, { status: response.status });
+    }
+
+    const trackingNumber = data.trackingNumber;
     if (!trackingNumber) {
       return Response.json({
-        error: 'Falta tracking number',
-        hint: 'Genera la OT en https://b2b.bluex.cl y reenvía con manual_tracking_number en el payload.',
-        portal_url: 'https://b2b.bluex.cl',
-        modo: 'manual_required',
-      }, { status: 400 });
+        error: 'BlueExpress no retornó tracking number',
+        trace: data,
+      }, { status: 500 });
     }
 
-    // Asegurar URLs por defecto si vinieron vacías
-    if (!labelUrl) {
-      labelUrl = `https://b2b.bluex.cl/etiquetas/${trackingNumber}`;
-    }
-
-    // Calcular fecha promesa según tipo
-    const tipoDestino = clasificarTipoDestino(pedido.ciudad);
-    const leadTimeDias = tipoDestino === 'Extremo' ? 7 : tipoDestino === 'Rural' ? 5 : 3;
-    const fechaPromesa = new Date(Date.now() + leadTimeDias * 86400000).toISOString().slice(0, 10);
-
-    // Crear entidad Envio (fuente de verdad)
+    const sr = base44.asServiceRole;
+    
+    // Crear registro Envio para rastreo
     const envio = await sr.entities.Envio.create({
-      pedido_id,
-      numero_pedido: pedido.numero_pedido,
-      cliente_nombre: pedido.cliente_nombre,
-      cliente_email: pedido.cliente_email,
-      cliente_telefono: pedido.cliente_telefono,
+      pedido_id: pedido_id || null,
+      numero_pedido: referencia || `PEYU-${id}`,
+      cliente_nombre,
+      cliente_email,
+      cliente_telefono,
       courier: 'BlueExpress',
       tracking_number: trackingNumber,
       servicio,
       estado: 'Etiqueta Generada',
-      comuna_destino: pedido.ciudad,
-      region_destino: pedido.region || '',
-      direccion_destino: pedido.direccion_envio,
+      comuna_destino,
+      direccion_destino,
       tipo_destino: tipoDestino,
-      peso_kg: pesoFinal,
+      peso_kg: parseFloat(peso_kg),
       piezas: 1,
-      valor_declarado_clp: valorFinal,
-      costo_envio_cobrado_clp: pedido.costo_envio || 0,
-      lead_time_estimado_dias: leadTimeDias,
+      valor_declarado_clp: valor_declarado,
+      lead_time_estimado_dias: tipoDestino === 'Extremo' ? 7 : tipoDestino === 'Rural' ? 5 : 3,
       fecha_emision: new Date().toISOString(),
-      fecha_promesa: fechaPromesa,
-      label_url: labelUrl,
-      label_base64: labelB64,
-      label_format: 'PDF',
+      fecha_promesa: new Date(Date.now() + 3 * 86400000).toISOString().split('T')[0],
+      label_url: data.labels?.contenido ? `data:image/base64,${data.labels.contenido}` : null,
+      label_format: ['PDF', 'XML', 'ZPL', 'EPL'][print_format - 1] || 'PDF',
       tracking_url: `https://www.bluex.cl/seguimiento?n=${trackingNumber}`,
-      raw_response_emision: rawResponse || { modo: modoUsado, manual: true },
+      raw_response_emision: data,
       eventos: [{
         at: new Date().toISOString(),
         code: '01',
         estado: 'Etiqueta Generada',
-        descripcion: modoUsado === 'manual'
-          ? 'OT registrada manualmente desde portal Bluex'
-          : 'Orden de transporte emitida vía API',
+        descripcion: 'OT emitida vía API BlueExpress Corporativa',
         ubicacion: 'Santiago - PEYU',
         es_excepcion: false,
       }],
       ultimo_evento_at: new Date().toISOString(),
-      ultimo_evento_descripcion: modoUsado === 'manual'
-        ? 'OT registrada manualmente'
-        : 'Orden de transporte emitida',
-    });
-
-    // Actualizar pedido
-    const historial = pedido.historial || [];
-    historial.push({
-      at: new Date().toISOString(),
-      type: 'shipped',
-      actor: 'system',
-      channel: 'system',
-      detail: `Envío Bluex creado · OT ${trackingNumber}`,
-      meta: { tracking: trackingNumber, servicio, peso_kg: pesoFinal, envio_id: envio.id },
-    });
-
-    await sr.entities.PedidoWeb.update(pedido_id, {
-      courier: 'BlueExpress',
-      tracking: trackingNumber,
-      estado: pedido.estado === 'Listo para Despacho' ? 'Despachado' : pedido.estado,
-      historial,
+      ultimo_evento_descripcion: 'OT emitida vía API',
     });
 
     return Response.json({
       ok: true,
       envio_id: envio.id,
       tracking: trackingNumber,
-      label_url: labelUrl,
-      label_base64: labelB64,
-      portal_url: 'https://b2b.bluex.cl/',
-      tipo_destino: tipoDestino,
-      fecha_promesa: fechaPromesa,
-      modo: modoUsado,
+      label_contenido: data.labels?.contenido || null,
+      label_format: ['PDF', 'XML', 'ZPL', 'EPL'][print_format - 1] || 'PDF',
+      tracking_url: `https://www.bluex.cl/seguimiento?n=${trackingNumber}`,
+      api_response: data,
     });
   } catch (error) {
-    console.error('[BluexCreateShipment] Exception:', error);
+    console.error('[BlueExpress Emission]', error);
     return Response.json({ error: error.message }, { status: 500 });
   }
 });

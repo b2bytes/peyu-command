@@ -7,6 +7,11 @@ export default function BluexShipmentPanel({ proposalId, proposal, onShipmentCre
   const [shipment, setShipment] = useState(null);
   const [tracking, setTracking] = useState(null);
   const [error, setError] = useState('');
+  const [printFormat, setPrintFormat] = useState(2); // 2: ZPL, 3: XML, 4: PDF
+  const [peso, setPeso] = useState('0.5');
+  const [largo, setLargo] = useState('20');
+  const [ancho, setAncho] = useState('15');
+  const [alto, setAlto] = useState('10');
 
   // Buscar shipment existente para esta propuesta
   useEffect(() => {
@@ -39,13 +44,19 @@ export default function BluexShipmentPanel({ proposalId, proposal, onShipmentCre
         cliente_telefono: proposal.numero || '',
         direccion_destino: proposal.direccion_entrega,
         comuna_destino: proposal.comuna_entrega,
-        peso_kg: 0.5, // Default para propuestas
+        peso_kg: parseFloat(peso) || 0.5,
         valor_declarado: proposal.total || 0,
+        print_format: printFormat,
+        dimensiones: {
+          largo_cm: parseFloat(largo) || 20,
+          ancho_cm: parseFloat(ancho) || 15,
+          alto_cm: parseFloat(alto) || 10,
+        },
       });
 
       if (res.data?.ok) {
-        setShipment(res.data.envio);
-        onShipmentCreated?.(res.data.envio);
+        setShipment({ ...res.data, tracking_number: res.data.tracking });
+        onShipmentCreated?.(res.data);
       } else {
         setError(res.data?.error || 'Error al crear envío');
       }
@@ -114,17 +125,82 @@ export default function BluexShipmentPanel({ proposalId, proposal, onShipmentCre
       )}
 
       {!shipment ? (
-        <button
-          onClick={createShipment}
-          disabled={loading}
-          className="w-full h-10 rounded-lg bg-[#0F8B6C] hover:bg-[#0B6E55] text-white font-bold text-sm flex items-center justify-center gap-2 disabled:opacity-50"
-        >
-          {loading ? (
-            <><Loader2 className="w-4 h-4 animate-spin" /> Creando...</>
-          ) : (
-            <><Truck className="w-4 h-4" /> Crear envío BlueExpress</>
-          )}
-        </button>
+        <div className="space-y-3">
+          {/* Formato de etiqueta */}
+          <div>
+            <label className="text-[10px] font-bold text-[#7A6050] block mb-1.5">Formato Etiqueta</label>
+            <select
+              value={printFormat}
+              onChange={(e) => setPrintFormat(parseInt(e.target.value))}
+              disabled={loading}
+              className="w-full text-xs border border-[#D4C4B0] rounded-lg px-2 py-2 bg-white text-[#2A2420]"
+            >
+              <option value={4}>PDF (Impresión estándar)</option>
+              <option value={2}>ZPL (Etiquetadora térmica)</option>
+              <option value={3}>XML (Personalizado)</option>
+              <option value={1}>EPL (Legado)</option>
+            </select>
+          </div>
+
+          {/* Peso y dimensiones */}
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <label className="text-[10px] font-bold text-[#7A6050] block mb-1">Peso (kg)</label>
+              <input
+                type="number"
+                value={peso}
+                onChange={(e) => setPeso(e.target.value)}
+                disabled={loading}
+                step="0.1"
+                className="w-full text-xs border border-[#D4C4B0] rounded-lg px-2 py-2 bg-white"
+              />
+            </div>
+            <div>
+              <label className="text-[10px] font-bold text-[#7A6050] block mb-1">Largo (cm)</label>
+              <input
+                type="number"
+                value={largo}
+                onChange={(e) => setLargo(e.target.value)}
+                disabled={loading}
+                className="w-full text-xs border border-[#D4C4B0] rounded-lg px-2 py-2 bg-white"
+              />
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <label className="text-[10px] font-bold text-[#7A6050] block mb-1">Ancho (cm)</label>
+              <input
+                type="number"
+                value={ancho}
+                onChange={(e) => setAncho(e.target.value)}
+                disabled={loading}
+                className="w-full text-xs border border-[#D4C4B0] rounded-lg px-2 py-2 bg-white"
+              />
+            </div>
+            <div>
+              <label className="text-[10px] font-bold text-[#7A6050] block mb-1">Alto (cm)</label>
+              <input
+                type="number"
+                value={alto}
+                onChange={(e) => setAlto(e.target.value)}
+                disabled={loading}
+                className="w-full text-xs border border-[#D4C4B0] rounded-lg px-2 py-2 bg-white"
+              />
+            </div>
+          </div>
+
+          <button
+            onClick={createShipment}
+            disabled={loading}
+            className="w-full h-10 rounded-lg bg-[#0F8B6C] hover:bg-[#0B6E55] text-white font-bold text-sm flex items-center justify-center gap-2 disabled:opacity-50"
+          >
+            {loading ? (
+              <><Loader2 className="w-4 h-4 animate-spin" /> Emitiendo...</>
+            ) : (
+              <><Truck className="w-4 h-4" /> Emitir OT BlueExpress</>
+            )}
+          </button>
+        </div>
       ) : (
         <div className="space-y-2.5">
           <div className="bg-[#FAF7F2] border border-[#EBE3D6] rounded-lg p-3">
