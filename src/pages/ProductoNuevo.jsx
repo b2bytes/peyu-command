@@ -4,7 +4,7 @@ import { base44 } from '@/api/base44Client';
 import {
   ArrowLeft, Recycle, ShieldCheck, Truck, Check, Loader2, ShoppingBag, Sparkles, Lock,
 } from 'lucide-react';
-import ShopV2Header from '@/components/shopv2/ShopV2Header';
+import PublicNavBar from '@/components/PublicNavBar';
 import CheckoutStepperV2 from '@/components/shopv2/CheckoutStepperV2';
 import ColorSwatchesV2 from '@/components/shopv2/ColorSwatchesV2';
 import PersonalizadorV2 from '@/components/shopv2/PersonalizadorV2';
@@ -221,7 +221,7 @@ export default function ProductoNuevo() {
   if (loading) {
     return (
       <div className="min-h-screen" style={{ background: '#F8F3ED' }}>
-        <ShopV2Header />
+        <PublicNavBar />
         <div className="flex items-center justify-center py-32">
           <Loader2 className="w-8 h-8 animate-spin" style={{ color: '#C0785C' }} />
         </div>
@@ -232,7 +232,7 @@ export default function ProductoNuevo() {
   if (!producto) {
     return (
       <div className="min-h-screen font-inter" style={{ background: '#F8F3ED' }}>
-        <ShopV2Header />
+        <PublicNavBar />
         <div className="text-center py-32 px-4">
           <p className="font-bold mb-2" style={{ color: '#2C1810' }}>Producto no encontrado</p>
           <Link to="/CatalogoNuevo" className="font-bold text-sm" style={{ color: '#C0785C' }}>← Volver a la tienda</Link>
@@ -245,7 +245,7 @@ export default function ProductoNuevo() {
 
   return (
     <div className="min-h-screen font-inter pb-20 lg:pb-0" style={{ background: '#F8F3ED', color: '#2C1810' }}>
-      <ShopV2Header />
+      <PublicNavBar />
 
       <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-2 sm:py-4">
         <CheckoutStepperV2 current="producto" />

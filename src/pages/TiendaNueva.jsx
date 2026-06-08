@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { ArrowRight, Recycle, Sparkles } from 'lucide-react';
 import MobileNavBarV2 from '@/components/shopv2/MobileNavBarV2';
-import ShopV2Header from '@/components/shopv2/ShopV2Header';
+import PublicNavBar from '@/components/PublicNavBar';
 import HeroBoldV2 from '@/components/shopv2/HeroBoldV2';
 import TrustSocialBarV2 from '@/components/shopv2/TrustSocialBarV2';
 import ImpactStoryV2 from '@/components/shopv2/ImpactStoryV2';
@@ -44,7 +44,7 @@ export default function TiendaNueva() {
 
   return (
     <div className="min-h-screen font-inter pb-16 lg:pb-0" style={{ background: '#F8F3ED', color: '#2C1810' }}>
-      <ShopV2Header />
+      <PublicNavBar />
 
       {/* 1 · HERO BOLD */}
       <HeroBoldV2 heroImg={heroImg} onPersonaliza={scrollToConfig} />

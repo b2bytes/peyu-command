@@ -3,7 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { ArrowLeft, Lock, ShieldCheck, Recycle, AlertCircle, Gift } from 'lucide-react';
 import MobileNavBarV2 from '@/components/shopv2/MobileNavBarV2';
-import ShopV2Header from '@/components/shopv2/ShopV2Header';
+import PublicNavBar from '@/components/PublicNavBar';
 import CheckoutStepperV2 from '@/components/shopv2/CheckoutStepperV2';
 import StepNavV2 from '@/components/shopv2/StepNavV2';
 import CartItemThumbV2 from '@/components/shopv2/CartItemThumbV2';
@@ -315,7 +315,7 @@ export default function CheckoutNuevo() {
 
     return (
       <div className="min-h-screen font-inter" style={{ background: '#F8F3ED', color: '#2C1810' }}>
-        <ShopV2Header />
+        <PublicNavBar />
         <div className="max-w-md mx-auto text-center py-24 px-4">
           {ultimaCompra ? (
             <>
@@ -356,7 +356,7 @@ export default function CheckoutNuevo() {
 
   return (
     <div className="min-h-screen font-inter pb-36 lg:pb-12" style={{ background: '#F8F3ED', color: '#2C1810' }}>
-      <ShopV2Header />
+      <PublicNavBar />
 
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-3 sm:py-6">
         <CheckoutStepperV2 current="pago" />
