@@ -76,19 +76,18 @@ export default function EmpresasNuevo() {
       <B2BHeader />
 
       {/* ── HERO ── */}
-      <section className="max-w-6xl mx-auto px-4 sm:px-6 pt-10 pb-8">
-        <div className="text-center max-w-2xl mx-auto mb-8">
-          <span className="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full mb-4"
+      <section className="max-w-6xl mx-auto px-4 sm:px-6 pt-6 sm:pt-10 pb-6 sm:pb-8">
+        <div className="text-center max-w-2xl mx-auto mb-6 sm:mb-8">
+          <span className="inline-flex items-center gap-1.5 text-[10px] sm:text-xs font-bold px-3 py-1.5 rounded-full mb-3 sm:mb-4"
             style={{ background: '#0F8B6C15', color: '#0F8B6C', border: '1px solid #0F8B6C30' }}>
-            <Building2 className="w-3.5 h-3.5" /> Corporativo · Regalos empresariales
+            <Building2 className="w-3 sm:w-3.5 h-3 sm:h-3.5" /> Corporativo · Regalos
           </span>
-          <h1 className="font-fraunces text-4xl sm:text-5xl leading-[1.05] mb-4" style={{ color: '#2C1810' }}>
+          <h1 className="font-fraunces text-2xl sm:text-5xl leading-[1.1] sm:leading-[1.05] mb-3 sm:mb-4" style={{ color: '#2C1810' }}>
             Regalos corporativos<br />
             <span style={{ color: '#0F8B6C' }}>100% reciclados</span>
           </h1>
-          <p className="text-base leading-relaxed mb-6" style={{ color: '#7A6050' }}>
-            Plástico reciclado chileno transformado en productos únicos con tu logo grabado láser.
-            Gratis desde 10 unidades · Hasta −54% por volumen · Factura disponible.
+          <p className="text-xs sm:text-base leading-relaxed mb-5 sm:mb-6" style={{ color: '#7A6050' }}>
+            Plástico reciclado chileno con tu logo grabado láser. Gratis desde 10u · Hasta −54% · Factura.
           </p>
           <Link
             to="/CotizacionRapida"
@@ -100,28 +99,28 @@ export default function EmpresasNuevo() {
         </div>
 
         {/* Trust strip */}
-        <div className="grid grid-cols-3 sm:grid-cols-6 gap-3 mb-10">
+        <div className="grid grid-cols-3 sm:grid-cols-6 gap-2 sm:gap-3 mb-8 sm:mb-10">
           {TRUST.map(({ icon: IconComp, t, s }) => (
-            <div key={t} className="flex flex-col items-center text-center p-3 rounded-2xl" style={{ background: 'white', border: '1.5px solid #EDE3D6' }}>
-              <div className="w-8 h-8 rounded-xl flex items-center justify-center mb-1.5" style={{ background: '#0F8B6C10' }}>
-                <IconComp className="w-4 h-4" style={{ color: '#0F8B6C' }} />
+            <div key={t} className="flex flex-col items-center text-center p-2.5 sm:p-3 rounded-xl sm:rounded-2xl" style={{ background: 'white', border: '1.5px solid #EDE3D6' }}>
+              <div className="w-7 sm:w-8 h-7 sm:h-8 rounded-lg sm:rounded-xl flex items-center justify-center mb-1 sm:mb-1.5" style={{ background: '#0F8B6C10' }}>
+                <IconComp className="w-3.5 sm:w-4 h-3.5 sm:h-4" style={{ color: '#0F8B6C' }} />
               </div>
-              <p className="text-xs font-bold leading-tight" style={{ color: '#2C1810' }}>{t}</p>
-              <p className="text-[10px] leading-tight mt-0.5" style={{ color: '#A08070' }}>{s}</p>
+              <p className="text-[10px] sm:text-xs font-bold leading-tight" style={{ color: '#2C1810' }}>{t}</p>
+              <p className="text-[8px] sm:text-[10px] leading-tight mt-0.5" style={{ color: '#A08070' }}>{s}</p>
             </div>
           ))}
         </div>
 
         {/* ── CATÁLOGO ── */}
-        <div className="mb-5 flex flex-col sm:flex-row gap-3">
+        <div className="mb-4 sm:mb-5 flex flex-col gap-2.5 sm:gap-3">
           {/* Buscador */}
-          <div className="relative flex-1 max-w-md">
+          <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: '#A08070' }} />
             <input
               value={search}
               onChange={e => setSearch(e.target.value)}
-              placeholder="Buscar productos…"
-              className="w-full h-11 pl-10 pr-4 rounded-xl text-sm focus:outline-none focus:ring-2"
+              placeholder="Buscar…"
+              className="w-full h-10 sm:h-11 pl-10 pr-4 rounded-lg sm:rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2"
               style={{ background: 'white', border: '1.5px solid #D4C4B0', color: '#2C1810', focusRingColor: '#0F8B6C' }}
             />
           </div>
@@ -135,7 +134,7 @@ export default function EmpresasNuevo() {
                 <button
                   key={c}
                   onClick={() => setCat(c)}
-                  className="flex-shrink-0 px-3.5 py-2 rounded-xl text-xs font-bold transition-all"
+                  className="flex-shrink-0 px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-lg sm:rounded-xl text-[10px] sm:text-xs font-bold transition-all"
                   style={{
                     background: cat === c ? '#0F8B6C' : 'white',
                     color: cat === c ? 'white' : '#7A6050',

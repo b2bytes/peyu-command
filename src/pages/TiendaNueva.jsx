@@ -60,20 +60,20 @@ export default function TiendaNueva() {
       <ImpactStoryV2 />
 
       {/* CATEGORÍAS */}
-      <section className="w-full px-4 sm:px-8 lg:px-12 mb-12">
+      <section className="w-full px-4 sm:px-8 lg:px-12 mb-10 sm:mb-12">
         <div className="max-w-screen-xl mx-auto">
-          <h2 className="font-fraunces text-2xl sm:text-3xl mb-5">Explora por categoría</h2>
-          <div className="flex sm:grid sm:grid-cols-3 lg:grid-cols-5 gap-3 overflow-x-auto scrollbar-hide -mx-4 px-4 sm:mx-0 sm:px-0 pb-1">
+          <h2 className="font-fraunces text-xl sm:text-3xl mb-4 sm:mb-5">Explora por categoría</h2>
+          <div className="flex sm:grid sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-3 overflow-x-auto scrollbar-hide -mx-4 px-4 sm:mx-0 sm:px-0 pb-1">
             {CATEGORIAS_V2.map((c) => (
               <Link
                 key={c.cat}
                 to={`/CatalogoNuevo?cat=${encodeURIComponent(c.cat)}`}
-                className="group flex-shrink-0 w-36 sm:w-auto bg-white rounded-3xl p-5 text-center hover:shadow-lg hover:-translate-y-1 transition-all"
+                className="group flex-shrink-0 w-32 sm:w-auto bg-white rounded-2xl sm:rounded-3xl p-3 sm:p-5 text-center hover:shadow-lg hover:-translate-y-1 transition-all"
                 style={{ border: '1.5px solid #D4C4B0' }}
               >
-                <div className="text-3xl mb-2 group-hover:scale-110 transition-transform">{c.emoji}</div>
-                <p className="font-bold text-sm" style={{ color: '#2C1810' }}>{c.label}</p>
-                <p className="text-[10px] mt-0.5" style={{ color: '#A08070' }}>{c.desc}</p>
+                <div className="text-2xl sm:text-3xl mb-1.5 sm:mb-2 group-hover:scale-110 transition-transform">{c.emoji}</div>
+                <p className="font-bold text-xs sm:text-sm" style={{ color: '#2C1810' }}>{c.label}</p>
+                <p className="text-[9px] sm:text-[10px] mt-0.5" style={{ color: '#A08070' }}>{c.desc}</p>
               </Link>
             ))}
           </div>
@@ -81,12 +81,12 @@ export default function TiendaNueva() {
       </section>
 
       {/* DESTACADOS */}
-      <section className="w-full px-4 sm:px-8 lg:px-12 mb-14">
+      <section className="w-full px-4 sm:px-8 lg:px-12 mb-10 sm:mb-14">
         <div className="max-w-screen-xl mx-auto">
-          <div className="flex items-center justify-between mb-5">
-            <h2 className="font-fraunces text-2xl sm:text-3xl">Destacados</h2>
-            <Link to="/CatalogoNuevo" className="text-sm font-bold hover:underline inline-flex items-center gap-1" style={{ color: '#C0785C' }}>
-              Ver todo <ArrowRight className="w-3.5 h-3.5" />
+          <div className="flex items-center justify-between mb-4 sm:mb-5">
+            <h2 className="font-fraunces text-xl sm:text-3xl">Destacados</h2>
+            <Link to="/CatalogoNuevo" className="text-xs sm:text-sm font-bold hover:underline inline-flex items-center gap-1" style={{ color: '#C0785C' }}>
+              Ver todo <ArrowRight className="w-3 sm:w-3.5 h-3 sm:h-3.5" />
             </Link>
           </div>
           {loading ? (
