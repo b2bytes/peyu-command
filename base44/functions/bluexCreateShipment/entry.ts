@@ -13,7 +13,7 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 //  - Geolocalización
 //  - Comentarios y parámetros personalizados
 
-const BLUEX_EMISSION_API = 'https://cmkin.api.qa.blue.cl/cmkin/customer/corp/emission/v1/emission';
+const BLUEX_EMISSION_API = 'https://cmkin.api.blue.cl/cmkin/customer/corp/emission/v1/emission';
 const BLUEX_EMISSION_PROD = 'https://cmkin.api.blue.cl/cmkin/customer/corp/emission/v1/emission';
 
 // Mapeo de tipo destino → código distrito BlueExpress

@@ -109,34 +109,7 @@ Deno.serve(async (req) => {
       notas: `${pedido.notas || ''}${pedido.notas ? '\n' : ''}[ETIQUETA_BLUEX] ${tracking}`,
     });
 
-    // Crear registro de Envio
-    try {
-      await sr.entities.Envio.create({
-        pedido_id,
-        numero_pedido: pedido.numero_pedido,
-        cliente_nombre: pedido.cliente_nombre,
-        cliente_email: pedido.cliente_email,
-        cliente_telefono: pedido.cliente_telefono || '',
-        courier: 'BlueExpress',
-        tracking_number: tracking,
-        servicio: 'EXPRESS',
-        estado: 'Etiqueta Generada',
-        comuna_destino: pedido.ciudad,
-        region_destino: 'Chile',
-        direccion_destino: pedido.direccion_envio,
-        tipo_destino: 'Urbano',
-        peso_kg: pesoTotal,
-        valor_declarado_clp: pedido.total || 0,
-        costo_envio_cobrado_clp: pedido.costo_envio || 0,
-        label_url: labelUrl,
-        label_format: 'PDF',
-        tracking_url: `https://www.blue.cl/seguimiento?n=${tracking}`,
-        secuencia_activa: 'estandar_urbano',
-      });
-    } catch (envioErr) {
-      console.warn('[generarEtiquetaB2C] Error creando Envio:', envioErr.message);
-      // No fallar si no se crea el registro
-    }
+    // El registro Envio ya fue creado por bluexCreateShipment, no duplicar.
 
     // Enviar email al cliente con número de tracking
     try {
