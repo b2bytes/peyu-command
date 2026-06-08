@@ -206,7 +206,7 @@ export default function CotizacionRapida() {
         ) : (
           <>
             {/* Hero compacto */}
-            <div className="text-center mb-6">
+             <div className="text-center mb-10">
               <span className="inline-flex items-center gap-1.5 bg-[#0F8B6C]/10 text-[#0F8B6C] text-xs font-bold px-3 py-1.5 rounded-full mb-3">
                 <Building2 className="w-3.5 h-3.5" /> Cotización para empresas
               </span>
@@ -221,7 +221,7 @@ export default function CotizacionRapida() {
             <QuoteStepper step={step} onStep={goTo} maxStep={maxStep} />
 
             {/* Layout con panel de logo persistente en desktop */}
-            <div className="flex gap-6 items-start">
+            <div className="flex gap-8 items-start mt-8">
               {/* Contenido principal */}
               <div className="flex-1 min-w-0">
                 <AnimatePresence mode="wait">
@@ -244,7 +244,7 @@ export default function CotizacionRapida() {
                       </div>
 
                       {items.length > 0 && (
-                        <div className="mt-4 space-y-3">
+                         <div className="mt-6 space-y-4">
                           <p className="text-xs font-bold text-[#4B4F54] px-1 flex items-center gap-1.5">
                             <ShoppingCart className="w-3.5 h-3.5 text-[#0F8B6C]" />
                             En tu cotización ({items.length} {items.length === 1 ? 'producto' : 'productos'} · {qtyTotal} u)
@@ -430,8 +430,8 @@ export default function CotizacionRapida() {
                 )}
 
                 {/* Barra de navegación inferior */}
-                <div className="fixed sm:static bottom-0 inset-x-0 z-30 sm:z-0 bg-[#FAF7F2]/95 sm:bg-transparent backdrop-blur sm:backdrop-blur-0 border-t sm:border-0 border-[#EBE3D6] px-4 sm:px-0 py-3 sm:py-0 sm:mt-6">
-                  <div className="max-w-5xl mx-auto flex items-center gap-3">
+                <div className="fixed sm:static bottom-0 inset-x-0 z-30 sm:z-0 bg-[#FAF7F2]/95 sm:bg-transparent backdrop-blur sm:backdrop-blur-0 border-t sm:border-0 border-[#EBE3D6] px-4 sm:px-0 py-3 sm:py-0 sm:mt-8">
+                  <div className="max-w-5xl mx-auto flex items-center gap-4">
                     {step > 0 && (
                       <button
                         onClick={back}
@@ -489,7 +489,7 @@ export default function CotizacionRapida() {
               </div>
 
               {/* ── PANEL LATERAL: GALERÍA DE MOCKUPS (desktop, sticky) ── */}
-              <div className="hidden sm:block w-64 flex-shrink-0 sticky top-24 self-start space-y-3">
+              <div className="hidden sm:block w-72 flex-shrink-0 sticky top-24 self-start space-y-4">
                 <MockupGalleryB2B
                   items={items.length > 0 ? items : (primerProducto ? [{ producto: primerProducto, qty: 1 }] : [])}
                   logoUrl={logoUrl}
@@ -499,7 +499,7 @@ export default function CotizacionRapida() {
 
                 {/* Mini resumen lateral */}
                 {items.length > 0 && (
-                  <div className="bg-white border border-[#EBE3D6] rounded-2xl p-3 space-y-1.5">
+                  <div className="bg-white border border-[#EBE3D6] rounded-2xl p-4 space-y-2">
                     <p className="text-[10px] font-bold uppercase tracking-wide text-[#A78B6F]">Resumen</p>
                     <div className="space-y-1">
                       {items.map((it) => {
