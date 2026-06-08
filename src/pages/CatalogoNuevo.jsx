@@ -74,15 +74,15 @@ export default function CatalogoNuevo() {
     <div className="min-h-screen font-inter pb-16 lg:pb-0" style={{ background: '#F8F3ED', color: '#2C1810' }}>
       <ShopV2Header />
 
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4 sm:py-7">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-3 sm:py-5">
         <CheckoutStepperV2 current="tienda" />
-        <div className="mb-4 sm:mb-6">
-          <h1 className="font-fraunces text-2xl sm:text-4xl mb-1" style={{ color: '#2C1810' }}>Nuestra tienda</h1>
+        <div className="mb-3 sm:mb-4">
+          <h1 className="font-fraunces text-2xl sm:text-4xl mb-0.5" style={{ color: '#2C1810' }}>Nuestra tienda</h1>
           <p className="text-xs sm:text-sm" style={{ color: '#7A6050' }}>Plástico 100% reciclado · Hecho en Chile.</p>
         </div>
 
         {/* Buscador */}
-        <div className="relative mb-3 sm:mb-4">
+        <div className="relative mb-2 sm:mb-3">
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#A78B6F]" />
           <input
             value={q}
@@ -96,7 +96,7 @@ export default function CatalogoNuevo() {
         </div>
 
         {/* Chips de categoría */}
-        <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto scrollbar-hide pb-1 mb-3 sm:mb-4">
+        <div className="flex items-center gap-1 sm:gap-2 overflow-x-auto scrollbar-hide pb-1 mb-2 sm:mb-3">
           <SlidersHorizontal className="w-3.5 h-3.5 text-[#A78B6F] flex-shrink-0" />
           {chips.map((c) => (
             <button

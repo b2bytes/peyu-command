@@ -61,7 +61,7 @@ export default function CarritoNuevo() {
     <div className="min-h-screen font-inter pb-32 lg:pb-0" style={{ background: '#F8F3ED', color: '#2C1810' }}>
       <ShopV2Header />
 
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 py-4 sm:py-6">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 py-3 sm:py-5">
         <CheckoutStepperV2 current="carrito" />
         {/* Link solo desktop — mobile usa el navbar inferior */}
         <Link to="/CatalogoNuevo" className="hidden lg:inline-flex items-center gap-1.5 text-sm font-bold mb-5 transition-colors" style={{ color: '#7A6050' }}>

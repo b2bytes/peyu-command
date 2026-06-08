@@ -76,7 +76,7 @@ export default function EmpresasNuevo() {
       <B2BHeader />
 
       {/* ── HERO ── */}
-      <section className="max-w-6xl mx-auto px-4 sm:px-6 pt-6 sm:pt-10 pb-6 sm:pb-8">
+      <section className="max-w-6xl mx-auto px-4 sm:px-6 pt-4 sm:pt-8 pb-5 sm:pb-6">
         <div className="text-center max-w-2xl mx-auto mb-6 sm:mb-8">
           <span className="inline-flex items-center gap-1.5 text-[10px] sm:text-xs font-bold px-3 py-1.5 rounded-full mb-3 sm:mb-4"
             style={{ background: '#0F8B6C15', color: '#0F8B6C', border: '1px solid #0F8B6C30' }}>
@@ -99,7 +99,7 @@ export default function EmpresasNuevo() {
         </div>
 
         {/* Trust strip */}
-        <div className="grid grid-cols-3 sm:grid-cols-6 gap-2 sm:gap-3 mb-8 sm:mb-10">
+        <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5 sm:gap-2.5 mb-5 sm:mb-7">
           {TRUST.map(({ icon: IconComp, t, s }) => (
             <div key={t} className="flex flex-col items-center text-center p-2.5 sm:p-3 rounded-xl sm:rounded-2xl" style={{ background: 'white', border: '1.5px solid #EDE3D6' }}>
               <div className="w-7 sm:w-8 h-7 sm:h-8 rounded-lg sm:rounded-xl flex items-center justify-center mb-1 sm:mb-1.5" style={{ background: '#0F8B6C10' }}>
@@ -112,7 +112,7 @@ export default function EmpresasNuevo() {
         </div>
 
         {/* ── CATÁLOGO ── */}
-        <div className="mb-4 sm:mb-5 flex flex-col gap-2.5 sm:gap-3">
+        <div className="mb-3 sm:mb-4 flex flex-col gap-2 sm:gap-2.5">
           {/* Buscador */}
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: '#A08070' }} />
@@ -151,15 +151,15 @@ export default function EmpresasNuevo() {
 
         {/* Grid */}
         {loading ? (
-          <div className="flex items-center justify-center py-24">
-            <Loader2 className="w-8 h-8 animate-spin" style={{ color: '#0F8B6C' }} />
-          </div>
+        <div className="flex items-center justify-center py-16">
+         <Loader2 className="w-8 h-8 animate-spin" style={{ color: '#0F8B6C' }} />
+        </div>
         ) : filtrados.length === 0 ? (
-          <div className="text-center py-20">
+        <div className="text-center py-12">
             <p className="text-sm font-semibold" style={{ color: '#A08070' }}>Sin productos con estos filtros.</p>
           </div>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-5">
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 sm:gap-4">
             {filtrados.map(p => (
               <B2BCatalogCard key={p.id} producto={p} />
             ))}
@@ -168,7 +168,7 @@ export default function EmpresasNuevo() {
       </section>
 
       {/* ── CLIENTES ── */}
-      <section className="max-w-6xl mx-auto px-4 sm:px-6 pb-8">
+      <section className="max-w-6xl mx-auto px-4 sm:px-6 pb-5">
         <p className="text-[10px] font-bold uppercase tracking-widest text-center mb-4" style={{ color: '#A08070' }}>
           Confiaron en PEYU
         </p>
@@ -182,11 +182,11 @@ export default function EmpresasNuevo() {
       </section>
 
       {/* ── CTA FINAL ── */}
-      <section className="max-w-3xl mx-auto px-4 sm:px-6 py-8">
-        <div className="rounded-3xl p-8 text-center" style={{ background: 'linear-gradient(135deg,#0F8B6C,#0B6E55)' }}>
-          <Star className="w-8 h-8 text-white/70 mx-auto mb-3" />
-          <h2 className="font-fraunces text-2xl sm:text-3xl text-white mb-3">¿Tienes un evento o proyecto corporativo?</h2>
-          <p className="text-sm text-white/80 mb-6 max-w-md mx-auto">
+      <section className="max-w-3xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
+        <div className="rounded-3xl p-6 sm:p-8 text-center" style={{ background: 'linear-gradient(135deg,#0F8B6C,#0B6E55)' }}>
+          <Star className="w-7 h-7 text-white/70 mx-auto mb-2.5" />
+          <h2 className="font-fraunces text-lg sm:text-3xl text-white mb-2.5">¿Tienes un evento o proyecto corporativo?</h2>
+          <p className="text-xs sm:text-sm text-white/80 mb-5 max-w-md mx-auto">
             Arma tu pedido, elige cantidades y recibe tu cotización con precios por volumen reales en menos de 24h hábiles.
             Grabado láser gratis · Factura · Despacho a todo Chile.
           </p>
