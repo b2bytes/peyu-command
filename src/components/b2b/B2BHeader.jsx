@@ -10,12 +10,12 @@ export default function B2BHeader({ backTo, backLabel }) {
       className="sticky top-0 z-40 backdrop-blur-xl border-b"
       style={{ background: 'rgba(248,243,237,.94)', borderColor: '#D4C4B0', boxShadow: '0 1px 20px rgba(44,24,16,.06)' }}
     >
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-3">
-        <div className="flex items-center gap-3">
+      <div className="max-w-6xl mx-auto px-3 sm:px-6 h-14 sm:h-16 flex items-center justify-between gap-2 sm:gap-3">
+        <div className="flex items-center gap-2 sm:gap-3">
           {backTo && (
             <button
               onClick={() => navigate(backTo)}
-              className="w-9 h-9 rounded-xl flex items-center justify-center transition-colors hover:bg-[#EDE3D6] lg:hidden"
+              className="w-9 h-9 rounded-xl flex items-center justify-center transition-colors hover:bg-[#EDE3D6] active:bg-[#D4C4B0]"
               style={{ border: '1.5px solid #D4C4B0' }}
             >
               <ArrowLeft className="w-4 h-4" style={{ color: '#7A6050' }} />

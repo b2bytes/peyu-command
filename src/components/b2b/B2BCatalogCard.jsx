@@ -49,27 +49,27 @@ export default function B2BCatalogCard({ producto }) {
       </div>
 
       {/* Info */}
-      <div className="flex flex-col flex-1 p-5">
-        <p className="text-[9px] font-bold uppercase tracking-widest mb-1.5" style={{ color: '#A08070' }}>
+      <div className="flex flex-col flex-1 p-3.5 sm:p-5">
+        <p className="text-[8px] sm:text-[9px] font-bold uppercase tracking-widest mb-1" style={{ color: '#A08070' }}>
           {producto.categoria?.replace(' B2C', '')}
         </p>
-        <h3 className="font-fraunces text-lg leading-snug mb-3 flex-1" style={{ color: '#2C1810' }}>
+        <h3 className="font-fraunces text-base sm:text-lg leading-snug mb-2 sm:mb-3 flex-1" style={{ color: '#2C1810' }}>
           {producto.nombre}
         </h3>
 
-        <div className="space-y-2">
+        <div className="space-y-1.5 sm:space-y-2">
           <div className="flex items-baseline justify-between">
-            <span className="text-xs" style={{ color: '#A08070' }}>desde</span>
-            <span className="font-poppins font-extrabold text-lg" style={{ color: '#0F8B6C' }}>{fmtCLP(basePrice)}/u</span>
+            <span className="text-[10px] sm:text-xs" style={{ color: '#A08070' }}>desde</span>
+            <span className="font-poppins font-extrabold text-base sm:text-lg" style={{ color: '#0F8B6C' }}>{fmtCLP(basePrice)}/u</span>
           </div>
           {ahorroMax > 0 && (
-            <p className="text-[11px]" style={{ color: '#A08070' }}>
+            <p className="text-[10px] sm:text-[11px]" style={{ color: '#A08070' }}>
               Hasta <strong style={{ color: '#D96B4D' }}>-{ahorroMax}%</strong> por volumen
             </p>
           )}
-          <div className="flex items-center gap-1.5 text-xs font-semibold mt-3 pt-3"
+          <div className="flex items-center gap-1.5 text-[10px] sm:text-xs font-semibold mt-2 pt-2 sm:mt-3 sm:pt-3"
             style={{ borderTop: '1px solid #EDE3D6', color: '#0F8B6C' }}>
-            <Sparkles className="w-3.5 h-3.5" />
+            <Sparkles className="w-3 sm:w-3.5 h-3 sm:h-3.5" />
             Logo gratis desde {moq}u
           </div>
         </div>

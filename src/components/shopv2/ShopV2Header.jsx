@@ -25,7 +25,7 @@ export default function ShopV2Header() {
 
   return (
     <header className="sticky top-0 z-40 bg-[#F8F3ED]/90 backdrop-blur-xl border-b border-[#D4C4B0]/60" style={{ boxShadow: '0 1px 20px rgba(44,24,16,.06)' }}>
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-3">
+      <div className="max-w-6xl mx-auto px-3 sm:px-6 h-14 sm:h-16 flex items-center justify-between gap-2 sm:gap-3">
         <Link to="/TiendaNueva" className="flex items-center group">
           <img
             src="https://media.base44.com/images/public/69d99b9d61f699701129c103/b67ed29f9_image.png"
@@ -36,7 +36,7 @@ export default function ShopV2Header() {
           />
         </Link>
 
-        <nav className="hidden sm:flex items-center gap-0.5">
+        <nav className="hidden md:flex items-center gap-0.5">
           <Link to="/TiendaNueva" className="px-3.5 py-2 text-sm font-semibold rounded-xl transition-colors hover:bg-[#EDE3D6]" style={{ color: '#7A6050' }}>Inicio</Link>
           <Link to="/CatalogoNuevo" className="px-3.5 py-2 text-sm font-semibold rounded-xl transition-colors hover:bg-[#EDE3D6]" style={{ color: '#7A6050' }}>Tienda</Link>
           <Link to="/EmpresasNuevo" className="px-3.5 py-2 text-sm font-semibold rounded-xl transition-colors hover:bg-[#EDE3D6]" style={{ color: '#7A6050' }}>Empresas</Link>
@@ -44,10 +44,10 @@ export default function ShopV2Header() {
 
         <button
           onClick={() => navigate('/CarritoNuevo')}
-          className="relative flex items-center gap-2 font-bold text-sm px-4 py-2.5 rounded-2xl transition-all hover:shadow-md"
-          style={{ background: 'white', border: '1.5px solid #D4C4B0', color: '#2C1810' }}
+          className="relative flex items-center gap-1.5 sm:gap-2 font-bold text-sm px-3 sm:px-4 py-2.5 rounded-2xl transition-all hover:shadow-md active:scale-[0.97]"
+          style={{ background: 'white', border: '1.5px solid #D4C4B0', color: '#2C1810', minHeight: '42px' }}
         >
-          <ShoppingBag className="w-4 h-4" style={{ color: '#C0785C' }} />
+          <ShoppingBag className="w-4 h-4 flex-shrink-0" style={{ color: '#C0785C' }} />
           <span className="hidden sm:inline">Carrito</span>
           {count > 0 && (
             <span className={`absolute -top-1.5 -right-1.5 min-w-5 h-5 px-1 rounded-full text-white text-[11px] font-bold flex items-center justify-center shadow transition-transform ${pulse ? 'scale-125' : 'scale-100'}`} style={{ background: '#C0785C' }}>

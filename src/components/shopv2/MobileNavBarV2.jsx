@@ -53,28 +53,28 @@ function NavTabs({ cartCount }) {
 function ActionBar({ backTo, backLabel, ctaLabel, onCta, ctaDisabled, ctaLoading, total }) {
   const navigate = useNavigate();
   return (
-    <div className="flex items-center gap-2.5 px-4 py-2.5">
+    <div className="flex items-center gap-2 px-3 py-2.5">
       <button
         onClick={() => backTo ? navigate(backTo) : navigate(-1)}
-        className="flex-shrink-0 h-11 px-3.5 rounded-2xl flex items-center gap-1.5 font-bold text-sm transition-all active:scale-[0.97]"
+        className="flex-shrink-0 h-12 px-4 rounded-2xl flex items-center gap-1.5 font-bold transition-all active:scale-[0.97]"
         style={{ background: 'white', border: '1.5px solid #D4C4B0', color: '#7A6050' }}
       >
         <ArrowLeft className="w-4 h-4" />
-        <span className="hidden xs:inline">{backLabel || 'Volver'}</span>
+        <span className="text-sm">{backLabel || 'Atrás'}</span>
       </button>
       <button
         onClick={onCta}
         disabled={ctaDisabled || ctaLoading}
-        className="flex-1 h-11 rounded-2xl text-white font-bold text-sm flex items-center justify-center gap-2 transition-all active:scale-[0.98] disabled:opacity-55"
+        className="flex-1 h-12 rounded-2xl text-white font-bold text-sm flex items-center justify-center gap-2 transition-all active:scale-[0.98] disabled:opacity-55"
         style={{ background: 'linear-gradient(135deg,#C0785C,#A86440)', boxShadow: '0 4px 16px rgba(192,120,92,.3)' }}
       >
         {ctaLoading ? (
           <><div className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" /> Procesando…</>
         ) : (
           <>
-            {ctaLabel}
-            {total != null && <span className="opacity-80">· {fmtCLP(total)}</span>}
-            {!ctaLoading && <ArrowRight className="w-3.5 h-3.5" />}
+            <span className="truncate">{ctaLabel}</span>
+            {total != null && <span className="opacity-80 flex-shrink-0">· {fmtCLP(total)}</span>}
+            {!ctaLoading && <ArrowRight className="w-3.5 h-3.5 flex-shrink-0" />}
           </>
         )}
       </button>

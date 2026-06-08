@@ -86,7 +86,7 @@ export default function EmpresaProducto() {
     <div className="min-h-screen font-inter pb-24 lg:pb-8" style={{ background: '#F8F3ED', color: '#2C1810' }}>
       <B2BHeader backTo="/EmpresasNuevo" />
 
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-3 sm:py-6">
         {/* Breadcrumb desktop */}
         <div className="hidden lg:flex items-center gap-2 text-xs mb-5" style={{ color: '#A08070' }}>
           <Link to="/EmpresasNuevo" className="hover:underline font-semibold" style={{ color: '#7A6050' }}>Catálogo empresarial</Link>
@@ -136,7 +136,7 @@ export default function EmpresaProducto() {
               <p className="text-xs font-bold uppercase tracking-wider mb-1.5" style={{ color: '#A08070' }}>
                 {producto.categoria?.replace(' B2C', '')}
               </p>
-              <h1 className="font-fraunces text-3xl sm:text-4xl leading-[1.05] mb-2" style={{ color: '#2C1810' }}>
+              <h1 className="font-fraunces text-2xl sm:text-4xl leading-[1.05] mb-2" style={{ color: '#2C1810' }}>
                 {producto.nombre}
               </h1>
               {producto.descripcion && (
@@ -182,39 +182,45 @@ export default function EmpresaProducto() {
                 </span>
               </div>
 
-              <div className="flex items-center gap-3 flex-wrap">
+              <div className="space-y-3">
                 {/* Stepper */}
-                <div className="inline-flex items-center rounded-xl overflow-hidden" style={{ border: '1.5px solid #D4C4B0', background: 'white' }}>
-                  <button onClick={() => setQty(q => Math.max(1, q - 10))} className="w-11 h-11 flex items-center justify-center transition-colors hover:bg-[#F2ECE2]">
-                    <Minus className="w-4 h-4" style={{ color: '#7A6050' }} />
-                  </button>
-                  <input
-                    type="number"
-                    value={qty}
-                    onChange={e => setQty(Math.max(1, parseInt(e.target.value, 10) || 1))}
-                    className="w-16 h-11 text-center text-sm font-bold bg-transparent focus:outline-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none"
-                    style={{ color: '#2C1810' }}
-                  />
-                  <button onClick={() => setQty(q => q + 10)} className="w-11 h-11 flex items-center justify-center transition-colors hover:bg-[#F2ECE2]">
-                    <Plus className="w-4 h-4" style={{ color: '#7A6050' }} />
-                  </button>
+                <div className="flex items-center gap-3">
+                  <div className="inline-flex items-center rounded-xl overflow-hidden" style={{ border: '1.5px solid #D4C4B0', background: 'white' }}>
+                    <button onClick={() => setQty(q => Math.max(1, q - 10))} className="w-12 h-12 flex items-center justify-center transition-colors hover:bg-[#F2ECE2] active:bg-[#EDE3D6]">
+                      <Minus className="w-4 h-4" style={{ color: '#7A6050' }} />
+                    </button>
+                    <input
+                      type="number"
+                      value={qty}
+                      onChange={e => setQty(Math.max(1, parseInt(e.target.value, 10) || 1))}
+                      className="w-16 h-12 text-center text-base font-bold bg-transparent focus:outline-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none"
+                      style={{ color: '#2C1810' }}
+                    />
+                    <button onClick={() => setQty(q => q + 10)} className="w-12 h-12 flex items-center justify-center transition-colors hover:bg-[#F2ECE2] active:bg-[#EDE3D6]">
+                      <Plus className="w-4 h-4" style={{ color: '#7A6050' }} />
+                    </button>
+                  </div>
+                  <span className="text-xs text-[#A08070]">unidades</span>
                 </div>
 
-                {/* Chips rápidos */}
-                {[10, 50, 100, 250, 500].map(n => (
-                  <button
-                    key={n}
-                    onClick={() => setQty(n)}
-                    className="px-3 py-2 rounded-xl text-xs font-bold transition-all"
-                    style={{
-                      background: qty === n ? '#0F8B6C' : 'white',
-                      color: qty === n ? 'white' : '#7A6050',
-                      border: `1.5px solid ${qty === n ? '#0F8B6C' : '#D4C4B0'}`,
-                    }}
-                  >
-                    {n}u
-                  </button>
-                ))}
+                {/* Chips rápidos — scroll horizontal en mobile */}
+                <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-0.5">
+                  {[10, 50, 100, 250, 500, 1000].map(n => (
+                    <button
+                      key={n}
+                      onClick={() => setQty(n)}
+                      className="flex-shrink-0 px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all active:scale-[0.96]"
+                      style={{
+                        background: qty === n ? '#0F8B6C' : 'white',
+                        color: qty === n ? 'white' : '#7A6050',
+                        border: `1.5px solid ${qty === n ? '#0F8B6C' : '#D4C4B0'}`,
+                        boxShadow: qty === n ? '0 2px 8px rgba(15,139,108,.2)' : 'none',
+                      }}
+                    >
+                      {n}u
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
 
