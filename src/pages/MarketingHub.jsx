@@ -31,14 +31,18 @@ export default function MarketingHub() {
   };
 
   const loadAll = async () => {
-    const [p, cal, camp, ass] = await Promise.all([
-      base44.entities.ContentPost.list('-created_date', 100),
-      base44.entities.ContentCalendar.list('-created_date', 50),
-      base44.entities.AdCampaign.list('-created_date', 50),
-      base44.entities.ContentAsset.list('-created_date', 100),
-    ]);
-    setPosts(p); setCalendarios(cal); setCampanas(camp); setAssets(ass);
-    setLoading(false);
+    setLoading(true);
+    try {
+      const [p, cal, camp, ass] = await Promise.all([
+        base44.entities.ContentPost.list('-created_date', 100),
+        base44.entities.ContentCalendar.list('-created_date', 50),
+        base44.entities.AdCampaign.list('-created_date', 50),
+        base44.entities.ContentAsset.list('-created_date', 100),
+      ]);
+      setPosts(p || []); setCalendarios(cal || []); setCampanas(camp || []); setAssets(ass || []);
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
