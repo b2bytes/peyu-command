@@ -58,17 +58,17 @@ export default function CarritoNuevo() {
   }
 
   return (
-    <div className="min-h-screen font-inter pb-24 lg:pb-0" style={{ background: '#F8F3ED', color: '#2C1810' }}>
+    <div className="min-h-screen font-inter pb-32 lg:pb-0" style={{ background: '#F8F3ED', color: '#2C1810' }}>
       <ShopV2Header />
 
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 py-4 sm:py-6">
         <CheckoutStepperV2 current="carrito" />
         {/* Link solo desktop — mobile usa el navbar inferior */}
         <Link to="/CatalogoNuevo" className="hidden lg:inline-flex items-center gap-1.5 text-sm font-bold mb-5 transition-colors" style={{ color: '#7A6050' }}>
           <ArrowLeft className="w-4 h-4" /> Seguir comprando
         </Link>
 
-        <h1 className="font-fraunces text-3xl sm:text-4xl mb-6">Tu carrito</h1>
+        <h1 className="font-fraunces text-2xl sm:text-4xl mb-4 sm:mb-6">Tu carrito</h1>
 
         <div className="grid lg:grid-cols-3 gap-6">
           {/* Líneas */}

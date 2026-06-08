@@ -247,7 +247,7 @@ export default function ProductoNuevo() {
     <div className="min-h-screen font-inter pb-20 lg:pb-0" style={{ background: '#F8F3ED', color: '#2C1810' }}>
       <ShopV2Header />
 
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-3 sm:py-6">
         <CheckoutStepperV2 current="producto" />
         {/* Link de vuelta solo visible en desktop (mobile usa el navbar inferior) */}
         <Link to="/CatalogoNuevo" className="hidden lg:inline-flex items-center gap-1.5 text-sm font-bold mb-4 transition-colors" style={{ color: '#7A6050' }}>
@@ -255,7 +255,7 @@ export default function ProductoNuevo() {
         </Link>
 
         {/* Layout: galería sticky izquierda · configurador scroll derecha */}
-        <div className="grid lg:grid-cols-2 gap-6 lg:gap-10 lg:items-start">
+        <div className="grid lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-10 lg:items-start">
           {/* GALERÍA sticky — fija en desktop mientras scrolleas el configurador */}
           <div className="lg:sticky lg:top-24 lg:self-start">
             <ProductGalleryV2
@@ -273,8 +273,8 @@ export default function ProductoNuevo() {
               <p className="text-xs font-bold uppercase tracking-wider mb-1.5" style={{ color: '#A08070' }}>
                 {producto.categoria?.replace(' B2C', '')}
               </p>
-              <h1 className="font-fraunces text-3xl sm:text-4xl leading-[1.05] mb-2.5" style={{ color: '#2C1810' }}>{producto.nombre}</h1>
-              <p className="font-poppins font-bold text-2xl" style={{ color: '#C0785C' }}>{fmtCLP(precioUnit)}</p>
+              <h1 className="font-fraunces text-2xl sm:text-4xl leading-[1.05] mb-2" style={{ color: '#2C1810' }}>{producto.nombre}</h1>
+              <p className="font-poppins font-bold text-xl sm:text-2xl" style={{ color: '#C0785C' }}>{fmtCLP(precioUnit)}</p>
               {stockBajo && (
                 <p className="inline-flex items-center gap-1.5 mt-2 text-xs font-bold px-2.5 py-1 rounded-full" style={{ color: '#C0785C', background: 'rgba(192,120,92,.1)' }}>
                   🔥 Solo quedan {stock} unidades

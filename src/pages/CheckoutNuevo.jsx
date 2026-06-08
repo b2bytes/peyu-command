@@ -355,17 +355,17 @@ export default function CheckoutNuevo() {
   }
 
   return (
-    <div className="min-h-screen font-inter pb-32 lg:pb-12" style={{ background: '#F8F3ED', color: '#2C1810' }}>
+    <div className="min-h-screen font-inter pb-36 lg:pb-12" style={{ background: '#F8F3ED', color: '#2C1810' }}>
       <ShopV2Header />
 
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-3 sm:py-6">
         <CheckoutStepperV2 current="pago" />
         {/* Link solo desktop — mobile usa navbar inferior */}
         <Link to="/CarritoNuevo" className="hidden lg:inline-flex items-center gap-1.5 text-sm font-bold mb-5 transition-colors" style={{ color: '#7A6050' }}>
           <ArrowLeft className="w-4 h-4" /> Volver al carrito
         </Link>
 
-        <h1 className="font-fraunces text-3xl sm:text-4xl mb-6">Finaliza tu compra</h1>
+        <h1 className="font-fraunces text-2xl sm:text-4xl mb-4 sm:mb-6">Finaliza tu compra</h1>
 
         <div className="grid lg:grid-cols-3 gap-6">
           {/* FORM — secciones colapsables para que el checkout no sea tan largo */}

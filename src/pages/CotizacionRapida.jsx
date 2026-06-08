@@ -200,21 +200,21 @@ export default function CotizacionRapida() {
     <div className="min-h-screen bg-[#FAF7F2] font-inter text-[#2A2420] pb-28 sm:pb-12">
       <ShopV2Header />
 
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-4 sm:py-8">
         {result ? (
           <QuoteResultCard result={result} empresa={form.company_name} email={form.email} onReset={reset} logoUrl={logoUrl} />
         ) : (
           <>
             {/* Hero compacto */}
-            <div className="text-center mb-8">
-              <span className="inline-flex items-center gap-1.5 bg-[#0F8B6C]/10 text-[#0F8B6C] text-xs font-bold px-3 py-1.5 rounded-full mb-3">
-                <Building2 className="w-3.5 h-3.5" /> Cotización para empresas
+            <div className="text-center mb-5 sm:mb-8">
+              <span className="inline-flex items-center gap-1.5 bg-[#0F8B6C]/10 text-[#0F8B6C] text-[10px] sm:text-xs font-bold px-3 py-1.5 rounded-full mb-2 sm:mb-3">
+                <Building2 className="w-3 sm:w-3.5 h-3 sm:h-3.5" /> Cotización para empresas
               </span>
-              <h1 className="font-fraunces text-3xl sm:text-4xl leading-tight mb-3">
+              <h1 className="font-fraunces text-2xl sm:text-4xl leading-tight mb-2 sm:mb-3">
                 Tu pedido corporativo, <span className="text-[#0F8B6C]">en 3 pasos</span>
               </h1>
-              <p className="text-sm text-[#4B4F54] max-w-xl mx-auto">
-                Arma tu carrito, completa datos de empresa y recibe presupuesto con precios reales por volumen.
+              <p className="text-xs sm:text-sm text-[#4B4F54] max-w-xl mx-auto">
+                Arma tu carrito, completa datos y recibe presupuesto con precios por volumen.
               </p>
             </div>
 
@@ -431,8 +431,8 @@ export default function CotizacionRapida() {
                 )}
 
                 {/* Barra de navegación inferior */}
-                 <div className="fixed sm:static bottom-0 inset-x-0 z-30 sm:z-0 bg-[#FAF7F2]/98 sm:bg-transparent backdrop-blur-xl sm:backdrop-blur-0 border-t sm:border-0 border-[#EBE3D6] px-4 sm:px-0 py-3 sm:py-0 sm:mt-10">
-                   <div className="max-w-5xl mx-auto flex items-center gap-3 sm:gap-4">
+                 <div className="fixed sm:static bottom-0 inset-x-0 z-30 sm:z-0 bg-[#FAF7F2]/98 sm:bg-transparent backdrop-blur-xl sm:backdrop-blur-0 border-t sm:border-0 border-[#EBE3D6] px-4 sm:px-0 py-2.5 sm:py-0 sm:mt-10 pb-safe">
+                   <div className="max-w-5xl mx-auto flex items-center gap-2.5 sm:gap-4">
                      {step > 0 && (
                        <button
                          onClick={back}

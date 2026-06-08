@@ -74,21 +74,21 @@ export default function CatalogoNuevo() {
     <div className="min-h-screen font-inter pb-16 lg:pb-0" style={{ background: '#F8F3ED', color: '#2C1810' }}>
       <ShopV2Header />
 
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-7">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4 sm:py-7">
         <CheckoutStepperV2 current="tienda" />
-        <div className="mb-6">
-          <h1 className="font-fraunces text-3xl sm:text-4xl mb-1.5" style={{ color: '#2C1810' }}>Nuestra tienda</h1>
-          <p className="text-sm" style={{ color: '#7A6050' }}>Productos de plástico 100% reciclado, hechos en Chile.</p>
+        <div className="mb-4 sm:mb-6">
+          <h1 className="font-fraunces text-2xl sm:text-4xl mb-1" style={{ color: '#2C1810' }}>Nuestra tienda</h1>
+          <p className="text-xs sm:text-sm" style={{ color: '#7A6050' }}>Plástico 100% reciclado · Hecho en Chile.</p>
         </div>
 
         {/* Buscador */}
-        <div className="relative mb-4">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[#A78B6F]" />
+        <div className="relative mb-3 sm:mb-4">
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#A78B6F]" />
           <input
             value={q}
             onChange={(e) => setQ(e.target.value)}
-            placeholder="Buscar carcasas, cachos, maceteros..."
-            className="w-full h-12 pl-11 pr-4 rounded-2xl text-sm focus:outline-none transition-all"
+            placeholder="Buscar productos..."
+            className="w-full h-10 sm:h-12 pl-10 pr-4 rounded-xl sm:rounded-2xl text-sm focus:outline-none transition-all"
             style={{ background: 'white', border: '1.5px solid #D4C4B0', color: '#2C1810' }}
             onFocus={e => { e.target.style.borderColor = '#C0785C'; e.target.style.boxShadow = '0 0 0 3px rgba(192,120,92,.12)'; }}
             onBlur={e => { e.target.style.borderColor = '#D4C4B0'; e.target.style.boxShadow = 'none'; }}
@@ -96,13 +96,13 @@ export default function CatalogoNuevo() {
         </div>
 
         {/* Chips de categoría */}
-        <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide pb-1 mb-4">
-          <SlidersHorizontal className="w-4 h-4 text-[#A78B6F] flex-shrink-0" />
+        <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto scrollbar-hide pb-1 mb-3 sm:mb-4">
+          <SlidersHorizontal className="w-3.5 h-3.5 text-[#A78B6F] flex-shrink-0" />
           {chips.map((c) => (
             <button
               key={c}
               onClick={() => setCat(c)}
-              className="flex-shrink-0 px-4 py-2 rounded-full text-sm font-bold transition-all"
+              className="flex-shrink-0 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full text-xs sm:text-sm font-bold transition-all"
               style={{
                 background: cat === c ? '#C0785C' : 'white',
                 color: cat === c ? 'white' : '#7A6050',
@@ -138,21 +138,21 @@ export default function CatalogoNuevo() {
 
         {/* Grilla */}
         {loading ? (
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-            {Array.from({ length: 12 }).map((_, i) => (
-              <div key={i} className="aspect-[3/4] rounded-3xl animate-pulse" style={{ background: '#EDE3D6', border: '1px solid #D4C4B0' }} />
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-4">
+            {Array.from({ length: 8 }).map((_, i) => (
+              <div key={i} className="aspect-[3/4] rounded-2xl sm:rounded-3xl animate-pulse" style={{ background: '#EDE3D6', border: '1px solid #D4C4B0' }} />
             ))}
           </div>
         ) : filtrados.length === 0 ? (
-          <div className="text-center py-20">
-            <PackageOpen className="w-12 h-12 mx-auto mb-3" style={{ color: '#A08070' }} />
-            <p className="font-bold" style={{ color: '#2C1810' }}>No encontramos productos</p>
-            <p className="text-sm mt-1" style={{ color: '#7A6050' }}>Prueba con otra categoría o búsqueda.</p>
+          <div className="text-center py-14 sm:py-20">
+            <PackageOpen className="w-10 sm:w-12 h-10 sm:h-12 mx-auto mb-3" style={{ color: '#A08070' }} />
+            <p className="font-bold text-sm sm:text-base" style={{ color: '#2C1810' }}>No encontramos productos</p>
+            <p className="text-xs sm:text-sm mt-1" style={{ color: '#7A6050' }}>Prueba con otra categoría o búsqueda.</p>
           </div>
         ) : (
           <>
-            <p className="text-xs text-[#A78B6F] mb-3 font-semibold">{filtrados.length} productos</p>
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+            <p className="text-[10px] sm:text-xs text-[#A78B6F] mb-2 sm:mb-3 font-semibold">{filtrados.length} productos</p>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-4">
               {filtrados.map((p, i) => <ProductCardV2 key={p.id} producto={p} index={i} />)}
             </div>
           </>
