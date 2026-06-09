@@ -39,7 +39,7 @@ export default function PageNotFound() {
                                 <Home className="w-4 h-4" /> Inicio
                             </button>
                         </Link>
-                        <Link to="/shop" className="flex-1">
+                        <Link to="/CatalogoNuevo" className="flex-1">
                             <button className="w-full h-11 rounded-xl bg-gradient-to-r from-teal-500 to-cyan-500 hover:from-teal-600 hover:to-cyan-600 text-white text-sm font-bold flex items-center justify-center gap-2 transition shadow-lg">
                                 <ShoppingCart className="w-4 h-4" /> Ir a la tienda
                             </button>

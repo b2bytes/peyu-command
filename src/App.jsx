@@ -263,6 +263,16 @@ function App() {
               <Route path="/Inicio" element={<Navigate to="/" replace />} />
               <Route path="/Tienda" element={<Navigate to="/" replace />} />
               <Route path="/Empresas" element={<Navigate to="/EmpresasNuevo" replace />} />
+              {/* Catch-all de URLs comunes de campañas / links compartidos */}
+              <Route path="/tienda" element={<Navigate to="/" replace />} />
+              <Route path="/inicio" element={<Navigate to="/" replace />} />
+              <Route path="/home" element={<Navigate to="/" replace />} />
+              <Route path="/catalogo" element={<Navigate to="/CatalogoNuevo" replace />} />
+              <Route path="/productos" element={<Navigate to="/CatalogoNuevo" replace />} />
+              <Route path="/empresas" element={<Navigate to="/EmpresasNuevo" replace />} />
+              <Route path="/comprar" element={<Navigate to="/CatalogoNuevo" replace />} />
+              <Route path="/checkout" element={<Navigate to="/CheckoutNuevo" replace />} />
+              <Route path="/carrito" element={<Navigate to="/CarritoNuevo" replace />} />
               
               {/* Legacy - mantener disponible pero no indexado (noindex) */}
               <Route path="/shop-legacy" element={<Shop />} />

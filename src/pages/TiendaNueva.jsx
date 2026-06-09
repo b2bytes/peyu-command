@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
+
 import SEOHead from '@/components/SEOHead';
 import { ArrowRight, Recycle, Sparkles } from 'lucide-react';
 import MobileNavBarV2 from '@/components/shopv2/MobileNavBarV2';
@@ -22,14 +23,22 @@ export default function TiendaNueva() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    base44.entities.Producto.filter({ activo: true }, '-updated_date', 200)
-      .then((data) => {
-        const b2c = (data || []).filter(
-          (p) => p.canal !== 'B2B Exclusivo' && p.categoria !== 'Gift Card' && p.precio_b2c
-        );
-        setProductos(b2c);
-      })
-      .finally(() => setLoading(false));
+    let retries = 0;
+    const cargar = () => {
+      base44.entities.Producto.filter({ activo: true }, '-updated_date', 200)
+        .then((data) => {
+          const b2c = (data || []).filter(
+            (p) => p.canal !== 'B2B Exclusivo' && p.categoria !== 'Gift Card' && p.precio_b2c
+          );
+          setProductos(b2c);
+        })
+        .catch(() => {
+          // Retry automático hasta 2 veces antes de mostrar pantalla vacía
+          if (retries < 2) { retries++; setTimeout(cargar, 1500 * retries); }
+        })
+        .finally(() => setLoading(false));
+    };
+    cargar();
   }, []);
 
   const carcasas = useMemo(() => productos.filter((p) => p.categoria === 'Carcasas B2C'), [productos]);

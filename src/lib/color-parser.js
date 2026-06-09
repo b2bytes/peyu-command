@@ -10,18 +10,20 @@
 // Catálogo central de colores PEYU con su HEX real y aliases (singular,
 // plural, con/sin tilde, variantes en español chileno).
 const PEYU_COLOR_CATALOG = [
-  { id: 'negro',     label: 'Negro Ónix',       hex: '#1a1a1a', aliases: ['negro', 'negros', 'onix', 'ónix', 'black'] },
-  { id: 'blanco',    label: 'Blanco',           hex: '#f4f4f0', aliases: ['blanco', 'blancos', 'white'] },
-  { id: 'azul',      label: 'Azul',             hex: '#4a90d9', aliases: ['azul', 'azules', 'blue', 'celeste'] },
-  { id: 'turquesa',  label: 'Turquesa',         hex: '#2d9d8f', aliases: ['turquesa', 'turquesas', 'turquoise'] },
+  // ── COLORES OFICIALES CARCASAS PEYU (5 colores del catálogo real) ──
+  { id: 'turquesa',  label: 'Turquesa',         hex: '#34C5B5', aliases: ['turquesa', 'turquesas', 'turquoise', 'teal'] },
+  { id: 'amarillo',  label: 'Amarillo',         hex: '#F5C842', aliases: ['amarillo', 'amarillos', 'yellow'] },
+  { id: 'rosa',      label: 'Rosado',           hex: '#F48FB1', aliases: ['rosa', 'rosado', 'rosados', 'rosadas', 'rosas', 'pink'] },
+  { id: 'negro',     label: 'Negro',            hex: '#212121', aliases: ['negro', 'negros', 'onix', 'ónix', 'black'] },
+  { id: 'azul',      label: 'Azul',             hex: '#5B9BD5', aliases: ['azul', 'azules', 'blue', 'celeste'] },
+  // ── COLORES ADICIONALES CATÁLOGO ──
+  { id: 'blanco',    label: 'Blanco',           hex: '#F5F5F0', aliases: ['blanco', 'blancos', 'white'] },
   { id: 'verde',     label: 'Verde',            hex: '#0F8B6C', aliases: ['verde', 'verdes', 'green'] },
-  { id: 'rojo',      label: 'Rojo Coral',       hex: '#c94040', aliases: ['rojo', 'rojos', 'coral', 'red'] },
-  { id: 'rosa',      label: 'Rosa',             hex: '#e8799c', aliases: ['rosa', 'rosado', 'rosados', 'rosadas', 'rosas', 'pink'] },
-  { id: 'amarillo',  label: 'Amarillo',         hex: '#f0c040', aliases: ['amarillo', 'amarillos', 'yellow'] },
-  { id: 'violeta',   label: 'Violeta',          hex: '#8b5cf6', aliases: ['violeta', 'violetas', 'morado', 'morados', 'purple', 'lila'] },
-  { id: 'naranja',   label: 'Naranja',          hex: '#fb923c', aliases: ['naranja', 'naranjas', 'orange', 'terracota'] },
-  { id: 'gris',      label: 'Gris',             hex: '#6b7280', aliases: ['gris', 'grises', 'gray', 'grey'] },
-  { id: 'cafe',      label: 'Café',             hex: '#8b5e3c', aliases: ['cafe', 'café', 'marron', 'marrón', 'brown', 'kraft'] },
+  { id: 'rojo',      label: 'Rojo',             hex: '#E05252', aliases: ['rojo', 'rojos', 'coral', 'red'] },
+  { id: 'violeta',   label: 'Violeta',          hex: '#9B72CF', aliases: ['violeta', 'violetas', 'morado', 'morados', 'purple', 'lila'] },
+  { id: 'naranja',   label: 'Naranja',          hex: '#FB923C', aliases: ['naranja', 'naranjas', 'orange', 'terracota'] },
+  { id: 'gris',      label: 'Gris',             hex: '#6B7280', aliases: ['gris', 'grises', 'gray', 'grey'] },
+  { id: 'cafe',      label: 'Café',             hex: '#8B5E3C', aliases: ['cafe', 'café', 'marron', 'marrón', 'brown', 'kraft'] },
   { id: 'beige',     label: 'Beige',            hex: '#E7D8C6', aliases: ['beige', 'arena', 'crema', 'natural'] },
 ];
 
