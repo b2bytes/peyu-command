@@ -599,14 +599,6 @@ export default function PersonalizacionFlow() {
         </div>
       )}
 
-      {/* Cantidad */}
-      {opcion === 'none' && (
-        <div className="flex items-center justify-between p-3.5 rounded-2xl" style={{ background: C.surface, border: `1.5px solid ${C.border}` }}>
-          <p className="text-xs font-bold uppercase tracking-wider" style={{ color: C.fgMuted }}>Cantidad</p>
-          <QuantityStepper value={cantidad} onChange={setCantidad} min={1} />
-        </div>
-      )}
-
       {/* Botón mockup IA / estado mockup */}
       {opcion && opcion !== 'none' && personalizacionCompleta && (
         <button
@@ -641,6 +633,41 @@ export default function PersonalizacionFlow() {
         <p className="text-sm mt-0.5" style={{ color: C.fgMuted }}>Confirma tu personalización antes de pagar</p>
       </div>
 
+      {/* Mockup generado — mostrar prominentemente si existe */}
+      {mockupUrl ? (
+        <div className="rounded-2xl overflow-hidden relative" style={{ border: `2px solid ${C.green}` }}>
+          <img src={mockupUrl} alt="Tu mockup personalizado"
+            className="w-full object-contain"
+            style={{ maxHeight: '260px', background: C.bg }} />
+          <div className="absolute top-2 left-2 flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-xs font-bold"
+            style={{ background: 'rgba(255,255,255,.92)', color: C.green }}>
+            <CheckCircle className="w-3 h-3" /> Mockup aprobado
+          </div>
+          <button
+            onClick={() => setMockupModalOpen(true)}
+            className="absolute top-2 right-2 px-2.5 py-1.5 rounded-full text-xs font-bold"
+            style={{ background: 'rgba(255,255,255,.92)', color: C.action }}>
+            Cambiar
+          </button>
+        </div>
+      ) : (
+        <button
+          onClick={() => setMockupModalOpen(true)}
+          className="w-full flex items-center gap-3 p-3.5 rounded-2xl transition-all"
+          style={{ border: `1.5px dashed ${C.border}`, background: C.bg }}
+        >
+          <div className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
+            style={{ background: C.greenSoft, border: `1px solid ${C.greenBorder}` }}>
+            <Sparkles className="w-5 h-5" style={{ color: C.green }} />
+          </div>
+          <div className="flex-1 text-left">
+            <p className="text-sm font-bold" style={{ color: C.fg }}>¿Quieres ver el mockup?</p>
+            <p className="text-xs mt-0.5" style={{ color: C.fgMuted }}>Genera una vista fotorrealista con IA (opcional)</p>
+          </div>
+          <ArrowRight className="w-4 h-4 flex-shrink-0" style={{ color: C.fgMuted }} />
+        </button>
+      )}
+
       {/* Resumen visual del pedido */}
       <div className="rounded-2xl overflow-hidden" style={{ border: `1.5px solid ${C.border}`, background: C.surface }}>
         {/* Header con imagen */}
@@ -656,7 +683,7 @@ export default function PersonalizacionFlow() {
             {texto && <p className="text-xs mt-0.5 font-semibold" style={{ color: C.action }}>"{texto}"</p>}
             {disenoPeyuUrl && <p className="text-xs mt-0.5" style={{ color: C.action }}>+ Diseño PEYU</p>}
             {(archivo || logoUrlSubido) && <p className="text-xs mt-0.5" style={{ color: C.action }}>+ Tu logo adjunto</p>}
-            {mockupUrl && <p className="text-xs mt-0.5 font-semibold" style={{ color: C.green }}>✓ Mockup aprobado</p>}
+            {mockupUrl && <p className="text-xs mt-0.5 font-semibold" style={{ color: C.green }}>✓ Mockup listo</p>}
           </div>
         </div>
 
@@ -849,6 +876,7 @@ export default function PersonalizacionFlow() {
         productImageUrl={displayImg}
         initialText={opcion === 'frase' ? texto : ''}
         initialColor={colorLabel || ''}
+        initialResultUrl={mockupUrl}
         onLogoUploaded={(url) => { if (url) { setLogoUrlSubido(url); setArchivo(null); } }}
         onGenerated={(url) => { if (url) setMockupUrl(url); }}
       />
