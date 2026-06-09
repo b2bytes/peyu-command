@@ -141,6 +141,20 @@
     --ring: 165 80% 50%;
   }
 
+  /* ── iOS scroll momentum global ────────────────────────────────────────
+     Sin esto el scroll en iPhone/iPad se siente "pegajoso" y lento.
+     touch-action: pan-y permite el scroll vertical nativo sin interferir
+     con los gestos horizontales de swipe. */
+  html {
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: none;
+  }
+  body {
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-y: contain;
+    touch-action: pan-y;
+  }
+
   /* Reduced motion respeta sistema */
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after {
@@ -493,6 +507,8 @@ html[data-liquid-mode="day"] {
   }
 
   /* ─── Mejoras globales móvil ─── */
+  /* Scroll momentum en cualquier contenedor scrollable — iOS Safari */
+  * { -webkit-overflow-scrolling: touch; }
   /* Ocultar scrollbars en filas horizontales (chips, categorías) */
   .scrollbar-hide {
     scrollbar-width: none;

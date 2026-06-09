@@ -369,7 +369,8 @@ export default function PersonalizacionFlow() {
         <h2 className="text-xl font-poppins font-bold" style={{ color: C.fg }}>¿Qué quieres personalizar?</h2>
         <p className="text-sm mt-0.5" style={{ color: C.fgMuted }}>Grabado láser UV permanente en {productos.length} productos</p>
       </div>
-      <div className="grid grid-cols-2 gap-2.5 max-h-[52vh] overflow-y-auto pr-1" style={{ scrollbarWidth: 'thin' }}>
+      <div className="grid grid-cols-2 gap-2.5 max-h-[52vh] overflow-y-auto pr-1"
+        style={{ scrollbarWidth: 'thin', WebkitOverflowScrolling: 'touch', overscrollBehavior: 'contain' }}>
         {productos.map(p => {
           const sel = productoId === p.id;
           return (
@@ -807,7 +808,8 @@ export default function PersonalizacionFlow() {
       </nav>
 
       {/* Contenido del paso */}
-      <div className="flex-1 max-w-lg mx-auto w-full px-4 pt-4">
+      <div className="flex-1 max-w-lg mx-auto w-full px-4 pt-4"
+        style={{ WebkitOverflowScrolling: 'touch', overscrollBehavior: 'contain' }}>
         <div className="rounded-3xl p-5 shadow-sm" style={{ background: C.surface, border: `1.5px solid ${C.border}` }}>
           {stepsContent[step]}
         </div>
@@ -816,6 +818,7 @@ export default function PersonalizacionFlow() {
       {/* ── CTA PERSISTENTE (sticky bottom) ────────────────────────────────── */}
       <div className="fixed bottom-0 left-0 right-0 z-50 px-4"
         style={{
+          width: '100%',
           paddingBottom: 'max(env(safe-area-inset-bottom, 0px), 16px)',
           paddingTop: '12px',
           background: 'rgba(248,243,237,.97)',
@@ -823,6 +826,8 @@ export default function PersonalizacionFlow() {
           backdropFilter: 'blur(16px)',
           WebkitBackdropFilter: 'blur(16px)',
           boxShadow: '0 -4px 20px rgba(44,24,16,.1)',
+          touchAction: 'none',       /* evita que el panel CTA intercepte el scroll de arriba */
+          pointerEvents: 'auto',
         }}>
         <div className="max-w-lg mx-auto">
 
