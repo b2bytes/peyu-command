@@ -57,9 +57,12 @@ export default function ProductoNuevo() {
     if (!id) { setLoading(false); return; }
     let retries = 0;
     const cargar = () => {
-      base44.entities.Producto.filter({ id })
+      // Base44 SDK: list() retorna todos, hay que filtrar por id en el lado del cliente
+      // O usar filter() con la query correcta. Usamos list() y buscamos el primero que coincida.
+      base44.entities.Producto.list('-updated_date', 500)
         .then((rows) => {
-          setProducto(rows?.[0] || null);
+          const encontrado = rows?.find(r => r.id === id);
+          setProducto(encontrado || null);
           setError(null);
         })
         .catch((err) => {
