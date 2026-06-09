@@ -18,7 +18,7 @@ export default function CheckoutStepperV2({ current = 'tienda' }) {
   const idx = PASOS.findIndex((p) => p.id === current);
 
   return (
-    <nav className="flex items-center justify-center gap-1 sm:gap-1.5 mb-5 sm:mb-7" aria-label="Progreso de compra">
+    <nav className="flex items-center justify-center gap-0.5 sm:gap-1.5 mb-4 sm:mb-7" aria-label="Progreso de compra">
       {PASOS.map((p, i) => {
         const done = i < idx;
         const active = i === idx;
@@ -26,8 +26,9 @@ export default function CheckoutStepperV2({ current = 'tienda' }) {
 
         const inner = (
           <div
-            className="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3.5 py-1.5 rounded-full text-xs sm:text-sm font-bold transition-all"
+            className="flex items-center gap-1 sm:gap-2 px-2 sm:px-3.5 py-1 sm:py-1.5 rounded-full font-bold transition-all"
             style={{
+              fontSize: active ? '11px' : '10px',
               background: active ? '#C0785C' : done ? 'rgba(192,120,92,.1)' : 'white',
               color: active ? 'white' : done ? '#C0785C' : '#A08070',
               border: active ? 'none' : done ? '1.5px solid rgba(192,120,92,.25)' : '1.5px solid #D4C4B0',
@@ -35,8 +36,9 @@ export default function CheckoutStepperV2({ current = 'tienda' }) {
             }}
           >
             <span
-              className="w-4 h-4 sm:w-5 sm:h-5 rounded-full flex items-center justify-center text-[10px] sm:text-[11px] flex-shrink-0"
+              className="w-4 h-4 sm:w-5 sm:h-5 rounded-full flex items-center justify-center flex-shrink-0"
               style={{
+                fontSize: '9px',
                 background: active ? 'rgba(255,255,255,.2)' : done ? '#C0785C' : '#F2EBE1',
                 color: done && !active ? 'white' : undefined,
                 border: !active && !done ? '1px solid #D4C4B0' : 'none',
@@ -44,7 +46,8 @@ export default function CheckoutStepperV2({ current = 'tienda' }) {
             >
               {done ? <Check className="w-2.5 h-2.5" /> : i + 1}
             </span>
-            <span className="hidden sm:inline">{p.label}</span>
+            {/* Label visible en todos los tamaños — más pequeño en mobile */}
+            <span className="text-[9px] sm:text-sm">{p.label}</span>
           </div>
         );
 

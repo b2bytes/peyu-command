@@ -93,9 +93,9 @@ export default function CarritoNuevo() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between gap-1">
                        <h3 className="font-semibold text-[11px] sm:text-xs text-[#2A2420] leading-tight line-clamp-2">{item.nombre}</h3>
-                       <button onClick={() => remove(item.id)} className="transition-colors flex-shrink-0 mt-0.5" style={{ color: '#A08070' }} onMouseOver={e=>e.currentTarget.style.color='#C0785C'} onMouseOut={e=>e.currentTarget.style.color='#A08070'}>
-                         <Trash2 className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
-                       </button>
+                       <button onClick={() => remove(item.id)} className="transition-colors flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-lg -mr-1" style={{ color: '#A08070' }} onMouseOver={e=>e.currentTarget.style.color='#C0785C'} onMouseOut={e=>e.currentTarget.style.color='#A08070'} aria-label="Eliminar">
+                          <Trash2 className="w-4 h-4" />
+                        </button>
                      </div>
                      <div className="flex flex-wrap gap-0.5 mt-1">
                        {item.color && (

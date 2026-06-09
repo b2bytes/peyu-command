@@ -426,9 +426,11 @@ export default function ProductoNuevo() {
                 { icon: Truck, t: 'Envío BlueExpress' },
                 { icon: Lock, t: 'Pago seguro' },
               ].map((b, i) => (
-                <div key={i} className="flex flex-col items-center gap-1.5 bg-white rounded-xl p-3 text-center" style={{ border: '1.5px solid #D4C4B0' }}>
-                  <b.icon className="w-4 h-4" style={{ color: '#8BAD8A' }} />
-                  <span className="text-[10px] font-bold leading-tight" style={{ color: '#7A6050' }}>{b.t}</span>
+                <div key={i} className="flex flex-col items-center gap-2 bg-white rounded-2xl p-3.5 text-center" style={{ border: '1.5px solid #D4C4B0' }}>
+                  <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: 'rgba(139,173,138,.12)' }}>
+                    <b.icon className="w-5 h-5" style={{ color: '#8BAD8A' }} />
+                  </div>
+                  <span className="text-[10px] sm:text-xs font-bold leading-tight" style={{ color: '#7A6050' }}>{b.t}</span>
                 </div>
               ))}
             </div>

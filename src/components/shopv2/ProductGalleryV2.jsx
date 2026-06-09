@@ -41,11 +41,16 @@ export default function ProductGalleryV2({
           alt="Producto"
           referrerPolicy="no-referrer"
           onError={(e) => { if (fallback) e.target.src = fallback; }}
-          className="w-full h-full object-cover transition-transform duration-200 ease-out"
-          style={zoom ? {
-            transform: 'scale(2)',
-            transformOrigin: `${pos.x}% ${pos.y}%`,
-          } : { transform: 'scale(1)' }}
+          className="w-full h-full transition-transform duration-200 ease-out"
+          style={{
+            objectFit: 'contain',
+            objectPosition: 'center',
+            padding: '12px',
+            ...(zoom ? {
+              transform: 'scale(2)',
+              transformOrigin: `${pos.x}% ${pos.y}%`,
+            } : { transform: 'scale(1)' })
+          }}
         />
         {badge && (
           <span className="absolute top-3 left-3 inline-flex items-center gap-1 bg-white/90 backdrop-blur text-[11px] font-bold px-2.5 py-1.5 rounded-full text-[#0F8B6C] shadow-sm">
@@ -69,7 +74,7 @@ export default function ProductGalleryV2({
                 i === active ? 'border-[#0F8B6C] shadow-md' : 'border-[#EBE3D6] hover:border-[#0F8B6C]/40'
               }`}
             >
-              <img src={img} alt="" referrerPolicy="no-referrer" className="w-full h-full object-cover" />
+              <img src={img} alt="" referrerPolicy="no-referrer" className="w-full h-full" style={{ objectFit: 'contain', padding: '4px' }} />
               {i === active && (
                 <span className="absolute inset-0 flex items-center justify-center bg-[#0F8B6C]/15">
                   <Check className="w-4 h-4 text-[#0F8B6C]" strokeWidth={3} />

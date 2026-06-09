@@ -22,12 +22,13 @@ export default function B2BCatalogCard({ producto }) {
       style={{ border: '1.5px solid #D4C4B0' }}
     >
       {/* Image */}
-      <div className="relative overflow-hidden" style={{ aspectRatio: '4/5', background: '#F2ECE2' }}>
+      <div className="relative overflow-hidden" style={{ aspectRatio: '1/1', background: 'linear-gradient(145deg,#F7F2EC,#EDE3D6)' }}>
         <img
           src={img}
           alt={producto.nombre}
           loading="lazy"
-          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+          className="w-full h-full transition-transform duration-500 group-hover:scale-[1.05]"
+          style={{ objectFit: 'contain', objectPosition: 'center', padding: '8px' }}
           onError={(e) => { e.target.style.opacity = '0.3'; }}
         />
         {ahorroMax > 0 && (

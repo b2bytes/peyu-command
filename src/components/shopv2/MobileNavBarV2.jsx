@@ -23,24 +23,24 @@ function NavTabs({ cartCount }) {
   ];
 
   return (
-    <div className="flex items-stretch h-16 sm:h-auto">
+    <div className="flex items-stretch h-[58px]">
       {tabs.map((t) => {
         const active = path === t.to || (t.to === '/' && path === '/') || (t.to !== '/' && path.startsWith(t.to));
         return (
-          <Link key={t.to} to={t.to} className="flex-1 flex flex-col items-center justify-center gap-1 py-2.5 relative transition-colors hover:bg-white/30 active:bg-white/50">
+          <Link key={t.to} to={t.to} className="flex-1 flex flex-col items-center justify-center gap-0.5 py-2 relative transition-colors active:bg-white/50">
             <div className="relative">
               <t.icon
-                className="w-6 h-6 transition-colors"
+                className="w-5 h-5 transition-colors"
                 style={{ color: active ? '#C0785C' : '#A08070' }}
               />
               {t.badge > 0 && (
-                <span className="absolute -top-2 -right-2 min-w-[18px] h-5 px-1 rounded-full text-white text-[9px] font-bold flex items-center justify-center"
+                <span className="absolute -top-1.5 -right-1.5 min-w-[16px] h-4 px-0.5 rounded-full text-white text-[8px] font-bold flex items-center justify-center"
                   style={{ background: '#C0785C' }}>
                   {t.badge}
                 </span>
               )}
             </div>
-            <span className="text-[11px] font-bold leading-tight" style={{ color: active ? '#C0785C' : '#A08070' }}>{t.label}</span>
+            <span className="text-[10px] font-bold leading-tight" style={{ color: active ? '#C0785C' : '#A08070' }}>{t.label}</span>
             {active && (
               <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-6 h-0.5 rounded-full" style={{ background: '#C0785C' }} />
             )}
