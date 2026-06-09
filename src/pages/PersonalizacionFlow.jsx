@@ -240,8 +240,9 @@ export default function PersonalizacionFlow() {
   const [cleanBaseLoading, setCleanBaseLoading] = useState(false);
 
   useEffect(() => {
-    base44.entities.Producto.filter({ activo: true }, '-updated_date', 200).then(data => {
+    base44.entities.Producto.list('-updated_date', 200).then(data => {
       const personalizables = (data || []).filter(p => {
+        if (p.activo === false) return false;
         if (p.canal === 'B2B Exclusivo') return false;
         if (p.categoria === 'Gift Card') return false;
         const sku = String(p.sku || '').toUpperCase();
