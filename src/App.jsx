@@ -17,6 +17,7 @@ import CookieBanner from '@/components/CookieBanner';
 // Cargadas inmediatamente porque son la cara pública del sitio:
 // crawlers, primer LCP, conversión. NO van a ser lazy.
 import PublicLayout from './components/PublicLayout';
+import LegacyProductRedirect from './components/LegacyProductRedirect';
 import ShopLanding from './pages/ShopLanding';
 import Shop from './pages/Shop';
 import ProductoDetalle from './pages/ProductoDetalle';
@@ -259,7 +260,8 @@ function App() {
 
               {/* Redireccionamientos 301 (SEO-safe) — preserva indexaciones */}
               <Route path="/shop" element={<Navigate to="/" replace />} />
-              <Route path="/producto/:id" element={<Navigate to="/ProductoNuevo" replace />} />
+              <Route path="/producto/:id" element={<LegacyProductRedirect />} />
+              <Route path="/ProductoDetalle" element={<Navigate to="/ProductoNuevo" replace />} />
               <Route path="/Inicio" element={<Navigate to="/" replace />} />
               <Route path="/Tienda" element={<Navigate to="/" replace />} />
               <Route path="/Empresas" element={<Navigate to="/EmpresasNuevo" replace />} />
