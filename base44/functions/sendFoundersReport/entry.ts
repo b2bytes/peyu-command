@@ -1,8 +1,7 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 
-// Reporte de avances de certificación E2E a los fundadores PEYU.
-// Envío puntual vía Resend. Usa el dominio sandbox de Resend como FROM
-// (siempre entrega) y reply-to a ventas@b2business.lat.
+// Reporte / presentación del sistema a los fundadores PEYU.
+// Envía directamente desde la cuenta Gmail conectada (sin Resend).
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
@@ -11,12 +10,10 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
     }
 
-    const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');
-    if (!RESEND_API_KEY) return Response.json({ error: 'RESEND_API_KEY no configurada' }, { status: 500 });
+    const { accessToken } = await base44.asServiceRole.connectors.getConnection('gmail');
 
-    const FROM = 'B2Business · LyaLab <onboarding@resend.dev>';
-    const TO = ['alfonsovambe@gmail.com'];
-    const CC = [];
+    const TO = ['jnilo@peyuchile.cl', 'cmoscoso@peyuchile.cl'];
+    const CC = ['admin@lyalab.tech'];
     const REPLY_TO = 'ventas@b2business.lat';
 
     const html = `
@@ -103,22 +100,32 @@ Deno.serve(async (req) => {
   </div>
 </div>`;
 
-    const r = await fetch('https://api.resend.com/emails', {
+    const subject = 'PEYU · Presentación del sistema — Qué puede hacer y cómo funciona 🚀';
+    const subjectEncoded = `=?UTF-8?B?${btoa(unescape(encodeURIComponent(subject)))}?=`;
+
+    const mime = [
+      `From: B2Business LyaLab <me>`,
+      `To: ${TO.join(', ')}`,
+      `Cc: ${CC.join(', ')}`,
+      `Subject: ${subjectEncoded}`,
+      `MIME-Version: 1.0`,
+      `Content-Type: text/html; charset=UTF-8`,
+      `Content-Transfer-Encoding: base64`,
+      ``,
+      btoa(unescape(encodeURIComponent(html))),
+    ].join('\r\n');
+
+    const raw = btoa(mime).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+
+    const r = await fetch('https://gmail.googleapis.com/gmail/v1/users/me/messages/send', {
       method: 'POST',
-      headers: { 'Authorization': `Bearer ${RESEND_API_KEY}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        from: FROM,
-        to: TO,
-        cc: CC,
-        reply_to: REPLY_TO,
-        subject: 'PEYU · Presentación del sistema — Qué puede hacer y cómo funciona 🚀',
-        html,
-      }),
+      headers: { 'Authorization': `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ raw }),
     });
 
     const result = await r.json();
     if (!r.ok) {
-      return Response.json({ error: `Resend ${r.status}`, detail: result }, { status: r.status });
+      return Response.json({ error: `Gmail API ${r.status}`, detail: result }, { status: r.status });
     }
 
     return Response.json({ success: true, id: result.id, to: TO, cc: CC });
