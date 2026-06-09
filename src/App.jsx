@@ -254,15 +254,18 @@ function App() {
         <QueryClientProvider client={queryClientInstance}>
           <Router>
             <Routes>
-              {/* Landing Page - Standalone */}
-              <Route path="/" element={<ShopLanding />} />
+              {/* Landing Page - Nueva tienda (MAIN) */}
+              <Route path="/" element={<TiendaNueva />} />
 
-              {/* Rutas-alias de seguridad — si queda un menú viejo cacheado o un
-                  enlace externo apuntando a /Inicio, /Tienda o /Empresas, redirige
-                  al flujo nuevo en vez de caer en pantalla negra / PageNotFound. */}
-              <Route path="/Inicio" element={<Navigate to="/TiendaNueva" replace />} />
-              <Route path="/Tienda" element={<Navigate to="/CatalogoNuevo" replace />} />
+              {/* Redireccionamientos 301 (SEO-safe) — preserva indexaciones */}
+              <Route path="/shop" element={<Navigate to="/" replace />} />
+              <Route path="/producto/:id" element={<Navigate to="/ProductoNuevo" replace />} />
+              <Route path="/Inicio" element={<Navigate to="/" replace />} />
+              <Route path="/Tienda" element={<Navigate to="/" replace />} />
               <Route path="/Empresas" element={<Navigate to="/EmpresasNuevo" replace />} />
+              
+              {/* Legacy - mantener disponible pero no indexado (noindex) */}
+              <Route path="/shop-legacy" element={<Shop />} />
 
               {/* Brand Lab (Fase 0) - Standalone, ruta nueva paralela */}
               <Route path="/brand" element={<BrandLab />} />
@@ -293,11 +296,10 @@ function App() {
               {/* /propuesta-valor-peyu - Viaje pedagógico de valor (compartible al cliente PEYU) */}
               <Route path="/propuesta-valor-peyu" element={<PropuestaValorPeyu />} />
 
-              {/* Public Routes */}
+              {/* Public Routes (legacy - deprecated) */}
               <Route element={<PublicLayout />}>
-                <Route path="/shop" element={<Shop />} />
-                <Route path="/producto/:id" element={<ProductoDetalle />} />
-                <Route path="/cart" element={<Carrito />} />
+                {/* Todos los accesos públicos van a las nuevas páginas vía 301 arriba */}
+                <Route path="/cart" element={<Navigate to="/CarritoNuevo" replace />} />
                 <Route path="/b2b/contacto" element={<B2BContacto />} />
                 <Route path="/b2b/propuesta" element={<B2BPropuesta />} />
                 <Route path="/b2b/self-service" element={<B2BSelfService />} />
