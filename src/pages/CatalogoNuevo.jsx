@@ -1,6 +1,5 @@
 import { useState, useEffect, useMemo, memo } from 'react';
 import { useLocation } from 'react-router-dom';
-import { useState, useEffect, useMemo, memo } from 'react';
 import { base44 } from '@/api/base44Client';
 import SEOHead from '@/components/SEOHead';
 import { Search, SlidersHorizontal, PackageOpen, Smartphone, AlertCircle } from 'lucide-react';
