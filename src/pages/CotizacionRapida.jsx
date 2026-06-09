@@ -8,7 +8,7 @@ import {
 } from 'lucide-react';
 import LogoMockupPreview from '@/components/cotizacion/LogoMockupPreview';
 import MockupGalleryB2B from '@/components/cotizacion/MockupGalleryB2B';
-import PublicNavBar from '@/components/PublicNavBar';
+import B2BHeader from '@/components/b2b/B2BHeader';
 import MobileNavBarV2 from '@/components/shopv2/MobileNavBarV2';
 import QuoteProductPicker from '@/components/cotizacion/QuoteProductPicker';
 import QuoteItemRow from '@/components/cotizacion/QuoteItemRow';
@@ -206,7 +206,7 @@ export default function CotizacionRapida() {
         url="https://peyuchile.cl/CotizacionRapida"
         type="website"
       />
-      <PublicNavBar />
+      <B2BHeader backTo="/EmpresasNuevo" backLabel="Catálogo" />
 
       <div className="max-w-5xl mx-auto px-3 sm:px-4 lg:px-6 py-6 sm:py-10">
         {result ? (
@@ -267,17 +267,25 @@ export default function CotizacionRapida() {
                               logoUrl={logoUrl}
                             />
                           ))}
-                          {/* Mini resumen */}
-                          <div className="bg-[#0F8B6C]/5 border border-[#0F8B6C]/15 rounded-2xl px-4 py-3 flex items-center justify-between">
-                            <div>
-                              <p className="text-[11px] font-semibold text-[#4B4F54]">Subtotal ({qtyTotal} u)</p>
-                              {ahorroTotal > 0 && (
-                                <p className="text-[10px] text-[#0F8B6C] font-bold">Ahorras {fmtCLP(ahorroTotal)}</p>
-                              )}
+                          {/* Mini resumen con desglose IVA */}
+                          <div className="bg-white border-2 border-[#0F8B6C] rounded-2xl px-4 py-3.5 space-y-2">
+                            <div className="flex items-center justify-between">
+                              <p className="text-[11px] font-semibold text-[#4B4F54]">Neto ({qtyTotal} u)</p>
+                              <p className="font-bold text-[#2C1810]">{fmtCLP(totalNeto)}</p>
                             </div>
-                            <div className="text-right">
-                              <p className="font-fraunces text-xl font-bold text-[#0F8B6C]">{fmtCLP(totalNeto)}</p>
-                              <p className="text-[10px] text-[#A78B6F]">+ IVA = {fmtCLP(totalConIVA)}</p>
+                            {ahorroTotal > 0 && (
+                              <div className="flex items-center justify-between">
+                                <p className="text-[11px] font-semibold text-[#D96B4D]">Descuento volumen</p>
+                                <p className="font-bold text-[#D96B4D]">−{fmtCLP(ahorroTotal)}</p>
+                              </div>
+                            )}
+                            <div className="flex items-center justify-between text-[11px]">
+                              <p style={{ color: '#A78B6F' }}>IVA (19%)</p>
+                              <p style={{ color: '#A78B6F' }}>{fmtCLP(totalConIVA - totalNeto)}</p>
+                            </div>
+                            <div className="border-t border-[#D4C4B0] pt-2 flex items-center justify-between">
+                              <p className="font-bold text-[#0F8B6C]">Total c/IVA</p>
+                              <p className="font-fraunces text-xl font-bold text-[#0F8B6C]">{fmtCLP(totalConIVA)}</p>
                             </div>
                           </div>
                         </div>
@@ -375,31 +383,35 @@ export default function CotizacionRapida() {
                           })}
                         </div>
 
-                        {/* Totales */}
-                        <div className="border-t border-[#EBE3D6] pt-3 space-y-1.5 mb-3">
-                          <div className="flex justify-between text-sm text-[#4B4F54]">
-                            <span>Unidades totales</span>
-                            <span className="font-bold">{qtyTotal.toLocaleString('es-CL')}</span>
-                          </div>
-                          {ahorroTotal > 0 && (
-                            <div className="flex justify-between text-sm">
-                              <span className="text-[#D96B4D]">Ahorro por volumen</span>
-                              <span className="font-bold text-[#D96B4D]">−{fmtCLP(ahorroTotal)}</span>
-                            </div>
-                          )}
-                          <div className="flex justify-between text-sm text-[#4B4F54]">
-                            <span>Neto (sin IVA)</span>
-                            <span className="font-bold">{fmtCLP(totalNeto)}</span>
-                          </div>
-                          <div className="flex justify-between text-sm text-[#A78B6F]">
-                            <span>IVA (19%)</span>
-                            <span>{fmtCLP(totalConIVA - totalNeto)}</span>
-                          </div>
-                          <div className="flex justify-between items-end pt-1 border-t border-[#EBE3D6]">
-                            <span className="text-sm font-bold text-[#2A2420]">Total estimado c/IVA</span>
-                            <span className="font-fraunces text-2xl text-[#0F8B6C]">{fmtCLP(totalConIVA)}</span>
-                          </div>
-                        </div>
+                        {/* Totales hermoso desglose */}
+                         <div className="bg-white border-2 border-[#0F8B6C] rounded-2xl px-4 py-4 space-y-2.5 mb-4">
+                           <div className="flex justify-between text-sm">
+                             <span style={{ color: '#4B4F54' }}>Unidades totales</span>
+                             <span className="font-bold text-[#2C1810]">{qtyTotal.toLocaleString('es-CL')}</span>
+                           </div>
+                           <div className="flex justify-between text-sm border-b border-[#EBE3D6] pb-2.5">
+                             <span style={{ color: '#4B4F54' }}>Subtotal (base)</span>
+                             <span className="font-bold text-[#2C1810]">{fmtCLP(totalSinDesc)}</span>
+                           </div>
+                           {ahorroTotal > 0 && (
+                             <div className="flex justify-between text-sm">
+                               <span style={{ color: '#D96B4D', fontWeight: 'bold' }}>Descuento volumen</span>
+                               <span className="font-bold text-[#D96B4D]">−{fmtCLP(ahorroTotal)}</span>
+                             </div>
+                           )}
+                           <div className="flex justify-between text-sm border-b border-[#EBE3D6] pb-2.5">
+                             <span style={{ color: '#2C1810', fontWeight: 'bold' }}>Neto (sin IVA)</span>
+                             <span className="font-bold text-[#0F8B6C] text-base">{fmtCLP(totalNeto)}</span>
+                           </div>
+                           <div className="flex justify-between text-sm">
+                             <span style={{ color: '#A78B6F' }}>IVA 19%</span>
+                             <span style={{ color: '#A78B6F', fontWeight: '600' }}>{fmtCLP(totalConIVA - totalNeto)}</span>
+                           </div>
+                           <div className="flex justify-between items-end pt-2 border-t-2 border-[#0F8B6C]">
+                             <span style={{ color: '#0F8B6C', fontWeight: 'bold' }}>Total estimado</span>
+                             <span className="font-fraunces text-3xl font-bold text-[#0F8B6C]">{fmtCLP(totalConIVA)}</span>
+                           </div>
+                         </div>
 
                         {/* Empresa */}
                         <div className="flex items-center gap-2 text-[11px] text-[#A78B6F] bg-[#0F8B6C]/5 rounded-xl px-3 py-2 mb-2">

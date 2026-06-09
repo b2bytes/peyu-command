@@ -50,28 +50,43 @@ export default function QuoteResultCard({ result, empresa, email, onReset }) {
       )}
       {!result.email_enviado && <div className="mb-5" />}
 
-      <div className="text-left bg-[#FAF7F2] border border-[#EBE3D6] rounded-2xl p-4 space-y-2 mb-5">
-        {result.lineas.map((l) => (
-          <div key={l.sku} className="flex items-center justify-between gap-2 text-sm">
-            <span className="text-[#2A2420] truncate">
-              <span className="font-bold">{l.cantidad}×</span> {l.nombre}
-              <span className="text-[#A78B6F] text-[11px] ml-1">({fmtCLP(l.precio_unitario)}/u · {l.tramo})</span>
-            </span>
-            <span className="font-bold text-[#2A2420] flex-shrink-0">{fmtCLP(l.subtotal)}</span>
-          </div>
-        ))}
-        <div className="border-t border-[#EBE3D6] pt-2 mt-2 space-y-1">
-          <div className="flex justify-between text-xs text-[#4B4F54]">
-            <span>Neto ({result.qty_total} u)</span><span>{fmtCLP(result.total_neto)}</span>
-          </div>
-          <div className="flex justify-between text-xs text-[#4B4F54]">
-            <span>IVA (19%)</span><span>{fmtCLP(result.iva)}</span>
-          </div>
-          <div className="flex justify-between font-bold text-[#0F8B6C] text-base">
-            <span>Total estimado</span><span>{fmtCLP(result.total_con_iva)}</span>
-          </div>
-        </div>
-      </div>
+      <div className="text-left bg-white border-2 border-[#0F8B6C] rounded-2xl p-5 space-y-3 mb-5">
+         {/* Líneas de productos */}
+         {result.lineas.map((l, idx) => (
+           <div key={l.sku}>
+             <div className="flex items-center justify-between gap-2 text-sm">
+               <span className="text-[#2A2420] truncate flex-1">
+                 <span className="font-bold">{l.cantidad}× </span> {l.nombre}
+               </span>
+               <span className="font-bold text-[#2A2420] flex-shrink-0 text-right">{fmtCLP(l.subtotal)}</span>
+             </div>
+             <p className="text-[11px] text-[#A78B6F] mt-0.5">
+               {fmtCLP(l.precio_unitario)}/u · Tramo {l.tramo}
+             </p>
+             {idx < result.lineas.length - 1 && <div className="border-t border-[#EBE3D6] my-2.5" />}
+           </div>
+         ))}
+
+         {/* Desglose totales */}
+         <div className="border-t-2 border-[#0F8B6C] pt-3.5 mt-3.5 space-y-2">
+           <div className="flex justify-between text-sm">
+             <span style={{ color: '#4B4F54' }}>Subtotal ({result.qty_total} u)</span>
+             <span className="font-bold text-[#2A2420]">{fmtCLP(result.total_neto + result.iva)}</span>
+           </div>
+           <div className="flex justify-between text-sm">
+             <span style={{ color: '#4B4F54', fontWeight: 'bold' }}>Neto (sin IVA)</span>
+             <span className="font-bold text-[#0F8B6C] text-base">{fmtCLP(result.total_neto)}</span>
+           </div>
+           <div className="flex justify-between text-sm">
+             <span style={{ color: '#A78B6F' }}>IVA (19%)</span>
+             <span style={{ color: '#A78B6F', fontWeight: '600' }}>{fmtCLP(result.iva)}</span>
+           </div>
+           <div className="flex justify-between items-end pt-2 border-t border-[#0F8B6C]">
+             <span style={{ color: '#0F8B6C', fontWeight: 'bold' }}>Total estimado</span>
+             <span className="font-fraunces text-2xl font-bold text-[#0F8B6C]">{fmtCLP(result.total_con_iva)}</span>
+           </div>
+         </div>
+       </div>
 
       {/* Próximos pasos — qué pasará ahora */}
       <div className="text-left bg-white border border-[#EBE3D6] rounded-2xl p-4 mb-5">

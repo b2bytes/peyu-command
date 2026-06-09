@@ -206,12 +206,10 @@ export default function EmpresasNuevo() {
         </div>
       </section>
 
-      <footer className="border-t py-6 sm:py-8 text-center text-xs sm:text-sm" style={{ borderColor: '#D4C4B0', color: '#A08070' }}>
-        <div className="flex items-center justify-center gap-2">
-          <Recycle className="w-4 h-4" style={{ color: '#0F8B6C' }} />
-          <span>PEYU · Plástico reciclado · Made in Santiago, Chile 🇨🇱</span>
-        </div>
-      </footer>
+      <footer className="py-6 sm:py-8 text-center text-[9px] sm:text-xs flex items-center justify-center gap-2 sm:gap-2.5" style={{ borderTop: '1.5px solid #D4C4B0', color: '#A08070' }}>
+         <Recycle className="w-3.5 sm:w-4 h-3.5 sm:h-4" style={{ color: '#8BAD8A' }} />
+         <span className="font-semibold">PEYU · Plástico 100% reciclado · Hecho en Santiago 🇨🇱</span>
+       </footer>
 
       <MobileNavBarV2 />
     </div>
