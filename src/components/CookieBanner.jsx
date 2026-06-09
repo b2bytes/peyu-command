@@ -42,8 +42,7 @@ export default function CookieBanner() {
     <div
       role="dialog"
       aria-label="Aviso de cookies"
-      className="fixed bottom-0 left-0 right-0 z-[80] p-2 sm:p-3 lg:bottom-4 lg:left-4 lg:right-auto lg:max-w-md"
-      style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 0.5rem)' }}
+      className="fixed bottom-[68px] left-0 right-0 z-[80] p-2 sm:p-3 lg:bottom-4 lg:left-4 lg:right-auto lg:max-w-md"
     >
       {/* Mobile: barra ultra compacta de 1 línea · Desktop: card completa */}
       <div className="bg-slate-900/95 backdrop-blur-xl border border-white/20 rounded-xl lg:rounded-2xl shadow-2xl px-3 py-2 lg:p-5 text-white">

@@ -84,7 +84,7 @@ export default function PWAInstallBanner() {
   if (!canShowAndroidPrompt && !isIOS) return null;
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 bg-gradient-to-t from-slate-900 via-slate-900/95 to-transparent backdrop-blur-md border-t border-teal-500/30 p-3 sm:p-4 safe-bottom">
+    <div className="fixed bottom-[68px] left-0 right-0 z-[60] bg-gradient-to-t from-slate-900 via-slate-900/95 to-transparent backdrop-blur-md border-t border-teal-500/30 rounded-t-2xl p-3 sm:p-4">
       <div className="max-w-2xl mx-auto">
         {/* Header */}
         <div className="flex items-start justify-between gap-2 sm:gap-3 mb-2.5 sm:mb-3">

@@ -151,7 +151,6 @@
   }
   body {
     -webkit-overflow-scrolling: touch;
-    overscroll-behavior-y: contain;
     touch-action: pan-y;
   }
 
@@ -182,12 +181,15 @@
     scroll-behavior: smooth;
   }
   /* Todos los contenedores con scroll vertical deben heredar momentum */
+  /* FIX scroll rueda del mouse: NO usar overscroll-behavior:contain global.
+     Con contain, cualquier contenedor overflow-auto cuyo contenido cabe (o está
+     en su límite) se traga los eventos de la rueda y la página no scrollea
+     cuando el cursor está encima. Solo conservamos el momentum táctil iOS. */
   [class*="overflow-y-auto"],
   [class*="overflow-y-scroll"],
   [class*="overflow-auto"],
   [class*="overflow-scroll"] {
     -webkit-overflow-scrolling: touch;
-    overscroll-behavior-y: contain;
   }
   html {
     color-scheme: light;
