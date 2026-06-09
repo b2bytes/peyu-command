@@ -242,7 +242,6 @@ export default function CheckoutNuevo() {
       total,
       medio_pago: medioPago,
       estado: 'Nuevo',
-      ciudad: cliente.ciudad,
       direccion_envio: direccionCompleta,
       requiere_personalizacion: carrito.some(i => i.personalizacion),
       texto_personalizacion: carrito.filter(i => i.personalizacion).map(i => i.personalizacion).join(', '),

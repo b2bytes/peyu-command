@@ -1,7 +1,7 @@
+import { useState, useEffect } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { Home, LayoutGrid, ShoppingBag, ArrowLeft, ArrowRight, Lock, ShieldCheck, Sparkles, BookOpen, Briefcase } from 'lucide-react';
-import { cartCountV2 } from '@/lib/shop-v2-cart';
-import { fmtCLP } from '@/lib/shop-v2-cart';
+import { cartCountV2, subscribeCartV2, fmtCLP } from '@/lib/shop-v2-cart';
 
 // ════════════════════════════════════════════════════════════════════════
 // MobileNavBarV2 — Barra inferior fija para TODO el recorrido Shop v2 mobile.
@@ -95,7 +95,9 @@ export default function MobileNavBarV2({
   total,
   // Si no se pasan → modo "exploración" (nav tabs)
 }) {
-  const cartCount = cartCountV2();
+  // Contador reactivo: se actualiza en vivo al agregar/quitar items del carrito.
+  const [cartCount, setCartCount] = useState(() => cartCountV2());
+  useEffect(() => subscribeCartV2(() => setCartCount(cartCountV2())), []);
   const isAction = !!onCta;
 
   return (
