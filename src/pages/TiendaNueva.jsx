@@ -74,11 +74,11 @@ export default function TiendaNueva() {
               <Link
                 key={c.cat}
                 to={`/CatalogoNuevo?cat=${encodeURIComponent(c.cat)}`}
-                className="group flex-shrink-0 w-28 sm:w-auto rounded-2xl sm:rounded-3xl p-3 sm:p-6 text-center hover:shadow-lg hover:-translate-y-0.5 transition-all"
+                className="group flex-shrink-0 w-24 sm:w-auto rounded-2xl sm:rounded-3xl p-3 sm:p-6 text-center hover:shadow-lg hover:-translate-y-0.5 transition-all active:scale-95"
                 style={{ border: '1.5px solid #D4C4B0', background: 'white' }}
               >
-                <div className="text-2xl sm:text-4xl mb-1.5 sm:mb-3 group-hover:scale-110 transition-transform inline-block">{c.emoji}</div>
-                <p className="font-bold text-[10px] sm:text-sm leading-tight" style={{ color: '#2C1810' }}>{c.label}</p>
+                <div className="text-3xl sm:text-4xl mb-2 sm:mb-3 group-hover:scale-110 transition-transform inline-block">{c.emoji}</div>
+                <p className="font-bold text-[11px] sm:text-sm leading-tight" style={{ color: '#2C1810' }}>{c.label}</p>
               </Link>
             ))}
           </div>

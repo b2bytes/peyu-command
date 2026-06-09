@@ -99,11 +99,12 @@ export default function EmpresaProducto() {
           {/* ── GALERÍA ── */}
           <div className="lg:sticky lg:top-24 lg:self-start space-y-3">
             {/* Imagen principal */}
-            <div className="relative aspect-square rounded-3xl overflow-hidden" style={{ background: '#F2ECE2', border: '1.5px solid #D4C4B0' }}>
+            <div className="relative aspect-square rounded-3xl overflow-hidden" style={{ background: 'linear-gradient(145deg,#F7F2EC,#EDE3D6)', border: '1.5px solid #D4C4B0' }}>
               <img
                 src={images[activeImg] || getProductImage(producto)}
                 alt={producto.nombre}
-                className="w-full h-full object-cover"
+                className="w-full h-full"
+                style={{ objectFit: 'contain', objectPosition: 'center', padding: '12px' }}
                 onError={(e) => { e.target.style.opacity = '0.3'; }}
               />
               <span className="absolute top-4 left-4 text-[10px] font-bold px-2.5 py-1 rounded-full"
@@ -122,7 +123,7 @@ export default function EmpresaProducto() {
                     className="flex-shrink-0 w-16 h-16 rounded-xl overflow-hidden transition-all"
                     style={{ border: activeImg === i ? '2px solid #0F8B6C' : '1.5px solid #D4C4B0', opacity: activeImg === i ? 1 : 0.7 }}
                   >
-                    <img src={img} alt="" className="w-full h-full object-cover" />
+                    <img src={img} alt="" className="w-full h-full" style={{ objectFit: 'contain', padding: '4px' }} />
                   </button>
                 ))}
               </div>
@@ -253,9 +254,11 @@ export default function EmpresaProducto() {
                 { icon: Truck, t: 'Envío a Chile' },
                 { icon: ShieldCheck, t: '3 años garantía' },
               ].map((b, i) => (
-                <div key={i} className="flex flex-col items-center gap-1.5 rounded-xl p-3 text-center" style={{ background: 'white', border: '1.5px solid #D4C4B0' }}>
-                  <b.icon className="w-4 h-4" style={{ color: '#8BAD8A' }} />
-                  <span className="text-[10px] font-bold leading-tight" style={{ color: '#7A6050' }}>{b.t}</span>
+                <div key={i} className="flex flex-col items-center gap-2 rounded-2xl p-3.5 text-center" style={{ background: 'white', border: '1.5px solid #D4C4B0' }}>
+                  <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: 'rgba(139,173,138,.12)' }}>
+                    <b.icon className="w-5 h-5" style={{ color: '#8BAD8A' }} />
+                  </div>
+                  <span className="text-[10px] sm:text-xs font-bold leading-tight" style={{ color: '#7A6050' }}>{b.t}</span>
                 </div>
               ))}
             </div>
@@ -290,7 +293,7 @@ export default function EmpresaProducto() {
             className="flex-shrink-0 h-12 px-4 rounded-2xl flex items-center gap-1.5 font-bold text-sm transition-all"
             style={{ background: 'white', border: '1.5px solid #D4C4B0', color: '#7A6050' }}
           >
-            <ArrowLeft className="w-4 h-4" />
+            <ArrowLeft className="w-4 h-4" /> <span className="text-sm">Atrás</span>
           </button>
           <button
             onClick={goToCotizar}

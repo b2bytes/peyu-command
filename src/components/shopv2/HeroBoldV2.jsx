@@ -36,21 +36,34 @@ export default function HeroBoldV2({ heroImg, onPersonaliza }) {
   return (
     <section className="w-full px-4 sm:px-8 lg:px-16 xl:px-20 pt-4 sm:pt-8 pb-4 sm:pb-6">
       <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
-        <div className="grid lg:grid-cols-2 gap-6 sm:gap-10 xl:gap-20 items-center">
+        {/* Mobile: headline encima del carrusel — no se pierde en el scroll */}
+        <div className="lg:hidden mb-3">
+          <h1 className="font-fraunces leading-[0.93] tracking-tight"
+            style={{ fontSize: 'clamp(1.75rem, 8vw, 2.8rem)', color: '#2C1810' }}>
+            Objetos que{' '}
+            <em className="not-italic" style={{ color: '#C0785C' }}>cuidan</em>{' '}
+            el planeta.
+          </h1>
+          <p className="text-sm mt-2 leading-snug" style={{ color: '#7A6050' }}>
+            Tapitas recicladas de Santiago · Grabado láser gratis desde 10u
+          </p>
+        </div>
 
-          {/* ── COPY ─────────────────────────────────────────────────────── */}
+        <div className="grid lg:grid-cols-2 gap-4 sm:gap-10 xl:gap-20 items-center">
+
+          {/* ── COPY (desktop only headline + CTAs) ─────────────────────── */}
           <div className="order-2 lg:order-1 flex flex-col justify-center">
 
-            {/* Status pill */}
-            <div className="hidden sm:block mb-4 sm:mb-6">
+            {/* Status pill — desktop */}
+            <div className="hidden lg:block mb-6">
               <LivePill color="#0F8B6C">
                 <Leaf className="w-3 h-3" strokeWidth={2} /> Fabricado con tapitas de Santiago · 100% reciclado
               </LivePill>
             </div>
 
-            {/* Headline editorial Fraunces */}
-            <h1 className="font-fraunces leading-[0.93] tracking-tight mb-3 sm:mb-5"
-              style={{ fontSize: 'clamp(1.6rem, 4.5vw, 5.2rem)', color: '#2C1810' }}>
+            {/* Headline — desktop only (mobile ya se muestra arriba) */}
+            <h1 className="hidden lg:block font-fraunces leading-[0.93] tracking-tight mb-5"
+              style={{ fontSize: 'clamp(2.4rem, 4.5vw, 5.2rem)', color: '#2C1810' }}>
               Objetos que<br />
               <em className="not-italic" style={{ color: '#C0785C' }}>cuidan</em>{' '}
               el planeta.
@@ -64,10 +77,9 @@ export default function HeroBoldV2({ heroImg, onPersonaliza }) {
               Personalizables con grabado láser permanente — tu frase, logo o diseño. Gratis desde 10 unidades.
             </p>
 
-            {/* CTAs — botones con nueva jerarquía visual */}
-            <div className="flex flex-col gap-2 sm:gap-3 mb-5 sm:mb-8">
+            {/* CTAs */}
+            <div className="flex flex-col gap-2 sm:gap-3 mb-4 sm:mb-8">
               <div className="flex gap-2 sm:gap-3">
-                {/* CTA primario — gradient + icono Sparkles */}
                 <button
                   onClick={() => navigate('/personalizar')}
                   className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 text-white font-bold text-sm sm:text-base px-5 sm:px-8 py-3 sm:py-4 rounded-2xl transition-all hover:scale-[1.02] hover:shadow-xl active:scale-[0.99]"
@@ -77,8 +89,6 @@ export default function HeroBoldV2({ heroImg, onPersonaliza }) {
                   <span>Personalizar</span>
                   <ArrowRight className="w-4 h-4" strokeWidth={2.5} />
                 </button>
-
-                {/* CTA secundario — ghost limpio */}
                 <a
                   href="/CatalogoNuevo"
                   className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 font-bold text-sm sm:text-base px-5 sm:px-8 py-3 sm:py-4 rounded-2xl transition-all hover:bg-[#F0E8DE]"
@@ -87,8 +97,6 @@ export default function HeroBoldV2({ heroImg, onPersonaliza }) {
                   Ver tienda
                 </a>
               </div>
-
-              {/* CTA empresas — eco tinted */}
               <a
                 href="/EmpresasNuevo"
                 className="w-full sm:w-auto inline-flex items-center justify-center gap-2 font-bold text-sm sm:text-base px-5 sm:px-8 py-3 sm:py-4 rounded-2xl transition-all hover:shadow-md"
@@ -99,7 +107,7 @@ export default function HeroBoldV2({ heroImg, onPersonaliza }) {
               </a>
             </div>
 
-            {/* Stats row */}
+            {/* Stats row — desktop */}
             <div className="hidden sm:flex items-center gap-8 pt-4 sm:pt-5" style={{ borderTop: '1px solid #E8DDD0' }}>
               <Stat value="~30 g" label="plástico rescatado" />
               <div className="w-px h-8" style={{ background: '#E8DDD0' }} />
