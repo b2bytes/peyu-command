@@ -13,7 +13,6 @@ export default function ProductCardV2({ producto, index = 0 }) {
   return (
     <Link
       to={`/ProductoNuevo?id=${producto.id}`}
-      style={{ animationDelay: `${Math.min(index, 11) * 50}ms` }}
       className="peyu-card-enter group flex flex-col bg-white rounded-3xl overflow-hidden transition-all duration-300 hover:-translate-y-1.5"
       onMouseOver={e => { e.currentTarget.style.boxShadow = '0 20px 48px -12px rgba(44,24,16,.14)'; e.currentTarget.style.borderColor = '#C8B89A'; }}
       onMouseOut={e => { e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.borderColor = '#E8DDD0'; }}

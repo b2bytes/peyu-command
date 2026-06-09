@@ -29,11 +29,14 @@ export default function TiendaNueva() {
             (p) => p.canal !== 'B2B Exclusivo' && p.categoria !== 'Gift Card' && p.precio_b2c
           );
           setProductos(b2c);
+          setLoading(false);
         })
         .catch(() => {
+          // Mantiene el skeleton visible mientras reintenta (antes el finally
+          // apagaba el loading y la grilla quedaba vacía).
           if (retries < 2) { retries++; setTimeout(cargar, 1500 * retries); }
-        })
-        .finally(() => setLoading(false));
+          else setLoading(false);
+        });
     };
     cargar();
   }, []);

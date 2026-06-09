@@ -54,39 +54,47 @@ export default function ProductoNuevo() {
   
   useEffect(() => {
     if (!id) { setLoading(false); return; }
-    let retries = 0;
-    const cargar = () => {
-      // Intenta con filter primero (más eficiente), si falla cae a list()
-      base44.entities.Producto.filter({ id }, '-updated_date', 1)
-        .then((rows) => {
-          const encontrado = rows?.[0] || null;
-          setProducto(encontrado);
-          setError(null);
-        })
-        .catch(() => {
-          // Fallback: buscar en lista si filter no funciona
-          if (retries < 2) {
-            retries++;
-            setTimeout(() => {
-              base44.entities.Producto.list('-updated_date', 300)
-                .then((rows) => {
-                  const encontrado = rows?.find(r => r.id === id) || null;
-                  setProducto(encontrado);
-                  setError(null);
-                })
-                .catch(() => {
-                  setError('Error de conexión. Por favor recarga la página.');
-                })
-                .finally(() => setLoading(false));
-            }, 500 * retries);
-          } else {
-            setError('Error de conexión. Por favor recarga la página.');
-            setLoading(false);
+    let cancelled = false;
+    setLoading(true);
+    setProducto(null);
+    setError(null);
+
+    // Carga resiliente: hasta 3 intentos. En cada intento prueba filter({id})
+    // y, si viene vacío (a veces pasa de forma transitoria), verifica contra
+    // list(). Solo declara "no encontrado" si las consultas respondieron BIEN
+    // y el producto realmente no está. El loading se apaga ÚNICAMENTE al final
+    // (antes un finally prematuro mostraba "Producto no encontrado" mientras
+    // todavía se estaba reintentando).
+    const cargar = async () => {
+      let consultaOkSinProducto = false;
+      for (let intento = 0; intento < 3; intento++) {
+        try {
+          const rows = await base44.entities.Producto.filter({ id }, '-updated_date', 1);
+          let encontrado = rows?.[0] || null;
+          if (!encontrado) {
+            const all = await base44.entities.Producto.list('-updated_date', 300);
+            encontrado = all?.find((r) => r.id === id) || null;
+            if (!encontrado && all?.length) consultaOkSinProducto = true;
           }
-        })
-        .finally(() => setLoading(false));
+          if (encontrado) {
+            if (!cancelled) { setProducto(encontrado); setError(null); setLoading(false); }
+            return;
+          }
+        } catch { /* reintenta */ }
+        if (cancelled) return;
+        await new Promise((r) => setTimeout(r, 600 * (intento + 1)));
+      }
+      if (cancelled) return;
+      if (consultaOkSinProducto) {
+        setProducto(null);
+        setError(null); // "Producto no encontrado" real
+      } else {
+        setError('Error de conexión. Por favor recarga la página.');
+      }
+      setLoading(false);
     };
     cargar();
+    return () => { cancelled = true; };
   }, [id]);
 
   // ¿Es carcasa? Usa la función inteligente que deduce de categoría/nombre/BD.
