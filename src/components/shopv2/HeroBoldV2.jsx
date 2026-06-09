@@ -42,7 +42,7 @@ export default function HeroBoldV2({ heroImg, onPersonaliza }) {
             <div className="flex flex-col gap-2 sm:gap-3 mb-4 sm:mb-8">
               <div className="flex gap-2 sm:gap-3">
                 <button
-                  onClick={onPersonaliza}
+                  onClick={() => navigate('/personalizar')}
                   className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 text-white font-bold text-sm sm:text-base px-4 sm:px-8 py-3 sm:py-4 rounded-2xl transition-all hover:scale-[1.02] active:scale-[0.99]"
                   style={{ background: 'linear-gradient(135deg,#C0785C,#A86440)', boxShadow: '0 8px 28px rgba(192,120,92,.3)' }}
                 >
