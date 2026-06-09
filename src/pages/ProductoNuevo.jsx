@@ -57,21 +57,32 @@ export default function ProductoNuevo() {
     if (!id) { setLoading(false); return; }
     let retries = 0;
     const cargar = () => {
-      // Base44 SDK: list() retorna todos, hay que filtrar por id en el lado del cliente
-      // O usar filter() con la query correcta. Usamos list() y buscamos el primero que coincida.
-      base44.entities.Producto.list('-updated_date', 500)
+      // Intenta con filter primero (más eficiente), si falla cae a list()
+      base44.entities.Producto.filter({ id }, '-updated_date', 1)
         .then((rows) => {
-          const encontrado = rows?.find(r => r.id === id);
-          setProducto(encontrado || null);
+          const encontrado = rows?.[0] || null;
+          setProducto(encontrado);
           setError(null);
         })
-        .catch((err) => {
-          // Retry automático hasta 3 veces (conexión intermitente)
-          if (retries < 3) {
+        .catch(() => {
+          // Fallback: buscar en lista si filter no funciona
+          if (retries < 2) {
             retries++;
-            setTimeout(cargar, 1000 * retries);
+            setTimeout(() => {
+              base44.entities.Producto.list('-updated_date', 300)
+                .then((rows) => {
+                  const encontrado = rows?.find(r => r.id === id) || null;
+                  setProducto(encontrado);
+                  setError(null);
+                })
+                .catch(() => {
+                  setError('Error de conexión. Por favor recarga la página.');
+                })
+                .finally(() => setLoading(false));
+            }, 500 * retries);
           } else {
             setError('Error de conexión. Por favor recarga la página.');
+            setLoading(false);
           }
         })
         .finally(() => setLoading(false));
