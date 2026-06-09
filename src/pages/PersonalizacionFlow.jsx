@@ -1,12 +1,11 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
-  ArrowLeft, ArrowRight, Sparkles, CheckCircle, Upload, Zap, Loader2,
-  RefreshCw, Recycle, Package, Palette, Pencil, User, Check, ShieldCheck, Truck,
-  ShoppingCart
+  ArrowLeft, ArrowRight, Sparkles, CheckCircle, Upload, Loader2,
+  Recycle, Package, Palette, Pencil, ShoppingCart, Check, ShieldCheck,
+  Truck, Star
 } from 'lucide-react';
 import MarbleSwatch from '@/components/personalizacion/MarbleSwatch';
 import LaserEngravePreview from '@/components/personalizacion/LaserEngravePreview';
@@ -18,173 +17,130 @@ import DisenosPeyuPicker from '@/components/personalizacion/DisenosPeyuPicker';
 import ColorPickerCarcasa from '@/components/personalizacion/ColorPickerCarcasa';
 import QuantityStepper from '@/components/personalizacion/QuantityStepper';
 import PersonalizacionOptionPicker from '@/components/personalizacion/PersonalizacionOptionPicker';
-import PriceBreakdownLive from '@/components/personalizacion/PriceBreakdownLive';
 import MockupGenerator from '@/components/MockupGenerator';
 import PublicSEO from '@/components/PublicSEO';
 
-const STEP_LABELS = [
+// ─── Paleta cálida PEYU (coherente con nueva tienda) ───────────────────────
+const C = {
+  bg: '#F8F3ED',
+  surface: '#FFFFFF',
+  border: '#D4C4B0',
+  fg: '#2C1810',
+  fgSoft: '#7A6050',
+  fgMuted: '#A08070',
+  action: '#C0785C',
+  actionGrad: 'linear-gradient(135deg,#C0785C,#A86440)',
+  actionShadow: '0 6px 20px rgba(192,120,92,.28)',
+  green: '#8BAD8A',
+  greenSoft: 'rgba(139,173,138,.15)',
+  greenBorder: '#8BAD8A',
+};
+
+// ─── Progress Bar ──────────────────────────────────────────────────────────
+const STEPS = [
   { label: 'Producto', Icon: Package },
   { label: 'Color', Icon: Palette },
   { label: 'Diseño', Icon: Pencil },
-  { label: 'Datos', Icon: User },
+  { label: 'Confirmar', Icon: ShoppingCart },
 ];
 
-function StepIndicator({ step, total }) {
+function ProgressBar({ step }) {
   return (
-    <div className="flex items-center justify-between gap-2 mb-8 max-w-md mx-auto">
-      {Array.from({ length: total }).map((_, i) => {
-        const { label, Icon } = STEP_LABELS[i];
-        const active = i === step;
-        const done = i < step;
-        return (
-          <div key={i} className="flex-1 flex flex-col items-center gap-1.5">
-            <div className={`w-9 h-9 rounded-xl flex items-center justify-center border transition-all duration-300 ${
-              done
-                ? 'bg-teal-500/20 border-teal-400/40 text-teal-300'
-                : active
-                  ? 'bg-gradient-to-br from-teal-500 to-cyan-500 border-teal-400 text-white shadow-lg shadow-teal-500/30 scale-110'
-                  : 'bg-white/5 border-white/15 text-white/30'
-            }`}>
-              {done ? <Check className="w-4 h-4" /> : <Icon className="w-4 h-4" />}
+    <div className="px-4 pt-3 pb-4">
+      {/* Barra lineal */}
+      <div className="relative h-1.5 rounded-full mb-3" style={{ background: C.border }}>
+        <div
+          className="absolute inset-y-0 left-0 rounded-full transition-all duration-500"
+          style={{ width: `${((step + 1) / 4) * 100}%`, background: C.actionGrad }}
+        />
+      </div>
+      {/* Dots + labels */}
+      <div className="flex justify-between">
+        {STEPS.map((s, i) => {
+          const done = i < step;
+          const active = i === step;
+          return (
+            <div key={i} className="flex flex-col items-center gap-1" style={{ width: '22%' }}>
+              <div
+                className="w-7 h-7 rounded-full flex items-center justify-center transition-all"
+                style={{
+                  background: done ? C.action : active ? C.actionGrad : C.border,
+                  border: active ? `2px solid ${C.action}` : 'none',
+                  boxShadow: active ? C.actionShadow : 'none',
+                }}
+              >
+                {done
+                  ? <Check className="w-3.5 h-3.5 text-white" strokeWidth={3} />
+                  : <s.Icon className="w-3 h-3" style={{ color: active ? 'white' : C.fgMuted }} />
+                }
+              </div>
+              <span className="text-[9px] font-bold uppercase tracking-wide leading-tight text-center" style={{ color: active ? C.action : done ? C.fgSoft : C.fgMuted }}>
+                {s.label}
+              </span>
             </div>
-            <span className={`text-[10px] font-bold tracking-wide uppercase ${
-              active ? 'text-white' : done ? 'text-teal-300' : 'text-white/30'
-            }`}>{label}</span>
-          </div>
-        );
-      })}
+          );
+        })}
+      </div>
     </div>
   );
 }
 
-function LaserPreview({ texto, producto, color }) {
-  const isDark = color?.hex && parseInt(color.hex.replace('#', '').slice(0, 2), 16) < 130;
-  const productImg = producto ? getProductImage(producto) : null;
-  return (
-    <div className="relative mx-auto w-56 h-56 rounded-3xl overflow-hidden shadow-2xl border border-white/20"
-      style={{ backgroundColor: color?.hex || '#1a1a1a' }}>
-      {productImg && (
-        <img
-          src={productImg}
-          alt={producto?.nombre}
-          className="absolute inset-0 w-full h-full object-cover opacity-90 mix-blend-luminosity"
-          onError={e => { e.target.style.display = 'none'; }}
-        />
-      )}
-      <div
-        className="absolute inset-0 opacity-30"
-        style={{ backgroundImage: 'radial-gradient(circle at 30% 30%, rgba(255,255,255,0.18) 0%, transparent 60%)' }}
-      />
-      {texto && (
-        <div className="absolute inset-0 flex items-end justify-center pb-8">
-          <div className="font-bold text-xs px-3 py-1.5 rounded-lg border tracking-widest"
-            style={{
-              color: isDark ? '#D4AF37' : '#2a1a00',
-              borderColor: isDark ? '#D4AF3780' : '#2a1a0040',
-              backgroundColor: isDark ? 'rgba(0,0,0,0.55)' : 'rgba(255,255,255,0.6)',
-              textShadow: isDark ? '0 0 12px #D4AF37' : 'none',
-              fontFamily: 'monospace'
-            }}>
-            {texto.toUpperCase()}
-          </div>
-        </div>
-      )}
-      {producto?.area_laser_mm && (
-        <div className="absolute top-3 left-3 text-[9px] font-bold px-2 py-1 rounded-full bg-black/45 text-white/85 backdrop-blur-sm">
-          Área láser: {producto.area_laser_mm}
-        </div>
-      )}
-    </div>
-  );
-}
+// ─── fmtCLP ────────────────────────────────────────────────────────────────
+const fmtCLP = (n) => `$${Math.round(n).toLocaleString('es-CL')}`;
 
 export default function PersonalizacionFlow() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Catálogo
   const [productos, setProductos] = useState([]);
   const [productosLoading, setProductosLoading] = useState(true);
-
-  // Estado del flujo
   const [step, setStep] = useState(0);
   const [productoId, setProductoId] = useState(null);
   const [colorId, setColorId] = useState(null);
-  // Clave de color REAL para productos con imagenes_por_color (carcasas).
-  // Ej. "Turquesa" | "Negro" | "Azul" — coincide 1:1 con las llaves del mapa.
   const [carcasaColorKey, setCarcasaColorKey] = useState(null);
   const [texto, setTexto] = useState('');
   const [cantidad, setCantidad] = useState(1);
   const [archivo, setArchivo] = useState(null);
   const [logoUrlSubido, setLogoUrlSubido] = useState('');
-  // Diseño elegido de la galería PEYU (url) → define tipo de cobro "peyu".
   const [disenoPeyuUrl, setDisenoPeyuUrl] = useState('');
-  // Opción de personalización elegida explícitamente: frase | peyu | archivo | none
   const [opcion, setOpcion] = useState(null);
-  // Modal de regeneración con IA (max-h/max-w ajustado, ya viene en MockupGenerator)
   const [mockupModalOpen, setMockupModalOpen] = useState(false);
-  const [nombre, setNombre] = useState('');
-  const [email, setEmail] = useState('');
-  const [telefono, setTelefono] = useState('');
   const [loading, setLoading] = useState(false);
   const [done, setDone] = useState(false);
   const [mockupUrl, setMockupUrl] = useState('');
-  const [mockupLoading, setMockupLoading] = useState(false);
-  const [mockupError, setMockupError] = useState('');
-  // Base limpia (sin logo PEYU) generada on-demand por producto.
   const [cleanBaseUrl, setCleanBaseUrl] = useState('');
   const [cleanBaseLoading, setCleanBaseLoading] = useState(false);
 
-  // ── Carga del catálogo (productos personalizables) ───────────────────
+  // ── Cargar catálogo ──────────────────────────────────────────────────────
   useEffect(() => {
     base44.entities.Producto.list().then(data => {
       const personalizables = data.filter(p => {
         if (p.activo === false) return false;
         if (p.canal === 'B2B Exclusivo') return false;
         if (!p.moq_personalizacion) return false;
-        // Excluir Gift Cards (no son grabables)
         const sku = String(p.sku || '').toUpperCase();
         if (sku.startsWith('GC-PEYU')) return false;
         if (p.categoria === 'Gift Card') return false;
         return true;
       });
       setProductos(personalizables);
-      // Preseleccionar por query param ?productoId=
       const params = new URLSearchParams(location.search);
       const preId = params.get('productoId');
       const initial = personalizables.find(p => p.id === preId) || personalizables[0];
       if (initial) setProductoId(initial.id);
-      // Deep-link de prueba/QA: ?step=2 salta directo al paso (0-index). Permite
-      // certificar/compartir el paso de diseño sin recorrer todo el wizard.
       const preStep = parseInt(params.get('step'), 10);
       if (!isNaN(preStep) && preStep >= 0 && preStep <= 3) setStep(preStep);
-      const preOpcion = params.get('opcion');
-      if (['frase', 'peyu', 'archivo', 'none'].includes(preOpcion)) setOpcion(preOpcion);
-      const preTexto = params.get('texto');
-      if (preTexto) setTexto(preTexto.slice(0, 20));
     }).finally(() => setProductosLoading(false));
   }, [location.search]);
 
-  const producto = useMemo(
-    () => productos.find(p => p.id === productoId),
-    [productos, productoId]
-  );
+  const producto = useMemo(() => productos.find(p => p.id === productoId), [productos, productoId]);
 
-  // Al cambiar de producto, tomamos su base limpia ya guardada (si existe).
-  useEffect(() => {
-    setCleanBaseUrl(producto?.imagen_base_limpia_url || '');
-  }, [producto]);
+  useEffect(() => { setCleanBaseUrl(producto?.imagen_base_limpia_url || ''); }, [producto]);
 
-  // Genera la base limpia (sin logo PEYU) on-demand la 1ª vez que el cliente
-  // aporta un diseño. Se cachea en el producto para futuras visitas.
-  // cleanBaseTried evita el loop de reintentos si la función falla (ej. 401 en
-  // usuario público): se intenta UNA vez por producto y si falla se cae al
-  // fallback (imagen normal del producto), sin reintentar sin fin.
   const cleanBaseTried = useRef(new Set());
   const tieneDiseno = !!(archivo || logoUrlSubido || texto || disenoPeyuUrl);
   useEffect(() => {
-    if (!producto || !tieneDiseno) return;
-    if (cleanBaseUrl || cleanBaseLoading) return;
+    if (!producto || !tieneDiseno || cleanBaseUrl || cleanBaseLoading) return;
     if (cleanBaseTried.current.has(producto.id)) return;
     cleanBaseTried.current.add(producto.id);
     setCleanBaseLoading(true);
@@ -194,9 +150,6 @@ export default function PersonalizacionFlow() {
       .finally(() => setCleanBaseLoading(false));
   }, [producto, tieneDiseno, cleanBaseUrl, cleanBaseLoading]);
 
-  // ¿El producto tiene imagenes_por_color con al menos una URL válida?
-  // (carcasas). Si es así, el selector de color LEE las claves reales del mapa
-  // y muestra la imagen real de cada variante — NO el marmolado genérico.
   const imagenesPorColor = useMemo(() => {
     const mapa = producto?.imagenes_por_color;
     if (mapa && typeof mapa === 'object') {
@@ -206,33 +159,29 @@ export default function PersonalizacionFlow() {
     return null;
   }, [producto]);
 
-  // Colores genéricos (marmolado) — SOLO para productos SIN imagenes_por_color.
-  const colores = useMemo(
-    () => (producto && !imagenesPorColor) ? getColoresProducto(producto) : [],
-    [producto, imagenesPorColor]
-  );
+  const colores = useMemo(() => (producto && !imagenesPorColor) ? getColoresProducto(producto) : [], [producto, imagenesPorColor]);
   const color = useMemo(() => colores.find(c => c.id === colorId), [colores, colorId]);
-
-  // Etiqueta de color visible (para resúmenes/pedido), unifica ambos modos.
   const colorLabel = imagenesPorColor ? carcasaColorKey : (color?.label || colorId || null);
 
-  // 🎨 Imagen mostrada = imagen de la VARIANTE elegida. Si hay imagenes_por_color
-  // usamos la clave real (carcasaColorKey) → imagen exacta. Si no, marmolado.
   const displayImg = useMemo(() => {
     if (!producto) return null;
     if (imagenesPorColor) return getProductImageForColor(producto, carcasaColorKey);
     return getProductImageForColor(producto, color || colorId);
   }, [producto, imagenesPorColor, carcasaColorKey, color, colorId]);
 
-  // Tipo de personalización = la OPCIÓN elegida explícitamente (fuente de verdad).
-  // 'none' → sin personalización (tipo null, fee $0). frase/peyu/archivo → cobran.
-  const tipoPersonalizacion = useMemo(() => {
-    if (opcion === 'none') return null;
-    return opcion || null;
-  }, [opcion]);
+  useEffect(() => {
+    if (imagenesPorColor) {
+      const keys = Object.keys(imagenesPorColor);
+      if (!carcasaColorKey || !keys.includes(carcasaColorKey)) setCarcasaColorKey(keys[0] || null);
+      return;
+    }
+    setCarcasaColorKey(null);
+    if (colores.length > 0 && !colores.find(c => c.id === colorId)) setColorId(colores[0].id);
+    else if (colores.length === 0) setColorId(null);
+  }, [colores, imagenesPorColor]); // eslint-disable-line
 
-  // ¿El cliente ya completó el contenido de la opción elegida?
-  // none → siempre completo · frase → texto · peyu → diseño · archivo → logo subido.
+  const tipoPersonalizacion = useMemo(() => opcion === 'none' ? null : (opcion || null), [opcion]);
+
   const personalizacionCompleta = useMemo(() => {
     if (opcion === 'none') return true;
     if (opcion === 'frase') return texto.trim().length > 0;
@@ -242,190 +191,99 @@ export default function PersonalizacionFlow() {
   }, [opcion, texto, disenoPeyuUrl, archivo, logoUrlSubido]);
 
   const moqGratis = producto?.personalizacion_gratis_desde || producto?.moq_personalizacion || MOQ_PERSONALIZACION_GRATIS;
-  // Cargo unitario de personalización según tipo (frase/peyu/archivo).
   const cargoPersonalizacionUnit = tipoPersonalizacion ? (PRECIO_PERSONALIZACION[tipoPersonalizacion] || 0) : 0;
-  // ✅ GRATIS desde el MOQ (≥10u): el cargo de personalización pasa a $0.
   const personalizacionGratis = cantidad >= moqGratis;
-  // Cargo total de personalización = unitario × cantidad (o $0 si gratis).
   const cargoPersonalizacion = personalizacionGratis ? 0 : cargoPersonalizacionUnit * cantidad;
-
-  // Cuando cambia el producto, resetear color al primero disponible.
-  // Modo carcasa (imagenes_por_color): inicializa carcasaColorKey con la 1ª
-  // clave real del mapa. Modo marmolado: inicializa colorId como antes.
-  useEffect(() => {
-    if (imagenesPorColor) {
-      const keys = Object.keys(imagenesPorColor);
-      if (!carcasaColorKey || !keys.includes(carcasaColorKey)) {
-        setCarcasaColorKey(keys[0] || null);
-      }
-      return;
-    }
-    setCarcasaColorKey(null);
-    if (colores.length > 0 && !colores.find(c => c.id === colorId)) {
-      setColorId(colores[0].id);
-    } else if (colores.length === 0) {
-      setColorId(null);
-    }
-  }, [colores, imagenesPorColor]); // eslint-disable-line
-
   const precioBaseProducto = producto ? (producto.precio_b2c || 9990) : 0;
-  // Subtotal del producto = precio × cantidad.
   const subtotalProducto = precioBaseProducto * cantidad;
-  // Precio final = (producto × cantidad) + cargo personalización total (gratis ≥ MOQ).
   const precioFinal = subtotalProducto + cargoPersonalizacion;
 
-  const resetMockupIfNeeded = () => { if (mockupUrl) setMockupUrl(''); };
-
-  // Escala/posición por defecto del grabado según el producto. Usa grabado_area
-  // si existe (campo opcional { size, x, y }); si no, default por categoría que
-  // se ve bien centrado y proporcionado en cada tipo de producto.
   const grabadoDefaults = useMemo(() => {
     const area = producto?.grabado_area;
-    if (area && typeof area === 'object') {
-      return {
-        size: area.size ?? 30,
-        x: area.x ?? 50,
-        y: area.y ?? 52,
-      };
-    }
+    if (area && typeof area === 'object') return { size: area.size ?? 30, x: area.x ?? 50, y: area.y ?? 52 };
     const cat = (producto?.categoria || '').toLowerCase();
     if (cat.includes('carcasa')) return { size: 34, x: 50, y: 44 };
-    if (cat.includes('hogar')) return { size: 30, x: 50, y: 50 };       // posavasos
-    if (cat.includes('entreten')) return { size: 26, x: 50, y: 50 };     // cachos / packs
+    if (cat.includes('hogar')) return { size: 30, x: 50, y: 50 };
     return { size: 30, x: 50, y: 52 };
   }, [producto]);
 
-  const handleGenerateMockup = async () => {
-    if (!texto && !archivo && !disenoPeyuUrl) {
-      setMockupError('Agrega un texto, elige un diseño PEYU o sube tu logo para generar el mockup.');
-      return;
-    }
-    setMockupLoading(true);
-    setMockupError('');
-    try {
-      let logoUrl = logoUrlSubido;
-      if (archivo && !logoUrlSubido) {
-        const { file_url } = await base44.integrations.Core.UploadFile({ file: archivo });
-        logoUrl = file_url;
-        setLogoUrlSubido(file_url);
-      }
-      const res = await base44.functions.invoke('generateMockup', {
-        productName: producto?.nombre,
-        productCategory: producto?.categoria || 'Personalización',
-        productImageUrl: displayImg,
-        sku: producto?.sku,
-        logoUrl: logoUrl || disenoPeyuUrl || undefined,
-        text: texto,
-        color: colorLabel,
-      });
-      const url = res?.data?.mockup_url;
-      if (!url) throw new Error(res?.data?.error || 'No se pudo generar el mockup');
-      setMockupUrl(url);
-    } catch (e) {
-      setMockupError(e.message || 'Error generando mockup');
-    } finally {
-      setMockupLoading(false);
-    }
-  };
+  // ── Validación de avance por paso ────────────────────────────────────────
+  const canAdvance = useMemo(() => {
+    if (step === 0) return !!producto;
+    if (step === 1) return true; // color siempre puede avanzar (puede ser único)
+    if (step === 2) return !!opcion && personalizacionCompleta;
+    return true;
+  }, [step, producto, opcion, personalizacionCompleta]);
 
-  // ── Confirmar: agregar al carrito + crear PersonalizationJob ─────────
-  const handleSubmit = async () => {
+  // ── Agregar al carrito (carrito_v2) ──────────────────────────────────────
+  const handleAddToCart = async () => {
     if (!producto) return;
     setLoading(true);
 
-    // 1. Subir logo si corresponde
     let logoUrl = logoUrlSubido;
     if (archivo && !logoUrlSubido) {
       const { file_url } = await base44.integrations.Core.UploadFile({ file: archivo });
       logoUrl = file_url;
     }
 
-    // 2. Agregar al carrito (storage local — mismo formato que ProductoDetalle)
     const personalizacionLabel = texto
       || (logoUrl ? '[Logo personalizado]' : (disenoPeyuUrl ? '[Diseño PEYU]' : null));
+
     const item = {
       id: Math.random(),
       productoId: producto.id,
       sku: producto.sku || null,
       nombre: producto.nombre,
-      precio: precioBaseProducto,            // precio del producto (sin cargo)
-      cargo_personalizacion: cargoPersonalizacionUnit, // cargo UNITARIO (el carrito multiplica × cantidad)
-      tipo_personalizacion: tipoPersonalizacion,    // frase | peyu | archivo
+      precio: precioBaseProducto,
+      cargo_personalizacion: cargoPersonalizacionUnit,
+      tipo_personalizacion: tipoPersonalizacion,
       moq_personalizacion: moqGratis,
       personalizacion_gratis_desde: moqGratis,
       cantidad,
       color: colorLabel,
       personalizacion: personalizacionLabel,
       imagen: displayImg,
-      // Arte del cliente: logo subido, o diseño PEYU elegido como respaldo.
       logoUrl: logoUrl || disenoPeyuUrl || null,
       disenoPeyuUrl: disenoPeyuUrl || null,
       mockupUrl: mockupUrl || null,
       posicion_grabado: 'centro',
     };
-    const carritoActual = JSON.parse(localStorage.getItem('carrito') || '[]');
-    const nuevo = [...carritoActual, item];
-    localStorage.setItem('carrito', JSON.stringify(nuevo));
+
+    // ✅ carrito_v2 — coherente con la nueva tienda
+    const actual = JSON.parse(localStorage.getItem('carrito_v2') || '[]');
+    localStorage.setItem('carrito_v2', JSON.stringify([...actual, item]));
     trackAddToCart({ ...item, sku: producto.sku, categoria: producto.categoria });
 
-    // 3. Crear PersonalizationJob para tracking de producción.
-    // Producción necesita saber EXACTAMENTE qué grabar: el arte (logo subido o
-    // diseño PEYU), el tipo, y la posición/escala usada en el preview.
+    // Job de producción (no bloqueante)
     const arteUrl = logoUrl || disenoPeyuUrl || null;
-    const job = await base44.entities.PersonalizationJob.create({
+    base44.entities.PersonalizationJob.create({
       source_type: 'Pedido B2C',
       product_name: producto.nombre,
       sku: producto.sku,
       quantity: cantidad,
       laser_required: true,
       laser_text: texto,
-      logo_url: arteUrl,                       // arte real a grabar (logo o diseño PEYU)
-      design_type: tipoPersonalizacion,        // frase | peyu | archivo
-      design_url: arteUrl,                     // url del arte (explícito para producción)
-      engrave_position: grabadoDefaults,       // { size, x, y } usados en el preview
+      logo_url: arteUrl,
+      design_type: tipoPersonalizacion,
+      design_url: arteUrl,
+      engrave_position: grabadoDefaults,
       color_producto: colorLabel || '',
       status: mockupUrl ? 'Preview generado' : 'Pendiente',
       mockup_urls: mockupUrl ? [mockupUrl] : [],
-      customer_name: nombre,
-      customer_email: email,
       estimated_minutes: 5,
-    });
-
-    // 4. Si no hay mockup pero hay diseño, dispararlo en background
-    if (job?.id && !mockupUrl && (logoUrl || disenoPeyuUrl || texto)) {
-      base44.functions.invoke('generateMockup', {
-        productName: producto.nombre,
-        productCategory: producto.categoria || 'Personalización',
-        productImageUrl: displayImg,
-        sku: producto.sku,
-        logoUrl: logoUrl || disenoPeyuUrl || undefined,
-        text: texto,
-        color: colorLabel,
-        jobId: job.id,
-      }).catch(() => {});
-    }
-
-    // 5. Email de confirmación al cliente (no-bloqueante)
-    if (email) {
-      base44.integrations.Core.SendEmail({
-        to: email,
-        subject: '✨ ¡Tu personalización Peyu está en cola!',
-        body: `<div style="font-family:Inter,Arial,sans-serif;padding:20px;max-width:500px"><h2 style="color:#0F8B6C">Tu grabado láser está en proceso 🌿</h2><p>Hola <strong>${nombre}</strong>, recibimos tu pedido de personalización:</p><ul><li><strong>Producto:</strong> ${producto.nombre}</li><li><strong>Color:</strong> ${colorLabel || '—'}</li>${texto ? `<li><strong>Texto a grabar:</strong> ${texto}</li>` : ''}${logoUrl ? '<li><strong>Logo:</strong> Recibido ✓</li>' : ''}</ul><p>Está agregado a tu carrito. Continúa al checkout para completar la compra.</p><p style="color:#9ca3af;font-size:12px">Peyu Chile · +56 9 3504 0242</p></div>`,
-        from_name: 'Peyu Chile Personalización',
-      }).catch(() => {});
-    }
+    }).catch(() => {});
 
     setLoading(false);
     setDone(true);
   };
 
-  // ── PANTALLA DE CARGA DEL CATÁLOGO ──────────────────────────────────
+  // ── Loading ───────────────────────────────────────────────────────────────
   if (productosLoading) {
     return (
-      <div className="flex-1 flex items-center justify-center py-20">
+      <div className="min-h-screen flex items-center justify-center" style={{ background: C.bg }}>
         <div className="text-center space-y-3">
-          <div className="w-12 h-12 border-4 border-teal-400/30 border-t-teal-400 rounded-full animate-spin mx-auto" />
-          <p className="text-white/60 text-sm font-medium">Cargando productos personalizables...</p>
+          <div className="w-10 h-10 border-4 rounded-full animate-spin mx-auto" style={{ borderColor: C.border, borderTopColor: C.action }} />
+          <p className="text-sm font-semibold" style={{ color: C.fgMuted }}>Cargando productos...</p>
         </div>
       </div>
     );
@@ -433,123 +291,137 @@ export default function PersonalizacionFlow() {
 
   if (productos.length === 0) {
     return (
-      <div className="flex-1 flex items-center justify-center px-4 py-12">
+      <div className="min-h-screen flex items-center justify-center px-4" style={{ background: C.bg }}>
         <div className="text-center space-y-4 max-w-sm">
-          <div className="w-16 h-16 rounded-2xl bg-white/10 mx-auto flex items-center justify-center">
-            <Package className="w-7 h-7 text-white/50" />
-          </div>
-          <h2 className="text-xl font-poppins font-bold text-white">Sin productos personalizables</h2>
-          <p className="text-sm text-white/60">No hay productos disponibles para personalización en este momento.</p>
-          <Link to="/shop">
-            <Button className="rounded-2xl bg-teal-500 hover:bg-teal-600 text-white">Ir a la tienda</Button>
+          <Package className="w-12 h-12 mx-auto" style={{ color: C.fgMuted }} />
+          <h2 className="text-xl font-bold" style={{ color: C.fg }}>Sin productos disponibles</h2>
+          <Link to="/CatalogoNuevo" className="inline-block px-6 py-3 rounded-2xl text-white font-bold" style={{ background: C.actionGrad }}>
+            Ver catálogo
           </Link>
         </div>
       </div>
     );
   }
 
-  // ── PANTALLA DE ÉXITO ────────────────────────────────────────────────
+  // ── PANTALLA DE ÉXITO ─────────────────────────────────────────────────────
   if (done) {
     return (
-      <div className="flex-1 flex items-center justify-center px-4 py-12 font-inter">
-        <div className="max-w-md w-full text-center space-y-6">
-          <div className="w-24 h-24 rounded-3xl bg-gradient-to-br from-teal-500 to-cyan-500 flex items-center justify-center mx-auto shadow-2xl shadow-teal-500/40 ring-4 ring-teal-400/20">
-            <CheckCircle className="w-12 h-12 text-white" />
+      <div className="min-h-screen flex flex-col items-center justify-center px-5 pb-8 pt-10" style={{ background: C.bg }}>
+        <div className="max-w-sm w-full text-center space-y-6">
+          <div className="w-20 h-20 rounded-3xl mx-auto flex items-center justify-center shadow-xl"
+            style={{ background: C.actionGrad, boxShadow: C.actionShadow }}>
+            <CheckCircle className="w-10 h-10 text-white" />
           </div>
           <div>
-            <h2 className="text-3xl font-poppins font-bold text-white mb-2">¡Agregado al carrito!</h2>
-            <p className="text-sm text-white/55">Tu personalización está lista. Continúa al checkout.</p>
+            <h2 className="text-2xl font-poppins font-bold mb-1" style={{ color: C.fg }}>¡Listo! Agregado al carrito</h2>
+            <p className="text-sm" style={{ color: C.fgMuted }}>Tu personalización quedó guardada. Continúa para pagar.</p>
           </div>
 
-          <div className="bg-white/5 backdrop-blur-sm border border-white/15 rounded-3xl p-5 text-left space-y-4 shadow-xl">
+          {/* Resumen */}
+          <div className="rounded-3xl p-4 text-left" style={{ background: C.surface, border: `1.5px solid ${C.border}` }}>
             <div className="flex items-center gap-3">
-              <img
-                src={displayImg}
-                alt={producto?.nombre}
-                className="w-14 h-14 rounded-xl object-cover border border-white/15 flex-shrink-0"
-              />
+              {displayImg && (
+                <img src={displayImg} alt={producto?.nombre}
+                  className="w-14 h-14 rounded-2xl object-cover flex-shrink-0"
+                  style={{ border: `1px solid ${C.border}` }} />
+              )}
               <div className="flex-1 min-w-0">
-                <div className="font-semibold text-white text-sm truncate">{producto?.nombre} × {cantidad}</div>
-                <div className="text-xs text-white/50 truncate">{colorLabel || ''}{texto ? ` · "${texto}"` : ''}{personalizacionGratis ? ' · grabado gratis' : ''}</div>
+                <div className="font-bold text-sm truncate" style={{ color: C.fg }}>{producto?.nombre} × {cantidad}</div>
+                <div className="text-xs truncate mt-0.5" style={{ color: C.fgMuted }}>
+                  {colorLabel || '—'}{texto ? ` · "${texto}"` : ''}
+                  {personalizacionGratis ? ' · grabado gratis ✓' : ''}
+                </div>
               </div>
-              <div className="font-poppins font-bold text-white">${precioFinal.toLocaleString('es-CL')}</div>
+              <div className="font-poppins font-bold text-base flex-shrink-0" style={{ color: C.action }}>
+                {fmtCLP(precioFinal)}
+              </div>
             </div>
           </div>
 
           <div className="space-y-2">
-            <Link to="/cart">
-              <Button size="lg" className="w-full h-12 gap-2 rounded-2xl font-bold bg-gradient-to-r from-teal-500 to-cyan-500 hover:from-teal-600 hover:to-cyan-600 text-white border-0 shadow-lg shadow-teal-500/30">
-                <ShoppingCart className="w-4 h-4" /> Ir al carrito
-              </Button>
-            </Link>
-            <Link to="/shop">
-              <Button className="w-full h-12 rounded-2xl bg-white/10 hover:bg-white/20 border border-white/20 text-white font-semibold">
-                Seguir comprando
-              </Button>
-            </Link>
+            <button
+              onClick={() => navigate('/CheckoutNuevo')}
+              className="w-full h-14 rounded-2xl text-white font-bold text-base flex items-center justify-center gap-2"
+              style={{ background: C.actionGrad, boxShadow: C.actionShadow }}
+            >
+              <ShoppingCart className="w-5 h-5" /> Ir a pagar · {fmtCLP(precioFinal)}
+            </button>
+            <button
+              onClick={() => navigate('/CatalogoNuevo')}
+              className="w-full h-12 rounded-2xl font-semibold text-sm"
+              style={{ background: 'transparent', border: `1.5px solid ${C.border}`, color: C.fgSoft }}
+            >
+              Seguir comprando
+            </button>
           </div>
         </div>
       </div>
     );
   }
 
-  // ── STEPS DEL FLUJO ───────────────────────────────────────────────────
-  const steps = [
-    // ── Step 0 — Producto (CATÁLOGO REAL) ─────────────────────────────
-    <div key="prod" className="space-y-5">
-      <div className="text-center">
-        <p className="text-xs font-bold text-teal-400 uppercase tracking-widest mb-2">Paso 1 · Elige tu base</p>
-        <h2 className="text-2xl sm:text-3xl font-poppins font-bold text-white mb-2">¿Qué quieres personalizar?</h2>
-        <p className="text-white/50 text-sm flex items-center justify-center gap-1.5">
-          <Recycle className="w-3.5 h-3.5 text-teal-400" />
-          {productos.length} productos · Grabado láser UV
-        </p>
-      </div>
+  // ── STEPS ─────────────────────────────────────────────────────────────────
 
-      <div className="grid grid-cols-2 gap-3 max-h-[480px] overflow-y-auto peyu-scrollbar-light pr-1">
+  // PASO 0 — Elige tu producto
+  const StepProducto = (
+    <div className="space-y-4">
+      <div>
+        <p className="text-xs font-bold uppercase tracking-widest mb-1" style={{ color: C.action }}>Paso 1 de 4</p>
+        <h2 className="text-xl font-poppins font-bold" style={{ color: C.fg }}>¿Qué quieres personalizar?</h2>
+        <p className="text-sm mt-0.5" style={{ color: C.fgMuted }}>Grabado láser UV permanente en {productos.length} productos</p>
+      </div>
+      <div className="grid grid-cols-2 gap-2.5 max-h-[52vh] overflow-y-auto pr-1" style={{ scrollbarWidth: 'thin' }}>
         {productos.map(p => {
           const sel = productoId === p.id;
-          const precio = Math.floor((p.precio_b2c || 9990) * 0.85);
           return (
-            <button key={p.id} onClick={() => { setProductoId(p.id); setMockupUrl(''); }}
-              className={`relative p-3 rounded-2xl border-2 transition-all text-left hover:-translate-y-0.5 hover:scale-[1.02] backdrop-blur-sm ${
-                sel
-                  ? 'border-teal-400 bg-gradient-to-br from-teal-500/25 to-cyan-500/20 shadow-xl shadow-teal-500/20'
-                  : 'border-white/15 bg-white/5 hover:border-white/30 hover:bg-white/10'
-              }`}>
+            <button key={p.id}
+              onClick={() => { setProductoId(p.id); setMockupUrl(''); }}
+              className="relative p-2.5 rounded-2xl text-left transition-all"
+              style={{
+                border: sel ? `2px solid ${C.action}` : `1.5px solid ${C.border}`,
+                background: sel ? 'rgba(192,120,92,.08)' : C.surface,
+                boxShadow: sel ? '0 4px 16px rgba(192,120,92,.15)' : 'none',
+              }}
+            >
               {sel && (
-                <div className="absolute top-2 right-2 w-5 h-5 rounded-full bg-teal-400 flex items-center justify-center shadow-lg z-10">
-                  <Check className="w-3 h-3 text-slate-900" strokeWidth={3} />
+                <div className="absolute top-2 right-2 w-5 h-5 rounded-full flex items-center justify-center z-10"
+                  style={{ background: C.action }}>
+                  <Check className="w-3 h-3 text-white" strokeWidth={3} />
                 </div>
               )}
-              <div className="aspect-square rounded-xl overflow-hidden bg-white/5 mb-2 border border-white/10">
-                <img
-                  src={getProductImage(p)}
-                  alt={p.nombre}
-                  className="w-full h-full object-cover"
-                  onError={e => { e.target.src = 'https://i0.wp.com/peyuchile.cl/wp-content/uploads/2025/04/carcasas-500x500-1.webp?fit=600%2C600&ssl=1'; }}
-                />
+              <div className="aspect-square rounded-xl overflow-hidden mb-2" style={{ background: C.bg }}>
+                <img src={getProductImage(p)} alt={p.nombre} className="w-full h-full object-cover"
+                  onError={e => { e.target.src = 'https://i0.wp.com/peyuchile.cl/wp-content/uploads/2025/04/carcasas-500x500-1.webp?fit=600%2C600&ssl=1'; }} />
               </div>
-              <div className={`font-semibold text-xs leading-tight line-clamp-2 ${sel ? 'text-white' : 'text-white/85'}`}>{p.nombre}</div>
-              <div className={`font-poppins font-bold text-sm mt-1 ${sel ? 'text-teal-300' : 'text-white'}`}>
-                ${precio.toLocaleString('es-CL')}
+              <div className="text-xs font-semibold leading-tight line-clamp-2" style={{ color: C.fg }}>{p.nombre}</div>
+              <div className="text-sm font-poppins font-bold mt-1" style={{ color: C.action }}>
+                {fmtCLP(p.precio_b2c || 9990)}
               </div>
-              {p.area_laser_mm && (
-                <div className="text-[10px] text-white/40 mt-0.5 truncate">Área: {p.area_laser_mm}</div>
-              )}
             </button>
           );
         })}
       </div>
-    </div>,
+    </div>
+  );
 
-    // ── Step 1 — Color ──────────────────────────────────────────────
-    <div key="color" className="space-y-5">
-      <div className="text-center">
-        <p className="text-xs font-bold text-teal-400 uppercase tracking-widest mb-2">Paso 2 · Tu paleta</p>
-        <h2 className="text-2xl sm:text-3xl font-poppins font-bold text-white mb-2">Elige el color</h2>
-        <p className="text-white/50 text-sm">{imagenesPorColor ? 'Elige el color de tu carcasa' : 'Cada marmolado es único e irrepetible'}</p>
+  // PASO 1 — Elige el color
+  const StepColor = (
+    <div className="space-y-4">
+      <div>
+        <p className="text-xs font-bold uppercase tracking-widest mb-1" style={{ color: C.action }}>Paso 2 de 4</p>
+        <h2 className="text-xl font-poppins font-bold" style={{ color: C.fg }}>Elige el color</h2>
+        <p className="text-sm mt-0.5" style={{ color: C.fgMuted }}>
+          {imagenesPorColor ? 'Elige el color de tu producto' : 'Cada marmolado es único e irrepetible'}
+        </p>
       </div>
+
+      {/* Imagen previa del producto seleccionado */}
+      {displayImg && (
+        <div className="flex justify-center">
+          <img src={displayImg} alt={producto?.nombre}
+            className="w-28 h-28 rounded-2xl object-cover shadow-md"
+            style={{ border: `1.5px solid ${C.border}` }} />
+        </div>
+      )}
 
       {imagenesPorColor ? (
         <ColorPickerCarcasa
@@ -558,32 +430,34 @@ export default function PersonalizacionFlow() {
           onSelect={(key) => { setCarcasaColorKey(key); setMockupUrl(''); }}
         />
       ) : colores.length === 0 ? (
-        <div className="bg-teal-500/10 border border-teal-400/25 rounded-2xl p-6 text-center">
-          <CheckCircle className="w-7 h-7 text-teal-400 mx-auto mb-3" />
-          <p className="text-sm text-white font-semibold">Color natural único</p>
-          <p className="text-xs text-white/55 mt-1">Este producto solo viene en su color original. Continúa al paso siguiente para personalizar tu diseño.</p>
+        <div className="rounded-2xl p-5 text-center" style={{ background: C.greenSoft, border: `1.5px solid ${C.greenBorder}` }}>
+          <CheckCircle className="w-7 h-7 mx-auto mb-2" style={{ color: C.green }} />
+          <p className="text-sm font-bold" style={{ color: C.fg }}>Color natural único</p>
+          <p className="text-xs mt-1" style={{ color: C.fgMuted }}>Este producto tiene su color original. Pasa al siguiente paso para personalizar tu diseño.</p>
         </div>
       ) : (
-        <div className="space-y-2.5">
+        <div className="space-y-2">
           {colores.map((c, idx) => {
             const sel = colorId === c.id;
             return (
-              <button key={c.id} onClick={() => { setColorId(c.id); setMockupUrl(''); }}
-                className={`w-full flex items-center gap-4 p-4 rounded-2xl border-2 transition-all backdrop-blur-sm ${
-                  sel
-                    ? 'border-teal-400 bg-gradient-to-r from-teal-500/20 to-cyan-500/15 shadow-lg shadow-teal-500/15'
-                    : 'border-white/15 bg-white/5 hover:border-white/30 hover:bg-white/10'
-                }`}>
-                <div className="w-14 h-14 rounded-xl border-2 border-white/40 shadow-md flex-shrink-0 overflow-hidden bg-slate-800">
+              <button key={c.id}
+                onClick={() => { setColorId(c.id); setMockupUrl(''); }}
+                className="w-full flex items-center gap-3 p-3.5 rounded-2xl transition-all"
+                style={{
+                  border: sel ? `2px solid ${C.action}` : `1.5px solid ${C.border}`,
+                  background: sel ? 'rgba(192,120,92,.06)' : C.surface,
+                }}
+              >
+                <div className="w-12 h-12 rounded-xl border-2 flex-shrink-0 overflow-hidden" style={{ borderColor: C.border }}>
                   <MarbleSwatch hex={c.hex} seed={idx + 1} className="w-full h-full" />
                 </div>
-                <div className="flex-1 text-left min-w-0">
-                  <div className="font-semibold text-sm text-white truncate">{c.label}</div>
-                  <div className="text-[10px] text-white/45 truncate">Patrón único · Plástico reciclado</div>
+                <div className="flex-1 text-left">
+                  <div className="font-semibold text-sm" style={{ color: C.fg }}>{c.label}</div>
+                  <div className="text-xs mt-0.5" style={{ color: C.fgMuted }}>Marmolado único · Plástico reciclado</div>
                 </div>
                 {sel && (
-                  <div className="w-6 h-6 rounded-full bg-teal-400 flex items-center justify-center shadow flex-shrink-0">
-                    <Check className="w-3.5 h-3.5 text-slate-900" strokeWidth={3} />
+                  <div className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0" style={{ background: C.action }}>
+                    <Check className="w-3.5 h-3.5 text-white" strokeWidth={3} />
                   </div>
                 )}
               </button>
@@ -592,84 +466,81 @@ export default function PersonalizacionFlow() {
         </div>
       )}
 
-      {!imagenesPorColor && (
-        <div className="bg-teal-500/10 border border-teal-400/25 rounded-2xl p-3 flex items-start gap-2.5">
-          <Sparkles className="w-4 h-4 text-teal-300 flex-shrink-0 mt-0.5" />
-          <p className="text-xs text-teal-100/80 leading-relaxed">
-            <strong className="text-white">El marmolado nace del proceso artesanal.</strong> Tu producto tendrá un patrón único — nunca habrá dos iguales.
-          </p>
-        </div>
-      )}
-    </div>,
+      <div className="flex items-center gap-2 p-3 rounded-xl" style={{ background: C.greenSoft, border: `1px solid ${C.greenBorder}` }}>
+        <Recycle className="w-4 h-4 flex-shrink-0" style={{ color: C.green }} />
+        <p className="text-xs leading-relaxed" style={{ color: C.fgSoft }}>
+          <strong style={{ color: C.fg }}>Hecho con tapitas recicladas de Santiago.</strong> Cada producto tiene un patrón marmolado único, nunca habrá dos iguales.
+        </p>
+      </div>
+    </div>
+  );
 
-    // ── Step 2 — Diseño + Mockup IA ─────────────────────────────────
-    <div key="pers" className="space-y-5">
-      <div className="text-center">
-        <p className="text-xs font-bold text-ld-action uppercase tracking-widest mb-2">Paso 3 · Tu diseño</p>
-        <h2 className="text-2xl sm:text-3xl font-poppins font-bold text-ld-fg mb-2">Personaliza tu producto</h2>
-        <p className="text-ld-fg-muted text-sm">Grabado láser UV permanente</p>
+  // PASO 2 — Personaliza el diseño
+  const StepDiseno = (
+    <div className="space-y-4">
+      <div>
+        <p className="text-xs font-bold uppercase tracking-widest mb-1" style={{ color: C.action }}>Paso 3 de 4</p>
+        <h2 className="text-xl font-poppins font-bold" style={{ color: C.fg }}>Personaliza tu diseño</h2>
+        <p className="text-sm mt-0.5" style={{ color: C.fgMuted }}>Grabado láser UV permanente · gratis desde {moqGratis} unidades</p>
       </div>
 
-      {/* Mockup en vivo — grabado realista (NO cuadro negro). Si hay mockup IA, lo muestra. */}
+      {/* Preview del mockup en vivo */}
       {mockupUrl ? (
-        <div className="relative rounded-3xl overflow-hidden border border-ld-border bg-ld-glass-soft shadow-2xl">
-          <img src={mockupUrl} alt="Mockup generado con IA" className="w-full h-auto" />
-          <div className="absolute top-3 left-3 ld-glass-strong text-ld-fg text-[10px] font-bold px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-lg">
-            <Sparkles className="w-3 h-3 text-ld-action" /> Generado con IA
+        <div className="relative rounded-2xl overflow-hidden" style={{ border: `1.5px solid ${C.border}` }}>
+          <img src={mockupUrl} alt="Mockup IA" className="w-full h-auto" />
+          <div className="absolute top-2 left-2 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold"
+            style={{ background: 'rgba(255,255,255,.9)', color: C.action, boxShadow: '0 2px 8px rgba(0,0,0,.1)' }}>
+            <Sparkles className="w-3 h-3" /> Mockup IA
           </div>
         </div>
       ) : (
         <LaserEngravePreview
-            productImageUrl={displayImg}
-            cleanImageUrl={cleanBaseUrl}
-            logoFile={opcion === 'archivo' ? archivo : null}
-            logoUrl={opcion === 'archivo' ? logoUrlSubido : (opcion === 'peyu' ? disenoPeyuUrl : '')}
-            texto={opcion === 'frase' ? texto : ''}
-            areaLabel={producto?.area_laser_mm}
-            defaultTint={(() => {
-              // Carcasas con color real: usar nombre del color para detectar oscuridad
-              if (imagenesPorColor && carcasaColorKey) {
-                const nombre = carcasaColorKey.toLowerCase();
-                const esOscuro = ['negro', 'black', 'azul', 'blue', 'verde', 'green', 'morado', 'purple', 'rojo', 'red', 'rosado oscuro', 'dark'].some(d => nombre.includes(d));
-                return esOscuro ? 'light' : 'dark';
-              }
-              // Productos con hex de color marmolado
-              if (!imagenesPorColor && color?.hex) {
-                const r = parseInt(color.hex.replace('#', '').slice(0, 2), 16);
-                return r < 130 ? 'light' : 'dark';
-              }
-              return 'dark';
-            })()}
-          />
+          productImageUrl={displayImg}
+          cleanImageUrl={cleanBaseUrl}
+          logoFile={opcion === 'archivo' ? archivo : null}
+          logoUrl={opcion === 'archivo' ? logoUrlSubido : (opcion === 'peyu' ? disenoPeyuUrl : '')}
+          texto={opcion === 'frase' ? texto : ''}
+          areaLabel={producto?.area_laser_mm}
+          defaultTint={(() => {
+            if (imagenesPorColor && carcasaColorKey) {
+              const n = carcasaColorKey.toLowerCase();
+              return ['negro', 'black', 'azul', 'blue', 'verde', 'green', 'morado', 'rojo', 'red'].some(d => n.includes(d)) ? 'light' : 'dark';
+            }
+            if (!imagenesPorColor && color?.hex) {
+              return parseInt(color.hex.replace('#', '').slice(0, 2), 16) < 130 ? 'light' : 'dark';
+            }
+            return 'dark';
+          })()}
+        />
       )}
 
-      {/* 1 — Las 3 opciones de personalización con sus precios + regla gratis ≥10u */}
+      {/* Opciones de personalización */}
       <PersonalizacionOptionPicker
         value={opcion}
         gratis={personalizacionGratis}
         moq={moqGratis}
         onSelect={(id) => {
           setOpcion(id);
-          // Al cambiar de opción, limpiamos el contenido de las otras para no arrastrar datos.
           if (id !== 'frase') setTexto('');
           if (id !== 'peyu') setDisenoPeyuUrl('');
           if (id !== 'archivo') { setArchivo(null); setLogoUrlSubido(''); }
-          resetMockupIfNeeded();
+          if (mockupUrl) setMockupUrl('');
         }}
       />
 
-      {/* Control concreto según la opción elegida */}
       {opcion === 'frase' && (
         <div>
-          <label className="text-xs font-bold text-ld-fg-muted uppercase tracking-wider block mb-2">
-            Texto a grabar (máx. 20)
+          <label className="text-xs font-bold uppercase tracking-wider block mb-2" style={{ color: C.fgMuted }}>
+            Texto a grabar (máx. 20 caracteres)
           </label>
-          <Input
+          <input
             value={texto}
-            onChange={e => { setTexto(e.target.value.slice(0, 20)); resetMockupIfNeeded(); }}
+            onChange={e => { setTexto(e.target.value.slice(0, 20)); if (mockupUrl) setMockupUrl(''); }}
             placeholder="Tu nombre, empresa, frase..."
-            className="text-center font-bold tracking-widest h-12 rounded-2xl ld-input" />
-          <p className={`text-xs text-right mt-1 font-bold ${texto.length >= 18 ? 'text-ld-highlight' : 'text-ld-fg-muted'}`}>
+            className="w-full h-12 px-4 rounded-2xl text-center font-bold tracking-widest text-base outline-none transition-all"
+            style={{ background: C.bg, border: `1.5px solid ${texto ? C.action : C.border}`, color: C.fg }}
+          />
+          <p className="text-xs text-right mt-1 font-bold" style={{ color: texto.length >= 18 ? C.action : C.fgMuted }}>
             {texto.length}/20
           </p>
         </div>
@@ -681,165 +552,172 @@ export default function PersonalizacionFlow() {
           onSelect={(url) => {
             setDisenoPeyuUrl(url);
             if (url) { setArchivo(null); setLogoUrlSubido(''); }
-            resetMockupIfNeeded();
+            if (mockupUrl) setMockupUrl('');
           }}
         />
       )}
 
       {opcion === 'archivo' && (
         <div
-          className={`border-2 border-dashed rounded-2xl p-6 text-center cursor-pointer transition-all ${
-            (archivo || logoUrlSubido)
-              ? 'border-ld-action bg-ld-action-soft'
-              : 'border-ld-border bg-ld-glass-soft hover:border-ld-action'
-          }`}
-          onClick={() => document.getElementById('pers-logo').click()}>
-          <Upload className={`w-7 h-7 mx-auto mb-2 ${(archivo || logoUrlSubido) ? 'text-ld-action' : 'text-ld-fg-muted'}`} />
+          className="rounded-2xl p-5 text-center cursor-pointer transition-all"
+          style={{
+            border: `2px dashed ${(archivo || logoUrlSubido) ? C.action : C.border}`,
+            background: (archivo || logoUrlSubido) ? 'rgba(192,120,92,.06)' : C.bg,
+          }}
+          onClick={() => document.getElementById('pers-logo-v2').click()}
+        >
+          <Upload className="w-7 h-7 mx-auto mb-2" style={{ color: (archivo || logoUrlSubido) ? C.action : C.fgMuted }} />
           {archivo ? (
-            <p className="text-sm text-ld-action font-bold">✓ {archivo.name}</p>
+            <p className="text-sm font-bold" style={{ color: C.action }}>✓ {archivo.name}</p>
           ) : logoUrlSubido ? (
-            <p className="text-sm text-ld-action font-bold">✓ Logo cargado</p>
+            <p className="text-sm font-bold" style={{ color: C.action }}>✓ Logo cargado</p>
           ) : (
-            <p className="text-sm text-ld-fg-muted">PNG, SVG, AI · Subir tu logo</p>
+            <>
+              <p className="text-sm font-semibold" style={{ color: C.fgSoft }}>Sube tu logo</p>
+              <p className="text-xs mt-0.5" style={{ color: C.fgMuted }}>PNG, SVG, AI, JPG · máx. 10MB</p>
+            </>
           )}
-          <input id="pers-logo" type="file" className="hidden" accept=".png,.svg,.ai,.pdf,.jpg"
-            onChange={e => { setArchivo(e.target.files[0]); setLogoUrlSubido(''); setDisenoPeyuUrl(''); resetMockupIfNeeded(); }} />
+          <input id="pers-logo-v2" type="file" className="hidden" accept=".png,.svg,.ai,.pdf,.jpg"
+            onChange={e => { setArchivo(e.target.files[0]); setLogoUrlSubido(''); setDisenoPeyuUrl(''); if (mockupUrl) setMockupUrl(''); }} />
         </div>
       )}
 
-      {/* 2 — Desglose de precio EN VIVO (Neto + IVA 19% + Total) en este mismo paso */}
+      {/* Cantidad */}
       {opcion && (
-        <>
-          <div className="flex items-center justify-between px-1">
-            <span className="text-xs font-bold text-ld-fg-muted uppercase tracking-wider">Cantidad</span>
-            <QuantityStepper value={cantidad} onChange={(v) => { setCantidad(v); }} min={1} />
+        <div className="flex items-center justify-between p-3.5 rounded-2xl" style={{ background: C.surface, border: `1.5px solid ${C.border}` }}>
+          <div>
+            <p className="text-xs font-bold uppercase tracking-wider" style={{ color: C.fgMuted }}>Cantidad</p>
+            {tipoPersonalizacion && (
+              <p className="text-xs mt-0.5 font-semibold" style={{ color: personalizacionGratis ? C.green : C.fgMuted }}>
+                {personalizacionGratis
+                  ? `✓ Grabado GRATIS desde ${moqGratis} u.`
+                  : `Faltan ${moqGratis - cantidad} u. para grabado gratis`}
+              </p>
+            )}
           </div>
-          <PriceBreakdownLive
-            precioUnit={precioBaseProducto}
-            cantidad={cantidad}
-            subtotalProducto={subtotalProducto}
-            tipoLabel={tipoPersonalizacion ? PERSONALIZACION_LABEL[tipoPersonalizacion] : null}
-            cargoUnit={cargoPersonalizacionUnit}
-            cargoTotal={cargoPersonalizacion}
-            gratis={personalizacionGratis}
-          />
-        </>
+          <QuantityStepper value={cantidad} onChange={setCantidad} min={1} />
+        </div>
       )}
 
-      {/* 4 — Regenerar mockup con IA: abre el MODAL ajustado (max-h 90vh, scroll) */}
-      {opcion && opcion !== 'none' && (
-        <Button
-          type="button"
+      {/* Botón mockup IA */}
+      {opcion && opcion !== 'none' && personalizacionCompleta && (
+        <button
           onClick={() => setMockupModalOpen(true)}
-          disabled={!personalizacionCompleta}
-          className="w-full h-12 rounded-2xl ld-btn-primary font-bold gap-2 disabled:opacity-50">
-          <Sparkles className="w-4 h-4" /> {mockupUrl ? 'Regenerar mockup con IA' : 'Ver mockup realista con IA'}
-        </Button>
+          className="w-full h-11 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 transition-all"
+          style={{ background: C.greenSoft, border: `1.5px solid ${C.greenBorder}`, color: '#5B7D5A' }}
+        >
+          <Sparkles className="w-4 h-4" />
+          {mockupUrl ? 'Regenerar mockup con IA' : 'Ver mockup fotorrealista con IA ✨'}
+        </button>
       )}
-      <p className="text-[10px] text-ld-fg-muted text-center">
-        {mockupUrl
-          ? '✓ Mockup incluido en tu pedido · resultado referencial'
-          : 'Mockup en vivo arriba · simulación fotorrealista opcional con IA'}
-      </p>
-    </div>,
+    </div>
+  );
 
-    // ── Step 3 — Datos ──────────────────────────────────────────────
-    <div key="datos" className="space-y-5">
-      <div className="text-center">
-        <p className="text-xs font-bold text-teal-400 uppercase tracking-widest mb-2">Paso 4 · Casi listo</p>
-        <h2 className="text-2xl sm:text-3xl font-poppins font-bold text-white mb-2">Tus datos</h2>
-        <p className="text-white/50 text-sm">Para coordinar tu pedido</p>
+  // PASO 3 — Confirmar y comprar
+  const StepConfirmar = (
+    <div className="space-y-4">
+      <div>
+        <p className="text-xs font-bold uppercase tracking-widest mb-1" style={{ color: C.action }}>Paso 4 de 4</p>
+        <h2 className="text-xl font-poppins font-bold" style={{ color: C.fg }}>Revisa y agrega al carrito</h2>
+        <p className="text-sm mt-0.5" style={{ color: C.fgMuted }}>Confirma tu personalización antes de pagar</p>
       </div>
 
-      <div className="bg-gradient-to-br from-teal-500/15 to-cyan-500/10 backdrop-blur-sm border border-teal-400/25 rounded-2xl p-4 shadow-lg">
-        <p className="text-[10px] font-bold text-teal-300 uppercase tracking-widest mb-3">Resumen de tu pedido</p>
-        <div className="flex items-center gap-3">
-          <img
-            src={displayImg}
-            alt={producto?.nombre}
-            className="w-14 h-14 rounded-xl object-cover border border-white/20 flex-shrink-0"
-          />
+      {/* Resumen visual del pedido */}
+      <div className="rounded-2xl overflow-hidden" style={{ border: `1.5px solid ${C.border}`, background: C.surface }}>
+        {/* Header con imagen */}
+        <div className="flex items-center gap-3 p-4" style={{ borderBottom: `1px solid ${C.border}` }}>
+          {displayImg && (
+            <img src={displayImg} alt={producto?.nombre}
+              className="w-16 h-16 rounded-xl object-cover flex-shrink-0"
+              style={{ border: `1px solid ${C.border}` }} />
+          )}
           <div className="flex-1 min-w-0">
-            <div className="font-semibold text-sm text-white truncate">{producto?.nombre}</div>
-            <div className="text-xs text-white/55 truncate">{colorLabel || 'Color por definir'}{texto ? ` · "${texto}"` : ''}</div>
-            {archivo && <div className="text-[10px] text-teal-300 mt-0.5">+ Logo adjunto</div>}
-            {disenoPeyuUrl && <div className="text-[10px] text-teal-300 mt-0.5">+ Diseño PEYU</div>}
+            <p className="font-bold text-sm" style={{ color: C.fg }}>{producto?.nombre}</p>
+            {colorLabel && <p className="text-xs mt-0.5" style={{ color: C.fgMuted }}>Color: {colorLabel}</p>}
+            {texto && <p className="text-xs mt-0.5 font-semibold" style={{ color: C.action }}>"{texto}"</p>}
+            {disenoPeyuUrl && <p className="text-xs mt-0.5" style={{ color: C.action }}>+ Diseño PEYU</p>}
+            {(archivo || logoUrlSubido) && <p className="text-xs mt-0.5" style={{ color: C.action }}>+ Tu logo adjunto</p>}
+            {mockupUrl && <p className="text-xs mt-0.5 font-semibold" style={{ color: C.green }}>✓ Mockup aprobado</p>}
           </div>
         </div>
 
-        {/* Selector de cantidad − [n] + */}
-        <div className="mt-4 pt-4 border-t border-white/10 flex items-center justify-between">
+        {/* Cantidad */}
+        <div className="flex items-center justify-between px-4 py-3" style={{ borderBottom: `1px solid ${C.border}` }}>
           <div>
-            <div className="text-xs font-bold text-white/70 uppercase tracking-wider">Cantidad</div>
+            <p className="text-xs font-bold uppercase tracking-wider" style={{ color: C.fgMuted }}>Cantidad</p>
             {tipoPersonalizacion && (
-              <div className={`text-[10px] mt-0.5 font-semibold ${personalizacionGratis ? 'text-teal-300' : 'text-white/45'}`}>
-                {personalizacionGratis
-                  ? `✓ Personalización GRATIS desde ${moqGratis} u.`
-                  : `Faltan ${moqGratis - cantidad} u. para grabado gratis`}
-              </div>
+              <p className="text-xs mt-0.5 font-semibold" style={{ color: personalizacionGratis ? C.green : C.fgMuted }}>
+                {personalizacionGratis ? `✓ Grabado GRATIS desde ${moqGratis} u.` : `+${fmtCLP(cargoPersonalizacion)} por grabado`}
+              </p>
             )}
           </div>
           <QuantityStepper value={cantidad} onChange={setCantidad} min={1} />
         </div>
 
-        {/* Desglose en vivo: (producto × cantidad) + (personalización × cantidad o $0) */}
-        <div className="mt-4 pt-3 border-t border-white/10 space-y-1.5 text-xs">
-          <div className="flex justify-between text-white/55">
-            <span>Producto · ${precioBaseProducto.toLocaleString('es-CL')} × {cantidad}</span>
-            <span>${subtotalProducto.toLocaleString('es-CL')}</span>
+        {/* Desglose de precio */}
+        <div className="px-4 py-3 space-y-2">
+          <div className="flex justify-between text-sm" style={{ color: C.fgMuted }}>
+            <span>Producto × {cantidad}</span>
+            <span>{fmtCLP(subtotalProducto)}</span>
           </div>
           {tipoPersonalizacion && (
-            <div className="flex justify-between text-white/55">
-              <span>
-                Personalización · {PERSONALIZACION_LABEL[tipoPersonalizacion]}
-                {!personalizacionGratis && cargoPersonalizacionUnit > 0 && ` · $${cargoPersonalizacionUnit.toLocaleString('es-CL')} × ${cantidad}`}
-              </span>
-              <span className={personalizacionGratis ? 'text-teal-300 font-bold' : 'text-white'}>
-                {personalizacionGratis ? 'GRATIS' : `+$${cargoPersonalizacion.toLocaleString('es-CL')}`}
+            <div className="flex justify-between text-sm">
+              <span style={{ color: C.fgMuted }}>Personalización {PERSONALIZACION_LABEL[tipoPersonalizacion]}</span>
+              <span className="font-bold" style={{ color: personalizacionGratis ? C.green : C.fg }}>
+                {personalizacionGratis ? 'GRATIS ✓' : `+${fmtCLP(cargoPersonalizacion)}`}
               </span>
             </div>
           )}
-          <div className="flex justify-between pt-2 mt-1 border-t border-white/10 text-sm">
-            <span className="font-bold text-white">Total</span>
-            <span className="font-poppins font-bold text-lg text-white">${precioFinal.toLocaleString('es-CL')}</span>
+          <div className="flex justify-between pt-2" style={{ borderTop: `1px solid ${C.border}` }}>
+            <span className="font-bold text-sm" style={{ color: C.fg }}>Total</span>
+            <span className="font-poppins font-bold text-lg" style={{ color: C.action }}>{fmtCLP(precioFinal)}</span>
           </div>
+          <p className="text-[10px] text-center" style={{ color: C.fgMuted }}>+ IVA 19% · Envío calculado en checkout</p>
         </div>
       </div>
 
-      <div className="space-y-3">
+      {/* Garantías */}
+      <div className="grid grid-cols-3 gap-2">
         {[
-          { label: 'Tu nombre *', value: nombre, onChange: setNombre, placeholder: 'Nombre completo' },
-          { label: 'Email *', value: email, onChange: setEmail, placeholder: 'tu@correo.cl', type: 'email' },
-          { label: 'WhatsApp (opcional)', value: telefono, onChange: setTelefono, placeholder: '+56 9 xxxx xxxx' },
-        ].map(f => (
-          <div key={f.label}>
-            <label className="text-xs font-bold text-white/70 uppercase tracking-wider block mb-2">{f.label}</label>
-            <Input
-              type={f.type || 'text'}
-              value={f.value}
-              onChange={e => f.onChange(e.target.value)}
-              placeholder={f.placeholder}
-              className="h-12 text-sm rounded-2xl bg-white/10 border-white/20 text-white placeholder:text-white/30 focus:bg-white/15 focus:border-teal-400/50 focus:ring-teal-400/20" />
+          { icon: ShieldCheck, label: '10 años garantía', color: C.action },
+          { icon: Recycle, label: '100% reciclado', color: C.green },
+          { icon: Truck, label: 'Envío a Chile', color: C.fgSoft },
+        ].map(({ icon: Icon, label, color }) => (
+          <div key={label} className="flex flex-col items-center gap-1.5 p-3 rounded-xl text-center"
+            style={{ background: C.surface, border: `1px solid ${C.border}` }}>
+            <Icon className="w-5 h-5" style={{ color }} />
+            <span className="text-[10px] font-semibold leading-tight" style={{ color: C.fgSoft }}>{label}</span>
           </div>
         ))}
       </div>
 
-      <div className="grid grid-cols-2 gap-2 pt-2">
-        <div className="flex items-center gap-2 bg-white/5 border border-white/10 rounded-xl p-2.5 backdrop-blur-sm">
-          <ShieldCheck className="w-4 h-4 text-teal-400 flex-shrink-0" />
-          <span className="text-[11px] font-semibold text-white/70">Garantía 10 años</span>
-        </div>
-        <div className="flex items-center gap-2 bg-white/5 border border-white/10 rounded-xl p-2.5 backdrop-blur-sm">
-          <Truck className="w-4 h-4 text-cyan-400 flex-shrink-0" />
-          <span className="text-[11px] font-semibold text-white/70">Envío a todo Chile</span>
-        </div>
+      {/* Stars social proof */}
+      <div className="flex items-center justify-center gap-1.5 py-1">
+        {[1, 2, 3, 4, 5].map(i => <Star key={i} className="w-4 h-4 fill-current" style={{ color: '#F5A623' }} />)}
+        <span className="text-xs font-semibold ml-1" style={{ color: C.fgMuted }}>+1.200 personalizaciones entregadas</span>
       </div>
-    </div>,
-  ];
+    </div>
+  );
 
-  // ── LAYOUT ───────────────────────────────────────────────────────────
+  const stepsContent = [StepProducto, StepColor, StepDiseno, StepConfirmar];
+
+  // ── Etiqueta y acción del botón según step ────────────────────────────────
+  const ctaLabel = step < 3
+    ? step === 2 && opcion && personalizacionCompleta
+      ? `Confirmar diseño → ${fmtCLP(precioFinal)}`
+      : 'Continuar'
+    : loading
+      ? 'Agregando...'
+      : `Agregar al carrito · ${fmtCLP(precioFinal)}`;
+
+  const handleCTA = () => {
+    if (step < 3) setStep(s => s + 1);
+    else handleAddToCart();
+  };
+
+  // ── LAYOUT ─────────────────────────────────────────────────────────────────
   return (
-    <div className="flex-1 font-inter">
+    <div className="min-h-screen flex flex-col font-inter pb-28" style={{ background: C.bg }}>
       <PublicSEO
         pageKey="personalizar"
         breadcrumbs={[
@@ -847,88 +725,102 @@ export default function PersonalizacionFlow() {
           { name: 'Personalizar', url: 'https://peyuchile.cl/personalizar' },
         ]}
       />
-      <nav className="sticky top-0 z-50 bg-slate-900/60 backdrop-blur-xl border-b border-white/10">
-        <div className="max-w-lg mx-auto px-5 py-3.5 flex items-center gap-3">
+
+      {/* NavBar */}
+      <nav className="sticky top-0 z-50 backdrop-blur-xl"
+        style={{ background: 'rgba(248,243,237,.96)', borderBottom: `1px solid ${C.border}`, boxShadow: '0 1px 10px rgba(44,24,16,.07)' }}>
+        <div className="max-w-lg mx-auto px-4 py-2 flex items-center gap-3">
           {step > 0 ? (
             <button onClick={() => setStep(s => s - 1)}
-              className="w-9 h-9 bg-white/10 hover:bg-white/20 border border-white/20 rounded-xl flex items-center justify-center transition-all">
-              <ArrowLeft className="w-4 h-4 text-white" />
+              className="w-9 h-9 rounded-xl flex items-center justify-center transition-all"
+              style={{ background: C.surface, border: `1.5px solid ${C.border}` }}>
+              <ArrowLeft className="w-4 h-4" style={{ color: C.fgSoft }} />
             </button>
           ) : (
-            <Link to="/shop"
-              className="w-9 h-9 bg-white/10 hover:bg-white/20 border border-white/20 rounded-xl flex items-center justify-center transition-all">
-              <ArrowLeft className="w-4 h-4 text-white" />
+            <Link to="/CatalogoNuevo"
+              className="w-9 h-9 rounded-xl flex items-center justify-center transition-all"
+              style={{ background: C.surface, border: `1.5px solid ${C.border}` }}>
+              <ArrowLeft className="w-4 h-4" style={{ color: C.fgSoft }} />
             </Link>
           )}
           <div className="flex items-center gap-2 flex-1">
-            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-teal-400 to-cyan-500 flex items-center justify-center shadow-lg">
+            <div className="w-8 h-8 rounded-xl flex items-center justify-center"
+              style={{ background: C.actionGrad }}>
               <Sparkles className="w-4 h-4 text-white" />
             </div>
             <div>
-              <div className="font-poppins font-bold text-sm text-white leading-tight">Personalización</div>
-              <div className="text-[10px] text-teal-300 leading-tight">Láser UV permanente</div>
+              <p className="font-poppins font-bold text-sm leading-tight" style={{ color: C.fg }}>Personalización PEYU</p>
+              <p className="text-[10px] leading-tight font-semibold" style={{ color: C.action }}>Grabado láser UV · Gratis desde 10u</p>
             </div>
           </div>
-          <span className="text-xs font-bold text-white/50">{step + 1}/4</span>
+          <span className="text-xs font-bold" style={{ color: C.fgMuted }}>{step + 1}/4</span>
         </div>
+
+        {/* Progress bar compacta */}
+        <ProgressBar step={step} />
       </nav>
 
-      <div className="max-w-lg mx-auto px-5 py-8">
-        <StepIndicator step={step} total={4} />
-
-        <div className="bg-white/5 backdrop-blur-sm border border-white/15 rounded-3xl p-5 sm:p-6 shadow-2xl">
-          {steps[step]}
-        </div>
-
-        <div className="mt-6 sticky bottom-4 z-10 space-y-2">
-          {/* Bubble de mockup: visible desde el paso 2 en adelante cuando hay personalización activa */}
-          {step >= 2 && opcion && opcion !== 'none' && personalizacionCompleta && (
-            <button
-              type="button"
-              onClick={() => step === 2 ? setMockupModalOpen(true) : setStep(2)}
-              className={`w-full flex items-center justify-between gap-2 px-4 py-2.5 rounded-2xl font-bold text-sm transition-all border ${
-                mockupUrl
-                  ? 'bg-teal-500/20 border-teal-400/50 text-teal-200 hover:bg-teal-500/30'
-                  : 'bg-amber-400/20 border-amber-400/50 text-amber-200 hover:bg-amber-400/30 animate-pulse'
-              }`}
-            >
-              <div className="flex items-center gap-2">
-                <Sparkles className="w-4 h-4 flex-shrink-0" />
-                <span>{mockupUrl ? '✓ Mockup aprobado · incluido en pedido' : '⚡ Aprobar mockup antes de pagar'}</span>
-              </div>
-              {!mockupUrl && <span className="text-xs font-semibold opacity-80">Ver →</span>}
-            </button>
-          )}
-
-          {step < 3 ? (
-            <Button onClick={() => setStep(s => s + 1)} size="lg"
-              className="w-full gap-2 font-bold rounded-2xl h-14 text-base bg-gradient-to-r from-teal-500 to-cyan-500 hover:from-teal-600 hover:to-cyan-600 text-white shadow-2xl shadow-teal-500/30 border-0 hover:scale-[1.01] transition-all"
-              disabled={(step === 0 && !producto) || (step === 2 && (!opcion || !personalizacionCompleta))}>
-              Continuar <ArrowRight className="w-4 h-4" />
-            </Button>
-          ) : (
-            <Button onClick={handleSubmit} size="lg"
-              className="w-full gap-2 font-bold rounded-2xl h-14 text-base bg-gradient-to-r from-teal-500 to-cyan-500 hover:from-teal-600 hover:to-cyan-600 text-white shadow-2xl shadow-teal-500/30 border-0 hover:scale-[1.01] transition-all"
-              disabled={loading || !nombre || !email}>
-              {loading ? (
-                <><Loader2 className="w-4 h-4 animate-spin" /> Agregando al carrito...</>
-              ) : (
-                <><ShoppingCart className="w-4 h-4" /> Agregar al carrito · ${precioFinal.toLocaleString('es-CL')}</>
-              )}
-            </Button>
-          )}
-        </div>
-
-        <div className="mt-6 flex items-center justify-center gap-4 text-[10px] text-white/40 font-medium">
-          <span className="flex items-center gap-1"><Recycle className="w-3 h-3 text-teal-400" /> Reciclado</span>
-          <span>·</span>
-          <span>🇨🇱 Hecho en Chile</span>
-          <span>·</span>
-          <span className="flex items-center gap-1"><ShieldCheck className="w-3 h-3 text-cyan-400" /> 10 años</span>
+      {/* Contenido del paso */}
+      <div className="flex-1 max-w-lg mx-auto w-full px-4 pt-4">
+        <div className="rounded-3xl p-5 shadow-sm" style={{ background: C.surface, border: `1.5px solid ${C.border}` }}>
+          {stepsContent[step]}
         </div>
       </div>
 
-      {/* Modal de mockup IA ajustado (max-h 90vh / max-w / scroll interno) */}
+      {/* ── CTA PERSISTENTE (sticky bottom) ────────────────────────────────── */}
+      <div className="fixed bottom-0 inset-x-0 z-50 max-w-lg mx-auto px-4 pb-safe"
+        style={{ paddingBottom: 'max(env(safe-area-inset-bottom, 0px), 12px)', paddingTop: '12px',
+          background: 'rgba(248,243,237,.97)',
+          borderTop: `1.5px solid ${C.border}`,
+          backdropFilter: 'blur(16px)',
+          boxShadow: '0 -4px 20px rgba(44,24,16,.1)',
+        }}>
+
+        {/* Indicador del producto elegido (visible desde paso 1+) */}
+        {step >= 1 && producto && (
+          <div className="flex items-center gap-2 mb-2.5 px-1">
+            {displayImg && (
+              <img src={displayImg} alt="" className="w-8 h-8 rounded-lg object-cover flex-shrink-0"
+                style={{ border: `1px solid ${C.border}` }} />
+            )}
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-semibold truncate" style={{ color: C.fg }}>{producto.nombre}</p>
+              {colorLabel && <p className="text-[10px]" style={{ color: C.fgMuted }}>{colorLabel}</p>}
+            </div>
+            <span className="text-sm font-poppins font-bold flex-shrink-0" style={{ color: C.action }}>{fmtCLP(precioFinal)}</span>
+          </div>
+        )}
+
+        <button
+          onClick={handleCTA}
+          disabled={!canAdvance || loading}
+          className="w-full h-14 rounded-2xl text-white font-bold text-base flex items-center justify-center gap-2 transition-all active:scale-[0.98] disabled:opacity-50"
+          style={{ background: canAdvance ? C.actionGrad : C.border, boxShadow: canAdvance ? C.actionShadow : 'none' }}
+        >
+          {loading ? (
+            <><Loader2 className="w-5 h-5 animate-spin" /> Agregando...</>
+          ) : (
+            <>
+              {step === 3 ? <ShoppingCart className="w-5 h-5" /> : null}
+              <span>{ctaLabel}</span>
+              {step < 3 && <ArrowRight className="w-5 h-5" />}
+            </>
+          )}
+        </button>
+
+        {!canAdvance && step === 0 && (
+          <p className="text-center text-xs mt-1.5 font-semibold" style={{ color: C.fgMuted }}>
+            Elige un producto para continuar
+          </p>
+        )}
+        {!canAdvance && step === 2 && (
+          <p className="text-center text-xs mt-1.5 font-semibold" style={{ color: C.fgMuted }}>
+            {!opcion ? 'Elige qué tipo de grabado quieres' : 'Completa tu diseño para continuar'}
+          </p>
+        )}
+      </div>
+
+      {/* Modal mockup IA */}
       <MockupGenerator
         open={mockupModalOpen}
         onOpenChange={setMockupModalOpen}
