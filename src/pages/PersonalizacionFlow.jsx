@@ -599,16 +599,35 @@ export default function PersonalizacionFlow() {
         </div>
       )}
 
-      {/* Botón mockup IA */}
+      {/* Cantidad */}
+      {opcion === 'none' && (
+        <div className="flex items-center justify-between p-3.5 rounded-2xl" style={{ background: C.surface, border: `1.5px solid ${C.border}` }}>
+          <p className="text-xs font-bold uppercase tracking-wider" style={{ color: C.fgMuted }}>Cantidad</p>
+          <QuantityStepper value={cantidad} onChange={setCantidad} min={1} />
+        </div>
+      )}
+
+      {/* Botón mockup IA / estado mockup */}
       {opcion && opcion !== 'none' && personalizacionCompleta && (
         <button
           onClick={() => setMockupModalOpen(true)}
-          className="w-full h-11 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 transition-all"
-          style={{ background: C.greenSoft, border: `1.5px solid ${C.greenBorder}`, color: '#5B7D5A' }}
+          className="w-full rounded-2xl font-bold text-sm flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
+          style={{
+            padding: '12px 16px',
+            background: mockupUrl ? 'rgba(139,173,138,.18)' : C.actionGrad,
+            border: mockupUrl ? `1.5px solid ${C.greenBorder}` : 'none',
+            color: mockupUrl ? '#5B7D5A' : 'white',
+            boxShadow: mockupUrl ? 'none' : C.actionShadow,
+          }}
         >
-          <Sparkles className="w-4 h-4" />
-          {mockupUrl ? 'Regenerar mockup con IA' : 'Ver mockup fotorrealista con IA ✨'}
+          <Sparkles className="w-4 h-4 flex-shrink-0" />
+          <span>{mockupUrl ? '✓ Mockup listo · toca para ver o regenerar' : '✨ Generar mockup fotorrealista con IA'}</span>
         </button>
+      )}
+      {opcion && opcion !== 'none' && personalizacionCompleta && (
+        <p className="text-[10px] text-center" style={{ color: C.fgMuted }}>
+          {mockupUrl ? 'El mockup quedará adjunto a tu pedido como referencia de producción.' : 'Toma ~10 seg · La IA simula el grabado sobre tu producto.'}
+        </p>
       )}
     </div>
   );

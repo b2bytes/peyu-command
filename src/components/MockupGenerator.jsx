@@ -16,6 +16,7 @@ export default function MockupGenerator({
   productImageUrl,
   initialText = '',
   initialColor = '',
+  initialResultUrl = '',   // ← nuevo: muestra el mockup ya generado al re-abrir
   onGenerated,
   onLogoUploaded,
 }) {
@@ -36,10 +37,11 @@ export default function MockupGenerator({
     if (open) {
       setText(initialText);
       setLogoUrl('');
-      setResultUrl('');
+      // Si ya hay un mockup generado, mostrarlo — no borrarlo
+      setResultUrl(initialResultUrl || '');
       setError('');
     }
-  }, [open, initialText]);
+  }, [open]); // eslint-disable-line
 
   const handleFileUpload = async (e) => {
     const file = e.target.files?.[0];
