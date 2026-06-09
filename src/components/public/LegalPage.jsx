@@ -13,7 +13,7 @@ import PublicHero from './PublicHero';
  */
 export default function LegalPage({ eyebrow, title, subtitle, children }) {
   return (
-    <div className="ld-canvas flex-1 overflow-auto pb-20 lg:pb-0 font-inter">
+    <div className="ld-canvas font-inter">
       <PublicHero eyebrow={eyebrow} title={title} subtitle={subtitle} />
       <section className="px-4 sm:px-8 pb-14">
         <div className="max-w-3xl mx-auto">

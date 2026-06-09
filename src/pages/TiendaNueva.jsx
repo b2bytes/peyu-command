@@ -4,8 +4,6 @@ import { base44 } from '@/api/base44Client';
 
 import SEOHead from '@/components/SEOHead';
 import { ArrowRight, Recycle, Sparkles } from 'lucide-react';
-import MobileNavBarV2 from '@/components/shopv2/MobileNavBarV2';
-import PublicNavBar from '@/components/PublicNavBar';
 import HeroBoldV2 from '@/components/shopv2/HeroBoldV2';
 import TrustSocialBarV2 from '@/components/shopv2/TrustSocialBarV2';
 import ImpactStoryV2 from '@/components/shopv2/ImpactStoryV2';
@@ -55,8 +53,6 @@ export default function TiendaNueva() {
         url="https://peyuchile.cl/"
         type="website"
       />
-      <PublicNavBar />
-
       {/* 1 · HERO BOLD */}
       <HeroBoldV2 heroImg={heroImg} onPersonaliza={() => {}} />
 
@@ -117,8 +113,7 @@ export default function TiendaNueva() {
         <span className="font-semibold">PEYU · Plástico 100% reciclado · Hecho en Santiago 🇨🇱</span>
       </footer>
 
-      {/* Menú inferior mobile */}
-      <MobileNavBarV2 />
+{/* MobileNavBarV2 viene del PublicPageLayout */}
     </div>
   );
 }

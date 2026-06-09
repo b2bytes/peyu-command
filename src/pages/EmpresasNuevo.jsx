@@ -11,9 +11,8 @@ import {
   Building2, Loader2, Search, Recycle, TrendingDown, Sparkles,
   ShieldCheck, Truck, FileText, ArrowRight, Star,
 } from 'lucide-react';
-import B2BHeader from '@/components/b2b/B2BHeader';
 import B2BCatalogCard from '@/components/b2b/B2BCatalogCard';
-import MobileNavBarV2 from '@/components/shopv2/MobileNavBarV2';
+// B2BHeader y MobileNavBarV2 ya vienen del PublicPageLayout
 
 const CATEGORIAS = ['Todos', 'Corporativo', 'Escritorio', 'Hogar', 'Entretenimiento'];
 
@@ -81,8 +80,6 @@ export default function EmpresasNuevo() {
         url="https://peyuchile.cl/EmpresasNuevo"
         type="website"
       />
-      <B2BHeader />
-
       {/* ── HERO ── */}
       <section className="max-w-6xl mx-auto px-3 sm:px-6 pt-4 sm:pt-10 pb-6 sm:pb-10">
         <div className="text-center max-w-2xl mx-auto mb-4 sm:mb-8">
@@ -211,7 +208,6 @@ export default function EmpresasNuevo() {
          <span className="font-semibold">PEYU · Plástico 100% reciclado · Hecho en Santiago 🇨🇱</span>
        </footer>
 
-      <MobileNavBarV2 />
     </div>
   );
 }

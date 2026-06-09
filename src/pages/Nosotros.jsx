@@ -1,7 +1,6 @@
 import { Leaf, Recycle, Zap, Globe, Award, Users, Factory } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import ShopV2Header from '@/components/shopv2/ShopV2Header';
-import MobileNavBarV2 from '@/components/shopv2/MobileNavBarV2';
+import { Recycle, Zap, Award, Globe, Users, Factory, Leaf } from 'lucide-react';
 
 const VALORES = [
   { icon: Recycle, title: 'Economía Circular', desc: 'Transformamos residuos plásticos post-consumo en productos de alta calidad. Cada producto equivale a sacar plástico del vertedero.' },
@@ -36,8 +35,6 @@ const IMPACTO = [
 export default function Nosotros() {
   return (
     <div className="min-h-screen font-inter pb-20 lg:pb-0" style={{ background: '#F8F3ED', color: '#2C1810' }}>
-      <ShopV2Header />
-
       {/* HERO */}
       <section className="max-w-4xl mx-auto px-4 sm:px-6 pt-14 pb-10 text-center">
         <span className="inline-block text-xs font-bold tracking-widest uppercase mb-4 px-3 py-1 rounded-full" style={{ background: 'rgba(192,120,92,.12)', color: '#C0785C' }}>
@@ -170,7 +167,6 @@ export default function Nosotros() {
         </div>
       </section>
 
-      <MobileNavBarV2 />
     </div>
   );
 }

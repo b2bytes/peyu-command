@@ -1,10 +1,10 @@
 import { useState, useEffect, useMemo, memo } from 'react';
+import { useState, useEffect, useMemo, memo } from 'react';
 import { useLocation } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import SEOHead from '@/components/SEOHead';
 import { Search, SlidersHorizontal, PackageOpen, Smartphone, AlertCircle } from 'lucide-react';
-import MobileNavBarV2 from '@/components/shopv2/MobileNavBarV2';
-import PublicNavBar from '@/components/PublicNavBar';
+
 import CheckoutStepperV2 from '@/components/shopv2/CheckoutStepperV2';
 import ProductCardV2 from '@/components/shopv2/ProductCardV2';
 import PhoneModelsModal from '@/components/shopv2/PhoneModelsModal';
@@ -88,8 +88,7 @@ export default function CatalogoNuevo() {
 
   if (error) {
     return (
-      <div className="min-h-screen font-inter" style={{ background: '#F8F3ED', color: '#2C1810' }}>
-        <PublicNavBar />
+      <div className="font-inter" style={{ background: '#F8F3ED', color: '#2C1810' }}>
         <div className="max-w-md mx-auto text-center py-24 px-4">
           <div className="w-16 h-16 rounded-3xl flex items-center justify-center mx-auto mb-4" style={{ background: '#FBE9E1', border: '1.5px solid #D96B4D' }}>
             <AlertCircle className="w-8 h-8" style={{ color: '#D96B4D' }} />
@@ -109,15 +108,13 @@ export default function CatalogoNuevo() {
   }
 
   return (
-    <div className="min-h-screen font-inter pb-16 lg:pb-0" style={{ background: '#F8F3ED', color: '#2C1810' }}>
+    <div className="font-inter" style={{ background: '#F8F3ED', color: '#2C1810' }}>
       <SEOHead
         title="Catálogo Completo — PEYU Chile"
         description="Explora nuestro catálogo completo de regalos corporativos sustentables. Carcasas iPhone, organizadores, maceteros y más en plástico 100% reciclado."
         url="https://peyuchile.cl/CatalogoNuevo"
         type="website"
       />
-      <PublicNavBar />
-
       <div className="max-w-6xl mx-auto px-3 sm:px-4 lg:px-6 py-3 sm:py-5">
         <CheckoutStepperV2 current="tienda" />
         <div className="mb-2 sm:mb-3">
@@ -238,7 +235,6 @@ export default function CatalogoNuevo() {
         PEYU Chile · Plástico reciclado · Hecho en Santiago 🇨🇱
       </footer>
 
-      <MobileNavBarV2 />
     </div>
   );
 }

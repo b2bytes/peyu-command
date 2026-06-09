@@ -1,13 +1,12 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
-import { ArrowLeft, Gift, Recycle, Mail, Clock, Shield } from 'lucide-react';
+import { useSearchParams } from 'react-router-dom';
+import { Gift, Recycle, Mail, Clock, Shield } from 'lucide-react';
 import SEO from '@/components/SEO';
 import FlowSelector from '@/components/giftcard/FlowSelector';
 import GiftCardB2CFlow from '@/components/giftcard/GiftCardB2CFlow';
 import GiftCardB2BForm from '@/components/giftcard/GiftCardB2BForm';
 
 export default function RegalarGiftCard() {
-  const navigate = useNavigate();
   const [params, setParams] = useSearchParams();
   const initialFlow = params.get('flow') === 'b2b' ? 'b2b' : 'b2c';
   const [flow, setFlow] = useState(initialFlow);
@@ -35,12 +34,8 @@ export default function RegalarGiftCard() {
           : 'Regala sostenibilidad con una Gift Card PEYU. Entrega digital inmediata por email, válida 12 meses en toda la tienda. Desde $5.000 CLP.'}
         canonical={`https://peyuchile.cl/regalar-giftcard${isB2B ? '?flow=b2b' : ''}`}
       />
-      <div className="flex-1 overflow-auto py-10 px-4">
+      <div className="py-10 px-4">
         <div className="max-w-6xl mx-auto">
-
-          <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-sm text-white/60 hover:text-white mb-6 transition-colors">
-            <ArrowLeft className="w-4 h-4" /> Volver
-          </button>
 
           {/* Hero */}
           <div className="text-center mb-8">

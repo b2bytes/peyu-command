@@ -12,6 +12,7 @@ import AdminAccessDenied from '@/components/AdminAccessDenied';
 import { isTeamMember } from '@/lib/team-whitelist';
 import PWAInstallBanner from '@/components/PWAInstallBanner';
 import CookieBanner from '@/components/CookieBanner';
+import PublicPageLayout from '@/components/PublicPageLayout';
 
 // ── PUBLIC PAGES (eager) ─────────────────────────────────────────────
 // Cargadas inmediatamente porque son la cara pública del sitio:
@@ -255,22 +256,15 @@ function App() {
         <QueryClientProvider client={queryClientInstance}>
           <Router>
             <Routes>
-              {/* Landing Page - Nueva tienda (MAIN) */}
-              <Route path="/" element={<TiendaNueva />} />
-              <Route path="/tienda" element={<Navigate to="/CatalogoNuevo" replace />} />
-
-              {/* Redireccionamientos 301 (SEO-safe) — preserva indexaciones */}
+              {/* ── SEO redirects (sin layout) ───────────────────────────────────── */}
               <Route path="/shop" element={<Navigate to="/" replace />} />
               <Route path="/producto/:id" element={<LegacyProductRedirect />} />
               <Route path="/ProductoDetalle" element={<Navigate to="/ProductoNuevo" replace />} />
-              <Route path="/Inicio" element={<Navigate to="/" replace />} />
-              <Route path="/Tienda" element={<Navigate to="/" replace />} />
-              <Route path="/Empresas" element={<Navigate to="/EmpresasNuevo" replace />} />
-              {/* Catch-all de URLs comunes de campañas / links compartidos */}
-              <Route path="/tienda" element={<Navigate to="/" replace />} />
+              <Route path="/tienda" element={<Navigate to="/CatalogoNuevo" replace />} />
+              <Route path="/Tienda" element={<Navigate to="/CatalogoNuevo" replace />} />
               <Route path="/Tienda-legacy" element={<Navigate to="/" replace />} />
-              <Route path="/inicio" element={<Navigate to="/" replace />} />
               <Route path="/Inicio" element={<Navigate to="/" replace />} />
+              <Route path="/inicio" element={<Navigate to="/" replace />} />
               <Route path="/home" element={<Navigate to="/" replace />} />
               <Route path="/Home" element={<Navigate to="/" replace />} />
               <Route path="/catalogo" element={<Navigate to="/CatalogoNuevo" replace />} />
@@ -278,6 +272,7 @@ function App() {
               <Route path="/productos" element={<Navigate to="/CatalogoNuevo" replace />} />
               <Route path="/Productos" element={<Navigate to="/CatalogoNuevo" replace />} />
               <Route path="/empresas" element={<Navigate to="/EmpresasNuevo" replace />} />
+              <Route path="/Empresas" element={<Navigate to="/EmpresasNuevo" replace />} />
               <Route path="/Empresas-legacy" element={<Navigate to="/EmpresasNuevo" replace />} />
               <Route path="/comprar" element={<Navigate to="/CatalogoNuevo" replace />} />
               <Route path="/Comprar" element={<Navigate to="/CatalogoNuevo" replace />} />
@@ -287,76 +282,58 @@ function App() {
               <Route path="/Carrito" element={<Navigate to="/CarritoNuevo" replace />} />
               <Route path="/cart" element={<Navigate to="/CarritoNuevo" replace />} />
               <Route path="/Cart" element={<Navigate to="/CarritoNuevo" replace />} />
-              
-              {/* Variaciones minúsculas / typos comunes desde Google / campañas antiguas */}
               <Route path="/Shop" element={<Navigate to="/" replace />} />
               <Route path="/SHOP" element={<Navigate to="/" replace />} />
               <Route path="/Producto" element={<Navigate to="/ProductoNuevo" replace />} />
               <Route path="/PRODUCTO" element={<Navigate to="/ProductoNuevo" replace />} />
-              
-              {/* Legacy - mantener disponible pero no indexado (noindex) */}
               <Route path="/shop-legacy" element={<Shop />} />
 
-              {/* Brand Lab (Fase 0) - Standalone, ruta nueva paralela */}
+              {/* ── Standalone (sin PublicPageLayout) ──────────────────────────── */}
+              {/* Estas páginas tienen diseño 100% propio y no deben llevar el nav */}
+              <Route path="/lanzamiento" element={<Lanzamiento />} />
+              <Route path="/propuesta-valor-peyu" element={<PropuestaValorPeyu />} />
               <Route path="/brand" element={<BrandLab />} />
-
-              {/* Peyu Commerce OS (Fase 2) - Standalone AISLADA, no toca la tienda viva */}
               <Route path="/v2" element={<PeyuV2 />} />
-
-              {/* Shop B2C v2 - Standalone, AISLADO (carrito_v2). No toca la tienda viva */}
-              <Route path="/TiendaNueva" element={<TiendaNueva />} />
-              <Route path="/CatalogoNuevo" element={<CatalogoNuevo />} />
-              <Route path="/ProductoNuevo" element={<ProductoNuevo />} />
-              <Route path="/CarritoNuevo" element={<CarritoNuevo />} />
-              <Route path="/CheckoutNuevo" element={<CheckoutNuevo />} />
-              <Route path="/CotizacionRapida" element={<CotizacionRapida />} />
-              <Route path="/EmpresasNuevo" element={<EmpresasNuevo />} />
-              <Route path="/EmpresaProducto" element={<EmpresaProducto />} />
-              <Route path="/b2b/propuesta" element={<B2BPropuestaPublica />} />
+              <Route path="/founders-presentation" element={<FoundersPresentation />} />
               <Route path="/design-lab" element={<FunnelDesignLab />} />
               <Route path="/test-index" element={<IndiceTest />} />
               <Route path="/resumen-operativo" element={<ResumenOperativo />} />
+              {/* PersonalizacionFlow tiene navbar interno de wizard con ProgressBar */}
+              <Route path="/personalizar" element={<PersonalizacionFlow />} />
 
-              {/* Presentación a fundadores - 22 layouts del design system */}
-              <Route path="/founders-presentation" element={<FoundersPresentation />} />
-
-              {/* /lanzamiento - Pure conversion landing (standalone, sin Layout) */}
-              <Route path="/lanzamiento" element={<Lanzamiento />} />
-
-              {/* /propuesta-valor-peyu - Viaje pedagógico de valor (sin Layout) */}
-              <Route path="/propuesta-valor-peyu" element={<PropuestaValorPeyu />} />
-
-              {/* NOTA: Rutas públicas se sirven DIRECTAMENTE con su propio PublicNavBar + MobileNavBar.
-                   NO usan Layout admin ni PublicLayout. Ver CatalogoNuevo, TiendaNueva, etc. */}
+              {/* ── RUTAS PÚBLICAS — todas con PublicNavBar permanente ──────────── */}
+              <Route element={<PublicPageLayout />}>
+                <Route path="/" element={<TiendaNueva />} />
+                <Route path="/TiendaNueva" element={<TiendaNueva />} />
+                <Route path="/CatalogoNuevo" element={<CatalogoNuevo />} />
+                <Route path="/ProductoNuevo" element={<ProductoNuevo />} />
+                <Route path="/CarritoNuevo" element={<CarritoNuevo />} />
+                <Route path="/CheckoutNuevo" element={<CheckoutNuevo />} />
+                <Route path="/CotizacionRapida" element={<CotizacionRapida />} />
+                <Route path="/EmpresasNuevo" element={<EmpresasNuevo />} />
+                <Route path="/EmpresaProducto" element={<EmpresaProducto />} />
+                <Route path="/b2b/propuesta" element={<B2BPropuestaPublica />} />
                 <Route path="/b2b/contacto" element={<B2BContacto />} />
-                <Route path="/b2b/propuesta" element={<B2BPropuesta />} />
                 <Route path="/b2b/self-service" element={<B2BSelfService />} />
                 <Route path="/b2b/mi-cuenta" element={<B2BMiCuenta />} />
-
-
-              {/* PÁGINAS PÚBLICAS · Cada una con su propia nav (PublicNavBar + MobileNavBarV2) */}
-              <Route path="/nosotros" element={<Nosotros />} />
-              <Route path="/blog" element={<Blog />} />
-              <Route path="/blog/:slug" element={<BlogPostPage />} />
-              <Route path="/contacto" element={<Contacto />} />
-              <Route path="/faq" element={<FAQ />} />
-              <Route path="/envios" element={<Envios />} />
-              <Route path="/cambios" element={<Cambios />} />
-              <Route path="/terminos" element={<Terminos />} />
-              <Route path="/privacidad" element={<Privacidad />} />
-              <Route path="/cookies" element={<Cookies />} />
-              <Route path="/canjear" element={<Canjear />} />
-              <Route path="/regalar-giftcard" element={<RegalarGiftCard />} />
-              <Route path="/gracias" element={<Gracias />} />
-              <Route path="/b2b/contacto" element={<B2BContacto />} />
-              <Route path="/b2b/propuesta" element={<B2BPropuesta />} />
-              <Route path="/b2b/self-service" element={<B2BSelfService />} />
-              <Route path="/b2b/mi-cuenta" element={<B2BMiCuenta />} />
-              <Route path="/b2b/catalogo" element={<CatalogoCorporativo />} />
-              <Route path="/personalizar" element={<PersonalizacionFlow />} />
-              <Route path="/soporte" element={<SoportePublico />} />
-              <Route path="/seguimiento" element={<SeguimientoPedido />} />
-              <Route path="/catalogo-visual" element={<CatalogoVisual />} />
+                <Route path="/b2b/catalogo" element={<CatalogoCorporativo />} />
+                <Route path="/nosotros" element={<Nosotros />} />
+                <Route path="/blog" element={<Blog />} />
+                <Route path="/blog/:slug" element={<BlogPostPage />} />
+                <Route path="/contacto" element={<Contacto />} />
+                <Route path="/faq" element={<FAQ />} />
+                <Route path="/envios" element={<Envios />} />
+                <Route path="/cambios" element={<Cambios />} />
+                <Route path="/terminos" element={<Terminos />} />
+                <Route path="/privacidad" element={<Privacidad />} />
+                <Route path="/cookies" element={<Cookies />} />
+                <Route path="/canjear" element={<Canjear />} />
+                <Route path="/regalar-giftcard" element={<RegalarGiftCard />} />
+                <Route path="/gracias" element={<Gracias />} />
+                <Route path="/soporte" element={<SoportePublico />} />
+                <Route path="/seguimiento" element={<SeguimientoPedido />} />
+                <Route path="/catalogo-visual" element={<CatalogoVisual />} />
+              </Route>
 
               {/* Admin Routes - Protected (lazy-loaded) */}
               <Route path="/admin/*" element={<AuthenticatedApp />} />
