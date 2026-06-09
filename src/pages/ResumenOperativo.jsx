@@ -1,4 +1,4 @@
-import { CheckCircle2, AlertTriangle, Zap, Truck, Package, CreditCard, Bug, Sparkles, TrendingUp, Calendar } from 'lucide-react';
+import { CheckCircle2, AlertTriangle, Zap, Truck, Package, CreditCard, Bug, Sparkles, TrendingUp, Calendar, BarChart3, ShoppingCart, Users } from 'lucide-react';
 
 /**
  * ResumenOperativo — Dashboard de cambios, bugs fixes y estado del sistema.
@@ -293,6 +293,135 @@ export default function ResumenOperativo() {
               <p><strong>4.</strong> Admin arrastra a "Listo"</p>
               <p><strong>5.</strong> Genera etiqueta Bluex (auto o manual)</p>
               <p><strong>6.</strong> CRON 6h: tracking + notificaciones</p>
+            </div>
+          </div>
+        </section>
+
+        {/* ACCESOS RÁPIDOS · ONBOARDING */}
+        <section className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl border border-slate-700 overflow-hidden shadow-sm">
+          <div className="px-4 sm:px-6 py-3 sm:py-4 border-b border-slate-700">
+            <h2 className="text-white font-bold text-sm sm:text-base flex items-center gap-2">
+              <Zap className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-400" /> Accesos Rápidos al Sistema
+            </h2>
+            <p className="text-slate-400 text-xs sm:text-sm mt-1">Navega por las funcionalidades clave de operaciones y ventas</p>
+          </div>
+          <div className="p-4 sm:p-6">
+            <div className="grid sm:grid-cols-2 gap-4 sm:gap-6">
+
+              {/* ENVÍO Y DESPACHO */}
+              <div>
+                <h3 className="text-white font-bold text-sm mb-3 flex items-center gap-2">
+                  <Truck className="w-4 h-4 text-blue-400" /> Envío · Despacho
+                </h3>
+                <div className="space-y-2">
+                  <a href="/admin/bluex" className="flex items-center gap-3 p-2.5 rounded-lg bg-slate-700/50 hover:bg-slate-700 transition-colors group">
+                    <div className="w-8 h-8 rounded-lg bg-blue-500/20 flex items-center justify-center group-hover:bg-blue-500/30">
+                      <Package className="w-4 h-4 text-blue-400" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs sm:text-sm font-bold text-white">Centro Logístico</p>
+                      <p className="text-[10px] text-slate-400">Dashboard Bluex, tracking, KPIs</p>
+                    </div>
+                    <span className="text-slate-500">→</span>
+                  </a>
+                  <a href="/admin/procesar-pedidos" className="flex items-center gap-3 p-2.5 rounded-lg bg-slate-700/50 hover:bg-slate-700 transition-colors group">
+                    <div className="w-8 h-8 rounded-lg bg-cyan-500/20 flex items-center justify-center group-hover:bg-cyan-500/30">
+                      <CreditCard className="w-4 h-4 text-cyan-400" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs sm:text-sm font-bold text-white">Procesar Pedidos</p>
+                      <p className="text-[10px] text-slate-400">Kanban, etiquetas, tracking</p>
+                    </div>
+                    <span className="text-slate-500">→</span>
+                  </a>
+                  <a href="/admin/despacho" className="flex items-center gap-3 p-2.5 rounded-lg bg-slate-700/50 hover:bg-slate-700 transition-colors group">
+                    <div className="w-8 h-8 rounded-lg bg-amber-500/20 flex items-center justify-center group-hover:bg-amber-500/30">
+                      <Zap className="w-4 h-4 text-amber-400" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs sm:text-sm font-bold text-white">Despacho Rápido</p>
+                      <p className="text-[10px] text-slate-400">Genera etiqueta, imprime</p>
+                    </div>
+                    <span className="text-slate-500">→</span>
+                  </a>
+                </div>
+              </div>
+
+              {/* PIPELINE VENTAS */}
+              <div>
+                <h3 className="text-white font-bold text-sm mb-3 flex items-center gap-2">
+                  <TrendingUp className="w-4 h-4 text-green-400" /> Pipeline de Ventas
+                </h3>
+                <div className="space-y-2">
+                  <a href="/admin/pipeline" className="flex items-center gap-3 p-2.5 rounded-lg bg-slate-700/50 hover:bg-slate-700 transition-colors group">
+                    <div className="w-8 h-8 rounded-lg bg-purple-500/20 flex items-center justify-center group-hover:bg-purple-500/30">
+                      <Truck className="w-4 h-4 text-purple-400" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs sm:text-sm font-bold text-white">Pipeline B2B</p>
+                      <p className="text-[10px] text-slate-400">Leads, propuestas, Kanban</p>
+                    </div>
+                    <span className="text-slate-500">→</span>
+                  </a>
+                  <a href="/admin/pipeline-b2c" className="flex items-center gap-3 p-2.5 rounded-lg bg-slate-700/50 hover:bg-slate-700 transition-colors group">
+                    <div className="w-8 h-8 rounded-lg bg-pink-500/20 flex items-center justify-center group-hover:bg-pink-500/30">
+                      <ShoppingCart className="w-4 h-4 text-pink-400" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs sm:text-sm font-bold text-white">Pipeline B2C</p>
+                      <p className="text-[10px] text-slate-400">Carritos, conversiones, RFM</p>
+                    </div>
+                    <span className="text-slate-500">→</span>
+                  </a>
+                  <a href="/admin/embudo" className="flex items-center gap-3 p-2.5 rounded-lg bg-slate-700/50 hover:bg-slate-700 transition-colors group">
+                    <div className="w-8 h-8 rounded-lg bg-indigo-500/20 flex items-center justify-center group-hover:bg-indigo-500/30">
+                      <TrendingUp className="w-4 h-4 text-indigo-400" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs sm:text-sm font-bold text-white">Embudo Ventas</p>
+                      <p className="text-[10px] text-slate-400">Funnels, segmentación</p>
+                    </div>
+                    <span className="text-slate-500">→</span>
+                  </a>
+                </div>
+              </div>
+
+              {/* ANÁLISIS Y OPERACIONES */}
+              <div className="sm:col-span-2">
+                <h3 className="text-white font-bold text-sm mb-3 flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-400" /> Análisis · Operaciones
+                </h3>
+                <div className="grid sm:grid-cols-3 gap-2">
+                  <a href="/admin/operaciones" className="flex items-center gap-2.5 p-2.5 rounded-lg bg-slate-700/50 hover:bg-slate-700 transition-colors group">
+                    <div className="w-6 h-6 rounded bg-slate-600/50 flex items-center justify-center flex-shrink-0">
+                      <Truck className="w-3 h-3 text-slate-400" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-bold text-white">Operaciones</p>
+                      <p className="text-[9px] text-slate-400">Control general</p>
+                    </div>
+                  </a>
+                  <a href="/admin/analitica" className="flex items-center gap-2.5 p-2.5 rounded-lg bg-slate-700/50 hover:bg-slate-700 transition-colors group">
+                    <div className="w-6 h-6 rounded bg-slate-600/50 flex items-center justify-center flex-shrink-0">
+                      <BarChart3 className="w-3 h-3 text-slate-400" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-bold text-white">Analítica</p>
+                      <p className="text-[9px] text-slate-400">Métricas y datos</p>
+                    </div>
+                  </a>
+                  <a href="/admin/clientes" className="flex items-center gap-2.5 p-2.5 rounded-lg bg-slate-700/50 hover:bg-slate-700 transition-colors group">
+                    <div className="w-6 h-6 rounded bg-slate-600/50 flex items-center justify-center flex-shrink-0">
+                      <Users className="w-3 h-3 text-slate-400" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-bold text-white">Clientes</p>
+                      <p className="text-[9px] text-slate-400">Base datos CRM</p>
+                    </div>
+                  </a>
+                </div>
+              </div>
+
             </div>
           </div>
         </section>
