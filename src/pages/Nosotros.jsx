@@ -1,6 +1,5 @@
 import { Leaf, Recycle, Zap, Globe, Award, Users, Factory } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { Recycle, Zap, Award, Globe, Users, Factory, Leaf } from 'lucide-react';
 
 const VALORES = [
   { icon: Recycle, title: 'Economía Circular', desc: 'Transformamos residuos plásticos post-consumo en productos de alta calidad. Cada producto equivale a sacar plástico del vertedero.' },

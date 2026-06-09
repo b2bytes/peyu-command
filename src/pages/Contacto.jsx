@@ -20,7 +20,7 @@ export default function Contacto() {
   };
 
   return (
-    <div className="ld-canvas font-inter">
+    <div className="ld-canvas flex-1 font-inter pb-4">
       <SEO
         title="Contacto | PEYU Chile - Regalos Corporativos Sostenibles"
         description="Contáctanos por WhatsApp, email o visítanos en Providencia y Macul. Respuesta en menos de 24 horas."

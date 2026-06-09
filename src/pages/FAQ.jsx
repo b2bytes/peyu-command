@@ -32,7 +32,7 @@ export default function FAQ() {
   };
 
   return (
-    <div className="ld-canvas font-inter">
+    <div className="ld-canvas flex-1 font-inter pb-4">
       <SEO
         title="Preguntas Frecuentes | PEYU Chile"
         description="Respuestas sobre productos reciclados, personalización láser UV, envíos, pagos, garantías y más."

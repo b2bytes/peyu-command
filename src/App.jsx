@@ -289,7 +289,8 @@ function App() {
               <Route path="/shop-legacy" element={<Shop />} />
 
               {/* ── Standalone (sin PublicPageLayout) ──────────────────────────── */}
-              {/* Estas páginas tienen diseño 100% propio y no deben llevar el nav */}
+              {/* Estas páginas tienen diseño 100% propio y no deben llevar el nav general */}
+              <Route path="/personalizar" element={<PersonalizacionFlow />} />
               <Route path="/lanzamiento" element={<Lanzamiento />} />
               <Route path="/propuesta-valor-peyu" element={<PropuestaValorPeyu />} />
               <Route path="/brand" element={<BrandLab />} />
@@ -298,8 +299,6 @@ function App() {
               <Route path="/design-lab" element={<FunnelDesignLab />} />
               <Route path="/test-index" element={<IndiceTest />} />
               <Route path="/resumen-operativo" element={<ResumenOperativo />} />
-              {/* PersonalizacionFlow tiene navbar interno de wizard con ProgressBar */}
-              <Route path="/personalizar" element={<PersonalizacionFlow />} />
 
               {/* ── RUTAS PÚBLICAS — todas con PublicNavBar permanente ──────────── */}
               <Route element={<PublicPageLayout />}>
@@ -330,6 +329,7 @@ function App() {
                 <Route path="/canjear" element={<Canjear />} />
                 <Route path="/regalar-giftcard" element={<RegalarGiftCard />} />
                 <Route path="/gracias" element={<Gracias />} />
+                {/* PersonalizacionFlow tiene su propio header wizard — excluido del PublicPageLayout */}
                 <Route path="/soporte" element={<SoportePublico />} />
                 <Route path="/seguimiento" element={<SeguimientoPedido />} />
                 <Route path="/catalogo-visual" element={<CatalogoVisual />} />

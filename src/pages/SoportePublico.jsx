@@ -121,7 +121,7 @@ export default function SoportePublico() {
   ];
 
   return (
-    <div className="ld-canvas font-inter">
+    <div className="ld-canvas flex-1 font-inter pb-4">
       <SEO
         title="Centro de Ayuda PEYU · Soporte, FAQ y Contacto Directo"
         description="Resuelve dudas sobre pedidos, personalización láser, materiales y devoluciones. Atención por WhatsApp, email y tiendas físicas en Providencia y Macul."
