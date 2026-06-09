@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
+import SEOHead from '@/components/SEOHead';
 import {
   Building2, Loader2, ArrowRight, ArrowLeft, Recycle, Package,
   ShoppingCart, Sparkles, TrendingDown, Upload, X, Check,
@@ -8,6 +9,7 @@ import {
 import LogoMockupPreview from '@/components/cotizacion/LogoMockupPreview';
 import MockupGalleryB2B from '@/components/cotizacion/MockupGalleryB2B';
 import PublicNavBar from '@/components/PublicNavBar';
+import MobileNavBarV2 from '@/components/shopv2/MobileNavBarV2';
 import QuoteProductPicker from '@/components/cotizacion/QuoteProductPicker';
 import QuoteItemRow from '@/components/cotizacion/QuoteItemRow';
 import QuoteContactForm from '@/components/cotizacion/QuoteContactForm';
@@ -197,31 +199,37 @@ export default function CotizacionRapida() {
   const reset = () => { setResult(null); setItems([]); setForm(FORM_INICIAL); setStep(0); setLogoUrl(null); };
 
   return (
-    <div className="min-h-screen bg-[#FAF7F2] font-inter text-[#2A2420] pb-28 sm:pb-12">
+    <div className="min-h-screen font-inter text-[#2C1810] pb-16 lg:pb-0" style={{ background: '#F8F3ED' }}>
+      <SEOHead
+        title="Cotización Rápida B2B — PEYU | Precios Corporativos"
+        description="Cotiza tu pedido corporativo en 3 pasos. Precios por volumen, personalización láser, facturación y despacho a Chile."
+        url="https://peyuchile.cl/CotizacionRapida"
+        type="website"
+      />
       <PublicNavBar />
 
-      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-8">
+      <div className="max-w-5xl mx-auto px-3 sm:px-4 lg:px-6 py-6 sm:py-10">
         {result ? (
           <QuoteResultCard result={result} empresa={form.company_name} email={form.email} onReset={reset} logoUrl={logoUrl} />
         ) : (
           <>
-            {/* Hero compacto */}
-            <div className="text-center mb-5 sm:mb-8">
-              <span className="inline-flex items-center gap-1.5 bg-[#0F8B6C]/10 text-[#0F8B6C] text-[10px] sm:text-xs font-bold px-3 py-1.5 rounded-full mb-2 sm:mb-3">
-                <Building2 className="w-3 sm:w-3.5 h-3 sm:h-3.5" /> Cotización para empresas
+            {/* Hero mejorado */}
+            <div className="text-center mb-8 sm:mb-10">
+              <span className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-bold px-4 py-2 rounded-full mb-3 sm:mb-4" style={{ background: '#0F8B6C15', color: '#0F8B6C' }}>
+                <Building2 className="w-3.5 sm:w-4 h-3.5 sm:h-4" /> Cotización corporativa
               </span>
-              <h1 className="font-fraunces text-2xl sm:text-4xl leading-tight mb-2 sm:mb-3">
-                Tu pedido corporativo, <span className="text-[#0F8B6C]">en 3 pasos</span>
+              <h1 className="font-fraunces text-3xl sm:text-5xl leading-[1.1] mb-3 sm:mb-4 font-bold" style={{ color: '#2C1810' }}>
+                Presupuesto B2B en <span style={{ color: '#0F8B6C' }}>3 pasos</span>
               </h1>
-              <p className="text-xs sm:text-sm text-[#4B4F54] max-w-xl mx-auto">
-                Arma tu carrito, completa datos y recibe presupuesto con precios por volumen.
+              <p className="text-sm sm:text-base max-w-2xl mx-auto leading-relaxed" style={{ color: '#7A6050' }}>
+                Selecciona productos • Completa tus datos • Obtén cotización con precios por volumen
               </p>
             </div>
 
             <QuoteStepper step={step} onStep={goTo} maxStep={maxStep} />
 
-            {/* Layout responsivo: grid en desktop, stack en mobile */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8 mt-8">
+            {/* Layout centrado con sidebar en desktop */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8 mt-10">
               {/* Contenido principal: 2 columnas en desktop */}
               <div className="lg:col-span-2">
                 <AnimatePresence mode="wait">
@@ -540,9 +548,12 @@ export default function CotizacionRapida() {
         logoUrl={logoUrl}
       />
 
-      <footer className="border-t border-[#EBE3D6] py-8 text-center text-xs text-[#A78B6F] flex items-center justify-center gap-1.5">
-        <Recycle className="w-3.5 h-3.5 text-[#0F8B6C]" /> PEYU Chile · Plástico reciclado · Hecho en Santiago 🇨🇱
+      <footer className="py-6 sm:py-8 text-center text-[9px] sm:text-xs flex items-center justify-center gap-2 sm:gap-2.5" style={{ borderTop: '1.5px solid #D4C4B0', color: '#A08070' }}>
+        <Recycle className="w-3.5 sm:w-4 h-3.5 sm:h-4" style={{ color: '#8BAD8A' }} />
+        <span className="font-semibold">PEYU · Plástico 100% reciclado · Hecho en Santiago 🇨🇱</span>
       </footer>
+
+      <MobileNavBarV2 />
     </div>
   );
 }
