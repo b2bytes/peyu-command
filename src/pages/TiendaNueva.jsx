@@ -21,7 +21,6 @@ import { getProductImage } from '@/utils/productImages';
 export default function TiendaNueva() {
   const [productos, setProductos] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [showB2BFork, setShowB2BFork] = useState(true);
 
   useEffect(() => {
     let retries = 0;
@@ -47,60 +46,6 @@ export default function TiendaNueva() {
     const c = carcasas[0] || productos[0];
     return c ? getProductImage(c) : null;
   }, [carcasas, productos]);
-
-  // Embudo B2C/B2B: si está activo, muestra fork al inicio
-  if (showB2BFork) {
-    return (
-      <div className="min-h-screen font-inter" style={{ background: '#F8F3ED', color: '#2C1810' }}>
-        <PublicNavBar />
-        <div className="max-w-2xl mx-auto px-4 py-16 sm:py-24 text-center">
-          <h1 className="font-fraunces text-4xl sm:text-5xl mb-3 font-semibold">Bienvenido a PEYU</h1>
-          <p className="text-lg sm:text-xl mb-12" style={{ color: '#7A6050' }}>Regalos corporativos sostenibles • Plástico 100% reciclado • Hecho en Chile</p>
-          
-          <div className="grid sm:grid-cols-2 gap-4 mb-8">
-            {/* B2C */}
-            <button
-              onClick={() => setShowB2BFork(false)}
-              className="group relative overflow-hidden rounded-3xl p-8 sm:p-10 transition-all active:scale-95"
-              style={{
-                background: 'linear-gradient(135deg, #C0785C, #A86440)',
-                boxShadow: '0 12px 40px rgba(192,120,92,0.25)',
-              }}
-            >
-              <div className="text-white">
-                <div className="text-3xl mb-2">🎁</div>
-                <h2 className="font-jakarta font-bold text-xl mb-2">Para ti</h2>
-                <p className="text-sm text-white/90 mb-4">Compra regalos personalizados con logo, frase o diseño.</p>
-                <div className="inline-flex items-center gap-2 text-sm font-bold">
-                  Ver tienda <ArrowRight className="w-4 h-4" />
-                </div>
-              </div>
-            </button>
-
-            {/* B2B */}
-            <Link
-              to="/EmpresasNuevo"
-              className="group relative overflow-hidden rounded-3xl p-8 sm:p-10 transition-all active:scale-95 hover:shadow-lg"
-              style={{
-                background: 'white',
-                border: '2px solid #0F8B6C',
-                color: '#0F8B6C',
-              }}
-            >
-              <div>
-                <div className="text-3xl mb-2">🏢</div>
-                <h2 className="font-jakarta font-bold text-xl mb-2">Para empresas</h2>
-                <p className="text-sm mb-4" style={{ color: '#7A6050' }}>Cotizaciones, precios mayoristas, personalización masiva.</p>
-                <div className="inline-flex items-center gap-2 text-sm font-bold">
-                  Explorar B2B <ArrowRight className="w-4 h-4" />
-                </div>
-              </div>
-            </Link>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen font-inter pb-16 lg:pb-0" style={{ background: '#F8F3ED', color: '#2C1810' }}>
