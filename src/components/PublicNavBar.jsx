@@ -1,12 +1,14 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, X, ChevronDown, ShoppingBag, Building2, BookOpen, Users, LifeBuoy, Phone, ChevronRight } from 'lucide-react';
+import { Menu, X, ChevronDown, ShoppingBag, Building2, BookOpen, Users, LifeBuoy, Phone, ChevronRight, ShoppingCart } from 'lucide-react';
+import { cartCountV2 } from '@/lib/shop-v2-cart';
 
 // Menú profesional para todas las páginas públicas de PEYU
 export default function PublicNavBar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(null);
   const location = useLocation();
+  const cartCount = cartCountV2();
 
   const isActive = (path) => location.pathname === path || location.pathname.startsWith(path + '/');
 
@@ -91,7 +93,7 @@ export default function PublicNavBar() {
             })}
           </div>
 
-          {/* Help Menu */}
+          {/* Right side: Help + Cart */}
           <div className="flex items-center gap-1 ml-6">
             <div className="relative group">
               <button className="px-4 py-2.5 text-sm font-semibold rounded-lg text-[#7A6050] hover:text-[#2C1810] hover:bg-[#F8F3ED] transition-all flex items-center gap-1.5">
@@ -114,15 +116,30 @@ export default function PublicNavBar() {
                 </div>
               </div>
             </div>
+
+            {/* Cart Button */}
+            <Link
+              to="/CarritoNuevo"
+              className="relative ml-1 p-2.5 rounded-lg hover:bg-[#F8F3ED] transition-colors"
+              aria-label="Carrito"
+            >
+              <ShoppingCart className="w-5 h-5 text-[#2C1810]" />
+              {cartCount > 0 && (
+                <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 rounded-full text-white text-[10px] font-bold flex items-center justify-center"
+                  style={{ background: '#C0785C' }}>
+                  {cartCount}
+                </span>
+              )}
+            </Link>
           </div>
         </div>
       </nav>
 
       {/* MOBILE NAV */}
-      <nav className="md:hidden sticky top-0 z-50 bg-white/95 backdrop-blur-xl border-b border-[#E0D5C8]/60">
-        <div className="px-4 h-14 flex items-center justify-between">
-          {/* Logo */}
-          <Link to="/" className="flex-shrink-0">
+      <nav className="md:hidden sticky top-0 z-50 bg-white/97 backdrop-blur-xl border-b border-[#E0D5C8]/60" style={{ boxShadow: '0 1px 8px rgba(44,24,16,.07)' }}>
+        <div className="px-4 h-14 flex items-center justify-between gap-2">
+          {/* Logo — siempre lleva a inicio */}
+          <Link to="/" className="flex-shrink-0" onClick={() => setMobileOpen(false)}>
             <img
               src="https://media.base44.com/images/public/69d99b9d61f699701129c103/b67ed29f9_image.png"
               alt="PEYU"
@@ -132,18 +149,52 @@ export default function PublicNavBar() {
             />
           </Link>
 
-          {/* Menu Button */}
-          <button
-            onClick={() => setMobileOpen(!mobileOpen)}
-            className="p-2 rounded-lg hover:bg-[#F8F3ED] transition-colors"
-            aria-label="Menú"
-          >
-            {mobileOpen ? (
-              <X className="w-6 h-6 text-[#2C1810]" />
-            ) : (
-              <Menu className="w-6 h-6 text-[#2C1810]" />
-            )}
-          </button>
+          {/* Tienda + Empresas quick links */}
+          <div className="flex items-center gap-0.5 flex-1 justify-center">
+            <Link
+              to="/CatalogoNuevo"
+              onClick={() => setMobileOpen(false)}
+              className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-colors ${isActive('/CatalogoNuevo') ? 'text-[#C0785C] bg-[#C0785C]/10' : 'text-[#7A6050] hover:bg-[#F8F3ED]'}`}
+            >
+              Tienda
+            </Link>
+            <Link
+              to="/EmpresasNuevo"
+              onClick={() => setMobileOpen(false)}
+              className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-colors ${isActive('/EmpresasNuevo') ? 'text-[#0F8B6C] bg-[#0F8B6C]/10' : 'text-[#7A6050] hover:bg-[#F8F3ED]'}`}
+            >
+              Empresas
+            </Link>
+          </div>
+
+          {/* Cart + Menu */}
+          <div className="flex items-center gap-1 flex-shrink-0">
+            <Link
+              to="/CarritoNuevo"
+              onClick={() => setMobileOpen(false)}
+              className="relative p-2 rounded-lg hover:bg-[#F8F3ED] transition-colors"
+              aria-label="Carrito"
+            >
+              <ShoppingCart className="w-5 h-5 text-[#2C1810]" />
+              {cartCount > 0 && (
+                <span className="absolute -top-0.5 -right-0.5 min-w-[17px] h-[17px] px-0.5 rounded-full text-white text-[9px] font-bold flex items-center justify-center"
+                  style={{ background: '#C0785C' }}>
+                  {cartCount}
+                </span>
+              )}
+            </Link>
+            <button
+              onClick={() => setMobileOpen(!mobileOpen)}
+              className="p-2 rounded-lg hover:bg-[#F8F3ED] transition-colors"
+              aria-label="Menú"
+            >
+              {mobileOpen ? (
+                <X className="w-5 h-5 text-[#2C1810]" />
+              ) : (
+                <Menu className="w-5 h-5 text-[#2C1810]" />
+              )}
+            </button>
+          </div>
         </div>
 
         {/* Mobile Menu */}
