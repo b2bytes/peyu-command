@@ -537,8 +537,18 @@ html[data-liquid-mode="day"] {
   /* Tap targets más cómodos en mobile (mín 44x44 = HIG Apple) */
   @media (max-width: 640px) {
     button, a[role="button"], .peyu-tap {
-      min-height: 36px;
+      min-height: 44px;
+      min-width: 44px;
     }
+    /* Chips/badges pequeños intencionales pueden optar out con .peyu-tap-sm */
+    .peyu-tap-sm { min-height: 32px; min-width: auto; }
+  }
+
+  /* Touch responsivo: elimina el delay de 300ms y el doble-tap zoom en
+     botones/links. También quita el flash gris azulado de iOS al tocar. */
+  button, a, [role="button"], input, select, textarea {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
   }
 
   /* Mejor anti-aliasing y line-height en mobile para mayor legibilidad */
