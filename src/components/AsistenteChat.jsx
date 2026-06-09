@@ -3,7 +3,7 @@ import { useLocation } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Send, X, History, Sparkles, Gift, Building2, Leaf } from 'lucide-react';
+import { Send, X, History, Sparkles, Gift, Building2, Leaf, ImagePlus } from 'lucide-react';
 import ChatProductContentLight from '@/components/chat/ChatMessageContentLight';
 import ChatHistoryPanel from '@/components/chat/ChatHistoryPanel';
 import FloatingActionDock from '@/components/FloatingActionDock';
@@ -42,6 +42,10 @@ export default function AsistenteChat() {
   const [input, setInput] = useState('');
   const [conversationId, setConversationId] = useState(() => localStorage.getItem(STORAGE_KEY) || null);
   const [loading, setLoading] = useState(false);
+  // Visión: imagen adjunta por el usuario (foto/screenshot) que el agente analiza
+  const [attachedImage, setAttachedImage] = useState(null); // { url, name }
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef(null);
   const messagesEndRef = useRef(null);
   const unsubRef = useRef(null);
   const firstMountRef = useRef(true);
@@ -143,10 +147,12 @@ export default function AsistenteChat() {
 
   const sendMessage = useCallback(async () => {
     const text = input.trim();
-    if (!text || loading) return;
+    const image = attachedImage;
+    if ((!text && !image) || loading) return;
     setInput('');
+    setAttachedImage(null);
     setLoading(true);
-    setMessages(prev => [...prev, { role: 'user', content: text }]);
+    setMessages(prev => [...prev, { role: 'user', content: text || '📷 Imagen adjunta', file_urls: image ? [image.url] : undefined }]);
 
     // Detectar cantidad para precargar cotizador B2B desde tarjetas
     const qtyMatch = text.match(/\b(\d{2,5})\b\s*(u\.?|unidades|pcs|piezas|regalos)?/i);
@@ -175,15 +181,36 @@ export default function AsistenteChat() {
       }
       // Inyectamos el contexto de página (producto visto, carrito, ruta) al mensaje
       // que recibe el agente. El usuario sigue viendo solo su texto en la UI.
-      const contextualized = await withContext(text);
-      await base44.agents.addMessage(conv, { role: 'user', content: contextualized });
+      const contextualized = await withContext(text || 'Te adjunto una imagen. Analízala y ayúdame en base a lo que ves.');
+      await base44.agents.addMessage(conv, {
+        role: 'user',
+        content: contextualized,
+        ...(image ? { file_urls: [image.url] } : {}),
+      });
       // Registrar/actualizar esta conversación en el historial (título = primer mensaje del user)
-      addToHistory(convId, text);
+      addToHistory(convId, text || 'Imagen adjunta');
     } catch (e) {
       console.error('Error enviando mensaje:', e);
       setLoading(false);
     }
-  }, [input, loading, conversationId]);
+  }, [input, attachedImage, loading, conversationId]);
+
+  // Adjuntar imagen: se sube y se envía junto al mensaje — el agente tiene
+  // visión nativa y puede analizar fotos/screenshots del cliente.
+  const handleAttachImage = useCallback(async (e) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file || !file.type.startsWith('image/')) return;
+    setUploading(true);
+    try {
+      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      setAttachedImage({ url: file_url, name: file.name });
+    } catch (err) {
+      console.error('Error subiendo imagen:', err);
+    } finally {
+      setUploading(false);
+    }
+  }, []);
 
   // Reabrir una conversación del historial
   const handleResume = useCallback(async (id) => {
@@ -374,7 +401,14 @@ export default function AsistenteChat() {
                 >
                   {msg.role === 'assistant'
                     ? <ChatProductContentLight content={msg.content} />
-                    : msg.content}
+                    : (
+                      <>
+                        {msg.file_urls?.[0] && (
+                          <img src={msg.file_urls[0]} alt="Imagen adjunta" className="rounded-lg mb-1.5 max-h-40 w-auto" />
+                        )}
+                        {msg.content}
+                      </>
+                    )}
                 </div>
               </div>
             ))}
@@ -391,7 +425,29 @@ export default function AsistenteChat() {
           </div>
 
           {/* Input */}
-          <div className="border-t border-gray-100 p-3 flex gap-2 flex-shrink-0 bg-white">
+          <div className="border-t border-gray-100 p-3 flex-shrink-0 bg-white">
+            {attachedImage && (
+              <div className="flex items-center gap-2 mb-2 bg-teal-50 border border-teal-200 rounded-lg px-2.5 py-1.5">
+                <img src={attachedImage.url} alt="" className="w-8 h-8 rounded object-cover" />
+                <span className="text-[11px] text-teal-800 font-medium flex-1 truncate">{attachedImage.name}</span>
+                <button onClick={() => setAttachedImage(null)} className="text-teal-600 hover:text-teal-800 p-1" aria-label="Quitar imagen">
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            )}
+            <div className="flex gap-2">
+            <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleAttachImage} />
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              disabled={loading || uploading}
+              className="flex-shrink-0 w-10 h-10 rounded-xl border border-gray-200 hover:border-teal-300 hover:bg-teal-50 flex items-center justify-center text-gray-500 hover:text-teal-600 transition disabled:opacity-50"
+              aria-label="Adjuntar imagen"
+              title="Adjuntar imagen o screenshot"
+            >
+              {uploading
+                ? <div className="w-4 h-4 border-2 border-teal-300 border-t-teal-600 rounded-full animate-spin" />
+                : <ImagePlus className="w-4 h-4" />}
+            </button>
             <Input
               value={input}
               onChange={e => setInput(e.target.value)}
@@ -402,12 +458,13 @@ export default function AsistenteChat() {
             />
             <Button
               onClick={sendMessage}
-              disabled={loading || !input.trim()}
+              disabled={loading || uploading || (!input.trim() && !attachedImage)}
               size="sm"
               className="bg-gradient-to-r from-teal-600 to-cyan-600 hover:from-teal-700 hover:to-cyan-700 text-white rounded-xl px-4"
             >
               <Send className="w-4 h-4" />
             </Button>
+            </div>
           </div>
         </div>
       )}
