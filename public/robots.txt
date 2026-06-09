@@ -1,65 +1,40 @@
-# ============================================================
-# PEYU Chile · robots.txt
-# ============================================================
-# Política: indexación abierta para todo el catálogo público.
-# Bloqueamos solo paneles admin, búsquedas internas y carrito.
-# ============================================================
+# PEYU Chile · Robots.txt · SEO Sitemap + Crawl Directives
+# ═══════════════════════════════════════════════════════════════════
 
+# ─ ALLOW ALL: Google, Bing, Yandex, AI crawlers
 User-agent: *
 Allow: /
 Disallow: /admin/
-Disallow: /admin
-Disallow: /cart
-Disallow: /seguimiento?
-Disallow: /b2b/mi-cuenta
-Disallow: /*?utm_*
-Disallow: /*?fbclid=
-Disallow: /*?gclid=
-Crawl-delay: 1
+Disallow: /brand/
+Disallow: /design-lab/
+Disallow: /v2/
+Disallow: /test-index
+Disallow: /shop-legacy
 
-# Acceso explícito para Googlebot (sin crawl-delay)
+# ─ Google-specific directives
 User-agent: Googlebot
 Allow: /
 Disallow: /admin/
-Disallow: /cart
-Disallow: /b2b/mi-cuenta
 
-# Acceso para Google Shopping bot
-User-agent: Googlebot-Image
-Allow: /
-
-User-agent: AdsBot-Google
-Allow: /
-
-# Acceso para Bing
+# ─ Bing/Yandex
 User-agent: Bingbot
 Allow: /
 Disallow: /admin/
-Disallow: /cart
 
-# Acceso para crawlers IA (claude, gpt, perplexity)
-User-agent: GPTBot
+User-agent: Yandexbot
 Allow: /
+Disallow: /admin/
 
-User-agent: ClaudeBot
-Allow: /
+# ─ Crawl delay (no seas agresivo con pequeños servidores)
+User-agent: *
+Crawl-delay: 1
+Request-rate: 1/1s
 
-User-agent: PerplexityBot
-Allow: /
-
-User-agent: Google-Extended
-Allow: /
-
-# ============================================================
-# Sitemaps
-# ============================================================
+# ─ Sitemap principal (Google, Bing, Yandex lo usan)
 Sitemap: https://peyuchile.cl/sitemap.xml
 Sitemap: https://peyuchile.cl/sitemap-products.xml
-Sitemap: https://peyuchile.cl/sitemap-blog.xml
+Sitemap: https://peyuchile.cl/sitemap-pages.xml
 
-# Feed Google Shopping / Facebook Catalog / Pinterest
-# Configurar como feed programado en Merchant Center
-# Feed URL: https://peyuchile.cl/feed/google-merchant.xml
-
-# Host preferido
-Host: peyuchile.cl
+# ─ No indexar staging/preview (de base44)
+Disallow: /preview/
+Disallow: /_vercel/

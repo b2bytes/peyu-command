@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
+import SEOHead from '@/components/SEOHead';
 import { ArrowRight, Recycle, Sparkles } from 'lucide-react';
 import MobileNavBarV2 from '@/components/shopv2/MobileNavBarV2';
 import PublicNavBar from '@/components/PublicNavBar';
@@ -44,6 +45,12 @@ export default function TiendaNueva() {
 
   return (
     <div className="min-h-screen font-inter pb-16 lg:pb-0" style={{ background: '#F8F3ED', color: '#2C1810' }}>
+      <SEOHead
+        title="Tienda PEYU — Regalos Corporativos 100% Sostenibles"
+        description="Compra regalos corporativos hechos con plástico 100% reciclado. Personalización láser UV gratis desde 10 unidades. Envío BlueExpress a todo Chile."
+        url="https://peyuchile.cl/"
+        type="website"
+      />
       <PublicNavBar />
 
       {/* 1 · HERO BOLD */}

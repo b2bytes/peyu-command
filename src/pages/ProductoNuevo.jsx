@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { useLocation, Link, useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
+import SEOHead from '@/components/SEOHead';
 import {
   ArrowLeft, Recycle, ShieldCheck, Truck, Check, Loader2, ShoppingBag, Sparkles, Lock,
 } from 'lucide-react';
@@ -243,8 +244,37 @@ export default function ProductoNuevo() {
 
   const esCompostable = producto.material?.includes('Trigo') || producto.categoria === 'Carcasas B2C';
 
+  // SEO: metaetiquetas dinámicas por producto
+  const seoUrl = `https://peyuchile.cl/ProductoNuevo?id=${id}`;
+  const seoImage = color ? getProductImageForColor(producto, color) : getProductImage(producto);
+  const seoSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'Product',
+    name: producto.nombre,
+    description: producto.descripcion || `${producto.nombre} - ${producto.categoria}`,
+    image: seoImage,
+    brand: { '@type': 'Brand', name: 'PEYU Chile' },
+    offers: {
+      '@type': 'Offer',
+      url: seoUrl,
+      priceCurrency: 'CLP',
+      price: precioUnit.toString(),
+      availability: 'https://schema.org/InStock',
+    },
+    category: producto.categoria,
+    material: producto.material,
+  };
+
   return (
     <div className="min-h-screen font-inter pb-20 lg:pb-0" style={{ background: '#F8F3ED', color: '#2C1810' }}>
+      <SEOHead
+        title={`${producto.nombre} - PEYU Chile`}
+        description={producto.descripcion || `Compra ${producto.nombre} personalizado. Regalos corporativos sostenibles hechos con plástico 100% reciclado.`}
+        image={seoImage}
+        url={seoUrl}
+        type="product"
+        schema={seoSchema}
+      />
       <PublicNavBar />
 
       <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-2 sm:py-4">

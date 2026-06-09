@@ -1,6 +1,8 @@
 import { useState, useEffect, useMemo, memo } from 'react';
 import { useLocation } from 'react-router-dom';
+import { useState, useEffect, useMemo, memo } from 'react';
 import { base44 } from '@/api/base44Client';
+import SEOHead from '@/components/SEOHead';
 import { Search, SlidersHorizontal, PackageOpen, Smartphone, AlertCircle } from 'lucide-react';
 import MobileNavBarV2 from '@/components/shopv2/MobileNavBarV2';
 import PublicNavBar from '@/components/PublicNavBar';
@@ -109,6 +111,12 @@ export default function CatalogoNuevo() {
 
   return (
     <div className="min-h-screen font-inter pb-16 lg:pb-0" style={{ background: '#F8F3ED', color: '#2C1810' }}>
+      <SEOHead
+        title="Catálogo Completo — PEYU Chile"
+        description="Explora nuestro catálogo completo de regalos corporativos sustentables. Carcasas iPhone, organizadores, maceteros y más en plástico 100% reciclado."
+        url="https://peyuchile.cl/CatalogoNuevo"
+        type="website"
+      />
       <PublicNavBar />
 
       <div className="max-w-6xl mx-auto px-3 sm:px-4 lg:px-6 py-3 sm:py-5">
