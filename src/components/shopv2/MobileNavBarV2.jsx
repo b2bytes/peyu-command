@@ -15,7 +15,7 @@ function NavTabs({ cartCount }) {
   const path = location.pathname;
 
   const tabs = [
-    { to: '/TiendaNueva', icon: Home, label: 'Inicio' },
+    { to: '/', icon: Home, label: 'Inicio' },
     { to: '/CatalogoNuevo', icon: LayoutGrid, label: 'Tienda' },
     { to: '/blog', icon: BookOpen, label: 'Blog' },
     { to: '/EmpresasNuevo', icon: Briefcase, label: 'B2B' },
@@ -25,7 +25,7 @@ function NavTabs({ cartCount }) {
   return (
     <div className="flex items-stretch h-16 sm:h-auto">
       {tabs.map((t) => {
-        const active = path === t.to || (t.to === '/CatalogoNuevo' && path === '/CatalogoNuevo');
+        const active = path === t.to || (t.to === '/' && path === '/') || (t.to !== '/' && path.startsWith(t.to));
         return (
           <Link key={t.to} to={t.to} className="flex-1 flex flex-col items-center justify-center gap-1 py-2.5 relative transition-colors hover:bg-white/30 active:bg-white/50">
             <div className="relative">
