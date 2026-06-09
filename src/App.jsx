@@ -59,6 +59,7 @@ import EmpresaProducto from './pages/EmpresaProducto';
 import B2BPropuestaPublica from './pages/B2BPropuesta';
 import FunnelDesignLab from './pages/FunnelDesignLab';
 import IndiceTest from './pages/IndiceTest';
+import ResumenOperativo from './pages/ResumenOperativo';
 
 // ── ADMIN PAGES (lazy + retry) ───────────────────────────────────────
 // Cargadas on-demand. Cada lazy() está envuelto en lazyWithRetry para
@@ -281,6 +282,7 @@ function App() {
               <Route path="/b2b/propuesta" element={<B2BPropuestaPublica />} />
               <Route path="/design-lab" element={<FunnelDesignLab />} />
               <Route path="/test-index" element={<IndiceTest />} />
+              <Route path="/resumen-operativo" element={<ResumenOperativo />} />
 
               {/* Presentación a fundadores - 22 layouts del design system */}
               <Route path="/founders-presentation" element={<FoundersPresentation />} />
