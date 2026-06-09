@@ -6,12 +6,14 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
+import SEOHead from '@/components/SEOHead';
 import {
   Building2, Loader2, Search, Recycle, TrendingDown, Sparkles,
   ShieldCheck, Truck, FileText, ArrowRight, Star,
 } from 'lucide-react';
 import B2BHeader from '@/components/b2b/B2BHeader';
 import B2BCatalogCard from '@/components/b2b/B2BCatalogCard';
+import MobileNavBarV2 from '@/components/shopv2/MobileNavBarV2';
 
 const CATEGORIAS = ['Todos', 'Corporativo', 'Escritorio', 'Hogar', 'Entretenimiento'];
 
@@ -72,7 +74,13 @@ export default function EmpresasNuevo() {
   }, [productos]);
 
   return (
-    <div className="min-h-screen font-inter" style={{ background: '#F8F3ED', color: '#2C1810' }}>
+    <div className="min-h-screen font-inter pb-16 lg:pb-0" style={{ background: '#F8F3ED', color: '#2C1810' }}>
+      <SEOHead
+        title="B2B Corporativo — PEYU | Regalos Mayoristas Sostenibles"
+        description="Soluciones B2B para empresas: precios por volumen, personalización masiva con logo, facturación y despacho a todo Chile."
+        url="https://peyuchile.cl/EmpresasNuevo"
+        type="website"
+      />
       <B2BHeader />
 
       {/* ── HERO ── */}
@@ -204,6 +212,8 @@ export default function EmpresasNuevo() {
           <span>PEYU · Plástico reciclado · Made in Santiago, Chile 🇨🇱</span>
         </div>
       </footer>
+
+      <MobileNavBarV2 />
     </div>
   );
 }
