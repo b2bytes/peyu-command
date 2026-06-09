@@ -257,6 +257,7 @@ function App() {
             <Routes>
               {/* Landing Page - Nueva tienda (MAIN) */}
               <Route path="/" element={<TiendaNueva />} />
+              <Route path="/tienda" element={<Navigate to="/CatalogoNuevo" replace />} />
 
               {/* Redireccionamientos 301 (SEO-safe) — preserva indexaciones */}
               <Route path="/shop" element={<Navigate to="/" replace />} />
