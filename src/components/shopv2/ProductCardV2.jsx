@@ -21,12 +21,13 @@ export default function ProductCardV2({ producto, index = 0 }) {
       onBlur={e => { e.currentTarget.style.boxShadow = 'none'; }}
       style={{ border: '1.5px solid #E8DDD0', animationDelay: `${Math.min(index, 11) * 50}ms` }}
     >
-      {/* Imagen */}
-      <div className="relative aspect-square overflow-hidden" style={{ background: '#F5F0EA' }}>
+      {/* Imagen: object-contain para ver el producto completo, con fondo cálido */}
+      <div className="relative overflow-hidden" style={{ background: 'linear-gradient(145deg,#F7F2EC,#EDE3D6)', aspectRatio: '1/1' }}>
         <img
           src={getProductImage(producto)}
           alt={producto.nombre}
-          className="w-full h-full object-cover group-hover:scale-[1.04] transition-transform duration-500 ease-out"
+          className="w-full h-full transition-transform duration-500 ease-out group-hover:scale-[1.06]"
+          style={{ objectFit: 'contain', objectPosition: 'center', padding: '6px' }}
           loading="lazy"
           onError={(e) => {
             e.target.src = 'https://media.base44.com/images/public/69d99b9d61f699701129c103/4a2230d61_generated_image.png';

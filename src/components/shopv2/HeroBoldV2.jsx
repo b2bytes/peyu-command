@@ -115,7 +115,7 @@ export default function HeroBoldV2({ heroImg, onPersonaliza }) {
             <div className="absolute -inset-10 rounded-[4rem] blur-3xl pointer-events-none opacity-35 sm:opacity-55"
               style={{ background: 'radial-gradient(ellipse at center, rgba(192,120,92,.18) 0%, rgba(139,173,138,.14) 60%, transparent 100%)' }} />
 
-            <div className="relative flex-1" style={{ maxWidth: '520px' }}>
+            <div className="relative flex-1 w-full" style={{ maxWidth: '520px' }}>
               <CarouselHeroV2
                 images={HERO_IMGS}
                 onImageClick={() => navigate('/CatalogoNuevo')}
