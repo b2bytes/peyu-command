@@ -1,7 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
-import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
-import { Search, BookOpen, TrendingUp, Clock, X, Plus } from 'lucide-react';
+import { Search, BookOpen, TrendingUp, Clock, X } from 'lucide-react';
 import BlogCard from '../components/blog/BlogCard';
 import BlogTopicChips, { BLOG_TOPICS, postMatchesTopic } from '../components/blog/BlogTopicChips';
 import EducationSection from '../components/blog/EducationSection';
@@ -96,16 +95,8 @@ export default function Blog() {
 
           {/* HERO editorial — más compacto en mobile */}
           <header className="text-center mb-10 sm:mb-16">
-            <div className="flex items-center justify-between mb-4 flex-col sm:flex-row gap-3">
-              <div className="inline-flex items-center gap-2 bg-teal-50 border border-teal-200 text-teal-800 px-3 py-1 sm:px-3.5 sm:py-1.5 rounded-full text-[10px] sm:text-[11px] font-bold uppercase tracking-[0.12em]">
-                <BookOpen className="w-3 h-3 sm:w-3.5 sm:h-3.5" /> Blog Peyu
-              </div>
-              <Link
-                to="/admin/marketing"
-                className="inline-flex items-center gap-1.5 bg-teal-600 hover:bg-teal-700 text-white px-3.5 py-1.5 rounded-full text-xs sm:text-[11px] font-bold transition-colors shadow-sm"
-              >
-                <Plus className="w-3.5 h-3.5" /> Crear post
-              </Link>
+            <div className="inline-flex items-center gap-2 bg-teal-50 border border-teal-200 text-teal-800 px-3 py-1 sm:px-3.5 sm:py-1.5 rounded-full text-[10px] sm:text-[11px] font-bold uppercase tracking-[0.12em] mb-4">
+              <BookOpen className="w-3 h-3 sm:w-3.5 sm:h-3.5" /> Blog Peyu
             </div>
             <h1 className="font-poppins font-extrabold text-slate-900 mb-3 sm:mb-4 tracking-tight leading-[1.05] text-[2rem] sm:text-6xl lg:text-7xl">
               Educación que{' '}
