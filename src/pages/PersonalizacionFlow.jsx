@@ -240,14 +240,13 @@ export default function PersonalizacionFlow() {
   const [cleanBaseLoading, setCleanBaseLoading] = useState(false);
 
   useEffect(() => {
-    base44.entities.Producto.list().then(data => {
-      const personalizables = data.filter(p => {
-        if (p.activo === false) return false;
+    base44.entities.Producto.filter({ activo: true }, '-updated_date', 200).then(data => {
+      const personalizables = (data || []).filter(p => {
         if (p.canal === 'B2B Exclusivo') return false;
-        if (!p.moq_personalizacion) return false;
+        if (p.categoria === 'Gift Card') return false;
         const sku = String(p.sku || '').toUpperCase();
         if (sku.startsWith('GC-PEYU')) return false;
-        if (p.categoria === 'Gift Card') return false;
+        if (!p.precio_b2c) return false;
         return true;
       });
       setProductos(personalizables);
