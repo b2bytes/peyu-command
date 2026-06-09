@@ -763,7 +763,7 @@ export default function PersonalizacionFlow() {
 
   // ── LAYOUT ─────────────────────────────────────────────────────────────────
   return (
-    <div className="min-h-screen flex flex-col font-inter pb-28" style={{ background: C.bg }}>
+    <div className="min-h-screen flex flex-col font-inter pb-32" style={{ background: C.bg, WebkitOverflowScrolling: 'touch' }}>
       <PublicSEO
         pageKey="personalizar"
         breadcrumbs={[
@@ -814,13 +814,17 @@ export default function PersonalizacionFlow() {
       </div>
 
       {/* ── CTA PERSISTENTE (sticky bottom) ────────────────────────────────── */}
-      <div className="fixed bottom-0 inset-x-0 z-50 max-w-lg mx-auto px-4 pb-safe"
-        style={{ paddingBottom: 'max(env(safe-area-inset-bottom, 0px), 12px)', paddingTop: '12px',
+      <div className="fixed bottom-0 left-0 right-0 z-50 px-4"
+        style={{
+          paddingBottom: 'max(env(safe-area-inset-bottom, 0px), 16px)',
+          paddingTop: '12px',
           background: 'rgba(248,243,237,.97)',
           borderTop: `1.5px solid ${C.border}`,
           backdropFilter: 'blur(16px)',
+          WebkitBackdropFilter: 'blur(16px)',
           boxShadow: '0 -4px 20px rgba(44,24,16,.1)',
         }}>
+        <div className="max-w-lg mx-auto">
 
         {/* Indicador del producto elegido (visible desde paso 1+) */}
         {step >= 1 && producto && (
@@ -864,6 +868,7 @@ export default function PersonalizacionFlow() {
             {!opcion ? 'Elige qué tipo de grabado quieres' : 'Completa tu diseño para continuar'}
           </p>
         )}
+        </div>
       </div>
 
       {/* Modal mockup IA */}
