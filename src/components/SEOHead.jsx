@@ -1,55 +1,61 @@
-import { Helmet } from 'react-helmet-async';
+import { useEffect } from 'react';
 
 /**
- * SEOHead — Componente reutilizable para inyectar metaetiquetas dinámicas en <head>
- * Usado por ProductoNuevo, CatalogoNuevo, TiendaNueva, etc.
- * 
- * Props:
- * - title: Título página (50-60 chars ideal)
- * - description: Meta description (150-160 chars ideal)
- * - image: URL imagen para OG/Twitter (1200x630 recomendado)
- * - url: URL canónica completa (ej: https://peyuchile.cl/ProductoNuevo?id=123)
- * - type: og:type (website, product, etc.)
- * - keywords: string separado por comas (opcional)
- * - schema: object JSON-LD (opcional)
+ * SEOHead — Inyecta metaetiquetas dinámicas sin librerías externas.
+ * Usa useEffect para actualizar document.head directamente.
  */
-export default function SEOHead({ title, description, image, url, type = 'website', keywords, schema, children }) {
-  const siteUrl = 'https://peyuchile.cl';
-  const finalUrl = url || siteUrl;
-  const finalImage = image || 'https://media.base44.com/images/public/69d99b9d61f699701129c103/b5b3cf211_kitclassssprro2.jpg';
+export default function SEOHead({ title, description, image, url, type = 'website', schema }) {
+  const defaultImage = 'https://media.base44.com/images/public/69d99b9d61f699701129c103/b5b3cf211_kitclassssprro2.jpg';
+  const finalTitle = title || 'PEYU Chile — Regalos Corporativos Sostenibles';
+  const finalImage = image || defaultImage;
+  const finalUrl = url || 'https://peyuchile.cl';
 
-  return (
-    <Helmet prioritizeSeoTags>
-      {/* Basic SEO */}
-      <title>{title || 'PEYU Chile — Regalos Corporativos Sostenibles'}</title>
-      <meta name="description" content={description} />
-      {keywords && <meta name="keywords" content={keywords} />}
-      <link rel="canonical" href={finalUrl} />
+  useEffect(() => {
+    // Title
+    document.title = finalTitle;
 
-      {/* Open Graph (Facebook, LinkedIn, etc.) */}
-      <meta property="og:type" content={type} />
-      <meta property="og:title" content={title} />
-      <meta property="og:description" content={description} />
-      <meta property="og:url" content={finalUrl} />
-      <meta property="og:image" content={finalImage} />
-      <meta property="og:site_name" content="PEYU Chile" />
-      <meta property="og:locale" content="es_CL" />
+    const setMeta = (nameOrProp, attr, content) => {
+      if (!content) return;
+      const selector = `meta[${attr}="${nameOrProp}"]`;
+      let el = document.querySelector(selector);
+      if (!el) {
+        el = document.createElement('meta');
+        el.setAttribute(attr, nameOrProp);
+        document.head.appendChild(el);
+      }
+      el.setAttribute('content', content);
+    };
 
-      {/* Twitter Card */}
-      <meta name="twitter:card" content="summary_large_image" />
-      <meta name="twitter:title" content={title} />
-      <meta name="twitter:description" content={description} />
-      <meta name="twitter:image" content={finalImage} />
+    // Basic SEO
+    setMeta('description', 'name', description);
+    setMeta('robots', 'name', 'index, follow');
 
-      {/* JSON-LD Schema (Google Rich Snippets) */}
-      {schema && (
-        <script type="application/ld+json">
-          {JSON.stringify(schema)}
-        </script>
-      )}
+    // Canonical
+    let canonical = document.querySelector('link[rel="canonical"]');
+    if (!canonical) { canonical = document.createElement('link'); canonical.rel = 'canonical'; document.head.appendChild(canonical); }
+    canonical.href = finalUrl;
 
-      {/* Adicionales inyectados por el componente hijo */}
-      {children}
-    </Helmet>
-  );
+    // Open Graph
+    setMeta('og:title', 'property', finalTitle);
+    setMeta('og:description', 'property', description);
+    setMeta('og:url', 'property', finalUrl);
+    setMeta('og:image', 'property', finalImage);
+    setMeta('og:type', 'property', type);
+
+    // Twitter
+    setMeta('twitter:title', 'name', finalTitle);
+    setMeta('twitter:description', 'name', description);
+    setMeta('twitter:image', 'name', finalImage);
+    setMeta('twitter:card', 'name', 'summary_large_image');
+
+    // JSON-LD Schema
+    if (schema) {
+      const id = 'seohead-jsonld';
+      let ld = document.getElementById(id);
+      if (!ld) { ld = document.createElement('script'); ld.id = id; ld.type = 'application/ld+json'; document.head.appendChild(ld); }
+      ld.textContent = JSON.stringify(schema);
+    }
+  }, [finalTitle, description, finalImage, finalUrl, type]);
+
+  return null;
 }
