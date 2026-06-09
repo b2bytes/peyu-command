@@ -1,9 +1,15 @@
 import { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { X, Download, Smartphone } from 'lucide-react';
 import { PWA_UTILS } from '@/lib/pwa-utils';
 import { Button } from '@/components/ui/button';
 
+// Rutas del flujo de compra: el banner NO debe taparle el CTA de pagar/comprar
+// (en mobile ambos viven fixed bottom-0 y este banner quedaba ENCIMA).
+const PURCHASE_ROUTES = ['/ProductoNuevo', '/CarritoNuevo', '/CheckoutNuevo', '/personalizar'];
+
 export default function PWAInstallBanner() {
+  const { pathname } = useLocation();
   const [showBanner, setShowBanner] = useState(false);
   const [deferredPrompt, setDeferredPrompt] = useState(null);
   const [platform, setPlatform] = useState('');
@@ -57,6 +63,7 @@ export default function PWAInstallBanner() {
   }, []);
 
   if (!showBanner) return null;
+  if (PURCHASE_ROUTES.some((r) => pathname.startsWith(r))) return null;
 
   const instructions = PWA_UTILS.getInstallInstructions();
 
@@ -84,7 +91,7 @@ export default function PWAInstallBanner() {
   if (!canShowAndroidPrompt && !isIOS) return null;
 
   return (
-    <div className="fixed bottom-[68px] left-0 right-0 z-[60] bg-gradient-to-t from-slate-900 via-slate-900/95 to-transparent backdrop-blur-md border-t border-teal-500/30 rounded-t-2xl p-3 sm:p-4">
+    <div className="fixed bottom-0 left-0 right-0 z-50 bg-gradient-to-t from-slate-900 via-slate-900/95 to-transparent backdrop-blur-md border-t border-teal-500/30 p-3 sm:p-4 safe-bottom">
       <div className="max-w-2xl mx-auto">
         {/* Header */}
         <div className="flex items-start justify-between gap-2 sm:gap-3 mb-2.5 sm:mb-3">
