@@ -267,14 +267,31 @@ function App() {
               <Route path="/Empresas" element={<Navigate to="/EmpresasNuevo" replace />} />
               {/* Catch-all de URLs comunes de campañas / links compartidos */}
               <Route path="/tienda" element={<Navigate to="/" replace />} />
+              <Route path="/Tienda-legacy" element={<Navigate to="/" replace />} />
               <Route path="/inicio" element={<Navigate to="/" replace />} />
+              <Route path="/Inicio" element={<Navigate to="/" replace />} />
               <Route path="/home" element={<Navigate to="/" replace />} />
+              <Route path="/Home" element={<Navigate to="/" replace />} />
               <Route path="/catalogo" element={<Navigate to="/CatalogoNuevo" replace />} />
+              <Route path="/Catalogo" element={<Navigate to="/CatalogoNuevo" replace />} />
               <Route path="/productos" element={<Navigate to="/CatalogoNuevo" replace />} />
+              <Route path="/Productos" element={<Navigate to="/CatalogoNuevo" replace />} />
               <Route path="/empresas" element={<Navigate to="/EmpresasNuevo" replace />} />
+              <Route path="/Empresas-legacy" element={<Navigate to="/EmpresasNuevo" replace />} />
               <Route path="/comprar" element={<Navigate to="/CatalogoNuevo" replace />} />
+              <Route path="/Comprar" element={<Navigate to="/CatalogoNuevo" replace />} />
               <Route path="/checkout" element={<Navigate to="/CheckoutNuevo" replace />} />
+              <Route path="/Checkout" element={<Navigate to="/CheckoutNuevo" replace />} />
               <Route path="/carrito" element={<Navigate to="/CarritoNuevo" replace />} />
+              <Route path="/Carrito" element={<Navigate to="/CarritoNuevo" replace />} />
+              <Route path="/cart" element={<Navigate to="/CarritoNuevo" replace />} />
+              <Route path="/Cart" element={<Navigate to="/CarritoNuevo" replace />} />
+              
+              {/* Variaciones minúsculas / typos comunes desde Google / campañas antiguas */}
+              <Route path="/Shop" element={<Navigate to="/" replace />} />
+              <Route path="/SHOP" element={<Navigate to="/" replace />} />
+              <Route path="/Producto" element={<Navigate to="/ProductoNuevo" replace />} />
+              <Route path="/PRODUCTO" element={<Navigate to="/ProductoNuevo" replace />} />
               
               {/* Legacy - mantener disponible pero no indexado (noindex) */}
               <Route path="/shop-legacy" element={<Shop />} />
