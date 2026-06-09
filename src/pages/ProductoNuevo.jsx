@@ -51,11 +51,29 @@ export default function ProductoNuevo() {
   const [galIdx, setGalIdx] = useState(0);
   const mockupRef = useRef(null);
 
+  const [error, setError] = useState(null);
+  
   useEffect(() => {
     if (!id) { setLoading(false); return; }
-    base44.entities.Producto.filter({ id }).then((rows) => {
-      setProducto(rows?.[0] || null);
-    }).finally(() => setLoading(false));
+    let retries = 0;
+    const cargar = () => {
+      base44.entities.Producto.filter({ id })
+        .then((rows) => {
+          setProducto(rows?.[0] || null);
+          setError(null);
+        })
+        .catch((err) => {
+          // Retry automático hasta 3 veces (conexión intermitente)
+          if (retries < 3) {
+            retries++;
+            setTimeout(cargar, 1000 * retries);
+          } else {
+            setError('Error de conexión. Por favor recarga la página.');
+          }
+        })
+        .finally(() => setLoading(false));
+    };
+    cargar();
   }, [id]);
 
   // ¿Es carcasa? Usa la función inteligente que deduce de categoría/nombre/BD.
@@ -235,7 +253,12 @@ export default function ProductoNuevo() {
       <div className="min-h-screen font-inter" style={{ background: '#F8F3ED' }}>
         <PublicNavBar />
         <div className="text-center py-32 px-4">
-          <p className="font-bold mb-2" style={{ color: '#2C1810' }}>Producto no encontrado</p>
+          <p className="font-bold mb-2" style={{ color: '#2C1810' }}>
+            {error ? 'Error de conexión' : 'Producto no encontrado'}
+          </p>
+          <p className="text-sm mb-4" style={{ color: '#7A6050' }}>
+            {error || 'Este producto no existe o fue eliminado.'}
+          </p>
           <Link to="/CatalogoNuevo" className="font-bold text-sm" style={{ color: '#C0785C' }}>← Volver a la tienda</Link>
         </div>
       </div>
