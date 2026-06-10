@@ -1,7 +1,18 @@
 import { useRef, useEffect } from 'react';
 import { ArrowUp, Loader2 } from 'lucide-react';
 
-const CHIPS = ['Ventas de hoy', 'Pedidos pendientes', 'Stock bajo', 'Cotizaciones B2B'];
+// Accesos a TODOS los módulos del negocio desde la misma conversación:
+// dashboard, pedidos, envíos Bluex, pipeline B2B, catálogo, clientes.
+const CHIPS = [
+  'Resumen del día',
+  'Ventas de hoy',
+  'Pedidos pendientes',
+  'Envíos BlueExpress',
+  'Pipeline B2B',
+  'Cotizaciones B2B',
+  'Stock bajo',
+  'Clientes',
+];
 
 // Barra de comando fija abajo: chips de sugerencias + textarea + enviar.
 export default function CommandBar({ value, onChange, onSend, onChip, loading }) {
@@ -24,14 +35,14 @@ export default function CommandBar({ value, onChange, onSend, onChip, loading })
   return (
     <div className="flex-shrink-0 px-3 sm:px-4 pb-3 sm:pb-4 pt-2 pb-safe bg-gradient-to-t from-ld-bg to-transparent">
       <div className="max-w-[820px] mx-auto w-full">
-        {/* Chips — envuelven en móvil (sin scroll lateral) */}
-        <div className="flex flex-wrap gap-2 pb-2.5">
+        {/* Chips — 1 fila con scroll horizontal (no tapan el input en móvil) */}
+        <div className="flex gap-2 pb-2.5 overflow-x-auto scrollbar-hide -mx-3 px-3 sm:mx-0 sm:px-0">
           {CHIPS.map((c) => (
             <button
               key={c}
               onClick={() => onChip(c)}
               disabled={loading}
-              className="flex-shrink-0 text-xs px-3 py-1.5 rounded-full ld-glass-soft text-ld-fg-soft hover:text-ld-fg hover:border-ld-action/50 transition-colors disabled:opacity-50"
+              className="flex-shrink-0 whitespace-nowrap text-xs px-3 py-1.5 rounded-full ld-glass-soft text-ld-fg-soft hover:text-ld-fg hover:border-ld-action/50 transition-colors disabled:opacity-50"
             >
               {c}
             </button>

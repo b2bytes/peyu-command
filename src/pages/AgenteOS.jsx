@@ -22,7 +22,6 @@ import AgentMobileDrawer from '@/components/agente-os/AgentMobileDrawer';
 import { detectCards } from '@/components/agente-os/intent';
 import OpsCenter from '@/components/agente-os/OpsCenter';
 import ActionProposalCard from '@/components/agente-os/ActionProposalCard';
-import { MessageCircle, LayoutDashboard } from 'lucide-react';
 
 const PEYU_OS_PROMPT = `Eres Peyu, el Agent OS interno de PEYU Chile (marca sustentable: "Hasta que el plástico deje de ser basura"). Hablas en español, cálido pero directo y breve. El founder te habla para administrar TODO el negocio desde este chat. Cuando te pregunten por una métrica o registros, responde con UNA o DOS frases cálidas que resuman lo clave y NOMBRA los registros concretos si los tienes en "DETALLE CONCRETO" — la pantalla mostrará automáticamente una TARJETA RICA debajo de tu mensaje con la lista completa y BOTONES DE ACCIÓN. Nunca digas "te las muestro" sin nombrarlas: usa el detalle que te paso.
 
@@ -157,7 +156,7 @@ Stock bajo (<10u): ${m.stock_bajo} SKUs · consultas sin responder: ${m.consulta
   };
 
   return (
-    <div className="ld-canvas flex h-[100dvh] w-full overflow-hidden font-inter">
+    <div className="ld-canvas flex h-full w-full overflow-hidden font-inter">
       <AgentSidebar
         open={sidebarOpen}
         onToggle={() => setSidebarOpen((v) => !v)}
@@ -177,23 +176,9 @@ Stock bajo (<10u): ${m.stock_bajo} SKUs · consultas sin responder: ${m.consulta
           onRefresh={() => loadData(true)}
           refreshing={refreshing}
           onMobileMenu={() => setMobileDrawer(true)}
+          view={view}
+          onView={setView}
         />
-
-        {/* Toggle Chat ↔ Operaciones */}
-        <div className="flex items-center gap-1.5 px-3 sm:px-4 pt-2.5">
-          <button
-            onClick={() => setView('chat')}
-            className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold border transition-colors ${view === 'chat' ? 'ld-btn-primary !border-transparent' : 'ld-btn-ghost text-ld-fg-soft'}`}
-          >
-            <MessageCircle className="w-3.5 h-3.5" /> Chat
-          </button>
-          <button
-            onClick={() => setView('ops')}
-            className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold border transition-colors ${view === 'ops' ? 'ld-btn-primary !border-transparent' : 'ld-btn-ghost text-ld-fg-soft'}`}
-          >
-            <LayoutDashboard className="w-3.5 h-3.5" /> Operaciones
-          </button>
-        </div>
 
         {loading ? (
           <div className="flex-1 flex items-center justify-center gap-3 text-ld-fg-muted">

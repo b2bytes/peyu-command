@@ -10,6 +10,15 @@
 // ════════════════════════════════════════════════════════════════════════
 
 export const CHANGELOG = [
+  // ── 10 junio 2026 · Agent OS móvil: header compacto + input persistente ──
+  {
+    fecha: '2026-06-10',
+    tipo: 'mejora',
+    area: 'Agent OS',
+    titulo: 'Diseño móvil del agente: marca, toggle integrado e input siempre visible',
+    detalle: 'El header del Agent OS se desarmaba en móvil y los botones flotantes del admin (Comando + Companion) tapaban el input del chat. Ahora: header compacto con marca PEYU (🐢 Peyu Agent OS · En línea) y el toggle Chat/Operaciones integrado como control segmentado; el input del chat queda persistente al fondo de la pantalla; los chips de acceso rápido cubren todos los módulos (Resumen del día, Ventas, Pedidos, Envíos BlueExpress, Pipeline B2B, Cotizaciones, Stock, Clientes) en una fila deslizable; y los FABs flotantes ya no aparecen en las páginas de agente.',
+  },
+
   // ── 10 junio 2026 · Catálogo B2B simplificado + flujo lineal ────────────
   {
     fecha: '2026-06-10',
