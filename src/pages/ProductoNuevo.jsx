@@ -255,6 +255,19 @@ export default function ProductoNuevo() {
       .catch(() => { /* sin base limpia: el mockup sigue con la foto normal */ });
   }, [producto, esCarcasa, muestraMockup, cleanBaseUrl]);
 
+  // Mobile: cuando el cliente carga su logo o elige un diseño PEYU, la página
+  // sube SOLA al mockup (que vive arriba, en el lugar de la foto principal)
+  // para que el resultado se vea de inmediato. No aplica al tipear la frase.
+  const firstArtRef = useRef(true);
+  useEffect(() => {
+    if (firstArtRef.current) { firstArtRef.current = false; return; }
+    if (!(pers.logoUrl || pers.disenoPeyuUrl)) return;
+    if (typeof window === 'undefined' || window.innerWidth >= 1024) return;
+    setTimeout(() => {
+      document.querySelector('[data-product-gallery]')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 200);
+  }, [pers.logoUrl, pers.disenoPeyuUrl]);
+
   // Stock/urgencia sutil: solo si el dato existe y es bajo.
   const stock = producto?.stock_actual;
   const stockBajo = typeof stock === 'number' && stock > 0 && stock <= 8;
@@ -535,15 +548,32 @@ export default function ProductoNuevo() {
 
           {/* ── Configurador: derecha desktop (scroll propio) · flujo mobile ── */}
           <div className="flex-1 min-w-0 lg:flex-none lg:w-[400px] xl:w-[440px] lg:h-full lg:min-h-0 lg:flex lg:flex-col">
-            {/* Galería mobile primero */}
+            {/* Imagen principal mobile: con grabado activo, el MOCKUP EN VIVO toma
+                el lugar de la foto — aparece de inmediato, sin scroll eterno. */}
             <div className="lg:hidden mb-3 scroll-mt-16" data-product-gallery>
-              <ProductGalleryV2
-                images={galleryImages}
-                active={galIdx}
-                onSelect={setGalIdx}
-                badge={esCompostable ? 'Compostable' : '100% Reciclado'}
-                fallback={getProductImage(producto)}
-              />
+              {muestraMockup ? (
+                <>
+                  <MockupLivePreviewV2
+                    ref={mockupRefMobile}
+                    productImageUrl={colorImg}
+                    fallbackUrl={getProductImage(producto)}
+                    capas={capas}
+                    onPlacementChange={setPlacements}
+                    esCarcasa={esCarcasa}
+                    customArea={engraggingArea}
+                  />
+                  {/* Aprobación SIEMPRE junto al mockup */}
+                  <MockupApproveBarV2 pers={pers} setPers={setPers} />
+                </>
+              ) : (
+                <ProductGalleryV2
+                  images={galleryImages}
+                  active={galIdx}
+                  onSelect={setGalIdx}
+                  badge={esCompostable ? 'Compostable' : '100% Reciclado'}
+                  fallback={getProductImage(producto)}
+                />
+              )}
             </div>
 
             <div className="space-y-3.5 lg:flex-1 lg:min-h-0 lg:overflow-y-auto peyu-scrollbar lg:bg-white lg:rounded-3xl lg:p-5 lg:shadow-sm lg:border lg:border-[#D4C4B0]">
@@ -581,25 +611,20 @@ export default function ProductoNuevo() {
                 />
               )}
 
-              {/* Personalización en vivo — circuito completo */}
+              {/* Personalización en vivo — circuito completo. En mobile el mockup
+                  vive ARRIBA (reemplaza la foto principal): al cargar logo/diseño
+                  la página sube sola para que se vea al instante. */}
               <div data-personalizador>
                 <PersonalizadorV2 pers={pers} setPers={setPers} gratis={gratis} moq={moq} soloArchivo={soloArchivo} />
-
-                {/* Mockup EN VIVO mobile (en desktop vive en el panel central) */}
                 {muestraMockup && (
-                  <div className="mt-4 lg:hidden">
-                    <MockupLivePreviewV2
-                      ref={mockupRefMobile}
-                      productImageUrl={colorImg}
-                      fallbackUrl={getProductImage(producto)}
-                      capas={capas}
-                      onPlacementChange={setPlacements}
-                      esCarcasa={esCarcasa}
-                      customArea={engraggingArea}
-                    />
-                    {/* Aprobación SIEMPRE junto al mockup — no se pierde el usuario */}
-                    <MockupApproveBarV2 pers={pers} setPers={setPers} />
-                  </div>
+                  <button
+                    type="button"
+                    onClick={() => document.querySelector('[data-product-gallery]')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+                    className="lg:hidden w-full mt-2.5 h-10 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-colors"
+                    style={{ background: 'rgba(192,120,92,.1)', border: '1.5px solid rgba(192,120,92,.3)', color: C.action }}
+                  >
+                    ↑ Ver tu mockup en vivo
+                  </button>
                 )}
               </div>
 

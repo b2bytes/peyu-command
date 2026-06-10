@@ -10,6 +10,15 @@
 // ════════════════════════════════════════════════════════════════════════
 
 export const CHANGELOG = [
+  // ── 10 junio 2026 · Ficha móvil: mockup inmediato arriba ──
+  {
+    fecha: '2026-06-10',
+    tipo: 'mejora',
+    area: 'Ficha de producto · Móvil',
+    titulo: 'El mockup aparece DE INMEDIATO en móvil, en el lugar de la foto',
+    detalle: 'El recorrido móvil era engorroso: el mockup se renderizaba abajo, lejos del personalizador, y al cargar el logo no se veía nada. Ahora con grabado activo el mockup EN VIVO reemplaza la foto principal arriba (con su barra de aprobación pegada), y al subir un logo o elegir un diseño PEYU la página sube sola hasta el mockup para que el resultado se vea al instante. Se eliminó el mockup duplicado del fondo y se agregó un acceso "↑ Ver tu mockup en vivo" en el personalizador. Flujo: configurar → ver al tiro → aprobar → agregar.',
+  },
+
   // ── 10 junio 2026 · Aprobar mockup junto al mockup ──
   {
     fecha: '2026-06-10',
