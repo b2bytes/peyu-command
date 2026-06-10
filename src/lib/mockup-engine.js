@@ -10,56 +10,56 @@
 export const ENGRAVE_ZONES = {
   // Cachos / pocillos: frente cilíndrico — zona centrada donde está la marca PEYU
   Cachos: {
-    top: '40%', left: '50%', size: '32%',
+    top: '40%', left: '50%', size: '26%',
     shape: 'circle',
     opacity: 1,
-    blendLight: 'grayscale(100%) brightness(0) invert(1)',
-    blendDark: 'grayscale(100%) brightness(0)',
+    blendLight: 'grayscale(100%) invert(1) contrast(1.25)',
+    blendDark: 'grayscale(100%) contrast(1.25) brightness(0.85)',
     areaLabel: 'Frente del producto',
   },
   // Escritorio: superficie plana — zona centrada
   Escritorio: {
-    top: '48%', left: '50%', size: '40%',
+    top: '48%', left: '50%', size: '32%',
     shape: 'square',
     opacity: 0.85,
-    blendLight: 'grayscale(100%) brightness(0) invert(1)',
-    blendDark: 'grayscale(100%) brightness(0)',
+    blendLight: 'grayscale(100%) invert(1) contrast(1.25)',
+    blendDark: 'grayscale(100%) contrast(1.25) brightness(0.85)',
     areaLabel: 'Superficie superior',
   },
   // Paletas / tablas: zona centrada, más grande
   Paletas: {
-    top: '46%', left: '50%', size: '42%',
+    top: '46%', left: '50%', size: '34%',
     shape: 'square',
     opacity: 0.82,
-    blendLight: 'grayscale(100%) brightness(0) invert(1)',
-    blendDark: 'grayscale(100%) brightness(0)',
+    blendLight: 'grayscale(100%) invert(1) contrast(1.25)',
+    blendDark: 'grayscale(100%) contrast(1.25) brightness(0.85)',
     areaLabel: 'Cara principal',
   },
   // Hogar: centrado, moderado
   Hogar: {
-    top: '48%', left: '50%', size: '38%',
+    top: '48%', left: '50%', size: '30%',
     shape: 'square',
     opacity: 0.85,
-    blendLight: 'grayscale(100%) brightness(0) invert(1)',
-    blendDark: 'grayscale(100%) brightness(0)',
+    blendLight: 'grayscale(100%) invert(1) contrast(1.25)',
+    blendDark: 'grayscale(100%) contrast(1.25) brightness(0.85)',
     areaLabel: 'Frente del producto',
   },
   // Corporativo: más grande, centrado
   Corporativo: {
-    top: '46%', left: '50%', size: '44%',
+    top: '46%', left: '50%', size: '34%',
     shape: 'square',
     opacity: 0.88,
-    blendLight: 'grayscale(100%) brightness(0) invert(1)',
-    blendDark: 'grayscale(100%) brightness(0)',
+    blendLight: 'grayscale(100%) invert(1) contrast(1.25)',
+    blendDark: 'grayscale(100%) contrast(1.25) brightness(0.85)',
     areaLabel: 'Cara principal',
   },
   // Default
   default: {
-    top: '48%', left: '50%', size: '38%',
+    top: '48%', left: '50%', size: '30%',
     shape: 'square',
     opacity: 0.85,
-    blendLight: 'grayscale(100%) brightness(0) invert(1)',
-    blendDark: 'grayscale(100%) brightness(0)',
+    blendLight: 'grayscale(100%) invert(1) contrast(1.25)',
+    blendDark: 'grayscale(100%) contrast(1.25) brightness(0.85)',
     areaLabel: 'Área de grabado',
   },
 };
@@ -124,7 +124,7 @@ export async function detectImageTone(imageUrl) {
  */
 export function getLogoFilter(tone, zone) {
   if (tone === 'dark') {
-    return zone?.blendLight || 'grayscale(100%) brightness(0) invert(1)';
+    return zone?.blendLight || 'grayscale(100%) invert(1) contrast(1.25)';
   }
-  return zone?.blendDark || 'grayscale(100%) brightness(0)';
+  return zone?.blendDark || 'grayscale(100%) contrast(1.25) brightness(0.85)';
 }

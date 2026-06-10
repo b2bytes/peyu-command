@@ -32,3 +32,26 @@ export function loadQuoteJourney() {
 export function clearQuoteJourney() {
   try { localStorage.removeItem(KEY); } catch { /* noop */ }
 }
+
+// ── Perfil B2B persistente ──────────────────────────────────────────────
+// La ficha del cliente (empresa, RUT, contacto, despacho) sobrevive incluso
+// después de enviar la cotización: la próxima vez llega pre-llenada.
+const PROFILE_KEY = 'peyu_b2b_profile_v1';
+
+export function saveB2BProfile(form = {}) {
+  try {
+    const { company_name, rut, giro, contact_name, cargo, email, phone, direccion, comuna } = form;
+    localStorage.setItem(PROFILE_KEY, JSON.stringify({
+      company_name, rut, giro, contact_name, cargo, email, phone, direccion, comuna,
+    }));
+  } catch { /* noop */ }
+}
+
+export function loadB2BProfile() {
+  try {
+    const data = JSON.parse(localStorage.getItem(PROFILE_KEY));
+    return data && typeof data === 'object' ? data : null;
+  } catch {
+    return null;
+  }
+}

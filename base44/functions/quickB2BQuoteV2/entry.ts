@@ -394,6 +394,7 @@ Deno.serve(async (req) => {
     const urgency = ['Alta', 'Normal', 'Baja'].includes(body.urgency) ? body.urgency : 'Normal';
     const clientNotes = (body.notes || '').toString().slice(0, 1000).trim();
     const personalization_needs = !!body.personalization_needs;
+    const logo_url = (body.logo_url || '').toString().slice(0, 500).trim() || undefined;
     const items = Array.isArray(body.items) ? body.items : [];
 
     if (!contact_name || !company_name || !email) {
@@ -491,6 +492,7 @@ Deno.serve(async (req) => {
         product_interest: productInterest || existing.product_interest,
         delivery_date: delivery_date ?? existing.delivery_date,
         personalization_needs,
+        logo_url: logo_url ?? existing.logo_url,
         urgency,
         lead_score,
         notes,
@@ -509,6 +511,7 @@ Deno.serve(async (req) => {
         product_interest: productInterest,
         delivery_date,
         personalization_needs,
+        logo_url,
         lead_score,
         status: 'Nuevo',
         urgency,

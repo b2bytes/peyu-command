@@ -10,6 +10,15 @@
 // ════════════════════════════════════════════════════════════════════════
 
 export const CHANGELOG = [
+  // ── 10 junio 2026 · Mockup B2B: fin de la mancha negra + ficha cliente ──
+  {
+    fecha: '2026-06-10',
+    tipo: 'bug',
+    area: 'Cotización Rápida B2B',
+    titulo: 'Logo grabado real (sin mancha negra) + ficha del cliente unificada',
+    detalle: 'El mockup pintaba una MANCHA NEGRA gigante sobre el producto: el filtro brightness(0) ennegrecía todo el rectángulo del logo (incluido el fondo blanco de un JPG). Ahora el motor usa grayscale+contrast con fusión multiply/screen según el tono del producto: el fondo del logo desaparece y solo se graba el arte, en un área más realista (26-34% del producto). Además la cotización se une a la ficha del cliente: el logo subido se guarda en el B2BLead del pipeline, y los datos de empresa (razón social, RUT, contacto, despacho) quedan recordados como perfil — la próxima cotización llega pre-llenada.',
+  },
+
   // ── 10 junio 2026 · Cotización B2B: mockup arreglado + recorrido pulido ─
   {
     fecha: '2026-06-10',

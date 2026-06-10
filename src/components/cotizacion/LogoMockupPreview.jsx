@@ -44,12 +44,12 @@ export default function LogoMockupPreview({
   }, [productImg]);
 
   const zone = getEngraveZone(producto);
-  // Mientras no se conoce el tono: logo oscuro (visible con blend darken).
-  const logoFilter = toneReady ? getLogoFilter(tone, zone) : 'grayscale(100%) brightness(0)';
-  // Blend según tono: darken graba logo oscuro sobre fondo claro; screen graba
-  // logo claro sobre fondo oscuro. Antes darken fijo hacía INVISIBLE el logo
-  // invertido (blanco) en productos oscuros.
-  const blendMode = toneReady && tone === 'dark' ? 'screen' : 'darken';
+  // Filtro de grabado. CLAVE: nunca usar brightness(0) — vuelve NEGRO todo el
+  // rectángulo del logo (incluido el fondo blanco de un JPG) y aparece una
+  // mancha negra gigante. Con grayscale+contrast, el blend multiply hace
+  // transparente el fondo claro y screen el fondo oscuro: solo se graba el logo.
+  const logoFilter = toneReady ? getLogoFilter(tone, zone) : 'grayscale(100%) contrast(1.2)';
+  const blendMode = toneReady && tone === 'dark' ? 'screen' : 'multiply';
 
   // Tamaños de contenedor según prop size
   const containerStyle = {

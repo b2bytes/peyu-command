@@ -18,7 +18,7 @@ import QuoteTotalsLive from '@/components/cotizacion/QuoteTotalsLive';
 import { getB2BPriceForQty, getUnitBasePrice } from '@/lib/catalog-pricing';
 import { getProductImage } from '@/utils/productImages';
 import { fmtCLP, getCartV2, addToCartV2, updateCartItemV2, removeFromCartV2 } from '@/lib/shop-v2-cart';
-import { saveQuoteJourney, loadQuoteJourney, clearQuoteJourney } from '@/lib/cotizacion-journey';
+import { saveQuoteJourney, loadQuoteJourney, clearQuoteJourney, saveB2BProfile, loadB2BProfile } from '@/lib/cotizacion-journey';
 
 // ════════════════════════════════════════════════════════════════════════
 // /CotizacionRapida — Cockpit B2B en 1 pantalla (mismo formato /personalizar):
@@ -244,9 +244,15 @@ export default function CotizacionRapida() {
         if (prefilledRef.current) return;
         prefilledRef.current = true;
 
-        // Restaura datos de empresa guardados (sobreviven recargas/salidas).
+        // Restaura datos de empresa: viaje en curso > perfil B2B guardado
+        // (la ficha del cliente queda recordada incluso tras enviar).
         const saved = loadQuoteJourney();
-        if (saved?.form) setForm(f => ({ ...f, ...saved.form }));
+        if (saved?.form && (saved.form.company_name || saved.form.email)) {
+          setForm(f => ({ ...f, ...saved.form }));
+        } else {
+          const perfil = loadB2BProfile();
+          if (perfil) setForm(f => ({ ...f, ...perfil }));
+        }
 
         // Entrada por URL (links externos): agrega el producto al CARRO ÚNICO
         // si aún no está, en vez de mantener una lista paralela.
@@ -372,6 +378,7 @@ export default function CotizacionRapida() {
       });
       if (res.data?.ok) {
         setResult(res.data);
+        saveB2BProfile(form); // la ficha del cliente queda recordada para la próxima
         clearQuoteJourney(); // viaje completado
         window.scrollTo({ top: 0, behavior: 'smooth' });
       } else {
