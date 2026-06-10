@@ -3,6 +3,11 @@
 /* PEYU OS design tokens (dirección activa: Warm Dusk OS) — capa independiente --os-* */
 @import './styles/os-theme.css';
 
+/* Capa de unificación del panel admin: remapea clases legacy (bg-white,
+   text-gray-*, border-gray-*) a tokens --ld-* dentro de .ld-canvas para que
+   TODAS las secciones compartan la misma identidad en modo día y noche. */
+@import './styles/admin-unify.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;

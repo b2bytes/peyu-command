@@ -1,0 +1,91 @@
+/* ═══════════════════════════════════════════════════════════════════
+   ADMIN UNIFY LAYER · Identidad Liquid Dual en TODO el panel admin
+   ────────────────────────────────────────────────────────────────────
+   Muchas páginas del admin fueron diseñadas para tema claro con clases
+   hardcoded (bg-white, text-gray-900, border-gray-200…). Sobre el canvas
+   Liquid Dual (día/noche) se veían rotas o inconsistentes.
+
+   En lugar de migrar ~60 páginas una por una, esta capa remapea las
+   clases legacy más comunes a los tokens --ld-* DENTRO de .ld-canvas
+   (el <main> del Layout admin). Resultado: superficies, textos, bordes
+   y hovers coherentes con la identidad nueva en ambos modos y en todos
+   los dispositivos. Los acentos de marca (verde PEYU, terracota) y los
+   chips de color pastel se conservan.
+   ─────────────────────────────────────────────────────────────────── */
+
+/* ── Superficies: tarjetas blancas → superficie elevada del sistema ── */
+.ld-canvas .bg-white {
+  background-color: var(--ld-bg-elevated) !important;
+  color: var(--ld-fg);
+}
+.ld-canvas .bg-gray-50,
+.ld-canvas .bg-slate-50,
+.ld-canvas .bg-zinc-50,
+.ld-canvas .bg-gray-100,
+.ld-canvas .bg-slate-100,
+.ld-canvas .bg-zinc-100 {
+  background-color: var(--ld-glass-soft) !important;
+}
+
+/* ── Tipografía: grises hardcoded → escala de foreground del sistema ── */
+.ld-canvas .text-gray-900,
+.ld-canvas .text-slate-900,
+.ld-canvas .text-zinc-900,
+.ld-canvas .text-gray-800,
+.ld-canvas .text-slate-800 {
+  color: var(--ld-fg) !important;
+}
+.ld-canvas .text-gray-700,
+.ld-canvas .text-slate-700,
+.ld-canvas .text-gray-600,
+.ld-canvas .text-slate-600,
+.ld-canvas .text-zinc-600 {
+  color: var(--ld-fg-soft) !important;
+}
+.ld-canvas .text-gray-500,
+.ld-canvas .text-slate-500,
+.ld-canvas .text-zinc-500,
+.ld-canvas .text-gray-400,
+.ld-canvas .text-slate-400 {
+  color: var(--ld-fg-muted) !important;
+}
+
+/* ── Bordes: grises hardcoded → border del sistema ── */
+.ld-canvas .border-gray-100,
+.ld-canvas .border-gray-200,
+.ld-canvas .border-slate-100,
+.ld-canvas .border-slate-200,
+.ld-canvas .border-zinc-200 {
+  border-color: var(--ld-border) !important;
+}
+.ld-canvas .border-gray-300,
+.ld-canvas .border-slate-300 {
+  border-color: var(--ld-border-strong) !important;
+}
+
+/* ── Hovers legacy → glass del sistema ── */
+.ld-canvas .hover\:bg-gray-50:hover,
+.ld-canvas .hover\:bg-slate-50:hover,
+.ld-canvas .hover\:bg-gray-100:hover,
+.ld-canvas .hover\:bg-slate-100:hover,
+.ld-canvas .hover\:bg-zinc-100:hover {
+  background-color: var(--ld-glass) !important;
+}
+.ld-canvas .hover\:border-gray-300:hover,
+.ld-canvas .hover\:border-slate-300:hover {
+  border-color: var(--ld-border-strong) !important;
+}
+
+/* ── Divisores de tablas/listas ── */
+.ld-canvas .divide-gray-100 > :not([hidden]) ~ :not([hidden]),
+.ld-canvas .divide-gray-200 > :not([hidden]) ~ :not([hidden]),
+.ld-canvas .divide-slate-100 > :not([hidden]) ~ :not([hidden]),
+.ld-canvas .divide-slate-200 > :not([hidden]) ~ :not([hidden]) {
+  border-color: var(--ld-border) !important;
+}
+
+/* ── Sombras suavizadas según el modo ── */
+.ld-canvas .shadow-sm { box-shadow: var(--ld-shadow-sm) !important; }
+.ld-canvas .shadow-md { box-shadow: var(--ld-shadow-md) !important; }
+.ld-canvas .shadow-lg,
+.ld-canvas .shadow-xl { box-shadow: var(--ld-shadow-lg) !important; }

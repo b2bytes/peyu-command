@@ -10,6 +10,15 @@
 // ════════════════════════════════════════════════════════════════════════
 
 export const CHANGELOG = [
+  // ── 10 junio 2026 · Capa de diseño unificada en todo el admin ──
+  {
+    fecha: '2026-06-10',
+    tipo: 'mejora',
+    area: 'Admin · Todas las secciones',
+    titulo: 'Identidad unificada: una sola capa de diseño para las ~60 páginas del panel',
+    detalle: 'Las secciones del admin mezclaban estilos: tarjetas blancas con textos y bordes grises pensados para tema claro, que se rompían sobre el fondo nuevo (modo noche) y se veían inconsistentes entre módulos. Nueva capa CSS de unificación: dentro del canvas admin, todas las clases legacy (fondos blancos, grises de texto, bordes, hovers, sombras y divisores) se remapean automáticamente a los tokens del sistema Liquid Dual. Resultado: superficies, tipografías, botones y colores coherentes con la misma identidad profesional en cada sección, en modo día y noche, y en todos los dispositivos — sin migrar página por página.',
+  },
+
   // ── 10 junio 2026 · Catálogo admin unificado al diseño nuevo ──
   {
     fecha: '2026-06-10',
