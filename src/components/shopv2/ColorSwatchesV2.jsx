@@ -32,7 +32,7 @@ export default function ColorSwatchesV2({ colores = [], value, onSelect, error, 
               type="button"
               onClick={() => onSelect(c.id)}
               title={c.label}
-              className={`relative w-14 h-14 sm:w-12 sm:h-12 rounded-full border-2 overflow-hidden transition-all ${
+              className={`relative w-16 h-16 sm:w-[4.5rem] sm:h-[4.5rem] rounded-full border-2 overflow-hidden transition-all ${
                 sel ? 'border-[#0F8B6C] scale-110 shadow-md' : 'border-[#EBE3D6] hover:scale-105'
               }`}
               style={usePhoto ? undefined : { backgroundColor: c.hex || '#ccc' }}

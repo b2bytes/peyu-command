@@ -10,6 +10,29 @@
 // ════════════════════════════════════════════════════════════════════════
 
 export const CHANGELOG = [
+  // ── 10 junio 2026 · Correcciones reunión Joaquín ───────────────────────
+  {
+    fecha: '2026-06-10',
+    tipo: 'mejora',
+    area: 'Catálogo',
+    titulo: 'Categorías reorganizadas (reunión Joaquín)',
+    detalle: '"Cachos" pasó a llamarse "Entretención y Juegos". Carcasas ahora navegan por Marca (iPhone, Samsung, Huawei, AirPods) → Modelo. La categoría Corporativo ya no queda vacía: muestra todos los productos aptos para empresas (canal B2B).',
+  },
+  {
+    fecha: '2026-06-10',
+    tipo: 'mejora',
+    area: 'Ficha de producto',
+    titulo: 'Mockup central en escritorio + carcasas con fuente única de imagen',
+    detalle: 'En desktop el preview de grabado EN VIVO toma el lugar de la galería (columna izquierda sticky) — se interactúa casi sin scroll. En carcasas se ocultó la galería de ángulos extra: la imagen por color del selector es la única fuente de verdad, y los swatches crecieron de tamaño.',
+  },
+  {
+    fecha: '2026-06-10',
+    tipo: 'mejora',
+    area: 'Ficha de producto · Móvil',
+    titulo: 'Orden móvil: foto → color → personalización',
+    detalle: 'La descripción del producto pasó a una pestaña colapsable al final de la ficha, dejando el flujo foto → color → personalización en la misma pantalla con menos scroll.',
+  },
+
   // ── 10 junio 2026 · BlueExpress API PROD desbloqueada ─────────────────
   {
     fecha: '2026-06-10',
@@ -133,6 +156,9 @@ export const CHANGELOG = [
 
 // Pendientes / próximas mejoras — se van tachando (hecho: true) o eliminando.
 export const PENDIENTES = [
+  { texto: 'Cargar Excel tarifas Bluex de hoy (todas las comunas de Chile)', tag: 'TODO' },
+  { texto: 'Calendarizar actualización de tarifas / definir alcance con Joaquín', tag: 'TODO' },
+  { texto: 'Revisar paso a paso flujo generar etiqueta (terminando)', tag: 'TODO' },
   { texto: 'Auditar tarifas Atacama vs factura Bluex', tag: 'TODO' },
   { texto: 'Refrescar imágenes productos (limpiar logos viejos)', tag: 'TODO' },
   { texto: 'Finalizar color-mapping B2B', tag: 'TODO' },

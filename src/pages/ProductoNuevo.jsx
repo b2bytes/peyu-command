@@ -13,6 +13,7 @@ import PriceBreakdownV2 from '@/components/shopv2/PriceBreakdownV2';
 import QtyStepperV2 from '@/components/shopv2/QtyStepperV2';
 import ProductGalleryV2 from '@/components/shopv2/ProductGalleryV2';
 import ProductIncludesV2 from '@/components/shopv2/ProductIncludesV2';
+import DescripcionCollapsibleV2 from '@/components/shopv2/DescripcionCollapsibleV2';
 import MobileNavBarV2 from '@/components/shopv2/MobileNavBarV2';
 import { getProductImage, getProductImageForColor } from '@/utils/productImages';
 import { getColoresProducto } from '@/lib/color-parser';
@@ -48,7 +49,8 @@ export default function ProductoNuevo() {
   const [colorError, setColorError] = useState(false);
   const [added, setAdded] = useState(false);
   const [galIdx, setGalIdx] = useState(0);
-  const mockupRef = useRef(null);
+  const mockupRefDesktop = useRef(null); // preview central en columna izquierda (desktop)
+  const mockupRefMobile = useRef(null);  // preview bajo el personalizador (mobile)
 
   const [error, setError] = useState(null);
   
@@ -152,6 +154,9 @@ export default function ProductoNuevo() {
   const galleryImages = useMemo(() => {
     if (!producto) return [];
     const main = color ? getProductImageForColor(producto, color) : getProductImage(producto);
+    // Carcasas: la imagen por color es la ÚNICA fuente de verdad. Sin galería
+    // de ángulos extra debajo del contenedor principal.
+    if (esCarcasa) return [main];
     let extra = Array.isArray(producto.galeria_urls)
       ? producto.galeria_urls.filter((u) => typeof u === 'string' && u.startsWith('http') && u !== main)
       : [];
@@ -162,7 +167,7 @@ export default function ProductoNuevo() {
     }
     
     return [main, ...extra].slice(0, 6);
-  }, [producto, color]);
+  }, [producto, color, esCarcasa]);
 
   // Al cambiar de color, vuelve a la 1ª imagen (la del color elegido).
   useEffect(() => { setGalIdx(0); }, [colorId]);
@@ -227,8 +232,12 @@ export default function ProductoNuevo() {
     // Captura el snapshot del canvas en vivo (foto base + grabado) como mockupUrl real.
     // Si falla (CORS, etc.) cae a colorImg como antes.
     let mockupUrl = muestraMockup ? colorImg : null;
-    if (muestraMockup && mockupRef.current?.captureSnapshot) {
-      const snap = await mockupRef.current.captureSnapshot();
+    if (muestraMockup) {
+      const isDesktop = typeof window !== 'undefined' && window.innerWidth >= 1024;
+      const primario = isDesktop ? mockupRefDesktop : mockupRefMobile;
+      const secundario = isDesktop ? mockupRefMobile : mockupRefDesktop;
+      const snap = (await primario.current?.captureSnapshot?.())
+        || (await secundario.current?.captureSnapshot?.());
       if (snap) mockupUrl = snap;
     }
 
@@ -328,13 +337,30 @@ export default function ProductoNuevo() {
         <div className="grid lg:grid-cols-2 gap-3 sm:gap-5 lg:gap-8 lg:items-start">
           {/* GALERÍA sticky — fija en desktop mientras scrolleas el configurador */}
           <div className="lg:sticky lg:top-24 lg:self-start">
-            <ProductGalleryV2
-              images={galleryImages}
-              active={galIdx}
-              onSelect={setGalIdx}
-              badge={esCompostable ? 'Compostable' : '100% Reciclado'}
-              fallback={getProductImage(producto)}
-            />
+            {/* Desktop: con grabado activo, el preview EN VIVO toma el lugar central
+                de la galería — interacción sin scroll aprovechando la pantalla grande. */}
+            {muestraMockup && (
+              <div className="hidden lg:block">
+                <MockupLivePreviewV2
+                  ref={mockupRefDesktop}
+                  productImageUrl={colorImg}
+                  fallbackUrl={getProductImage(producto)}
+                  capas={capas}
+                  onPlacementChange={setPlacements}
+                  esCarcasa={esCarcasa}
+                  customArea={engraggingArea}
+                />
+              </div>
+            )}
+            <div className={muestraMockup ? 'lg:hidden' : ''}>
+              <ProductGalleryV2
+                images={galleryImages}
+                active={galIdx}
+                onSelect={setGalIdx}
+                badge={esCompostable ? 'Compostable' : '100% Reciclado'}
+                fallback={getProductImage(producto)}
+              />
+            </div>
           </div>
 
           {/* CONFIGURADOR — scroll libre en desktop */}
@@ -350,9 +376,7 @@ export default function ProductoNuevo() {
                   🔥 Solo {stock}u
                 </p>
               )}
-              {producto.descripcion && (
-                <p className="text-xs leading-relaxed mt-2" style={{ color: '#7A6050' }}>{producto.descripcion}</p>
-              )}
+
             </div>
 
             {/* Color — swatches visibles (Baymard #1) */}
@@ -372,9 +396,9 @@ export default function ProductoNuevo() {
 
               {/* Mockup EN VIVO: compone todas las capas combinadas */}
               {muestraMockup && (
-                <div className="mt-4">
+                <div className="mt-4 lg:hidden">
                   <MockupLivePreviewV2
-                    ref={mockupRef}
+                    ref={mockupRefMobile}
                     productImageUrl={colorImg}
                     fallbackUrl={getProductImage(producto)}
                     capas={capas}
@@ -442,6 +466,9 @@ export default function ProductoNuevo() {
                 </div>
               ))}
             </div>
+
+            {/* Descripción en pestaña colapsable (menos scroll: foco en color + personalización) */}
+            <DescripcionCollapsibleV2 texto={producto.descripcion} />
 
             {/* Incluye + impacto ambiental (Baymard #7) */}
             <ProductIncludesV2 producto={producto} cantidad={cantidad} />

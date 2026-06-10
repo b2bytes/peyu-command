@@ -10,7 +10,7 @@ export const PEYU_LOGO_CREMA =
 // del catálogo (entidad Producto) para filtrar sin tocar datos.
 export const CATEGORIAS_V2 = [
   { label: 'Carcasas', cat: 'Carcasas B2C', emoji: '📱', desc: 'Personalizables' },
-  { label: 'Cachos', cat: 'Entretenimiento', emoji: '🎲', desc: 'Juegos eco' },
+  { label: 'Entretención y Juegos', cat: 'Entretenimiento', emoji: '🎲', desc: 'Cachos y juegos eco' },
   { label: 'Hogar', cat: 'Hogar', emoji: '🪴', desc: 'Maceteros y más' },
   { label: 'Escritorio', cat: 'Escritorio', emoji: '🖊️', desc: 'Orden eco' },
   { label: 'Corporativo', cat: 'Corporativo', emoji: '🏢', desc: 'Para empresas' },

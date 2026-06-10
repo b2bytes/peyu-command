@@ -8,7 +8,7 @@ import CheckoutStepperV2 from '@/components/shopv2/CheckoutStepperV2';
 import ProductCardV2 from '@/components/shopv2/ProductCardV2';
 import PhoneModelsModal from '@/components/shopv2/PhoneModelsModal';
 import { CATEGORIAS_V2 } from '@/lib/shop-v2-config';
-import { modeloDe, modelosDisponibles } from '@/lib/phone-models-v2';
+import { modeloDe, marcaDe, modelosDisponibles, marcasDisponibles } from '@/lib/phone-models-v2';
 
 // ════════════════════════════════════════════════════════════════════════
 // /CatalogoNuevo — Grilla del Shop v2 (Tema 6). Filtro por categoría (chips) +
@@ -23,6 +23,7 @@ export default function CatalogoNuevo() {
   const [error, setError] = useState(null);
   const [cat, setCat] = useState('Todos');
   const [q, setQ] = useState('');
+  const [marca, setMarca] = useState('Todas');
   const [modelo, setModelo] = useState('Todos');
   const [retry, setRetry] = useState(0);
   const [openModelsModal, setOpenModelsModal] = useState(false);
@@ -54,20 +55,33 @@ export default function CatalogoNuevo() {
     if (preCat) setCat(preCat);
   }, [location.search]);
 
-  // Reset filtro de modelo al cambiar de categoría.
-  useEffect(() => { setModelo('Todos'); }, [cat]);
+  // Reset filtros marca/modelo al cambiar de categoría; modelo al cambiar marca.
+  useEffect(() => { setMarca('Todas'); setModelo('Todos'); }, [cat]);
+  useEffect(() => { setModelo('Todos'); }, [marca]);
 
   const esCarcasas = cat === 'Carcasas B2C';
 
-  // Modelos de teléfono disponibles (solo en carcasas).
+  // Carcasas: navegación por MARCA (categoría) → MODELO (subcategoría).
+  const carcasas = useMemo(
+    () => productos.filter((p) => p.categoria === 'Carcasas B2C'),
+    [productos]
+  );
+  const marcas = useMemo(() => (esCarcasas ? marcasDisponibles(carcasas) : []), [carcasas, esCarcasas]);
   const modelos = useMemo(() => {
     if (!esCarcasas) return [];
-    return modelosDisponibles(productos.filter((p) => p.categoria === 'Carcasas B2C'));
-  }, [productos, esCarcasas]);
+    return modelosDisponibles(carcasas, marca === 'Todas' ? null : marca);
+  }, [carcasas, esCarcasas, marca]);
 
   const filtrados = useMemo(() => {
     let list = productos;
-    if (cat !== 'Todos') list = list.filter((p) => p.categoria === cat);
+    if (cat === 'Corporativo') {
+      // Corporativo: productos con categoría Corporativo + todo el catálogo apto
+      // para empresas (canal B2B + B2C). Así la categoría nunca queda vacía.
+      list = list.filter((p) => p.categoria === 'Corporativo' || p.canal === 'B2B + B2C');
+    } else if (cat !== 'Todos') {
+      list = list.filter((p) => p.categoria === cat);
+    }
+    if (esCarcasas && marca !== 'Todas') list = list.filter((p) => marcaDe(p) === marca);
     if (esCarcasas && modelo !== 'Todos') list = list.filter((p) => modeloDe(p) === modelo);
     if (q.trim()) {
       const n = q.toLowerCase().trim();
@@ -79,7 +93,7 @@ export default function CatalogoNuevo() {
       );
     }
     return list;
-  }, [productos, cat, q, esCarcasas, modelo]);
+  }, [productos, cat, q, esCarcasas, marca, modelo]);
 
   const chips = ['Todos', ...CATEGORIAS_V2.map((c) => c.cat)];
   const chipLabel = (c) =>
@@ -155,7 +169,28 @@ export default function CatalogoNuevo() {
           ))}
         </div>
 
-        {/* Filtro por MODELO de teléfono (visible en carcasas — Baymard) */}
+        {/* Carcasas: filtro por MARCA (categoría) */}
+        {esCarcasas && marcas.length > 0 && (
+          <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto scrollbar-hide pb-2 sm:pb-1 mb-2 sm:mb-3 -mx-3 sm:mx-0 px-3 sm:px-0">
+            <span className="text-[10px] sm:text-xs font-bold flex-shrink-0" style={{ color: '#A78B6F' }}>Marca</span>
+            {['Todas', ...marcas].map((m) => (
+              <button
+                key={m}
+                onClick={() => setMarca(m)}
+                className="flex-shrink-0 px-3 sm:px-4 py-1.5 rounded-full text-[10px] sm:text-xs font-bold transition-all whitespace-nowrap"
+                style={{
+                  background: marca === m ? '#2C1810' : 'white',
+                  color: marca === m ? 'white' : '#7A6050',
+                  border: `1.5px solid ${marca === m ? '#2C1810' : '#D4C4B0'}`,
+                }}
+              >
+                {m}
+              </button>
+            ))}
+          </div>
+        )}
+
+        {/* Carcasas: filtro por MODELO (subcategoría de la marca elegida) */}
          {esCarcasas && modelos.length > 0 && (
           <>
             {/* Mobile: solo botón */}
