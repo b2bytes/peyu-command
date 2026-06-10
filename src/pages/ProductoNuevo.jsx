@@ -3,7 +3,7 @@ import { useLocation, Link, useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import SEOHead from '@/components/SEOHead';
 import {
-  ArrowLeft, Recycle, ShieldCheck, Truck, Check, Loader2, ShoppingBag, Sparkles, Lock,
+  ArrowLeft, Recycle, Truck, Check, Loader2, ShoppingBag, Sparkles, Lock,
 } from 'lucide-react';
 import CheckoutStepperV2 from '@/components/shopv2/CheckoutStepperV2';
 import ColorSwatchesV2 from '@/components/shopv2/ColorSwatchesV2';
@@ -15,6 +15,8 @@ import ProductGalleryV2 from '@/components/shopv2/ProductGalleryV2';
 import ProductIncludesV2 from '@/components/shopv2/ProductIncludesV2';
 import DescripcionCollapsibleV2 from '@/components/shopv2/DescripcionCollapsibleV2';
 import MobileNavBarV2 from '@/components/shopv2/MobileNavBarV2';
+import ShippingEstimatorV2 from '@/components/shopv2/ShippingEstimatorV2';
+import PaymentMethodsBadgesV2 from '@/components/shopv2/PaymentMethodsBadgesV2';
 import { getProductImage, getProductImageForColor } from '@/utils/productImages';
 import { getColoresProducto } from '@/lib/color-parser';
 import { MOQ_PERSONALIZACION_GRATIS } from '@/lib/personalizacion-config';
@@ -29,10 +31,20 @@ import { applyAutoPlacement } from '@/lib/auto-placement';
 import { getQtyDiscountPct } from '@/lib/volume-discount';
 
 // ════════════════════════════════════════════════════════════════════════
-// /ProductoNuevo?id= — Ficha de producto del Shop v2 (Tema 6 Conversion Machine).
-// Galería con zoom · swatches con foto real · personalización en vivo · breakdown
-// IVA · incluye/impacto · sticky móvil. Add-to-cart al carrito_v2 (aislado).
+// /ProductoNuevo?id= — Ficha de producto Shop v2 en formato COCKPIT de 1
+// pantalla en escritorio (mismo patrón /personalizar): header wizard sticky
+// con pasos + CTA, panel izquierdo con info y resumen vivo, preview/mockup
+// GIGANTE al centro y el configurador a la derecha con scroll propio y CTA
+// siempre visible. Incluye envío BlueExpress en vivo y medios de pago.
+// Lógica intacta: borrador persistente, capas combinables, carrito_v2.
 // ════════════════════════════════════════════════════════════════════════
+const C = {
+  bg: '#F8F3ED', surface: '#FFFFFF', border: '#D4C4B0',
+  fg: '#2C1810', fgSoft: '#7A6050', fgMuted: '#A08070',
+  action: '#C0785C', actionGrad: 'linear-gradient(135deg,#C0785C,#A86440)',
+  actionShadow: '0 6px 20px rgba(192,120,92,.28)', green: '#8BAD8A',
+};
+
 export default function ProductoNuevo() {
   const location = useLocation();
   const navigate = useNavigate();
@@ -49,11 +61,20 @@ export default function ProductoNuevo() {
   const [colorError, setColorError] = useState(false);
   const [added, setAdded] = useState(false);
   const [galIdx, setGalIdx] = useState(0);
-  const mockupRefDesktop = useRef(null); // preview central en columna izquierda (desktop)
+  const mockupRefDesktop = useRef(null); // preview central gigante (desktop)
   const mockupRefMobile = useRef(null);  // preview bajo el personalizador (mobile)
 
   const [error, setError] = useState(null);
-  
+
+  // Fondo crema fijo (Warm Dusk): forzamos modo día mientras está abierta,
+  // igual que /personalizar, para que el modo noche no borre los textos.
+  useEffect(() => {
+    const html = document.documentElement;
+    const prev = html.getAttribute('data-liquid-mode');
+    html.setAttribute('data-liquid-mode', 'day');
+    return () => { if (prev) html.setAttribute('data-liquid-mode', prev); };
+  }, []);
+
   useEffect(() => {
     if (!id) { setLoading(false); return; }
     let cancelled = false;
@@ -64,9 +85,7 @@ export default function ProductoNuevo() {
     // Carga resiliente: hasta 3 intentos. En cada intento prueba filter({id})
     // y, si viene vacío (a veces pasa de forma transitoria), verifica contra
     // list(). Solo declara "no encontrado" si las consultas respondieron BIEN
-    // y el producto realmente no está. El loading se apaga ÚNICAMENTE al final
-    // (antes un finally prematuro mostraba "Producto no encontrado" mientras
-    // todavía se estaba reintentando).
+    // y el producto realmente no está. El loading se apaga ÚNICAMENTE al final.
     const cargar = async () => {
       let consultaOkSinProducto = false;
       for (let intento = 0; intento < 3; intento++) {
@@ -99,9 +118,8 @@ export default function ProductoNuevo() {
     return () => { cancelled = true; };
   }, [id]);
 
-  // ¿Es carcasa? Usa la función inteligente que deduce de categoría/nombre/BD.
-  // Solo en carcasas se permiten las 3 personalizaciones (Frase + Diseño PEYU + Tu diseño).
-  // En el resto: SOLO "Tu diseño".
+  // ¿Es carcasa? Solo en carcasas se permiten las 3 personalizaciones
+  // (Frase + Diseño PEYU + Tu diseño). En el resto: SOLO "Tu diseño".
   const esCarcasa = producto ? isProductoCarcasa(producto) : false;
   const engraggingArea = producto ? getProductEngraggingArea(producto) : null;
   const soloArchivo = !!producto && !esCarcasa;
@@ -112,8 +130,8 @@ export default function ProductoNuevo() {
   const color = useMemo(() => colores.find((c) => c.id === colorId), [colores, colorId]);
 
   // Inicializa: restaura el borrador auto-guardado de este producto si existe
-  // (color, personalización, posiciones, cantidad). Si no, estado limpio. Así la
-  // configuración sobrevive a recargas o salir/volver, y llega intacta al carrito.
+  // (color, personalización, posiciones, cantidad). La configuración sobrevive
+  // a recargas o salir/volver, y llega intacta al carrito.
   useEffect(() => {
     if (!producto) return;
     const draft = loadDraftV2(producto.id);
@@ -142,9 +160,7 @@ export default function ProductoNuevo() {
     saveDraftV2(producto.id, { colorId, pers, placements, cantidad });
   }, [producto, colorId, pers, placements, cantidad]);
 
-  // Auto-placement: cuando se cambia la personalización, auto-asigna las posiciones.
-  // Cada vez que el usuario selecciona un logo/diseño, automáticamente se coloca
-  // en la posición predeterminada del producto sin requerir ajuste manual.
+  // Auto-placement: cuando se cambia la personalización, auto-asigna posiciones.
   useEffect(() => {
     if (!producto || !pers) return;
     applyAutoPlacement(producto, pers, setPlacements);
@@ -154,27 +170,24 @@ export default function ProductoNuevo() {
   const galleryImages = useMemo(() => {
     if (!producto) return [];
     const main = color ? getProductImageForColor(producto, color) : getProductImage(producto);
-    // Carcasas: la imagen por color es la ÚNICA fuente de verdad. Sin galería
-    // de ángulos extra debajo del contenedor principal.
+    // Carcasas: la imagen por color es la ÚNICA fuente de verdad.
     if (esCarcasa) return [main];
     let extra = Array.isArray(producto.galeria_urls)
       ? producto.galeria_urls.filter((u) => typeof u === 'string' && u.startsWith('http') && u !== main)
       : [];
-    
+
     // Filtro especial: cacho unitario no muestra imagen amarilla
     if (producto.sku === 'ENT-CACH-1') {
       extra = extra.filter((u) => !u.toLowerCase().includes('amarillo') && !u.includes('1-2.jpg'));
     }
-    
+
     return [main, ...extra].slice(0, 6);
   }, [producto, color, esCarcasa]);
 
   // Al cambiar de color, vuelve a la 1ª imagen (la del color elegido).
   useEffect(() => { setGalIdx(0); }, [colorId]);
 
-  // IMPORTANTE: la imagen principal SIEMPRE es la del color elegido (galleryImages[0]),
-  // sin importar qué thumbnail se seleccione en la galería. Los thumbnails solo permiten
-  // ver ángulos alternativos, pero el color elegido prevalece siempre.
+  // La imagen principal SIEMPRE es la del color elegido.
   const displayImg = color ? getProductImageForColor(producto, color) : getProductImage(producto);
 
   const precioUnit = producto?.precio_b2c || 9990;
@@ -183,18 +196,14 @@ export default function ProductoNuevo() {
   const feeUnit = useMemo(() => feeUnitarioCombinado(pers), [pers]);
   const gratis = cantidad >= moq;
   const feeTotal = gratis ? 0 : feeUnit * cantidad;
-  
+
   // Descuento por cantidad: 2u → 10% · 3+u → 15%
   const descuentoPct = getQtyDiscountPct(cantidad);
   const descuentoMonto = Math.floor(precioUnit * cantidad * (descuentoPct / 100));
-  
+
   const total = precioUnit * cantidad + feeTotal - descuentoMonto;
 
   // Imagen base (lienzo) del mockup.
-  // • Carcasas: foto del color elegido.
-  // • Resto de productos: imagen base LIMPIA (sin el logo PEYU grabado de fábrica)
-  //   si existe, para montar el diseño del cliente sin superposiciones. Cae a la
-  //   foto normal si aún no se generó la versión limpia.
   const colorImg = useMemo(() => {
     if (!esCarcasa && producto?.imagen_base_limpia_url) return producto.imagen_base_limpia_url;
     return color ? getProductImageForColor(producto, color) : displayImg;
@@ -214,7 +223,7 @@ export default function ProductoNuevo() {
   const persOk = persCompleta(pers) && (!hayAlgunoActivado(pers) || pers.aprobada);
   const muestraMockup = capas.length > 0;
 
-  // Stock/urgencia sutil (Baymard #6): solo si el dato existe y es bajo.
+  // Stock/urgencia sutil: solo si el dato existe y es bajo.
   const stock = producto?.stock_actual;
   const stockBajo = typeof stock === 'number' && stock > 0 && stock <= 8;
 
@@ -229,8 +238,7 @@ export default function ProductoNuevo() {
       return;
     }
 
-    // Captura el snapshot del canvas en vivo (foto base + grabado) como mockupUrl real.
-    // Si falla (CORS, etc.) cae a colorImg como antes.
+    // Captura el snapshot del canvas en vivo (foto base + grabado) como mockupUrl.
     let mockupUrl = muestraMockup ? colorImg : null;
     if (muestraMockup) {
       const isDesktop = typeof window !== 'undefined' && window.innerWidth >= 1024;
@@ -269,9 +277,9 @@ export default function ProductoNuevo() {
 
   if (loading) {
     return (
-      <div className="min-h-screen" style={{ background: '#F8F3ED' }}>
+      <div className="min-h-screen" style={{ background: C.bg }}>
         <div className="flex items-center justify-center py-32">
-          <Loader2 className="w-8 h-8 animate-spin" style={{ color: '#C0785C' }} />
+          <Loader2 className="w-8 h-8 animate-spin" style={{ color: C.action }} />
         </div>
       </div>
     );
@@ -279,15 +287,15 @@ export default function ProductoNuevo() {
 
   if (!producto) {
     return (
-      <div className="min-h-screen font-inter" style={{ background: '#F8F3ED' }}>
+      <div className="min-h-screen font-inter" style={{ background: C.bg }}>
         <div className="text-center py-32 px-4">
-          <p className="font-bold mb-2" style={{ color: '#2C1810' }}>
+          <p className="font-bold mb-2" style={{ color: C.fg }}>
             {error ? 'Error de conexión' : 'Producto no encontrado'}
           </p>
-          <p className="text-sm mb-4" style={{ color: '#7A6050' }}>
+          <p className="text-sm mb-4" style={{ color: C.fgSoft }}>
             {error || 'Este producto no existe o fue eliminado.'}
           </p>
-          <Link to="/CatalogoNuevo" className="font-bold text-sm" style={{ color: '#C0785C' }}>← Volver a la tienda</Link>
+          <Link to="/CatalogoNuevo" className="font-bold text-sm" style={{ color: C.action }}>← Volver a la tienda</Link>
         </div>
       </div>
     );
@@ -316,8 +324,16 @@ export default function ProductoNuevo() {
     material: producto.material,
   };
 
+  const ctaLabel = added
+    ? '✓ ¡Agregado!'
+    : hayAlgunoActivado(pers) && !pers.aprobada
+      ? 'Aprueba tu personalización'
+      : `Agregar al carrito · ${fmtCLP(total)}`;
+
+  const persResumen = resumenPersonalizacion(pers);
+
   return (
-    <div className="min-h-screen font-inter pb-20 lg:pb-0" style={{ background: '#F8F3ED', color: '#2C1810' }}>
+    <div className="min-h-screen lg:h-screen lg:min-h-0 lg:flex lg:flex-col lg:overflow-hidden font-inter pb-20 lg:pb-0" style={{ background: C.bg, color: C.fg }}>
       <SEOHead
         title={`${producto.nombre} - PEYU Chile`}
         description={producto.descripcion || `Compra ${producto.nombre} personalizado. Regalos corporativos sostenibles hechos con plástico 100% reciclado.`}
@@ -326,33 +342,165 @@ export default function ProductoNuevo() {
         type="product"
         schema={seoSchema}
       />
-      <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-2 sm:py-4">
-        <CheckoutStepperV2 current="producto" />
-        {/* Link de vuelta solo visible en desktop (mobile usa el navbar inferior) */}
-        <Link to="/CatalogoNuevo" className="hidden lg:inline-flex items-center gap-1.5 text-sm font-bold mb-4 transition-colors" style={{ color: '#7A6050' }}>
-          <ArrowLeft className="w-4 h-4" /> Volver a la tienda
-        </Link>
 
-        {/* Layout: galería sticky izquierda · configurador scroll derecha */}
-        <div className="grid lg:grid-cols-2 gap-3 sm:gap-5 lg:gap-8 lg:items-start">
-          {/* GALERÍA sticky — fija en desktop mientras scrolleas el configurador */}
-          <div className="lg:sticky lg:top-24 lg:self-start">
-            {/* Desktop: con grabado activo, el preview EN VIVO toma el lugar central
-                de la galería — interacción sin scroll aprovechando la pantalla grande. */}
-            {muestraMockup && (
-              <div className="hidden lg:block">
-                <MockupLivePreviewV2
-                  ref={mockupRefDesktop}
-                  productImageUrl={colorImg}
-                  fallbackUrl={getProductImage(producto)}
-                  capas={capas}
-                  onPlacementChange={setPlacements}
-                  esCarcasa={esCarcasa}
-                  customArea={engraggingArea}
-                />
+      {/* ── TOP NAV sticky (mismo patrón /personalizar) ──────────────────── */}
+      <header className="sticky top-0 z-50 backdrop-blur-xl"
+        style={{ background: 'rgba(248,243,237,.97)', borderBottom: `1px solid ${C.border}`, boxShadow: '0 1px 10px rgba(44,24,16,.07)' }}>
+        <div className="max-w-7xl mx-auto px-4 lg:px-8 py-2.5 flex items-center gap-3">
+          <Link to="/CatalogoNuevo"
+            className="w-9 h-9 rounded-xl flex items-center justify-center transition-all hover:bg-white flex-shrink-0"
+            style={{ border: `1.5px solid ${C.border}` }}>
+            <ArrowLeft className="w-4 h-4" style={{ color: C.fgSoft }} />
+          </Link>
+
+          {/* Logo (solo desktop) */}
+          <Link to="/" className="hidden lg:block flex-shrink-0 group mr-4">
+            <img src="https://media.base44.com/images/public/69d99b9d61f699701129c103/b67ed29f9_image.png"
+              alt="PEYU" className="h-8 w-auto group-hover:scale-105 transition-transform" draggable={false} />
+          </Link>
+
+          {/* Brand mobile: nombre + precio */}
+          <div className="lg:hidden flex-1 min-w-0">
+            <p className="font-poppins font-bold text-sm leading-tight truncate" style={{ color: C.fg }}>{producto.nombre}</p>
+            <p className="text-[11px] leading-tight font-bold" style={{ color: C.action }}>{fmtCLP(precioUnit)} · envío a todo Chile</p>
+          </div>
+
+          {/* Pasos del funnel centrados (desktop) — coordinado con tienda/carrito/pago */}
+          <div className="hidden lg:flex flex-1 justify-center">
+            <CheckoutStepperV2 current="producto" className="" />
+          </div>
+
+          {/* CTA en header (desktop) */}
+          <button
+            onClick={handleAdd}
+            disabled={added || !persOk}
+            className="hidden lg:flex items-center gap-2 px-5 h-10 rounded-xl text-white font-bold text-sm transition-all hover:-translate-y-0.5 active:scale-[0.97] disabled:opacity-60 disabled:hover:translate-y-0"
+            style={{ background: C.actionGrad, boxShadow: C.actionShadow, flexShrink: 0 }}
+          >
+            {added ? <Check className="w-4 h-4" /> : <ShoppingBag className="w-4 h-4" />}
+            <span>{added ? '¡Agregado!' : `Agregar · ${fmtCLP(total)}`}</span>
+          </button>
+        </div>
+      </header>
+
+      {/* ── BODY: cockpit 3 cols desktop (1 pantalla) · 1 col mobile ─────── */}
+      <div className="w-full max-w-7xl 2xl:max-w-[1600px] mx-auto px-3 sm:px-4 lg:px-6 py-3 lg:py-4 lg:flex-1 lg:min-h-0 lg:overflow-hidden">
+        {/* Stepper mobile */}
+        <div className="lg:hidden">
+          <CheckoutStepperV2 current="producto" />
+        </div>
+
+        <div className="flex flex-col lg:flex-row gap-4 lg:gap-5 lg:items-stretch lg:h-full">
+
+          {/* ── Panel izquierdo desktop: info + resumen vivo ─────────────── */}
+          <aside className="hidden lg:flex flex-col gap-3 w-60 xl:w-72 flex-shrink-0 lg:h-full lg:min-h-0 lg:overflow-y-auto peyu-scrollbar pr-1">
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-wider mb-1" style={{ color: C.fgMuted }}>
+                {producto.categoria?.replace(' B2C', '')}
+              </p>
+              <h1 className="font-fraunces text-2xl xl:text-3xl leading-[1.05] mb-1.5" style={{ color: C.fg }}>{producto.nombre}</h1>
+              <p className="font-poppins font-bold text-xl" style={{ color: C.action }}>{fmtCLP(precioUnit)}</p>
+              {stockBajo && (
+                <p className="inline-flex items-center gap-1 mt-1.5 text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ color: C.action, background: 'rgba(192,120,92,.1)' }}>
+                  🔥 Solo {stock}u disponibles
+                </p>
+              )}
+            </div>
+
+            <p className="text-[10px] font-bold text-center flex items-center justify-center gap-1" style={{ color: '#5B7D5A' }}>
+              <Check className="w-3 h-3" /> Tu configuración se guarda automáticamente
+            </p>
+
+            {/* Resumen vivo de la configuración */}
+            <div className="rounded-2xl p-3 space-y-1.5" style={{ border: `1.5px solid ${C.border}`, background: C.surface }}>
+              <p className="text-[10px] font-bold uppercase tracking-widest" style={{ color: C.fgMuted }}>Tu configuración</p>
+              <div className="flex justify-between text-[11px]">
+                <span style={{ color: C.fgSoft }}>Color</span>
+                <span className="font-bold" style={{ color: color ? C.fg : C.fgMuted }}>{color?.label || (requiereColor ? 'Por elegir' : 'Natural')}</span>
               </div>
-            )}
-            <div className={muestraMockup ? 'lg:hidden' : ''}>
+              <div className="flex justify-between text-[11px] gap-2">
+                <span className="flex-shrink-0" style={{ color: C.fgSoft }}>Grabado</span>
+                <span className="font-bold text-right truncate" style={{ color: persResumen ? C.action : C.fgMuted }}>
+                  {persResumen || 'Sin grabado'}
+                </span>
+              </div>
+              <div className="flex justify-between text-[11px]">
+                <span style={{ color: C.fgSoft }}>Cantidad</span>
+                <span className="font-bold" style={{ color: C.fg }}>{cantidad} u{descuentoPct > 0 ? ` · −${descuentoPct}%` : ''}</span>
+              </div>
+              <div className="flex justify-between pt-1.5" style={{ borderTop: `1px solid ${C.border}` }}>
+                <span className="text-[11px] font-bold" style={{ color: C.fg }}>Total</span>
+                <span className="text-sm font-poppins font-bold" style={{ color: C.action }}>{fmtCLP(total)}</span>
+              </div>
+              <p className="text-[9px] text-center" style={{ color: C.fgMuted }}>IVA incluido ✓</p>
+            </div>
+
+            {/* Medios de pago */}
+            <PaymentMethodsBadgesV2 vertical />
+
+            {/* Trust badges */}
+            <div className="grid grid-cols-3 gap-1.5">
+              {[
+                { icon: Recycle, label: '100%', sub: 'reciclado' },
+                { icon: Truck, label: 'Bluex', sub: 'todo Chile' },
+                { icon: Lock, label: 'Pago', sub: 'seguro' },
+              ].map(({ icon: Icon, label, sub }) => (
+                <div key={label} className="flex flex-col items-center gap-1 p-2 rounded-xl text-center"
+                  style={{ background: C.surface, border: `1px solid ${C.border}` }}>
+                  <Icon className="w-4 h-4" style={{ color: C.green }} />
+                  <span className="text-[10px] font-bold leading-tight" style={{ color: C.fg }}>{label}</span>
+                  <span className="text-[9px]" style={{ color: C.fgMuted }}>{sub}</span>
+                </div>
+              ))}
+            </div>
+          </aside>
+
+          {/* ── Centro desktop: mockup/galería GIGANTE en vivo ───────────── */}
+          <main className="hidden lg:flex flex-col flex-1 min-w-0 lg:h-full lg:min-h-0 gap-3">
+            <div
+              className="relative flex-1 min-h-0 rounded-3xl overflow-y-auto peyu-scrollbar flex items-start justify-center p-4"
+              style={{ background: C.surface, border: `1.5px solid ${C.border}` }}
+            >
+              <div className="w-full max-w-[640px]">
+                {muestraMockup ? (
+                  <MockupLivePreviewV2
+                    ref={mockupRefDesktop}
+                    productImageUrl={colorImg}
+                    fallbackUrl={getProductImage(producto)}
+                    capas={capas}
+                    onPlacementChange={setPlacements}
+                    esCarcasa={esCarcasa}
+                    customArea={engraggingArea}
+                  />
+                ) : (
+                  <ProductGalleryV2
+                    images={galleryImages}
+                    active={galIdx}
+                    onSelect={setGalIdx}
+                    badge={esCompostable ? 'Compostable' : '100% Reciclado'}
+                    fallback={getProductImage(producto)}
+                  />
+                )}
+              </div>
+            </div>
+
+            {/* Barra info inferior */}
+            <div className="flex-shrink-0 flex items-center justify-between gap-3 px-4 py-2.5 rounded-2xl"
+              style={{ background: 'rgba(255,255,255,.94)', border: `1px solid ${C.border}` }}>
+              <div className="min-w-0">
+                <p className="text-sm font-bold truncate" style={{ color: C.fg }}>{producto.nombre}</p>
+                <p className="text-[11px] truncate" style={{ color: C.fgMuted }}>
+                  {color?.label || 'Color natural'}{persResumen ? ` · ${persResumen}` : ''} · ×{cantidad}
+                </p>
+              </div>
+              <span className="font-poppins font-bold text-lg flex-shrink-0" style={{ color: C.action }}>{fmtCLP(total)}</span>
+            </div>
+          </main>
+
+          {/* ── Configurador: derecha desktop (scroll propio) · flujo mobile ── */}
+          <div className="flex-1 min-w-0 lg:flex-none lg:w-[400px] xl:w-[440px] lg:h-full lg:min-h-0 lg:flex lg:flex-col">
+            {/* Galería mobile primero */}
+            <div className="lg:hidden mb-3">
               <ProductGalleryV2
                 images={galleryImages}
                 active={galIdx}
@@ -361,117 +509,129 @@ export default function ProductoNuevo() {
                 fallback={getProductImage(producto)}
               />
             </div>
-          </div>
 
-          {/* CONFIGURADOR — scroll libre en desktop */}
-          <div className="space-y-3.5 lg:pb-8">
-            <div>
-              <p className="text-[9px] font-bold uppercase tracking-wider mb-0.5" style={{ color: '#A08070' }}>
-                {producto.categoria?.replace(' B2C', '')}
-              </p>
-              <h1 className="font-fraunces text-lg sm:text-4xl leading-[1.05] mb-1" style={{ color: '#2C1810' }}>{producto.nombre}</h1>
-              <p className="font-poppins font-bold text-lg sm:text-2xl" style={{ color: '#C0785C' }}>{fmtCLP(precioUnit)}</p>
-              {stockBajo && (
-                <p className="inline-flex items-center gap-1 mt-1 text-[9px] font-bold px-2 py-0.5 rounded-full" style={{ color: '#C0785C', background: 'rgba(192,120,92,.1)' }}>
-                  🔥 Solo {stock}u
+            <div className="space-y-3.5 lg:flex-1 lg:min-h-0 lg:overflow-y-auto peyu-scrollbar lg:bg-white lg:rounded-3xl lg:p-5 lg:shadow-sm lg:border lg:border-[#D4C4B0]">
+              {/* Título (mobile — en desktop vive en el panel izquierdo) */}
+              <div className="lg:hidden">
+                <p className="text-[9px] font-bold uppercase tracking-wider mb-0.5" style={{ color: C.fgMuted }}>
+                  {producto.categoria?.replace(' B2C', '')}
                 </p>
-              )}
-
-            </div>
-
-            {/* Color — swatches visibles (Baymard #1) */}
-            {colores.length > 0 && (
-              <ColorSwatchesV2
-                colores={colores}
-                value={colorId}
-                onSelect={(v) => { setColorId(v); setColorError(false); }}
-                error={colorError}
-                producto={producto}
-              />
-            )}
-
-            {/* Personalización en vivo (Baymard #5) — circuito completo */}
-            <div data-personalizador>
-              <PersonalizadorV2 pers={pers} setPers={setPers} gratis={gratis} moq={moq} soloArchivo={soloArchivo} />
-
-              {/* Mockup EN VIVO: compone todas las capas combinadas */}
-              {muestraMockup && (
-                <div className="mt-4 lg:hidden">
-                  <MockupLivePreviewV2
-                    ref={mockupRefMobile}
-                    productImageUrl={colorImg}
-                    fallbackUrl={getProductImage(producto)}
-                    capas={capas}
-                    onPlacementChange={setPlacements}
-                    esCarcasa={esCarcasa}
-                    customArea={engraggingArea}
-                  />
-                </div>
-              )}
-            </div>
-
-            {/* Cantidad */}
-            <div className="flex items-center justify-between gap-2">
-              <div className="flex-1 min-w-0">
-                <span className="text-xs sm:text-sm font-bold" style={{ color: '#2C1810' }}>Cantidad</span>
-                {activos.length > 0 && (
-                  <p className="text-[10px] sm:text-[11px] mt-0.5 font-semibold truncate" style={{ color: gratis ? '#8BAD8A' : '#A08070' }}>
-                    {gratis ? '✓ GRATIS' : `${moq - cantidad}u más`}
+                <h1 className="font-fraunces text-lg sm:text-4xl leading-[1.05] mb-1" style={{ color: C.fg }}>{producto.nombre}</h1>
+                <p className="font-poppins font-bold text-lg sm:text-2xl" style={{ color: C.action }}>{fmtCLP(precioUnit)}</p>
+                {stockBajo && (
+                  <p className="inline-flex items-center gap-1 mt-1 text-[9px] font-bold px-2 py-0.5 rounded-full" style={{ color: C.action, background: 'rgba(192,120,92,.1)' }}>
+                    🔥 Solo {stock}u
                   </p>
                 )}
               </div>
-              <QtyStepperV2 value={cantidad} onChange={setCantidad} min={1} />
-            </div>
 
-            {/* Precio en vivo con desglose IVA (Baymard #4) */}
-            <PriceBreakdownV2
-              precioUnit={precioUnit}
-              cantidad={cantidad}
-              tipoLabel={labelCombinada(pers)}
-              feeUnit={feeUnit}
-              feeTotal={feeTotal}
-              gratis={gratis}
-              descuentoPct={descuentoPct}
-              descuentoMonto={descuentoMonto}
-            />
-
-            {/* CTA desktop */}
-            <button
-              onClick={handleAdd}
-              disabled={added || !persOk}
-              className="hidden lg:flex w-full h-14 rounded-2xl text-white font-bold text-base items-center justify-center gap-2 transition-all hover:scale-[1.01] disabled:opacity-60 disabled:hover:scale-100"
-              style={{ background: 'linear-gradient(135deg,#C0785C,#A86440)', boxShadow: '0 8px 28px rgba(192,120,92,.28)' }}
-            >
-              {added ? (
-                <><Check className="w-5 h-5" /> ¡Agregado!</>
-              ) : hayAlgunoActivado(pers) && !pers.aprobada ? (
-                <><Sparkles className="w-5 h-5" /> Aprueba tu personalización</>
-              ) : (
-                <><ShoppingBag className="w-5 h-5" /> Agregar al carrito · {fmtCLP(total)}</>
+              {/* Color — swatches visibles */}
+              {colores.length > 0 && (
+                <ColorSwatchesV2
+                  colores={colores}
+                  value={colorId}
+                  onSelect={(v) => { setColorId(v); setColorError(false); }}
+                  error={colorError}
+                  producto={producto}
+                />
               )}
-            </button>
 
-            {/* Trust badges (Baymard #6) */}
-            <div className="grid grid-cols-3 gap-2">
-              {[
-                { icon: Recycle, t: '100% reciclado' },
-                { icon: Truck, t: 'Envío BlueExpress' },
-                { icon: Lock, t: 'Pago seguro' },
-              ].map((b, i) => (
-                <div key={i} className="flex flex-col items-center gap-2 bg-white rounded-2xl p-3.5 text-center" style={{ border: '1.5px solid #D4C4B0' }}>
-                  <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: 'rgba(139,173,138,.12)' }}>
-                    <b.icon className="w-5 h-5" style={{ color: '#8BAD8A' }} />
+              {/* Personalización en vivo — circuito completo */}
+              <div data-personalizador>
+                <PersonalizadorV2 pers={pers} setPers={setPers} gratis={gratis} moq={moq} soloArchivo={soloArchivo} />
+
+                {/* Mockup EN VIVO mobile (en desktop vive en el panel central) */}
+                {muestraMockup && (
+                  <div className="mt-4 lg:hidden">
+                    <MockupLivePreviewV2
+                      ref={mockupRefMobile}
+                      productImageUrl={colorImg}
+                      fallbackUrl={getProductImage(producto)}
+                      capas={capas}
+                      onPlacementChange={setPlacements}
+                      esCarcasa={esCarcasa}
+                      customArea={engraggingArea}
+                    />
                   </div>
-                  <span className="text-[10px] sm:text-xs font-bold leading-tight" style={{ color: '#7A6050' }}>{b.t}</span>
+                )}
+              </div>
+
+              {/* Cantidad */}
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex-1 min-w-0">
+                  <span className="text-xs sm:text-sm font-bold" style={{ color: C.fg }}>Cantidad</span>
+                  {activos.length > 0 && (
+                    <p className="text-[10px] sm:text-[11px] mt-0.5 font-semibold truncate" style={{ color: gratis ? C.green : C.fgMuted }}>
+                      {gratis ? '✓ GRATIS' : `${moq - cantidad}u más para grabado gratis`}
+                    </p>
+                  )}
                 </div>
-              ))}
+                <QtyStepperV2 value={cantidad} onChange={setCantidad} min={1} />
+              </div>
+
+              {/* Precio en vivo con desglose IVA */}
+              <PriceBreakdownV2
+                precioUnit={precioUnit}
+                cantidad={cantidad}
+                tipoLabel={labelCombinada(pers)}
+                feeUnit={feeUnit}
+                feeTotal={feeTotal}
+                gratis={gratis}
+                descuentoPct={descuentoPct}
+                descuentoMonto={descuentoMonto}
+              />
+
+              {/* Envío BlueExpress en vivo (tarifario oficial por comuna) */}
+              <ShippingEstimatorV2 producto={producto} cantidad={cantidad} />
+
+              {/* Medios de pago (mobile — en desktop vive en el panel izquierdo) */}
+              <div className="lg:hidden">
+                <PaymentMethodsBadgesV2 />
+              </div>
+
+              {/* Trust badges mobile */}
+              <div className="grid grid-cols-3 gap-2 lg:hidden">
+                {[
+                  { icon: Recycle, t: '100% reciclado' },
+                  { icon: Truck, t: 'Envío BlueExpress' },
+                  { icon: Lock, t: 'Pago seguro' },
+                ].map((b, i) => (
+                  <div key={i} className="flex flex-col items-center gap-2 bg-white rounded-2xl p-3.5 text-center" style={{ border: `1.5px solid ${C.border}` }}>
+                    <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: 'rgba(139,173,138,.12)' }}>
+                      <b.icon className="w-5 h-5" style={{ color: C.green }} />
+                    </div>
+                    <span className="text-[10px] sm:text-xs font-bold leading-tight" style={{ color: C.fgSoft }}>{b.t}</span>
+                  </div>
+                ))}
+              </div>
+
+              {/* Descripción colapsable + incluye/impacto */}
+              <DescripcionCollapsibleV2 texto={producto.descripcion} />
+              <ProductIncludesV2 producto={producto} cantidad={cantidad} />
             </div>
 
-            {/* Descripción en pestaña colapsable (menos scroll: foco en color + personalización) */}
-            <DescripcionCollapsibleV2 texto={producto.descripcion} />
-
-            {/* Incluye + impacto ambiental (Baymard #7) */}
-            <ProductIncludesV2 producto={producto} cantidad={cantidad} />
+            {/* CTA desktop fijo bajo la columna (siempre visible, sin scroll) */}
+            <div className="hidden lg:block mt-3 lg:flex-shrink-0">
+              <button
+                onClick={handleAdd}
+                disabled={added || !persOk}
+                className="w-full h-14 rounded-2xl text-white font-bold text-base flex items-center justify-center gap-2 transition-all hover:-translate-y-0.5 active:scale-[0.98] disabled:opacity-60 disabled:hover:translate-y-0"
+                style={{ background: C.actionGrad, boxShadow: C.actionShadow }}
+              >
+                {added ? (
+                  <><Check className="w-5 h-5" /> ¡Agregado!</>
+                ) : hayAlgunoActivado(pers) && !pers.aprobada ? (
+                  <><Sparkles className="w-5 h-5" /> Aprueba tu personalización</>
+                ) : (
+                  <><ShoppingBag className="w-5 h-5" /> {ctaLabel}</>
+                )}
+              </button>
+              {!persOk && hayAlgunoActivado(pers) && (
+                <p className="text-center text-xs mt-2 font-semibold" style={{ color: C.fgMuted }}>
+                  Revisa el mockup y aprueba tu diseño para continuar
+                </p>
+              )}
+            </div>
           </div>
         </div>
       </div>

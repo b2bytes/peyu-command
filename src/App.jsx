@@ -293,9 +293,10 @@ function App() {
               {/* ── Standalone (sin PublicPageLayout) ──────────────────────────── */}
               {/* Estas páginas tienen diseño 100% propio y no deben llevar el nav general */}
               <Route path="/personalizar" element={<PersonalizacionFlow />} />
-              {/* Recorrido B2B unificado en cockpits con header propio (mismo formato que /personalizar) */}
+              {/* CotizacionRapida = cockpit wizard B2B con header propio (mismo formato que /personalizar) */}
               <Route path="/CotizacionRapida" element={<CotizacionRapida />} />
-              <Route path="/EmpresasNuevo" element={<EmpresasNuevo />} />
+              {/* ProductoNuevo = ficha cockpit de 1 pantalla con header propio (mismo formato que /personalizar) */}
+              <Route path="/ProductoNuevo" element={<ProductoNuevo />} />
               <Route path="/lanzamiento" element={<Lanzamiento />} />
               <Route path="/propuesta-valor-peyu" element={<PropuestaValorPeyu />} />
               <Route path="/brand" element={<BrandLab />} />
@@ -310,9 +311,9 @@ function App() {
                 <Route path="/" element={<TiendaNueva />} />
                 <Route path="/TiendaNueva" element={<TiendaNueva />} />
                 <Route path="/CatalogoNuevo" element={<CatalogoNuevo />} />
-                <Route path="/ProductoNuevo" element={<ProductoNuevo />} />
                 <Route path="/CarritoNuevo" element={<CarritoNuevo />} />
                 <Route path="/CheckoutNuevo" element={<CheckoutNuevo />} />
+                <Route path="/EmpresasNuevo" element={<EmpresasNuevo />} />
                 <Route path="/EmpresaProducto" element={<EmpresaProducto />} />
                 <Route path="/b2b/propuesta" element={<B2BPropuestaPublica />} />
                 <Route path="/b2b/contacto" element={<B2BContacto />} />
