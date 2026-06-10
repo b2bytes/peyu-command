@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { base44 } from '@/api/base44Client';
+import EtiquetaWizardModal from '@/components/agente-os/EtiquetaWizardModal';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
@@ -272,6 +273,7 @@ export default function DespachoRapido() {
   const [loadingEnvio, setLoadingEnvio] = useState(false);
   const [generando, setGenerando] = useState(false);
   const [showManual, setShowManual] = useState(false);
+  const [showWizard, setShowWizard] = useState(false); // asistente guiado con burbujas
   const [manualTracking, setManualTracking] = useState('');
   const [manualLabelUrl, setManualLabelUrl] = useState('');
 
@@ -452,12 +454,27 @@ export default function DespachoRapido() {
             setShowManual={setShowManual}
             setManualTracking={setManualTracking}
             setManualLabelUrl={setManualLabelUrl}
-            onGenerarEtiqueta={generarEtiqueta}
+            onGenerarEtiqueta={({ manual = false } = {}) => (manual ? generarEtiqueta({ manual: true }) : setShowWizard(true))}
             onRecargar={() => selected && selectPedido(selected)}
           />
         </div>
 
       </div>
+
+      {/* Asistente guiado con burbujas: revisa pago, dirección, cobertura y
+          duplicados — si falta algo se corrige AHÍ MISMO hasta emitir la OT. */}
+      {showWizard && selected && (
+        <EtiquetaWizardModal
+          pedido={selected}
+          onClose={() => setShowWizard(false)}
+          onDone={async () => {
+            await loadPedidos();
+            const [fresco] = await base44.entities.PedidoWeb.filter({ id: selected.id });
+            if (fresco) { setSelected(fresco); cargarEnvio(fresco); }
+          }}
+          openLabelUrl={(url) => window.open(url, '_blank')}
+        />
+      )}
     </div>
   );
 }

@@ -10,6 +10,15 @@
 // ════════════════════════════════════════════════════════════════════════
 
 export const CHANGELOG = [
+  // ── 10 junio 2026 · Etiqueta Bluex: corrección inline hasta finalizar ──
+  {
+    fecha: '2026-06-10',
+    tipo: 'mejora',
+    area: 'BlueExpress · Despacho',
+    titulo: 'Asistente de etiqueta Bluex: si falta un dato, se corrige AHÍ MISMO hasta emitir el envío',
+    detalle: 'El asistente guiado con burbujas ya no solo diagnostica — ahora RESUELVE: si falta la dirección o la comuna, aparece un formulario dentro del mismo modal (con autocompletado de comunas contra el tarifario oficial Bluex de 346 comunas, marcando "✓ cobertura verificada"); si la comuna está mal escrita, se corrige con sugerencias en un clic; si falta el pago, se confirma ahí mismo. Cada corrección re-corre el checklist automáticamente hasta que todo queda verde y se emite la OT con su PDF. Además, Despacho Rápido ahora usa este mismo asistente como flujo principal (el modo manual se mantiene como respaldo).',
+  },
+
   // ── 10 junio 2026 · Tinte instantáneo al color oficial elegido ──
   {
     fecha: '2026-06-10',

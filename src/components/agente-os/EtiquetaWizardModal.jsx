@@ -5,6 +5,7 @@ import { getPagoStatus } from '@/lib/pago-status';
 import {
   X, CheckCircle2, AlertTriangle, Loader2, Tag, Printer, BadgeCheck, Truck, ExternalLink,
 } from 'lucide-react';
+import { FixDireccionForm, FixComunaPicker } from '@/components/agente-os/EtiquetaFixForms';
 
 // ════════════════════════════════════════════════════════════════════════
 // EtiquetaWizardModal — Asistente INTELIGENTE de etiqueta BlueExpress.
@@ -105,12 +106,8 @@ export default function EtiquetaWizardModal({ pedido: pedidoInicial, onClose, on
       upd({
         status: 'fail',
         title: 'Paso 2 · Falta la dirección o la comuna',
-        detail: 'BlueExpress necesita dirección y comuna de destino para emitir la OT. Edita el pedido y completa estos datos:',
-        fix: (
-          <Link to="/admin/procesar-pedidos" className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-white text-[11px] font-bold">
-            Ir a Procesar Pedidos <ExternalLink className="w-3 h-3" />
-          </Link>
-        ),
+        detail: 'BlueExpress necesita dirección y comuna de destino para emitir la OT. Complétalas aquí mismo (la comuna se autocompleta con cobertura Bluex verificada):',
+        fix: <FixDireccionForm pedido={p} onSaved={handleDatosCorregidos} />,
       });
       return;
     }
@@ -131,11 +128,14 @@ export default function EtiquetaWizardModal({ pedido: pedidoInicial, onClose, on
       upd({
         status: 'warn',
         title: 'Paso 3 · Comuna sin tarifa en el sistema',
-        detail: `"${p.ciudad}" no aparece en el tarifario cargado (346 comunas). Puede ser un nombre mal escrito. Bluex intentará resolverla igual con su API de geografía, pero revisa el tarifario si falla:`,
+        detail: `"${p.ciudad}" no aparece en el tarifario cargado (346 comunas). Suele ser un nombre mal escrito. Bluex intentará resolverla igual con su API de geografía, pero lo seguro es corregirla:`,
         fix: (
-          <Link to="/admin/tarifas-envio" className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-600 text-white text-[11px] font-bold">
-            Revisar Tarifas Bluex <ExternalLink className="w-3 h-3" />
-          </Link>
+          <div className="space-y-2">
+            <FixComunaPicker pedido={p} onSaved={handleDatosCorregidos} />
+            <Link to="/admin/tarifas-envio" className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-600 text-white text-[11px] font-bold">
+              Revisar Tarifas Bluex <ExternalLink className="w-3 h-3" />
+            </Link>
+          </div>
         ),
       });
     }
@@ -164,6 +164,14 @@ export default function EtiquetaWizardModal({ pedido: pedidoInicial, onClose, on
   useEffect(() => { runChecks(pedido); /* eslint-disable-next-line */ }, []);
 
   // ── Acciones ─────────────────────────────────────────────────────────
+  // Datos corregidos inline (dirección/comuna): re-corre el checklist con el
+  // pedido actualizado — el flujo continúa solo hasta poder emitir la etiqueta.
+  function handleDatosCorregidos(actualizado) {
+    setPedido(actualizado);
+    onDone?.();
+    runChecks(actualizado);
+  }
+
   async function handleMarcarPagado() {
     setMarcandoPago(true);
     try {
