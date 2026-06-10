@@ -22,6 +22,7 @@ export default function LaserEngravePreview({
   texto = '',
   areaLabel,         // ej: "≈ 40×25mm"
   defaultTint = 'dark',
+  light = false,     // tema claro Warm Dusk (alto contraste sobre fondo crema)
 }) {
   // Fuente de imagen efectiva con fallback robusto: si la base limpia falla a
   // cargar (404/red), caemos a la imagen normal del producto. NUNCA roto.
@@ -91,18 +92,20 @@ export default function LaserEngravePreview({
   const hasContent = !!logoSource || !!texto;
 
   return (
-    <div className="bg-white/5 backdrop-blur-md border border-teal-400/30 rounded-2xl p-5 space-y-4 shadow-xl">
+    <div className={light
+      ? 'bg-white border-[1.5px] border-[#D4C4B0] rounded-2xl p-4 space-y-4 shadow-sm'
+      : 'bg-white/5 backdrop-blur-md border border-teal-400/30 rounded-2xl p-5 space-y-4 shadow-xl'}>
       <div className="flex items-center justify-between flex-wrap gap-2">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-teal-500/20 border border-teal-400/30 flex items-center justify-center">
-            <Sparkles className="w-4 h-4 text-teal-300" />
+          <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${light ? 'bg-[#C0785C]/12 border border-[#C0785C]/30' : 'bg-teal-500/20 border border-teal-400/30'}`}>
+            <Sparkles className={`w-4 h-4 ${light ? 'text-[#C0785C]' : 'text-teal-300'}`} />
           </div>
           <div>
-            <p className="font-semibold text-sm text-white">Mockup en vivo</p>
-            <p className="text-[10px] text-white/50">Grabado láser simulado · acerca con rueda o pinch para inspeccionar</p>
+            <p className={`font-bold text-sm ${light ? 'text-[#2C1810]' : 'text-white'}`}>Mockup en vivo</p>
+            <p className={`text-[10px] ${light ? 'text-[#7A6050]' : 'text-white/50'}`}>Grabado láser simulado · acerca con rueda o pinch para inspeccionar</p>
           </div>
         </div>
-        <span className="text-[10px] font-bold text-teal-300 bg-teal-500/20 border border-teal-400/30 px-2 py-1 rounded-full">
+        <span className={`text-[10px] font-bold px-2 py-1 rounded-full ${light ? 'text-[#C0785C] bg-[#C0785C]/10 border border-[#C0785C]/30' : 'text-teal-300 bg-teal-500/20 border border-teal-400/30'}`}>
           {processing ? 'Procesando logo…' : 'Tiempo real'}
         </span>
       </div>
@@ -111,7 +114,7 @@ export default function LaserEngravePreview({
           La capa interna .zoom-layer aplica el transform de zoom VISUAL. */}
       <div
         ref={containerRef}
-        className={`relative aspect-square rounded-2xl overflow-hidden bg-slate-900 border border-white/10 select-none touch-none ${zoom.zoomedIn ? 'cursor-grab active:cursor-grabbing' : ''}`}
+        className={`relative aspect-square rounded-2xl overflow-hidden select-none touch-none ${light ? 'bg-[#F2EBE0] border-[1.5px] border-[#D4C4B0]' : 'bg-slate-900 border border-white/10'} ${zoom.zoomedIn ? 'cursor-grab active:cursor-grabbing' : ''}`}
         onMouseMove={(e) => { handleMouseMove(e); zoom.bind.onMouseMove(e); }}
         onMouseDown={(e) => { if (!dragging) zoom.bind.onMouseDown(e); }}
         onMouseUp={(e) => { setDragging(false); zoom.bind.onMouseUp(e); }}
@@ -142,7 +145,7 @@ export default function LaserEngravePreview({
                   if (preferClean) setImgFailed(true);
                 }}
               />
-            : <div className="w-full h-full bg-gradient-to-br from-slate-800 to-slate-900" />
+            : <div className={`w-full h-full bg-gradient-to-br ${light ? 'from-[#F2EBE0] to-[#E7D8C6]' : 'from-slate-800 to-slate-900'}`} />
           }
 
           {/* Área técnica guía (recuadro sutil) */}
@@ -268,13 +271,13 @@ export default function LaserEngravePreview({
         <div className="space-y-3 text-xs">
           <div>
             <div className="flex justify-between mb-1">
-              <label className="text-white/60 font-semibold">Tamaño</label>
-              <span className="text-white/40">{size}%</span>
+              <label className={`font-bold ${light ? 'text-[#2C1810]' : 'text-white/60 font-semibold'}`}>Tamaño</label>
+              <span className={light ? 'text-[#7A6050] font-semibold' : 'text-white/40'}>{size}%</span>
             </div>
             <input
               type="range" min="10" max="50" value={size}
               onChange={e => setSize(Number(e.target.value))}
-              className="w-full accent-teal-400"
+              className={`w-full ${light ? 'accent-[#C0785C]' : 'accent-teal-400'}`}
             />
           </div>
 
@@ -282,15 +285,15 @@ export default function LaserEngravePreview({
             <button
               type="button"
               onClick={() => setTint(tint === 'dark' ? 'light' : 'dark')}
-              className="flex items-center justify-center gap-2 px-3 py-2 rounded-xl bg-white/5 border border-white/15 text-white/80 hover:bg-white/10 text-[11px] font-semibold"
+              className={`flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-[11px] font-bold ${light ? 'bg-white border-[1.5px] border-[#D4C4B0] text-[#2C1810] hover:bg-[#F8F3ED]' : 'bg-white/5 border border-white/15 text-white/80 hover:bg-white/10 font-semibold'}`}
             >
-              <span className={`w-3 h-3 rounded-full ${tint === 'light' ? 'bg-white' : 'bg-gray-900'} border border-white/30`} />
+              <span className={`w-3 h-3 rounded-full ${tint === 'light' ? 'bg-white' : 'bg-gray-900'} ${light ? 'border border-black/25' : 'border border-white/30'}`} />
               Tinta {tint === 'light' ? 'clara' : 'oscura'}
             </button>
             <button
               type="button"
               onClick={recenter}
-              className="flex items-center justify-center gap-2 px-3 py-2 rounded-xl bg-white/5 border border-white/15 text-white/80 hover:bg-white/10 text-[11px] font-semibold"
+              className={`flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-[11px] font-bold ${light ? 'bg-white border-[1.5px] border-[#D4C4B0] text-[#2C1810] hover:bg-[#F8F3ED]' : 'bg-white/5 border border-white/15 text-white/80 hover:bg-white/10 font-semibold'}`}
             >
               <Move className="w-3 h-3" /> Centrar
             </button>
@@ -298,7 +301,7 @@ export default function LaserEngravePreview({
         </div>
       )}
 
-      <div className="text-[10px] text-white/40 italic bg-white/5 border border-white/10 rounded-xl p-2.5 leading-relaxed">
+      <div className={`text-[10px] italic rounded-xl p-2.5 leading-relaxed ${light ? 'text-[#7A6050] bg-[#F8F3ED] border border-[#D4C4B0]' : 'text-white/40 bg-white/5 border border-white/10'}`}>
         El grabado láser UV real se aplica a pedido y se ajusta al área técnica del producto{areaLabel ? ` (${areaLabel})` : ''}.
       </div>
     </div>

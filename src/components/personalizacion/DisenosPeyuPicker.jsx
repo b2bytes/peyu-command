@@ -9,8 +9,9 @@ import { Check, Loader2, Palette } from 'lucide-react';
 // mockup). Lee la entidad DisenoPeyu (activos, ordenados) y agrupa
 // DINÁMICAMENTE por categoría — con tabs para navegar entre ellas.
 // Soporta PNG transparentes y SVG vectoriales (<img> con object-contain).
+// Temas: dark (default, chat /v2) · light (Warm Dusk alto contraste).
 // ============================================================================
-export default function DisenosPeyuPicker({ selectedUrl, onSelect }) {
+export default function DisenosPeyuPicker({ selectedUrl, onSelect, light = false }) {
   const [disenos, setDisenos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [catActiva, setCatActiva] = useState(null);
@@ -48,7 +49,7 @@ export default function DisenosPeyuPicker({ selectedUrl, onSelect }) {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-4 text-white/50 text-xs gap-2">
+      <div className={`flex items-center justify-center py-4 text-xs gap-2 ${light ? 'text-[#7A6050]' : 'text-white/50'}`}>
         <Loader2 className="w-3.5 h-3.5 animate-spin" /> Cargando diseños…
       </div>
     );
@@ -58,8 +59,8 @@ export default function DisenosPeyuPicker({ selectedUrl, onSelect }) {
 
   return (
     <div className="space-y-2.5">
-      <label className="text-xs font-bold text-white/80 flex items-center gap-1.5">
-        <Palette className="w-3.5 h-3.5" /> O elige un diseño PEYU
+      <label className={`text-xs font-bold flex items-center gap-1.5 ${light ? 'text-[#2C1810]' : 'text-white/80'}`}>
+        <Palette className={`w-3.5 h-3.5 ${light ? 'text-[#C0785C]' : ''}`} /> O elige un diseño PEYU
       </label>
 
       {/* Tabs por categoría (solo si hay más de una) */}
@@ -68,18 +69,21 @@ export default function DisenosPeyuPicker({ selectedUrl, onSelect }) {
           {categorias.map(cat => {
             const sel = cat === catActiva;
             const count = disenos.filter(d => (d.categoria || 'Otro') === cat).length;
+            const cls = light
+              ? sel
+                ? 'bg-[#C0785C] text-white border-[#C0785C] shadow-md shadow-[#C0785C]/25'
+                : 'bg-white text-[#7A6050] border-[#D4C4B0] hover:border-[#C0785C]/50 hover:text-[#2C1810]'
+              : sel
+                ? 'bg-gradient-to-r from-teal-500 to-cyan-500 text-white border-teal-400 shadow-lg shadow-teal-500/25'
+                : 'bg-white/5 text-white/60 border-white/15 hover:bg-white/10 hover:text-white/85';
             return (
               <button
                 key={cat}
                 type="button"
                 onClick={() => setCatActiva(cat)}
-                className={`flex-shrink-0 px-3 py-1.5 rounded-full text-[11px] font-bold whitespace-nowrap transition-all border ${
-                  sel
-                    ? 'bg-gradient-to-r from-teal-500 to-cyan-500 text-white border-teal-400 shadow-lg shadow-teal-500/25'
-                    : 'bg-white/5 text-white/60 border-white/15 hover:bg-white/10 hover:text-white/85'
-                }`}
+                className={`flex-shrink-0 px-3 py-1.5 rounded-full text-[11px] font-bold whitespace-nowrap transition-all border ${cls}`}
               >
-                {cat} <span className={sel ? 'text-white/70' : 'text-white/35'}>· {count}</span>
+                {cat} <span className={light ? (sel ? 'text-white/80' : 'text-[#A08070]') : (sel ? 'text-white/70' : 'text-white/35')}>· {count}</span>
               </button>
             );
           })}
@@ -95,8 +99,11 @@ export default function DisenosPeyuPicker({ selectedUrl, onSelect }) {
               type="button"
               title={d.nombre}
               onClick={() => onSelect(activo ? '' : d.imagen_url, d)}
-              className="relative aspect-square rounded-xl overflow-hidden border-2 transition-all bg-white/5 hover:scale-[1.04]"
-              style={{ borderColor: activo ? '#5eead4' : 'rgba(255,255,255,0.18)' }}
+              className={`relative aspect-square rounded-xl overflow-hidden border-2 transition-all hover:scale-[1.04] ${light ? 'bg-white' : 'bg-white/5'}`}
+              style={{
+                borderColor: activo ? (light ? '#C0785C' : '#5eead4') : (light ? '#D4C4B0' : 'rgba(255,255,255,0.18)'),
+                boxShadow: activo && light ? '0 4px 14px rgba(192,120,92,.25)' : undefined,
+              }}
             >
               <img
                 src={d.imagen_url}
@@ -110,7 +117,7 @@ export default function DisenosPeyuPicker({ selectedUrl, onSelect }) {
                 </span>
               )}
               {activo && (
-                <span className="absolute inset-0 flex items-center justify-center bg-teal-500/30">
+                <span className={`absolute inset-0 flex items-center justify-center ${light ? 'bg-[#C0785C]/25' : 'bg-teal-500/30'}`}>
                   <Check className="w-5 h-5 text-white drop-shadow" />
                 </span>
               )}

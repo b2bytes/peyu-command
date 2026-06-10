@@ -10,6 +10,15 @@
 // ════════════════════════════════════════════════════════════════════════
 
 export const CHANGELOG = [
+  // ── 10 junio 2026 · Personalizar: textos visibles en todos los pasos ────
+  {
+    fecha: '2026-06-10',
+    tipo: 'fix',
+    area: 'Personalizar',
+    titulo: 'Contraste total: mockup en vivo, galería y cantidad legibles (desktop + móvil)',
+    detalle: 'El preview láser, la galería de diseños PEYU y el selector de cantidad usaban estilos para fondo oscuro (texto blanco) y quedaban invisibles sobre el fondo crema. Ahora tienen tema claro de alto contraste (texto café oscuro, acentos terracota) en /personalizar, manteniendo el tema oscuro donde corresponde (chat /v2). Además la página fuerza modo día mientras está abierta para que el modo noche del visitante no borre los textos.',
+  },
+
   // ── 10 junio 2026 · Personalizar: contraste + viaje persistente ─────────
   {
     fecha: '2026-06-10',

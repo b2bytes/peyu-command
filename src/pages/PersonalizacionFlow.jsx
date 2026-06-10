@@ -226,6 +226,16 @@ export default function PersonalizacionFlow() {
   const navigate = useNavigate();
   const location = useLocation();
 
+  // Esta página usa fondo crema fijo (Warm Dusk). Si el visitante tiene el
+  // modo noche activo, los textos con tokens claros quedarían invisibles.
+  // Forzamos modo día mientras está aquí y restauramos al salir.
+  useEffect(() => {
+    const html = document.documentElement;
+    const prev = html.getAttribute('data-liquid-mode');
+    html.setAttribute('data-liquid-mode', 'day');
+    return () => { if (prev) html.setAttribute('data-liquid-mode', prev); };
+  }, []);
+
   const [productos, setProductos] = useState([]);
   const [productosLoading, setProductosLoading] = useState(true);
   const [step, setStep] = useState(0);
@@ -678,6 +688,7 @@ export default function PersonalizacionFlow() {
             texto={opcion === 'frase' ? texto : ''}
             areaLabel={producto?.area_laser_mm}
             defaultTint={tint}
+            light
           />
         )}
       </div>
@@ -712,7 +723,7 @@ export default function PersonalizacionFlow() {
       )}
 
       {opcion === 'peyu' && (
-        <DisenosPeyuPicker selectedUrl={disenoPeyuUrl}
+        <DisenosPeyuPicker selectedUrl={disenoPeyuUrl} light
           onSelect={(url) => { setDisenoPeyuUrl(url); if (url) { setArchivo(null); setLogoUrlSubido(''); } if (mockupUrl) setMockupUrl(''); }} />
       )}
 
@@ -741,7 +752,7 @@ export default function PersonalizacionFlow() {
               </p>
             )}
           </div>
-          <QuantityStepper value={cantidad} onChange={setCantidad} min={1} />
+          <QuantityStepper value={cantidad} onChange={setCantidad} min={1} light />
         </div>
       )}
 
@@ -835,7 +846,7 @@ export default function PersonalizacionFlow() {
               </p>
             )}
           </div>
-          <QuantityStepper value={cantidad} onChange={setCantidad} min={1} />
+          <QuantityStepper value={cantidad} onChange={setCantidad} min={1} light />
         </div>
         <div className="px-4 py-3 space-y-2">
           <div className="flex justify-between text-sm" style={{ color: C.fgMuted }}>
@@ -1030,6 +1041,7 @@ export default function PersonalizacionFlow() {
                       texto={opcion === 'frase' ? texto : ''}
                       areaLabel={producto?.area_laser_mm}
                       defaultTint={tint}
+                      light
                     />
                   </div>
                 )
