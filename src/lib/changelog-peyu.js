@@ -10,6 +10,15 @@
 // ════════════════════════════════════════════════════════════════════════
 
 export const CHANGELOG = [
+  // ── 10 junio 2026 · Catálogo B2B simplificado + flujo lineal ────────────
+  {
+    fecha: '2026-06-10',
+    tipo: 'mejora',
+    area: 'Empresas B2B',
+    titulo: 'Catálogo B2B simplificado y flujo directo a cotización',
+    detalle: 'Las tarjetas del catálogo empresas eran excesivas: tabla de 4 tramos de precio, overlay al pasar el mouse y varias líneas de texto por producto. Ahora cada tarjeta es compacta — imagen, nombre, precio "desde 50u" y un botón "Cotizar" que lleva DIRECTO a la cotización con el producto ya cargado (flujo lineal sin desvíos). El detalle completo de tramos vive en la ficha del producto. Con tarjetas más livianas el grid muestra 4-5 columnas y todo cabe en una pantalla.',
+  },
+
   // ── 10 junio 2026 · Escala global: fin del "zoom al 75%" ────────────────
   {
     fecha: '2026-06-10',

@@ -361,7 +361,7 @@ export default function EmpresasNuevo() {
             className="flex-1 min-h-0 rounded-3xl overflow-y-auto peyu-scrollbar p-4"
             style={{ background: C.surface, border: `1.5px solid ${C.border}` }}
           >
-            {ProductGrid('lg:grid-cols-3 2xl:grid-cols-4')}
+            {ProductGrid('lg:grid-cols-4 2xl:grid-cols-5')}
           </div>
           {/* Franja compacta de clientes (1 línea, scroll horizontal) */}
           <div className="flex-shrink-0">{ClientsStrip}</div>
@@ -407,7 +407,7 @@ export default function EmpresasNuevo() {
 
           <div className="mb-5">{SearchAndChips}</div>
 
-          {ProductGrid('lg:grid-cols-3')}
+          {ProductGrid('grid-cols-2')}
         </section>
 
         {/* Clientes en franja compacta (1 línea, scroll horizontal) */}
