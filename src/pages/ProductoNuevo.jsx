@@ -191,6 +191,11 @@ export default function ProductoNuevo() {
   // por nombre de archivo: rojo, negro, verde...) y saltamos a ella.
   useEffect(() => {
     if (!color || esCarcasa) { setGalIdx(0); return; }
+    // 1. Si el producto tiene mapa color→foto (imagenes_por_color, generado por
+    //    visionMapColorImages), la foto del color YA es la 1ª de la galería.
+    const colorImgMapped = getProductImageForColor(producto, color);
+    if (colorImgMapped && colorImgMapped !== getProductImage(producto)) { setGalIdx(0); return; }
+    // 2. Fallback: matching por nombre de archivo (rojo, negro, verde...).
     const match = findColorImageMatch(galleryImages, color);
     setGalIdx(match ? match.index : 0);
     // eslint-disable-next-line react-hooks/exhaustive-deps

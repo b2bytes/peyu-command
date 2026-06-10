@@ -10,13 +10,13 @@
 // ════════════════════════════════════════════════════════════════════════
 
 export const CHANGELOG = [
-  // ── 10 junio 2026 · Cotización B2B móvil compacta ──
+  // ── 10 junio 2026 · Color → foto real con VISIÓN IA en todo el catálogo ──
   {
     fecha: '2026-06-10',
-    tipo: 'mejora',
-    area: 'Cotización Rápida B2B · Móvil',
-    titulo: 'Cotización B2B en móvil: menos scroll en cada paso',
-    detalle: 'El recorrido móvil de la cotización se veía eterno hacia abajo. Compactado: la barra de progreso del header perdió los círculos grandes (solo barra fina + etiquetas), los títulos de cada paso son más chicos y sin el "Paso X de 3" redundante, y el catálogo ahora muestra 2 productos por fila con imagen más baja y sin specs técnicas (que solo aparecen en pantallas amplias). Resultado: se ven 4+ productos por pantalla en vez de 1.',
+    tipo: 'feature',
+    area: 'Ficha de producto',
+    titulo: 'La IA miró las fotos del catálogo y mapeó cada color a su foto real',
+    detalle: 'El matching por nombre de archivo no funcionaba en productos como los cachos (las fotos se llaman IMG_8105.jpg, sin el color). Nueva función visionMapColorImages: la IA analiza VISUALMENTE las fotos de la galería de cada producto y asigna a cada color la foto donde el producto aparece claramente en ese color — igual que las carcasas. Ya corrió sobre el catálogo (packs de cachos, paletas, maceteros...) y la ficha prioriza ese mapa: al elegir Azul/Rojo/Verde/Negro la imagen principal cambia a la foto real de ese color. Los colores sin foto real quedan reportados para subirles foto.',
   },
 
   // ── 10 junio 2026 · Color → imagen en TODOS los productos + ficha móvil compacta ──
