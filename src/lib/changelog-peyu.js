@@ -10,6 +10,15 @@
 // ════════════════════════════════════════════════════════════════════════
 
 export const CHANGELOG = [
+  // ── 10 junio 2026 · Checkout = cockpit de 1 pantalla ────────────────────
+  {
+    fecha: '2026-06-10',
+    tipo: 'mejora',
+    area: 'Checkout',
+    titulo: '"Finaliza tu compra" integrado al viaje: cockpit de 1 pantalla',
+    detalle: 'El pago ya no se siente como "otra pantalla": ahora usa el mismo formato cockpit de /personalizar y la cotización B2B. Header propio con el viaje completo (Tienda → Producto → Carrito → Pago) y botón Pagar siempre visible; resumen "Tu pedido" vivo a la izquierda (items, descuentos, envío, total) y el formulario al centro con scroll propio — todo en una sola pantalla en escritorio. Toda la lógica intacta: persistencia progresiva de datos, captura de carrito abandonado, BlueExpress, facturación y MercadoPago/transferencia. Mobile conserva su flujo vertical con barra de pago sticky.',
+  },
+
   // ── 10 junio 2026 · Mockup B2B: fin de la mancha negra + ficha cliente ──
   {
     fecha: '2026-06-10',

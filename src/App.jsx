@@ -297,6 +297,8 @@ function App() {
               <Route path="/CotizacionRapida" element={<CotizacionRapida />} />
               {/* ProductoNuevo = ficha cockpit de 1 pantalla con header propio (mismo formato que /personalizar) */}
               <Route path="/ProductoNuevo" element={<ProductoNuevo />} />
+              {/* CheckoutNuevo = cockpit de pago de 1 pantalla con header wizard propio */}
+              <Route path="/CheckoutNuevo" element={<CheckoutNuevo />} />
               <Route path="/lanzamiento" element={<Lanzamiento />} />
               <Route path="/propuesta-valor-peyu" element={<PropuestaValorPeyu />} />
               <Route path="/brand" element={<BrandLab />} />
@@ -312,7 +314,6 @@ function App() {
                 <Route path="/TiendaNueva" element={<TiendaNueva />} />
                 <Route path="/CatalogoNuevo" element={<CatalogoNuevo />} />
                 <Route path="/CarritoNuevo" element={<CarritoNuevo />} />
-                <Route path="/CheckoutNuevo" element={<CheckoutNuevo />} />
                 <Route path="/EmpresasNuevo" element={<EmpresasNuevo />} />
                 <Route path="/EmpresaProducto" element={<EmpresaProducto />} />
                 <Route path="/b2b/propuesta" element={<B2BPropuestaPublica />} />

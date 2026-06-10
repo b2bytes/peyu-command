@@ -4,8 +4,7 @@ import { base44 } from '@/api/base44Client';
 import { ArrowLeft, Lock, ShieldCheck, Recycle, AlertCircle, Gift } from 'lucide-react';
 import MobileNavBarV2 from '@/components/shopv2/MobileNavBarV2';
 import CheckoutStepperV2 from '@/components/shopv2/CheckoutStepperV2';
-import StepNavV2 from '@/components/shopv2/StepNavV2';
-import CartItemThumbV2 from '@/components/shopv2/CartItemThumbV2';
+import CheckoutSummaryCardV2 from '@/components/shopv2/CheckoutSummaryCardV2';
 import CollapsibleSectionV2 from '@/components/shopv2/CollapsibleSectionV2';
 import ShippingAddressForm, { validarShippingForm } from '@/components/cart/ShippingAddressForm';
 import BillingSection, { validarBilling } from '@/components/cart/BillingSection';
@@ -361,174 +360,211 @@ export default function CheckoutNuevo() {
     );
   }
 
+  // ── LAYOUT cockpit 1 pantalla (mismo formato /personalizar y /CotizacionRapida):
+  // header wizard propio con el viaje completo + CTA siempre visible, resumen
+  // "Tu pedido" vivo a la izquierda y el formulario al centro con scroll propio.
+  // Mobile conserva el flujo vertical completo con barra de pago sticky.
+  const ctaPagar = medioPago === 'Transferencia' ? `Confirmar · ${fmtCLP(total)}` : `Pagar ${fmtCLP(total)}`;
+
+  const formSections = (
+    <>
+      {/* 1 · Envío */}
+      <CollapsibleSectionV2
+        step={1}
+        title="Datos de envío"
+        subtitle="¿A dónde enviamos tu pedido?"
+        defaultOpen
+        complete={envioCompleto}
+        summary={envioCompleto ? `${cliente.nombre} · ${cliente.ciudad}, ${cliente.region}` : null}
+      >
+        <ShippingAddressForm
+          cliente={cliente}
+          setCliente={(c) => { setCliente(c); setErrors({}); }}
+          errors={errors}
+        />
+      </CollapsibleSectionV2>
+
+      {/* 2 · Forma de envío (BlueExpress inline) */}
+      <div data-shipping-selector>
+        <CollapsibleSectionV2
+          step={2}
+          title="Forma de envío"
+          subtitle="Tarifa BlueExpress según tu comuna"
+          defaultOpen
+          complete={!!envioBluex}
+          summary={envioBluex ? `BlueExpress ${envioBluex.servicio} · ${envio === 0 ? 'GRATIS' : fmtCLP(envio)}` : null}
+        >
+          <ShippingSelector
+            variant="light"
+            items={itemsEnvio}
+            comuna={cliente.ciudad}
+            region={cliente.region}
+            subtotal={subtotal}
+            umbralEnvioGratis={40000}
+            onSelect={setEnvioBluex}
+          />
+        </CollapsibleSectionV2>
+      </div>
+
+      {/* 3 · Pago */}
+      <CollapsibleSectionV2
+        step={3}
+        title="Método de pago"
+        subtitle="Elige cómo quieres pagar"
+        defaultOpen
+        complete={!!medioPago}
+        summary={medioPago ? (medioPago === 'Transferencia' ? 'Transferencia bancaria' : 'Mercado Pago') : null}
+      >
+        <PaymentMethodSelector value={medioPago} onChange={setMedioPago} totalCubiertoConGC={false} />
+      </CollapsibleSectionV2>
+
+      {/* 4 · Facturación */}
+      <div data-billing-section>
+        <BillingSection
+          billing={billing}
+          setBilling={(b) => { setBilling(b); setBillingErrors({}); }}
+          errors={billingErrors}
+        />
+      </div>
+    </>
+  );
+
   return (
-    <div className="min-h-screen font-inter pb-36 lg:pb-12" style={{ background: '#F8F3ED', color: '#2C1810' }}>
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-3 sm:py-6">
-        <CheckoutStepperV2 current="pago" />
-        {/* Link solo desktop — mobile usa navbar inferior */}
-        <Link to="/CarritoNuevo" className="hidden lg:inline-flex items-center gap-1.5 text-sm font-bold mb-5 transition-colors" style={{ color: '#7A6050' }}>
-          <ArrowLeft className="w-4 h-4" /> Volver al carrito
-        </Link>
+    <div className="min-h-screen lg:h-screen lg:min-h-0 lg:flex lg:flex-col lg:overflow-hidden font-inter pb-36 lg:pb-0" style={{ background: '#F8F3ED', color: '#2C1810' }}>
 
-        <h1 className="font-fraunces text-2xl sm:text-4xl mb-4 sm:mb-6">Finaliza tu compra</h1>
+      {/* ── TOP NAV cockpit: viaje completo + CTA siempre visible ─────────── */}
+      <header className="sticky top-0 z-50 backdrop-blur-xl"
+        style={{ background: 'rgba(248,243,237,.97)', borderBottom: '1px solid #D4C4B0', boxShadow: '0 1px 10px rgba(44,24,16,.07)' }}>
+        <div className="max-w-7xl mx-auto px-4 lg:px-8 py-2.5 flex items-center gap-3">
+          <Link to="/CarritoNuevo"
+            className="w-9 h-9 rounded-xl flex items-center justify-center transition-all hover:bg-white flex-shrink-0"
+            style={{ border: '1.5px solid #D4C4B0' }}>
+            <ArrowLeft className="w-4 h-4" style={{ color: '#7A6050' }} />
+          </Link>
 
-        <div className="grid lg:grid-cols-3 gap-6">
-          {/* FORM — secciones colapsables para que el checkout no sea tan largo */}
-          <div className="lg:col-span-2 space-y-3">
-            {/* 1 · Envío */}
-            <CollapsibleSectionV2
-              step={1}
-              title="Datos de envío"
-              subtitle="¿A dónde enviamos tu pedido?"
-              defaultOpen
-              complete={envioCompleto}
-              summary={envioCompleto ? `${cliente.nombre} · ${cliente.ciudad}, ${cliente.region}` : null}
-            >
-              <ShippingAddressForm
-                cliente={cliente}
-                setCliente={(c) => { setCliente(c); setErrors({}); }}
-                errors={errors}
-              />
-            </CollapsibleSectionV2>
+          {/* Logo (solo desktop) */}
+          <Link to="/" className="hidden lg:block flex-shrink-0 group mr-4">
+            <img src="https://media.base44.com/images/public/69d99b9d61f699701129c103/b67ed29f9_image.png"
+              alt="PEYU" className="h-8 w-auto group-hover:scale-105 transition-transform" draggable={false} />
+          </Link>
 
-            {/* 2 · Forma de envío (BlueExpress inline) */}
-            <div data-shipping-selector>
-              <CollapsibleSectionV2
-                step={2}
-                title="Forma de envío"
-                subtitle="Tarifa BlueExpress según tu comuna"
-                defaultOpen
-                complete={!!envioBluex}
-                summary={envioBluex ? `BlueExpress ${envioBluex.servicio} · ${envio === 0 ? 'GRATIS' : fmtCLP(envio)}` : null}
-              >
-                <ShippingSelector
-                  variant="light"
-                  items={itemsEnvio}
-                  comuna={cliente.ciudad}
-                  region={cliente.region}
-                  subtotal={subtotal}
-                  umbralEnvioGratis={40000}
-                  onSelect={setEnvioBluex}
-                />
-              </CollapsibleSectionV2>
+          {/* Brand mobile */}
+          <div className="flex items-center gap-2 lg:hidden flex-1 min-w-0">
+            <div className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: 'linear-gradient(135deg,#C0785C,#A86440)' }}>
+              <Lock className="w-4 h-4 text-white" />
             </div>
-
-            {/* 3 · Pago */}
-            <CollapsibleSectionV2
-              step={3}
-              title="Método de pago"
-              subtitle="Elige cómo quieres pagar"
-              defaultOpen
-              complete={!!medioPago}
-              summary={medioPago ? (medioPago === 'Transferencia' ? 'Transferencia bancaria' : 'Mercado Pago') : null}
-            >
-              <PaymentMethodSelector value={medioPago} onChange={setMedioPago} totalCubiertoConGC={false} />
-            </CollapsibleSectionV2>
-
-            {/* 4 · Facturación (full width, plegable interno) */}
-            <div data-billing-section>
-              <BillingSection
-                billing={billing}
-                setBilling={(b) => { setBilling(b); setBillingErrors({}); }}
-                errors={billingErrors}
-              />
-            </div>
-
-            {/* Navegación Atrás / Pagar (desktop) */}
-            <div className="hidden lg:block">
-              <StepNavV2
-                backTo="/CarritoNuevo"
-                backLabel="Volver al carrito"
-                onNext={crearPedido}
-                nextLabel={medioPago === 'Transferencia' ? `Confirmar · ${fmtCLP(total)}` : `Pagar ${fmtCLP(total)}`}
-                nextLoading={creando}
-              />
+            <div className="min-w-0">
+              <p className="font-poppins font-bold text-sm leading-tight truncate">Finaliza tu compra</p>
+              <p className="text-[10px] leading-tight font-semibold" style={{ color: '#C0785C' }}>Pago seguro · Mercado Pago o transferencia</p>
             </div>
           </div>
 
-          {/* RESUMEN sticky */}
-          <div className="lg:sticky lg:top-24 self-start space-y-3">
-            <div className="bg-white rounded-3xl p-5" style={{ border: '1.5px solid #D4C4B0', boxShadow: '0 4px 24px rgba(44,24,16,.08)' }}>
-              <h2 className="font-fraunces text-xl mb-4" style={{ color: '#2C1810' }}>Tu pedido</h2>
+          {/* Desktop: viaje completo Tienda → Producto → Carrito → Pago */}
+          <div className="hidden lg:flex flex-1 justify-center">
+            <CheckoutStepperV2 current="pago" className="mb-0" />
+          </div>
 
-              <div className="space-y-2.5 max-h-52 overflow-y-auto peyu-scrollbar pr-1 mb-4">
-                {carrito.map((item) => (
-                  <div key={item.id} className="flex gap-2.5 items-center">
-                    <div className="w-12 h-12 flex-shrink-0">
-                      <CartItemThumbV2 imagen={item.mockupUrl || item.imagen} capas={item.capas_grabado || []} alt={item.nombre} />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-xs font-semibold text-[#2A2420] truncate">{item.nombre}</p>
-                      <p className="text-[10px] text-[#A78B6F]">x{item.cantidad}{item.color ? ` · ${item.color}` : ''}</p>
-                      {item.personalizacion && (
-                        <p className="text-[10px] font-semibold truncate" style={{ color: '#C0785C' }}>✦ {item.personalizacion}</p>
-                      )}
-                    </div>
-                    <span className="text-xs font-bold text-[#2A2420]">{fmtCLP((item.precio || 0) * (item.cantidad || 1))}</span>
-                  </div>
-                ))}
+          {/* CTA desktop en header */}
+          <button
+            onClick={crearPedido}
+            disabled={creando}
+            className="hidden lg:flex items-center gap-2 px-5 h-10 rounded-xl text-white font-bold text-sm transition-all hover:-translate-y-0.5 active:scale-[0.97] disabled:opacity-60 flex-shrink-0"
+            style={{ background: 'linear-gradient(135deg,#C0785C,#A86440)', boxShadow: '0 6px 20px rgba(192,120,92,.28)' }}
+          >
+            {creando ? <div className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" /> : <Lock className="w-4 h-4" />}
+            <span>{ctaPagar}</span>
+          </button>
+        </div>
+
+        {/* Viaje compacto en mobile */}
+        <div className="lg:hidden pb-2">
+          <CheckoutStepperV2 current="pago" className="mb-0" />
+        </div>
+      </header>
+
+      {/* ── BODY cockpit: resumen vivo izquierda · formulario centro ─────── */}
+      <div className="w-full max-w-7xl 2xl:max-w-[1600px] mx-auto px-4 lg:px-6 py-4 lg:flex-1 lg:min-h-0 lg:overflow-hidden">
+        <div className="flex gap-8 lg:gap-5 items-start lg:items-stretch lg:h-full">
+
+          {/* Panel izquierdo desktop: Tu pedido SIEMPRE visible + sellos */}
+          <aside className="hidden lg:flex flex-col gap-3 w-72 xl:w-80 flex-shrink-0 lg:h-full lg:min-h-0 lg:overflow-y-auto peyu-scrollbar pr-1">
+            <div className="flex items-center gap-2 mb-1">
+              <span className="text-xs font-bold px-2 py-0.5 rounded-full" style={{ background: 'rgba(192,120,92,.12)', color: '#C0785C' }}>
+                Pago seguro
+              </span>
+              <span className="text-[10px] font-semibold" style={{ color: '#A08070' }}>Último paso de tu viaje</span>
+            </div>
+
+            <CheckoutSummaryCardV2
+              carrito={carrito} subtotal={subtotal} cargoPersonalizacion={cargoPersonalizacion}
+              ahorroTotal={ahorroTotal} descLineas={descLineas}
+              envioBluex={envioBluex} envio={envio} total={total}
+              errorPago={errorPago} medioPago={medioPago}
+            />
+
+            {/* Trust badges */}
+            <div className="grid grid-cols-3 gap-1.5">
+              {[
+                { icon: Lock, label: 'Pago', sub: 'seguro' },
+                { icon: ShieldCheck, label: '10 años', sub: 'garantía' },
+                { icon: Recycle, label: '100%', sub: 'reciclado' },
+              ].map(({ icon: Icon, label, sub }) => (
+                <div key={label} className="flex flex-col items-center gap-1 p-2 rounded-xl text-center bg-white"
+                  style={{ border: '1px solid #D4C4B0' }}>
+                  <Icon className="w-4 h-4" style={{ color: '#C0785C' }} />
+                  <span className="text-[10px] font-bold leading-tight" style={{ color: '#2C1810' }}>{label}</span>
+                  <span className="text-[9px]" style={{ color: '#A08070' }}>{sub}</span>
+                </div>
+              ))}
+            </div>
+          </aside>
+
+          {/* Centro: formulario con scroll propio + CTA fijo (sin scroll de página) */}
+          <div className="flex-1 min-w-0 lg:h-full lg:min-h-0 lg:flex lg:flex-col">
+            <div className="space-y-3 lg:flex-1 lg:min-h-0 lg:overflow-y-auto peyu-scrollbar lg:pr-1">
+              <h1 className="font-fraunces text-2xl sm:text-3xl lg:hidden">Finaliza tu compra</h1>
+
+              {formSections}
+
+              {/* Resumen en mobile (mismos datos en vivo) */}
+              <div className="lg:hidden">
+                <CheckoutSummaryCardV2
+                  carrito={carrito} subtotal={subtotal} cargoPersonalizacion={cargoPersonalizacion}
+                  ahorroTotal={ahorroTotal} descLineas={descLineas}
+                  envioBluex={envioBluex} envio={envio} total={total}
+                  errorPago={errorPago} medioPago={medioPago}
+                />
               </div>
+            </div>
 
-              <div className="space-y-2 pt-3 text-sm" style={{ borderTop: '1px solid #D4C4B0' }}>
-                <div className="flex justify-between" style={{ color: '#7A6050' }}>
-                  <span>Subtotal</span><span className="font-semibold">{fmtCLP(subtotal)}</span>
-                </div>
-                {cargoPersonalizacion > 0 && (
-                  <div className="flex justify-between" style={{ color: '#7A6050' }}>
-                    <span>Personalización</span><span className="font-semibold">+{fmtCLP(cargoPersonalizacion)}</span>
-                  </div>
-                )}
-                {ahorroTotal > 0 && (
-                  <div className="rounded-xl p-2.5 space-y-1" style={{ background: 'rgba(139,173,138,.1)', border: '1px solid rgba(139,173,138,.3)' }}>
-                    <div className="flex justify-between font-bold" style={{ color: '#5B7D5A' }}>
-                      <span>Descuento por cantidad</span><span>−{fmtCLP(ahorroTotal)}</span>
-                    </div>
-                    {descLineas.filter((l) => l.ahorro > 0).map((l) => (
-                      <div key={l.sku || l.nombre} className="flex justify-between text-[11px]" style={{ color: '#7A6050' }}>
-                        <span className="truncate pr-2">{l.nombre} ({l.unidades}u · −{l.pct}%)</span>
-                        <span className="font-semibold flex-shrink-0">−{fmtCLP(l.ahorro)}</span>
-                      </div>
-                    ))}
-                  </div>
-                )}
-                <div className="flex justify-between" style={{ color: '#7A6050' }}>
-                  <span>Envío</span>
-                  {envioBluex
-                    ? (envio === 0 ? <span className="font-bold" style={{ color: '#8BAD8A' }}>GRATIS</span> : <span className="font-semibold">{fmtCLP(envio)}</span>)
-                    : <span className="text-xs" style={{ color: '#A08070' }}>Elige arriba</span>}
-                </div>
-                <div className="flex justify-between pt-2" style={{ borderTop: '1px solid #D4C4B0' }}>
-                  <span className="font-bold" style={{ color: '#2C1810' }}>Total</span>
-                  <span className="font-poppins font-bold text-xl" style={{ color: '#C0785C' }}>{fmtCLP(total)}</span>
-                </div>
-                <p className="text-[10px]" style={{ color: '#A08070' }}>IVA incluido</p>
-              </div>
-
+            {/* CTA desktop fijo bajo la columna (siempre visible) */}
+            <div className="hidden lg:block mt-3 lg:flex-shrink-0">
               {errorPago && (
-                <div className="mt-3 rounded-xl p-3 flex items-start gap-2" style={{ background: 'rgba(192,120,92,.08)', border: '1px solid rgba(192,120,92,.3)' }}>
+                <div className="mb-2 rounded-xl p-3 flex items-start gap-2" style={{ background: 'rgba(192,120,92,.08)', border: '1px solid rgba(192,120,92,.3)' }}>
                   <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: '#C0785C' }} />
                   <p className="text-xs font-semibold" style={{ color: '#C0785C' }}>{errorPago}</p>
                 </div>
               )}
-
-              {/* CTA desktop */}
-              <button
-                onClick={crearPedido}
-                disabled={creando}
-                className="hidden lg:flex w-full mt-4 h-13 py-3.5 rounded-2xl disabled:opacity-60 text-white font-bold items-center justify-center gap-2 transition-all hover:scale-[1.01]"
-                style={{ background: 'linear-gradient(135deg,#C0785C,#A86440)', boxShadow: '0 8px 24px rgba(192,120,92,.28)' }}
-              >
-                {creando ? (
-                  <><div className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" /> Procesando…</>
-                ) : medioPago === 'Transferencia' ? (
-                  <><Gift className="w-4 h-4" /> Confirmar · {fmtCLP(total)}</>
-                ) : (
-                  <><Lock className="w-4 h-4" /> Pagar {fmtCLP(total)}</>
-                )}
-              </button>
-
-              <div className="hidden lg:flex items-center justify-center gap-1.5 text-[11px] pt-3" style={{ color: '#A08070' }}>
-                <ShieldCheck className="w-3.5 h-3.5" style={{ color: '#8BAD8A' }} /> Pago seguro · {medioPago === 'Transferencia' ? 'Transferencia' : 'Mercado Pago'}
+              <div className="flex items-center gap-4">
+                <Link to="/CarritoNuevo"
+                  className="h-12 px-5 rounded-2xl font-semibold text-sm flex items-center gap-2 transition-all hover:bg-white"
+                  style={{ border: '1.5px solid #D4C4B0', color: '#7A6050' }}>
+                  <ArrowLeft className="w-4 h-4" /> Carrito
+                </Link>
+                <button
+                  onClick={crearPedido}
+                  disabled={creando}
+                  className="flex-1 h-14 rounded-2xl text-white font-bold text-base flex items-center justify-center gap-2 transition-all active:scale-[0.98] disabled:opacity-60 hover:-translate-y-0.5"
+                  style={{ background: 'linear-gradient(135deg,#C0785C,#A86440)', boxShadow: '0 8px 24px rgba(192,120,92,.28)' }}
+                >
+                  {creando ? (
+                    <><div className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" /> Procesando…</>
+                  ) : medioPago === 'Transferencia' ? (
+                    <><Gift className="w-5 h-5" /> {ctaPagar}</>
+                  ) : (
+                    <><Lock className="w-5 h-5" /> {ctaPagar}</>
+                  )}
+                </button>
               </div>
             </div>
           </div>
@@ -544,10 +580,6 @@ export default function CheckoutNuevo() {
         ctaLoading={creando}
         total={total}
       />
-
-      <footer className="py-8 text-center text-xs hidden lg:flex items-center justify-center gap-1.5" style={{ borderTop: '1px solid #D4C4B0', color: '#A08070' }}>
-        <Recycle className="w-3.5 h-3.5" style={{ color: '#8BAD8A' }} /> PEYU Chile · Pago seguro · Garantía 10 años
-      </footer>
     </div>
   );
 }
