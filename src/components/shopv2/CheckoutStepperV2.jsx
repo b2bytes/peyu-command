@@ -14,11 +14,11 @@ const PASOS = [
   { id: 'pago',     label: 'Pago',     to: '/CheckoutNuevo' },
 ];
 
-export default function CheckoutStepperV2({ current = 'tienda' }) {
+export default function CheckoutStepperV2({ current = 'tienda', className }) {
   const idx = PASOS.findIndex((p) => p.id === current);
 
   return (
-    <nav className="flex items-center justify-center gap-0.5 sm:gap-1.5 mb-4 sm:mb-7" aria-label="Progreso de compra">
+    <nav className={`flex items-center justify-center gap-0.5 sm:gap-1.5 ${className ?? 'mb-4 sm:mb-7'}`} aria-label="Progreso de compra">
       {PASOS.map((p, i) => {
         const done = i < idx;
         const active = i === idx;
