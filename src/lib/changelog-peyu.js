@@ -10,6 +10,15 @@
 // ════════════════════════════════════════════════════════════════════════
 
 export const CHANGELOG = [
+  // ── 10 junio 2026 · Personalizar: reglas por producto + precio en vivo ──
+  {
+    fecha: '2026-06-10',
+    tipo: 'mejora',
+    area: 'Personalizar',
+    titulo: 'Grabado según producto + detalle de precio en vivo con IVA',
+    detalle: 'Solo las carcasas ofrecen los 4 tipos de personalización; el resto de productos (maceteros, escritorio, etc.) ahora muestra solo frase y logo propio — si un viaje guardado traía "Diseño PEYU" en un producto no permitido, se resetea limpio. Además el paso Diseño suma un detalle de precio EN VIVO que calca las reglas reales del carrito: descuento por cantidad (2u→10%, 3+u→15%), grabado gratis ≥10u, desglose Neto + IVA 19% (IVA incluido) y teaser "agrega 1 más y ahorra". Se corrigió la nota engañosa "+IVA" del paso Confirmar: el precio B2C siempre fue IVA incluido, igual que carrito y checkout.',
+  },
+
   // ── 10 junio 2026 · Auditoría completa del funnel público ──────────────
   {
     fecha: '2026-06-10',

@@ -19,6 +19,8 @@ import PersonalizacionOptionPicker from '@/components/personalizacion/Personaliz
 import PublicSEO from '@/components/PublicSEO';
 import { saveJourney, loadJourney, clearJourney } from '@/lib/personalizar-journey';
 import { addToCartV2 } from '@/lib/shop-v2-cart';
+import { getQtyDiscountPct } from '@/lib/volume-discount';
+import PriceDetailLive from '@/components/personalizacion/PriceDetailLive';
 
 const C = {
   bg: '#F8F3ED',
@@ -299,6 +301,16 @@ export default function PersonalizacionFlow() {
 
   const producto = useMemo(() => productos.find(p => p.id === productoId), [productos, productoId]);
 
+  // Regla por producto: solo las CARCASAS permiten los 4 tipos de grabado.
+  // El resto de productos (maceteros, escritorio, etc.) solo logo propio o frase.
+  const esCarcasa = (producto?.categoria || '').toLowerCase().includes('carcasa');
+  const opcionesPermitidas = esCarcasa ? ['frase', 'peyu', 'archivo', 'none'] : ['frase', 'archivo', 'none'];
+  useEffect(() => {
+    // Si el viaje restaurado o un cambio de producto deja una opción no
+    // permitida (ej: diseño PEYU en un macetero), se resetea limpiamente.
+    if (opcion === 'peyu' && !esCarcasa) { setOpcion(null); setDisenoPeyuUrl(''); }
+  }, [esCarcasa, opcion]);
+
   const imagenesPorColor = useMemo(() => {
     const mapa = producto?.imagenes_por_color;
     if (mapa && typeof mapa === 'object') {
@@ -370,7 +382,10 @@ export default function PersonalizacionFlow() {
   const cargoPersonalizacion = personalizacionGratis ? 0 : cargoPersonalizacionUnit * cantidad;
   const precioBaseProducto = producto ? (producto.precio_b2c || 9990) : 0;
   const subtotalProducto = precioBaseProducto * cantidad;
-  const precioFinal = subtotalProducto + cargoPersonalizacion;
+  // Descuento automático por cantidad (misma regla del carrito: 2u→10%, 3+u→15%)
+  // para que el total mostrado aquí sea EXACTAMENTE el del carrito y checkout.
+  const descuentoCantidad = Math.floor(subtotalProducto * (getQtyDiscountPct(cantidad) / 100));
+  const precioFinal = subtotalProducto + cargoPersonalizacion - descuentoCantidad;
 
   const grabadoDefaults = useMemo(() => {
     const area = producto?.grabado_area;
@@ -710,6 +725,7 @@ export default function PersonalizacionFlow() {
         value={opcion}
         gratis={personalizacionGratis}
         moq={moqGratis}
+        permitidas={opcionesPermitidas}
         onSelect={(id) => {
           setOpcion(id);
           if (id !== 'frase') setTexto('');
@@ -780,6 +796,16 @@ export default function PersonalizacionFlow() {
           </div>
           <QuantityStepper value={cantidad} onChange={setCantidad} min={1} light />
         </div>
+      )}
+
+      {opcion && (
+        <PriceDetailLive
+          precioBase={precioBaseProducto}
+          cantidad={cantidad}
+          cargoPersonalizacion={cargoPersonalizacion}
+          personalizacionGratis={personalizacionGratis}
+          tipoPersonalizacion={tipoPersonalizacion}
+        />
       )}
 
       {opcion && cantidad >= 10 && quoteB2BLink}
@@ -854,23 +880,15 @@ export default function PersonalizacionFlow() {
           </div>
           <QuantityStepper value={cantidad} onChange={setCantidad} min={1} light />
         </div>
-        <div className="px-4 py-3 space-y-2">
-          <div className="flex justify-between text-sm" style={{ color: C.fgMuted }}>
-            <span>Producto × {cantidad}</span><span>{fmtCLP(subtotalProducto)}</span>
-          </div>
-          {tipoPersonalizacion && (
-            <div className="flex justify-between text-sm">
-              <span style={{ color: C.fgMuted }}>Personalización {PERSONALIZACION_LABEL[tipoPersonalizacion]}</span>
-              <span className="font-bold" style={{ color: personalizacionGratis ? C.green : C.fg }}>
-                {personalizacionGratis ? 'GRATIS ✓' : `+${fmtCLP(cargoPersonalizacion)}`}
-              </span>
-            </div>
-          )}
-          <div className="flex justify-between pt-2" style={{ borderTop: `1px solid ${C.border}` }}>
-            <span className="font-bold text-sm" style={{ color: C.fg }}>Total</span>
-            <span className="font-poppins font-bold text-lg" style={{ color: C.action }}>{fmtCLP(precioFinal)}</span>
-          </div>
-          <p className="text-[10px] text-center" style={{ color: C.fgMuted }}>+ IVA 19% · Envío calculado en checkout</p>
+        <div className="px-4 py-3">
+          <PriceDetailLive
+            precioBase={precioBaseProducto}
+            cantidad={cantidad}
+            cargoPersonalizacion={cargoPersonalizacion}
+            personalizacionGratis={personalizacionGratis}
+            tipoPersonalizacion={tipoPersonalizacion}
+            embedded
+          />
         </div>
       </div>
 

@@ -27,11 +27,16 @@ const OPCIONES = [
   { id: 'none',    Icon: Ban,     label: 'Sin personalización', sub: 'Producto tal cual, sin grabado',     fee: 0 },
 ];
 
-export default function PersonalizacionOptionPicker({ value, onSelect, gratis, moq }) {
+export default function PersonalizacionOptionPicker({ value, onSelect, gratis, moq, permitidas }) {
+  // Regla por producto: solo las CARCASAS ofrecen las 4 opciones; el resto
+  // recibe la lista filtrada (ej: solo frase + logo) vía `permitidas`.
+  const opciones = Array.isArray(permitidas)
+    ? OPCIONES.filter((o) => permitidas.includes(o.id))
+    : OPCIONES;
   return (
     <div className="space-y-2.5">
       <div className="grid grid-cols-1 gap-2">
-        {OPCIONES.map(({ id, Icon, label, sub, fee }) => {
+        {opciones.map(({ id, Icon, label, sub, fee }) => {
           const sel = value === id;
           const feeLabel = fee === 0
             ? (id === 'none' ? '$0' : 'Incluido')
