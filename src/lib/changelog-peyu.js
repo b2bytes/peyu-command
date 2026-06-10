@@ -10,6 +10,15 @@
 // ════════════════════════════════════════════════════════════════════════
 
 export const CHANGELOG = [
+  // ── 10 junio 2026 · Personalizar: comprar o cotizar ─────────────────────
+  {
+    fecha: '2026-06-10',
+    tipo: 'mejora',
+    area: 'Personalizar',
+    titulo: 'Flujo completo: comprar al instante o cotizar B2B',
+    detalle: 'Puente directo a Cotización Rápida B2B desde /personalizar: aparece al subir la cantidad a 10+ en el paso Diseño, en Confirmar y en la pantalla de éxito, pre-cargando producto y cantidad. La pantalla de éxito ahora también ofrece "Revisar carrito". Además, si falla la subida del logo el botón ya no queda pegado en "Agregando...".',
+  },
+
   // ── 10 junio 2026 · Personalizar = cockpit de 1 pantalla ───────────────
   {
     fecha: '2026-06-10',

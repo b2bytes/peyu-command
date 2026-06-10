@@ -4,7 +4,7 @@ import { base44 } from '@/api/base44Client';
 import {
   ArrowLeft, ArrowRight, Sparkles, CheckCircle, Upload, Loader2,
   Recycle, Package, Palette, Pencil, ShoppingCart, Check, ShieldCheck,
-  Truck, Star, Zap, Eye, ChevronRight
+  Truck, Star, Zap, Eye, ChevronRight, Building2
 } from 'lucide-react';
 import MarbleSwatch from '@/components/personalizacion/MarbleSwatch';
 import LaserEngravePreview from '@/components/personalizacion/LaserEngravePreview';
@@ -342,6 +342,7 @@ export default function PersonalizacionFlow() {
   const handleAddToCart = async () => {
     if (!producto) return;
     setLoading(true);
+    try {
     let logoUrl = logoUrlSubido;
     if (archivo && !logoUrlSubido) {
       const { file_url } = await base44.integrations.Core.UploadFile({ file: archivo });
@@ -378,9 +379,30 @@ export default function PersonalizacionFlow() {
       color_producto: colorLabel || '', status: mockupUrl ? 'Preview generado' : 'Pendiente',
       mockup_urls: mockupUrl ? [mockupUrl] : [], estimated_minutes: 5,
     }).catch(() => {});
-    setLoading(false);
     setDone(true);
+    } finally {
+      setLoading(false);
+    }
   };
+
+  // Puente "comprar o cotizar": pedidos corporativos van a /CotizacionRapida
+  // pre-cargada con el producto y la cantidad (precios por volumen + factura).
+  const quoteB2BLink = producto?.sku ? (
+    <Link
+      to={`/CotizacionRapida?sku=${encodeURIComponent(producto.sku)}&qty=${Math.max(cantidad, 50)}`}
+      className="flex items-center gap-3 p-3 rounded-2xl transition-all hover:-translate-y-0.5"
+      style={{ background: 'rgba(15,139,108,.07)', border: '1.5px solid rgba(15,139,108,.3)' }}
+    >
+      <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: 'rgba(15,139,108,.12)' }}>
+        <Building2 className="w-4 h-4" style={{ color: '#0F8B6C' }} />
+      </div>
+      <div className="flex-1 min-w-0 text-left">
+        <p className="text-xs font-bold" style={{ color: '#0F8B6C' }}>¿Pedido para tu empresa?</p>
+        <p className="text-[11px]" style={{ color: C.fgSoft }}>Cotiza por volumen con hasta −54% + factura</p>
+      </div>
+      <ArrowRight className="w-4 h-4 flex-shrink-0" style={{ color: '#0F8B6C' }} />
+    </Link>
+  ) : null;
 
   // ── Loading ──────────────────────────────────────────────────────────────
   if (productosLoading) {
@@ -443,11 +465,19 @@ export default function PersonalizacionFlow() {
               style={{ background: C.actionGrad, boxShadow: C.actionShadow }}>
               <ShoppingCart className="w-5 h-5" /> Ir a pagar · {fmtCLP(precioFinal)}
             </button>
-            <button onClick={() => navigate('/CatalogoNuevo')}
-              className="w-full h-12 rounded-2xl font-semibold text-sm"
-              style={{ background: 'transparent', border: `1.5px solid ${C.border}`, color: C.fgSoft }}>
-              Seguir comprando
-            </button>
+            <div className="grid grid-cols-2 gap-2">
+              <button onClick={() => navigate('/CarritoNuevo')}
+                className="h-12 rounded-2xl font-semibold text-sm"
+                style={{ background: 'transparent', border: `1.5px solid ${C.border}`, color: C.fgSoft }}>
+                Revisar carrito
+              </button>
+              <button onClick={() => navigate('/CatalogoNuevo')}
+                className="h-12 rounded-2xl font-semibold text-sm"
+                style={{ background: 'transparent', border: `1.5px solid ${C.border}`, color: C.fgSoft }}>
+                Seguir comprando
+              </button>
+            </div>
+            {quoteB2BLink}
           </div>
         </div>
       </div>
@@ -681,6 +711,8 @@ export default function PersonalizacionFlow() {
         </div>
       )}
 
+      {opcion && cantidad >= 10 && quoteB2BLink}
+
       {opcion && opcion !== 'none' && personalizacionCompleta && (
         <>
           <button
@@ -804,6 +836,8 @@ export default function PersonalizacionFlow() {
           </div>
         ))}
       </div>
+
+      {quoteB2BLink}
 
       <div className="flex items-center justify-center gap-1.5 py-1">
         {[1,2,3,4,5].map(i => <Star key={i} className="w-4 h-4 fill-current" style={{ color: '#F5A623' }} />)}
