@@ -15,11 +15,12 @@ const PEYU_COLOR_CATALOG = [
   { id: 'amarillo',  label: 'Amarillo',         hex: '#F5C842', aliases: ['amarillo', 'amarillos', 'yellow'] },
   { id: 'rosa',      label: 'Rosado',           hex: '#F48FB1', aliases: ['rosa', 'rosado', 'rosados', 'rosadas', 'rosas', 'pink'] },
   { id: 'negro',     label: 'Negro',            hex: '#212121', aliases: ['negro', 'negros', 'onix', 'ónix', 'black'] },
-  { id: 'azul',      label: 'Azul',             hex: '#5B9BD5', aliases: ['azul', 'azules', 'blue', 'celeste'] },
-  // ── COLORES ADICIONALES CATÁLOGO ──
+  { id: 'azul',      label: 'Azul',             hex: '#4DA3DC', aliases: ['azul', 'azules', 'blue', 'celeste'] },
+  // ── COLORES ADICIONALES CATÁLOGO (tonos oficiales del PDF B2B) ──
   { id: 'blanco',    label: 'Blanco',           hex: '#F5F5F0', aliases: ['blanco', 'blancos', 'white'] },
-  { id: 'verde',     label: 'Verde',            hex: '#0F8B6C', aliases: ['verde', 'verdes', 'green'] },
-  { id: 'rojo',      label: 'Rojo',             hex: '#E05252', aliases: ['rojo', 'rojos', 'coral', 'red'] },
+  { id: 'verde',     label: 'Verde',            hex: '#4BC5A5', aliases: ['verde', 'verdes', 'green'] },
+  { id: 'rojo',      label: 'Rojo',             hex: '#F0807A', aliases: ['rojo', 'rojos', 'coral', 'red'] },
+  { id: 'mixto',     label: 'Mixto',            hex: '#4DA3DC', aliases: ['mixto', 'mix', 'multicolor', 'surtido'] },
   { id: 'violeta',   label: 'Violeta',          hex: '#9B72CF', aliases: ['violeta', 'violetas', 'morado', 'morados', 'purple', 'lila'] },
   { id: 'naranja',   label: 'Naranja',          hex: '#FB923C', aliases: ['naranja', 'naranjas', 'orange', 'terracota'] },
   { id: 'gris',      label: 'Gris',             hex: '#6B7280', aliases: ['gris', 'grises', 'gray', 'grey'] },
@@ -113,19 +114,10 @@ export function getColoresProducto(producto) {
   }
 
   // Resto del catálogo (Escritorio, Hogar, Entretenimiento, Corporativo):
-  // Si el producto tiene fotos por color (imagenes_por_color), las usamos como
-  // fuente de verdad (igual que carcasas: cambiar color cambia la imagen).
-  const mapa = producto.imagenes_por_color;
-  if (mapa && typeof mapa === 'object' && Object.keys(mapa).length > 0) {
-    const norm = (s) => normalize(s);
-    const colores = Object.keys(mapa)
-      .map((k) => PEYU_COLOR_CATALOG.find((c) => c.aliases.some((a) => norm(a) === norm(k))))
-      .filter(Boolean);
-    if (colores.length > 0) return colores;
-  }
-
-  // Colores explícitos cargados en el producto (campo `colores`, poblado por
-  // el backfill de visión IA o manualmente). Son los colores REALES del SKU.
+  // NORMA OFICIAL (catálogo B2B PDF): el campo `colores` del producto es la
+  // FUENTE DE VERDAD (Azul, Negro, Rojo, Verde · + Mixto en Pack 4 cachos).
+  // Va PRIMERO: aunque solo algunos colores tengan foto, el cliente siempre
+  // ve las opciones oficiales completas.
   const explicit = Array.isArray(producto.colores) && producto.colores.length > 0
     ? producto.colores
     : (Array.isArray(producto.colores_v2) ? producto.colores_v2 : []);
@@ -134,6 +126,17 @@ export function getColoresProducto(producto) {
       .map((raw) => PEYU_COLOR_CATALOG.find((c) => c.aliases.some((a) => normalize(a) === normalize(raw))))
       .filter(Boolean);
     if (mapped.length > 0) return mapped;
+  }
+
+  // Sin `colores` explícitos: las llaves de imagenes_por_color (fotos por
+  // color generadas con visión IA) definen las opciones disponibles.
+  const mapa = producto.imagenes_por_color;
+  if (mapa && typeof mapa === 'object' && Object.keys(mapa).length > 0) {
+    const norm = (s) => normalize(s);
+    const colores = Object.keys(mapa)
+      .map((k) => PEYU_COLOR_CATALOG.find((c) => c.aliases.some((a) => norm(a) === norm(k))))
+      .filter(Boolean);
+    if (colores.length > 0) return colores;
   }
 
   // Si no tiene fotos por color pero es plástico reciclado, mostramos los

@@ -10,6 +10,15 @@
 // ════════════════════════════════════════════════════════════════════════
 
 export const CHANGELOG = [
+  // ── 10 junio 2026 · Catálogo oficial B2B PDF = norma del sistema ──
+  {
+    fecha: '2026-06-10',
+    tipo: 'mejora',
+    area: 'Catálogo · Colores oficiales B2C + B2B',
+    titulo: 'Norma oficial del catálogo PDF aplicada: colores Azul, Negro, Rojo y Verde en todo el catálogo',
+    detalle: 'Se aprendió el catálogo corporativo oficial de PEYU (PDF) y se aplicó como norma del sistema: (1) los 24 productos de plástico reciclado del catálogo vivo ahora ofrecen SIEMPRE los 4 colores oficiales — Azul, Negro, Rojo, Verde — y el Pack 4 cachos suma la opción Mixto con swatch multicolor (antes cada producto mostraba colores dispares detectados por fotos: turquesa, rosado, etc.); (2) el campo de colores oficiales pasa a ser la fuente de verdad del selector en B2C y B2B — las fotos por color se usan cuando existen, pero las opciones completas se muestran siempre; (3) los tonos de los swatches se calibraron a los del PDF (azul cielo, coral, verde menta); (4) el CatalogoB2BOficial estaba cargado DOS veces — se eliminaron 17 registros duplicados, quedando los 21 productos oficiales limpios con sus 8 tramos de precio sin IVA. Carcasas (5 colores propios) y fibra de trigo (natural) mantienen su regla.',
+  },
+
   // ── 10 junio 2026 · Flujo B2B continuo: el logo no se pide dos veces ──
   {
     fecha: '2026-06-10',

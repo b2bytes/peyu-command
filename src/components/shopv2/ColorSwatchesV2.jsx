@@ -35,7 +35,9 @@ export default function ColorSwatchesV2({ colores = [], value, onSelect, error, 
               className={`relative w-16 h-16 sm:w-[4.5rem] sm:h-[4.5rem] rounded-full border-2 overflow-hidden transition-all ${
                 sel ? 'border-[#0F8B6C] scale-110 shadow-md' : 'border-[#EBE3D6] hover:scale-105'
               }`}
-              style={usePhoto ? undefined : { backgroundColor: c.hex || '#ccc' }}
+              style={usePhoto ? undefined : c.id === 'mixto'
+                ? { background: 'conic-gradient(#4DA3DC 0 25%, #212121 25% 50%, #F0807A 50% 75%, #4BC5A5 75% 100%)' }
+                : { backgroundColor: c.hex || '#ccc' }}
             >
               {usePhoto && (
                 <img src={photo} alt={c.label} referrerPolicy="no-referrer" className="w-full h-full object-cover" />
