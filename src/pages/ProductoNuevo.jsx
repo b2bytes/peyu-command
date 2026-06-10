@@ -19,6 +19,7 @@ import ShippingEstimatorV2 from '@/components/shopv2/ShippingEstimatorV2';
 import PaymentMethodsBadgesV2 from '@/components/shopv2/PaymentMethodsBadgesV2';
 import { getProductImage, getProductImageForColor } from '@/utils/productImages';
 import { getColoresProducto } from '@/lib/color-parser';
+import { findColorImageMatch } from '@/lib/color-image-matcher';
 import { MOQ_PERSONALIZACION_GRATIS } from '@/lib/personalizacion-config';
 import { addToCartV2, fmtCLP } from '@/lib/shop-v2-cart';
 import { saveDraftV2, loadDraftV2, clearDraftV2 } from '@/lib/shop-v2-draft';
@@ -184,8 +185,16 @@ export default function ProductoNuevo() {
     return [main, ...extra].slice(0, 6);
   }, [producto, color, esCarcasa]);
 
-  // Al cambiar de color, vuelve a la 1ª imagen (la del color elegido).
-  useEffect(() => { setGalIdx(0); }, [colorId]);
+  // Al cambiar de color, la imagen principal se sincroniza sola: en carcasas la
+  // 1ª imagen YA es la del color (imagenes_por_color); en el resto de productos
+  // buscamos en la galería la foto que coincide con el color elegido (matching
+  // por nombre de archivo: rojo, negro, verde...) y saltamos a ella.
+  useEffect(() => {
+    if (!color || esCarcasa) { setGalIdx(0); return; }
+    const match = findColorImageMatch(galleryImages, color);
+    setGalIdx(match ? match.index : 0);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [colorId, esCarcasa]);
 
   // La imagen principal SIEMPRE es la del color elegido.
   const displayImg = color ? getProductImageForColor(producto, color) : getProductImage(producto);
@@ -517,7 +526,7 @@ export default function ProductoNuevo() {
           {/* ── Configurador: derecha desktop (scroll propio) · flujo mobile ── */}
           <div className="flex-1 min-w-0 lg:flex-none lg:w-[400px] xl:w-[440px] lg:h-full lg:min-h-0 lg:flex lg:flex-col">
             {/* Galería mobile primero */}
-            <div className="lg:hidden mb-3">
+            <div className="lg:hidden mb-3 scroll-mt-16" data-product-gallery>
               <ProductGalleryV2
                 images={galleryImages}
                 active={galIdx}
@@ -542,12 +551,21 @@ export default function ProductoNuevo() {
                 )}
               </div>
 
-              {/* Color — swatches visibles */}
+              {/* Color — swatches visibles. Al elegir, la foto de arriba cambia
+                  sola al color y en móvil se sube a la vista para que se VEA. */}
               {colores.length > 0 && (
                 <ColorSwatchesV2
                   colores={colores}
                   value={colorId}
-                  onSelect={(v) => { setColorId(v); setColorError(false); }}
+                  onSelect={(v) => {
+                    setColorId(v);
+                    setColorError(false);
+                    if (typeof window !== 'undefined' && window.innerWidth < 1024) {
+                      setTimeout(() => {
+                        document.querySelector('[data-product-gallery]')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                      }, 100);
+                    }
+                  }}
                   error={colorError}
                   producto={producto}
                 />
@@ -601,25 +619,21 @@ export default function ProductoNuevo() {
               {/* Envío BlueExpress en vivo (tarifario oficial por comuna) */}
               <ShippingEstimatorV2 producto={producto} cantidad={cantidad} />
 
-              {/* Medios de pago (mobile — en desktop vive en el panel izquierdo) */}
-              <div className="lg:hidden">
+              {/* Trust + medios de pago mobile — UNA franja compacta (menos scroll) */}
+              <div className="lg:hidden space-y-2">
+                <div className="flex items-center justify-center gap-3 bg-white rounded-2xl px-3 py-2.5" style={{ border: `1.5px solid ${C.border}` }}>
+                  {[
+                    { icon: Recycle, t: '100% reciclado' },
+                    { icon: Truck, t: 'Bluex todo Chile' },
+                    { icon: Lock, t: 'Pago seguro' },
+                  ].map((b, i) => (
+                    <span key={i} className="flex items-center gap-1 text-[10px] font-bold" style={{ color: C.fgSoft }}>
+                      <b.icon className="w-3.5 h-3.5 flex-shrink-0" style={{ color: C.green }} />
+                      {b.t}
+                    </span>
+                  ))}
+                </div>
                 <PaymentMethodsBadgesV2 />
-              </div>
-
-              {/* Trust badges mobile */}
-              <div className="grid grid-cols-3 gap-2 lg:hidden">
-                {[
-                  { icon: Recycle, t: '100% reciclado' },
-                  { icon: Truck, t: 'Envío BlueExpress' },
-                  { icon: Lock, t: 'Pago seguro' },
-                ].map((b, i) => (
-                  <div key={i} className="flex flex-col items-center gap-2 bg-white rounded-2xl p-3.5 text-center" style={{ border: `1.5px solid ${C.border}` }}>
-                    <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: 'rgba(139,173,138,.12)' }}>
-                      <b.icon className="w-5 h-5" style={{ color: C.green }} />
-                    </div>
-                    <span className="text-[10px] sm:text-xs font-bold leading-tight" style={{ color: C.fgSoft }}>{b.t}</span>
-                  </div>
-                ))}
               </div>
 
               {/* Descripción colapsable + incluye/impacto */}

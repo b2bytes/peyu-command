@@ -10,6 +10,15 @@
 // ════════════════════════════════════════════════════════════════════════
 
 export const CHANGELOG = [
+  // ── 10 junio 2026 · Color → imagen en TODOS los productos + ficha móvil compacta ──
+  {
+    fecha: '2026-06-10',
+    tipo: 'mejora',
+    area: 'Ficha de producto',
+    titulo: 'Elegir color cambia la foto automáticamente en todos los productos',
+    detalle: 'La lógica inteligente de las carcasas (elegir color → la imagen del producto cambia sola) ahora funciona en TODO el catálogo: al escoger un color (ej. cachos rojo/negro/verde/azul), el sistema busca en la galería la foto que coincide con ese color y la muestra como imagen principal; en móvil además la pantalla se desplaza sola hasta la foto para que el cambio se VEA. Y la ficha móvil se acortó: los 3 bloques grandes de confianza (reciclado, envío, pago seguro) se condensaron en una sola franja compacta — menos scroll eterno hacia abajo.',
+  },
+
   // ── 10 junio 2026 · Carrusel fiel a productos reales + botón permanente ──
   {
     fecha: '2026-06-10',
