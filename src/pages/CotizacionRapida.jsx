@@ -17,7 +17,7 @@ import QuoteProductModal from '@/components/cotizacion/QuoteProductModal';
 import QuoteTotalsLive from '@/components/cotizacion/QuoteTotalsLive';
 import { getB2BPriceForQty, getUnitBasePrice } from '@/lib/catalog-pricing';
 import { getProductImage } from '@/utils/productImages';
-import { fmtCLP, getCartV2, addToCartV2, updateCartItemV2, removeFromCartV2 } from '@/lib/shop-v2-cart';
+import { fmtCLP, getCartV2, addToCartV2, updateCartItemV2, removeFromCartV2, clearCartV2 } from '@/lib/shop-v2-cart';
 import { saveQuoteJourney, loadQuoteJourney, clearQuoteJourney, saveB2BProfile, loadB2BProfile } from '@/lib/cotizacion-journey';
 
 // ════════════════════════════════════════════════════════════════════════
@@ -391,7 +391,9 @@ export default function CotizacionRapida() {
     }
   };
 
-  const reset = () => { setResult(null); setItems([]); setForm(FORM_INICIAL); setStep(0); setLogoUrl(null); clearQuoteJourney(); };
+  // "Otra cotización" = partir LIMPIO de verdad: también vacía el carro único.
+  // Sin esto, los productos viejos re-hidrataban la cotización al recargar.
+  const reset = () => { setResult(null); setItems([]); setForm(FORM_INICIAL); setStep(0); setLogoUrl(null); clearQuoteJourney(); clearCartV2(); };
 
   const canAdvance = step === 0 ? items.length > 0 : step === 1 ? !!datosOk : true;
   const ctaLabel = step === 0

@@ -10,6 +10,15 @@
 // ════════════════════════════════════════════════════════════════════════
 
 export const CHANGELOG = [
+  // ── 10 junio 2026 · Auditoría de flujos: 3 quiebres corregidos ──────────
+  {
+    fecha: '2026-06-10',
+    tipo: 'bug',
+    area: 'Funnel completo',
+    titulo: 'Auditoría entrada/salida de cada flujo: 3 quiebres corregidos',
+    detalle: 'Revisión página por página del recorrido de compra y cotización (backend verificado sano con health check). Corregido: (1) en el carrito móvil el resumen de totales aparecía DESPUÉS del footer — ahora va antes; (2) "Otra cotización" no limpiaba el carro único, así que los productos viejos reaparecían al recargar la cotización ya enviada — ahora parte limpio de verdad; (3) al confirmar una compra se borraban el nombre, email y dirección del cliente — ahora el perfil persiste y la próxima compra llega pre-llenada (igual que el perfil B2B).',
+  },
+
   // ── 10 junio 2026 · Checkout = cockpit de 1 pantalla ────────────────────
   {
     fecha: '2026-06-10',

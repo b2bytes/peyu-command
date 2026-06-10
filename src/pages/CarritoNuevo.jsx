@@ -186,11 +186,7 @@ export default function CarritoNuevo() {
         </div>
       </div>
 
-      <footer className="py-8 text-center text-xs mt-8 flex items-center justify-center gap-1.5" style={{ borderTop: '1px solid #D4C4B0', color: '#A08070' }}>
-        <Recycle className="w-3.5 h-3.5" style={{ color: '#8BAD8A' }} /> PEYU Chile · Hecho con plástico reciclado 🇨🇱
-      </footer>
-
-      {/* Resumen mobile inline (antes del footer, solo mobile) */}
+      {/* Resumen mobile inline (ANTES del footer — estaba invertido) */}
       <div className="lg:hidden max-w-4xl mx-auto px-4 sm:px-6 pb-4">
         <div className="bg-white rounded-3xl p-4 space-y-2.5" style={{ border: '1.5px solid #D4C4B0' }}>
           <div className="flex justify-between text-sm" style={{ color: '#7A6050' }}>
@@ -213,6 +209,10 @@ export default function CarritoNuevo() {
           <p className="text-[10px]" style={{ color: '#A08070' }}>IVA incluido · envío se calcula al pagar</p>
         </div>
       </div>
+
+      <footer className="py-8 text-center text-xs flex items-center justify-center gap-1.5" style={{ borderTop: '1px solid #D4C4B0', color: '#A08070' }}>
+        <Recycle className="w-3.5 h-3.5" style={{ color: '#8BAD8A' }} /> PEYU Chile · Hecho con plástico reciclado 🇨🇱
+      </footer>
 
       <MobileNavBarV2
         backTo="/CatalogoNuevo"

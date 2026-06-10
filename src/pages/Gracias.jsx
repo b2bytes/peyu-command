@@ -4,7 +4,6 @@ import { CheckCircle2, Mail, MessageCircle, Package, Sparkles, Heart } from 'luc
 import SEO from '@/components/SEO';
 import { trackPurchase } from '@/lib/analytics-peyu';
 import { clearCartV2 } from '@/lib/shop-v2-cart';
-import { clearShopCheckout } from '@/lib/shop-v2-checkout-store';
 import NewsletterCTA from '@/components/newsletter/NewsletterCTA';
 import TransferenciaInstrucciones from '@/components/gracias/TransferenciaInstrucciones';
 
@@ -34,12 +33,11 @@ export default function Gracias() {
         cart: Array.isArray(carritoBackup) ? carritoBackup : [],
       });
     } catch { /* noop */ }
-    // Llegamos a la confirmación → la compra se concretó. Ahora SÍ vaciamos el
-    // carrito v2 y los datos del checkout (en MP no se limpiaban antes de pagar,
-    // para conservarlos si el cliente cancelaba y volvía atrás).
+    // Llegamos a la confirmación → la compra se concretó. Vaciamos el carrito v2,
+    // pero CONSERVAMOS los datos del checkout (nombre, email, dirección): el
+    // perfil del cliente es persistente y su próxima compra llega pre-llenada.
     try {
       clearCartV2();
-      clearShopCheckout();
       localStorage.setItem('peyu_v2_last_order', JSON.stringify({ numero, at: Date.now() }));
     } catch { /* noop */ }
     setTracked(true);

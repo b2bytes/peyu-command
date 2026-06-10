@@ -132,15 +132,12 @@ function MobileProgressBar({ step }) {
 function DesktopLeftPanel({ producto, displayImg, colorLabel, texto, disenoPeyuUrl, archivo, logoUrlSubido, mockupUrl, precioFinal, cantidad, step, onGoTo }) {
   return (
     <aside className="hidden lg:flex flex-col gap-3 w-60 xl:w-72 flex-shrink-0 lg:h-full lg:min-h-0 lg:overflow-y-auto peyu-scrollbar pr-1">
-      {/* Logo + brand */}
-      <div className="flex items-center gap-2 mb-2">
-        <Link to="/" className="flex items-center group">
-          <img src="https://media.base44.com/images/public/69d99b9d61f699701129c103/b67ed29f9_image.png"
-            alt="PEYU" className="h-7 w-auto group-hover:scale-105 transition-transform" draggable={false} />
-        </Link>
+      {/* Título del panel — el logo PEYU ya vive en el header, sin duplicarlo */}
+      <div className="flex items-center justify-between gap-2 mb-2">
         <span className="text-xs font-bold px-2 py-0.5 rounded-full" style={{ background: 'rgba(192,120,92,.12)', color: C.action }}>
           Personalizar
         </span>
+        <span className="text-[10px] font-semibold" style={{ color: C.fgMuted }}>Láser UV · gratis desde 10u</span>
       </div>
 
       {/* Stepper lateral */}
