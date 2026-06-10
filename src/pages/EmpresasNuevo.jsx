@@ -216,6 +216,19 @@ export default function EmpresasNuevo() {
     </div>
   );
 
+  // Sellos en franja compacta de 1 línea (scroll horizontal) — versión mobile
+  // del TrustGrid: mismo contenido, sin ocupar 2 filas de pantalla.
+  const TrustStrip = (
+    <div className="flex gap-1.5 overflow-x-auto scrollbar-hide">
+      {TRUST.map(({ icon: Icon, t, s }) => (
+        <span key={t} className="flex-shrink-0 flex items-center gap-1.5 text-[10px] font-bold px-2.5 py-1.5 rounded-full" style={{ background: 'white', border: `1px solid ${C.border}`, color: C.fgSoft }}>
+          <Icon className="w-3 h-3" style={{ color: C.action }} />
+          {t} <span className="font-semibold" style={{ color: C.fgMuted }}>· {s}</span>
+        </span>
+      ))}
+    </div>
+  );
+
   // Clientes en franja compacta de 1 línea (scroll horizontal) — reemplaza el
   // muro de 25 chips que dominaba la pantalla. Misma data, formato discreto.
   const ClientsStrip = (
@@ -380,40 +393,31 @@ export default function EmpresasNuevo() {
 
       {/* ── BODY MOBILE: flujo vertical completo (sin perder funciones) ────── */}
       <div className="lg:hidden pb-24">
-        <section className="max-w-6xl mx-auto px-3 sm:px-6 pt-4 pb-6">
-          <div className="text-center max-w-2xl mx-auto mb-4">
-            <span className="inline-block text-xs font-bold px-3 py-1 rounded-lg mb-2" style={{ background: C.action, color: 'white' }}>
-              ✨ Regalos corporativos
-            </span>
-            <h1 className="font-fraunces text-2xl leading-[1.2] mb-2 font-bold" style={{ color: C.fg }}>
-              Plástico reciclado<br />
-              <span style={{ color: C.action }}>con tu logo grabado</span>
+        <section className="max-w-6xl mx-auto px-3 sm:px-6 pt-3 pb-4">
+          {/* Hero compacto de 1 línea: el CTA "Cotizar" ya vive en el header */}
+          <div className="mb-3">
+            <h1 className="font-fraunces text-lg leading-tight font-bold" style={{ color: C.fg }}>
+              Plástico reciclado <span style={{ color: C.action }}>con tu logo grabado</span>
             </h1>
-            <p className="text-xs leading-relaxed mb-4 font-semibold" style={{ color: C.fgSoft }}>
-              Desde 10u • Hasta −54% • Factura + Despacho
+            <p className="text-[11px] font-semibold" style={{ color: C.fgSoft }}>
+              Elige tus productos y pide tu cotización — respuesta en 24h
             </p>
-            <Link
-              to="/CotizacionRapida"
-              className="inline-flex items-center gap-2 font-bold text-sm px-6 py-3 rounded-2xl transition-all hover:scale-105 active:scale-95"
-              style={{ background: C.actionGrad, color: 'white', boxShadow: '0 8px 24px rgba(15,139,108,.35)' }}
-            >
-              Pedir cotización <ArrowRight className="w-4 h-4" />
-            </Link>
           </div>
 
-          {savedQuote && <div className="mb-4">{ResumeQuoteChip}</div>}
+          {savedQuote && <div className="mb-3">{ResumeQuoteChip}</div>}
 
-          <div className="my-5">{TrustGrid('grid-cols-3')}</div>
+          {/* Sellos en 1 línea deslizable (antes: grilla de 2 filas) */}
+          <div className="mb-3">{TrustStrip}</div>
 
-          <div className="mb-5">{SearchAndChips}</div>
+          <div className="mb-3">{SearchAndChips}</div>
 
           {ProductGrid('grid-cols-2')}
         </section>
 
         {/* Clientes en franja compacta (1 línea, scroll horizontal) */}
-        <section className="max-w-6xl mx-auto px-4 py-4">{ClientsStrip}</section>
+        <section className="max-w-6xl mx-auto px-4 py-2">{ClientsStrip}</section>
 
-        <section className="max-w-3xl mx-auto px-4 py-4">{CTACard}</section>
+        <section className="max-w-3xl mx-auto px-4 py-3">{CTACard}</section>
 
         <footer className="py-6 text-center text-[9px] flex items-center justify-center gap-2" style={{ borderTop: `1.5px solid ${C.border}`, color: C.fgMuted }}>
           <Recycle className="w-3.5 h-3.5" style={{ color: '#8BAD8A' }} />
