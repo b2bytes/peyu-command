@@ -123,12 +123,12 @@ Deno.serve(async (req) => {
     const rawEvents = pkg.trackings || pkg.events || pkg.tracking || [];
 
     const eventos = rawEvents.map((t) => ({
-      at: t.eventDate || new Date().toISOString(),
-      code: String(t.eventCode || t.eventType || ''),
-      estado: ESTADO_MAP[t.eventType] || t.eventTypeDesc || 'En Tránsito',
-      descripcion: t.eventCodeDesc || t.eventTypeDesc || '',
-      ubicacion: t.location || '',
-      es_excepcion: ['EX', 'NE'].includes(t.eventType),
+      at: t.eventDate || t.date || t.fecha || t.timestamp || new Date().toISOString(),
+      code: String(t.eventCode || t.eventType || t.code || ''),
+      estado: ESTADO_MAP[t.eventType] || t.eventTypeDesc || t.status || 'En Tránsito',
+      descripcion: t.eventCodeDesc || t.eventTypeDesc || t.description || t.descripcion || '',
+      ubicacion: t.location || t.ubicacion || t.branch || '',
+      es_excepcion: ['EX', 'NE'].includes(t.eventType) || /no entregado|rechazado|siniestro|extrav/i.test(t.eventCodeDesc || t.description || ''),
     })).sort((a, b) => new Date(b.at) - new Date(a.at));
 
     const ultimoEvento = eventos[0];

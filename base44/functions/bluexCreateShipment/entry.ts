@@ -99,6 +99,7 @@ Deno.serve(async (req) => {
       dimensiones, // { largo_cm, ancho_cm, alto_cm }
       referencia,
       comentarios,
+      dry_run = false, // true → solo resuelve distrito y arma payload, NO emite
     } = await req.json();
 
     const id = proposal_id || pedido_id;
@@ -175,6 +176,11 @@ Deno.serve(async (req) => {
       comments: comentarios || null,
       parameters: null,
     };
+
+    // Modo dry-run: verificar resolución de distrito y payload sin emitir OT real
+    if (dry_run) {
+      return Response.json({ ok: true, dry_run: true, distrito_resuelto: distrito, tipo_destino: tipoDestino, payload_preview: payload });
+    }
 
     // Llamar a API de Emisión PRODUCCIÓN
     const response = await fetch(BLUEX_EMISSION_API, {
