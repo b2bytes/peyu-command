@@ -306,6 +306,8 @@ function App() {
               <Route path="/founders-presentation" element={<FoundersPresentation />} />
               <Route path="/design-lab" element={<FunnelDesignLab />} />
               <Route path="/test-index" element={<IndiceTest />} />
+              {/* EmpresasNuevo = cockpit B2B con header wizard propio (sin doble navegación) */}
+              <Route path="/EmpresasNuevo" element={<EmpresasNuevo />} />
               <Route path="/resumen-operativo" element={<ResumenOperativo />} />
 
               {/* ── RUTAS PÚBLICAS — todas con PublicNavBar permanente ──────────── */}
@@ -314,7 +316,6 @@ function App() {
                 <Route path="/TiendaNueva" element={<TiendaNueva />} />
                 <Route path="/CatalogoNuevo" element={<CatalogoNuevo />} />
                 <Route path="/CarritoNuevo" element={<CarritoNuevo />} />
-                <Route path="/EmpresasNuevo" element={<EmpresasNuevo />} />
                 <Route path="/EmpresaProducto" element={<EmpresaProducto />} />
                 <Route path="/b2b/propuesta" element={<B2BPropuestaPublica />} />
                 <Route path="/b2b/contacto" element={<B2BContacto />} />

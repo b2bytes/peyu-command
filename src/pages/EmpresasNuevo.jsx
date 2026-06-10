@@ -16,6 +16,7 @@ import {
   ChevronRight, Package, ShoppingCart, History,
 } from 'lucide-react';
 import B2BCatalogCard from '@/components/b2b/B2BCatalogCard';
+import MobileNavBarV2 from '@/components/shopv2/MobileNavBarV2';
 import { loadQuoteJourney } from '@/lib/cotizacion-journey';
 
 const C = {
@@ -215,6 +216,21 @@ export default function EmpresasNuevo() {
     </div>
   );
 
+  // Clientes en franja compacta de 1 línea (scroll horizontal) — reemplaza el
+  // muro de 25 chips que dominaba la pantalla. Misma data, formato discreto.
+  const ClientsStrip = (
+    <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-hide py-1">
+      <span className="flex-shrink-0 text-[9px] font-bold uppercase tracking-widest mr-1" style={{ color: C.fgMuted }}>
+        Confían en PEYU
+      </span>
+      {CLIENTES.map(c => (
+        <span key={c} className="flex-shrink-0 text-[10px] font-semibold px-2.5 py-1 rounded-full" style={{ background: 'white', border: `1px solid ${C.border}`, color: C.fgSoft }}>
+          {c}
+        </span>
+      ))}
+    </div>
+  );
+
   return (
     <div className="min-h-screen lg:h-screen lg:min-h-0 lg:flex lg:flex-col lg:overflow-hidden font-inter" style={{ background: C.bg, color: C.fg }}>
       <SEOHead
@@ -337,15 +353,18 @@ export default function EmpresasNuevo() {
           </p>
         </aside>
 
-        {/* Centro: catálogo GIGANTE con scroll propio */}
-        <main className="flex flex-col flex-1 min-w-0 h-full min-h-0 gap-3">
+        {/* Centro: catálogo GIGANTE con scroll propio (sin columna derecha:
+            los clientes viven en una franja compacta bajo el catálogo) */}
+        <main className="flex flex-col flex-1 min-w-0 h-full min-h-0 gap-2.5">
           <div className="flex-shrink-0">{SearchAndChips}</div>
           <div
             className="flex-1 min-h-0 rounded-3xl overflow-y-auto peyu-scrollbar p-4"
             style={{ background: C.surface, border: `1.5px solid ${C.border}` }}
           >
-            {ProductGrid('lg:grid-cols-2 xl:grid-cols-3')}
+            {ProductGrid('lg:grid-cols-3 2xl:grid-cols-4')}
           </div>
+          {/* Franja compacta de clientes (1 línea, scroll horizontal) */}
+          <div className="flex-shrink-0">{ClientsStrip}</div>
           {/* Barra info inferior del recorrido */}
           <div className="flex-shrink-0 flex items-center justify-between gap-3 px-4 py-2.5 rounded-2xl"
             style={{ background: 'rgba(255,255,255,.94)', border: `1px solid ${C.border}` }}>
@@ -357,31 +376,10 @@ export default function EmpresasNuevo() {
             </Link>
           </div>
         </main>
-
-        {/* Panel derecho: clientes + CTA */}
-        <aside className="hidden xl:flex flex-col gap-3 w-64 flex-shrink-0 h-full min-h-0 overflow-y-auto peyu-scrollbar pl-1">
-          <div className="rounded-2xl p-4" style={{ background: C.surface, border: `1.5px solid ${C.border}` }}>
-            <p className="text-[10px] font-bold uppercase tracking-widest text-center mb-3" style={{ color: C.fgMuted }}>
-              Clientes que confían en PEYU
-            </p>
-            <div className="flex flex-wrap justify-center gap-1.5">
-              {CLIENTES.map(c => (
-                <span key={c} className="text-[10px] font-semibold px-2.5 py-1.5 rounded-full" style={{ background: C.bgSoft, border: `1px solid ${C.border}`, color: C.fgSoft }}>
-                  {c}
-                </span>
-              ))}
-            </div>
-          </div>
-          {CTACard}
-          <p className="text-[9px] text-center flex items-center justify-center gap-1.5" style={{ color: C.fgMuted }}>
-            <Recycle className="w-3.5 h-3.5" style={{ color: '#8BAD8A' }} />
-            <span className="font-semibold">PEYU · 100% reciclado · Santiago 🇨🇱</span>
-          </p>
-        </aside>
       </div>
 
       {/* ── BODY MOBILE: flujo vertical completo (sin perder funciones) ────── */}
-      <div className="lg:hidden pb-10">
+      <div className="lg:hidden pb-24">
         <section className="max-w-6xl mx-auto px-3 sm:px-6 pt-4 pb-6">
           <div className="text-center max-w-2xl mx-auto mb-4">
             <span className="inline-block text-xs font-bold px-3 py-1 rounded-lg mb-2" style={{ background: C.action, color: 'white' }}>
@@ -412,26 +410,19 @@ export default function EmpresasNuevo() {
           {ProductGrid('lg:grid-cols-3')}
         </section>
 
-        <section className="max-w-6xl mx-auto px-4 py-6">
-          <p className="text-xs font-bold uppercase tracking-widest text-center mb-4" style={{ color: C.fgMuted }}>
-            Clientes que confían en PEYU
-          </p>
-          <div className="flex flex-wrap justify-center gap-2">
-            {CLIENTES.map(c => (
-              <span key={c} className="text-xs font-semibold px-3.5 py-2 rounded-full" style={{ background: 'white', border: '1px solid #EDE3D6', color: C.fgSoft }}>
-                {c}
-              </span>
-            ))}
-          </div>
-        </section>
+        {/* Clientes en franja compacta (1 línea, scroll horizontal) */}
+        <section className="max-w-6xl mx-auto px-4 py-4">{ClientsStrip}</section>
 
-        <section className="max-w-3xl mx-auto px-4 py-6">{CTACard}</section>
+        <section className="max-w-3xl mx-auto px-4 py-4">{CTACard}</section>
 
         <footer className="py-6 text-center text-[9px] flex items-center justify-center gap-2" style={{ borderTop: `1.5px solid ${C.border}`, color: C.fgMuted }}>
           <Recycle className="w-3.5 h-3.5" style={{ color: '#8BAD8A' }} />
           <span className="font-semibold">PEYU · Plástico 100% reciclado · Hecho en Santiago 🇨🇱</span>
         </footer>
       </div>
+
+      {/* Tabs de navegación mobile (Inicio · Tienda · Blog · B2B · Carrito) */}
+      <MobileNavBarV2 />
     </div>
   );
 }
