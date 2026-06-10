@@ -10,6 +10,15 @@
 // ════════════════════════════════════════════════════════════════════════
 
 export const CHANGELOG = [
+  // ── 10 junio 2026 · Carrusel fiel a productos reales + botón permanente ──
+  {
+    fecha: '2026-06-10',
+    tipo: 'mejora',
+    area: 'Inicio · Hero',
+    titulo: 'Carrusel con los productos REALES, textos legibles y Personalizar siempre a mano',
+    detalle: 'Las 3 imágenes del carrusel (escritorio, cachos, carcasa) se regeneraron usando las fotos oficiales de la galería como referencia exacta: mismos tonos, mismo marmolado y misma forma de los productos reales — mejor presentación sin inventar productos distintos. Los textos de cada slide ahora se leen siempre (degradado más oscuro + sombra de texto). Y la acción principal gana permanencia: al hacer scroll aparece un botón flotante "Personalizar" fijo abajo a la derecha, sobre los tabs móviles.',
+  },
+
   // ── 10 junio 2026 · El logo del cliente reemplaza a PEYU automáticamente ─
   {
     fecha: '2026-06-10',

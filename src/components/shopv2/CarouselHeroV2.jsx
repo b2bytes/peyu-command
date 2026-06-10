@@ -66,20 +66,22 @@ export default function CarouselHeroV2({ slides = [], onSlideClick }) {
               e.target.onerror = null;
             }}
           />
-          {/* Gradiente cálido inferior para legibilidad del caption */}
-          <div className="absolute inset-x-0 bottom-0 h-2/5 pointer-events-none"
-            style={{ background: 'linear-gradient(to top, rgba(44,24,16,.62) 0%, rgba(44,24,16,.18) 55%, transparent 100%)' }} />
+          {/* Gradiente cálido inferior para legibilidad del caption (reforzado) */}
+          <div className="absolute inset-x-0 bottom-0 h-1/2 pointer-events-none"
+            style={{ background: 'linear-gradient(to top, rgba(44,24,16,.82) 0%, rgba(44,24,16,.45) 45%, transparent 100%)' }} />
 
           {/* Caption editorial */}
           {(s.kicker || s.title) && (
             <div className="absolute bottom-0 inset-x-0 p-4 sm:p-5 pr-20 pointer-events-none">
               {s.kicker && (
-                <p className="text-[9px] sm:text-[10px] font-bold uppercase tracking-[0.14em] mb-0.5" style={{ color: '#F0C9B4' }}>
+                <p className="text-[9px] sm:text-[10px] font-bold uppercase tracking-[0.14em] mb-0.5"
+                  style={{ color: '#F0C9B4', textShadow: '0 1px 6px rgba(44,24,16,.8)' }}>
                   {s.kicker}
                 </p>
               )}
               {s.title && (
-                <p className="font-fraunces text-base sm:text-xl leading-tight text-white drop-shadow-sm">
+                <p className="font-fraunces text-base sm:text-xl leading-tight text-white"
+                  style={{ textShadow: '0 2px 10px rgba(44,24,16,.85)' }}>
                   {s.title}
                 </p>
               )}

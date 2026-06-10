@@ -7,19 +7,19 @@ import CarouselHeroV2 from './CarouselHeroV2';
 // historia y lleva a su destino del viaje.
 const HERO_SLIDES = [
   {
-    img: 'https://media.base44.com/images/public/69d99b9d61f699701129c103/4ef288a0a_generated_image.png',
+    img: 'https://media.base44.com/images/public/69d99b9d61f699701129c103/69134ef4d_generated_image.png',
     kicker: 'Escritorio consciente',
     title: 'Hecho con tapitas recicladas de Santiago',
     to: '/CatalogoNuevo?cat=Escritorio',
   },
   {
-    img: 'https://media.base44.com/images/public/69d99b9d61f699701129c103/d4fe2808b_generated_image.png',
+    img: 'https://media.base44.com/images/public/69d99b9d61f699701129c103/7fcca1287_generated_image.png',
     kicker: 'Entretención y juegos',
     title: 'Cachos 100% reciclados, todo terreno',
     to: '/CatalogoNuevo?cat=Entretenimiento',
   },
   {
-    img: 'https://media.base44.com/images/public/69d99b9d61f699701129c103/3c0bba9e5_generated_image.png',
+    img: 'https://media.base44.com/images/public/69d99b9d61f699701129c103/a4235e9c2_generated_image.png',
     kicker: 'Carcasas eco',
     title: 'Marmolado único e irrepetible',
     to: '/CatalogoNuevo?cat=Carcasas%20B2C',
