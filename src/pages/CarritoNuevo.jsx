@@ -6,6 +6,7 @@ import CheckoutStepperV2 from '@/components/shopv2/CheckoutStepperV2';
 import StepNavV2 from '@/components/shopv2/StepNavV2';
 import QtyStepperV2 from '@/components/shopv2/QtyStepperV2';
 import CartItemThumbV2 from '@/components/shopv2/CartItemThumbV2';
+import CartQuoteBridgeV2 from '@/components/shopv2/CartQuoteBridgeV2';
 import {
   getCartV2, updateCartItemV2, removeFromCartV2, fmtCLP,
 } from '@/lib/shop-v2-cart';
@@ -121,6 +122,9 @@ export default function CarritoNuevo() {
                 </div>
               );
             })}
+
+            {/* Puente B2B: el MISMO carrito se cotiza con factura y volumen */}
+            <CartQuoteBridgeV2 />
 
             {/* Navegación Atrás / Siguiente (desktop) */}
             <div className="hidden lg:block">

@@ -10,6 +10,15 @@
 // ════════════════════════════════════════════════════════════════════════
 
 export const CHANGELOG = [
+  // ── 10 junio 2026 · Carro único: cotización y compra unificadas ─────────
+  {
+    fecha: '2026-06-10',
+    tipo: 'mejora',
+    area: 'Carro único · Compra + Cotización',
+    titulo: 'Un solo carro para comprar y cotizar — sin pasos redundantes',
+    detalle: 'La cotización B2B ahora lee y sincroniza el MISMO carrito de compra (carrito_v2): al cruzar desde /personalizar el item configurado (color, diseño, cantidad) se agrega al carro y la cotización lo hidrata desde ahí, saltando el paso redundante de elegir productos (entra directo a Datos). Cambios de cantidad, productos agregados o eliminados en la cotización se reflejan en el carro y viceversa. El carrito de compra suma un puente "Cotiza este mismo carrito" para empresas. La selección final llega intacta a ambos destinos.',
+  },
+
   // ── 10 junio 2026 · Comprar o cotizar: un solo viaje, nada se pierde ────
   {
     fecha: '2026-06-10',

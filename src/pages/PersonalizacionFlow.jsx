@@ -18,6 +18,7 @@ import QuantityStepper from '@/components/personalizacion/QuantityStepper';
 import PersonalizacionOptionPicker from '@/components/personalizacion/PersonalizacionOptionPicker';
 import PublicSEO from '@/components/PublicSEO';
 import { saveJourney, loadJourney, clearJourney } from '@/lib/personalizar-journey';
+import { addToCartV2 } from '@/lib/shop-v2-cart';
 
 const C = {
   bg: '#F8F3ED',
@@ -387,7 +388,7 @@ export default function PersonalizacionFlow() {
     return true;
   }, [step, producto, opcion, personalizacionCompleta]);
 
-  const handleAddToCart = async () => {
+  const handleAddToCart = async (destino = 'comprar') => {
     if (!producto) return;
     setLoading(true);
     try {
@@ -398,7 +399,6 @@ export default function PersonalizacionFlow() {
     }
     const personalizacionLabel = texto || (logoUrl ? '[Logo personalizado]' : (disenoPeyuUrl ? '[Diseño PEYU]' : null));
     const item = {
-      id: Math.random(),
       productoId: producto.id,
       sku: producto.sku || null,
       nombre: producto.nombre,
@@ -416,8 +416,7 @@ export default function PersonalizacionFlow() {
       mockupUrl: mockupUrl || null,
       posicion_grabado: 'centro',
     };
-    const actual = JSON.parse(localStorage.getItem('carrito_v2') || '[]');
-    localStorage.setItem('carrito_v2', JSON.stringify([...actual, item]));
+    addToCartV2(item); // CARRO ÚNICO: compra y cotización comparten estas líneas
     trackAddToCart({ ...item, sku: producto.sku, categoria: producto.categoria });
     const arteUrl = logoUrl || disenoPeyuUrl || null;
     base44.entities.PersonalizationJob.create({
@@ -428,20 +427,25 @@ export default function PersonalizacionFlow() {
       mockup_urls: mockupUrl ? [mockupUrl] : [], estimated_minutes: 5,
     }).catch(() => {});
     clearJourney();
+    // Flujo unificado: si el cliente quiere COTIZAR, el item ya quedó en el
+    // carro único y la cotización lo lee desde ahí (sin re-elegir nada).
+    if (destino === 'cotizar') { navigate('/CotizacionRapida'); return; }
     setDone(true);
     } finally {
       setLoading(false);
     }
   };
 
-  // Puente "comprar o cotizar": pedidos corporativos van a /CotizacionRapida
-  // pre-cargada con el producto, la CANTIDAD REAL del cliente y su logo/diseño
-  // (precios por volumen + factura). Nada se pierde al cruzar de flujo.
-  const arteParaCotizacion = logoUrlSubido || disenoPeyuUrl || '';
+  // Puente "comprar o cotizar" UNIFICADO en un solo carro: al cotizar, el item
+  // configurado (color, diseño, cantidad real) se agrega al MISMO carrito_v2 y
+  // la cotización lo lee desde ahí. Nada se pierde, sin pasos duplicados.
+  const irACotizar = () => done ? navigate('/CotizacionRapida') : handleAddToCart('cotizar');
   const quoteB2BLink = producto?.sku ? (
-    <Link
-      to={`/CotizacionRapida?sku=${encodeURIComponent(producto.sku)}&qty=${Math.max(cantidad, 10)}${arteParaCotizacion ? `&logo=${encodeURIComponent(arteParaCotizacion)}` : ''}`}
-      className="flex items-center gap-3 p-3 rounded-2xl transition-all hover:-translate-y-0.5"
+    <button
+      type="button"
+      onClick={irACotizar}
+      disabled={loading}
+      className="w-full flex items-center gap-3 p-3 rounded-2xl transition-all hover:-translate-y-0.5 disabled:opacity-60"
       style={{ background: 'rgba(15,139,108,.07)', border: '1.5px solid rgba(15,139,108,.3)' }}
     >
       <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: 'rgba(15,139,108,.12)' }}>
@@ -449,10 +453,12 @@ export default function PersonalizacionFlow() {
       </div>
       <div className="flex-1 min-w-0 text-left">
         <p className="text-xs font-bold" style={{ color: '#0F8B6C' }}>¿Pedido para tu empresa?</p>
-        <p className="text-[11px]" style={{ color: C.fgSoft }}>Cotiza por volumen con hasta −54% + factura</p>
+        <p className="text-[11px]" style={{ color: C.fgSoft }}>
+          {done ? 'Cotiza este mismo carrito con factura y hasta −54%' : 'Cotiza este mismo pedido — tu diseño y cantidad viajan contigo'}
+        </p>
       </div>
       <ArrowRight className="w-4 h-4 flex-shrink-0" style={{ color: '#0F8B6C' }} />
-    </Link>
+    </button>
   ) : null;
 
   // ── Loading ──────────────────────────────────────────────────────────────

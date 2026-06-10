@@ -16,7 +16,7 @@ import QuoteStepper from '@/components/cotizacion/QuoteStepper';
 import QuoteProductModal from '@/components/cotizacion/QuoteProductModal';
 import { getB2BPriceForQty, getUnitBasePrice } from '@/lib/catalog-pricing';
 import { getProductImage } from '@/utils/productImages';
-import { fmtCLP } from '@/lib/shop-v2-cart';
+import { fmtCLP, getCartV2, addToCartV2, updateCartItemV2, removeFromCartV2 } from '@/lib/shop-v2-cart';
 import { saveQuoteJourney, loadQuoteJourney, clearQuoteJourney } from '@/lib/cotizacion-journey';
 
 // ════════════════════════════════════════════════════════════════════════
@@ -133,25 +133,50 @@ export default function CotizacionRapida() {
         if (prefilledRef.current) return;
         prefilledRef.current = true;
 
-        // Restaura el viaje guardado (sobrevive recargas/salidas). Los datos de
-        // empresa y el logo SIEMPRE se restauran; los items según prioridad:
-        // URL (puente desde /personalizar) > guardado.
+        // Restaura datos de empresa guardados (sobreviven recargas/salidas).
         const saved = loadQuoteJourney();
         if (saved?.form) setForm(f => ({ ...f, ...saved.form }));
-        if (saved?.logoUrl) setLogoUrl(saved.logoUrl);
-        if (urlLogo && urlLogo.startsWith('http')) setLogoUrl(urlLogo);
 
-        const restoreItems = (list) => (list || [])
-          .map(si => ({ producto: cotizables.find(p => p.sku === si.sku), qty: si.qty || 50 }))
-          .filter(it => it.producto);
-
+        // Entrada por URL (links externos): agrega el producto al CARRO ÚNICO
+        // si aún no está, en vez de mantener una lista paralela.
         if (urlSku) {
           const match = cotizables.find(p => p.sku === urlSku);
-          const otros = restoreItems(saved?.items).filter(it => it.producto.sku !== urlSku);
-          if (match) setItems([{ producto: match, qty: urlQty }, ...otros]);
-          else if (otros.length) setItems(otros);
+          if (match && !getCartV2().some(l => l.sku === urlSku)) {
+            addToCartV2({
+              productoId: match.id, sku: match.sku, nombre: match.nombre,
+              precio: match.precio_b2c || getUnitBasePrice(match), cantidad: urlQty,
+              imagen: getProductImage(match),
+              ...(urlLogo && urlLogo.startsWith('http') ? { logoUrl: urlLogo, personalizacion: '[Logo personalizado]' } : {}),
+            });
+          }
+        }
+
+        // CARRO ÚNICO (carrito_v2) = fuente de verdad de los items a cotizar.
+        // La selección hecha en /personalizar o la tienda llega intacta.
+        const cart = getCartV2();
+        const porSku = {};
+        for (const l of cart) {
+          if (!l.sku) continue;
+          porSku[l.sku] = (porSku[l.sku] || 0) + (l.cantidad || 1);
+        }
+        const hidratados = Object.entries(porSku)
+          .map(([sku, qty]) => ({ producto: cotizables.find(p => p.sku === sku), qty }))
+          .filter(it => it.producto);
+
+        // Logo: URL > guardado > el que viaja en el carro desde /personalizar.
+        const lineaConLogo = cart.find(l => l.logoUrl || l.disenoPeyuUrl);
+        if (urlLogo && urlLogo.startsWith('http')) setLogoUrl(urlLogo);
+        else if (saved?.logoUrl) setLogoUrl(saved.logoUrl);
+        else if (lineaConLogo) setLogoUrl(lineaConLogo.logoUrl || lineaConLogo.disenoPeyuUrl);
+
+        if (hidratados.length) {
+          setItems(hidratados);
+          // Paso redundante eliminado: productos ya elegidos → directo a Datos.
+          setStep(typeof saved?.step === 'number' && saved.step > 0 ? Math.min(saved.step, 2) : 1);
         } else if (saved?.items?.length) {
-          const restored = restoreItems(saved.items);
+          const restored = saved.items
+            .map(si => ({ producto: cotizables.find(p => p.sku === si.sku), qty: si.qty || 50 }))
+            .filter(it => it.producto);
           if (restored.length) {
             setItems(restored);
             if (typeof saved.step === 'number' && saved.step >= 0 && saved.step <= 2) setStep(saved.step);
@@ -190,9 +215,27 @@ export default function CotizacionRapida() {
 
   const primerProducto = items[0]?.producto || null;
 
-  const addProducto = (p) => setItems((prev) => [...prev, { producto: p, qty: 50 }]);
-  const setQty = (sku, qty) => setItems((prev) => prev.map((it) => it.producto.sku === sku ? { ...it, qty } : it));
-  const removeItem = (sku) => setItems((prev) => prev.filter((it) => it.producto.sku !== sku));
+  // CARRO ÚNICO: toda mutación de la cotización se refleja en carrito_v2,
+  // así el cliente puede alternar entre cotizar y comprar sin perder nada.
+  const addProducto = (p) => {
+    setItems((prev) => [...prev, { producto: p, qty: 50 }]);
+    if (!getCartV2().some((l) => l.sku === p.sku)) {
+      addToCartV2({
+        productoId: p.id, sku: p.sku, nombre: p.nombre,
+        precio: p.precio_b2c || getUnitBasePrice(p), cantidad: 50,
+        imagen: getProductImage(p),
+      });
+    }
+  };
+  const setQty = (sku, qty) => {
+    setItems((prev) => prev.map((it) => it.producto.sku === sku ? { ...it, qty } : it));
+    const lineas = getCartV2().filter((l) => l.sku === sku);
+    if (lineas.length === 1) updateCartItemV2(lineas[0].id, { cantidad: qty });
+  };
+  const removeItem = (sku) => {
+    setItems((prev) => prev.filter((it) => it.producto.sku !== sku));
+    getCartV2().filter((l) => l.sku === sku).forEach((l) => removeFromCartV2(l.id));
+  };
 
   const datosOk = form.company_name.trim() && form.rut.trim() && form.contact_name.trim() && form.email.trim() && form.phone.trim();
   const maxStep = items.length === 0 ? 0 : datosOk ? 2 : 1;
