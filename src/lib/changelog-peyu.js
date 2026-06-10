@@ -10,6 +10,15 @@
 // ════════════════════════════════════════════════════════════════════════
 
 export const CHANGELOG = [
+  // ── 10 junio 2026 · Colores casados con las FOTOS REALES de la galería ──
+  {
+    fecha: '2026-06-10',
+    tipo: 'bug',
+    area: 'Catálogo · Colores B2C + B2B',
+    titulo: 'Cada color oficial ahora muestra su FOTO REAL de la galería (fin de los tintes errados)',
+    detalle: 'El selector de color mostraba imágenes equivocadas (ej. cacho "Verde" con foto rosada) porque el mapa color→foto tenía claves obsoletas (Turquesa, Amarillo, Rosado) apuntando a imágenes generadas por IA, y los colores oficiales (Azul/Negro/Rojo/Verde) quedaban sin foto. Se reconstruyó el mapa de TODO el catálogo con visión IA en modo rebuild: solo fotos REALES de la galería (las generadas por IA quedan excluidas si hay fotos reales), claves limpias alineadas a la norma oficial y aplicado en los 10+ productos de plástico reciclado (cachos, jenga, maceteros, packs escritorio, sujetadores, pocillos...). Además se corrigió el motor de tinte: si el color tiene foto real en el mapa, NUNCA se tiñe encima (antes Azul se teñía sobre la propia foto azul). Aplica a la ficha B2C, la ficha B2B de empresas y los swatches con miniatura real.',
+  },
+
   // ── 10 junio 2026 · Etiqueta Bluex: corrección inline hasta finalizar ──
   {
     fecha: '2026-06-10',

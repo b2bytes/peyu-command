@@ -30,7 +30,11 @@ Deno.serve(async (req) => {
     }
 
     const body = await req.json().catch(() => ({}));
-    const { sku = null, limit = 10, dryRun = false } = body;
+    // rebuild=true: reconstruye el mapa DESDE CERO para los colores oficiales
+    // actuales (limpia claves obsoletas tipo Turquesa/Amarillo) usando SOLO
+    // fotos reales de la galería (excluye imágenes generadas por IA si hay
+    // suficientes fotos reales).
+    const { sku = null, limit = 10, dryRun = false, rebuild = false } = body;
 
     // Carga productos
     let productos = [];
@@ -58,6 +62,16 @@ Deno.serve(async (req) => {
     // Paleta oficial PEYU para el modo DETECCIÓN (productos sin `colores`).
     const PALETA = ['Azul', 'Verde', 'Rojo', 'Negro', 'Turquesa', 'Amarillo', 'Rosado', 'Blanco', 'Gris', 'Café', 'Naranja', 'Violeta', 'Beige'];
 
+    // Pool de imágenes candidatas: imagen principal + galería. Prioriza FOTOS
+    // REALES — si hay ≥2 fotos no generadas por IA, las generadas se excluyen.
+    const poolDe = (p) => {
+      const urls = [p.imagen_url, ...(p.galeria_urls || [])]
+        .filter((u) => typeof u === 'string' && u.startsWith('http'));
+      const dedup = [...new Set(urls)];
+      const reales = dedup.filter((u) => !/generated_image/i.test(u));
+      return (reales.length >= 2 ? reales : dedup).slice(0, MAX_IMGS);
+    };
+
     // Candidatos: activos, con galería ≥2. Dos modos:
     //  · COMPLETAR: tiene colores definidos pero faltan fotos en el mapa.
     //  · DETECTAR: NO tiene colores definidos → la IA detecta en qué colores
@@ -68,10 +82,21 @@ Deno.serve(async (req) => {
       if (p.categoria === 'Carcasas B2C') return false;
       if (p.material === 'Fibra de Trigo (Compostable)') return false;
       if (/gift\s*card/i.test(p.categoria || '') || /gift\s*card/i.test(p.nombre || '')) return false;
-      const galeria = (p.galeria_urls || []).filter((u) => typeof u === 'string' && u.startsWith('http'));
-      if (galeria.length < 2) return false;
+      if (poolDe(p).length < 2) return false;
       const colores = getColores(p);
       const mapa = p.imagenes_por_color || {};
+      if (rebuild) {
+        // REBUILD idempotente: salta productos cuyo mapa YA está alineado
+        // (todas las claves son colores oficiales y con foto real asignada).
+        if (colores.length < 2) return false;
+        const keys = Object.keys(mapa);
+        // Alineado = el mapa solo contiene colores oficiales con fotos reales
+        // (los colores sin foto real quedan al tinte instantáneo como fallback).
+        const aligned = keys.length > 0
+          && keys.every((k) => colores.includes(k))
+          && keys.every((k) => !/generated_image/i.test(mapa[k] || ''));
+        return !aligned;
+      }
       if (colores.length >= 2) return colores.some((c) => !mapa[c]); // COMPLETAR
       return Object.keys(mapa).length === 0; // DETECTAR desde cero
     }).slice(0, Math.min(limit, 25));
@@ -85,10 +110,10 @@ Deno.serve(async (req) => {
       const mapaExistente = (p.imagenes_por_color && typeof p.imagenes_por_color === 'object') ? p.imagenes_por_color : {};
       const objetivo = modoDeteccion
         ? PALETA
-        : colores.filter((c) => !mapaExistente[c] && !/mix/i.test(c));
+        : colores.filter((c) => !/mix/i.test(c) && (rebuild || !mapaExistente[c]));
       if (objetivo.length === 0) continue;
 
-      const galeria = (p.galeria_urls || []).filter((u) => typeof u === 'string' && u.startsWith('http')).slice(0, MAX_IMGS);
+      const galeria = poolDe(p);
 
       const prompt = modoDeteccion
         ? `Eres un clasificador visual de fotos de e-commerce. Te adjunto ${galeria.length} fotos (en orden: foto 1, foto 2, ... foto ${galeria.length}) del producto "${p.nombre}".
@@ -127,7 +152,9 @@ Sé estricto: solo asigna una foto si el color del producto es inequívoco.`;
         continue;
       }
 
-      const nuevoMapa = { ...mapaExistente };
+      // REBUILD: parte de cero — limpia claves obsoletas (colores que ya no
+      // están en la norma oficial del producto).
+      const nuevoMapa = rebuild ? {} : { ...mapaExistente };
       let cambios = 0;
       const sinFoto = [];
       for (const a of asignaciones) {
@@ -143,7 +170,7 @@ Sé estricto: solo asigna una foto si el color del producto es inequívoco.`;
 
       report.push({ sku: p.sku, nombre: p.nombre, modo: modoDeteccion ? 'deteccion' : 'completar', nuevos: cambios, sin_foto: sinFoto, mapa: nuevoMapa });
 
-      if (cambios > 0 && !dryRun) {
+      if ((cambios > 0 || rebuild) && !dryRun) {
         const patch = { imagenes_por_color: nuevoMapa };
         // Modo detección: además poblamos `colores` con lo detectado (reales).
         if (modoDeteccion) patch.colores = Object.keys(nuevoMapa);
