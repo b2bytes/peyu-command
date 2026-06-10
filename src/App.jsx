@@ -134,6 +134,7 @@ const CatalogoB2BOficial = lazyWithRetry(() => import('./pages/CatalogoB2BOficia
 const MigrarPreciosB2B = lazyWithRetry(() => import('./pages/MigrarPreciosB2B'), { name: 'MigrarPreciosB2B' });
 const DespachoRapido = lazyWithRetry(() => import('./pages/DespachoRapido'), { name: 'DespachoRapido' });
 const AgenteCentral = lazyWithRetry(() => import('./pages/AgenteCentral'), { name: 'AgenteCentral' });
+const Induccion = lazyWithRetry(() => import('./pages/Induccion'), { name: 'Induccion' });
 
 const AdminLoader = () => (
   <div className="fixed inset-0 flex items-center justify-center bg-background">
@@ -244,6 +245,7 @@ const AuthenticatedApp = () => {
           <Route path="catalogo-b2b-oficial" element={<CatalogoB2BOficial />} />
           <Route path="migrar-precios-b2b" element={<MigrarPreciosB2B />} />
           <Route path="despacho" element={<DespachoRapido />} />
+          <Route path="induccion" element={<Induccion />} />
         </Route>
         <Route path="*" element={<PageNotFound />} />
       </Routes>
