@@ -21,12 +21,16 @@ Deno.serve(async (req) => {
     const body = await req.json().catch(() => ({}));
     const { productoId, sku, force } = body;
 
-    // Auth: admin logueado o secret interno
+    // Auth: admin logueado o secret interno. EXCEPCIÓN: visitantes del shop
+    // pueden gatillar la generación AUTOMÁTICA (idempotente: solo si el
+    // producto aún no tiene base limpia). Regenerar con force sigue siendo
+    // exclusivo de admin/interno.
     const internalSecret = req.headers.get('x-internal-secret');
     const isInternal = internalSecret && internalSecret === Deno.env.get('MADRE_V2_SECRET');
     if (!isInternal) {
       const user = await base44.auth.me().catch(() => null);
-      if (user?.role !== 'admin') {
+      const isAdmin = user?.role === 'admin';
+      if (!isAdmin && force) {
         return Response.json({ error: 'Forbidden' }, { status: 403 });
       }
     }

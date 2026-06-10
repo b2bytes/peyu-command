@@ -10,6 +10,15 @@
 // ════════════════════════════════════════════════════════════════════════
 
 export const CHANGELOG = [
+  // ── 10 junio 2026 · El logo del cliente reemplaza a PEYU automáticamente ─
+  {
+    fecha: '2026-06-10',
+    tipo: 'mejora',
+    area: 'Ficha de producto',
+    titulo: 'Producto personalizado: la marca PEYU desaparece sola y aparece el logo del cliente',
+    detalle: 'Al activar una personalización en la ficha, si el producto aún no tiene su foto "base limpia" (sin la marca PEYU grabada), se genera automáticamente con IA en segundo plano y el mockup cambia solo al lienzo limpio — el diseño del cliente reemplaza a PEYU sin ningún clic extra. Generada de inmediato la base limpia del Pack 4 Cachos Todo Terreno; el resto del catálogo se va generando solo la primera vez que un cliente personaliza cada producto.',
+  },
+
   // ── 10 junio 2026 · PDFs unificados con datos siempre perfectos ────────
   {
     fecha: '2026-06-10',

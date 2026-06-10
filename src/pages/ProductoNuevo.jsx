@@ -203,11 +203,14 @@ export default function ProductoNuevo() {
 
   const total = precioUnit * cantidad + feeTotal - descuentoMonto;
 
-  // Imagen base (lienzo) del mockup.
+  // Imagen base (lienzo) del mockup: versión LIMPIA sin marca PEYU si existe,
+  // o la generada al vuelo (cleanBaseUrl) cuando el cliente carga su diseño.
+  const [cleanBaseUrl, setCleanBaseUrl] = useState(null);
   const colorImg = useMemo(() => {
-    if (!esCarcasa && producto?.imagen_base_limpia_url) return producto.imagen_base_limpia_url;
+    const limpia = producto?.imagen_base_limpia_url || cleanBaseUrl;
+    if (!esCarcasa && limpia) return limpia;
     return color ? getProductImageForColor(producto, color) : displayImg;
-  }, [producto, color, displayImg, esCarcasa]);
+  }, [producto, color, displayImg, esCarcasa, cleanBaseUrl]);
 
   // Capas (combinables) para el mockup en vivo. ORDEN FIJO de apilado
   // (arriba→abajo): 1) Tu logo  2) Diseño PEYU  3) Frase.
@@ -222,6 +225,20 @@ export default function ProductoNuevo() {
   // Listo para agregar: sin personalización, o con personalización aprobada.
   const persOk = persCompleta(pers) && (!hayAlgunoActivado(pers) || pers.aprobada);
   const muestraMockup = capas.length > 0;
+
+  // AUTOMÁTICO: al activar una personalización, si el producto aún no tiene su
+  // foto "base limpia" (sin la marca PEYU grabada), se genera sola en segundo
+  // plano y el mockup cambia al lienzo limpio — el logo del cliente reemplaza
+  // a PEYU sin ningún clic extra.
+  const cleanRequestedRef = useRef(false);
+  useEffect(() => {
+    if (!producto || esCarcasa || !muestraMockup) return;
+    if (producto.imagen_base_limpia_url || cleanBaseUrl || cleanRequestedRef.current) return;
+    cleanRequestedRef.current = true;
+    base44.functions.invoke('generateCleanBaseImage', { productoId: producto.id })
+      .then((res) => { if (res?.data?.clean_url) setCleanBaseUrl(res.data.clean_url); })
+      .catch(() => { /* sin base limpia: el mockup sigue con la foto normal */ });
+  }, [producto, esCarcasa, muestraMockup, cleanBaseUrl]);
 
   // Stock/urgencia sutil: solo si el dato existe y es bajo.
   const stock = producto?.stock_actual;
