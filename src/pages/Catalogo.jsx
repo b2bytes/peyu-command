@@ -12,12 +12,13 @@ const CATEGORIAS = ["Escritorio", "Hogar", "Entretenimiento", "Corporativo", "Ca
 const MATERIALES = ["Plástico 100% Reciclado", "Fibra de Trigo (Compostable)"];
 const CANALES = ["B2B + B2C", "B2C Exclusivo", "B2B Exclusivo"];
 
-const catColor = {
-  "Escritorio": "bg-blue-100 text-blue-700",
-  "Hogar": "bg-green-100 text-green-700",
-  "Entretenimiento": "bg-purple-100 text-purple-700",
-  "Corporativo": "bg-amber-100 text-amber-700",
-  "Carcasas B2C": "bg-pink-100 text-pink-700",
+// Punto de color por categoría (funciona en modo día Y noche del Liquid Dual)
+const catDot = {
+  "Escritorio": '#60A5FA',
+  "Hogar": '#34D399',
+  "Entretenimiento": '#A78BFA',
+  "Corporativo": '#FBBF24',
+  "Carcasas B2C": '#F472B6',
 };
 
 const DEFAULTS = {
@@ -30,54 +31,56 @@ const DEFAULTS = {
 };
 
 function ProductCard({ prod, onEdit, onDelete }) {
-  const margenEst = prod.precio_b2c > 0 ? Math.round((prod.precio_b2c - prod.precio_base_b2b) / prod.precio_b2c * 100) : null;
   return (
-    <div className={`bg-white rounded-xl p-4 shadow-sm border transition-shadow hover:shadow-md ${!prod.activo ? 'opacity-60' : 'border-border'}`}>
+    <div className={`ld-card rounded-2xl p-4 ${!prod.activo ? 'opacity-55' : ''}`}>
       <div className="flex items-start justify-between mb-2">
-        <div>
+        <div className="min-w-0">
           <div className="flex items-center gap-2">
-            <span className="text-xs font-mono text-muted-foreground bg-muted px-1.5 py-0.5 rounded">{prod.sku}</span>
-            {prod.activo ? <CheckCircle2 className="w-3.5 h-3.5 text-green-500" /> : <XCircle className="w-3.5 h-3.5 text-gray-400" />}
+            <span className="text-xs font-mono px-1.5 py-0.5 rounded text-ld-fg-muted" style={{ background: 'var(--ld-glass-soft)', border: '1px solid var(--ld-border)' }}>{prod.sku}</span>
+            {prod.activo ? <CheckCircle2 className="w-3.5 h-3.5" style={{ color: 'var(--ld-action)' }} /> : <XCircle className="w-3.5 h-3.5 text-ld-fg-subtle" />}
           </div>
-          <p className="font-poppins font-semibold text-sm text-foreground mt-1">{prod.nombre}</p>
+          <p className="font-poppins font-semibold text-sm text-ld-fg mt-1 leading-snug">{prod.nombre}</p>
         </div>
-        <div className="flex gap-1">
-          <button onClick={() => onEdit(prod)} className="p-1.5 hover:bg-muted rounded-lg transition-colors"><Edit2 className="w-3.5 h-3.5 text-muted-foreground" /></button>
-          <button onClick={() => onDelete(prod.id)} className="p-1.5 hover:bg-red-50 rounded-lg transition-colors"><Trash2 className="w-3.5 h-3.5 text-red-400" /></button>
+        <div className="flex gap-1 flex-shrink-0">
+          <button onClick={() => onEdit(prod)} className="p-1.5 rounded-lg transition-colors hover:bg-ld-action-soft"><Edit2 className="w-3.5 h-3.5 text-ld-fg-muted" /></button>
+          <button onClick={() => onDelete(prod.id)} className="p-1.5 rounded-lg transition-colors hover:bg-ld-highlight-soft"><Trash2 className="w-3.5 h-3.5" style={{ color: 'var(--ld-highlight)' }} /></button>
         </div>
       </div>
 
       <div className="flex flex-wrap gap-1.5 mb-3">
-        <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${catColor[prod.categoria] || 'bg-gray-100'}`}>{prod.categoria}</span>
-        <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-gray-100 text-gray-600">{prod.canal}</span>
+        <span className="text-xs px-2 py-0.5 rounded-full font-medium inline-flex items-center gap-1.5 text-ld-fg-soft" style={{ background: 'var(--ld-glass-soft)', border: '1px solid var(--ld-border)' }}>
+          <span className="w-1.5 h-1.5 rounded-full" style={{ background: catDot[prod.categoria] || 'var(--ld-fg-subtle)' }} />
+          {prod.categoria}
+        </span>
+        <span className="text-xs px-2 py-0.5 rounded-full font-medium text-ld-fg-muted" style={{ background: 'var(--ld-glass-soft)', border: '1px solid var(--ld-border)' }}>{prod.canal}</span>
       </div>
 
       <div className="grid grid-cols-2 gap-2 text-xs mb-3">
         {prod.precio_b2c > 0 && (
-          <div className="p-2 rounded-lg bg-muted/50">
-            <p className="text-muted-foreground">B2C</p>
-            <p className="font-poppins font-bold" style={{ color: '#4B4F54' }}>${prod.precio_b2c.toLocaleString('es-CL')}</p>
+          <div className="p-2 rounded-xl" style={{ background: 'var(--ld-glass-soft)', border: '1px solid var(--ld-border)' }}>
+            <p className="text-ld-fg-muted">B2C</p>
+            <p className="font-poppins font-bold text-ld-fg">${prod.precio_b2c.toLocaleString('es-CL')}</p>
           </div>
         )}
         {prod.precio_base_b2b > 0 && (
-          <div className="p-2 rounded-lg bg-muted/50">
-            <p className="text-muted-foreground">B2B base</p>
-            <p className="font-poppins font-bold" style={{ color: '#0F8B6C' }}>${prod.precio_base_b2b.toLocaleString('es-CL')}</p>
+          <div className="p-2 rounded-xl" style={{ background: 'var(--ld-glass-soft)', border: '1px solid var(--ld-border)' }}>
+            <p className="text-ld-fg-muted">B2B base</p>
+            <p className="font-poppins font-bold" style={{ color: 'var(--ld-action)' }}>${prod.precio_base_b2b.toLocaleString('es-CL')}</p>
           </div>
         )}
       </div>
 
       {/* Precios escalonados */}
       {prod.precio_50_199 > 0 && (
-        <div className="text-xs space-y-0.5 p-2 rounded-lg" style={{ background: '#f0faf7' }}>
-          <p className="font-medium mb-1" style={{ color: '#0F8B6C' }}>Precios por volumen</p>
-          {prod.precio_50_199 > 0 && <div className="flex justify-between"><span className="text-muted-foreground">50-199 u</span><span className="font-medium">${prod.precio_50_199.toLocaleString('es-CL')}</span></div>}
-          {prod.precio_200_499 > 0 && <div className="flex justify-between"><span className="text-muted-foreground">200-499 u</span><span className="font-medium">${prod.precio_200_499.toLocaleString('es-CL')}</span></div>}
-          {prod.precio_500_mas > 0 && <div className="flex justify-between"><span className="text-muted-foreground">500+ u</span><span className="font-medium">${prod.precio_500_mas.toLocaleString('es-CL')}</span></div>}
+        <div className="text-xs space-y-0.5 p-2 rounded-xl" style={{ background: 'var(--ld-action-soft)', border: '1px solid var(--ld-border)' }}>
+          <p className="font-medium mb-1" style={{ color: 'var(--ld-action)' }}>Precios por volumen</p>
+          {prod.precio_50_199 > 0 && <div className="flex justify-between"><span className="text-ld-fg-muted">50-199 u</span><span className="font-medium text-ld-fg">${prod.precio_50_199.toLocaleString('es-CL')}</span></div>}
+          {prod.precio_200_499 > 0 && <div className="flex justify-between"><span className="text-ld-fg-muted">200-499 u</span><span className="font-medium text-ld-fg">${prod.precio_200_499.toLocaleString('es-CL')}</span></div>}
+          {prod.precio_500_mas > 0 && <div className="flex justify-between"><span className="text-ld-fg-muted">500+ u</span><span className="font-medium text-ld-fg">${prod.precio_500_mas.toLocaleString('es-CL')}</span></div>}
         </div>
       )}
 
-      <div className="flex justify-between text-xs text-muted-foreground mt-2 pt-2 border-t border-border">
+      <div className="flex justify-between text-xs text-ld-fg-muted mt-2 pt-2 border-t border-ld-border">
         <span>Láser gratis desde {prod.personalizacion_gratis_desde || 10}u</span>
         <span>Lead time: {prod.lead_time_con_personal || '?'}d</span>
       </div>
@@ -133,46 +136,55 @@ export default function Catalogo() {
 
   return (
     <div className="p-6 space-y-5">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-poppins font-bold text-foreground">Catálogo de Productos</h1>
-          <p className="text-muted-foreground text-sm mt-1">{productos.length} SKUs • Personalización láser gratis desde 10u</p>
+          <h1 className="text-2xl font-poppins font-bold text-ld-fg">Catálogo de Productos</h1>
+          <p className="text-ld-fg-muted text-sm mt-1">{productos.length} SKUs • Personalización láser gratis desde 10u</p>
         </div>
-        <Button onClick={openNew} style={{ background: '#0F8B6C' }} className="text-white hover:opacity-90 gap-2">
+        <Button onClick={openNew} className="ld-btn-primary gap-2 border-0">
           <Plus className="w-4 h-4" />Nuevo Producto
         </Button>
       </div>
 
       {/* Category stats */}
-      <div className="flex gap-3 overflow-x-auto pb-1">
-        {CATEGORIAS.map(cat => (
-          <button key={cat} onClick={() => setFilterCat(filterCat === cat ? 'todos' : cat)}
-            className={`flex-shrink-0 px-3 py-2 rounded-xl text-xs font-medium border transition-all ${filterCat === cat ? 'border-current' : 'bg-white border-border hover:border-gray-300'} ${catColor[cat]}`}>
-            {cat} ({byCategoria[cat] || 0})
-          </button>
-        ))}
+      <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1">
+        {CATEGORIAS.map(cat => {
+          const active = filterCat === cat;
+          return (
+            <button key={cat} onClick={() => setFilterCat(active ? 'todos' : cat)}
+              className={`flex-shrink-0 px-3 py-2 rounded-xl text-xs font-semibold inline-flex items-center gap-1.5 transition-all ${active ? 'text-white' : 'text-ld-fg-soft hover:text-ld-fg'}`}
+              style={active
+                ? { background: 'var(--ld-grad-action)', boxShadow: 'var(--ld-shadow-md)' }
+                : { background: 'var(--ld-glass-soft)', border: '1px solid var(--ld-border)' }}>
+              <span className="w-1.5 h-1.5 rounded-full" style={{ background: active ? 'rgba(255,255,255,.85)' : catDot[cat] }} />
+              {cat} ({byCategoria[cat] || 0})
+            </button>
+          );
+        })}
       </div>
 
       {/* Filters */}
       <div className="flex gap-2 flex-wrap">
         <div className="relative">
-          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-          <Input value={search} onChange={e => setSearch(e.target.value)} placeholder="Buscar SKU o nombre..." className="pl-9 h-9 w-56" />
+          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-ld-fg-muted" />
+          <Input value={search} onChange={e => setSearch(e.target.value)} placeholder="Buscar SKU o nombre..."
+            className="pl-9 h-9 w-56 rounded-xl text-ld-fg placeholder:text-ld-fg-muted"
+            style={{ background: 'var(--ld-glass-soft)', borderColor: 'var(--ld-border)' }} />
         </div>
         <Select value={filterCanal} onValueChange={setFilterCanal}>
-          <SelectTrigger className="h-9 w-40"><SelectValue placeholder="Canal" /></SelectTrigger>
+          <SelectTrigger className="h-9 w-40 rounded-xl text-ld-fg" style={{ background: 'var(--ld-glass-soft)', borderColor: 'var(--ld-border)' }}><SelectValue placeholder="Canal" /></SelectTrigger>
           <SelectContent>
             <SelectItem value="todos">Todos los canales</SelectItem>
             {CANALES.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
           </SelectContent>
         </Select>
-        <span className="text-sm text-muted-foreground self-center">{filtered.length} productos</span>
+        <span className="text-sm text-ld-fg-muted self-center">{filtered.length} productos</span>
       </div>
 
       {loading ? (
-        <div className="text-center py-12 text-muted-foreground">Cargando catálogo...</div>
+        <div className="text-center py-12 text-ld-fg-muted">Cargando catálogo...</div>
       ) : filtered.length === 0 ? (
-        <div className="text-center py-16 text-muted-foreground">
+        <div className="text-center py-16 text-ld-fg-muted">
           <Package className="w-12 h-12 mx-auto mb-3 opacity-30" />
           <p className="font-medium">No hay productos aún</p>
           <p className="text-sm mt-1">Agrega productos del catálogo Peyu (109 SKUs totales)</p>

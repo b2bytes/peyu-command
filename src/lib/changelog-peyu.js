@@ -10,6 +10,15 @@
 // ════════════════════════════════════════════════════════════════════════
 
 export const CHANGELOG = [
+  // ── 10 junio 2026 · Catálogo admin unificado al diseño nuevo ──
+  {
+    fecha: '2026-06-10',
+    tipo: 'mejora',
+    area: 'Admin · Catálogo',
+    titulo: 'Catálogo de Productos unificado al diseño Liquid Dual',
+    detalle: 'El catálogo del admin mezclaba tarjetas blancas con el fondo oscuro del panel nuevo (precios ilegibles, chips lavados). Ahora usa los tokens del sistema: tarjetas glass adaptativas día/noche, chips de categoría con punto de color y estado activo en verde PEYU, buscador y filtros translúcidos, y bloque de precios por volumen con el acento de acción. Todo legible y coherente con el resto del panel.',
+  },
+
   // ── 10 junio 2026 · Catálogo móvil compactado ──
   {
     fecha: '2026-06-10',
