@@ -10,6 +10,15 @@
 // ════════════════════════════════════════════════════════════════════════
 
 export const CHANGELOG = [
+  // ── 10 junio 2026 · Personalizar = cockpit de 1 pantalla ───────────────
+  {
+    fecha: '2026-06-10',
+    tipo: 'mejora',
+    area: 'Personalizar',
+    titulo: 'Escritorio en una sola pantalla, sin scroll',
+    detalle: '/personalizar ahora es un cockpit de 3 columnas en desktop: stepper + resumen a la izquierda, preview GIGANTE en vivo al centro (toda la altura, con barra de producto/precio) y los controles del paso a la derecha con scroll propio y CTA siempre visible. La galería de diseños y las opciones ya no empujan el botón fuera de pantalla. Mobile mantiene su flujo vertical.',
+  },
+
   // ── 10 junio 2026 · Agente Central con gestión total ───────────────────
   {
     fecha: '2026-06-10',

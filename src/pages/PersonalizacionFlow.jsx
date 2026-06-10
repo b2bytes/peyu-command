@@ -128,7 +128,7 @@ function MobileProgressBar({ step }) {
 // ── Panel lateral izquierdo (solo desktop) ───────────────────────────────────
 function DesktopLeftPanel({ producto, displayImg, colorLabel, texto, disenoPeyuUrl, archivo, logoUrlSubido, mockupUrl, precioFinal, cantidad, step, onGoTo }) {
   return (
-    <aside className="hidden lg:flex flex-col gap-4 w-72 xl:w-80 flex-shrink-0">
+    <aside className="hidden lg:flex flex-col gap-3 w-60 xl:w-72 flex-shrink-0 lg:h-full lg:min-h-0 lg:overflow-y-auto peyu-scrollbar pr-1">
       {/* Logo + brand */}
       <div className="flex items-center gap-2 mb-2">
         <Link to="/" className="flex items-center group">
@@ -464,8 +464,8 @@ export default function PersonalizacionFlow() {
       </div>
       {/* Grid — 2 cols mobile, 3 cols desktop dentro del panel */}
       <div
-        className="grid grid-cols-2 lg:grid-cols-3 gap-3 overflow-y-auto pr-1"
-        style={{ maxHeight: 'calc(100vh - 320px)', scrollbarWidth: 'thin', WebkitOverflowScrolling: 'touch' }}
+        className="grid grid-cols-2 gap-3 overflow-y-auto lg:overflow-visible pr-1 max-h-[calc(100vh-320px)] lg:max-h-none"
+        style={{ scrollbarWidth: 'thin', WebkitOverflowScrolling: 'touch' }}
       >
         {productos.map(p => {
           const sel = productoId === p.id;
@@ -595,8 +595,8 @@ export default function PersonalizacionFlow() {
         <p className="text-sm mt-0.5" style={{ color: C.fgMuted }}>Grabado láser UV · gratis desde {moqGratis} unidades</p>
       </div>
 
-      {/* Preview láser — en desktop ocupamos más espacio */}
-      <div className="rounded-2xl overflow-hidden" style={{ border: `1.5px solid ${C.border}` }}>
+      {/* Preview láser — solo mobile (en desktop vive en el panel central gigante) */}
+      <div className="rounded-2xl overflow-hidden lg:hidden" style={{ border: `1.5px solid ${C.border}` }}>
         {mockupUrl ? (
           <div className="relative">
             <img src={mockupUrl} alt="Mockup IA" className="w-full h-auto" />
@@ -715,7 +715,7 @@ export default function PersonalizacionFlow() {
       </div>
 
       {mockupUrl ? (
-        <div className="rounded-2xl overflow-hidden relative" style={{ border: `2px solid ${C.green}` }}>
+        <div className="rounded-2xl overflow-hidden relative lg:hidden" style={{ border: `2px solid ${C.green}` }}>
           <img src={mockupUrl} alt="Tu mockup personalizado" className="w-full object-contain" style={{ maxHeight: '280px', background: C.bg }} />
           <div className="absolute top-2 left-2 flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-xs font-bold"
             style={{ background: 'rgba(255,255,255,.92)', color: C.green }}>
@@ -825,7 +825,7 @@ export default function PersonalizacionFlow() {
 
   // ── LAYOUT PRINCIPAL ───────────────────────────────────────────────────────
   return (
-    <div className="min-h-screen font-inter" style={{ background: C.bg }}>
+    <div className="min-h-screen lg:h-screen lg:min-h-0 lg:flex lg:flex-col lg:overflow-hidden font-inter" style={{ background: C.bg }}>
       <PublicSEO
         pageKey="personalizar"
         breadcrumbs={[
@@ -923,9 +923,9 @@ export default function PersonalizacionFlow() {
         <MobileProgressBar step={step} />
       </header>
 
-      {/* ── BODY: 2 cols desktop, 1 col mobile ─────────────────────────────── */}
-      <div className="max-w-7xl mx-auto px-4 lg:px-8 py-4 lg:py-8">
-        <div className="flex gap-8 items-start">
+      {/* ── BODY: cockpit 3 cols desktop (1 pantalla, sin scroll) · 1 col mobile ── */}
+      <div className="w-full max-w-7xl 2xl:max-w-[1600px] mx-auto px-4 lg:px-6 py-4 lg:py-4 lg:flex-1 lg:min-h-0 lg:overflow-hidden">
+        <div className="flex gap-8 lg:gap-5 items-start lg:items-stretch lg:h-full">
 
           {/* Panel izquierdo desktop */}
           <DesktopLeftPanel
@@ -943,14 +943,64 @@ export default function PersonalizacionFlow() {
             onGoTo={setStep}
           />
 
-          {/* Contenido principal del paso */}
-          <div className="flex-1 min-w-0 pb-32 lg:pb-8">
-            <div className="rounded-3xl p-5 lg:p-7 shadow-sm" style={{ background: C.surface, border: `1.5px solid ${C.border}` }}>
+          {/* Centro desktop: preview gigante EN VIVO — aprovecha toda la altura */}
+          <main className="hidden lg:flex flex-col flex-1 min-w-0 lg:h-full lg:min-h-0">
+            <div
+              className="relative flex-1 min-h-0 rounded-3xl overflow-hidden flex items-center justify-center"
+              style={{ background: C.surface, border: `1.5px solid ${C.border}` }}
+            >
+              {step >= 2 ? (
+                mockupUrl ? (
+                  <img src={mockupUrl} alt="Mockup IA" className="max-h-full max-w-full object-contain" />
+                ) : (
+                  <div className="w-full max-w-[620px] px-6">
+                    <LaserEngravePreview
+                      productImageUrl={displayImg}
+                      cleanImageUrl={cleanBaseUrl}
+                      logoFile={opcion === 'archivo' ? archivo : null}
+                      logoUrl={opcion === 'archivo' ? logoUrlSubido : (opcion === 'peyu' ? disenoPeyuUrl : '')}
+                      texto={opcion === 'frase' ? texto : ''}
+                      areaLabel={producto?.area_laser_mm}
+                      defaultTint={tint}
+                    />
+                  </div>
+                )
+              ) : displayImg ? (
+                <img src={displayImg} alt={producto?.nombre} className="w-full h-full object-contain p-8" />
+              ) : (
+                <Package className="w-14 h-14" style={{ color: C.fgMuted }} />
+              )}
+
+              {/* Badge superior */}
+              <div className="absolute top-3 left-3 flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-[11px] font-bold"
+                style={{ background: mockupUrl && step >= 2 ? 'rgba(255,255,255,.92)' : 'rgba(192,120,92,.92)', color: mockupUrl && step >= 2 ? C.green : 'white' }}>
+                {mockupUrl && step >= 2 ? <><Sparkles className="w-3 h-3" /> Mockup IA</> : <><Zap className="w-3 h-3" /> Láser UV</>}
+              </div>
+
+              {/* Barra info inferior */}
+              {producto && (
+                <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between gap-3 px-4 py-2.5 rounded-2xl"
+                  style={{ background: 'rgba(255,255,255,.94)', border: `1px solid ${C.border}`, backdropFilter: 'blur(8px)' }}>
+                  <div className="min-w-0">
+                    <p className="text-sm font-bold truncate" style={{ color: C.fg }}>{producto.nombre}</p>
+                    <p className="text-[11px] truncate" style={{ color: C.fgMuted }}>
+                      {colorLabel || 'Color natural'}{texto ? ` · "${texto}"` : ''}{(disenoPeyuUrl || archivo || logoUrlSubido) ? ' · + diseño' : ''} · ×{cantidad}
+                    </p>
+                  </div>
+                  <span className="font-poppins font-bold text-lg flex-shrink-0" style={{ color: C.action }}>{fmtCLP(precioFinal)}</span>
+                </div>
+              )}
+            </div>
+          </main>
+
+          {/* Contenido principal del paso — columna derecha con scroll propio */}
+          <div className="flex-1 min-w-0 pb-32 lg:pb-0 lg:flex-none lg:w-[400px] xl:w-[440px] lg:h-full lg:min-h-0 lg:flex lg:flex-col">
+            <div className="rounded-3xl p-5 shadow-sm lg:flex-1 lg:min-h-0 lg:overflow-y-auto peyu-scrollbar" style={{ background: C.surface, border: `1.5px solid ${C.border}` }}>
               {stepsContent[step]}
             </div>
 
-            {/* CTA desktop inline (debajo del card) */}
-            <div className="hidden lg:block mt-4">
+            {/* CTA desktop fijo bajo la columna (siempre visible, sin scroll) */}
+            <div className="hidden lg:block mt-3 lg:flex-shrink-0">
               <div className="flex items-center gap-4">
                 {step > 0 && (
                   <button onClick={() => setStep(s => s - 1)}
