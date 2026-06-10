@@ -8,8 +8,6 @@ import {
 } from 'lucide-react';
 import LogoMockupPreview from '@/components/cotizacion/LogoMockupPreview';
 import MockupGalleryB2B from '@/components/cotizacion/MockupGalleryB2B';
-import B2BHeader from '@/components/b2b/B2BHeader';
-import MobileNavBarV2 from '@/components/shopv2/MobileNavBarV2';
 import QuoteProductPicker from '@/components/cotizacion/QuoteProductPicker';
 import QuoteItemRow from '@/components/cotizacion/QuoteItemRow';
 import QuoteContactForm from '@/components/cotizacion/QuoteContactForm';
@@ -206,32 +204,50 @@ export default function CotizacionRapida() {
         url="https://peyuchile.cl/CotizacionRapida"
         type="website"
       />
-      <B2BHeader backTo="/EmpresasNuevo" backLabel="Catálogo" />
-
-      <div className="max-w-5xl mx-auto px-3 sm:px-4 lg:px-6 py-6 sm:py-10">
+      <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 py-6 sm:py-10">
         {result ? (
           <QuoteResultCard result={result} empresa={form.company_name} email={form.email} onReset={reset} logoUrl={logoUrl} />
         ) : (
           <>
-            {/* Hero mejorado */}
-            <div className="text-center mb-8 sm:mb-10">
-              <span className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-bold px-4 py-2 rounded-full mb-3 sm:mb-4" style={{ background: '#0F8B6C15', color: '#0F8B6C' }}>
-                <Building2 className="w-3.5 sm:w-4 h-3.5 sm:h-4" /> Cotización corporativa
-              </span>
-              <h1 className="font-fraunces text-3xl sm:text-5xl leading-[1.1] mb-3 sm:mb-4 font-bold" style={{ color: '#2C1810' }}>
-                Presupuesto B2B en <span style={{ color: '#0F8B6C' }}>3 pasos</span>
-              </h1>
-              <p className="text-sm sm:text-base max-w-2xl mx-auto leading-relaxed" style={{ color: '#7A6050' }}>
-                Selecciona productos • Completa tus datos • Obtén cotización con precios por volumen
-              </p>
+            {/* Hero banda ancha: título a la izquierda, stats a la derecha (desktop) */}
+            <div className="mb-7 sm:mb-9 lg:flex lg:items-end lg:justify-between lg:gap-10 text-center lg:text-left">
+              <div>
+                <span className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-bold px-4 py-2 rounded-full mb-3" style={{ background: '#0F8B6C15', color: '#0F8B6C' }}>
+                  <Building2 className="w-3.5 sm:w-4 h-3.5 sm:h-4" /> Empresas · Cotización corporativa
+                </span>
+                <h1 className="font-fraunces text-3xl sm:text-5xl leading-[1.05] mb-3 font-bold" style={{ color: '#2C1810' }}>
+                  Presupuesto B2B en <span style={{ color: '#0F8B6C' }}>3 pasos</span>
+                </h1>
+                <p className="text-sm sm:text-base max-w-2xl mx-auto lg:mx-0 leading-relaxed" style={{ color: '#7A6050' }}>
+                  Selecciona productos, completa tus datos y recibe tu cotización con precios por volumen al instante.
+                </p>
+              </div>
+              {/* Stats de confianza (solo desktop) */}
+              <div className="hidden lg:flex items-center gap-3 flex-shrink-0">
+                {[
+                  { Icon: TrendingDown, t: 'Hasta −54%', s: 'por volumen' },
+                  { Icon: Building2, t: 'Factura', s: 'formalizada' },
+                  { Icon: Recycle, t: '100% Reciclado', s: 'ESG incluido' },
+                ].map(({ Icon, t, s }) => (
+                  <div key={t} className="bg-white border border-[#EBE3D6] rounded-2xl px-4 py-3 flex items-center gap-2.5 shadow-sm">
+                    <div className="w-9 h-9 rounded-xl bg-[#0F8B6C]/10 flex items-center justify-center flex-shrink-0">
+                      <Icon className="w-4 h-4 text-[#0F8B6C]" />
+                    </div>
+                    <div>
+                      <p className="text-xs font-bold text-[#2A2420] leading-tight whitespace-nowrap">{t}</p>
+                      <p className="text-[10px] text-[#A78B6F] whitespace-nowrap">{s}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
 
             <QuoteStepper step={step} onStep={goTo} maxStep={maxStep} />
 
-            {/* Layout centrado con sidebar en desktop */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8 mt-10">
-              {/* Contenido principal: 2 columnas en desktop */}
-              <div className="lg:col-span-2">
+            {/* Layout ancho con sidebar en desktop */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 mt-8 lg:mt-10">
+              {/* Contenido principal */}
+              <div className="lg:col-span-8">
                 <AnimatePresence mode="wait">
                   {/* ── PASO 1 · Productos ── */}
                   {step === 0 && (
@@ -452,7 +468,7 @@ export default function CotizacionRapida() {
 
                 {/* Barra de navegación inferior */}
                  <div className="fixed sm:static bottom-0 inset-x-0 z-30 sm:z-0 bg-[#FAF7F2]/98 sm:bg-transparent backdrop-blur-xl sm:backdrop-blur-0 border-t sm:border-0 border-[#EBE3D6] px-4 sm:px-0 py-2.5 sm:py-0 sm:mt-10 pb-safe">
-                   <div className="max-w-5xl mx-auto flex items-center gap-2.5 sm:gap-4">
+                   <div className="max-w-7xl mx-auto flex items-center gap-2.5 sm:gap-4">
                      {step > 0 && (
                        <button
                          onClick={back}
@@ -491,8 +507,8 @@ export default function CotizacionRapida() {
                    </div>
                  </div>
 
-                {/* Trust badges */}
-                <div className="mt-12 pt-8 border-t border-[#EBE3D6]">
+                {/* Trust badges (mobile — en desktop van en el hero) */}
+                <div className="mt-12 pt-8 border-t border-[#EBE3D6] lg:hidden">
                   <p className="text-xs font-bold text-[#A78B6F] uppercase tracking-wide mb-4">Ventajas PEYU</p>
                   <div className="grid grid-cols-3 gap-3">
                     {[
@@ -513,7 +529,7 @@ export default function CotizacionRapida() {
               </div>
 
               {/* ── PANEL LATERAL: GALERÍA DE MOCKUPS (desktop, sticky) ── */}
-              <div className="hidden lg:flex lg:flex-col lg:col-span-1 sticky top-24 h-fit space-y-4">
+              <div className="hidden lg:flex lg:flex-col lg:col-span-4 sticky top-24 h-fit space-y-4">
                 <MockupGalleryB2B
                   items={items.length > 0 ? items : (primerProducto ? [{ producto: primerProducto, qty: 1 }] : [])}
                   logoUrl={logoUrl}
@@ -564,8 +580,6 @@ export default function CotizacionRapida() {
         <Recycle className="w-3.5 sm:w-4 h-3.5 sm:h-4" style={{ color: '#8BAD8A' }} />
         <span className="font-semibold">PEYU · Plástico 100% reciclado · Hecho en Santiago 🇨🇱</span>
       </footer>
-
-      <MobileNavBarV2 />
     </div>
   );
 }

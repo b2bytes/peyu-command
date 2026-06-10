@@ -43,7 +43,7 @@ export default function QuoteProductPicker({ productos, selectedSkus, onAdd, onV
       .filter((p) => !selectedSkus.includes(p.sku))
       .filter((p) => cat === 'Todos' || p.categoria?.replace(' B2C', '') === cat)
       .filter((p) => !term || (p.nombre || '').toLowerCase().includes(term) || (p.categoria || '').toLowerCase().includes(term))
-      .slice(0, 16);
+      .slice(0, 18);
   }, [productos, selectedSkus, q, cat]);
 
   return (
@@ -55,7 +55,7 @@ export default function QuoteProductPicker({ productos, selectedSkus, onAdd, onV
           value={q}
           onChange={(e) => setQ(e.target.value)}
           placeholder="Busca producto para cotizar..."
-          className="w-full h-11 pl-10 pr-4 rounded-xl bg-white border border-[#EBE3D6] text-sm text-[#2A2420] placeholder:text-[#A78B6F] focus:outline-none focus:border-[#0F8B6C] focus:ring-2 focus:ring-[#0F8B6C]/15"
+          className="w-full h-11 lg:h-12 pl-10 pr-4 rounded-xl lg:rounded-2xl bg-[#FAF7F2] lg:bg-white border border-[#EBE3D6] text-sm text-[#2A2420] placeholder:text-[#A78B6F] focus:outline-none focus:border-[#0F8B6C] focus:ring-2 focus:ring-[#0F8B6C]/15 transition-colors"
         />
       </div>
 
@@ -83,7 +83,7 @@ export default function QuoteProductPicker({ productos, selectedSkus, onAdd, onV
           {q ? 'Sin resultados.' : 'Todos los productos ya están en tu cotización.'}
         </p>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[420px] overflow-y-auto peyu-scrollbar pr-1">
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 max-h-[420px] lg:max-h-[640px] overflow-y-auto peyu-scrollbar pr-1">
           {filtrados.map((p) => {
             const precioDesde = getB2BPriceForQty(p, 10)?.precio ?? getUnitBasePrice(p);
             const maxVol = getB2BPriceForQty(p, 2000) || getB2BPriceForQty(p, 1000);
@@ -98,10 +98,10 @@ export default function QuoteProductPicker({ productos, selectedSkus, onAdd, onV
               <div
                 key={p.id}
                 onClick={() => onView?.(p)}
-                className="group bg-white border border-[#EBE3D6] hover:border-[#0F8B6C]/50 rounded-2xl overflow-hidden cursor-pointer transition-all hover:shadow-md"
+                className="group bg-white border border-[#EBE3D6] hover:border-[#0F8B6C]/50 rounded-2xl overflow-hidden cursor-pointer transition-all hover:shadow-lg hover:-translate-y-0.5"
               >
                 {/* Imagen */}
-                <div className="relative h-32 bg-[#F8F4EE] overflow-hidden">
+                <div className="relative h-32 lg:h-40 bg-[#F8F4EE] overflow-hidden">
                   <img
                     src={getProductImage(p)}
                     alt={p.nombre}
