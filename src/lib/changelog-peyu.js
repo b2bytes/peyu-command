@@ -10,6 +10,15 @@
 // ════════════════════════════════════════════════════════════════════════
 
 export const CHANGELOG = [
+  // ── 10 junio 2026 · Escala desktop calibrada a zoom nativo 75-80% ──────
+  {
+    fecha: '2026-06-10',
+    tipo: 'mejora',
+    area: 'Toda la app · Desktop',
+    titulo: 'Escala perfecta a pantalla completa sin tocar el zoom del navegador',
+    detalle: 'Los escalones de densidad global se profundizaron para que en computadores a pantalla completa la página se vea como con zoom 75-80% del navegador, automáticamente: 14px ≥1024px, 13px ≥1280px, 12.5px ≥1536px y 12px ≥1920px (pantalla completa típica). Todo el contenido (texto, paddings, tarjetas, espaciados) se compacta proporcionalmente porque la app dimensiona en rem. Móvil se mantiene en 16px por accesibilidad.',
+  },
+
   // ── 10 junio 2026 · Pulido móvil de todos los embudos públicos ──────────
   {
     fecha: '2026-06-10',

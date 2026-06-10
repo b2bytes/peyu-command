@@ -201,10 +201,13 @@
      bajar el zoom del navegador a ~75%). Como Tailwind dimensiona TODO en rem
      (texto, paddings, gaps, cards), bajar la base en pantallas grandes
      compacta la página completa proporcionalmente — un zoom nativo sin tocar
-     200 archivos. Mobile queda en 16px (accesibilidad / no-zoom de iOS). */
-  @media (min-width: 1024px) { html { font-size: 15px; } }
-  @media (min-width: 1280px) { html { font-size: 14px; } }
-  @media (min-width: 1700px) { html { font-size: 13px; } }
+     200 archivos. Mobile queda en 16px (accesibilidad / no-zoom de iOS).
+     Escalones calibrados para que a pantalla completa (≥1920px) la página se
+     vea como con zoom 75% del navegador — sin que el usuario lo toque. */
+  @media (min-width: 1024px) { html { font-size: 14px; } }
+  @media (min-width: 1280px) { html { font-size: 13px; } }
+  @media (min-width: 1536px) { html { font-size: 12.5px; } }
+  @media (min-width: 1920px) { html { font-size: 12px; } }
   html[data-liquid-mode="night"] { color-scheme: dark; }
 
   body {
