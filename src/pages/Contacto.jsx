@@ -107,9 +107,18 @@ export default function Contacto() {
       {/* Llamada telefónica info */}
       <section className="px-4 sm:px-8 pb-8">
         <div className="max-w-5xl mx-auto">
-          <div className="ld-glass p-5 rounded-2xl flex items-center gap-3 text-sm text-ld-fg-soft">
-            <Phone className="w-5 h-5 flex-shrink-0" style={{ color: 'var(--ld-action)' }} />
-            <span>¿Prefieres que te llamemos? Déjanos tu número por WhatsApp o email y agendamos.</span>
+          <div className="ld-glass p-5 rounded-2xl flex flex-col sm:flex-row sm:items-center gap-3 text-sm text-ld-fg-soft">
+            <div className="flex items-center gap-3 flex-1">
+              <Phone className="w-5 h-5 flex-shrink-0" style={{ color: 'var(--ld-action)' }} />
+              <span>¿Prefieres hablar directo? Llámanos o déjanos tu número y agendamos.</span>
+            </div>
+            <a
+              href="tel:+56935040242"
+              className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-full font-bold text-white text-sm flex-shrink-0 transition-all active:scale-95"
+              style={{ background: 'var(--ld-action)' }}
+            >
+              <Phone className="w-4 h-4" /> Llamar ahora
+            </a>
           </div>
         </div>
       </section>

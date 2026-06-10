@@ -81,6 +81,7 @@ export default function SoportePublico() {
   const [ticketForm, setTicketForm] = useState({ nombre: '', email: '', mensaje: '', tipo: 'Pregunta General' });
   const [enviado, setEnviado] = useState(false);
   const [enviando, setEnviando] = useState(false);
+  const [errorMsg, setErrorMsg] = useState('');
 
   const filteredFaqs = FAQS.map(cat => ({
     ...cat,
@@ -88,12 +89,19 @@ export default function SoportePublico() {
   })).filter(cat => cat.items.length > 0);
 
   const enviarTicket = async () => {
-    if (!ticketForm.nombre || !ticketForm.email || !ticketForm.mensaje) { alert('Completa todos los campos'); return; }
+    if (!ticketForm.nombre || !ticketForm.email || !ticketForm.mensaje) { setErrorMsg('Completa nombre, email y mensaje para enviar tu consulta.'); return; }
+    if (!/\S+@\S+\.\S+/.test(ticketForm.email)) { setErrorMsg('Ingresa un email válido para poder responderte.'); return; }
+    setErrorMsg('');
     setEnviando(true);
-    await base44.entities.Consulta.create({ nombre: ticketForm.nombre, email: ticketForm.email, mensaje: ticketForm.mensaje, tipo: ticketForm.tipo, estado: 'Sin responder', canal: 'Web', telefono: '' });
-    await base44.integrations.Core.SendEmail({ to: 'ventas@peyuchile.cl', from_name: 'Soporte Web Peyu', subject: `Nueva consulta web: ${ticketForm.tipo} — ${ticketForm.nombre}`, body: `Nombre: ${ticketForm.nombre}\nEmail: ${ticketForm.email}\nTipo: ${ticketForm.tipo}\n\nMensaje:\n${ticketForm.mensaje}` });
-    setEnviado(true);
-    setEnviando(false);
+    try {
+      await base44.entities.Consulta.create({ nombre: ticketForm.nombre, email: ticketForm.email, mensaje: ticketForm.mensaje, tipo: ticketForm.tipo, estado: 'Sin responder', canal: 'Web', telefono: '' });
+      await base44.integrations.Core.SendEmail({ to: 'ventas@peyuchile.cl', from_name: 'Soporte Web Peyu', subject: `Nueva consulta web: ${ticketForm.tipo} — ${ticketForm.nombre}`, body: `Nombre: ${ticketForm.nombre}\nEmail: ${ticketForm.email}\nTipo: ${ticketForm.tipo}\n\nMensaje:\n${ticketForm.mensaje}` });
+      setEnviado(true);
+    } catch {
+      setErrorMsg('No pudimos enviar tu consulta. Intenta de nuevo o escríbenos por WhatsApp.');
+    } finally {
+      setEnviando(false);
+    }
   };
 
   const faqJsonLd = {
@@ -259,6 +267,11 @@ export default function SoportePublico() {
                   className="w-full ld-input bg-transparent text-ld-fg placeholder:text-ld-fg-subtle px-4 py-3 text-sm resize-none h-24 rounded-2xl focus:outline-none border border-ld-border"
                 />
               </div>
+              {errorMsg && (
+                <div className="md:col-span-2 rounded-2xl p-3.5 text-sm" style={{ background: 'var(--ld-highlight-soft)', color: 'var(--ld-highlight)', border: '1px solid var(--ld-highlight)' }}>
+                  {errorMsg}
+                </div>
+              )}
               <div className="md:col-span-2 flex gap-3 flex-wrap">
                 <Button onClick={enviarTicket} disabled={enviando} className="ld-btn-primary gap-2 rounded-full font-semibold text-white">
                   {enviando ? 'Enviando...' : 'Enviar consulta'}

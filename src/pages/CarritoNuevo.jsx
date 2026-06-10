@@ -118,6 +118,15 @@ export default function CarritoNuevo() {
                       <QtyStepperV2 value={cant} onChange={(v) => setQty(item.id, v)} min={1} />
                       <span className="font-poppins font-bold text-sm sm:text-base flex-shrink-0" style={{ color: '#2C1810' }}>{fmtCLP(lineaProducto)}</span>
                      </div>
+                     {teaser && (
+                       <button
+                         onClick={() => setQty(item.id, cant + teaser.necesita)}
+                         className="mt-1.5 text-[9px] sm:text-[10px] font-bold px-2 py-1 rounded-full transition-all active:scale-95"
+                         style={{ background: 'rgba(139,173,138,.12)', border: '1px dashed #8BAD8A', color: '#5B7D5A' }}
+                       >
+                         💡 Agrega {teaser.necesita} más y ahorra {teaser.pctSiguiente}%
+                       </button>
+                     )}
                   </div>
                 </div>
               );

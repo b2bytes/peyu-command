@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { CheckCircle2, Mail, MessageCircle, Package, Sparkles, Heart } from 'lucide-react';
+import { CheckCircle2, Mail, MessageCircle, Package, Sparkles, Heart, Copy, Check } from 'lucide-react';
 import SEO from '@/components/SEO';
 import { trackPurchase } from '@/lib/analytics-peyu';
 import { clearCartV2 } from '@/lib/shop-v2-cart';
@@ -21,6 +21,15 @@ export default function Gracias() {
   const pago = params.get('pago') || '';
   const isTransferencia = pago === 'Transferencia';
   const [tracked, setTracked] = useState(false);
+  const [copiado, setCopiado] = useState(false);
+
+  const copiarNumero = async () => {
+    try {
+      await navigator.clipboard.writeText(numero);
+      setCopiado(true);
+      setTimeout(() => setCopiado(false), 2000);
+    } catch { /* noop */ }
+  };
 
   useEffect(() => {
     if (tracked || !numero) return;
@@ -101,11 +110,22 @@ export default function Gracias() {
                 )}
               </p>
               {numero && (
-                <div className="inline-flex items-center gap-2 rounded-full px-5 py-2.5 mt-4" style={{ background: '#F5EDE3', border: '1px solid #D4C4B0' }}>
+                <button
+                  onClick={copiarNumero}
+                  className="inline-flex items-center gap-2 rounded-full px-5 py-2.5 mt-4 transition-all active:scale-95"
+                  style={{ background: '#F5EDE3', border: '1px solid #D4C4B0' }}
+                  aria-label="Copiar número de pedido"
+                >
                   <Package className="w-4 h-4" style={{ color: '#0F8B6C' }} />
                   <span className="text-sm font-mono" style={{ color: '#2C1810' }}>N° pedido: <strong style={{ color: '#0F8B6C' }}>{numero}</strong></span>
-                </div>
+                  {copiado ? (
+                    <Check className="w-3.5 h-3.5" style={{ color: '#0F8B6C' }} />
+                  ) : (
+                    <Copy className="w-3.5 h-3.5" style={{ color: '#A08070' }} />
+                  )}
+                </button>
               )}
+              {copiado && <p className="text-[11px] mt-1.5 font-semibold" style={{ color: '#0F8B6C' }}>✓ Número copiado</p>}
               {total > 0 && (
                 <p className="text-ld-fg-soft text-sm mt-3">
                   {isTransferencia ? 'Total a transferir' : 'Total pagado'}:{' '}

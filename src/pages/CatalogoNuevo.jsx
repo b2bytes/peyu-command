@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo, memo } from 'react';
 import { useLocation } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import SEOHead from '@/components/SEOHead';
-import { Search, SlidersHorizontal, PackageOpen, Smartphone, AlertCircle } from 'lucide-react';
+import { Search, SlidersHorizontal, PackageOpen, Smartphone, AlertCircle, X } from 'lucide-react';
 
 import CheckoutStepperV2 from '@/components/shopv2/CheckoutStepperV2';
 import ResumeJourneyBannerV2 from '@/components/shopv2/ResumeJourneyBannerV2';
@@ -149,6 +149,16 @@ export default function CatalogoNuevo() {
             onFocus={e => { e.target.style.borderColor = '#C0785C'; e.target.style.boxShadow = '0 0 0 3px rgba(192,120,92,.12)'; }}
             onBlur={e => { e.target.style.borderColor = '#D4C4B0'; e.target.style.boxShadow = 'none'; }}
           />
+          {q && (
+            <button
+              onClick={() => setQ('')}
+              aria-label="Limpiar búsqueda"
+              className="absolute right-2 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full flex items-center justify-center transition-all active:scale-90 peyu-tap-sm"
+              style={{ background: '#F2EBE1', color: '#7A6050' }}
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          )}
         </div>
 
         {/* Chips de categoría */}
@@ -256,6 +266,13 @@ export default function CatalogoNuevo() {
              <PackageOpen className="w-10 sm:w-12 h-10 sm:h-12 mx-auto mb-3" style={{ color: '#A08070' }} />
              <p className="font-bold text-sm sm:text-base" style={{ color: '#2C1810' }}>No encontramos productos</p>
              <p className="text-xs sm:text-sm mt-1" style={{ color: '#7A6050' }}>Prueba con otra categoría o búsqueda.</p>
+             <button
+               onClick={() => { setCat('Todos'); setQ(''); setMarca('Todas'); setModelo('Todos'); }}
+               className="mt-5 inline-flex items-center gap-2 text-white font-bold px-6 py-3 rounded-2xl transition-all active:scale-95"
+               style={{ background: 'linear-gradient(135deg,#C0785C,#A86440)', boxShadow: '0 6px 20px rgba(192,120,92,.25)' }}
+             >
+               Ver todo el catálogo
+             </button>
            </div>
          ) : (
            <>

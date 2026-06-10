@@ -206,7 +206,19 @@ export default function SeguimientoPedido() {
             <div className="ld-card p-6">
               <div className="flex items-start justify-between flex-wrap gap-4 mb-5">
                 <div>
-                  <p className="font-mono text-xs text-ld-fg-muted mb-1">{pedido.numero_pedido}</p>
+                  <div className="flex items-center gap-2 flex-wrap mb-1">
+                    <p className="font-mono text-xs text-ld-fg-muted">{pedido.numero_pedido}</p>
+                    <span
+                      className="inline-flex px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide"
+                      style={pedido.estado === 'Entregado'
+                        ? { background: 'var(--ld-action-soft)', color: 'var(--ld-action)', border: '1px solid var(--ld-action)' }
+                        : ['Despachado', 'Listo para Despacho'].includes(pedido.estado)
+                          ? { background: 'var(--ld-highlight-soft)', color: 'var(--ld-highlight)', border: '1px solid var(--ld-highlight)' }
+                          : { background: 'var(--ld-bg-soft)', color: 'var(--ld-fg-muted)', border: '1px solid var(--ld-border)' }}
+                    >
+                      {pedido.estado}
+                    </span>
+                  </div>
                   <h3 className="ld-display text-2xl text-ld-fg">{pedido.cliente_nombre}</h3>
                   <p className="text-sm text-ld-fg-muted">{pedido.fecha}</p>
                 </div>

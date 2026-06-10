@@ -10,6 +10,15 @@
 // ════════════════════════════════════════════════════════════════════════
 
 export const CHANGELOG = [
+  // ── 10 junio 2026 · Pulido móvil de todos los embudos públicos ──────────
+  {
+    fecha: '2026-06-10',
+    tipo: 'mejora',
+    area: 'Embudos públicos · Móvil',
+    titulo: 'Pulido móvil de punta a punta en compra, post-venta y soporte',
+    detalle: 'Mejoras concretas en cada embudo público: (1) Catálogo: botón X para limpiar la búsqueda y CTA "Ver todo el catálogo" cuando los filtros no arrojan resultados (recuperación del embudo); (2) Carrito: el teaser de descuento por cantidad ahora es visible y accionable — "Agrega 1 más y ahorra 15%" suma la unidad con un tap; (3) Gracias: el número de pedido se copia con un tap (útil para seguimiento y WhatsApp); (4) Seguimiento: badge de estado del pedido visible de inmediato (Entregado/Despachado/etc.); (5) Soporte: el formulario ya no queda pegado en "Enviando..." si falla y los errores se muestran inline (sin alert() de sistema); (6) Contacto: botón "Llamar ahora" con marcado directo en móvil.',
+  },
+
   // ── 10 junio 2026 · Auditoría de correos: fin de los duplicados ─────────
   {
     fecha: '2026-06-10',
