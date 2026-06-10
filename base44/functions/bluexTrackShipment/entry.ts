@@ -1,40 +1,31 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// BlueExpress · Consultar tracking en tiempo real
+// BlueExpress · Consultar tracking en tiempo real (API CORPORATIVA PRODUCCIÓN)
 // ─────────────────────────────────────────────────────────────────────────────
-// Endpoint: POST /api/v1/admision/tracking
-// Devuelve eventos del envío. Actualiza Envio.eventos + estado derivado.
+// Endpoint: GET /cmkin/bff/tracking-pull-corp/v1/{trackingNumber}
+// Auth: Bearer BLUEX_TOKEN + x-api-key BLUEX_API_KEY (igual que la emisión OS).
+// Actualiza Envio.eventos + estado derivado + atraso vs promesa.
+// Es la función que consume el CRON bluexTrackingPollerCRON cada 6h.
 // ─────────────────────────────────────────────────────────────────────────────
 
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.27';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 
-// Normaliza el secret del host: garantiza https://, quita '/' final y descarta
-// valores inválidos (ej. el secret trae el token suelto sin dominio). Así la URL
-// final SIEMPRE es `https://<host>/admision/...` y nunca un "Invalid URL".
 function normalizeBluexBase(raw) {
   let h = String(raw || '').trim().replace(/\/+$/, '');
   if (!h) return '';
-  // Si no parece un dominio (sin punto y sin esquema) → es token suelto, descartar.
   if (!h.includes('.') && !h.startsWith('http')) return '';
   if (!/^https?:\/\//i.test(h)) h = `https://${h}`;
   return h;
 }
 
-const BLUEX_API_BASE = normalizeBluexBase(Deno.env.get('BLUEX_API_BASE_URL'));
-const TRACKING_ENDPOINT = '/admision/tracking';
-
-// Mapping de códigos Bluex → estados internos
+// Mapping eventType corporativo → estados internos
 const ESTADO_MAP = {
-  '01': 'Etiqueta Generada',
-  '02': 'Retirado por Courier',
-  '03': 'En Tránsito',
-  '04': 'En Reparto',
-  '05': 'Entregado',
-  '06': 'No Entregado',
-  '07': 'Devuelto',
-  '99': 'Excepción',
+  PR: 'Etiqueta Generada',   // PRINTED
+  IN: 'En Tránsito',         // IN TRANSIT
+  ON: 'En Reparto',          // OUT FOR DELIVERY
+  DE: 'Entregado',           // DELIVERED
+  NE: 'No Entregado',        // NOT DELIVERED
+  EX: 'Excepción',           // EXCEPTION
 };
-
-const EXCEPCION_KEYWORDS = ['no encontrado', 'rechazado', 'siniestro', 'extravío', 'dañado', 'devuelto', 'no entregado'];
 
 Deno.serve(async (req) => {
   try {
@@ -60,38 +51,37 @@ Deno.serve(async (req) => {
     const ot = envio.tracking_number || tracking_number;
     if (!ot) return Response.json({ error: 'Sin tracking number' }, { status: 400 });
 
-    // Si la API no está configurada → devolver el estado actual sin error.
-    // El operador puede actualizar manualmente desde el drawer.
-    if (!BLUEX_API_BASE) {
+    // API producción legacy (misma familia que bx-emission, verificada).
+    const BX_BASE = 'https://bx-tracking.bluex.cl';
+    const apiKey = Deno.env.get('BLUEX_API_KEY');
+    const token = Deno.env.get('BLUEX_TOKEN');
+    const bxHeaders = {
+      'apikey': apiKey || '',
+      'BX-TOKEN': token || '',
+      'BX-USERCODE': Deno.env.get('BLUEX_USER_CODE') || '',
+      'BX-CLIENT_ACCOUNT': Deno.env.get('BLUEX_CLIENT_ACCOUNT') || '',
+    };
+
+    if (!apiKey || !token) {
       return Response.json({
         ok: true,
         envio_id: envio.id,
         tracking: ot,
         estado: envio.estado,
         modo: 'manual',
-        hint: 'API Bluex no configurada (BLUEX_API_BASE_URL). Actualiza el estado manualmente desde el drawer.',
+        hint: 'Credenciales Bluex no configuradas (BLUEX_API_KEY / BLUEX_TOKEN).',
         tracking_url: `https://www.bluex.cl/seguimiento?n=${ot}`,
       });
     }
 
-    const apiKey = Deno.env.get('BLUEX_API_KEY');
-    const token = Deno.env.get('BLUEX_TOKEN');
-    const clientAccount = Deno.env.get('BLUEX_CLIENT_ACCOUNT');
-    const userCode = Deno.env.get('BLUEX_USER_CODE');
-
     let response;
     try {
-      response = await fetch(`${BLUEX_API_BASE}${TRACKING_ENDPOINT}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'apiKey': apiKey,
-          'token': token,
-          'clientAccount': clientAccount,
-          'userCode': userCode,
-        },
-        body: JSON.stringify({ orderTransportNumber: ot, clientAccount, userCode }),
-      });
+      // Ruta principal del tracking-pull legacy; fallback a variante corta.
+      response = await fetch(`${BX_BASE}/bx-tracking-pull/v1/tracking/${encodeURIComponent(ot)}`, { headers: bxHeaders });
+      if (response.status === 404) {
+        const alt = await fetch(`${BX_BASE}/bx-tracking-pull/v1/${encodeURIComponent(ot)}`, { headers: bxHeaders });
+        if (alt.status !== 404) response = alt;
+      }
     } catch (netErr) {
       // DNS / red caída → no rompemos, devolvemos estado actual
       return Response.json({
@@ -105,39 +95,51 @@ Deno.serve(async (req) => {
     }
 
     const data = await response.json().catch(() => ({}));
+
+    // 404 = OT recién emitida, aún sin eventos en el sistema corporativo → no es error.
+    if (response.status === 404) {
+      await sr.entities.Envio.update(envio.id, { ultimo_poll_at: new Date().toISOString() });
+      return Response.json({
+        ok: true,
+        envio_id: envio.id,
+        tracking: ot,
+        estado: envio.estado,
+        modo: 'sin_eventos',
+        hint: 'La OT aún no registra eventos en Bluex (normal en las primeras horas).',
+      });
+    }
+
     if (!response.ok) {
       return Response.json({
         error: 'Error consultando tracking Bluex',
         status: response.status,
-        detail: data,
+        detail: data?.detail || data?.title || data,
       }, { status: response.status });
     }
 
-    // Parsear eventos del response
-    const rawEvents = data?.events || data?.tracking || data?.history || [];
-    const eventos = rawEvents.map(e => {
-      const desc = e.description || e.descripcion || e.statusDescription || '';
-      const code = String(e.code || e.statusCode || '').padStart(2, '0');
-      return {
-        at: e.date || e.fecha || e.timestamp || new Date().toISOString(),
-        code,
-        estado: ESTADO_MAP[code] || e.status || 'En Tránsito',
-        descripcion: desc,
-        ubicacion: e.location || e.ubicacion || e.branch || '',
-        es_excepcion: EXCEPCION_KEYWORDS.some(k => desc.toLowerCase().includes(k)),
-      };
-    }).sort((a, b) => new Date(b.at) - new Date(a.at));
+    // ── Parsear respuesta (plana o envuelta en {status,data}) ──
+    const root = data?.data && typeof data.data === 'object' ? data.data : data;
+    const pkg = root?.packages?.[0] || root || {};
+    const rawEvents = pkg.trackings || pkg.events || pkg.tracking || [];
 
-    // Estado derivado del último evento
+    const eventos = rawEvents.map((t) => ({
+      at: t.eventDate || new Date().toISOString(),
+      code: String(t.eventCode || t.eventType || ''),
+      estado: ESTADO_MAP[t.eventType] || t.eventTypeDesc || 'En Tránsito',
+      descripcion: t.eventCodeDesc || t.eventTypeDesc || '',
+      ubicacion: t.location || '',
+      es_excepcion: ['EX', 'NE'].includes(t.eventType),
+    })).sort((a, b) => new Date(b.at) - new Date(a.at));
+
     const ultimoEvento = eventos[0];
     const nuevoEstado = ultimoEvento?.estado || envio.estado;
-    const tieneExcepcion = eventos.some(e => e.es_excepcion);
-    const intentos = eventos.filter(e => /reparto|intento/i.test(e.descripcion)).length;
+    const tieneExcepcion = eventos.some((e) => e.es_excepcion);
+    const intentos = eventos.filter((e) => /reparto|intento|no entregado/i.test(e.descripcion)).length;
 
-    // Días en tránsito
-    const eventoEmision = eventos.find(e => e.code === '01' || e.code === '02') || eventos[eventos.length - 1];
-    const diasTransito = eventoEmision
-      ? Math.floor((Date.now() - new Date(eventoEmision.at).getTime()) / 86400000)
+    // Días en tránsito desde la emisión
+    const emision = root.emissionDate || envio.fecha_emision;
+    const diasTransito = emision
+      ? Math.max(0, Math.floor((Date.now() - new Date(emision).getTime()) / 86400000))
       : 0;
 
     // Atrasado vs promesa

@@ -1,23 +1,13 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// BlueExpress · Obtener / re-imprimir etiqueta PDF
+// BlueExpress · Obtener / re-imprimir etiqueta PDF (PRODUCCIÓN)
 // ─────────────────────────────────────────────────────────────────────────────
-// Devuelve la etiqueta en base64 o URL para mostrar/imprimir desde la app.
+// La API corporativa de emisión OS devuelve la etiqueta UNA sola vez al emitir;
+// bluexCreateShipment la cachea en Envio.label_base64 / label_url. Esta función
+// sirve esa cache. Si por algún motivo no existe, entrega el tracking público y
+// el portal B2B para reimprimir (no hay endpoint de re-print en la API corp).
 // ─────────────────────────────────────────────────────────────────────────────
 
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.27';
-
-// Normaliza el secret del host: garantiza https://, quita '/' final y descarta
-// valores inválidos (ej. el secret trae el token suelto sin dominio).
-function normalizeBluexBase(raw) {
-  let h = String(raw || '').trim().replace(/\/+$/, '');
-  if (!h) return '';
-  if (!h.includes('.') && !h.startsWith('http')) return '';
-  if (!/^https?:\/\//i.test(h)) h = `https://${h}`;
-  return h;
-}
-
-const BLUEX_API_BASE = normalizeBluexBase(Deno.env.get('BLUEX_API_BASE_URL'));
-const LABEL_ENDPOINT = '/admision/etiqueta';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 
 Deno.serve(async (req) => {
   try {
@@ -32,72 +22,35 @@ Deno.serve(async (req) => {
     const envio = await sr.entities.Envio.get(envio_id);
     if (!envio) return Response.json({ error: 'Envío no encontrado' }, { status: 404 });
 
-    // Si ya tenemos cache local, devolverlo
+    // 1) Cache local (poblada al emitir la OT)
     if (envio.label_base64 || envio.label_url) {
       return Response.json({
         ok: true,
-        label_base64: envio.label_base64,
-        label_url: envio.label_url,
+        label_base64: envio.label_base64 || null,
+        label_url: envio.label_url || null,
+        label_format: envio.label_format || 'PDF',
         from_cache: true,
       });
     }
 
+    // 2) Buscar en la respuesta cruda de emisión (envíos antiguos sin cache normalizada)
+    const rawLabel = envio.raw_response_emision?.labels?.contenido;
+    if (rawLabel) {
+      const labelUrl = `data:application/pdf;base64,${rawLabel}`;
+      await sr.entities.Envio.update(envio_id, { label_base64: rawLabel, label_url: labelUrl, label_format: 'PDF' });
+      return Response.json({ ok: true, label_base64: rawLabel, label_url: labelUrl, label_format: 'PDF', from_cache: false });
+    }
+
+    // 3) Sin etiqueta disponible → portal B2B (la API corp no permite re-print)
     if (!envio.tracking_number) {
-      return Response.json({ error: 'Envío sin tracking_number' }, { status: 400 });
+      return Response.json({ error: 'Envío sin tracking_number ni etiqueta' }, { status: 400 });
     }
-
-    // Si API no está configurada → devolver portal fallback
-    if (!BLUEX_API_BASE) {
-      return Response.json({
-        ok: true,
-        modo: 'manual',
-        label_url: `https://b2b.bluex.cl/etiquetas/${envio.tracking_number}`,
-        portal_url: 'https://b2b.bluex.cl/',
-        hint: 'Descarga la etiqueta desde el portal Bluex.',
-      });
-    }
-
-    const apiKey = Deno.env.get('BLUEX_API_KEY');
-    const token = Deno.env.get('BLUEX_TOKEN');
-    const clientAccount = Deno.env.get('BLUEX_CLIENT_ACCOUNT');
-    const userCode = Deno.env.get('BLUEX_USER_CODE');
-
-    const response = await fetch(`${BLUEX_API_BASE}${LABEL_ENDPOINT}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'apiKey': apiKey, 'token': token,
-        'clientAccount': clientAccount, 'userCode': userCode,
-      },
-      body: JSON.stringify({
-        orderTransportNumber: envio.tracking_number,
-        clientAccount, userCode,
-        format: 'PDF',
-      }),
-    });
-
-    const data = await response.json().catch(() => ({}));
-    if (!response.ok) {
-      return Response.json({
-        error: 'Error obteniendo etiqueta',
-        detail: data,
-        portal_fallback: `https://ecommerce.blue.cl/etiquetas/${envio.tracking_number}`,
-      }, { status: response.status });
-    }
-
-    const labelB64 = data?.label || data?.pdf || data?.labelBase64 || null;
-    const labelUrl = data?.labelUrl || data?.url || null;
-
-    // Cachear
-    await sr.entities.Envio.update(envio_id, {
-      label_base64: labelB64,
-      label_url: labelUrl || `https://ecommerce.blue.cl/etiquetas/${envio.tracking_number}`,
-    });
-
     return Response.json({
       ok: true,
-      label_base64: labelB64,
-      label_url: labelUrl,
+      modo: 'portal',
+      tracking_url: `https://www.bluex.cl/seguimiento?n=${envio.tracking_number}`,
+      portal_url: 'https://b2b.bluex.cl/',
+      hint: 'La etiqueta no quedó cacheada. Reimprímela desde el portal B2B de Bluex.',
     });
   } catch (error) {
     console.error('[bluexGetLabel]', error);

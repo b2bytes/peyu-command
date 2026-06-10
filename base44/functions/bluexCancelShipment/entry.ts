@@ -1,23 +1,13 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // BlueExpress · Anular OT (Orden de Transporte)
 // ─────────────────────────────────────────────────────────────────────────────
+// La API corporativa de producción NO expone endpoint de anulación: la anulación
+// se hace en el portal B2B de Bluex. Esta función anula INTERNAMENTE (libera el
+// pedido para re-emitir) y deja el recordatorio de anular en el portal.
 // Solo se puede anular si el envío NO ha sido retirado por el courier.
 // ─────────────────────────────────────────────────────────────────────────────
 
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.27';
-
-// Normaliza el secret del host: garantiza https://, quita '/' final y descarta
-// valores inválidos (ej. el secret trae el token suelto sin dominio).
-function normalizeBluexBase(raw) {
-  let h = String(raw || '').trim().replace(/\/+$/, '');
-  if (!h) return '';
-  if (!h.includes('.') && !h.startsWith('http')) return '';
-  if (!/^https?:\/\//i.test(h)) h = `https://${h}`;
-  return h;
-}
-
-const BLUEX_API_BASE = normalizeBluexBase(Deno.env.get('BLUEX_API_BASE_URL'));
-const CANCEL_ENDPOINT = '/admision/anular';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 
 Deno.serve(async (req) => {
   try {
@@ -38,61 +28,13 @@ Deno.serve(async (req) => {
       }, { status: 400 });
     }
 
-    // Si no hay API → solo marcar interno como anulado (el operador anula en portal Bluex manualmente)
-    if (!BLUEX_API_BASE) {
-      const sr2 = base44.asServiceRole;
-      await sr2.entities.Envio.update(envio_id, {
-        estado: 'Anulado',
-        anulacion_motivo: motivo || 'Anulado por admin (manual)',
-        anulada_at: new Date().toISOString(),
-      });
-      if (envio.pedido_id) {
-        await sr2.entities.PedidoWeb.update(envio.pedido_id, { courier: 'Pendiente', tracking: '' });
-      }
-      return Response.json({
-        ok: true,
-        envio_id,
-        anulada: true,
-        modo: 'manual',
-        hint: 'Recuerda anular también en https://b2b.bluex.cl',
-      });
-    }
-
-    const apiKey = Deno.env.get('BLUEX_API_KEY');
-    const token = Deno.env.get('BLUEX_TOKEN');
-    const clientAccount = Deno.env.get('BLUEX_CLIENT_ACCOUNT');
-    const userCode = Deno.env.get('BLUEX_USER_CODE');
-
-    const response = await fetch(`${BLUEX_API_BASE}${CANCEL_ENDPOINT}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'apiKey': apiKey, 'token': token,
-        'clientAccount': clientAccount, 'userCode': userCode,
-      },
-      body: JSON.stringify({
-        orderTransportNumber: envio.tracking_number,
-        clientAccount, userCode,
-        reason: motivo || 'Solicitud cliente',
-      }),
-    });
-
-    const data = await response.json().catch(() => ({}));
-    if (!response.ok) {
-      return Response.json({
-        error: 'Error anulando en Bluex',
-        detail: data,
-        portal_fallback: 'https://portal2.bluex.cl/',
-      }, { status: response.status });
-    }
-
     await sr.entities.Envio.update(envio_id, {
       estado: 'Anulado',
       anulacion_motivo: motivo || 'Anulado por admin',
       anulada_at: new Date().toISOString(),
     });
 
-    // Actualizar pedido relacionado
+    // Liberar el pedido relacionado para poder re-emitir etiqueta
     if (envio.pedido_id) {
       await sr.entities.PedidoWeb.update(envio.pedido_id, {
         courier: 'Pendiente',
@@ -100,7 +42,12 @@ Deno.serve(async (req) => {
       });
     }
 
-    return Response.json({ ok: true, envio_id, anulada: true });
+    return Response.json({
+      ok: true,
+      envio_id,
+      anulada: true,
+      hint: `Recuerda anular la OT ${envio.tracking_number || ''} también en el portal Bluex: https://b2b.bluex.cl/`,
+    });
   } catch (error) {
     console.error('[bluexCancelShipment]', error);
     return Response.json({ error: error.message }, { status: 500 });
