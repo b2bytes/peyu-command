@@ -83,7 +83,7 @@ export default function QuoteProductPicker({ productos, selectedSkus, onAdd, onV
           {q ? 'Sin resultados.' : 'Todos los productos ya están en tu cotización.'}
         </p>
       ) : (
-        <div className={`grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 ${fillHeight ? '' : 'max-h-[420px] lg:max-h-[640px] overflow-y-auto peyu-scrollbar pr-1'}`}>
+        <div className={`grid grid-cols-2 xl:grid-cols-3 gap-2 sm:gap-3 ${fillHeight ? '' : 'max-h-[420px] lg:max-h-[640px] overflow-y-auto peyu-scrollbar pr-1'}`}>
           {filtrados.map((p) => {
             const precioDesde = getB2BPriceForQty(p, 10)?.precio ?? getUnitBasePrice(p);
             const maxVol = getB2BPriceForQty(p, 2000) || getB2BPriceForQty(p, 1000);
@@ -101,7 +101,7 @@ export default function QuoteProductPicker({ productos, selectedSkus, onAdd, onV
                 className="group bg-white border border-[#EBE3D6] hover:border-[#0F8B6C]/50 rounded-2xl overflow-hidden cursor-pointer transition-all hover:shadow-lg hover:-translate-y-0.5"
               >
                 {/* Imagen */}
-                <div className="relative h-32 lg:h-40 bg-[#F8F4EE] overflow-hidden">
+                <div className="relative h-24 sm:h-32 lg:h-40 bg-[#F8F4EE] overflow-hidden">
                   <img
                     src={getProductImage(p)}
                     alt={p.nombre}
@@ -119,14 +119,14 @@ export default function QuoteProductPicker({ productos, selectedSkus, onAdd, onV
                 </div>
 
                 {/* Info */}
-                <div className="p-3">
-                  <p className="text-[10px] font-bold uppercase tracking-wide text-[#A78B6F] mb-0.5">
+                <div className="p-2.5 sm:p-3">
+                  <p className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wide text-[#A78B6F] mb-0.5">
                     {p.categoria?.replace(' B2C', '')}
                   </p>
-                  <p className="font-bold text-sm text-[#2A2420] leading-snug mb-2">{p.nombre}</p>
+                  <p className="font-bold text-xs sm:text-sm text-[#2A2420] leading-snug mb-1.5 sm:mb-2 line-clamp-2">{p.nombre}</p>
 
-                  {/* Specs rápidas */}
-                  <div className="flex flex-wrap gap-x-3 gap-y-0.5 mb-2">
+                  {/* Specs rápidas — solo en pantallas amplias (en móvil alargan el scroll) */}
+                  <div className="hidden sm:flex flex-wrap gap-x-3 gap-y-0.5 mb-2">
                     {dim && (
                       <span className="inline-flex items-center gap-0.5 text-[10px] text-[#A78B6F]">
                         <Ruler className="w-2.5 h-2.5" /> {dim}
@@ -144,7 +144,7 @@ export default function QuoteProductPicker({ productos, selectedSkus, onAdd, onV
 
                   {/* Colores */}
                   {colores.length > 0 && (
-                    <div className="flex items-center gap-1 mb-2">
+                    <div className="flex items-center gap-1 mb-1.5 sm:mb-2">
                       {colores.slice(0, 5).map((c) => (
                         <span key={c} title={c} className="w-3.5 h-3.5 rounded-full ring-1 ring-black/10 flex-shrink-0"
                           style={{ background: swatchColor(c) }} />
@@ -156,10 +156,10 @@ export default function QuoteProductPicker({ productos, selectedSkus, onAdd, onV
                   )}
 
                   {/* Precio + botón */}
-                  <div className="flex items-center justify-between mt-2 pt-2 border-t border-[#EBE3D6]">
+                  <div className="flex items-center justify-between mt-1.5 sm:mt-2 pt-1.5 sm:pt-2 border-t border-[#EBE3D6]">
                     <div>
                       <span className="text-[9px] text-[#A78B6F]">desde 10u</span>
-                      <p className="font-bold text-sm text-[#0F8B6C] leading-tight">{fmtCLP(precioDesde)}/u</p>
+                      <p className="font-bold text-xs sm:text-sm text-[#0F8B6C] leading-tight">{fmtCLP(precioDesde)}/u</p>
                     </div>
                     <div className="flex items-center gap-1.5">
                       <span className="hidden sm:inline-flex items-center gap-0.5 text-[9px] font-bold text-[#0F8B6C] bg-[#0F8B6C]/8 px-1.5 py-0.5 rounded-full">

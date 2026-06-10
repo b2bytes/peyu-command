@@ -10,6 +10,15 @@
 // ════════════════════════════════════════════════════════════════════════
 
 export const CHANGELOG = [
+  // ── 10 junio 2026 · Cotización B2B móvil compacta ──
+  {
+    fecha: '2026-06-10',
+    tipo: 'mejora',
+    area: 'Cotización Rápida B2B · Móvil',
+    titulo: 'Cotización B2B en móvil: menos scroll en cada paso',
+    detalle: 'El recorrido móvil de la cotización se veía eterno hacia abajo. Compactado: la barra de progreso del header perdió los círculos grandes (solo barra fina + etiquetas), los títulos de cada paso son más chicos y sin el "Paso X de 3" redundante, y el catálogo ahora muestra 2 productos por fila con imagen más baja y sin specs técnicas (que solo aparecen en pantallas amplias). Resultado: se ven 4+ productos por pantalla en vez de 1.',
+  },
+
   // ── 10 junio 2026 · Color → imagen en TODOS los productos + ficha móvil compacta ──
   {
     fecha: '2026-06-10',

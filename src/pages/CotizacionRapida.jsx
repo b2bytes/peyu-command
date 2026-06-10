@@ -58,32 +58,20 @@ const trans = { duration: 0.3, ease: [0.22, 1, 0.36, 1] };
 // ── Mobile Progress Bar (mismo patrón /personalizar) ───────────────────────
 function MobileProgressBar({ step }) {
   return (
-    <div className="lg:hidden px-4 pt-2 pb-3">
-      <div className="relative h-1 rounded-full mb-2" style={{ background: C.border }}>
+    <div className="lg:hidden px-4 pt-1 pb-2">
+      <div className="relative h-1 rounded-full" style={{ background: C.border }}>
         <div
           className="absolute inset-y-0 left-0 rounded-full transition-all duration-500"
           style={{ width: `${((step + 1) / STEPS.length) * 100}%`, background: C.actionGrad }}
         />
       </div>
-      <div className="flex justify-between">
-        {STEPS.map((s, i) => {
-          const done = i < step;
-          const active = i === step;
-          return (
-            <div key={i} className="flex flex-col items-center gap-0.5" style={{ width: '30%' }}>
-              <div className="w-6 h-6 rounded-full flex items-center justify-center transition-all"
-                style={{ background: done ? C.action : active ? C.actionGrad : C.border, boxShadow: active ? C.actionShadow : 'none' }}>
-                {done
-                  ? <Check className="w-3 h-3 text-white" strokeWidth={3} />
-                  : <s.Icon className="w-2.5 h-2.5" style={{ color: active ? 'white' : C.fgMuted }} />
-                }
-              </div>
-              <span className="text-[8px] font-bold uppercase tracking-wide text-center" style={{ color: active ? C.action : done ? C.fgSoft : C.fgMuted }}>
-                {s.label}
-              </span>
-            </div>
-          );
-        })}
+      <div className="flex justify-between mt-1">
+        {STEPS.map((s, i) => (
+          <span key={i} className="text-[8px] font-bold uppercase tracking-wide"
+            style={{ color: i === step ? C.action : i < step ? C.fgSoft : C.fgMuted }}>
+            {s.label}
+          </span>
+        ))}
       </div>
     </div>
   );
@@ -418,9 +406,9 @@ export default function CotizacionRapida() {
   const StepProductos = (
     <div className="space-y-4">
       <div>
-        <p className="text-xs font-bold uppercase tracking-widest mb-1" style={{ color: C.action }}>Paso 1 de 3</p>
-        <h2 className="text-xl lg:text-2xl font-poppins font-bold" style={{ color: C.fg }}>Elige tus productos</h2>
-        <p className="text-sm mt-0.5" style={{ color: C.fgMuted }}>Precios por volumen en vivo · grabado láser de tu logo incluido</p>
+        <p className="hidden lg:block text-xs font-bold uppercase tracking-widest mb-1" style={{ color: C.action }}>Paso 1 de 3</p>
+        <h2 className="text-lg lg:text-2xl font-poppins font-bold" style={{ color: C.fg }}>Elige tus productos</h2>
+        <p className="text-xs lg:text-sm mt-0.5" style={{ color: C.fgMuted }}>Precios por volumen en vivo · grabado láser de tu logo incluido</p>
       </div>
 
       {/* Mobile: catálogo aquí. Desktop: el catálogo vive GIGANTE en el panel central */}
@@ -480,9 +468,9 @@ export default function CotizacionRapida() {
   const StepDatos = (
     <div className="space-y-4">
       <div>
-        <p className="text-xs font-bold uppercase tracking-widest mb-1" style={{ color: C.action }}>Paso 2 de 3</p>
-        <h2 className="text-xl lg:text-2xl font-poppins font-bold" style={{ color: C.fg }}>Datos de tu empresa</h2>
-        <p className="text-sm mt-0.5" style={{ color: C.fgMuted }}>Un ejecutivo PEYU te contacta en 24h hábiles con tu propuesta formal</p>
+        <p className="hidden lg:block text-xs font-bold uppercase tracking-widest mb-1" style={{ color: C.action }}>Paso 2 de 3</p>
+        <h2 className="text-lg lg:text-2xl font-poppins font-bold" style={{ color: C.fg }}>Datos de tu empresa</h2>
+        <p className="text-xs lg:text-sm mt-0.5" style={{ color: C.fgMuted }}>Un ejecutivo PEYU te contacta en 24h hábiles con tu propuesta formal</p>
       </div>
 
       <QuoteContactForm form={form} setForm={setForm} />
@@ -498,9 +486,9 @@ export default function CotizacionRapida() {
   const StepRevisar = (
     <div className="space-y-4">
       <div>
-        <p className="text-xs font-bold uppercase tracking-widest mb-1" style={{ color: C.action }}>Paso 3 de 3</p>
-        <h2 className="text-xl lg:text-2xl font-poppins font-bold" style={{ color: C.fg }}>Revisa y solicita</h2>
-        <p className="text-sm mt-0.5" style={{ color: C.fgMuted }}>Confirma tu cotización antes de enviarla</p>
+        <p className="hidden lg:block text-xs font-bold uppercase tracking-widest mb-1" style={{ color: C.action }}>Paso 3 de 3</p>
+        <h2 className="text-lg lg:text-2xl font-poppins font-bold" style={{ color: C.fg }}>Revisa y solicita</h2>
+        <p className="text-xs lg:text-sm mt-0.5" style={{ color: C.fgMuted }}>Confirma tu cotización antes de enviarla</p>
       </div>
 
       {/* Líneas con mockup de logo */}
@@ -747,7 +735,7 @@ export default function CotizacionRapida() {
 
           {/* Columna derecha: contenido del paso con scroll propio + CTA fijo */}
           <div className="flex-1 min-w-0 pb-36 lg:pb-0 lg:flex-none lg:w-[400px] xl:w-[440px] lg:h-full lg:min-h-0 lg:flex lg:flex-col">
-            <div className="rounded-3xl p-5 shadow-sm lg:flex-1 lg:min-h-0 lg:overflow-y-auto peyu-scrollbar" style={{ background: C.surface, border: `1.5px solid ${C.border}` }}>
+            <div className="rounded-3xl p-4 lg:p-5 shadow-sm lg:flex-1 lg:min-h-0 lg:overflow-y-auto peyu-scrollbar" style={{ background: C.surface, border: `1.5px solid ${C.border}` }}>
               <AnimatePresence mode="wait">
                 <motion.div key={step} initial={{ opacity: 0, x: 16 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -16 }} transition={trans}>
                   {stepsContent[step]}
