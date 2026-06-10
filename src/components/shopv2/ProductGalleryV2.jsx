@@ -7,7 +7,7 @@ import { Recycle, ZoomIn, Check } from 'lucide-react';
 // Recibe `images` (urls), `active` (índice), `onSelect` y `badge`.
 // ════════════════════════════════════════════════════════════════════════
 export default function ProductGalleryV2({
-  images = [], active = 0, onSelect, badge, fallback,
+  images = [], active = 0, onSelect, badge, fallback, imgFilter = '',
 }) {
   const [zoom, setZoom] = useState(false);
   const [pos, setPos] = useState({ x: 50, y: 50 });
@@ -46,6 +46,8 @@ export default function ProductGalleryV2({
             objectFit: 'contain',
             objectPosition: 'center',
             padding: '12px',
+            filter: imgFilter || undefined,
+            transition: 'filter .25s ease, transform .2s ease-out',
             ...(zoom ? {
               transform: 'scale(2)',
               transformOrigin: `${pos.x}% ${pos.y}%`,

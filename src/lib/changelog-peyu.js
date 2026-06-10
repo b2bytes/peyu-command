@@ -10,6 +10,15 @@
 // ════════════════════════════════════════════════════════════════════════
 
 export const CHANGELOG = [
+  // ── 10 junio 2026 · Tinte instantáneo al color oficial elegido ──
+  {
+    fecha: '2026-06-10',
+    tipo: 'mejora',
+    area: 'Ficha de producto · B2C + B2B',
+    titulo: 'El selector de color re-pinta el mockup AL TIRO con el tono oficial',
+    detalle: 'Los colores oficiales del catálogo PDF (Azul, Negro, Rojo, Verde) ahora se VEN de inmediato en todos los productos no-carcasa: al elegir un color, si existe foto real de ese color se muestra esa foto; si no, la imagen del producto y el mockup en vivo se re-pintan instantáneamente al tono oficial mediante filtro de color por GPU (sin esperas ni IA). Funciona en la ficha B2C (galería + mockup de grabado) y la ficha B2B de empresas estrena su propio selector de colores oficiales con el mismo cambio inmediato. Carcasas mantienen su sistema de fotos reales por color.',
+  },
+
   // ── 10 junio 2026 · Catálogo oficial B2B PDF = norma del sistema ──
   {
     fecha: '2026-06-10',

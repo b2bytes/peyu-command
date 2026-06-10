@@ -21,6 +21,7 @@ import PaymentMethodsBadgesV2 from '@/components/shopv2/PaymentMethodsBadgesV2';
 import { getProductImage, getProductImageForColor } from '@/utils/productImages';
 import { getColoresProducto } from '@/lib/color-parser';
 import { findColorImageMatch } from '@/lib/color-image-matcher';
+import { getColorTintFilter } from '@/lib/color-tint';
 import { MOQ_PERSONALIZACION_GRATIS } from '@/lib/personalizacion-config';
 import { addToCartV2, fmtCLP } from '@/lib/shop-v2-cart';
 import { saveDraftV2, loadDraftV2, clearDraftV2 } from '@/lib/shop-v2-draft';
@@ -204,6 +205,15 @@ export default function ProductoNuevo() {
 
   // La imagen principal SIEMPRE es la del color elegido.
   const displayImg = color ? getProductImageForColor(producto, color) : getProductImage(producto);
+
+  // Tinte instantáneo al tono OFICIAL (norma catálogo B2B PDF): si el color
+  // elegido NO tiene foto real (ni mapa ni match en galería), la imagen y el
+  // mockup se re-pintan al tono oficial vía filtro CSS — cambio inmediato.
+  const colorFilter = useMemo(() => {
+    if (!producto || !color || esCarcasa) return '';
+    const fotoReal = !!findColorImageMatch(galleryImages, color);
+    return getColorTintFilter(producto, color, fotoReal);
+  }, [producto, color, esCarcasa, galleryImages]);
 
   const precioUnit = producto?.precio_b2c || 9990;
   const moq = producto?.personalizacion_gratis_desde || producto?.moq_personalizacion || MOQ_PERSONALIZACION_GRATIS;
@@ -515,6 +525,7 @@ export default function ProductoNuevo() {
                       fallbackUrl={getProductImage(producto)}
                       capas={capas}
                       onPlacementChange={setPlacements}
+                      baseFilter={colorFilter}
                       esCarcasa={esCarcasa}
                       customArea={engraggingArea}
                     />
@@ -527,6 +538,7 @@ export default function ProductoNuevo() {
                     active={galIdx}
                     onSelect={setGalIdx}
                     badge={esCompostable ? 'Compostable' : '100% Reciclado'}
+                    imgFilter={colorFilter}
                     fallback={getProductImage(producto)}
                   />
                 )}
@@ -559,6 +571,7 @@ export default function ProductoNuevo() {
                     fallbackUrl={getProductImage(producto)}
                     capas={capas}
                     onPlacementChange={setPlacements}
+                    baseFilter={colorFilter}
                     esCarcasa={esCarcasa}
                     customArea={engraggingArea}
                   />

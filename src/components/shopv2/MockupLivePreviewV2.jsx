@@ -106,7 +106,7 @@ function clampToArea(x, y, sizePct, tipo, area) {
 // captureSnapshot(): captura el canvas del preview en vivo como dataURL PNG.
 // Se expone via forwardRef para que el padre (ProductoNuevo, LiveConfiguratorV2)
 // lo llame al agregar al carrito y guarde el mockup REAL (foto base + grabado).
-const MockupLivePreviewV2 = forwardRef(function MockupLivePreviewV2({ productImageUrl, capas = [], onPlacementChange, fallbackUrl, esCarcasa = false, customArea = null }, ref) {
+const MockupLivePreviewV2 = forwardRef(function MockupLivePreviewV2({ productImageUrl, capas = [], onPlacementChange, fallbackUrl, esCarcasa = false, customArea = null, baseFilter = '' }, ref) {
   // Usa customArea si está disponible (asignada por ProductoNuevo), sino deduce de esCarcasa.
   const area = customArea || getArea(esCarcasa);
   const containerRef = useRef(null);
@@ -271,7 +271,7 @@ const MockupLivePreviewV2 = forwardRef(function MockupLivePreviewV2({ productIma
               <X className="w-4 h-4" style={{ color: '#7A6050' }} />
             </button>
             <div className="aspect-square">
-              {imgSrc && <img src={imgSrc} alt="Mockup" className="w-full h-full object-cover" />}
+              {imgSrc && <img src={imgSrc} alt="Mockup" className="w-full h-full object-cover" style={{ filter: baseFilter || undefined }} />}
             </div>
             <div className="px-4 py-3">
               <p className="text-xs font-bold text-center" style={{ color: '#7A6050' }}>Vista previa referencial · El grabado láser real puede variar ligeramente</p>
@@ -296,6 +296,7 @@ const MockupLivePreviewV2 = forwardRef(function MockupLivePreviewV2({ productIma
             referrerPolicy="no-referrer"
             draggable={false}
             className="w-full h-full object-cover"
+            style={{ filter: baseFilter || undefined, transition: 'filter .25s ease' }}
             onError={() => {
               // Si la imagen principal falla y existe un fallback distinto, úsalo.
               if (fallbackUrl && imgSrc !== fallbackUrl) setImgSrc(fallbackUrl);

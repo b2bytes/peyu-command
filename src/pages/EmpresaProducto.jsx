@@ -13,7 +13,10 @@ import {
 import B2BHeader from '@/components/b2b/B2BHeader';
 import B2BPriceTable from '@/components/b2b/B2BPriceTable';
 import B2BLogoMockup from '@/components/b2b/B2BLogoMockup';
-import { getProductImage } from '@/utils/productImages';
+import ColorSwatchesV2 from '@/components/shopv2/ColorSwatchesV2';
+import { getColoresProducto } from '@/lib/color-parser';
+import { getColorTintFilter } from '@/lib/color-tint';
+import { getProductImage, getProductImageForColor } from '@/utils/productImages';
 import { getB2BPriceForQty, getUnitBasePrice } from '@/lib/catalog-pricing';
 import { fmtCLP } from '@/lib/shop-v2-cart';
 
@@ -29,6 +32,7 @@ export default function EmpresaProducto() {
   const [qty, setQty] = useState(50);
   const [activeImg, setActiveImg] = useState(0);
   const [logoUrl, setLogoUrl] = useState(null); // logo subido en esta ficha → viaja al cotizador
+  const [colorId, setColorId] = useState(null); // color oficial elegido (norma catálogo PDF)
 
   useEffect(() => {
     if (!id) { setLoading(false); return; }
@@ -45,6 +49,16 @@ export default function EmpresaProducto() {
       : [];
     return [main, ...extra].slice(0, 5);
   }, [producto]);
+
+  // Colores oficiales (Azul/Negro/Rojo/Verde · norma catálogo B2B PDF).
+  // Al elegir uno, la imagen cambia INSTANTÁNEO: foto real del color si existe,
+  // o tinte CSS al tono oficial si no. No aplica a carcasas.
+  const colores = useMemo(
+    () => (producto && producto.categoria !== 'Carcasas B2C' ? getColoresProducto(producto) : []),
+    [producto],
+  );
+  const color = useMemo(() => colores.find((c) => c.id === colorId), [colores, colorId]);
+  const colorFilter = useMemo(() => getColorTintFilter(producto, color), [producto, color]);
 
   const b2b = useMemo(() => getB2BPriceForQty(producto, qty), [producto, qty]);
   const unitPrice = b2b?.precio ?? getUnitBasePrice(producto);
@@ -105,10 +119,10 @@ export default function EmpresaProducto() {
             {/* Imagen principal */}
             <div className="relative aspect-square rounded-3xl overflow-hidden" style={{ background: 'linear-gradient(145deg,#F7F2EC,#EDE3D6)', border: '1.5px solid #D4C4B0' }}>
               <img
-                src={images[activeImg] || getProductImage(producto)}
+                src={color && !colorFilter ? getProductImageForColor(producto, color) : (images[activeImg] || getProductImage(producto))}
                 alt={producto.nombre}
                 className="w-full h-full"
-                style={{ objectFit: 'contain', objectPosition: 'center', padding: '12px' }}
+                style={{ objectFit: 'contain', objectPosition: 'center', padding: '12px', filter: colorFilter || undefined, transition: 'filter .25s ease' }}
                 onError={(e) => { e.target.style.opacity = '0.3'; }}
               />
               <span className="absolute top-4 left-4 text-[10px] font-bold px-2.5 py-1 rounded-full"
@@ -148,6 +162,11 @@ export default function EmpresaProducto() {
                 <p className="text-sm leading-relaxed" style={{ color: '#7A6050' }}>{producto.descripcion}</p>
               )}
             </div>
+
+            {/* Color oficial (norma catálogo B2B): actualiza la imagen al tiro */}
+            {colores.length > 1 && (
+              <ColorSwatchesV2 colores={colores} value={colorId} onSelect={setColorId} producto={producto} />
+            )}
 
             {/* Precio en vivo */}
             <div className="rounded-2xl p-4 space-y-2" style={{ background: 'white', border: '1.5px solid #D4C4B0' }}>
