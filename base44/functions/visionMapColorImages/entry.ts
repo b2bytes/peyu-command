@@ -55,15 +55,25 @@ Deno.serve(async (req) => {
       return [...set];
     };
 
-    // Candidatos: activos, con colores, con galería, con huecos en el mapa
+    // Paleta oficial PEYU para el modo DETECCIÓN (productos sin `colores`).
+    const PALETA = ['Azul', 'Verde', 'Rojo', 'Negro', 'Turquesa', 'Amarillo', 'Rosado', 'Blanco', 'Gris', 'Café', 'Naranja', 'Violeta', 'Beige'];
+
+    // Candidatos: activos, con galería ≥2. Dos modos:
+    //  · COMPLETAR: tiene colores definidos pero faltan fotos en el mapa.
+    //  · DETECTAR: NO tiene colores definidos → la IA detecta en qué colores
+    //    aparece el producto en su galería y puebla `colores` + mapa.
+    // Carcasas (sistema propio) y fibra de trigo (color natural único) se excluyen.
     const candidatos = productos.filter((p) => {
       if (p.activo === false) return false;
-      const colores = getColores(p);
-      if (colores.length < 2) return false;
+      if (p.categoria === 'Carcasas B2C') return false;
+      if (p.material === 'Fibra de Trigo (Compostable)') return false;
+      if (/gift\s*card/i.test(p.categoria || '') || /gift\s*card/i.test(p.nombre || '')) return false;
       const galeria = (p.galeria_urls || []).filter((u) => typeof u === 'string' && u.startsWith('http'));
       if (galeria.length < 2) return false;
+      const colores = getColores(p);
       const mapa = p.imagenes_por_color || {};
-      return colores.some((c) => !mapa[c]);
+      if (colores.length >= 2) return colores.some((c) => !mapa[c]); // COMPLETAR
+      return Object.keys(mapa).length === 0; // DETECTAR desde cero
     }).slice(0, Math.min(limit, 25));
 
     const report = [];
@@ -71,19 +81,29 @@ Deno.serve(async (req) => {
 
     for (const p of candidatos) {
       const colores = getColores(p);
+      const modoDeteccion = colores.length < 2;
       const mapaExistente = (p.imagenes_por_color && typeof p.imagenes_por_color === 'object') ? p.imagenes_por_color : {};
-      const faltantes = colores.filter((c) => !mapaExistente[c] && !/mix/i.test(c));
-      if (faltantes.length === 0) continue;
+      const objetivo = modoDeteccion
+        ? PALETA
+        : colores.filter((c) => !mapaExistente[c] && !/mix/i.test(c));
+      if (objetivo.length === 0) continue;
 
       const galeria = (p.galeria_urls || []).filter((u) => typeof u === 'string' && u.startsWith('http')).slice(0, MAX_IMGS);
+
+      const prompt = modoDeteccion
+        ? `Eres un clasificador visual de fotos de e-commerce. Te adjunto ${galeria.length} fotos (en orden: foto 1, foto 2, ... foto ${galeria.length}) del producto "${p.nombre}".
+DETECTA en qué COLORES distintos aparece el producto (el producto en sí, NO el fondo ni accesorios), usando SOLO esta paleta: ${PALETA.join(', ')}.
+Para cada color detectado, indica el número de la foto (1 a ${galeria.length}) donde el producto se ve MAYORITARIA y CLARAMENTE en ese color.
+Sé estricto: solo colores inequívocos del producto. Si el producto aparece siempre del mismo color, devuelve solo ese color.`
+        : `Eres un clasificador visual de fotos de e-commerce. Te adjunto ${galeria.length} fotos (en orden: foto 1, foto 2, ... foto ${galeria.length}) del producto "${p.nombre}".
+Los colores disponibles del producto son: ${objetivo.join(', ')}.
+Para CADA color, indica el número de la foto (1 a ${galeria.length}) donde el producto aparece MAYORITARIA y CLARAMENTE en ese color (el producto en sí, no el fondo ni accesorios). Si ninguna foto muestra el producto en ese color de forma clara, usa 0.
+Sé estricto: solo asigna una foto si el color del producto es inequívoco.`;
 
       let asignaciones = [];
       try {
         const result = await base44.asServiceRole.integrations.Core.InvokeLLM({
-          prompt: `Eres un clasificador visual de fotos de e-commerce. Te adjunto ${galeria.length} fotos (en orden: foto 1, foto 2, ... foto ${galeria.length}) del producto "${p.nombre}".
-Los colores disponibles del producto son: ${faltantes.join(', ')}.
-Para CADA color, indica el número de la foto (1 a ${galeria.length}) donde el producto aparece MAYORITARIA y CLARAMENTE en ese color (el producto en sí, no el fondo ni accesorios). Si ninguna foto muestra el producto en ese color de forma clara, usa 0.
-Sé estricto: solo asigna una foto si el color del producto es inequívoco.`,
+          prompt,
           file_urls: galeria,
           response_json_schema: {
             type: 'object',
@@ -112,8 +132,8 @@ Sé estricto: solo asigna una foto si el color del producto es inequívoco.`,
       const sinFoto = [];
       for (const a of asignaciones) {
         const idx = Math.round(Number(a.foto)) - 1;
-        const colorKey = faltantes.find((c) => c.toLowerCase() === String(a.color || '').toLowerCase()) || a.color;
-        if (idx >= 0 && idx < galeria.length && colorKey && faltantes.includes(colorKey)) {
+        const colorKey = objetivo.find((c) => c.toLowerCase() === String(a.color || '').toLowerCase());
+        if (idx >= 0 && idx < galeria.length && colorKey) {
           nuevoMapa[colorKey] = galeria[idx];
           cambios++;
         } else if (colorKey) {
@@ -121,10 +141,13 @@ Sé estricto: solo asigna una foto si el color del producto es inequívoco.`,
         }
       }
 
-      report.push({ sku: p.sku, nombre: p.nombre, nuevos: cambios, sin_foto: sinFoto, mapa: nuevoMapa });
+      report.push({ sku: p.sku, nombre: p.nombre, modo: modoDeteccion ? 'deteccion' : 'completar', nuevos: cambios, sin_foto: sinFoto, mapa: nuevoMapa });
 
       if (cambios > 0 && !dryRun) {
-        await base44.asServiceRole.entities.Producto.update(p.id, { imagenes_por_color: nuevoMapa });
+        const patch = { imagenes_por_color: nuevoMapa };
+        // Modo detección: además poblamos `colores` con lo detectado (reales).
+        if (modoDeteccion) patch.colores = Object.keys(nuevoMapa);
+        await base44.asServiceRole.entities.Producto.update(p.id, patch);
         updated++;
       }
     }

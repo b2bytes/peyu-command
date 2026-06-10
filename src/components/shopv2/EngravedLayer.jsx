@@ -77,14 +77,16 @@ export default function EngravedLayer({ eng, tipo, texto, sizePct, tint, product
 
    if (!eng) return null;
 
-   // Fallback CORS: el engraver no pudo limpiar el fondo → mostramos el diseño
-   // limpio sin blend ennegrecedor (evita la caja negra), pero con bisel sutil.
+   // Fallback CORS: el engraver no pudo limpiar el fondo. NUNCA mostramos la
+   // caja blanca del logo: grayscale + multiply hace DESAPARECER el fondo
+   // blanco/claro sobre cualquier producto y deja solo el trazo como grabado
+   // oscuro (en productos oscuros queda sutil, pero jamás un parche blanco).
    if (!eng.ok && !eng.svg) {
      return (
        <img
          src={eng.dataUrl} alt="Tu diseño" draggable={false}
          className="w-full h-auto pointer-events-none"
-         style={{ filter: `contrast(1.05) ${biselFx(tint)}` }}
+         style={{ mixBlendMode: 'multiply', opacity: 0.92, filter: `grayscale(1) contrast(1.2) ${biselFx(tint)}` }}
        />
      );
    }

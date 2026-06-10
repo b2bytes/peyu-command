@@ -124,6 +124,18 @@ export function getColoresProducto(producto) {
     if (colores.length > 0) return colores;
   }
 
+  // Colores explícitos cargados en el producto (campo `colores`, poblado por
+  // el backfill de visión IA o manualmente). Son los colores REALES del SKU.
+  const explicit = Array.isArray(producto.colores) && producto.colores.length > 0
+    ? producto.colores
+    : (Array.isArray(producto.colores_v2) ? producto.colores_v2 : []);
+  if (explicit.length > 0) {
+    const mapped = explicit
+      .map((raw) => PEYU_COLOR_CATALOG.find((c) => c.aliases.some((a) => normalize(a) === normalize(raw))))
+      .filter(Boolean);
+    if (mapped.length > 0) return mapped;
+  }
+
   // Si no tiene fotos por color pero es plástico reciclado, mostramos los
   // 4 colores oficiales PEYU (azul, verde, rojo, negro). Son colores reales del
   // producto aunque no tengan foto individual — el cliente igual debe elegir.

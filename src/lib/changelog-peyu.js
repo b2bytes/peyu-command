@@ -10,6 +10,15 @@
 // ════════════════════════════════════════════════════════════════════════
 
 export const CHANGELOG = [
+  // ── 10 junio 2026 · Colores reales en TODO el catálogo + mockup sin caja blanca ──
+  {
+    fecha: '2026-06-10',
+    tipo: 'mejora',
+    area: 'Ficha de producto · Personalizar',
+    titulo: 'Colores reales con foto en todos los productos y mockup sin caja blanca',
+    detalle: 'Dos arreglos: (1) La visión IA ahora también DETECTA los colores de productos que no los tenían cargados (mirando su galería de fotos) y puebla colores + foto por color — corrió sobre el catálogo completo (10 productos actualizados: packs escritorio, maceteros, sujetadores, etc.), así el selector de color con variante real funciona en todos los productos, no solo en algunos. (2) Se corrigió la CAJA BLANCA del mockup: el motor de grabado ahora carga el logo vía fetch (el canvas ya no queda bloqueado por CORS y siempre puede limpiar el fondo), y si aún así falla, el fallback usa fusión multiply que hace desaparecer el fondo blanco — nunca más un parche blanco sobre el producto.',
+  },
+
   // ── 10 junio 2026 · Capa de diseño unificada en todo el admin ──
   {
     fecha: '2026-06-10',

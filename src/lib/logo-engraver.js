@@ -47,11 +47,28 @@ export async function detectImageTone(src) {
   }
 }
 
-/** Carga una imagen (File o URL) como HTMLImageElement. */
-function loadImage(src) {
+/** Carga una imagen (File o URL) como HTMLImageElement.
+ * Para URLs remotas intenta primero fetch → blob → objectURL: así el canvas
+ * NUNCA queda "tainted" (causa raíz de la caja blanca: getImageData lanzaba
+ * SecurityError con logos sin headers CORS y caía al fallback sin limpiar
+ * el fondo). Si fetch falla, cae al <img crossOrigin> directo. */
+async function loadImage(src) {
+  if (typeof src === 'string' && /^https?:/i.test(src)) {
+    try {
+      const res = await fetch(src, { mode: 'cors' });
+      if (res.ok) {
+        const blob = await res.blob();
+        return await loadImageEl(URL.createObjectURL(blob));
+      }
+    } catch { /* sigue al intento directo */ }
+  }
+  return loadImageEl(src, true);
+}
+
+function loadImageEl(src, crossOrigin = false) {
   return new Promise((resolve, reject) => {
     const img = new Image();
-    img.crossOrigin = 'anonymous';
+    if (crossOrigin) img.crossOrigin = 'anonymous';
     img.onload = () => resolve(img);
     img.onerror = reject;
     img.src = src;
