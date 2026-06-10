@@ -10,6 +10,15 @@
 // ════════════════════════════════════════════════════════════════════════
 
 export const CHANGELOG = [
+  // ── 10 junio 2026 · Aprobar mockup junto al mockup ──
+  {
+    fecha: '2026-06-10',
+    tipo: 'mejora',
+    area: 'Ficha de producto',
+    titulo: 'El botón "Aprobar mockup" ahora vive pegado al mockup',
+    detalle: 'El usuario se perdía: el mockup estaba al centro pero el botón de aprobar quedaba escondido en el panel de personalización. Ahora la aprobación aparece SIEMPRE junto al mockup (desktop y móvil) en una barra distinguida: hint terracota "¿Te gusta cómo quedó?" + botón verde grande "Aprobar mockup", y al aprobar muestra confirmación con opción Editar. El personalizador solo guía ("revisa el mockup y apruébalo ↓") sin duplicar el botón. Flujo más lógico: configurar → ver → aprobar → agregar.',
+  },
+
   // ── 10 junio 2026 · Color → foto real con VISIÓN IA en todo el catálogo ──
   {
     fecha: '2026-06-10',

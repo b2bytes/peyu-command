@@ -153,35 +153,30 @@ export default function PersonalizadorV2({ pers, setPers, gratis, moq = 10, solo
         <p className="text-xs font-semibold text-[#D96B4D] bg-[#D96B4D]/10 border border-[#D96B4D]/30 rounded-xl p-2.5 mt-2">{error}</p>
       )}
 
-      {/* BOTÓN APROBAR — confirma la personalización antes de agregar al carro */}
-      {haySeleccion && (
-        pers.aprobada ? (
-          <div className="flex items-center justify-between mt-3 bg-[#0F8B6C]/10 border border-[#0F8B6C]/30 rounded-xl px-3.5 py-2.5">
-            <span className="text-xs font-bold text-[#0F8B6C] flex items-center gap-1.5">
-              <CheckCircle2 className="w-4 h-4" /> Personalización aprobada
-            </span>
-            <button
-              onClick={() => setPers({ ...pers, aprobada: false })}
-              className="text-[11px] font-bold text-[#A78B6F] hover:text-[#2A2420] flex items-center gap-1"
-            >
-              <Pencil className="w-3 h-3" /> Editar
-            </button>
-          </div>
-        ) : (
+      {/* Estado del flujo: la APROBACIÓN vive junto al mockup (MockupApproveBarV2).
+          Aquí solo guiamos cuando falta completar el dato del grabado. */}
+      {haySeleccion && !completa && (
+        <div className="w-full mt-3 h-11 rounded-xl font-bold text-sm flex items-center justify-center gap-2 bg-[#EBE3D6] text-[#A78B6F]">
+          <CheckCircle2 className="w-4 h-4" /> Completa tu personalización
+        </div>
+      )}
+      {haySeleccion && completa && !pers.aprobada && (
+        <p className="text-[11px] font-bold text-center mt-3 text-[#D96B4D]">
+          ↓ Revisa el mockup y apruébalo para continuar
+        </p>
+      )}
+      {haySeleccion && pers.aprobada && (
+        <div className="flex items-center justify-between mt-3 bg-[#0F8B6C]/10 border border-[#0F8B6C]/30 rounded-xl px-3.5 py-2.5">
+          <span className="text-xs font-bold text-[#0F8B6C] flex items-center gap-1.5">
+            <CheckCircle2 className="w-4 h-4" /> Personalización aprobada
+          </span>
           <button
-            type="button"
-            onClick={() => setPers({ ...pers, aprobada: true })}
-            disabled={!completa}
-            className={`w-full mt-3 h-11 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-colors ${
-              completa
-                ? 'bg-[#0F8B6C] hover:bg-[#0B6E55] text-white'
-                : 'bg-[#EBE3D6] text-[#A78B6F] cursor-not-allowed'
-            }`}
+            onClick={() => setPers({ ...pers, aprobada: false })}
+            className="text-[11px] font-bold text-[#A78B6F] hover:text-[#2A2420] flex items-center gap-1"
           >
-            <CheckCircle2 className="w-4 h-4" />
-            {completa ? 'Aprobar personalización' : 'Completa tu personalización'}
+            <Pencil className="w-3 h-3" /> Editar
           </button>
-        )
+        </div>
       )}
     </div>
   );

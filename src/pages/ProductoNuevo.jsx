@@ -9,6 +9,7 @@ import CheckoutStepperV2 from '@/components/shopv2/CheckoutStepperV2';
 import ColorSwatchesV2 from '@/components/shopv2/ColorSwatchesV2';
 import PersonalizadorV2 from '@/components/shopv2/PersonalizadorV2';
 import MockupLivePreviewV2 from '@/components/shopv2/MockupLivePreviewV2';
+import MockupApproveBarV2 from '@/components/shopv2/MockupApproveBarV2';
 import PriceBreakdownV2 from '@/components/shopv2/PriceBreakdownV2';
 import QtyStepperV2 from '@/components/shopv2/QtyStepperV2';
 import ProductGalleryV2 from '@/components/shopv2/ProductGalleryV2';
@@ -494,15 +495,19 @@ export default function ProductoNuevo() {
             >
               <div className="w-full max-w-[640px]">
                 {muestraMockup ? (
-                  <MockupLivePreviewV2
-                    ref={mockupRefDesktop}
-                    productImageUrl={colorImg}
-                    fallbackUrl={getProductImage(producto)}
-                    capas={capas}
-                    onPlacementChange={setPlacements}
-                    esCarcasa={esCarcasa}
-                    customArea={engraggingArea}
-                  />
+                  <>
+                    <MockupLivePreviewV2
+                      ref={mockupRefDesktop}
+                      productImageUrl={colorImg}
+                      fallbackUrl={getProductImage(producto)}
+                      capas={capas}
+                      onPlacementChange={setPlacements}
+                      esCarcasa={esCarcasa}
+                      customArea={engraggingArea}
+                    />
+                    {/* Aprobación SIEMPRE junto al mockup — no se pierde el usuario */}
+                    <MockupApproveBarV2 pers={pers} setPers={setPers} />
+                  </>
                 ) : (
                   <ProductGalleryV2
                     images={galleryImages}
@@ -592,6 +597,8 @@ export default function ProductoNuevo() {
                       esCarcasa={esCarcasa}
                       customArea={engraggingArea}
                     />
+                    {/* Aprobación SIEMPRE junto al mockup — no se pierde el usuario */}
+                    <MockupApproveBarV2 pers={pers} setPers={setPers} />
                   </div>
                 )}
               </div>
