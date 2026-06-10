@@ -10,6 +10,15 @@
 // ════════════════════════════════════════════════════════════════════════
 
 export const CHANGELOG = [
+  // ── 10 junio 2026 · Personalizar: color persiste hasta el final ─────────
+  {
+    fecha: '2026-06-10',
+    tipo: 'bug',
+    area: 'Personalizar',
+    titulo: 'El color elegido de la carcasa ya no se pierde en el mockup',
+    detalle: 'Al agregar un diseño, el preview cambiaba a la imagen "base limpia" genérica y pisaba el color que el cliente había escogido. Ahora en productos con colores reales (carcasas) la imagen del color elegido es siempre la fuente de verdad del mockup, y ese color viaja intacto hasta el carrito, el pedido y la orden de producción. Además el logo subido se guarda al instante (sobrevive recargas) con indicador "Subiendo tu logo…".',
+  },
+
   // ── 10 junio 2026 · Personalizar: mockup unificado ──────────────────────
   {
     fecha: '2026-06-10',

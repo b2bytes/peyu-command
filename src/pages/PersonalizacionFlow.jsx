@@ -247,6 +247,7 @@ export default function PersonalizacionFlow() {
   const [logoUrlSubido, setLogoUrlSubido] = useState('');
   const [disenoPeyuUrl, setDisenoPeyuUrl] = useState('');
   const [opcion, setOpcion] = useState(null);
+  const [subiendoLogo, setSubiendoLogo] = useState(false);
   const [loading, setLoading] = useState(false);
   const [done, setDone] = useState(false);
   const [mockupUrl, setMockupUrl] = useState('');
@@ -296,26 +297,6 @@ export default function PersonalizacionFlow() {
   }, [location.search]);
 
   const producto = useMemo(() => productos.find(p => p.id === productoId), [productos, productoId]);
-  useEffect(() => { setCleanBaseUrl(producto?.imagen_base_limpia_url || ''); }, [producto]);
-
-  const cleanBaseTried = useRef(new Set());
-  const tieneDiseno = !!(archivo || logoUrlSubido || texto || disenoPeyuUrl);
-  useEffect(() => {
-    if (!producto || !tieneDiseno || cleanBaseUrl || cleanBaseLoading) return;
-    if (cleanBaseTried.current.has(producto.id)) return;
-    cleanBaseTried.current.add(producto.id);
-    setCleanBaseLoading(true);
-    base44.functions.invoke('generateCleanBaseImage', { productoId: producto.id })
-      .then(res => { if (res?.data?.clean_url) setCleanBaseUrl(res.data.clean_url); })
-      .catch(() => {})
-      .finally(() => setCleanBaseLoading(false));
-  }, [producto, tieneDiseno, cleanBaseUrl, cleanBaseLoading]);
-
-  // Auto-guardado del viaje: cada decisión del cliente queda persistida.
-  useEffect(() => {
-    if (productosLoading || done || !productoId) return;
-    saveJourney({ step, productoId, colorId, carcasaColorKey, texto, opcion, disenoPeyuUrl, logoUrlSubido, cantidad, mockupUrl });
-  }, [step, productoId, colorId, carcasaColorKey, texto, opcion, disenoPeyuUrl, logoUrlSubido, cantidad, mockupUrl, productosLoading, done]);
 
   const imagenesPorColor = useMemo(() => {
     const mapa = producto?.imagenes_por_color;
@@ -325,6 +306,32 @@ export default function PersonalizacionFlow() {
     }
     return null;
   }, [producto]);
+
+  // Base limpia (sin logo PEYU) SOLO para productos sin imágenes por color.
+  // En carcasas la imagen del COLOR elegido es la fuente de verdad: usar la base
+  // limpia genérica pisaba el color que el cliente escogió.
+  useEffect(() => {
+    setCleanBaseUrl(imagenesPorColor ? '' : (producto?.imagen_base_limpia_url || ''));
+  }, [producto, imagenesPorColor]);
+
+  const cleanBaseTried = useRef(new Set());
+  const tieneDiseno = !!(archivo || logoUrlSubido || texto || disenoPeyuUrl);
+  useEffect(() => {
+    if (!producto || imagenesPorColor || !tieneDiseno || cleanBaseUrl || cleanBaseLoading) return;
+    if (cleanBaseTried.current.has(producto.id)) return;
+    cleanBaseTried.current.add(producto.id);
+    setCleanBaseLoading(true);
+    base44.functions.invoke('generateCleanBaseImage', { productoId: producto.id })
+      .then(res => { if (res?.data?.clean_url) setCleanBaseUrl(res.data.clean_url); })
+      .catch(() => {})
+      .finally(() => setCleanBaseLoading(false));
+  }, [producto, imagenesPorColor, tieneDiseno, cleanBaseUrl, cleanBaseLoading]);
+
+  // Auto-guardado del viaje: cada decisión del cliente queda persistida.
+  useEffect(() => {
+    if (productosLoading || done || !productoId) return;
+    saveJourney({ step, productoId, colorId, carcasaColorKey, texto, opcion, disenoPeyuUrl, logoUrlSubido, cantidad, mockupUrl });
+  }, [step, productoId, colorId, carcasaColorKey, texto, opcion, disenoPeyuUrl, logoUrlSubido, cantidad, mockupUrl, productosLoading, done]);
 
   const colores = useMemo(() => (producto && !imagenesPorColor) ? getColoresProducto(producto) : [], [producto, imagenesPorColor]);
   const color = useMemo(() => colores.find(c => c.id === colorId), [colores, colorId]);
@@ -732,11 +739,24 @@ export default function PersonalizacionFlow() {
           onClick={() => document.getElementById('pers-logo-v2').click()}
         >
           <Upload className="w-7 h-7 mx-auto mb-2" style={{ color: (archivo || logoUrlSubido) ? C.action : C.fgMuted }} />
-          {archivo ? <p className="text-sm font-bold" style={{ color: C.action }}>✓ {archivo.name}</p>
-           : logoUrlSubido ? <p className="text-sm font-bold" style={{ color: C.action }}>✓ Logo cargado</p>
+          {subiendoLogo ? <p className="text-sm font-bold flex items-center justify-center gap-1.5" style={{ color: C.action }}><Loader2 className="w-3.5 h-3.5 animate-spin" /> Subiendo tu logo…</p>
+           : archivo ? <p className="text-sm font-bold" style={{ color: C.action }}>✓ {archivo.name}{logoUrlSubido ? ' · guardado' : ''}</p>
+           : logoUrlSubido ? <p className="text-sm font-bold" style={{ color: C.action }}>✓ Logo cargado y guardado</p>
            : <><p className="text-sm font-semibold" style={{ color: C.fgSoft }}>Sube tu logo</p><p className="text-xs mt-0.5" style={{ color: C.fgMuted }}>PNG, SVG, AI, JPG · máx. 10MB</p></>}
           <input id="pers-logo-v2" type="file" className="hidden" accept=".png,.svg,.ai,.pdf,.jpg"
-            onChange={e => { setArchivo(e.target.files[0]); setLogoUrlSubido(''); setDisenoPeyuUrl(''); if (mockupUrl) setMockupUrl(''); }} />
+            onChange={async e => {
+              const f = e.target.files[0];
+              if (!f) return;
+              setArchivo(f); setLogoUrlSubido(''); setDisenoPeyuUrl(''); if (mockupUrl) setMockupUrl('');
+              // Subida INMEDIATA: el logo queda persistido en el viaje (sobrevive
+              // recargas) y llega garantizado hasta el carrito y producción.
+              setSubiendoLogo(true);
+              try {
+                const { file_url } = await base44.integrations.Core.UploadFile({ file: f });
+                setLogoUrlSubido(file_url);
+              } catch { /* fallback: se sube al agregar al carrito */ }
+              finally { setSubiendoLogo(false); }
+            }} />
         </div>
       )}
 
