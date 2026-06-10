@@ -61,179 +61,195 @@ function genQuoteNumero() {
   return `COT-${y}${m}-${rand}`;
 }
 
-// Genera el PDF de cotización B2B multi-producto (mismo estilo PEYU que el
-// cotizador del chat). Devuelve base64 listo para descargar/adjuntar.
+// ─── DISEÑO UNIFICADO PEYU PDF 2026 ──────────────────────────────────────
+// Misma plantilla profesional que generateProposalPDF / exportCotizacionPDF:
+// paleta ECO, hero verde bosque, card de cliente, tabla oscura, totales
+// justificados y footer corporativo. safeTxt garantiza que los datos del
+// cliente y producto se rendericen perfecto (WinAnsi, sin glifos rotos).
+const INK = [18, 28, 24], FOREST = [11, 70, 52], TEAL = [15, 139, 108], LEAF = [52, 168, 128],
+      MINT = [235, 248, 244], SAND = [250, 246, 238], STONE = [100, 110, 104],
+      STONE2 = [140, 150, 145], CREAM = [170, 220, 205], WHITE = [255, 255, 255];
+const PMX = 16;
+const fmtCLP = (n) => '$' + (n || 0).toLocaleString('es-CL');
+
+function safeTxt(s) {
+  if (s === undefined || s === null) return '';
+  return String(s)
+    .replace(/[✓✔☑]/g, '>').replace(/[✗✘❌]/g, 'x').replace(/[♻]/g, '')
+    .replace(/[–—]/g, '-').replace(/[""«»]/g, '"').replace(/['']/g, "'")
+    .replace(/…/g, '...').replace(/[·•]/g, '-').replace(/°/g, 'o')
+    .replace(/[\u0000-\u001F\u007F]/g, '').replace(/[^\x20-\xFF]/g, '');
+}
+
+// base64 chunked: evita stack overflow con PDFs grandes.
+function b64FromDoc(doc) {
+  const bytes = new Uint8Array(doc.output('arraybuffer'));
+  let bin = '';
+  for (let i = 0; i < bytes.length; i += 0x8000) {
+    bin += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000));
+  }
+  return btoa(bin);
+}
+
 function buildQuotePDF({ numero, empresa, contacto, email, telefono, rut, lineas, totalNeto, iva, totalConIva, qtyTotal, deliveryDate, personalizacion }) {
   const doc = new jsPDF({ unit: 'mm', format: 'a4' });
-  const W = 210;
-  const margin = 20;
+  const pw = 210, ph = 297, RX = pw - PMX, CW = pw - PMX * 2;
   const hoy = new Date();
-  const vence = new Date(hoy.getTime() + 15 * 24 * 60 * 60 * 1000);
+  const vence = new Date(hoy.getTime() + 15 * 86400000);
+  let y = 0;
 
-  // Header verde PEYU
-  doc.setFillColor(15, 139, 108);
-  doc.rect(0, 0, W, 38, 'F');
-  doc.setTextColor(255, 255, 255);
-  doc.setFontSize(22);
-  doc.setFont('helvetica', 'bold');
-  doc.text('PEYU', margin, 16);
-  doc.setFontSize(9);
-  doc.setFont('helvetica', 'normal');
-  doc.text('Productos con Propósito | 100% Plástico Reciclado', margin, 23);
-  doc.text('www.peyuchile.cl  ·  ventas@peyuchile.cl  ·  +56 9 3504 0242', margin, 29);
+  const T = (txt, x, yy, { size = 9, font = 'normal', color = INK, align = 'left', spacing = 0 } = {}) => {
+    doc.setFont('helvetica', font); doc.setFontSize(size);
+    doc.setTextColor(color[0], color[1], color[2]);
+    if (spacing) doc.setCharSpace(spacing);
+    doc.text(safeTxt(txt), x, yy, { align });
+    if (spacing) doc.setCharSpace(0);
+  };
 
-  doc.setFontSize(11);
-  doc.setFont('helvetica', 'bold');
-  doc.text('COTIZACIÓN POR VOLUMEN', W - margin, 14, { align: 'right' });
-  doc.setFontSize(14);
-  doc.text(numero, W - margin, 22, { align: 'right' });
-  doc.setFontSize(9);
-  doc.setFont('helvetica', 'normal');
-  doc.text(`Fecha: ${hoy.toLocaleDateString('es-CL')}`, W - margin, 30, { align: 'right' });
-  doc.text(`Vence: ${vence.toLocaleDateString('es-CL')}`, W - margin, 35, { align: 'right' });
+  // ═══ HERO ═══
+  const heroH = 62;
+  doc.setFillColor(...FOREST); doc.rect(0, 0, pw, heroH, 'F');
+  doc.setFillColor(...TEAL); doc.circle(pw - 6, 8, 30, 'F');
+  doc.setFillColor(...LEAF); doc.circle(pw + 6, heroH - 4, 22, 'F');
+  doc.setFillColor(...CREAM); doc.rect(0, heroH, pw, 2, 'F');
 
-  // Datos cliente
-  doc.setTextColor(30, 30, 30);
-  let y = 50;
-  doc.setFillColor(245, 245, 240);
-  doc.rect(margin, y - 5, W - 2 * margin, 30, 'F');
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(9);
-  doc.setTextColor(100, 100, 100);
-  doc.text('PARA', margin + 4, y + 1);
-  doc.setTextColor(30, 30, 30);
-  doc.setFontSize(12);
-  doc.text(empresa || contacto || 'Cliente', margin + 4, y + 8);
-  doc.setFontSize(9);
-  doc.setFont('helvetica', 'normal');
-  if (rut) doc.text(`RUT: ${rut}`, margin + 4, y + 14);
-  if (contacto) doc.text(`Contacto: ${contacto}`, margin + 90, y + 14);
-  if (email) doc.text(`Email: ${email}`, margin + 4, y + 19);
-  if (telefono) doc.text(`Teléfono: ${telefono}`, margin + 90, y + 19);
-  if (deliveryDate) doc.text(`Fecha requerida: ${deliveryDate}`, margin + 4, y + 24);
+  T('PEYU', PMX, 20, { size: 22, font: 'bold', color: WHITE });
+  T('Plastico que renace - 100% reciclado - Hecho en Chile', PMX, 27, { size: 8, color: CREAM });
+  T('COTIZACION N°', RX, 16, { size: 7, font: 'bold', color: CREAM, align: 'right', spacing: 1 });
+  T(numero, RX, 24, { size: 14, font: 'bold', color: WHITE, align: 'right' });
 
-  // Tabla productos
-  y = 89;
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(9);
-  doc.setFillColor(15, 139, 108);
-  doc.setTextColor(255, 255, 255);
-  doc.rect(margin, y - 5, W - 2 * margin, 8, 'F');
-  doc.text('Producto', margin + 3, y);
-  doc.text('Tramo', 108, y);
-  doc.text('Cant.', 140, y);
-  doc.text('P. Unit.', 158, y);
-  doc.text('Total', W - margin - 3, y, { align: 'right' });
+  T('Cotizacion por Volumen', PMX, 44, { size: 20, font: 'bold', color: WHITE });
+  T(`Preparada para ${empresa || contacto || 'Cliente'}`, PMX, 52, { size: 10, color: [210, 228, 220] });
+  T(`Emision  ${hoy.toLocaleDateString('es-CL')}`, RX, 44, { size: 8, color: [210, 228, 220], align: 'right' });
+  T(`Valida hasta  ${vence.toLocaleDateString('es-CL')}`, RX, 50, { size: 8, color: [210, 228, 220], align: 'right' });
 
-  y += 8;
-  doc.setTextColor(30, 30, 30);
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(9);
+  y = heroH + 10;
+
+  // ═══ CARD CLIENTE + TOTAL ═══
+  const cardH = 40;
+  doc.setFillColor(...SAND); doc.roundedRect(PMX, y, CW, cardH, 4, 4, 'F');
+  doc.setFillColor(...TEAL); doc.roundedRect(PMX, y, 2.5, cardH, 1, 1, 'F');
+  const cx = PMX + 8;
+  T('CLIENTE', cx, y + 8, { size: 7, font: 'bold', color: STONE2, spacing: 1 });
+  T((empresa || contacto || 'Cliente').substring(0, 40), cx, y + 16, { size: 13, font: 'bold', color: INK });
+  let fY = y + 22;
+  if (contacto) { T(contacto.substring(0, 48), cx, fY, { size: 8.5, color: STONE }); fY += 4.5; }
+  if (email) { T(email.substring(0, 48), cx, fY, { size: 8.5, color: STONE }); fY += 4.5; }
+  const extra = [rut ? `RUT ${rut}` : '', telefono || ''].filter(Boolean).join('  -  ');
+  if (extra) T(extra.substring(0, 52), cx, fY, { size: 7.5, color: STONE });
+
+  T('MONTO TOTAL', RX - 8, y + 8, { size: 7, font: 'bold', color: TEAL, align: 'right', spacing: 1 });
+  T(fmtCLP(totalConIva), RX - 8, y + 20, { size: 19, font: 'bold', color: FOREST, align: 'right' });
+  T('CLP (incluye IVA 19% - ver detalle)', RX - 8, y + 26, { size: 7, color: STONE, align: 'right' });
+  y += cardH + 6;
+
+  // ═══ STRIP MÉTRICAS ═══
+  const mH = 17;
+  doc.setFillColor(...MINT); doc.roundedRect(PMX, y, CW, mH, 3, 3, 'F');
+  const metr = [
+    ['UNIDADES', `${qtyTotal}`],
+    ['ITEMS', `${lineas.length}`],
+    ['VALIDEZ', '15 dias'],
+    ['ENTREGA', deliveryDate ? String(deliveryDate).substring(0, 12) : 'A convenir'],
+  ];
+  const mCol = CW / 4;
+  metr.forEach((m, i) => {
+    const mx = PMX + i * mCol + mCol / 2;
+    T(m[0], mx, y + 6.5, { size: 6, font: 'bold', color: STONE2, align: 'center', spacing: 0.6 });
+    T(m[1], mx, y + 13, { size: 10, font: 'bold', color: FOREST, align: 'center' });
+    if (i > 0) { doc.setDrawColor(...CREAM); doc.setLineWidth(0.3); doc.line(PMX + i * mCol, y + 4, PMX + i * mCol, y + mH - 4); }
+  });
+  y += mH + 10;
+
+  // ═══ TABLA DE ITEMS ═══
+  T('DETALLE ECONOMICO', PMX, y, { size: 7, font: 'bold', color: STONE2, spacing: 1 });
+  y += 5;
+  const COL_PROD = PMX + 4, COL_TRAMO = PMX + 96, COL_CANT = PMX + 124, COL_UNIT = PMX + 152, COL_TOT = RX - 4;
+  doc.setFillColor(...INK); doc.roundedRect(PMX, y, CW, 9, 2, 2, 'F');
+  T('PRODUCTO', COL_PROD, y + 6, { size: 7, font: 'bold', color: WHITE, spacing: 0.4 });
+  T('TRAMO', COL_TRAMO, y + 6, { size: 7, font: 'bold', color: WHITE });
+  T('CANT.', COL_CANT, y + 6, { size: 7, font: 'bold', color: WHITE, align: 'center' });
+  T('UNIT. (NETO)', COL_UNIT, y + 6, { size: 6.5, font: 'bold', color: WHITE, align: 'right' });
+  T('TOTAL (NETO)', COL_TOT, y + 6, { size: 6.5, font: 'bold', color: WHITE, align: 'right' });
+  y += 12;
 
   lineas.forEach((l, i) => {
-    if (i % 2 === 0) { doc.setFillColor(250, 250, 248); doc.rect(margin, y - 5, W - 2 * margin, 8, 'F'); }
-    const nombreCorto = (l.nombre || l.sku).length > 30 ? (l.nombre || l.sku).slice(0, 30) + '…' : (l.nombre || l.sku);
-    doc.setTextColor(30, 30, 30);
-    doc.text(nombreCorto, margin + 3, y);
-    doc.setFontSize(7.5);
-    doc.setTextColor(120, 120, 120);
-    doc.text(l.tramo || '', 108, y);
-    doc.setFontSize(9);
-    doc.setTextColor(30, 30, 30);
-    doc.text(l.cantidad.toString(), 148, y, { align: 'right' });
-    doc.text(`$${l.precio_unitario.toLocaleString('es-CL')}`, 176, y, { align: 'right' });
-    doc.text(`$${l.subtotal.toLocaleString('es-CL')}`, W - margin - 3, y, { align: 'right' });
-    y += 8;
+    const rowH = 11;
+    if (y - 4 + rowH > ph - 60) { doc.addPage(); y = 20; }
+    doc.setFillColor(...(i % 2 === 0 ? MINT : WHITE));
+    doc.roundedRect(PMX, y - 4, CW, rowH, 1.5, 1.5, 'F');
+    T((l.nombre || l.sku).substring(0, 40), COL_PROD, y + 1, { size: 9, font: 'bold', color: INK });
+    T(l.sku || '', COL_PROD, y + 4.5, { size: 6.5, color: STONE2 });
+    T(l.tramo || '-', COL_TRAMO, y + 1, { size: 8, color: STONE });
+    if (l.ahorro_pct > 0) T(`-${l.ahorro_pct}% volumen`, COL_TRAMO, y + 4.5, { size: 6.5, font: 'bold', color: TEAL });
+    T(`${l.cantidad}`, COL_CANT, y + 1, { size: 9, font: 'bold', color: STONE, align: 'center' });
+    T(fmtCLP(l.precio_unitario), COL_UNIT, y + 1, { size: 9, color: INK, align: 'right' });
+    T(fmtCLP(l.subtotal), COL_TOT, y + 1, { size: 9, font: 'bold', color: FOREST, align: 'right' });
+    y += rowH;
   });
 
-  // Separador + Totales
-  doc.setDrawColor(15, 139, 108);
-  doc.setLineWidth(0.3);
-  doc.line(margin, y, W - margin, y);
+  // ═══ TOTALES (justificados a la derecha) ═══
+  y += 4;
+  if (y > ph - 70) { doc.addPage(); y = 20; }
+  const TLX = pw - 78, TVX = RX;
+  const tRow = (label, val, { big = false, color = STONE, valColor = INK } = {}) => {
+    T(label, TLX, y, { size: big ? 12 : 9, font: big ? 'bold' : 'normal', color });
+    T(fmtCLP(val), TVX, y, { size: big ? 13 : 9.5, font: 'bold', color: valColor, align: 'right' });
+    y += big ? 9 : 6;
+  };
+  tRow(`Neto (${qtyTotal} u)`, totalNeto, { color: FOREST, valColor: FOREST });
+  tRow('+ IVA 19%', iva, { valColor: TEAL });
+  doc.setDrawColor(...TEAL); doc.setLineWidth(0.8); doc.line(TLX, y, TVX, y);
   y += 7;
-
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(9.5);
-  doc.setTextColor(80, 80, 80);
-  doc.text(`Neto (${qtyTotal} u)`, margin + 3, y);
-  doc.text(`$${totalNeto.toLocaleString('es-CL')}`, W - margin - 3, y, { align: 'right' });
-  y += 6;
-  doc.text('IVA (19%)', margin + 3, y);
-  doc.text(`$${iva.toLocaleString('es-CL')}`, W - margin - 3, y, { align: 'right' });
-  y += 7;
-
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(11);
-  doc.setTextColor(30, 30, 30);
-  doc.text('TOTAL (CLP, IVA incluido)', margin + 3, y);
-  doc.setTextColor(15, 139, 108);
-  doc.text(`$${totalConIva.toLocaleString('es-CL')}`, W - margin - 3, y, { align: 'right' });
-
+  tRow('TOTAL (CON IVA)', totalConIva, { big: true, color: FOREST, valColor: FOREST });
   if (personalizacion) {
+    T('> Grabado laser UV de tu logo incluido GRATIS desde 10 unidades por producto', PMX, y, { size: 7.5, font: 'bold', color: TEAL });
     y += 6;
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(8);
-    doc.setTextColor(15, 139, 108);
-    doc.text('✓ Personalización láser UV incluida GRATIS desde 10 unidades por producto', margin + 3, y);
   }
 
-  // Condiciones
-  y += 14;
-  doc.setTextColor(30, 30, 30);
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(9);
-  doc.text('Condiciones Comerciales', margin, y);
-  y += 5;
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(8.5);
-  doc.setTextColor(80, 80, 80);
-  const condiciones = [
-    'Forma de pago: 50% anticipo al confirmar · 50% contra entrega.',
-    `Validez de cotización: 15 días corridos (hasta ${vence.toLocaleDateString('es-CL')}).`,
-    'Precios netos por volumen según catálogo oficial PEYU (sin IVA). El IVA se detalla aparte.',
-    'Personalización: Láser UV incluida desde 10 unidades por producto. Requiere logo en formato AI/PDF vectorial.',
-    'Despacho: A coordinar vía Bluex/Starken. El costo de envío no está incluido salvo indicación expresa.',
-    'Material: 100% plástico reciclado post-consumo. Certificación e informe de impacto disponibles a solicitud.',
+  // ═══ CONDICIONES ═══
+  y += 4;
+  const conds = [
+    'Forma de pago: 50% anticipo al confirmar - 50% contra entrega.',
+    `Validez: 15 dias corridos (hasta ${vence.toLocaleDateString('es-CL')}).`,
+    'Precios netos por volumen segun catalogo oficial PEYU. El IVA se detalla aparte.',
+    'Personalizacion laser UV incluida desde 10 unidades por producto (logo AI/PDF vectorial).',
+    'Despacho a coordinar via Bluex/Starken. Envio no incluido salvo indicacion expresa.',
+    'Material 100% plastico reciclado post-consumo. Certificacion disponible a solicitud.',
   ];
-  condiciones.forEach((c) => {
-    const lines = doc.splitTextToSize(`• ${c}`, W - 2 * margin);
-    doc.text(lines, margin, y);
-    y += lines.length * 4.8;
+  const condH = 14 + conds.length * 5.5;
+  if (y + condH > ph - 26) { doc.addPage(); y = 20; }
+  doc.setFillColor(...SAND); doc.roundedRect(PMX, y, CW, condH, 3, 3, 'F');
+  T('CONDICIONES COMERCIALES', PMX + 8, y + 8, { size: 7, font: 'bold', color: STONE2, spacing: 1 });
+  conds.forEach((c, i) => {
+    const cy = y + 15 + i * 5.5;
+    T('>', PMX + 8, cy, { size: 8, font: 'bold', color: TEAL });
+    T(c, PMX + 12.5, cy, { size: 8, color: STONE });
   });
+  y += condH + 6;
 
-  // Impacto ambiental
-  if (qtyTotal >= 50) {
-    y += 4;
-    doc.setFillColor(231, 244, 239);
-    doc.rect(margin, y - 4, W - 2 * margin, 14, 'F');
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(9);
-    doc.setTextColor(15, 139, 108);
-    doc.text('🌱 Impacto de tu pedido corporativo', margin + 3, y);
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(8);
-    doc.setTextColor(60, 60, 60);
+  // ═══ IMPACTO AMBIENTAL ═══
+  if (qtyTotal >= 50 && y + 16 < ph - 26) {
+    doc.setFillColor(...MINT); doc.roundedRect(PMX, y, CW, 14, 3, 3, 'F');
     const kg = Math.round(qtyTotal * 0.05 * 10) / 10;
-    const litros = qtyTotal * 12.5;
-    doc.text(`Esta orden rescata ~${kg}kg de plástico y ahorra ${litros.toLocaleString('es-CL')}L de agua vs producción virgen.`, margin + 3, y + 5);
+    T('IMPACTO DE TU PEDIDO', PMX + 8, y + 5.5, { size: 6.5, font: 'bold', color: TEAL, spacing: 0.8 });
+    T(`Esta orden rescata ~${kg}kg de plastico y ahorra ${(qtyTotal * 12.5).toLocaleString('es-CL')}L de agua vs produccion virgen.`, PMX + 8, y + 10.5, { size: 8, color: STONE });
   }
 
-  // Footer
-  const footerY = 270;
-  doc.setFillColor(15, 139, 108);
-  doc.rect(0, footerY, W, 27, 'F');
-  doc.setTextColor(255, 255, 255);
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(9);
-  doc.text('PEYU Chile SPA  ·  Fabricantes de productos sostenibles', W / 2, footerY + 7, { align: 'center' });
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(8);
-  doc.text('Para confirmar tu pedido responde este documento o escríbenos a ventas@peyuchile.cl', W / 2, footerY + 13, { align: 'center' });
-  doc.setFont('helvetica', 'bold');
-  doc.text('♻ Cada compra evita que el plástico llegue al vertedero', W / 2, footerY + 20, { align: 'center' });
+  // ═══ FOOTER (todas las páginas) ═══
+  const pages = doc.getNumberOfPages();
+  for (let pg = 1; pg <= pages; pg++) {
+    doc.setPage(pg);
+    const fy = ph - 18;
+    doc.setFillColor(...INK); doc.rect(0, fy, pw, 18, 'F');
+    doc.setFillColor(...TEAL); doc.rect(0, fy, pw, 1.5, 'F');
+    T('PEYU Chile SpA', PMX, fy + 8, { size: 9, font: 'bold', color: WHITE });
+    T('Plastico que renace - Hecho en Chile', PMX, fy + 13, { size: 7, color: CREAM });
+    T('peyuchile.cl', RX, fy + 8, { size: 7.5, color: [210, 228, 220], align: 'right' });
+    T('+56 9 3504 0242 - ventas@peyuchile.cl', RX, fy + 13, { size: 7, color: [210, 228, 220], align: 'right' });
+  }
 
-  const pdfBytes = doc.output('arraybuffer');
-  return btoa(String.fromCharCode(...new Uint8Array(pdfBytes)));
+  return b64FromDoc(doc);
 }
 
 // ─── Email helpers (HTML inline, sin imports locales) ───────────────────
