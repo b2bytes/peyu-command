@@ -29,7 +29,7 @@ export default function ResumeJourneyBannerV2() {
   const accent = usarQuote ? '#0F8B6C' : '#C0785C';
 
   return (
-    <div className="w-full px-3 sm:px-4 lg:px-6 mb-3 sm:mb-4">
+    <div className="w-full px-3 sm:px-4 lg:px-6 pt-3 mb-3 sm:mb-4">
       <div className="max-w-screen-xl mx-auto">
         <div
           className="flex items-center gap-3 p-3 rounded-2xl"
@@ -39,8 +39,8 @@ export default function ResumeJourneyBannerV2() {
             <Icon className="w-4 h-4" style={{ color: accent }} />
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-xs font-bold" style={{ color: accent }}>{titulo}</p>
-            <p className="text-[11px] truncate" style={{ color: '#7A6050' }}>{sub}</p>
+            <p className="text-xs font-bold leading-snug" style={{ color: accent }}>{titulo}</p>
+            <p className="text-[11px] leading-snug line-clamp-2 sm:line-clamp-1" style={{ color: '#7A6050' }}>{sub}</p>
           </div>
           <Link
             to={to}

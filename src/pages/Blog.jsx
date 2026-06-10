@@ -90,7 +90,7 @@ export default function Blog() {
       />
 
       {/* Fondo creme/papel — separa visualmente al blog del resto del sitio */}
-      <div className="bg-[#FAF7F2] min-h-screen text-slate-900">
+      <div className="min-h-screen text-slate-900" style={{ background: '#F8F3ED' }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-16">
 
           {/* HERO editorial — más compacto en mobile */}

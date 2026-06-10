@@ -10,6 +10,15 @@
 // ════════════════════════════════════════════════════════════════════════
 
 export const CHANGELOG = [
+  // ── 10 junio 2026 · Barra superior móvil alineada + blog unificado ─────
+  {
+    fecha: '2026-06-10',
+    tipo: 'mejora',
+    area: 'Navegación pública · Móvil',
+    titulo: 'Barra superior alineada al tema cálido y navegación móvil sin duplicados',
+    detalle: 'La barra superior se veía oscura en móvil (fondo transparente que dejaba ver el modo noche detrás): ahora tiene fondo crema sólido con blur, igual que la barra inferior de tabs — coherente en modo día y noche. Se eliminaron los links duplicados "Tienda/Empresas" del top móvil (ya viven en los tabs inferiores Inicio·Tienda·Blog·B2B·Carrito), dejando logo + carrito + menú y un tagline de marca. El banner "cotización en curso" ya no trunca su texto y respira con padding superior. Blog e interior de artículos unificados al mismo fondo crema del sitio, con link "Ver todos" visible también en móvil.',
+  },
+
   // ── 10 junio 2026 · Escala desktop calibrada a zoom nativo 75-80% ──────
   {
     fecha: '2026-06-10',

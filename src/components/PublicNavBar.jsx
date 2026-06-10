@@ -45,7 +45,7 @@ export default function PublicNavBar() {
   return (
     <>
       {/* DESKTOP NAV */}
-      <nav className="hidden md:block sticky top-0 z-50 bg-white/95 backdrop-blur-xl border-b border-[#E0D5C8]/60" style={{ boxShadow: '0 1px 12px rgba(44,24,16,.08)' }}>
+      <nav className="hidden md:block sticky top-0 z-50" style={{ background: 'rgba(248,243,237,.96)', backdropFilter: 'blur(20px) saturate(160%)', WebkitBackdropFilter: 'blur(20px) saturate(160%)', borderBottom: '1.5px solid #D4C4B0', boxShadow: '0 1px 12px rgba(44,24,16,.08)' }}>
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
           {/* Logo */}
           <Link to="/" className="flex-shrink-0 group">
@@ -143,10 +143,10 @@ export default function PublicNavBar() {
       </nav>
 
       {/* MOBILE NAV */}
-      <nav className="md:hidden sticky top-0 z-50 bg-white/97 backdrop-blur-xl border-b border-[#E0D5C8]/60" style={{ boxShadow: '0 1px 8px rgba(44,24,16,.07)' }}>
+      <nav className="md:hidden sticky top-0 z-50" style={{ background: 'rgba(248,243,237,.97)', backdropFilter: 'blur(20px) saturate(160%)', WebkitBackdropFilter: 'blur(20px) saturate(160%)', borderBottom: '1.5px solid #D4C4B0', boxShadow: '0 1px 8px rgba(44,24,16,.07)' }}>
         <div className="px-4 h-14 flex items-center justify-between gap-2">
           {/* Logo — siempre lleva a inicio */}
-          <Link to="/" className="flex-shrink-0" onClick={() => setMobileOpen(false)}>
+          <Link to="/" className="flex-shrink-0 flex items-center gap-2" onClick={() => setMobileOpen(false)}>
             <img
               src="https://media.base44.com/images/public/69d99b9d61f699701129c103/b67ed29f9_image.png"
               alt="PEYU"
@@ -156,23 +156,10 @@ export default function PublicNavBar() {
             />
           </Link>
 
-          {/* Tienda + Empresas quick links */}
-          <div className="flex items-center gap-0.5 flex-1 justify-center">
-            <Link
-              to="/CatalogoNuevo"
-              onClick={() => setMobileOpen(false)}
-              className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-colors ${isActive('/CatalogoNuevo') ? 'text-[#C0785C] bg-[#C0785C]/10' : 'text-[#7A6050] hover:bg-[#F8F3ED]'}`}
-            >
-              Tienda
-            </Link>
-            <Link
-              to="/EmpresasNuevo"
-              onClick={() => setMobileOpen(false)}
-              className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-colors ${isActive('/EmpresasNuevo') ? 'text-[#0F8B6C] bg-[#0F8B6C]/10' : 'text-[#7A6050] hover:bg-[#F8F3ED]'}`}
-            >
-              Empresas
-            </Link>
-          </div>
+          {/* Tagline — la navegación principal vive en los tabs inferiores */}
+          <p className="flex-1 text-center text-[10px] font-semibold truncate px-1" style={{ color: '#A08070' }}>
+            Plástico 100% reciclado 🇨🇱
+          </p>
 
           {/* Cart + Menu */}
           <div className="flex items-center gap-1 flex-shrink-0">
@@ -206,7 +193,7 @@ export default function PublicNavBar() {
 
         {/* Mobile Menu */}
         {mobileOpen && (
-          <div className="border-t border-[#E0D5C8]/40 bg-white animate-in fade-in slide-in-from-top-2 duration-200">
+          <div className="animate-in fade-in slide-in-from-top-2 duration-200" style={{ background: '#FBF8F3', borderTop: '1px solid #E0D5C8' }}>
             <div className="px-4 py-3 space-y-1">
               {/* Main Links */}
               {mainLinks.map((item) => {

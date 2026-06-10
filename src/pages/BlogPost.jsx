@@ -71,7 +71,7 @@ export default function BlogPostPage() {
 
   if (loading) {
     return (
-      <div className="bg-[#FAF7F2] min-h-screen">
+      <div className="bg-[#F8F3ED] min-h-screen">
         <div className="max-w-3xl mx-auto px-4 py-16 animate-pulse">
           <div className="h-4 bg-stone-200 rounded w-24 mb-6" />
           <div className="h-12 bg-stone-200 rounded w-3/4 mb-4" />
@@ -85,7 +85,7 @@ export default function BlogPostPage() {
 
   if (!post) {
     return (
-      <div className="bg-[#FAF7F2] min-h-screen">
+      <div className="bg-[#F8F3ED] min-h-screen">
         <div className="max-w-2xl mx-auto px-4 py-24 text-center">
           <p className="text-2xl font-bold text-slate-900 mb-3">Artículo no encontrado</p>
           <p className="text-slate-500 mb-6">Quizás fue movido o aún no se publica.</p>
@@ -127,7 +127,7 @@ export default function BlogPostPage() {
       />
 
       {/* Fondo creme/papel — separa visualmente al blog del resto del sitio */}
-      <div className="bg-[#FAF7F2] min-h-screen text-slate-900">
+      <div className="bg-[#F8F3ED] min-h-screen text-slate-900">
         {/* Reading progress bar */}
         <div className="fixed top-0 left-0 right-0 h-[3px] z-50 bg-stone-200/40">
           <div
@@ -280,7 +280,7 @@ export default function BlogPostPage() {
                   <p className="text-[11px] uppercase tracking-[0.18em] text-teal-700 font-bold mb-1">Sigue leyendo</p>
                   <h2 className="text-2xl sm:text-3xl font-poppins font-extrabold text-slate-900 tracking-tight">También te puede interesar</h2>
                 </div>
-                <Link to="/blog" className="hidden sm:inline-flex items-center gap-1.5 text-sm text-teal-700 hover:text-teal-800 font-semibold">
+                <Link to="/blog" className="inline-flex items-center gap-1.5 text-xs sm:text-sm text-teal-700 hover:text-teal-800 font-semibold flex-shrink-0">
                   Ver todos →
                 </Link>
               </div>
