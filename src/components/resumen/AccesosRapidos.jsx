@@ -6,7 +6,7 @@ const LinkCard = ({ href, icon: Icon, color, titulo, sub }) => (
       <Icon className="w-4 h-4" />
     </div>
     <div className="flex-1 min-w-0">
-      <p className="text-xs sm:text-sm font-bold text-white">{titulo}</p>
+      <p className="text-xs sm:text-sm font-bold text-slate-50">{titulo}</p>
       <p className="text-[10px] text-slate-400">{sub}</p>
     </div>
     <span className="text-slate-500">→</span>
@@ -18,14 +18,14 @@ export default function AccesosRapidos() {
   return (
     <section className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl border border-slate-700 overflow-hidden shadow-sm">
       <div className="px-4 sm:px-6 py-3 sm:py-4 border-b border-slate-700">
-        <h2 className="text-white font-bold text-sm sm:text-base flex items-center gap-2">
+        <h2 className="text-slate-50 font-bold text-sm sm:text-base flex items-center gap-2">
           <Zap className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-400" /> Accesos Rápidos al Sistema
         </h2>
         <p className="text-slate-400 text-xs sm:text-sm mt-1">Navega por las funcionalidades clave de operaciones y ventas</p>
       </div>
       <div className="p-4 sm:p-6 grid sm:grid-cols-2 gap-4 sm:gap-6">
         <div>
-          <h3 className="text-white font-bold text-sm mb-3 flex items-center gap-2">
+          <h3 className="text-slate-50 font-bold text-sm mb-3 flex items-center gap-2">
             <Truck className="w-4 h-4 text-blue-400" /> Envío · Despacho
           </h3>
           <div className="space-y-2">
@@ -35,7 +35,7 @@ export default function AccesosRapidos() {
           </div>
         </div>
         <div>
-          <h3 className="text-white font-bold text-sm mb-3 flex items-center gap-2">
+          <h3 className="text-slate-50 font-bold text-sm mb-3 flex items-center gap-2">
             <TrendingUp className="w-4 h-4 text-green-400" /> Pipeline de Ventas
           </h3>
           <div className="space-y-2">
@@ -45,7 +45,7 @@ export default function AccesosRapidos() {
           </div>
         </div>
         <div className="sm:col-span-2">
-          <h3 className="text-white font-bold text-sm mb-3 flex items-center gap-2">
+          <h3 className="text-slate-50 font-bold text-sm mb-3 flex items-center gap-2">
             <CheckCircle2 className="w-4 h-4 text-emerald-400" /> Análisis · Operaciones
           </h3>
           <div className="grid sm:grid-cols-3 gap-2">
