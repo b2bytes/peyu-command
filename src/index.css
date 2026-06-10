@@ -195,6 +195,15 @@
     color-scheme: light;
     transition: background-color 600ms ease, color 600ms ease;
   }
+
+  /* ── Escala de densidad global ────────────────────────────────────────
+     A pantalla completa el diseño se veía "amorfo" (todo gigante, había que
+     bajar el zoom del navegador a ~75%). Como Tailwind dimensiona TODO en rem
+     (texto, paddings, gaps, cards), bajar la base en pantallas grandes
+     compacta la página completa proporcionalmente — un zoom nativo sin tocar
+     200 archivos. Mobile queda en 16px (accesibilidad / no-zoom de iOS). */
+  @media (min-width: 1024px) { html { font-size: 15px; } }
+  @media (min-width: 1536px) { html { font-size: 14px; } }
   html[data-liquid-mode="night"] { color-scheme: dark; }
 
   body {

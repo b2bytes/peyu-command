@@ -10,6 +10,15 @@
 // ════════════════════════════════════════════════════════════════════════
 
 export const CHANGELOG = [
+  // ── 10 junio 2026 · Escala global: fin del "zoom al 75%" ────────────────
+  {
+    fecha: '2026-06-10',
+    tipo: 'bug',
+    area: 'Toda la tienda',
+    titulo: 'La página ya no se ve gigante a pantalla completa',
+    detalle: 'En escritorio a pantalla completa todo se veía sobredimensionado ("amorfo") y había que bajar el zoom del navegador a 75% para verla bien. Se aplicó una escala de densidad global: en pantallas grandes la base tipográfica baja (15px ≥1024px, 14px ≥1536px), compactando proporcionalmente texto, paddings y tarjetas de TODA la app como un zoom nativo. Además el titular del hero se redujo (83px → máx 54px), junto con el ancho y los espaciados del hero. Mobile queda en 16px por accesibilidad.',
+  },
+
   // ── 10 junio 2026 · Auditoría de flujos: 3 quiebres corregidos ──────────
   {
     fecha: '2026-06-10',

@@ -34,12 +34,12 @@ export default function HeroBoldV2({ heroImg, onPersonaliza }) {
   const navigate = useNavigate();
 
   return (
-    <section className="w-full px-4 sm:px-8 lg:px-16 xl:px-20 pt-4 sm:pt-8 pb-4 sm:pb-6">
-      <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
+    <section className="w-full px-4 sm:px-8 lg:px-12 xl:px-16 pt-4 sm:pt-6 pb-4 sm:pb-6">
+      <div style={{ maxWidth: '1240px', margin: '0 auto' }}>
         {/* Mobile: headline encima del carrusel — no se pierde en el scroll */}
         <div className="lg:hidden mb-3">
           <h1 className="font-fraunces leading-[0.93] tracking-tight"
-            style={{ fontSize: 'clamp(1.75rem, 8vw, 2.8rem)', color: '#2C1810' }}>
+            style={{ fontSize: 'clamp(1.5rem, 6.5vw, 2.2rem)', color: '#2C1810' }}>
             Objetos que{' '}
             <em className="not-italic" style={{ color: '#C0785C' }}>cuidan</em>{' '}
             el planeta.
@@ -49,7 +49,7 @@ export default function HeroBoldV2({ heroImg, onPersonaliza }) {
           </p>
         </div>
 
-        <div className="grid lg:grid-cols-2 gap-4 sm:gap-10 xl:gap-20 items-center">
+        <div className="grid lg:grid-cols-2 gap-4 sm:gap-8 xl:gap-12 items-center">
 
           {/* ── COPY (desktop only headline + CTAs) ─────────────────────── */}
           <div className="order-2 lg:order-1 flex flex-col justify-center">
@@ -63,7 +63,7 @@ export default function HeroBoldV2({ heroImg, onPersonaliza }) {
 
             {/* Headline — desktop only (mobile ya se muestra arriba) */}
             <h1 className="hidden lg:block font-fraunces leading-[0.93] tracking-tight mb-5"
-              style={{ fontSize: 'clamp(2.4rem, 4.5vw, 5.2rem)', color: '#2C1810' }}>
+              style={{ fontSize: 'clamp(2.2rem, 3.2vw, 3.6rem)', color: '#2C1810' }}>
               Objetos que<br />
               <em className="not-italic" style={{ color: '#C0785C' }}>cuidan</em>{' '}
               el planeta.
