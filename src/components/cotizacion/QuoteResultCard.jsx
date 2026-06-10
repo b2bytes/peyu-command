@@ -1,4 +1,5 @@
-import { CheckCircle2, Building2, Mail, MessageCircle, FileText, PhoneCall, Download } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { CheckCircle2, Building2, Mail, MessageCircle, FileText, PhoneCall, Download, ShoppingCart } from 'lucide-react';
 import { fmtCLP } from '@/lib/shop-v2-cart';
 
 // Próximos pasos tras enviar la cotización: dan claridad de qué pasará.
@@ -108,6 +109,15 @@ export default function QuoteResultCard({ result, empresa, email, onReset }) {
       <p className="text-[11px] text-[#A78B6F] mb-5">
         Precio referencial por volumen. El presupuesto final puede variar según personalización y plazos.
       </p>
+
+      {/* Viaje único: el carro conserva estos mismos productos — el cliente
+          puede cerrar la compra AHORA sin esperar al ejecutivo ni re-elegir nada */}
+      <Link
+        to="/CarritoNuevo"
+        className="w-full h-11 mb-2.5 rounded-xl bg-white border-2 border-[#0F8B6C] hover:bg-[#0F8B6C]/5 text-[#0F8B6C] font-bold text-sm flex items-center justify-center gap-2 transition-colors"
+      >
+        <ShoppingCart className="w-4 h-4" /> Comprar ahora este mismo pedido
+      </Link>
 
       {/* Acciones inline (desktop) */}
       <div className="hidden sm:flex flex-col gap-2.5">

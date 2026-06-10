@@ -468,7 +468,7 @@ Deno.serve(async (req) => {
       actor: contact_name || email,
       channel: 'web',
       detail: 'Cotización rápida por volumen (Shop v2)',
-      meta: { lead_score, qty_total: qtyTotal, total_neto: totalNeto },
+      meta: { lead_score, qty_total: qtyTotal, total_neto: totalNeto, total_con_iva: totalConIva, lineas },
     };
 
     // ─── IDEMPOTENCIA: B2BLead previo por email ───

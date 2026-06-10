@@ -143,7 +143,13 @@ Deno.serve(async (req) => {
     }
 
     // 4) NOTIFICACIÓN al equipo (Carlos / ventas)
-    try {
+    // GUARD anti-duplicados: si el lead vino de la cotización rápida Shop v2,
+    // quickB2BQuoteV2 YA envió el email rico al equipo (3 buzones). Sin este
+    // guard, los founders recibían el mismo aviso duplicado por cada cotización.
+    const yaNotificadoPorQuote = (lead.notes || '').includes('Shop v2');
+    if (yaNotificadoPorQuote) {
+      log.steps.push({ step: 'notify', ok: false, reason: 'ya_notificado_por_quickB2BQuoteV2' });
+    } else try {
       const summary = `
 Lead score: ${leadScore}/100 (${urgency})
 Empresa: ${lead.company_name || 'N/A'}

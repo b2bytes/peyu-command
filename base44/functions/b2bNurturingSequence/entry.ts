@@ -269,6 +269,12 @@ async function processLead(svc, lead, baseUrl) {
   // Si la propuesta fue aceptada, no hay nada que hacer
   if (propuesta?.status === 'Aceptada' || lead.status === 'Aceptado' || lead.status === 'Ganado') return { skip: 'already_won' };
 
+  // HANDOFF anti-duplicados: si hay una propuesta formal ENVIADA, la secuencia
+  // de propuesta (b2bProposalEmailSequence: D0/D2/D5/D10) es la dueña de la
+  // comunicación con el cliente. Sin esto, el cliente recibía DOS secuencias
+  // en paralelo (hasta 9 correos en 2 semanas).
+  if (propuesta?.status === 'Enviada') return { skip: 'proposal_sequence_active' };
+
   const propUrl = propuesta ? `${baseUrl}/b2b/propuesta?id=${propuesta.id}` : null;
   const total = propuesta?.total;
   const qtyTotal = lead.qty_estimate || 50;

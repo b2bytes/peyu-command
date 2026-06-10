@@ -10,6 +10,22 @@
 // ════════════════════════════════════════════════════════════════════════
 
 export const CHANGELOG = [
+  // ── 10 junio 2026 · Auditoría de correos: fin de los duplicados ─────────
+  {
+    fecha: '2026-06-10',
+    tipo: 'bug',
+    area: 'Secuencias de correo',
+    titulo: 'Fin de los correos duplicados al equipo y al cliente B2B',
+    detalle: 'Auditoría completa de TODAS las secuencias de correo. Encontrado: cada cotización B2B generaba hasta 7 correos al equipo (quickB2BQuoteV2 a 3 buzones + automatización "Alerta: Nuevo Lead" a ventas@ + onNewB2BLead a 3 buzones) y el cliente podía caer en 3 secuencias paralelas (nurturing por hora + secuencia de propuesta + nurturing "tibios"). Corregido: (1) archivada la alerta redundante de lead; (2) onNewB2BLead ya no re-notifica leads que vienen de la cotización Shop v2; (3) archivado el CRON "tibios" (duplicaba el nurturing principal); (4) handoff limpio: cuando hay propuesta formal Enviada, solo la secuencia de propuesta escribe al cliente. Resultado: 1 correo al equipo y 1 secuencia al cliente por cotización.',
+  },
+  {
+    fecha: '2026-06-10',
+    tipo: 'mejora',
+    area: 'Cotización + Compra',
+    titulo: 'Viaje único cerrado: de la cotización a la compra sin re-elegir nada',
+    detalle: 'La pantalla de éxito de la cotización ahora ofrece "Comprar ahora este mismo pedido": como el carro único conserva los productos cotizados, el cliente puede cerrar la compra al instante sin esperar al ejecutivo. Además cada cotización guarda en su historial el desglose estructurado completo (líneas, tramos, neto, IVA, total) para que el admin vea en el pipeline exactamente lo que el cliente cotizó, no solo un resumen de texto.',
+  },
+
   // ── 10 junio 2026 · Agent OS móvil: header compacto + input persistente ──
   {
     fecha: '2026-06-10',
