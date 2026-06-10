@@ -203,7 +203,8 @@
      compacta la página completa proporcionalmente — un zoom nativo sin tocar
      200 archivos. Mobile queda en 16px (accesibilidad / no-zoom de iOS). */
   @media (min-width: 1024px) { html { font-size: 15px; } }
-  @media (min-width: 1536px) { html { font-size: 14px; } }
+  @media (min-width: 1280px) { html { font-size: 14px; } }
+  @media (min-width: 1700px) { html { font-size: 13px; } }
   html[data-liquid-mode="night"] { color-scheme: dark; }
 
   body {
