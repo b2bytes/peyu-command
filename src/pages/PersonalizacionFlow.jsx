@@ -16,7 +16,6 @@ import DisenosPeyuPicker from '@/components/personalizacion/DisenosPeyuPicker';
 import ColorPickerCarcasa from '@/components/personalizacion/ColorPickerCarcasa';
 import QuantityStepper from '@/components/personalizacion/QuantityStepper';
 import PersonalizacionOptionPicker from '@/components/personalizacion/PersonalizacionOptionPicker';
-import MockupGenerator from '@/components/MockupGenerator';
 import PublicSEO from '@/components/PublicSEO';
 import { saveJourney, loadJourney, clearJourney } from '@/lib/personalizar-journey';
 
@@ -248,7 +247,6 @@ export default function PersonalizacionFlow() {
   const [logoUrlSubido, setLogoUrlSubido] = useState('');
   const [disenoPeyuUrl, setDisenoPeyuUrl] = useState('');
   const [opcion, setOpcion] = useState(null);
-  const [mockupModalOpen, setMockupModalOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [done, setDone] = useState(false);
   const [mockupUrl, setMockupUrl] = useState('');
@@ -759,25 +757,12 @@ export default function PersonalizacionFlow() {
       {opcion && cantidad >= 10 && quoteB2BLink}
 
       {opcion && opcion !== 'none' && personalizacionCompleta && (
-        <>
-          <button
-            onClick={() => setMockupModalOpen(true)}
-            className="w-full rounded-2xl font-bold text-sm flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
-            style={{
-              padding: '12px 16px',
-              background: mockupUrl ? 'rgba(139,173,138,.18)' : C.actionGrad,
-              border: mockupUrl ? `1.5px solid ${C.greenBorder}` : 'none',
-              color: mockupUrl ? '#5B7D5A' : 'white',
-              boxShadow: mockupUrl ? 'none' : C.actionShadow,
-            }}
-          >
-            <Sparkles className="w-4 h-4" />
-            <span>{mockupUrl ? '✓ Mockup listo · click para ver o regenerar' : '✨ Generar mockup fotorrealista con IA'}</span>
-          </button>
-          <p className="text-[10px] text-center" style={{ color: C.fgMuted }}>
-            {mockupUrl ? 'El mockup quedará adjunto como referencia de producción.' : 'Toma ~10 seg · La IA simula el grabado sobre tu producto.'}
+        <div className="flex items-center gap-2 p-3 rounded-2xl" style={{ background: C.greenSoft, border: `1.5px solid ${C.greenBorder}` }}>
+          <CheckCircle className="w-4 h-4 flex-shrink-0" style={{ color: C.green }} />
+          <p className="text-xs leading-relaxed font-semibold" style={{ color: C.fg }}>
+            Tu diseño se ve en el mockup en vivo. Ajusta tamaño y posición, y confirma para continuar.
           </p>
-        </>
+        </div>
       )}
     </div>
   );
@@ -791,33 +776,26 @@ export default function PersonalizacionFlow() {
         <p className="text-sm mt-0.5" style={{ color: C.fgMuted }}>Confirma tu personalización antes de pagar</p>
       </div>
 
-      {mockupUrl ? (
-        <div className="rounded-2xl overflow-hidden relative lg:hidden" style={{ border: `2px solid ${C.green}` }}>
-          <img src={mockupUrl} alt="Tu mockup personalizado" className="w-full object-contain" style={{ maxHeight: '280px', background: C.bg }} />
-          <div className="absolute top-2 left-2 flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-xs font-bold"
-            style={{ background: 'rgba(255,255,255,.92)', color: C.green }}>
-            <CheckCircle className="w-3 h-3" /> Mockup aprobado
-          </div>
-          <button onClick={() => setMockupModalOpen(true)}
-            className="absolute top-2 right-2 px-2.5 py-1.5 rounded-full text-xs font-bold"
-            style={{ background: 'rgba(255,255,255,.92)', color: C.action }}>
-            Cambiar
+      {/* Mockup en vivo del diseño confirmado — el MISMO del paso anterior (solo mobile;
+          en desktop ya vive en el panel central gigante). Sin paso extra de IA. */}
+      {tieneDiseno && opcion !== 'none' && (
+        <div className="lg:hidden relative">
+          <LaserEngravePreview
+            productImageUrl={displayImg}
+            cleanImageUrl={cleanBaseUrl}
+            logoFile={opcion === 'archivo' ? archivo : null}
+            logoUrl={opcion === 'archivo' ? logoUrlSubido : (opcion === 'peyu' ? disenoPeyuUrl : '')}
+            texto={opcion === 'frase' ? texto : ''}
+            areaLabel={producto?.area_laser_mm}
+            defaultTint={tint}
+            light
+          />
+          <button onClick={() => setStep(2)}
+            className="absolute top-3 right-3 px-2.5 py-1.5 rounded-full text-xs font-bold z-10"
+            style={{ background: 'rgba(255,255,255,.92)', color: C.action, border: `1px solid ${C.border}` }}>
+            Editar diseño
           </button>
         </div>
-      ) : (
-        <button onClick={() => setMockupModalOpen(true)}
-          className="w-full flex items-center gap-3 p-3.5 rounded-2xl transition-all hover:-translate-y-0.5"
-          style={{ border: `1.5px dashed ${C.border}`, background: C.bg }}>
-          <div className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
-            style={{ background: C.greenSoft, border: `1px solid ${C.greenBorder}` }}>
-            <Sparkles className="w-5 h-5" style={{ color: C.green }} />
-          </div>
-          <div className="flex-1 text-left">
-            <p className="text-sm font-bold" style={{ color: C.fg }}>¿Quieres ver el mockup?</p>
-            <p className="text-xs mt-0.5" style={{ color: C.fgMuted }}>Vista fotorrealista con IA · opcional</p>
-          </div>
-          <ArrowRight className="w-4 h-4 flex-shrink-0" style={{ color: C.fgMuted }} />
-        </button>
       )}
 
       {/* Resumen del pedido */}
@@ -1143,19 +1121,6 @@ export default function PersonalizacionFlow() {
         {!canAdvance && step === 2 && <p className="text-center text-xs mt-1.5 font-semibold" style={{ color: C.fgMuted }}>{!opcion ? 'Elige qué tipo de grabado quieres' : 'Completa tu diseño para continuar'}</p>}
       </div>
 
-      <MockupGenerator
-        open={mockupModalOpen}
-        onOpenChange={setMockupModalOpen}
-        productName={producto?.nombre}
-        productCategory={producto?.categoria || 'Personalización'}
-        productSku={producto?.sku}
-        productImageUrl={displayImg}
-        initialText={opcion === 'frase' ? texto : ''}
-        initialColor={colorLabel || ''}
-        initialResultUrl={mockupUrl}
-        onLogoUploaded={(url) => { if (url) { setLogoUrlSubido(url); setArchivo(null); } }}
-        onGenerated={(url) => { if (url) setMockupUrl(url); }}
-      />
     </div>
   );
 }

@@ -10,6 +10,15 @@
 // ════════════════════════════════════════════════════════════════════════
 
 export const CHANGELOG = [
+  // ── 10 junio 2026 · Personalizar: mockup unificado ──────────────────────
+  {
+    fecha: '2026-06-10',
+    tipo: 'mejora',
+    area: 'Personalizar',
+    titulo: 'Mockup unificado: el preview en vivo ES el mockup, sin paso extra de IA',
+    detalle: 'Se eliminó el botón "Generar mockup fotorrealista con IA" que abría un segundo flujo de mockup distinto al preview en vivo. Ahora el mockup en vivo (donde el cliente ajusta tamaño y posición) es la única vista: en Confirmar se muestra el mismo preview con botón "Editar diseño" para volver, y el CTA pasa directo a confirmar. Menos pasos, sin duplicación.',
+  },
+
   // ── 10 junio 2026 · Personalizar: textos visibles en todos los pasos ────
   {
     fecha: '2026-06-10',
