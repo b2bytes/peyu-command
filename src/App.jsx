@@ -133,6 +133,7 @@ const ConciliarCatalogo = lazyWithRetry(() => import('./pages/ConciliarCatalogo'
 const CatalogoB2BOficial = lazyWithRetry(() => import('./pages/CatalogoB2BOficial'), { name: 'CatalogoB2BOficial' });
 const MigrarPreciosB2B = lazyWithRetry(() => import('./pages/MigrarPreciosB2B'), { name: 'MigrarPreciosB2B' });
 const DespachoRapido = lazyWithRetry(() => import('./pages/DespachoRapido'), { name: 'DespachoRapido' });
+const AgenteCentral = lazyWithRetry(() => import('./pages/AgenteCentral'), { name: 'AgenteCentral' });
 
 const AdminLoader = () => (
   <div className="fixed inset-0 flex items-center justify-center bg-background">
@@ -238,6 +239,7 @@ const AuthenticatedApp = () => {
           <Route path="seo-keywords" element={<SEOKeywords />} />
           <Route path="recategorizar" element={<RecategorizarCatalogo />} />
           <Route path="agente" element={<AgenteOS />} />
+          <Route path="agente-central" element={<AgenteCentral />} />
           <Route path="conciliar-catalogo" element={<ConciliarCatalogo />} />
           <Route path="catalogo-b2b-oficial" element={<CatalogoB2BOficial />} />
           <Route path="migrar-precios-b2b" element={<MigrarPreciosB2B />} />

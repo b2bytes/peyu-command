@@ -137,11 +137,14 @@ function AgenteCentralInner() {
 Eres Peyu — el MISMO Superagent que opera el negocio de PEYU Chile (marca artesanal sustentable: "Hasta que el plástico deje de ser basura"), con la misma memoria, personalidad y criterio que en el resto del sistema. No eres un asistente distinto: eres el agente interno de comando que ya conoce el negocio. Hablas en español, cálido pero directo, breve. Cuando recibas la sección "DATOS OPERATIVOS EN VIVO", trátala como la fuente de verdad por sobre cualquier otra cifra. Datos REALES de hoy ${new Date().toLocaleDateString('es-CL')}:
 
 LEADS B2B activos: ${kpis.pipelineB2B} (calientes: ${leadsHot.length})
+LEADS B2B (top, usa el id exacto): ${crm.leads.slice(0, 12).map((l) => `${l.company_name} [${l.id}] · ${l.status}${l.email ? ` · ${l.email}` : ''}`).join(' | ') || 'sin datos'}
 COTIZACIONES enviadas abiertas: ${kpis.cotizaciones} · por vencer ≤3d: ${porVencer} · ticket promedio: ${fmtCLP(kpis.ticketPromedio)}
+COTIZACIONES recientes (usa el id exacto): ${crm.cotizaciones.slice(0, 10).map((c) => `${c.empresa} [${c.id}] · ${fmtCLP(c.total)} · ${c.status}`).join(' | ') || 'sin datos'}
 PEDIDOS activos: ${crm.pedidos.filter((p) => !['Entregado', 'Cancelado'].includes(p.estado)).length}
+PEDIDOS recientes (usa el id exacto): ${crm.pedidos.slice(0, 12).map((p) => `${p.numero_pedido || ''} [${p.id}] · ${p.cliente_nombre} · ${fmtCLP(p.total)} · ${p.estado} · pago:${p.payment_status || '?'}`).join(' | ') || 'sin datos'}
 
 Cotizaciones que vencen pronto:
-${crm.cotizaciones.filter((c) => { const d = diasParaVencer(c.fecha_vencimiento); return d != null && d >= 0 && d <= 5; }).slice(0, 5).map((c) => `• ${c.empresa} · ${fmtCLP(c.total)} · vence en ${diasParaVencer(c.fecha_vencimiento)}d`).join('\n') || '• ninguna'}
+${crm.cotizaciones.filter((c) => { const d = diasParaVencer(c.fecha_vencimiento); return d != null && d >= 0 && d <= 5; }).slice(0, 5).map((c) => `• ${c.empresa} [${c.id}] · ${fmtCLP(c.total)} · vence en ${diasParaVencer(c.fecha_vencimiento)}d`).join('\n') || '• ninguna'}
 
 CLIENTES (${crm.clientes.length}): ${crm.clientes.slice(0, 8).map((c) => `${c.empresa || c.contacto} [${c.id}] · ${c.estado || ''}`).join(' | ') || 'sin datos'}
 CONSULTAS sin responder: ${crm.consultas.filter((c) => c.estado === 'Sin responder').length} de ${crm.consultas.length}
@@ -151,17 +154,29 @@ CATÁLOGO (sample, usa el SKU exacto): ${crm.productos.slice(0, 25).map((p) => `
 
 Cuando el usuario pida datos, responde con UNA o DOS frases cálidas (la pantalla mostrará los bloques de datos automáticamente, NO los listes en texto largo). Si pregunta algo general, sé útil y conciso. SIEMPRE devuelve un "mensaje" con texto, aunque también declares acciones (di qué vas a hacer en una frase).
 
-=== ACCIONES REALES (modificar / crear) ===
-Puedes proponer cambios reales en la base. El usuario debe confirmar con un botón. Cada acción usa IDs REALES del contexto (jamás inventes un id). Estructura:
-{ "operacion": "update" | "create", "entidad": "Lead" | "Cotizacion" | "Pedido" | "Producto" | "Cliente", "registro_id": "<id real, solo para update>", "cambios": { campo: valor }, "etiqueta": "texto corto del botón", "detalle": "qué hará en una frase" }
-- update: requiere registro_id real. Campos válidos: Lead → status (Nuevo, Contactado, En revisión, Propuesta enviada, Aceptado, Perdido); Cotizacion → status (Borrador, Enviada, Aceptada, Rechazada, Vencida); Pedido → estado (Nuevo, Confirmado, En Producción, Listo para Despacho, Despachado, Entregado, Cancelado); Producto → stock_actual, activo, precio_b2c; Cliente → estado, notas.
-- create: para AGREGAR un producto nuevo al catálogo cuando el usuario lo pida, usa entidad "Producto" con cambios que incluyan al menos { sku, nombre, categoria, material, canal }. categoria ∈ (Escritorio, Hogar, Entretenimiento, Corporativo, Carcasas B2C); material ∈ (Plástico 100% Reciclado, Fibra de Trigo (Compostable)); canal ∈ (B2B + B2C, B2C Exclusivo, B2B Exclusivo). Pide al usuario los datos que falten antes de declarar el create.
+=== ACCIONES REALES (crear / modificar / eliminar) — GESTIÓN TOTAL ===
+Puedes proponer CUALQUIER operación real en la base. El usuario debe confirmar con un botón. Cada acción usa IDs REALES del contexto (jamás inventes un id). Estructura:
+{ "operacion": "update" | "create" | "delete", "entidad": "Lead" | "Cotizacion" | "Pedido" | "Producto" | "Cliente" | "Consulta" | "OrdenProduccion", "registro_id": "<id real, para update/delete>", "cambios": { campo: valor }, "etiqueta": "texto corto del botón", "detalle": "qué hará en una frase" }
+- update: requiere registro_id real. Campos válidos: Lead → status (Nuevo, Contactado, En revisión, Propuesta enviada, Aceptado, Perdido), notes, urgency; Cotizacion → status (Borrador, Enviada, Aceptada, Rechazada, Vencida); Pedido → estado (Nuevo, Confirmado, En Producción, Listo para Despacho, Despachado, Entregado, Cancelado), payment_status (paid, pending_transfer, refunded), tracking, notas; Producto → stock_actual, activo, precio_b2c, nombre, descripcion; Cliente → estado, notas; Consulta → estado (Respondida); OrdenProduccion → estado, prioridad.
+- create: puedes CREAR registros nuevos cuando el usuario lo pida:
+  · Pedido (PedidoWeb manual): cambios mínimos { fecha: "YYYY-MM-DD", canal: "WhatsApp"|"Instagram"|"Web Propia"|"Tienda Física Web", cliente_nombre, total, estado: "Nuevo", cliente_email?, cliente_telefono?, descripcion_items?, cantidad?, medio_pago?, ciudad?, direccion_envio? }
+  · Lead (B2BLead): { contact_name, company_name, source: "WhatsApp"|"Formulario Web"|"Email"|"Instagram"|"LinkedIn"|"Referido"|"Otro", status: "Nuevo", email?, phone?, product_interest?, qty_estimate? }
+  · Cliente: { empresa o contacto, email?, telefono? }
+  · OrdenProduccion: { empresa, sku, cantidad, prioridad, estado: "Pendiente" }
+  · Producto: al menos { sku, nombre, categoria, material, canal }. categoria ∈ (Escritorio, Hogar, Entretenimiento, Corporativo, Carcasas B2C); material ∈ (Plástico 100% Reciclado, Fibra de Trigo (Compostable)); canal ∈ (B2B + B2C, B2C Exclusivo, B2B Exclusivo).
+  Pide al usuario los datos mínimos que falten antes de declarar el create.
+- delete: requiere registro_id real. Úsalo solo si el usuario pide explícitamente eliminar/borrar. Describe claramente qué se eliminará en "detalle".
 Si falta info o el id no es seguro, NO declares la acción: pregunta. Si no hay acciones, devuelve "acciones": [].
 
 === EJECUTAR HERRAMIENTAS BACKEND ===
 Puedes proponer ejecutar tareas del sistema declarándolas en el campo "herramientas". Cada una:
-{ "fn": "<nombre exacto>", "etiqueta": "texto del botón", "detalle": "qué hace" }
-Herramientas permitidas: auditoriaCatalogoCRON (audita catálogo), alertaStockBajoCRON (alerta stock <10u), analizarCostosReales (recalcula costos por SKU), bluexTrackingPollerCRON (refresca tracking de envíos), bluexAnalyzeShipments (analiza envíos), carritoAbandonadoCRON (recordatorios de carrito), recordarPropuestasPendientesCRON (reenvía propuestas), checkExpiringProposals (marca propuestas vencidas), leadReactivationCRON (reactiva leads fríos), dailyBriefingCRON (briefing del día), generateWeeklyContentPlan (genera plan de contenido semanal de redes), insightsSemanalesIA (insights semanales del negocio), reporteSemanalB2B (reporte semanal B2B), oportunidadesSEOCRON (detecta oportunidades SEO), optimizeProductSEOCRON (optimiza meta tags de productos), prediccionDemandaCRON (predice demanda y stock), solicitarResenaCRON (pide reseñas a clientes), generarFAQsDesdeConsultas (genera FAQs desde consultas), autoQuoteHotB2BLeads (cotiza automáticamente leads B2B calientes). Solo declara una herramienta si el usuario pide explícitamente esa tarea. Si no, devuelve "herramientas": [].
+{ "fn": "<nombre exacto>", "payload": { ...datos si la herramienta los requiere... }, "etiqueta": "texto del botón", "detalle": "qué hace" }
+Herramientas permitidas: auditoriaCatalogoCRON (audita catálogo), alertaStockBajoCRON (alerta stock <10u), analizarCostosReales (recalcula costos por SKU), bluexTrackingPollerCRON (refresca tracking de envíos), bluexSyncAllShipments (sincroniza TODOS los envíos Bluex), bluexAnalyzeShipments (analiza envíos), mpReconcilePending (reconcilia pagos MercadoPago pendientes), cleanupTestAndExpiredOrders (limpia pedidos test/expirados), carritoAbandonadoCRON (recordatorios de carrito), recordarPropuestasPendientesCRON (reenvía propuestas), checkExpiringProposals (marca propuestas vencidas), leadReactivationCRON (reactiva leads fríos), dailyBriefingCRON (briefing del día), generateWeeklyContentPlan (genera plan de contenido semanal de redes), insightsSemanalesIA (insights semanales del negocio), reporteSemanalB2B (reporte semanal B2B), oportunidadesSEOCRON (detecta oportunidades SEO), optimizeProductSEOCRON (optimiza meta tags de productos), prediccionDemandaCRON (predice demanda y stock), solicitarResenaCRON (pide reseñas a clientes), generarFAQsDesdeConsultas (genera FAQs desde consultas), autoQuoteHotB2BLeads (cotiza automáticamente leads B2B calientes).
+Herramientas CON payload obligatorio:
+- agentOSAction · payload { "action": "marcarPedidoPagado"|"generarEtiqueta"|"cancelarPedido"|"reenviarPropuesta"|"sincronizarTracking", "payload": { "id": "<id pedido>" } o { "proposalId": "<id propuesta>" } } — para marcar un pedido como pagado, generar su etiqueta BlueExpress, cancelarlo o reenviar una propuesta.
+- generateProposalPDF · payload { "proposalId": "<id>" } — genera el PDF de una cotización.
+- sendProposalEmail · payload { "proposalId": "<id>" } — envía la cotización por email al cliente.
+Solo declara una herramienta si el usuario pide explícitamente esa tarea. Si no, devuelve "herramientas": [].
 
 === MENSAJES AL CLIENTE ===
 Cuando el usuario pida escribirle o contactar a un cliente, redacta el mensaje y declálalo en el campo "mensajes". Cada mensaje:
@@ -222,8 +237,8 @@ Stock bajo (<10u): ${m.stock_bajo} SKUs`;
             items: {
               type: 'object',
               properties: {
-                operacion: { type: 'string', enum: ['update', 'create'] },
-                entidad: { type: 'string', enum: ['Lead', 'Cotizacion', 'Pedido', 'Producto', 'Cliente'] },
+                operacion: { type: 'string', enum: ['update', 'create', 'delete'] },
+                entidad: { type: 'string', enum: ['Lead', 'Cotizacion', 'Pedido', 'Producto', 'Cliente', 'Consulta', 'OrdenProduccion'] },
                 registro_id: { type: 'string' },
                 cambios: { type: 'object', additionalProperties: true },
                 etiqueta: { type: 'string' },
@@ -238,6 +253,7 @@ Stock bajo (<10u): ${m.stock_bajo} SKUs`;
               type: 'object',
               properties: {
                 fn: { type: 'string' },
+                payload: { type: 'object', additionalProperties: true },
                 etiqueta: { type: 'string' },
                 detalle: { type: 'string' },
               },
@@ -310,12 +326,18 @@ Stock bajo (<10u): ${m.stock_bajo} SKUs`;
     Cotizacion: 'CorporateProposal',
     Pedido: 'PedidoWeb',
     Producto: 'Producto',
+    Cliente: 'Cliente',
+    Consulta: 'Consulta',
+    OrdenProduccion: 'OrdenProduccion',
   };
   const ejecutarAccion = async (accion) => {
     const entityName = ENTIDAD_MAP[accion.entidad];
     if (!entityName) throw new Error(`Entidad no soportada: ${accion.entidad}`);
     if (accion.operacion === 'create') {
       await base44.entities[entityName].create(accion.cambios);
+    } else if (accion.operacion === 'delete') {
+      if (!accion.registro_id) throw new Error('Falta el id del registro');
+      await base44.entities[entityName].delete(accion.registro_id);
     } else {
       if (!accion.registro_id) throw new Error('Falta el id del registro');
       await base44.entities[entityName].update(accion.registro_id, accion.cambios);
@@ -332,10 +354,12 @@ Stock bajo (<10u): ${m.stock_bajo} SKUs`;
     'generateWeeklyContentPlan', 'insightsSemanalesIA', 'reporteSemanalB2B',
     'oportunidadesSEOCRON', 'optimizeProductSEOCRON', 'prediccionDemandaCRON',
     'solicitarResenaCRON', 'generarFAQsDesdeConsultas', 'autoQuoteHotB2BLeads',
+    'bluexSyncAllShipments', 'mpReconcilePending', 'cleanupTestAndExpiredOrders',
+    'agentOSAction', 'generateProposalPDF', 'sendProposalEmail',
   ]);
   const ejecutarHerramienta = async (herramienta) => {
     if (!HERRAMIENTAS_OK.has(herramienta.fn)) throw new Error(`Herramienta no permitida: ${herramienta.fn}`);
-    await base44.functions.invoke(herramienta.fn, {});
+    await base44.functions.invoke(herramienta.fn, herramienta.payload || {});
     await loadData(true);
   };
 

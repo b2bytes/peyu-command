@@ -10,6 +10,15 @@
 // ════════════════════════════════════════════════════════════════════════
 
 export const CHANGELOG = [
+  // ── 10 junio 2026 · Agente Central con gestión total ───────────────────
+  {
+    fecha: '2026-06-10',
+    tipo: 'feature',
+    area: 'Agente Central',
+    titulo: 'Gestión total del sistema desde /admin/agente-central',
+    detalle: 'El Agente Central ahora puede CREAR pedidos manuales, leads B2B, clientes y órdenes de producción, ELIMINAR registros, marcar pagos, generar etiquetas Bluex, cancelar pedidos, reconciliar MercadoPago y sincronizar envíos — todo conversando y con confirmación por botón. El contexto incluye los IDs reales de pedidos, leads y cotizaciones para que las acciones nunca fallen.',
+  },
+
   // ── 10 junio 2026 · Agent OS con capacidades totales ───────────────────
   {
     fecha: '2026-06-10',
