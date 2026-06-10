@@ -10,6 +10,15 @@
 // ════════════════════════════════════════════════════════════════════════
 
 export const CHANGELOG = [
+  // ── 10 junio 2026 · Asistente inteligente de etiqueta BlueExpress ──
+  {
+    fecha: '2026-06-10',
+    tipo: 'feature',
+    area: 'Agent OS · BlueExpress',
+    titulo: 'Etiqueta BlueExpress con asistente guiado: burbujas que enseñan cada paso',
+    detalle: 'Al apretar "Etiqueta" ya no falla con un error 500 críptico: se abre un asistente que revisa CON BURBUJAS cada requisito — 1) pago confirmado (con botón "Marcar pagado" ahí mismo), 2) dirección y comuna completas (link a Procesar Pedidos si faltan), 3) cobertura Bluex de la comuna contra el tarifario de 346 comunas (link a Tarifas si no aparece), 4) sin OT previa (anti cobros duplicados). Cada paso que falla EXPLICA cómo resolverlo y a qué módulo ir — el equipo aprende el proceso mientras lo ejecuta. Además se corrigió la causa del 500: el backend exigía payment_status=paid y rechazaba transferencias confirmadas (estado Confirmado+); ahora ambas vías cuentan como pago válido.',
+  },
+
   // ── 10 junio 2026 · Ficha móvil: mockup inmediato arriba ──
   {
     fecha: '2026-06-10',

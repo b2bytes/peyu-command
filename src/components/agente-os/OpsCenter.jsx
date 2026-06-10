@@ -4,6 +4,7 @@ import { base44 } from '@/api/base44Client';
 import { getPagoStatus } from '@/lib/pago-status';
 import { Loader2, RefreshCw, Search, CheckCircle2, AlertTriangle, ExternalLink } from 'lucide-react';
 import OpsPedidoRow from './OpsPedidoRow';
+import EtiquetaWizardModal from './EtiquetaWizardModal';
 
 // ════════════════════════════════════════════════════════════════════════
 // OpsCenter — Centro de Operaciones maestro dentro del Agent OS.
@@ -39,6 +40,7 @@ export default function OpsCenter({ onRefreshAll }) {
   const [search, setSearch] = useState('');
   const [busyId, setBusyId] = useState(null);
   const [feedback, setFeedback] = useState(null); // { ok, message, label_url }
+  const [wizardPedido, setWizardPedido] = useState(null); // asistente de etiqueta Bluex
 
   const load = async () => {
     setLoading(true);
@@ -68,6 +70,12 @@ export default function OpsCenter({ onRefreshAll }) {
   }), [pedidos]);
 
   const handleAction = async (action, payload) => {
+    // Etiqueta Bluex: abre el asistente inteligente con checklist guiado
+    // (pago, dirección, cobertura, anti-duplicados) en vez de disparar directo.
+    if (action === 'generarEtiqueta') {
+      const p = pedidos.find((x) => x.id === payload.id);
+      if (p) { setWizardPedido(p); return; }
+    }
     setBusyId(payload.id);
     setFeedback(null);
     try {
@@ -173,6 +181,16 @@ export default function OpsCenter({ onRefreshAll }) {
         </div>
 
       </div>
+
+      {/* Asistente inteligente de etiqueta BlueExpress (burbujas paso a paso) */}
+      {wizardPedido && (
+        <EtiquetaWizardModal
+          pedido={wizardPedido}
+          onClose={() => setWizardPedido(null)}
+          onDone={() => { load(); onRefreshAll?.(); }}
+          openLabelUrl={openLabelUrl}
+        />
+      )}
     </div>
   );
 }

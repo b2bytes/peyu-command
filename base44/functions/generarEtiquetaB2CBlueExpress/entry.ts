@@ -30,8 +30,12 @@ Deno.serve(async (req) => {
 
     const sr = base44.asServiceRole;
 
-    // Verificar que esté pagado
-    if (pedido.payment_status !== 'paid') {
+    // Verificar que esté pagado: payment_status 'paid' O estado post-pago
+    // (transferencias confirmadas manualmente quedan con estado Confirmado+
+    // sin payment_status='paid' — son pago válido).
+    const ESTADOS_PAGADOS = ['Confirmado', 'En Producción', 'Listo para Despacho', 'Despachado', 'Entregado'];
+    const pagado = pedido.payment_status === 'paid' || ESTADOS_PAGADOS.includes(pedido.estado);
+    if (!pagado) {
       return Response.json({ ok: false, reason: 'Pedido aún no está pagado', current_status: pedido.payment_status });
     }
 

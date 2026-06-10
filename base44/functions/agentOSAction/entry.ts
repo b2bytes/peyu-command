@@ -146,7 +146,11 @@ Deno.serve(async (req) => {
         if (!payload.id) throw new Error('Falta id de pedido');
         const [pedido] = await svc.PedidoWeb.filter({ id: payload.id });
         if (!pedido) throw new Error('Pedido no encontrado');
-        if (pedido.payment_status !== 'paid') throw new Error('El pedido no está pagado. Márcalo como pagado primero.');
+        // Pago confirmado: payment_status 'paid' O estado post-pago (transferencias
+        // confirmadas / WebPay quedan con estado Confirmado+ sin payment_status paid).
+        const ESTADOS_PAGADOS = ['Confirmado', 'En Producción', 'Listo para Despacho', 'Despachado', 'Entregado'];
+        const pagadoOk = pedido.payment_status === 'paid' || ESTADOS_PAGADOS.includes(pedido.estado);
+        if (!pagadoOk) throw new Error('El pedido no está pagado. Márcalo como pagado primero.');
         if (pedido.tracking) {
           return Response.json({ ok: true, message: `Ya tiene tracking: ${pedido.tracking}`, tracking: pedido.tracking });
         }
