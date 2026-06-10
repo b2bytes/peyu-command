@@ -132,9 +132,10 @@ export default function CatalogoNuevo() {
       <div className="max-w-6xl mx-auto px-3 sm:px-4 lg:px-6 py-3 sm:py-5">
         <CheckoutStepperV2 current="tienda" />
         <ResumeJourneyBannerV2 />
-        <div className="mb-2 sm:mb-3">
+        {/* Título compacto en mobile: una sola línea (título + claim inline) */}
+        <div className="mb-1.5 sm:mb-3 flex items-baseline gap-2 sm:block">
           <h1 className="font-fraunces text-lg sm:text-4xl mb-0" style={{ color: '#2C1810' }}>Nuestra tienda</h1>
-          <p className="text-[11px] sm:text-sm" style={{ color: '#7A6050' }}>Plástico 100% reciclado · Hecho en Chile.</p>
+          <p className="text-[10px] sm:text-sm truncate" style={{ color: '#7A6050' }}>100% reciclado · Chile 🇨🇱</p>
         </div>
 
         {/* Buscador */}
@@ -162,7 +163,7 @@ export default function CatalogoNuevo() {
         </div>
 
         {/* Chips de categoría */}
-        <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto scrollbar-hide pb-2 sm:pb-1 mb-3 sm:mb-4 -mx-3 sm:mx-0 px-3 sm:px-0">
+        <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto scrollbar-hide pb-1 mb-2 sm:mb-4 -mx-3 sm:mx-0 px-3 sm:px-0">
           <SlidersHorizontal className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-[#A78B6F] flex-shrink-0" />
           {chips.map((c) => (
             <button
@@ -183,7 +184,7 @@ export default function CatalogoNuevo() {
 
         {/* Carcasas: filtro por MARCA (categoría) */}
         {esCarcasas && marcas.length > 0 && (
-          <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto scrollbar-hide pb-2 sm:pb-1 mb-2 sm:mb-3 -mx-3 sm:mx-0 px-3 sm:px-0">
+          <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto scrollbar-hide pb-1 mb-1.5 sm:mb-3 -mx-3 sm:mx-0 px-3 sm:px-0">
             <span className="text-[10px] sm:text-xs font-bold flex-shrink-0" style={{ color: '#A78B6F' }}>Marca</span>
             {['Todas', ...marcas].map((m) => (
               <button
@@ -208,7 +209,7 @@ export default function CatalogoNuevo() {
             {/* Mobile: solo botón */}
             <button
               onClick={() => setOpenModelsModal(true)}
-              className="lg:hidden w-full mb-4 py-2.5 rounded-2xl text-sm font-bold flex items-center justify-center gap-2 transition-all active:scale-95"
+              className="lg:hidden w-full mb-2.5 py-2 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-all active:scale-95"
               style={{ background: 'white', border: '1.5px solid #D4C4B0', color: '#7A6050' }}
             >
               <Smartphone className="w-4 h-4" /> {modelo === 'Todos' ? 'Ver modelos' : modelo}
@@ -276,7 +277,7 @@ export default function CatalogoNuevo() {
            </div>
          ) : (
            <>
-             <p className="text-[10px] sm:text-xs text-[#A78B6F] mb-2 sm:mb-3 font-semibold">{filtrados.length} productos</p>
+             <p className="text-[10px] sm:text-xs text-[#A78B6F] mb-1.5 sm:mb-3 font-semibold">{filtrados.length} productos</p>
              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3 lg:gap-4">
                {filtrados.map((p, i) => <MemoProductCardV2 key={p.id} producto={p} index={i} />)}
              </div>
@@ -284,7 +285,7 @@ export default function CatalogoNuevo() {
          )}
       </div>
 
-      <footer className="py-8 text-center text-xs mt-6" style={{ borderTop: '1px solid #D4C4B0', color: '#A08070' }}>
+      <footer className="py-5 sm:py-8 text-center text-xs mt-4 sm:mt-6" style={{ borderTop: '1px solid #D4C4B0', color: '#A08070' }}>
         PEYU Chile · Plástico reciclado · Hecho en Santiago 🇨🇱
       </footer>
 

@@ -10,6 +10,15 @@
 // ════════════════════════════════════════════════════════════════════════
 
 export const CHANGELOG = [
+  // ── 10 junio 2026 · Catálogo móvil compactado ──
+  {
+    fecha: '2026-06-10',
+    tipo: 'mejora',
+    area: 'Catálogo · Móvil',
+    titulo: 'Catálogo móvil más corto: pasos ligeros y menos aire vertical',
+    detalle: 'El catálogo en móvil se sentía eterno. El stepper de compra ahora solo muestra el texto del paso ACTIVO (los demás quedan como número) — más corto y ligero. Título y claim en una sola línea, márgenes de buscador/chips/filtros reducidos a la mitad, botón "Ver modelos" compacto y footer más bajo. Los productos aparecen mucho antes en la primera pantalla.',
+  },
+
   // ── 10 junio 2026 · Asistente inteligente de etiqueta BlueExpress ──
   {
     fecha: '2026-06-10',

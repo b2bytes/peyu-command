@@ -18,7 +18,7 @@ export default function CheckoutStepperV2({ current = 'tienda', className }) {
   const idx = PASOS.findIndex((p) => p.id === current);
 
   return (
-    <nav className={`flex items-center justify-center gap-0.5 sm:gap-1.5 ${className ?? 'mb-4 sm:mb-7'}`} aria-label="Progreso de compra">
+    <nav className={`flex items-center justify-center gap-0.5 sm:gap-1.5 ${className ?? 'mb-2 sm:mb-7'}`} aria-label="Progreso de compra">
       {PASOS.map((p, i) => {
         const done = i < idx;
         const active = i === idx;
@@ -46,8 +46,9 @@ export default function CheckoutStepperV2({ current = 'tienda', className }) {
             >
               {done ? <Check className="w-2.5 h-2.5" /> : i + 1}
             </span>
-            {/* Label visible en todos los tamaños — más pequeño en mobile */}
-            <span className="text-[9px] sm:text-sm">{p.label}</span>
+            {/* Mobile: solo el paso ACTIVO muestra texto (los demás, solo número)
+                — stepper más corto y visualmente ligero. Desktop: todos. */}
+            <span className={`text-[9px] sm:text-sm ${active ? '' : 'hidden sm:inline'}`}>{p.label}</span>
           </div>
         );
 
