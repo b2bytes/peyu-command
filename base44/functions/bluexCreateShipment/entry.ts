@@ -1,17 +1,32 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 
 // ─────────────────────────────────────────────────────────────────────────────
-// BlueExpress · Emisión OS — API PRODUCCIÓN (verificada 2026-06-10)
+// BlueExpress · Emisión OS — API CORPORATIVA PRODUCCIÓN (verificada 2026-06-10)
 // ─────────────────────────────────────────────────────────────────────────────
-// Endpoint: POST https://bx-tracking.bluex.cl/bx-emission/v1
-// Auth: headers apikey + BX-TOKEN + BX-USERCODE + BX-CLIENT_ACCOUNT
-//       (credenciales del grupo de integraciones Bluex, secrets BLUEX_*)
-// Distritos: códigos REALES resueltos vía GET /bx-geo/state/all (BX-Geolocation)
+// Token: POST https://sso.blue.cl/oauth2/token (client_credentials, Basic auth)
+// Emisión: POST https://cmkin.api.blue.cl/cmkin/customer/corp/emission/v1/emission
+//          headers: Authorization Bearer + x-api-key
+// Distritos: códigos REALES resueltos vía GET bx-geo/state/all (BX-Geolocation)
 // Devuelve tracking number + etiqueta (PDF base64) y crea el registro Envio.
 // ─────────────────────────────────────────────────────────────────────────────
 
 const BX_BASE = 'https://bx-tracking.bluex.cl';
-const BLUEX_EMISSION_API = `${BX_BASE}/bx-emission/v1`;
+const BLUEX_EMISSION_API = 'https://cmkin.api.blue.cl/cmkin/customer/corp/emission/v1/emission';
+
+// Obtiene Bearer token OAuth PROD (client_credentials, expira en 1h)
+async function getBearerToken() {
+  const cid = Deno.env.get('BLUEX_CLIENT_ID') || '';
+  const csec = Deno.env.get('BLUEX_CLIENT_SECRET') || '';
+  const r = await fetch('https://sso.blue.cl/oauth2/token', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'Authorization': `Basic ${btoa(`${cid}:${csec}`)}` },
+    body: 'grant_type=client_credentials',
+  });
+  if (!r.ok) throw new Error(`Token Bluex falló (${r.status})`);
+  const j = await r.json();
+  if (!j.access_token) throw new Error('Bluex no entregó access_token');
+  return j.access_token;
+}
 
 function bxHeaders() {
   return {
@@ -25,14 +40,23 @@ function bxHeaders() {
 
 const norm = (s) => String(s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
 
-// Resuelve el código de distrito Bluex REAL para una comuna usando BX-Geo.
-// Estructura: data[].states[].ciudades[].districts[{name, code}]
-async function resolverDistrito(comuna) {
+// Resuelve el código de distrito Bluex REAL para una comuna.
+// Fuente 1: tarifario oficial Bluex importado (TarifaBluex.raw_columnas['Codigo Comuna'])
+// Fuente 2 (fallback): API BX-Geolocation
+async function resolverDistrito(sr, comuna) {
+  const objetivo = norm(comuna);
+  // 1) Tarifario oficial en la base (rápido y confiable)
+  try {
+    const tarifas = await sr.entities.TarifaBluex.filter({ comuna_normalizada: objetivo }, undefined, 1);
+    const t = tarifas?.[0];
+    const code = t?.raw_columnas?.['Codigo Comuna'];
+    if (code) return { code, name: t.comuna, region: t.region, fuente: 'tarifario' };
+  } catch { /* sigue al fallback */ }
+  // 2) Fallback: BX-Geolocation API
   try {
     const res = await fetch(`${BX_BASE}/bx-geo/state/all`, { headers: bxHeaders() });
     if (!res.ok) return null;
     const json = await res.json();
-    const objetivo = norm(comuna);
     const paises = json?.data || [];
     // 1ra pasada: match exacto por distrito (comuna/localidad)
     for (const pais of paises) {
@@ -108,16 +132,17 @@ Deno.serve(async (req) => {
     const clientAccount = Deno.env.get('BLUEX_CLIENT_ACCOUNT');
     const userName = Deno.env.get('BLUEX_USER_CODE');
     const apiKey = Deno.env.get('BLUEX_API_KEY');
-    const token = Deno.env.get('BLUEX_TOKEN');
-    if (!clientAccount || !userName || !apiKey || !token) {
+    const clientId = Deno.env.get('BLUEX_CLIENT_ID');
+    if (!clientAccount || !userName || !apiKey || !clientId) {
       return Response.json({
         error: 'Credenciales BlueExpress no configuradas',
-        hint: 'Configura BLUEX_CLIENT_ACCOUNT, BLUEX_USER_CODE, BLUEX_API_KEY, BLUEX_TOKEN en secrets',
+        hint: 'Configura BLUEX_CLIENT_ACCOUNT, BLUEX_USER_CODE, BLUEX_API_KEY, BLUEX_CLIENT_ID, BLUEX_CLIENT_SECRET en secrets',
       }, { status: 503 });
     }
 
-    // ── Resolver distrito destino REAL contra BX-Geo (producción) ────────────
-    const distrito = await resolverDistrito(comuna_destino);
+    // ── Resolver distrito destino REAL (tarifario oficial → BX-Geo) ──────────
+    const sr = base44.asServiceRole;
+    const distrito = await resolverDistrito(sr, comuna_destino);
     const tipoDestino = clasificarTipoDestino(comuna_destino);
     const districtCode = distrito?.code || 'PUD'; // fallback conservador
 
@@ -182,10 +207,15 @@ Deno.serve(async (req) => {
       return Response.json({ ok: true, dry_run: true, distrito_resuelto: distrito, tipo_destino: tipoDestino, payload_preview: payload });
     }
 
-    // Llamar a API de Emisión PRODUCCIÓN
+    // Llamar a API de Emisión CORPORATIVA PRODUCCIÓN (Bearer + x-api-key)
+    const bearer = await getBearerToken();
     const response = await fetch(BLUEX_EMISSION_API, {
       method: 'POST',
-      headers: bxHeaders(),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${bearer}`,
+        'x-api-key': apiKey,
+      },
       body: JSON.stringify(payload),
     });
 
@@ -207,8 +237,6 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'BlueExpress no retornó tracking number', trace: data }, { status: 502 });
     }
     const labelContenido = body.labels?.contenido || body.label || data.labels?.contenido || null;
-
-    const sr = base44.asServiceRole;
 
     // Crear registro Envio para rastreo
     const envio = await sr.entities.Envio.create({

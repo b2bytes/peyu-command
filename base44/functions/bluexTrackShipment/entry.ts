@@ -51,37 +51,38 @@ Deno.serve(async (req) => {
     const ot = envio.tracking_number || tracking_number;
     if (!ot) return Response.json({ error: 'Sin tracking number' }, { status: 400 });
 
-    // API producción legacy (misma familia que bx-emission, verificada).
-    const BX_BASE = 'https://bx-tracking.bluex.cl';
+    // API corporativa PROD: Bearer OAuth (sso.blue.cl) + x-api-key (verificada).
     const apiKey = Deno.env.get('BLUEX_API_KEY');
-    const token = Deno.env.get('BLUEX_TOKEN');
-    const bxHeaders = {
-      'apikey': apiKey || '',
-      'BX-TOKEN': token || '',
-      'BX-USERCODE': Deno.env.get('BLUEX_USER_CODE') || '',
-      'BX-CLIENT_ACCOUNT': Deno.env.get('BLUEX_CLIENT_ACCOUNT') || '',
-    };
+    const clientId = Deno.env.get('BLUEX_CLIENT_ID');
+    const clientSecret = Deno.env.get('BLUEX_CLIENT_SECRET');
 
-    if (!apiKey || !token) {
+    if (!apiKey || !clientId || !clientSecret) {
       return Response.json({
         ok: true,
         envio_id: envio.id,
         tracking: ot,
         estado: envio.estado,
         modo: 'manual',
-        hint: 'Credenciales Bluex no configuradas (BLUEX_API_KEY / BLUEX_TOKEN).',
+        hint: 'Credenciales Bluex no configuradas (BLUEX_API_KEY / BLUEX_CLIENT_ID / BLUEX_CLIENT_SECRET).',
         tracking_url: `https://www.bluex.cl/seguimiento?n=${ot}`,
       });
     }
 
     let response;
     try {
-      // Ruta principal del tracking-pull legacy; fallback a variante corta.
-      response = await fetch(`${BX_BASE}/bx-tracking-pull/v1/tracking/${encodeURIComponent(ot)}`, { headers: bxHeaders });
-      if (response.status === 404) {
-        const alt = await fetch(`${BX_BASE}/bx-tracking-pull/v1/${encodeURIComponent(ot)}`, { headers: bxHeaders });
-        if (alt.status !== 404) response = alt;
-      }
+      // 1) Token OAuth client_credentials (expira en 1h, se pide por consulta)
+      const tk = await fetch('https://sso.blue.cl/oauth2/token', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'Authorization': `Basic ${btoa(`${clientId}:${clientSecret}`)}` },
+        body: 'grant_type=client_credentials',
+      });
+      const bearer = (await tk.json().catch(() => ({}))).access_token;
+      if (!bearer) throw new Error(`Token Bluex falló (${tk.status})`);
+
+      // 2) Tracking-pull corporativo
+      response = await fetch(`https://cmkin.api.blue.cl/cmkin/bff/tracking-pull-corp/v1/${encodeURIComponent(ot)}`, {
+        headers: { 'Authorization': `Bearer ${bearer}`, 'x-api-key': apiKey },
+      });
     } catch (netErr) {
       // DNS / red caída → no rompemos, devolvemos estado actual
       return Response.json({

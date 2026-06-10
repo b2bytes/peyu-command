@@ -10,6 +10,22 @@
 // ════════════════════════════════════════════════════════════════════════
 
 export const CHANGELOG = [
+  // ── 10 junio 2026 · BlueExpress API PROD desbloqueada ─────────────────
+  {
+    fecha: '2026-06-10',
+    tipo: 'feature',
+    area: 'BlueExpress',
+    titulo: 'API corporativa de producción conectada y verificada',
+    detalle: 'Con las credenciales PROD nuevas (OAuth client_credentials vía sso.blue.cl) la integración quedó autenticada de punta a punta: emisión de OT (cmkin emission), tracking en tiempo real (tracking-pull-corp) y etiqueta PDF. El tracking ya valida OTs reales contra Bluex.',
+  },
+  {
+    fecha: '2026-06-10',
+    tipo: 'mejora',
+    area: 'BlueExpress',
+    titulo: 'Códigos de comuna oficiales en la emisión',
+    detalle: 'La etiqueta ya no se emite con comuna genérica: el código de distrito Bluex real (ej. PRO = Providencia) se resuelve desde el tarifario oficial de 346 comunas cargado en la base, con fallback a la API BX-Geo. Además: modo dry-run para verificar payload sin emitir OT real.',
+  },
+
   // ── 10 junio 2026 · Agent OS = página maestra de operaciones ──────────
   {
     fecha: '2026-06-10',
@@ -125,7 +141,7 @@ export const PENDIENTES = [
 
 // Estado de sistemas clave mostrado en el panel derecho.
 export const ESTADO_SISTEMA = [
-  { nombre: 'BlueExpress API', estado: 'Operativo' },
+  { nombre: 'BlueExpress API PROD (OAuth)', estado: 'Operativo' },
   { nombre: 'Tarifas (346 comunas)', estado: 'Cargadas' },
   { nombre: 'Checkout v2', estado: 'Completo' },
   { nombre: 'Tienda B2C v2', estado: 'Estable' },
