@@ -435,10 +435,12 @@ export default function PersonalizacionFlow() {
   };
 
   // Puente "comprar o cotizar": pedidos corporativos van a /CotizacionRapida
-  // pre-cargada con el producto y la cantidad (precios por volumen + factura).
+  // pre-cargada con el producto, la CANTIDAD REAL del cliente y su logo/diseño
+  // (precios por volumen + factura). Nada se pierde al cruzar de flujo.
+  const arteParaCotizacion = logoUrlSubido || disenoPeyuUrl || '';
   const quoteB2BLink = producto?.sku ? (
     <Link
-      to={`/CotizacionRapida?sku=${encodeURIComponent(producto.sku)}&qty=${Math.max(cantidad, 50)}`}
+      to={`/CotizacionRapida?sku=${encodeURIComponent(producto.sku)}&qty=${Math.max(cantidad, 10)}${arteParaCotizacion ? `&logo=${encodeURIComponent(arteParaCotizacion)}` : ''}`}
       className="flex items-center gap-3 p-3 rounded-2xl transition-all hover:-translate-y-0.5"
       style={{ background: 'rgba(15,139,108,.07)', border: '1.5px solid rgba(15,139,108,.3)' }}
     >

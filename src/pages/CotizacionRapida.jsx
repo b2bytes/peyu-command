@@ -17,6 +17,7 @@ import QuoteProductModal from '@/components/cotizacion/QuoteProductModal';
 import { getB2BPriceForQty, getUnitBasePrice } from '@/lib/catalog-pricing';
 import { getProductImage } from '@/utils/productImages';
 import { fmtCLP } from '@/lib/shop-v2-cart';
+import { saveQuoteJourney, loadQuoteJourney, clearQuoteJourney } from '@/lib/cotizacion-journey';
 
 // ════════════════════════════════════════════════════════════════════════
 // /CotizacionRapida — Flujo B2B: Productos → Datos → Revisar.
@@ -120,6 +121,7 @@ export default function CotizacionRapida() {
   const urlParams = new URLSearchParams(window.location.search);
   const urlSku = urlParams.get('sku');
   const urlQty = parseInt(urlParams.get('qty'), 10) || 50;
+  const urlLogo = urlParams.get('logo'); // logo/diseño que viene del personalizador
 
   useEffect(() => {
     base44.entities.Producto.filter({ activo: true }, '-updated_date', 200)
@@ -128,12 +130,45 @@ export default function CotizacionRapida() {
           (p) => p.sku && p.canal !== 'B2C Exclusivo' && p.categoria !== 'Gift Card'
         );
         setProductos(cotizables);
-        if (urlSku && !prefilledRef.current) {
+        if (prefilledRef.current) return;
+        prefilledRef.current = true;
+
+        // Restaura el viaje guardado (sobrevive recargas/salidas). Los datos de
+        // empresa y el logo SIEMPRE se restauran; los items según prioridad:
+        // URL (puente desde /personalizar) > guardado.
+        const saved = loadQuoteJourney();
+        if (saved?.form) setForm(f => ({ ...f, ...saved.form }));
+        if (saved?.logoUrl) setLogoUrl(saved.logoUrl);
+        if (urlLogo && urlLogo.startsWith('http')) setLogoUrl(urlLogo);
+
+        const restoreItems = (list) => (list || [])
+          .map(si => ({ producto: cotizables.find(p => p.sku === si.sku), qty: si.qty || 50 }))
+          .filter(it => it.producto);
+
+        if (urlSku) {
           const match = cotizables.find(p => p.sku === urlSku);
-          if (match) { setItems([{ producto: match, qty: urlQty }]); prefilledRef.current = true; }
+          const otros = restoreItems(saved?.items).filter(it => it.producto.sku !== urlSku);
+          if (match) setItems([{ producto: match, qty: urlQty }, ...otros]);
+          else if (otros.length) setItems(otros);
+        } else if (saved?.items?.length) {
+          const restored = restoreItems(saved.items);
+          if (restored.length) {
+            setItems(restored);
+            if (typeof saved.step === 'number' && saved.step >= 0 && saved.step <= 2) setStep(saved.step);
+          }
         }
       });
   }, []); // eslint-disable-line
+
+  // Auto-guardado del viaje B2B: cada decisión queda persistida.
+  useEffect(() => {
+    if (result || productos.length === 0 || !prefilledRef.current) return;
+    if (items.length === 0 && !form.company_name && !logoUrl) return;
+    saveQuoteJourney({
+      items: items.map(it => ({ sku: it.producto.sku, qty: it.qty })),
+      form, step, logoUrl,
+    });
+  }, [items, form, step, logoUrl, result, productos.length]);
 
   const selectedSkus = useMemo(() => items.map((i) => i.producto.sku), [items]);
 
@@ -183,6 +218,7 @@ export default function CotizacionRapida() {
       });
       if (res.data?.ok) {
         setResult(res.data);
+        clearQuoteJourney(); // viaje completado
         window.scrollTo({ top: 0, behavior: 'smooth' });
       } else {
         setError(res.data?.error || 'No se pudo enviar. Intenta de nuevo.');
@@ -194,7 +230,7 @@ export default function CotizacionRapida() {
     }
   };
 
-  const reset = () => { setResult(null); setItems([]); setForm(FORM_INICIAL); setStep(0); setLogoUrl(null); };
+  const reset = () => { setResult(null); setItems([]); setForm(FORM_INICIAL); setStep(0); setLogoUrl(null); clearQuoteJourney(); };
 
   return (
     <div className="min-h-screen font-inter text-[#2C1810] pb-16 lg:pb-0" style={{ background: '#F8F3ED' }}>

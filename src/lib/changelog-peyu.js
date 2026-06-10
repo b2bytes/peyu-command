@@ -10,6 +10,15 @@
 // ════════════════════════════════════════════════════════════════════════
 
 export const CHANGELOG = [
+  // ── 10 junio 2026 · Comprar o cotizar: un solo viaje, nada se pierde ────
+  {
+    fecha: '2026-06-10',
+    tipo: 'mejora',
+    area: 'Personalizar + Cotización B2B',
+    titulo: 'Puente unificado: cantidad real, logo y avance persisten entre comprar y cotizar',
+    detalle: 'Al cruzar de /personalizar a Cotización Rápida ya no se pisa la cantidad (antes forzaba 50u aunque el cliente tenía 17): viaja la cantidad real junto con su logo o diseño elegido, que llega pre-cargado al mockup B2B. Además la cotización ahora tiene viaje persistente igual que el personalizador: productos, cantidades, datos de empresa, paso y logo se guardan automáticamente, sobreviven recargas y se limpian solo al enviar la solicitud.',
+  },
+
   // ── 10 junio 2026 · Personalizar: color persiste hasta el final ─────────
   {
     fecha: '2026-06-10',
