@@ -85,7 +85,7 @@ export default function QuoteProductModal({ producto, onClose, onAdd, yaAgregado
 
   return (
     <AnimatePresence>
-      <motion.div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4"
+      <motion.div className="fixed inset-0 z-[70] flex items-end sm:items-center justify-center p-0 sm:p-4"
         initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
         <div className="absolute inset-0 bg-[#2A2420]/55 backdrop-blur-sm" onClick={onClose} />
 

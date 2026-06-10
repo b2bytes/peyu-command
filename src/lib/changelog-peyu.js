@@ -10,13 +10,22 @@
 // ════════════════════════════════════════════════════════════════════════
 
 export const CHANGELOG = [
-  // ── 10 junio 2026 · Ficha de producto = cockpit de 1 pantalla ──────────
+  // ── 10 junio 2026 · Cotización B2B: mockup arreglado + recorrido pulido ─
+  {
+    fecha: '2026-06-10',
+    tipo: 'bug',
+    area: 'Cotización Rápida B2B',
+    titulo: 'Mockup corregido y fin de las "pantallas encima"',
+    detalle: 'Se arreglaron 4 problemas visuales del cockpit B2B: (1) el logo grabado era INVISIBLE en productos oscuros (blend fijo) — ahora el modo de fusión se adapta al tono del producto; (2) el loader del mockup podía girar infinito si la detección de tono fallaba — ahora hay timeout de seguridad y el logo siempre aparece; (3) al subir el logo se disparaba sola la generación IA de todos los mockups, poniendo pantallas de carga encima de cada producto — ahora la IA es solo manual; (4) tarjetas dentro de tarjetas y doble scroll anidado eliminados. Además el recorrido desktop mejoró: el paso 1 muestra el catálogo GIGANTE al centro y los pasos 2-3 el mockup en vivo, con la ficha de producto siempre por sobre el header.',
+  },
+
+  // ── 10 junio 2026 · EmpresasNuevo = inicio del modo B2B en cockpit ──────
   {
     fecha: '2026-06-10',
     tipo: 'mejora',
-    area: 'Ficha de producto',
-    titulo: 'ProductoNuevo al formato cockpit + envío Bluex y medios de pago en vivo',
-    detalle: 'La ficha de producto en escritorio ahora es un cockpit de 1 pantalla (mismo formato /personalizar): header sticky con pasos del funnel y CTA "Agregar" siempre visible, panel izquierdo con info del producto + resumen vivo de la configuración (color, grabado, cantidad, total IVA incluido) + medios de pago, mockup/galería GIGANTE al centro y el configurador a la derecha con scroll propio. Suma un cotizador de envío BlueExpress EN VIVO (tarifario oficial por comuna, peso real × cantidad, comuna persistida para todo el funnel) y badges de medios de compra (Webpay/MercadoPago, transferencia −5%). Borrador persistente y lógica de carrito intactos. Móvil mantiene su flujo vertical con barra inferior.',
+    area: 'Empresas B2B',
+    titulo: 'EmpresasNuevo unificado: el modo B2B parte en cockpit de 1 pantalla',
+    detalle: 'La página de Empresas ahora abre el recorrido B2B con el mismo formato cockpit de /personalizar y /CotizacionRapida: header wizard que muestra el recorrido completo (Catálogo B2B → Cotización → Propuesta) con CTA siempre visible, propuesta de valor + sellos de confianza a la izquierda, catálogo gigante con buscador y filtros al centro (scroll propio, página sin scroll) y clientes + CTA a la derecha. Si el visitante dejó una cotización a medias, se le ofrece retomarla en 1 clic. Mobile conserva el flujo vertical completo sin perder ninguna función.',
   },
 
   // ── 10 junio 2026 · Cotización B2B = cockpit de 1 pantalla ─────────────

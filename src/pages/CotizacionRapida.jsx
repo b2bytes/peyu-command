@@ -414,12 +414,23 @@ export default function CotizacionRapida() {
         <p className="text-sm mt-0.5" style={{ color: C.fgMuted }}>Precios por volumen en vivo · grabado láser de tu logo incluido</p>
       </div>
 
-      <QuoteProductPicker
-        productos={productos}
-        selectedSkus={selectedSkus}
-        onAdd={addProducto}
-        onView={setPreview}
-      />
+      {/* Mobile: catálogo aquí. Desktop: el catálogo vive GIGANTE en el panel central */}
+      <div className="lg:hidden">
+        <QuoteProductPicker
+          productos={productos}
+          selectedSkus={selectedSkus}
+          onAdd={addProducto}
+          onView={setPreview}
+        />
+      </div>
+
+      {items.length === 0 && (
+        <div className="hidden lg:flex flex-col items-center gap-2 py-10 text-center rounded-2xl" style={{ background: C.bgSoft, border: `1.5px dashed ${C.border}` }}>
+          <Package className="w-7 h-7" style={{ color: C.fgMuted }} />
+          <p className="text-sm font-bold" style={{ color: C.fg }}>Elige productos del catálogo</p>
+          <p className="text-xs px-6" style={{ color: C.fgMuted }}>Haz clic en + en el catálogo de la izquierda. Aquí verás cantidades y totales en vivo.</p>
+        </div>
+      )}
 
       {items.length > 0 && (
         <div className="space-y-3 pt-3" style={{ borderTop: `1px solid ${C.border}` }}>
@@ -678,18 +689,34 @@ export default function CotizacionRapida() {
             form={form}
           />
 
-          {/* Centro desktop: mockup GIGANTE en vivo con uploader del logo */}
+          {/* Centro desktop: paso 1 = catálogo GIGANTE · pasos 2-3 = mockup en vivo */}
           <main className="hidden lg:flex flex-col flex-1 min-w-0 lg:h-full lg:min-h-0 gap-3">
             <div
               className="relative flex-1 min-h-0 rounded-3xl overflow-y-auto peyu-scrollbar p-4"
               style={{ background: C.surface, border: `1.5px solid ${C.border}` }}
             >
-              <MockupGalleryB2B
-                items={items.length > 0 ? items : (primerProducto ? [{ producto: primerProducto, qty: 1 }] : [])}
-                logoUrl={logoUrl}
-                onLogoChange={setLogoUrl}
-                showUploader={true}
-              />
+              {step === 0 ? (
+                <QuoteProductPicker
+                  productos={productos}
+                  selectedSkus={selectedSkus}
+                  onAdd={addProducto}
+                  onView={setPreview}
+                  fillHeight
+                />
+              ) : items.length > 0 ? (
+                <MockupGalleryB2B
+                  frameless
+                  items={items}
+                  logoUrl={logoUrl}
+                  onLogoChange={setLogoUrl}
+                  showUploader={true}
+                />
+              ) : (
+                <div className="h-full flex flex-col items-center justify-center gap-2 text-center">
+                  <Package className="w-10 h-10" style={{ color: C.fgMuted }} />
+                  <p className="text-sm font-bold" style={{ color: C.fg }}>Agrega productos para ver el mockup</p>
+                </div>
+              )}
             </div>
 
             {/* Barra info inferior */}

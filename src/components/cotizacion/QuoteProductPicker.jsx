@@ -28,7 +28,7 @@ function getColores(p) {
 
 // Buscador de productos para agregar a la cotización B2B.
 // Muestra cards ricos: imagen, colores, dimensiones, precio por tramo real.
-export default function QuoteProductPicker({ productos, selectedSkus, onAdd, onView }) {
+export default function QuoteProductPicker({ productos, selectedSkus, onAdd, onView, fillHeight = false }) {
   const [q, setQ] = useState('');
   const [cat, setCat] = useState('Todos');
 
@@ -43,8 +43,8 @@ export default function QuoteProductPicker({ productos, selectedSkus, onAdd, onV
       .filter((p) => !selectedSkus.includes(p.sku))
       .filter((p) => cat === 'Todos' || p.categoria?.replace(' B2C', '') === cat)
       .filter((p) => !term || (p.nombre || '').toLowerCase().includes(term) || (p.categoria || '').toLowerCase().includes(term))
-      .slice(0, 18);
-  }, [productos, selectedSkus, q, cat]);
+      .slice(0, fillHeight ? 60 : 18);
+  }, [productos, selectedSkus, q, cat, fillHeight]);
 
   return (
     <div>
@@ -83,7 +83,7 @@ export default function QuoteProductPicker({ productos, selectedSkus, onAdd, onV
           {q ? 'Sin resultados.' : 'Todos los productos ya están en tu cotización.'}
         </p>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 max-h-[420px] lg:max-h-[640px] overflow-y-auto peyu-scrollbar pr-1">
+        <div className={`grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 ${fillHeight ? '' : 'max-h-[420px] lg:max-h-[640px] overflow-y-auto peyu-scrollbar pr-1'}`}>
           {filtrados.map((p) => {
             const precioDesde = getB2BPriceForQty(p, 10)?.precio ?? getUnitBasePrice(p);
             const maxVol = getB2BPriceForQty(p, 2000) || getB2BPriceForQty(p, 1000);

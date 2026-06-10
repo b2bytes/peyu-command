@@ -5,7 +5,7 @@
 // Logo blanco sobre fondo oscuro, negro sobre fondo claro — siempre legible.
 // ════════════════════════════════════════════════════════════════════════
 import { useState, useEffect, useRef } from 'react';
-import { Image, Sparkles, Loader2 } from 'lucide-react';
+import { Image, Sparkles } from 'lucide-react';
 import { getEngraveZone, detectImageTone, getLogoFilter } from '@/lib/mockup-engine';
 
 export default function LogoMockupPreview({
@@ -21,19 +21,35 @@ export default function LogoMockupPreview({
   const [imgLoaded, setImgLoaded] = useState(false);
   const prevImg = useRef(null);
 
-  // Detecta el tono del fondo del producto automáticamente
+  // Detecta el tono del fondo del producto automáticamente.
+  // Con timeout de seguridad: si la detección se cuelga (CORS, red), el mockup
+  // igual se muestra con el filtro por defecto — nunca un loader infinito.
   useEffect(() => {
     if (!productImg || productImg === prevImg.current) return;
     prevImg.current = productImg;
     setToneReady(false);
+    let resolved = false;
+    const fallback = setTimeout(() => { if (!resolved) setToneReady(true); }, 1500);
     detectImageTone(productImg).then((t) => {
+      resolved = true;
+      clearTimeout(fallback);
       setTone(t);
       setToneReady(true);
+    }).catch(() => {
+      resolved = true;
+      clearTimeout(fallback);
+      setToneReady(true);
     });
+    return () => clearTimeout(fallback);
   }, [productImg]);
 
   const zone = getEngraveZone(producto);
-  const logoFilter = toneReady ? getLogoFilter(tone, zone) : 'grayscale(100%) brightness(0) invert(1)';
+  // Mientras no se conoce el tono: logo oscuro (visible con blend darken).
+  const logoFilter = toneReady ? getLogoFilter(tone, zone) : 'grayscale(100%) brightness(0)';
+  // Blend según tono: darken graba logo oscuro sobre fondo claro; screen graba
+  // logo claro sobre fondo oscuro. Antes darken fijo hacía INVISIBLE el logo
+  // invertido (blanco) en productos oscuros.
+  const blendMode = toneReady && tone === 'dark' ? 'screen' : 'darken';
 
   // Tamaños de contenedor según prop size
   const containerStyle = {
@@ -86,26 +102,22 @@ export default function LogoMockupPreview({
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              // Mix-blend-mode: darken reemplaza visualmente la marca PEYU
-              mixBlendMode: 'darken',
+              // Blend según tono del producto (darken=claro · screen=oscuro)
+              mixBlendMode: blendMode,
             }}
           >
-            {/* Logo grabado con filtro inteligente + sombra realista */}
-            {!toneReady ? (
-              <Loader2 style={{ width: '40%', height: '40%', color: 'rgba(100,100,100,0.4)', animation: 'spin 1s linear infinite' }} />
-            ) : (
-              <img
-                src={logoUrl}
-                alt="Logo grabado"
-                style={{
-                  width: '95%',
-                  height: '95%',
-                  objectFit: 'contain',
-                  filter: logoFilter,
-                  opacity: 1,
-                }}
-              />
-            )}
+            {/* Logo grabado con filtro inteligente — siempre visible, sin loader */}
+            <img
+              src={logoUrl}
+              alt="Logo grabado"
+              style={{
+                width: '95%',
+                height: '95%',
+                objectFit: 'contain',
+                filter: logoFilter,
+                opacity: 1,
+              }}
+            />
           </div>
 
           {/* Badge indicador */}

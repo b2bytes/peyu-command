@@ -15,6 +15,7 @@ export default function MockupGalleryB2B({
   onLogoChange = null,
   showUploader = true,
   compact = false,
+  frameless = false,   // sin card propia (cuando vive dentro de otro panel)
 }) {
   const [internalLogoUrl, setInternalLogoUrl] = useState(null);
   const [uploading, setUploading] = useState(false);
@@ -41,12 +42,8 @@ export default function MockupGalleryB2B({
       setMockupUrls({});
     } finally {
       setUploading(false);
-      // Auto-generar mockups IA para TODOS los items después de subir logo
-      if (items.length > 0) {
-        setTimeout(() => generateAll(), 800);
-      }
     }
-  }, [onLogoChange, items]);
+  }, [onLogoChange]);
 
   const clearLogo = () => {
     if (onLogoChange) onLogoChange(null);
@@ -90,9 +87,9 @@ export default function MockupGalleryB2B({
   if (!items.length) return null;
 
   return (
-    <div className={compact ? '' : 'bg-white border border-[#EBE3D6] rounded-3xl overflow-hidden'}>
+    <div className={(compact || frameless) ? '' : 'bg-white border border-[#EBE3D6] rounded-3xl overflow-hidden'}>
       {!compact && (
-        <div className="px-5 py-4 border-b border-[#EBE3D6] flex items-center justify-between gap-3">
+        <div className={`${frameless ? 'pb-3' : 'px-5 py-4'} border-b border-[#EBE3D6] flex items-center justify-between gap-3`}>
           <div>
             <div className="flex items-center gap-2 mb-0.5">
               <Sparkles className="w-4 h-4 text-[#D96B4D]" />
@@ -114,7 +111,7 @@ export default function MockupGalleryB2B({
         </div>
       )}
 
-      <div className={compact ? '' : 'p-4 space-y-4'}>
+      <div className={compact ? '' : frameless ? 'py-4 space-y-4' : 'p-4 space-y-4'}>
         {/* Uploader si no hay logo */}
         {showUploader && !logoUrl && (
           <div
