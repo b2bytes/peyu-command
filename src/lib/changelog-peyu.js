@@ -10,6 +10,15 @@
 // ════════════════════════════════════════════════════════════════════════
 
 export const CHANGELOG = [
+  // ── 10 junio 2026 · Agent OS con capacidades totales ───────────────────
+  {
+    fecha: '2026-06-10',
+    tipo: 'feature',
+    area: 'Agent OS',
+    titulo: 'El agente ahora EJECUTA la operación desde el chat',
+    detalle: 'El chat entiende intenciones y propone acciones reales con botón de confirmación: avanzar/cancelar pedidos, marcar pagos, generar etiquetas Bluex, responder consultas por Gmail, mover leads y propuestas, ajustar stock/precios, enviar emails libres y sincronizar tracking. Toda mutación requiere confirmación del founder y pasa por el backend con validación admin.',
+  },
+
   // ── 10 junio 2026 · Correcciones reunión Joaquín ───────────────────────
   {
     fecha: '2026-06-10',

@@ -21,9 +21,37 @@ import MessageBubble from '@/components/agente-os/MessageBubble';
 import AgentMobileDrawer from '@/components/agente-os/AgentMobileDrawer';
 import { detectCards } from '@/components/agente-os/intent';
 import OpsCenter from '@/components/agente-os/OpsCenter';
+import ActionProposalCard from '@/components/agente-os/ActionProposalCard';
 import { MessageCircle, LayoutDashboard } from 'lucide-react';
 
-const PEYU_OS_PROMPT = `Eres Peyu, el Agent OS interno de PEYU Chile (marca sustentable: "Hasta que el plástico deje de ser basura"). Hablas en español, cálido pero directo y breve. El founder te habla para administrar TODO el negocio desde este chat. Cuando te pregunten por una métrica o registros, responde con UNA o DOS frases cálidas que resuman lo clave y NOMBRA los registros concretos si los tienes en "DETALLE CONCRETO" — la pantalla mostrará automáticamente una TARJETA RICA debajo de tu mensaje con la lista completa y BOTONES DE ACCIÓN (responder consulta, avanzar pedido, marcar lead, reponer stock, reenviar propuesta). Nunca digas "te las muestro" sin nombrarlas: usa el detalle que te paso. Si no se entiende la pregunta, pide aclaración y sugiere qué puedes hacer (ventas, pedidos, stock, cotizaciones, leads, consultas, clientes).`;
+const PEYU_OS_PROMPT = `Eres Peyu, el Agent OS interno de PEYU Chile (marca sustentable: "Hasta que el plástico deje de ser basura"). Hablas en español, cálido pero directo y breve. El founder te habla para administrar TODO el negocio desde este chat. Cuando te pregunten por una métrica o registros, responde con UNA o DOS frases cálidas que resuman lo clave y NOMBRA los registros concretos si los tienes en "DETALLE CONCRETO" — la pantalla mostrará automáticamente una TARJETA RICA debajo de tu mensaje con la lista completa y BOTONES DE ACCIÓN. Nunca digas "te las muestro" sin nombrarlas: usa el detalle que te paso.
+
+ACCIONES EJECUTABLES — cuando el founder te PIDE HACER algo (no solo preguntar), además del mensaje propone la acción correspondiente. La pantalla mostrará un botón de confirmación, así que propónla con confianza cuando la intención sea clara:
+- updatePedidoEstado {id, estado: "Nuevo"|"Confirmado"|"En Producción"|"Listo para Despacho"|"Despachado"|"Entregado"}
+- marcarPedidoPagado {id}
+- generarEtiqueta {id} (etiqueta BlueExpress, requiere pedido pagado)
+- cancelarPedido {id, motivo}
+- marcarConsultaRespondida {id}
+- responderConsulta {id, email, asunto, cuerpo} (redacta tú el cuerpo, cálido y útil)
+- updateLeadEstado {id, status: "Nuevo"|"Contactado"|"En revisión"|"Propuesta enviada"|"Aceptado"|"Perdido"}
+- updatePropuestaEstado {id, status: "Borrador"|"Enviada"|"Aceptada"|"Rechazada"|"Vencida"}
+- reenviarPropuesta {proposalId}
+- ajustarStock {id, stock_actual}
+- updateProducto {id, precio_b2c?, stock_actual?, activo?}
+- enviarEmail {to, asunto, cuerpo} (email libre vía Gmail PEYU)
+- sincronizarTracking {} (refresca tracking de todos los envíos Bluex)
+REGLAS: usa SOLO los ids exactos que aparecen en DETALLE CONCRETO como [id:XXX]. Si no tienes el id del registro, NO propongas acción — pide al founder que precise cuál. Máximo UNA acción por respuesta.
+
+Responde SIEMPRE en el formato JSON pedido: "mensaje" (tu respuesta cálida), "action" (nombre exacto de la acción o "" si no hay), "payload" (objeto con los datos), "action_descripcion" (frase corta de lo que hará, ej: "Marcar pedido #1042 como pagado"). Si no se entiende la pregunta, pide aclaración y sugiere qué puedes hacer (ventas, pedidos, stock, cotizaciones, leads, consultas, clientes, emails, etiquetas).`;
+
+// Whitelist de acciones que el front acepta del LLM (defensa en profundidad;
+// el backend valida de nuevo y exige admin).
+const ACTIONS_VALIDAS = new Set([
+  'updatePedidoEstado', 'marcarPedidoPagado', 'generarEtiqueta', 'cancelarPedido',
+  'marcarConsultaRespondida', 'responderConsulta', 'updateLeadEstado',
+  'updatePropuestaEstado', 'enviarPropuesta', 'reenviarPropuesta', 'ajustarStock',
+  'updateProducto', 'enviarEmail', 'sincronizarTracking', 'eliminarLead',
+]);
 
 export default function AgenteOS() {
   const [loading, setLoading] = useState(true);
@@ -89,13 +117,13 @@ export default function AgenteOS() {
     // promete cosas que no tiene (causa raíz del bug reportado).
     const detalle = [];
     if (liveLists.consultas_pendientes?.length)
-      detalle.push(`Consultas sin responder:\n${liveLists.consultas_pendientes.map(c => `• ${c.nombre || 'Sin nombre'} (${c.canal || 'web'})${c.email ? ` ${c.email}` : ''}: "${(c.mensaje || '').slice(0, 80)}"`).join('\n')}`);
+      detalle.push(`Consultas sin responder:\n${liveLists.consultas_pendientes.map(c => `• [id:${c.id}] ${c.nombre || 'Sin nombre'} (${c.canal || 'web'})${c.email ? ` ${c.email}` : ''}: "${(c.mensaje || '').slice(0, 80)}"`).join('\n')}`);
     if (liveLists.pedidos_pendientes?.length)
-      detalle.push(`Pedidos pendientes:\n${liveLists.pedidos_pendientes.map(p => `• ${p.numero_pedido || p.id?.slice(-6)} · ${p.cliente_nombre} · $${(p.total || 0).toLocaleString('es-CL')} · ${p.estado}`).join('\n')}`);
+      detalle.push(`Pedidos pendientes:\n${liveLists.pedidos_pendientes.map(p => `• [id:${p.id}] ${p.numero_pedido || p.id?.slice(-6)} · ${p.cliente_nombre} · $${(p.total || 0).toLocaleString('es-CL')} · ${p.estado}`).join('\n')}`);
     if (liveLists.leads_top?.length)
-      detalle.push(`Leads B2B activos:\n${liveLists.leads_top.map(l => `• ${l.company_name} · ${l.contact_name || ''} · score ${l.lead_score || 0} · ${l.status}`).join('\n')}`);
+      detalle.push(`Leads B2B activos:\n${liveLists.leads_top.map(l => `• [id:${l.id}] ${l.company_name} · ${l.contact_name || ''} · score ${l.lead_score || 0} · ${l.status}`).join('\n')}`);
     if (liveLists.stock_bajo_list?.length)
-      detalle.push(`Stock bajo:\n${liveLists.stock_bajo_list.map(p => `• ${p.sku} ${p.nombre}: ${p.stock_actual}u`).join('\n')}`);
+      detalle.push(`Stock bajo:\n${liveLists.stock_bajo_list.map(p => `• [id:${p.id}] ${p.sku} ${p.nombre}: ${p.stock_actual}u`).join('\n')}`);
 
     const liveOps = m ? `\n\nDATOS EN VIVO (${new Date().toLocaleString('es-CL')}):
 Ventas hoy: $${(m.ingresos_hoy || 0).toLocaleString('es-CL')} en ${m.pedidos_hoy} pedidos · 7d: $${(m.ingresos_7d || 0).toLocaleString('es-CL')}
@@ -107,12 +135,24 @@ Stock bajo (<10u): ${m.stock_bajo} SKUs · consultas sin responder: ${m.consulta
     const response = await base44.integrations.Core.InvokeLLM({
       prompt: `${PEYU_OS_PROMPT}${liveOps}\n\nCONVERSACIÓN:\n${history}\n\nPeyu:`,
       model: 'claude_opus_4_8',
+      response_json_schema: {
+        type: 'object',
+        properties: {
+          mensaje: { type: 'string', description: 'Respuesta cálida y breve al founder' },
+          action: { type: 'string', description: 'Nombre exacto de la acción a proponer, o "" si no hay' },
+          payload: { type: 'object', additionalProperties: true, description: 'Datos de la acción (ids exactos del detalle)' },
+          action_descripcion: { type: 'string', description: 'Frase corta de lo que hará la acción' },
+        },
+        required: ['mensaje'],
+      },
     });
 
-    const mensaje = (typeof response === 'string' ? response : response?.toString?.() || '').trim()
-      || 'Cuéntame un poco más para ayudarte mejor 🐢';
+    const mensaje = (response?.mensaje || '').trim() || 'Cuéntame un poco más para ayudarte mejor 🐢';
+    const proposal = response?.action && ACTIONS_VALIDAS.has(response.action)
+      ? { action: response.action, payload: response.payload || {}, descripcion: response.action_descripcion || '' }
+      : null;
 
-    setMessages((prev) => [...prev, { role: 'assistant', content: mensaje, cards, lists: liveLists }]);
+    setMessages((prev) => [...prev, { role: 'assistant', content: mensaje, cards, lists: liveLists, proposal }]);
     setThinking(false);
   };
 
@@ -169,7 +209,12 @@ Stock bajo (<10u): ${m.stock_bajo} SKUs · consultas sin responder: ${m.consulta
                 <WelcomeScreen metrics={metrics} onAsk={sendMessage} />
               ) : (
                 messages.map((msg, i) => (
-                  <MessageBubble key={i} message={msg} crm={crm} metrics={metrics} lists={lists} onAsk={sendMessage} onDone={() => loadData(true)} />
+                  <div key={i} className="space-y-2">
+                    <MessageBubble message={msg} crm={crm} metrics={metrics} lists={lists} onAsk={sendMessage} onDone={() => loadData(true)} />
+                    {msg.proposal && (
+                      <ActionProposalCard proposal={msg.proposal} onDone={() => loadData(true)} />
+                    )}
+                  </div>
                 ))
               )}
               {thinking && (

@@ -160,6 +160,46 @@ Deno.serve(async (req) => {
         });
       }
 
+      case 'cancelarPedido': {
+        if (!payload.id) throw new Error('Falta id de pedido');
+        const [pedido] = await svc.PedidoWeb.filter({ id: payload.id });
+        if (!pedido) throw new Error('Pedido no encontrado');
+        const historial = Array.isArray(pedido.historial) ? [...pedido.historial] : [];
+        historial.push({
+          at: new Date().toISOString(),
+          type: 'cancelled',
+          actor: user.email,
+          channel: 'manual',
+          detail: payload.motivo || 'Cancelado desde Agent OS',
+        });
+        await svc.PedidoWeb.update(payload.id, { estado: 'Cancelado', historial });
+        return Response.json({ ok: true, message: `Pedido ${pedido.numero_pedido || payload.id.slice(-6)} cancelado` });
+      }
+
+      case 'updateProducto': {
+        if (!payload.id) throw new Error('Falta id de producto');
+        const campos = {};
+        if (typeof payload.precio_b2c === 'number') campos.precio_b2c = payload.precio_b2c;
+        if (typeof payload.stock_actual === 'number') campos.stock_actual = payload.stock_actual;
+        if (typeof payload.activo === 'boolean') campos.activo = payload.activo;
+        if (!Object.keys(campos).length) throw new Error('Nada que actualizar (acepta: precio_b2c, stock_actual, activo)');
+        await svc.Producto.update(payload.id, campos);
+        return Response.json({ ok: true, message: `Producto actualizado: ${Object.keys(campos).join(', ')}` });
+      }
+
+      case 'enviarEmail': {
+        if (!payload.to || !payload.cuerpo) throw new Error('Falta destinatario (to) o cuerpo');
+        const { accessToken } = await base44.asServiceRole.connectors.getConnection('gmail');
+        const html = `<div style="font-family:system-ui,sans-serif;font-size:15px;line-height:1.6;color:#22302c;white-space:pre-wrap">${payload.cuerpo}</div>`;
+        await sendViaGmail(accessToken, { to: payload.to, subject: payload.asunto || 'PEYU Chile', html });
+        return Response.json({ ok: true, message: `Email enviado a ${payload.to}` });
+      }
+
+      case 'sincronizarTracking': {
+        const r = await base44.asServiceRole.functions.invoke('bluexSyncAllShipments', {});
+        return Response.json({ ok: true, message: 'Tracking BlueExpress sincronizado', detail: r || null });
+      }
+
       default:
         return Response.json({ error: `Acción no soportada: ${action}` }, { status: 400 });
     }
