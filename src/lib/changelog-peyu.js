@@ -10,6 +10,15 @@
 // ════════════════════════════════════════════════════════════════════════
 
 export const CHANGELOG = [
+  // ── 10 junio 2026 · Cotización B2B = cockpit de 1 pantalla ─────────────
+  {
+    fecha: '2026-06-10',
+    tipo: 'mejora',
+    area: 'Cotización Rápida B2B',
+    titulo: 'Rediseño completo al formato cockpit de /personalizar — versión B2B',
+    detalle: 'La cotización B2B ahora usa el mismo formato del personalizador: header wizard propio con pasos clickeables y CTA siempre visible, panel izquierdo con stepper + resumen vivo (productos, neto, ahorro, logo, empresa) + sellos de confianza, mockup GIGANTE del logo al centro con uploader, y los controles del paso a la derecha con scroll propio. En móvil: barra de progreso arriba y CTA sticky con total c/IVA abajo. Desglose de totales unificado en un componente (Subtotal → descuento volumen → Neto sin IVA → IVA 19% → Total c/IVA) visible en cada paso. Toda la lógica se mantiene intacta: carro único, viaje persistente y envío a quickB2BQuoteV2.',
+  },
+
   // ── 10 junio 2026 · Personalizar: reglas por producto + precio en vivo ──
   {
     fecha: '2026-06-10',

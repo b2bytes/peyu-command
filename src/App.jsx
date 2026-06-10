@@ -293,6 +293,8 @@ function App() {
               {/* ── Standalone (sin PublicPageLayout) ──────────────────────────── */}
               {/* Estas páginas tienen diseño 100% propio y no deben llevar el nav general */}
               <Route path="/personalizar" element={<PersonalizacionFlow />} />
+              {/* CotizacionRapida = cockpit wizard B2B con header propio (mismo formato que /personalizar) */}
+              <Route path="/CotizacionRapida" element={<CotizacionRapida />} />
               <Route path="/lanzamiento" element={<Lanzamiento />} />
               <Route path="/propuesta-valor-peyu" element={<PropuestaValorPeyu />} />
               <Route path="/brand" element={<BrandLab />} />
@@ -310,7 +312,6 @@ function App() {
                 <Route path="/ProductoNuevo" element={<ProductoNuevo />} />
                 <Route path="/CarritoNuevo" element={<CarritoNuevo />} />
                 <Route path="/CheckoutNuevo" element={<CheckoutNuevo />} />
-                <Route path="/CotizacionRapida" element={<CotizacionRapida />} />
                 <Route path="/EmpresasNuevo" element={<EmpresasNuevo />} />
                 <Route path="/EmpresaProducto" element={<EmpresaProducto />} />
                 <Route path="/b2b/propuesta" element={<B2BPropuestaPublica />} />
