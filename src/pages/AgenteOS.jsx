@@ -123,6 +123,8 @@ export default function AgenteOS() {
       detalle.push(`Leads B2B activos:\n${liveLists.leads_top.map(l => `• [id:${l.id}] ${l.company_name} · ${l.contact_name || ''} · score ${l.lead_score || 0} · ${l.status}`).join('\n')}`);
     if (liveLists.stock_bajo_list?.length)
       detalle.push(`Stock bajo:\n${liveLists.stock_bajo_list.map(p => `• [id:${p.id}] ${p.sku} ${p.nombre}: ${p.stock_actual}u`).join('\n')}`);
+    if (liveLists.envios_list?.length)
+      detalle.push(`Envíos BlueExpress activos:\n${liveLists.envios_list.map(e => `• [id:${e.id}] OT ${e.tracking_number || 'sin emitir'} · ${e.cliente_nombre || ''} · ${e.estado}${e.tiene_excepcion ? ' ⚠ excepción' : ''}${e.comuna_destino ? ` · ${e.comuna_destino}` : ''}`).join('\n')}`);
 
     const liveOps = m ? `\n\nDATOS EN VIVO (${new Date().toLocaleString('es-CL')}):
 Ventas hoy: $${(m.ingresos_hoy || 0).toLocaleString('es-CL')} en ${m.pedidos_hoy} pedidos · 7d: $${(m.ingresos_7d || 0).toLocaleString('es-CL')}

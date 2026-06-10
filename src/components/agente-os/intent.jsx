@@ -20,8 +20,11 @@ export function detectCards(text) {
   if (has(['cotizaci', 'propuesta', 'corporativ'])) {
     cards.push({ type: 'proposals' });
   }
-  if (has(['lead', 'b2b', 'prospecto'])) {
+  if (has(['lead', 'b2b', 'prospecto', 'empresa'])) {
     cards.push({ type: 'leads' });
+  }
+  if (has(['envío', 'envio', 'bluex', 'blue express', 'tracking', 'etiqueta', 'courier', 'reparto', 'tránsito', 'transito', 'despacho'])) {
+    cards.push({ type: 'shipments' });
   }
   if (has(['consulta', 'pregunta', 'sin responder', 'mensaje', 'whatsapp'])) {
     cards.push({ type: 'consultas' });

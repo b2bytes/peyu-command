@@ -136,6 +136,20 @@ Deno.serve(async (req) => {
       stock_bajo_list: stockBajo.slice(0, 10).map(p => ({
         id: p.id, sku: p.sku, nombre: p.nombre, stock_actual: p.stock_actual,
       })),
+      // Envíos BlueExpress: activos primero (excepciones arriba), para la
+      // tarjeta de logística embebida en el agente — sin salir de la vista.
+      envios_list: envios
+        .filter(e => !['Entregado', 'Anulado', 'Devuelto'].includes(e.estado))
+        .sort((a, b) => (b.tiene_excepcion ? 1 : 0) - (a.tiene_excepcion ? 1 : 0))
+        .slice(0, 10)
+        .map(e => ({
+          id: e.id, tracking_number: e.tracking_number, numero_pedido: e.numero_pedido,
+          cliente_nombre: e.cliente_nombre, estado: e.estado, comuna_destino: e.comuna_destino,
+          courier: e.courier, tiene_excepcion: e.tiene_excepcion,
+          ultimo_evento_descripcion: e.ultimo_evento_descripcion,
+          fecha_entrega_estimada: e.fecha_entrega_estimada,
+          tracking_url: e.tracking_url, label_url: e.label_url, atrasado: e.atrasado,
+        })),
       // vCard inteligente: TODA la info del cliente para la página agente.
       clientes_top: (clientes || []).slice(0, 12).map(c => ({
         id: c.id, empresa: c.empresa, contacto: c.contacto, email: c.email,
