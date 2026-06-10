@@ -28,6 +28,7 @@ export default function EmpresaProducto() {
   const [loading, setLoading] = useState(true);
   const [qty, setQty] = useState(50);
   const [activeImg, setActiveImg] = useState(0);
+  const [logoUrl, setLogoUrl] = useState(null); // logo subido en esta ficha → viaja al cotizador
 
   useEffect(() => {
     if (!id) { setLoading(false); return; }
@@ -58,7 +59,10 @@ export default function EmpresaProducto() {
     : (producto?.incluye ? [producto.incluye] : []);
 
   const goToCotizar = () => {
-    navigate(`/CotizacionRapida?sku=${producto?.sku}&qty=${qty}`);
+    // FLUJO CONTINUO: el logo cargado en esta ficha viaja al cotizador por URL
+    // (CotizacionRapida lo lee con ?logo=) — nunca se pide una segunda vez.
+    const logoParam = logoUrl ? `&logo=${encodeURIComponent(logoUrl)}` : '';
+    navigate(`/CotizacionRapida?sku=${producto?.sku}&qty=${qty}${logoParam}`);
   };
 
   if (loading) return (
@@ -228,8 +232,8 @@ export default function EmpresaProducto() {
             {/* Tabla de precios */}
             <B2BPriceTable producto={producto} qtyActual={qty} />
 
-            {/* Mockup con logo */}
-            <B2BLogoMockup producto={producto} />
+            {/* Mockup con logo — el logo subido aquí viaja al cotizador */}
+            <B2BLogoMockup producto={producto} onLogoChange={setLogoUrl} />
 
             {/* Qué incluye */}
             {incluye.length > 0 && (

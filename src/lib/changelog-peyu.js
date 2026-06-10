@@ -10,6 +10,15 @@
 // ════════════════════════════════════════════════════════════════════════
 
 export const CHANGELOG = [
+  // ── 10 junio 2026 · Flujo B2B continuo: el logo no se pide dos veces ──
+  {
+    fecha: '2026-06-10',
+    tipo: 'bug',
+    area: 'Empresas B2B · Cotizador',
+    titulo: 'El logo cargado en la ficha B2B viaja al cotizador — fin del doble upload',
+    detalle: 'El cliente subía su logo en la ficha del producto empresarial (/EmpresaProducto), avanzaba a "Agregar a cotización" y el cotizador le pedía el logo OTRA VEZ desde cero. Ahora el flujo es continuo: el logo subido en la ficha viaja por URL al cotizador, llega pre-cargado en el mockup y marcado como "Logo incluido para grabado". Además, si el producto ya estaba en el carro, la cantidad elegida en la ficha se sincroniza (antes se ignoraba) y el logo se adjunta a esa línea. Un solo paso a paso sin repetir nada.',
+  },
+
   // ── 10 junio 2026 · Colores reales en TODO el catálogo + mockup sin caja blanca ──
   {
     fecha: '2026-06-10',

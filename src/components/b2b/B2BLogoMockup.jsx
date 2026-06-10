@@ -6,8 +6,11 @@ import { Upload, Loader2, Sparkles, RefreshCw, Check, Image as ImageIcon } from 
 import { getProductImage } from '@/utils/productImages';
 import LogoMockupPreview from '@/components/cotizacion/LogoMockupPreview';
 
-export default function B2BLogoMockup({ producto }) {
-  const [logoUrl, setLogoUrl] = useState(null);
+export default function B2BLogoMockup({ producto, initialLogoUrl = null, onLogoChange }) {
+  const [logoUrl, setLogoUrlState] = useState(initialLogoUrl);
+  // Notifica cada cambio de logo al padre → el logo VIAJA al cotizador y no
+  // se le pide al cliente una segunda vez (flujo B2B continuo).
+  const setLogoUrl = (u) => { setLogoUrlState(u); onLogoChange?.(u); };
   const [logoFile, setLogoFile] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [generating, setGenerating] = useState(false);

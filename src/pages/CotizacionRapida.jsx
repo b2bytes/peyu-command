@@ -246,13 +246,25 @@ export default function CotizacionRapida() {
         // si aún no está, en vez de mantener una lista paralela.
         if (urlSku) {
           const match = cotizables.find(p => p.sku === urlSku);
-          if (match && !getCartV2().some(l => l.sku === urlSku)) {
-            addToCartV2({
-              productoId: match.id, sku: match.sku, nombre: match.nombre,
-              precio: match.precio_b2c || getUnitBasePrice(match), cantidad: urlQty,
-              imagen: getProductImage(match),
-              ...(urlLogo && urlLogo.startsWith('http') ? { logoUrl: urlLogo, personalizacion: '[Logo personalizado]' } : {}),
-            });
+          if (match) {
+            const linea = getCartV2().find(l => l.sku === urlSku);
+            if (!linea) {
+              addToCartV2({
+                productoId: match.id, sku: match.sku, nombre: match.nombre,
+                precio: match.precio_b2c || getUnitBasePrice(match), cantidad: urlQty,
+                imagen: getProductImage(match),
+                ...(urlLogo && urlLogo.startsWith('http') ? { logoUrl: urlLogo, personalizacion: '[Logo personalizado]' } : {}),
+              });
+            } else {
+              // Ya estaba en el carro: sincroniza la cantidad elegida en la
+              // ficha y adjunta el logo que viene de allá (no se pide de nuevo).
+              const patch = { cantidad: urlQty };
+              if (urlLogo && urlLogo.startsWith('http') && !linea.logoUrl) {
+                patch.logoUrl = urlLogo;
+                patch.personalizacion = linea.personalizacion || '[Logo personalizado]';
+              }
+              updateCartItemV2(linea.id, patch);
+            }
           }
         }
 
