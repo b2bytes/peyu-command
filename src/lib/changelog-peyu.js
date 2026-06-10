@@ -10,6 +10,15 @@
 // ════════════════════════════════════════════════════════════════════════
 
 export const CHANGELOG = [
+  // ── 10 junio 2026 · Auditoría completa del funnel público ──────────────
+  {
+    fecha: '2026-06-10',
+    tipo: 'mejora',
+    area: 'Funnel completo · Tienda pública',
+    titulo: 'Recorrido a prueba de humanos: botones, navegación y continuidad',
+    detalle: 'Auditoría de punta a punta del relato de compra: (1) los CTAs "Ver tienda" y "Para empresas" del hero recargaban la página completa — ahora navegan instantáneo sin perder estado; (2) el contador del carrito en la barra superior ahora se actualiza EN VIVO al agregar productos desde cualquier página; (3) el menú móvil tenía botones anidados inválidos que rompían los taps — corregido; (4) nuevo banner de continuidad en Inicio y Tienda: si el cliente dejó una personalización o cotización a medias, se le ofrece retomarla en 1 clic donde quedó.',
+  },
+
   // ── 10 junio 2026 · Carro único: cotización y compra unificadas ─────────
   {
     fecha: '2026-06-10',

@@ -1,5 +1,5 @@
 import { ArrowRight, Leaf, Recycle, Sparkles, ShieldCheck } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import CarouselHeroV2 from './CarouselHeroV2';
 
 const HERO_IMGS = [
@@ -89,22 +89,22 @@ export default function HeroBoldV2({ heroImg, onPersonaliza }) {
                   <span>Personalizar</span>
                   <ArrowRight className="w-4 h-4" strokeWidth={2.5} />
                 </button>
-                <a
-                  href="/CatalogoNuevo"
+                <Link
+                  to="/CatalogoNuevo"
                   className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 font-bold text-sm sm:text-base px-5 sm:px-8 py-3 sm:py-4 rounded-2xl transition-all hover:bg-[#F0E8DE]"
                   style={{ background: 'white', border: '1.5px solid #D4C4B0', color: '#2C1810' }}
                 >
                   Ver tienda
-                </a>
+                </Link>
               </div>
-              <a
-                href="/EmpresasNuevo"
+              <Link
+                to="/EmpresasNuevo"
                 className="w-full sm:w-auto inline-flex items-center justify-center gap-2 font-bold text-sm sm:text-base px-5 sm:px-8 py-3 sm:py-4 rounded-2xl transition-all hover:shadow-md"
                 style={{ background: 'rgba(15,139,108,.09)', border: '1.5px solid rgba(15,139,108,.22)', color: '#0B6E55' }}
               >
                 <Recycle className="w-4 h-4" strokeWidth={1.75} />
                 Para empresas
-              </a>
+              </Link>
             </div>
 
             {/* Stats row — desktop */}

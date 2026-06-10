@@ -5,6 +5,7 @@ import { base44 } from '@/api/base44Client';
 import SEOHead from '@/components/SEOHead';
 import { ArrowRight, Recycle, Sparkles } from 'lucide-react';
 import HeroBoldV2 from '@/components/shopv2/HeroBoldV2';
+import ResumeJourneyBannerV2 from '@/components/shopv2/ResumeJourneyBannerV2';
 import TrustSocialBarV2 from '@/components/shopv2/TrustSocialBarV2';
 import ImpactStoryV2 from '@/components/shopv2/ImpactStoryV2';
 import ProductCardV2 from '@/components/shopv2/ProductCardV2';
@@ -56,8 +57,11 @@ export default function TiendaNueva() {
         url="https://peyuchile.cl/"
         type="website"
       />
+      {/* Continuidad: retomar personalización o cotización a medias */}
+      <ResumeJourneyBannerV2 />
+
       {/* 1 · HERO BOLD */}
-      <HeroBoldV2 heroImg={heroImg} onPersonaliza={() => {}} />
+      <HeroBoldV2 heroImg={heroImg} />
 
       {/* 1b · TRUST + SOCIAL PROOF */}
       <TrustSocialBarV2 />

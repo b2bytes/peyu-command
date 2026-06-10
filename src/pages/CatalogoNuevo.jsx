@@ -5,6 +5,7 @@ import SEOHead from '@/components/SEOHead';
 import { Search, SlidersHorizontal, PackageOpen, Smartphone, AlertCircle } from 'lucide-react';
 
 import CheckoutStepperV2 from '@/components/shopv2/CheckoutStepperV2';
+import ResumeJourneyBannerV2 from '@/components/shopv2/ResumeJourneyBannerV2';
 import ProductCardV2 from '@/components/shopv2/ProductCardV2';
 import PhoneModelsModal from '@/components/shopv2/PhoneModelsModal';
 import { CATEGORIAS_V2 } from '@/lib/shop-v2-config';
@@ -130,6 +131,7 @@ export default function CatalogoNuevo() {
       />
       <div className="max-w-6xl mx-auto px-3 sm:px-4 lg:px-6 py-3 sm:py-5">
         <CheckoutStepperV2 current="tienda" />
+        <ResumeJourneyBannerV2 />
         <div className="mb-2 sm:mb-3">
           <h1 className="font-fraunces text-lg sm:text-4xl mb-0" style={{ color: '#2C1810' }}>Nuestra tienda</h1>
           <p className="text-[11px] sm:text-sm" style={{ color: '#7A6050' }}>Plástico 100% reciclado · Hecho en Chile.</p>

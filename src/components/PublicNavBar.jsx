@@ -1,14 +1,21 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Menu, X, ChevronDown, ShoppingBag, Building2, BookOpen, Users, LifeBuoy, Phone, ChevronRight, ShoppingCart } from 'lucide-react';
-import { cartCountV2 } from '@/lib/shop-v2-cart';
+import { cartCountV2, subscribeCartV2 } from '@/lib/shop-v2-cart';
 
 // Menú profesional para todas las páginas públicas de PEYU
 export default function PublicNavBar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(null);
   const location = useLocation();
-  const cartCount = cartCountV2();
+
+  // Contador del carrito EN VIVO: se actualiza al instante cuando se agrega
+  // un producto desde cualquier página (evento carrito_v2_updated).
+  const [cartCount, setCartCount] = useState(0);
+  useEffect(() => {
+    setCartCount(cartCountV2());
+    return subscribeCartV2(() => setCartCount(cartCountV2()));
+  }, [location.pathname]);
 
   const isActive = (path) => location.pathname === path || location.pathname.startsWith(path + '/');
 
@@ -208,32 +215,28 @@ export default function PublicNavBar() {
 
                 return (
                   <div key={item.path}>
-                    <button
-                      onClick={() => !hasSubmenu && setMobileOpen(false)}
-                      className="w-full flex items-center justify-between px-3 py-2.5 rounded-lg font-semibold text-sm transition-colors"
-                    >
+                    {/* div (no button) — evita botones anidados inválidos que rompían los taps */}
+                    <div className="w-full flex items-center justify-between px-3 py-2.5 rounded-lg font-semibold text-sm transition-colors">
                       <Link
                         to={item.path}
                         className={`flex items-center gap-2 flex-1 ${
                           active ? 'text-[#0F8B6C]' : 'text-[#7A6050]'
                         }`}
-                        onClick={() => !hasSubmenu && setMobileOpen(false)}
+                        onClick={() => setMobileOpen(false)}
                       >
                         {item.icon && <item.icon className="w-4 h-4" />}
                         {item.label}
                       </Link>
                       {hasSubmenu && (
                         <button
-                          onClick={(e) => {
-                            e.preventDefault();
-                            setDropdownOpen(dropdownOpen === item.path ? null : item.path);
-                          }}
+                          onClick={() => setDropdownOpen(dropdownOpen === item.path ? null : item.path)}
                           className="p-1 hover:bg-[#F8F3ED] rounded"
+                          aria-label={`Abrir submenú ${item.label}`}
                         >
                           <ChevronRight className={`w-4 h-4 transition-transform ${dropdownOpen === item.path ? 'rotate-90' : ''}`} />
                         </button>
                       )}
-                    </button>
+                    </div>
 
                     {/* Mobile Submenu */}
                     {hasSubmenu && dropdownOpen === item.path && (
