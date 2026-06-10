@@ -10,6 +10,15 @@
 // ════════════════════════════════════════════════════════════════════════
 
 export const CHANGELOG = [
+  // ── 10 junio 2026 · Hero carrusel editorial con imágenes generadas ─────
+  {
+    fecha: '2026-06-10',
+    tipo: 'mejora',
+    area: 'Inicio · Hero móvil',
+    titulo: 'Carrusel del hero rediseñado: imágenes editoriales generadas desde los productos reales',
+    detalle: 'El carrusel de la home mostraba fotos crudas de producto (fondos planos, mezcla de estilos) que se veían pobres en móvil. Se generaron 4 imágenes lifestyle de calidad editorial A PARTIR de los productos reales del catálogo (que no se tocan): escritorio consciente, cachos al atardecer, carcasa eco y set de regalo corporativo. El carrusel ahora es full-bleed con efecto ken-burns suave, caption por slide (historia + destino), navegación por swipe en móvil (sin flechas encima de la foto) y dots refinados. Cada slide lleva a su categoría o al embudo B2B.',
+  },
+
   // ── 10 junio 2026 · Barra superior móvil alineada + blog unificado ─────
   {
     fecha: '2026-06-10',

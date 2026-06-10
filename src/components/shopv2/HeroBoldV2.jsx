@@ -2,11 +2,34 @@ import { ArrowRight, Leaf, Recycle, Sparkles, ShieldCheck } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import CarouselHeroV2 from './CarouselHeroV2';
 
-const HERO_IMGS = [
-  'https://media.base44.com/images/public/69d99b9d61f699701129c103/7b59fad60_generated_image.png',
-  'https://i0.wp.com/peyuchile.cl/wp-content/uploads/2025/04/4-mixto-1024x1024-1.webp?fit=600%2C600&ssl=1',
-  'https://i0.wp.com/peyuchile.cl/wp-content/uploads/2022/11/potfinal_porta-Photoroom-1.jpg?fit=600%2C600&ssl=1',
-  'https://i0.wp.com/peyuchile.cl/wp-content/uploads/2022/09/greencel-1.jpg?fit=600%2C600&ssl=1',
+// Imágenes editoriales generadas A PARTIR de los productos reales del catálogo
+// (los productos no cambian — solo su presentación). Cada slide cuenta una
+// historia y lleva a su destino del viaje.
+const HERO_SLIDES = [
+  {
+    img: 'https://media.base44.com/images/public/69d99b9d61f699701129c103/4ef288a0a_generated_image.png',
+    kicker: 'Escritorio consciente',
+    title: 'Hecho con tapitas recicladas de Santiago',
+    to: '/CatalogoNuevo?cat=Escritorio',
+  },
+  {
+    img: 'https://media.base44.com/images/public/69d99b9d61f699701129c103/d4fe2808b_generated_image.png',
+    kicker: 'Entretención y juegos',
+    title: 'Cachos 100% reciclados, todo terreno',
+    to: '/CatalogoNuevo?cat=Entretenimiento',
+  },
+  {
+    img: 'https://media.base44.com/images/public/69d99b9d61f699701129c103/3c0bba9e5_generated_image.png',
+    kicker: 'Carcasas eco',
+    title: 'Marmolado único e irrepetible',
+    to: '/CatalogoNuevo?cat=Carcasas%20B2C',
+  },
+  {
+    img: 'https://media.base44.com/images/public/69d99b9d61f699701129c103/45c523d4b_generated_image.png',
+    kicker: 'Regalos corporativos',
+    title: 'Grabado láser gratis desde 10 unidades',
+    to: '/EmpresasNuevo',
+  },
 ];
 
 // ── Pill estilo AI platform con dot animado ──────────────────────────────────
@@ -125,8 +148,8 @@ export default function HeroBoldV2({ heroImg, onPersonaliza }) {
 
             <div className="relative flex-1 w-full" style={{ maxWidth: '520px' }}>
               <CarouselHeroV2
-                images={HERO_IMGS}
-                onImageClick={() => navigate('/CatalogoNuevo')}
+                slides={HERO_SLIDES}
+                onSlideClick={(s) => navigate(s.to || '/CatalogoNuevo')}
               />
 
               {/* Badge inferior — glass morphism */}
