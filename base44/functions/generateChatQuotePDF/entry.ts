@@ -174,7 +174,7 @@ Deno.serve(async (req) => {
     T(numero, RX, 24, { size: 14, font: 'bold', color: WHITE, align: 'right' });
 
     T('Cotizacion Comercial', PMX, 44, { size: 20, font: 'bold', color: WHITE });
-    T(`Preparada para ${empresa || contacto || 'Cliente'}`, PMX, 52, { size: 10, color: [210, 228, 220] });
+    T(`Preparada para ${(empresa || contacto || 'Cliente').substring(0, 40)}`, PMX, 52, { size: 10, color: [210, 228, 220] });
     T(`Emision  ${hoy.toLocaleDateString('es-CL')}`, RX, 44, { size: 8, color: [210, 228, 220], align: 'right' });
     T(`Valida hasta  ${vence.toLocaleDateString('es-CL')}`, RX, 50, { size: 8, color: [210, 228, 220], align: 'right' });
 

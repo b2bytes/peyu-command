@@ -10,6 +10,15 @@
 // ════════════════════════════════════════════════════════════════════════
 
 export const CHANGELOG = [
+  // ── 10 junio 2026 · PDFs unificados con datos siempre perfectos ────────
+  {
+    fecha: '2026-06-10',
+    tipo: 'mejora',
+    area: 'Exportación PDF',
+    titulo: 'Todos los PDF (cotizaciones, propuestas, chat) con el mismo diseño y datos impecables',
+    detalle: 'Los 4 generadores de PDF (cotización admin, cotización rápida B2B, cotización del chat y propuesta corporativa) ya comparten la plantilla profesional PEYU. Se corrigió lo que faltaba: la cotización del admin ahora muestra el NOMBRE real del producto desde el catálogo (antes imprimía solo el código SKU, ej. "61411") con el SKU como línea secundaria, y todos los nombres de empresa/contacto/email largos se truncan con guardas para que nunca se monten sobre el monto total ni se salgan del documento. Verificado con cotización real: genera 200 OK.',
+  },
+
   // ── 10 junio 2026 · Hero carrusel editorial con imágenes generadas ─────
   {
     fecha: '2026-06-10',

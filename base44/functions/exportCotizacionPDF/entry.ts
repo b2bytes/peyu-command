@@ -38,6 +38,17 @@ Deno.serve(async (req) => {
   if (!cotizaciones.length) return Response.json({ error: 'Cotización no encontrada' }, { status: 404 });
   const cot = cotizaciones[0];
 
+  // Nombre REAL del producto desde el catálogo (cot.sku suele traer solo el
+  // código). Así la tabla muestra "Pack 6 Cachos" en vez de "61411".
+  let prodNombre = cot.sku || 'Producto personalizado';
+  let prodSku = '';
+  if (cot.sku) {
+    try {
+      const prods = await base44.asServiceRole.entities.Producto.filter({ sku: cot.sku }, '-updated_date', 1);
+      if (prods?.length && prods[0].nombre) { prodNombre = prods[0].nombre; prodSku = cot.sku; }
+    } catch { /* fallback al sku */ }
+  }
+
   // ── Datos económicos (misma lógica de siempre) ──
   const precioUnitario = cot.precio_unitario || 0;
   const cantidad = cot.cantidad || 1;
@@ -80,7 +91,7 @@ Deno.serve(async (req) => {
   T(numero, RX, 24, { size: 14, font: 'bold', color: WHITE, align: 'right' });
 
   T('Cotizacion Comercial', PMX, 44, { size: 20, font: 'bold', color: WHITE });
-  T(`Preparada para ${cot.empresa || 'Cliente'}`, PMX, 52, { size: 10, color: [210, 228, 220] });
+  T(`Preparada para ${(cot.empresa || 'Cliente').substring(0, 40)}`, PMX, 52, { size: 10, color: [210, 228, 220] });
   T(`Emision  ${fechaEnvio}`, RX, 44, { size: 8, color: [210, 228, 220], align: 'right' });
   T(`Valida hasta  ${fechaVence}`, RX, 50, { size: 8, color: [210, 228, 220], align: 'right' });
 
@@ -134,19 +145,21 @@ Deno.serve(async (req) => {
 
   const rows = [
     {
-      nombre: cot.sku || 'Producto personalizado',
+      nombre: prodNombre,
+      meta: prodSku ? `SKU ${prodSku}` : '',
       pers: requierePersonal ? cot.personalizacion_tipo : '-',
       cant: `${cantidad}`,
       unit: fmtCLP(precioConDesc),
       total: fmtCLP(subtotalProd),
     },
-    ...fees.map((f) => ({ nombre: f[0], pers: '', cant: '', unit: '', total: fmtCLP(f[1]) })),
+    ...fees.map((f) => ({ nombre: f[0], meta: '', pers: '', cant: '', unit: '', total: fmtCLP(f[1]) })),
   ];
   rows.forEach((r, i) => {
-    const rowH = 10;
+    const rowH = r.meta ? 11 : 10;
     doc.setFillColor(...(i % 2 === 0 ? MINT : WHITE));
     doc.roundedRect(PMX, y - 4, CW, rowH, 1.5, 1.5, 'F');
     T(r.nombre.substring(0, 42), COL_PROD, y + 1.5, { size: 9, font: i === 0 ? 'bold' : 'normal', color: INK });
+    if (r.meta) T(r.meta, COL_PROD, y + 5, { size: 6.5, color: STONE2 });
     if (r.pers) T(r.pers.substring(0, 20), COL_PERS, y + 1.5, { size: 8, color: STONE });
     if (r.cant) T(r.cant, COL_CANT, y + 1.5, { size: 9, font: 'bold', color: STONE, align: 'center' });
     if (r.unit) T(r.unit, COL_UNIT, y + 1.5, { size: 9, color: INK, align: 'right' });

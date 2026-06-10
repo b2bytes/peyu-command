@@ -174,7 +174,7 @@ Deno.serve(async (req) => {
 
     // Título grande
     T('Propuesta Comercial', MX, 50, { size: 22, font: 'bold', color: WHITE });
-    T(`Preparada para ${p.empresa}`, MX, 59, { size: 10, font: 'normal', color: [210, 228, 220] });
+    T(`Preparada para ${(p.empresa || 'Cliente').substring(0, 40)}`, MX, 59, { size: 10, font: 'normal', color: [210, 228, 220] });
 
     // Fechas (derecha)
     T(`Emision  ${fechaEnvio}`, RX, 50, { size: 8, font: 'normal', color: [210, 228, 220], align: 'right' });
@@ -202,10 +202,10 @@ Deno.serve(async (req) => {
     const cpadX = MX + 8;
     // Columna cliente
     T('CLIENTE', cpadX, y + 9, { size: 7, font: 'bold', color: STONE2, spacing: 1 });
-    T(p.empresa || '-', cpadX, y + 17, { size: 13, font: 'bold', color: INK });
-    T(p.contacto || '-', cpadX, y + 23.5, { size: 8.5, font: 'normal', color: STONE });
+    T((p.empresa || '-').substring(0, 38), cpadX, y + 17, { size: 13, font: 'bold', color: INK });
+    T((p.contacto || '-').substring(0, 48), cpadX, y + 23.5, { size: 8.5, font: 'normal', color: STONE });
     let fY = y + 23.5;
-    if (p.email) { fY += 4.5; T(p.email, cpadX, fY, { size: 8.5, font: 'normal', color: STONE }); }
+    if (p.email) { fY += 4.5; T(p.email.substring(0, 48), cpadX, fY, { size: 8.5, font: 'normal', color: STONE }); }
     if (p.giro) { fY += 4.5; T(`Giro: ${p.giro}`.substring(0, 46), cpadX, fY, { size: 7.5, color: STONE }); }
     if (p.direccion_facturacion) { fY += 4.5; T(`Facturacion: ${p.direccion_facturacion}`.substring(0, 46), cpadX, fY, { size: 7.5, color: STONE }); }
 
