@@ -20,6 +20,8 @@ import WelcomeScreen from '@/components/agente-os/WelcomeScreen';
 import MessageBubble from '@/components/agente-os/MessageBubble';
 import AgentMobileDrawer from '@/components/agente-os/AgentMobileDrawer';
 import { detectCards } from '@/components/agente-os/intent';
+import OpsCenter from '@/components/agente-os/OpsCenter';
+import { MessageCircle, LayoutDashboard } from 'lucide-react';
 
 const PEYU_OS_PROMPT = `Eres Peyu, el Agent OS interno de PEYU Chile (marca sustentable: "Hasta que el plástico deje de ser basura"). Hablas en español, cálido pero directo y breve. El founder te habla para administrar TODO el negocio desde este chat. Cuando te pregunten por una métrica o registros, responde con UNA o DOS frases cálidas que resuman lo clave y NOMBRA los registros concretos si los tienes en "DETALLE CONCRETO" — la pantalla mostrará automáticamente una TARJETA RICA debajo de tu mensaje con la lista completa y BOTONES DE ACCIÓN (responder consulta, avanzar pedido, marcar lead, reponer stock, reenviar propuesta). Nunca digas "te las muestro" sin nombrarlas: usa el detalle que te paso. Si no se entiende la pregunta, pide aclaración y sugiere qué puedes hacer (ventas, pedidos, stock, cotizaciones, leads, consultas, clientes).`;
 
@@ -34,6 +36,7 @@ export default function AgenteOS() {
   const [thinking, setThinking] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [mobileDrawer, setMobileDrawer] = useState(false);
+  const [view, setView] = useState('chat'); // 'chat' | 'ops'
   const bottomRef = useRef(null);
 
   const loadData = async (isRefresh = false) => {
@@ -103,7 +106,7 @@ Stock bajo (<10u): ${m.stock_bajo} SKUs · consultas sin responder: ${m.consulta
 
     const response = await base44.integrations.Core.InvokeLLM({
       prompt: `${PEYU_OS_PROMPT}${liveOps}\n\nCONVERSACIÓN:\n${history}\n\nPeyu:`,
-      model: 'gemini_3_flash',
+      model: 'claude_opus_4_8',
     });
 
     const mensaje = (typeof response === 'string' ? response : response?.toString?.() || '').trim()
@@ -136,11 +139,29 @@ Stock bajo (<10u): ${m.stock_bajo} SKUs · consultas sin responder: ${m.consulta
           onMobileMenu={() => setMobileDrawer(true)}
         />
 
+        {/* Toggle Chat ↔ Operaciones */}
+        <div className="flex items-center gap-1.5 px-3 sm:px-4 pt-2.5">
+          <button
+            onClick={() => setView('chat')}
+            className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold border transition-colors ${view === 'chat' ? 'ld-btn-primary !border-transparent' : 'ld-btn-ghost text-ld-fg-soft'}`}
+          >
+            <MessageCircle className="w-3.5 h-3.5" /> Chat
+          </button>
+          <button
+            onClick={() => setView('ops')}
+            className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold border transition-colors ${view === 'ops' ? 'ld-btn-primary !border-transparent' : 'ld-btn-ghost text-ld-fg-soft'}`}
+          >
+            <LayoutDashboard className="w-3.5 h-3.5" /> Operaciones
+          </button>
+        </div>
+
         {loading ? (
           <div className="flex-1 flex items-center justify-center gap-3 text-ld-fg-muted">
             <Loader2 className="w-5 h-5 animate-spin" />
             <span className="text-sm">Cargando tu negocio…</span>
           </div>
+        ) : view === 'ops' ? (
+          <OpsCenter onRefreshAll={() => loadData(true)} />
         ) : (
           <div className="flex-1 overflow-y-auto peyu-scrollbar px-3 sm:px-4 py-5 sm:py-6">
             <div className="max-w-[820px] mx-auto w-full space-y-6">
@@ -166,13 +187,15 @@ Stock bajo (<10u): ${m.stock_bajo} SKUs · consultas sin responder: ${m.consulta
           </div>
         )}
 
-        <CommandBar
-          value={input}
-          onChange={setInput}
-          onSend={() => sendMessage()}
-          onChip={sendMessage}
-          loading={thinking}
-        />
+        {view === 'chat' && (
+          <CommandBar
+            value={input}
+            onChange={setInput}
+            onSend={() => sendMessage()}
+            onChip={sendMessage}
+            loading={thinking}
+          />
+        )}
       </div>
     </div>
   );

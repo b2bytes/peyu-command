@@ -10,6 +10,29 @@
 // ════════════════════════════════════════════════════════════════════════
 
 export const CHANGELOG = [
+  // ── 10 junio 2026 · Agent OS = página maestra de operaciones ──────────
+  {
+    fecha: '2026-06-10',
+    tipo: 'feature',
+    area: 'Agent OS',
+    titulo: 'Centro de Operaciones maestro',
+    detalle: 'Nueva pestaña "Operaciones" en /admin/agente: gestión completa de pedidos sin salir de la página — marcar pedido no pagado como pagado en 1 clic, generar etiqueta BlueExpress, cambiar estado, abrir etiqueta/tracking, buscador y filtros (por pagar / por despachar / despachados). Incluye accesos a todos los módulos del admin.',
+  },
+  {
+    fecha: '2026-06-10',
+    tipo: 'mejora',
+    area: 'Agent OS · IA',
+    titulo: 'Modelo IA de última generación',
+    detalle: 'El chat del Agent OS ahora responde con Claude Opus 4.8 (el modelo más nuevo y capaz disponible) para razonamiento de negocio de mayor calidad.',
+  },
+  {
+    fecha: '2026-06-10',
+    tipo: 'mejora',
+    area: 'Backend',
+    titulo: 'Acciones nuevas del agente',
+    detalle: 'agentOSAction soporta marcarPedidoPagado (confirma pago + historial) y generarEtiqueta (emite OT Bluex reutilizando el flujo B2C con validación de pago).',
+  },
+
   // ── 9 junio 2026 · Estabilidad tienda B2C ──────────────────────────────
   {
     fecha: '2026-06-09',

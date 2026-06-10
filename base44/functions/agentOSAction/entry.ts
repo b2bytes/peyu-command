@@ -121,6 +121,45 @@ Deno.serve(async (req) => {
         return Response.json({ ok: true, message: `Stock ajustado a ${payload.stock_actual}u` });
       }
 
+      case 'marcarPedidoPagado': {
+        if (!payload.id) throw new Error('Falta id de pedido');
+        const [pedido] = await svc.PedidoWeb.filter({ id: payload.id });
+        if (!pedido) throw new Error('Pedido no encontrado');
+        const ESTADOS_POST = ['Confirmado', 'En Producción', 'Listo para Despacho', 'Despachado', 'Entregado'];
+        const historial = Array.isArray(pedido.historial) ? [...pedido.historial] : [];
+        historial.push({
+          at: new Date().toISOString(),
+          type: 'paid',
+          actor: user.email,
+          channel: 'manual',
+          detail: 'Pago confirmado manualmente desde Agent OS',
+        });
+        await svc.PedidoWeb.update(payload.id, {
+          payment_status: 'paid',
+          estado: ESTADOS_POST.includes(pedido.estado) ? pedido.estado : 'Confirmado',
+          historial,
+        });
+        return Response.json({ ok: true, message: `Pedido ${pedido.numero_pedido || payload.id.slice(-6)} marcado como pagado ✓` });
+      }
+
+      case 'generarEtiqueta': {
+        if (!payload.id) throw new Error('Falta id de pedido');
+        const [pedido] = await svc.PedidoWeb.filter({ id: payload.id });
+        if (!pedido) throw new Error('Pedido no encontrado');
+        if (pedido.payment_status !== 'paid') throw new Error('El pedido no está pagado. Márcalo como pagado primero.');
+        if (pedido.tracking) {
+          return Response.json({ ok: true, message: `Ya tiene tracking: ${pedido.tracking}`, tracking: pedido.tracking });
+        }
+        const d = await base44.asServiceRole.functions.invoke('generarEtiquetaB2CBlueExpress', { pedido_id: payload.id, pedido });
+        if (!d?.ok) throw new Error(d?.error || d?.reason || 'Error generando etiqueta BlueExpress');
+        return Response.json({
+          ok: true,
+          message: `Etiqueta generada · OT ${d.tracking_number || ''}`,
+          tracking: d.tracking_number,
+          label_url: d.label_url || null,
+        });
+      }
+
       default:
         return Response.json({ error: `Acción no soportada: ${action}` }, { status: 400 });
     }
