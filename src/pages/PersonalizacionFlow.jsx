@@ -18,6 +18,7 @@ import QuantityStepper from '@/components/personalizacion/QuantityStepper';
 import PersonalizacionOptionPicker from '@/components/personalizacion/PersonalizacionOptionPicker';
 import MockupGenerator from '@/components/MockupGenerator';
 import PublicSEO from '@/components/PublicSEO';
+import { saveJourney, loadJourney, clearJourney } from '@/lib/personalizar-journey';
 
 const C = {
   bg: '#F8F3ED',
@@ -143,6 +144,11 @@ function DesktopLeftPanel({ producto, displayImg, colorLabel, texto, disenoPeyuU
       {/* Stepper lateral */}
       <DesktopStepper step={step} onGoTo={onGoTo} />
 
+      {/* Indicador de auto-guardado del viaje */}
+      <p className="text-[10px] font-bold text-center -mt-1 flex items-center justify-center gap-1" style={{ color: '#5B7D5A' }}>
+        <CheckCircle className="w-3 h-3" /> Tu avance se guarda automáticamente
+      </p>
+
       {/* Preview del producto seleccionado */}
       {producto && (
         <div className="rounded-2xl overflow-hidden" style={{ border: `1.5px solid ${C.border}`, background: C.surface }}>
@@ -253,9 +259,30 @@ export default function PersonalizacionFlow() {
       setProductos(personalizables);
       const params = new URLSearchParams(location.search);
       const preId = params.get('productoId');
-      const initial = personalizables.find(p => p.id === preId) || personalizables[0];
-      if (initial) setProductoId(initial.id);
       const preStep = parseInt(params.get('step'), 10);
+
+      // Restaura el viaje guardado del cliente (sobrevive recargas/salidas).
+      // Los parámetros de URL tienen prioridad sobre lo guardado.
+      const journey = loadJourney();
+      const journeyProducto = !preId && journey?.productoId && personalizables.some(p => p.id === journey.productoId)
+        ? journey.productoId : null;
+
+      const initial = personalizables.find(p => p.id === preId)
+        || personalizables.find(p => p.id === journeyProducto)
+        || personalizables[0];
+      if (initial) setProductoId(initial.id);
+
+      if (journey && (journeyProducto || preId === journey.productoId)) {
+        if (journey.colorId) setColorId(journey.colorId);
+        if (journey.carcasaColorKey) setCarcasaColorKey(journey.carcasaColorKey);
+        if (journey.texto) setTexto(journey.texto);
+        if (journey.opcion) setOpcion(journey.opcion);
+        if (journey.disenoPeyuUrl) setDisenoPeyuUrl(journey.disenoPeyuUrl);
+        if (journey.logoUrlSubido) setLogoUrlSubido(journey.logoUrlSubido);
+        if (journey.cantidad > 1) setCantidad(journey.cantidad);
+        if (journey.mockupUrl) setMockupUrl(journey.mockupUrl);
+        if (isNaN(preStep) && typeof journey.step === 'number' && journey.step >= 0 && journey.step <= 3) setStep(journey.step);
+      }
       if (!isNaN(preStep) && preStep >= 0 && preStep <= 3) setStep(preStep);
     }).finally(() => setProductosLoading(false));
   }, [location.search]);
@@ -275,6 +302,12 @@ export default function PersonalizacionFlow() {
       .catch(() => {})
       .finally(() => setCleanBaseLoading(false));
   }, [producto, tieneDiseno, cleanBaseUrl, cleanBaseLoading]);
+
+  // Auto-guardado del viaje: cada decisión del cliente queda persistida.
+  useEffect(() => {
+    if (productosLoading || done || !productoId) return;
+    saveJourney({ step, productoId, colorId, carcasaColorKey, texto, opcion, disenoPeyuUrl, logoUrlSubido, cantidad, mockupUrl });
+  }, [step, productoId, colorId, carcasaColorKey, texto, opcion, disenoPeyuUrl, logoUrlSubido, cantidad, mockupUrl, productosLoading, done]);
 
   const imagenesPorColor = useMemo(() => {
     const mapa = producto?.imagenes_por_color;
@@ -379,6 +412,7 @@ export default function PersonalizacionFlow() {
       color_producto: colorLabel || '', status: mockupUrl ? 'Preview generado' : 'Pendiente',
       mockup_urls: mockupUrl ? [mockupUrl] : [], estimated_minutes: 5,
     }).catch(() => {});
+    clearJourney();
     setDone(true);
     } finally {
       setLoading(false);
@@ -1047,7 +1081,7 @@ export default function PersonalizacionFlow() {
                   onClick={handleCTA}
                   disabled={!canAdvance || loading}
                   className="flex-1 h-14 rounded-2xl text-white font-bold text-base flex items-center justify-center gap-2 transition-all active:scale-[0.98] disabled:opacity-50 hover:-translate-y-0.5"
-                  style={{ background: canAdvance ? C.actionGrad : C.border, boxShadow: canAdvance ? C.actionShadow : 'none' }}
+                  style={{ background: canAdvance ? C.actionGrad : '#E9DFD0', color: canAdvance ? 'white' : '#A08070', border: canAdvance ? 'none' : `1.5px solid ${C.border}`, boxShadow: canAdvance ? C.actionShadow : 'none' }}
                 >
                   {loading ? <><Loader2 className="w-5 h-5 animate-spin" /> Agregando...</>
                     : <>{step === 3 && <ShoppingCart className="w-5 h-5" />}<span>{ctaLabel}</span>{step < 3 && <ArrowRight className="w-5 h-5" />}</>}
@@ -1088,7 +1122,7 @@ export default function PersonalizacionFlow() {
           onClick={handleCTA}
           disabled={!canAdvance || loading}
           className="w-full h-14 rounded-2xl text-white font-bold text-base flex items-center justify-center gap-2 transition-all active:scale-[0.98] disabled:opacity-50"
-          style={{ background: canAdvance ? C.actionGrad : C.border, boxShadow: canAdvance ? C.actionShadow : 'none' }}
+          style={{ background: canAdvance ? C.actionGrad : '#E9DFD0', color: canAdvance ? 'white' : '#A08070', border: canAdvance ? 'none' : `1.5px solid ${C.border}`, boxShadow: canAdvance ? C.actionShadow : 'none' }}
         >
           {loading ? <><Loader2 className="w-5 h-5 animate-spin" /> Agregando...</>
             : <>{step === 3 && <ShoppingCart className="w-5 h-5" />}<span>{ctaLabel}</span>{step < 3 && <ArrowRight className="w-5 h-5" />}</>}

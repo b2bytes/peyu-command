@@ -10,6 +10,15 @@
 // ════════════════════════════════════════════════════════════════════════
 
 export const CHANGELOG = [
+  // ── 10 junio 2026 · Personalizar: contraste + viaje persistente ─────────
+  {
+    fecha: '2026-06-10',
+    tipo: 'mejora',
+    area: 'Personalizar',
+    titulo: 'Alto contraste en cada paso + viaje del cliente persistente',
+    detalle: 'Selectores de color y de tipo de grabado rediseñados con cards blancas sólidas, texto café oscuro y selección terracota (antes se veían lavados sobre el fondo crema). El botón Continuar deshabilitado ahora se distingue claramente. Y el viaje completo del cliente (paso, producto, color, diseño, texto, cantidad, mockup) se guarda automáticamente en cada decisión: sobrevive recargas y se limpia al agregar al carrito, con indicador "Tu avance se guarda automáticamente".',
+  },
+
   // ── 10 junio 2026 · Personalizar: comprar o cotizar ─────────────────────
   {
     fecha: '2026-06-10',
