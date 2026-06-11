@@ -1,20 +1,23 @@
 import { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
-import { MessageCircle, RefreshCw, Link2, Loader2, ArrowLeft, Check } from 'lucide-react';
+import { MessageCircle, RefreshCw, Loader2, ArrowLeft, QrCode } from 'lucide-react';
 import WhatsAppConvList from '@/components/whatsapp/WhatsAppConvList';
 import WhatsAppThread from '@/components/whatsapp/WhatsAppThread';
+import WhatsAppQRModal from '@/components/whatsapp/WhatsAppQRModal';
 
 // ════════════════════════════════════════════════════════════════════════
 // /admin/whatsapp — Bandeja especial de conversaciones WhatsApp.
 // El agente "whatsapp_peyu" (canal WhatsApp nativo de Base44) responde a los
 // clientes 24/7; aquí el equipo ve cada conversación en vivo y puede
-// intervenir. Mobile-first: lista ↔ hilo con navegación tipo WhatsApp.
+// intervenir. Conexión rápida del teléfono vía QR. Mobile-first.
 // ════════════════════════════════════════════════════════════════════════
 export default function WhatsAppInbox() {
   const [conversations, setConversations] = useState([]);
   const [active, setActive] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [copied, setCopied] = useState(false);
+  const [showQR, setShowQR] = useState(false);
+
+  const connectUrl = base44.agents.getWhatsAppConnectURL('whatsapp_peyu');
 
   const load = async () => {
     const convs = await base44.agents.listConversations({ agent_name: 'whatsapp_peyu' }).catch(() => []);
@@ -33,45 +36,50 @@ export default function WhatsAppInbox() {
     setActive(full || c);
   };
 
-  const copyConnectLink = async () => {
-    const url = base44.agents.getWhatsAppConnectURL('whatsapp_peyu');
-    await navigator.clipboard.writeText(url).catch(() => {});
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
+  const activeNombre = active?.metadata?.name || (active ? `Cliente ${active.id?.slice(-5)}` : '');
 
   return (
     <div className="absolute inset-0 flex flex-col overflow-hidden">
-      {/* Header */}
-      <header className="flex-shrink-0 h-14 px-3 sm:px-4 border-b border-ld-border bg-ld-bg-soft/60 backdrop-blur-xl flex items-center gap-2.5">
+      {/* Header — verde WhatsApp con prestancia */}
+      <header
+        className="flex-shrink-0 h-16 px-3 sm:px-4 flex items-center gap-2.5 shadow-md z-10"
+        style={{ background: 'linear-gradient(135deg, #075E54 0%, #128C7E 60%, #1DA851 100%)' }}
+      >
         {active && (
-          <button onClick={() => setActive(null)} className="md:hidden w-9 h-9 rounded-lg hover:bg-ld-bg-elevated flex items-center justify-center text-ld-fg-muted" aria-label="Volver">
+          <button onClick={() => setActive(null)} className="md:hidden w-9 h-9 rounded-full hover:bg-white/15 flex items-center justify-center text-white" aria-label="Volver">
             <ArrowLeft className="w-5 h-5" />
           </button>
         )}
-        <span className="w-9 h-9 rounded-xl bg-[#25D366]/15 flex items-center justify-center flex-shrink-0">
-          <MessageCircle className="w-5 h-5 text-[#25D366]" />
-        </span>
+        <div className="relative flex-shrink-0">
+          <span className="w-10 h-10 rounded-full bg-white/15 backdrop-blur flex items-center justify-center">
+            <MessageCircle className="w-5 h-5 text-white" />
+          </span>
+          <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-[#25D366] border-2 border-[#0c7a6b] animate-pulse" />
+        </div>
         <div className="min-w-0 flex-1">
-          <h1 className="text-sm font-bold text-ld-fg leading-none">Bandeja WhatsApp</h1>
-          <p className="text-[10px] text-ld-fg-muted mt-0.5 truncate">Agente Peyu respondiendo 24/7 · {conversations.length} conversaciones</p>
+          <h1 className="text-sm font-bold text-white leading-none truncate">
+            {active ? activeNombre : 'WhatsApp PEYU'}
+          </h1>
+          <p className="text-[10px] text-white/75 mt-0.5 truncate">
+            {active ? 'Agente Peyu activo en esta conversación' : `Agente Peyu en línea 24/7 · ${conversations.length} conversaciones`}
+          </p>
         </div>
         <button
-          onClick={copyConnectLink}
-          className="ld-btn-ghost inline-flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-bold text-ld-fg-soft flex-shrink-0"
-          title="Copiar link de conexión WhatsApp para compartir con clientes"
+          onClick={() => setShowQR(true)}
+          className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full text-xs font-bold text-[#075E54] bg-white hover:bg-white/90 transition-colors shadow-sm flex-shrink-0"
+          title="Conectar tu teléfono escaneando un QR"
         >
-          {copied ? <Check className="w-3.5 h-3.5 text-[#25D366]" /> : <Link2 className="w-3.5 h-3.5" />}
-          <span className="hidden sm:inline">{copied ? 'Copiado' : 'Link de conexión'}</span>
+          <QrCode className="w-4 h-4" />
+          <span className="hidden sm:inline">Conectar con QR</span>
         </button>
-        <button onClick={load} className="w-9 h-9 rounded-lg hover:bg-ld-bg-elevated flex items-center justify-center text-ld-fg-muted flex-shrink-0" aria-label="Refrescar">
+        <button onClick={load} className="w-9 h-9 rounded-full hover:bg-white/15 flex items-center justify-center text-white/85 flex-shrink-0" aria-label="Refrescar">
           <RefreshCw className="w-4 h-4" />
         </button>
       </header>
 
       {/* Layout: lista + hilo (en móvil se alternan) */}
       <div className="flex-1 flex min-h-0">
-        <aside className={`w-full md:w-[340px] md:flex-shrink-0 md:border-r border-ld-border overflow-y-auto peyu-scrollbar bg-ld-bg ${active ? 'hidden md:block' : ''}`}>
+        <aside className={`w-full md:w-[340px] md:flex-shrink-0 md:border-r border-ld-border bg-ld-bg ${active ? 'hidden md:flex' : 'flex'} flex-col min-h-0`}>
           {loading ? (
             <div className="flex items-center justify-center gap-2 py-12 text-ld-fg-muted text-sm">
               <Loader2 className="w-4 h-4 animate-spin" /> Cargando…
@@ -81,18 +89,31 @@ export default function WhatsAppInbox() {
           )}
         </aside>
 
-        <main className={`flex-1 min-w-0 ${active ? '' : 'hidden md:flex'} flex-col`}>
+        <main className={`flex-1 min-w-0 ${active ? 'flex' : 'hidden md:flex'} flex-col`}>
           {active ? (
             <WhatsAppThread key={active.id} conversation={active} />
           ) : (
-            <div className="flex-1 flex flex-col items-center justify-center text-center p-6 text-ld-fg-muted">
-              <MessageCircle className="w-10 h-10 mb-3 opacity-30" />
-              <p className="text-sm font-semibold text-ld-fg-soft">Selecciona una conversación</p>
-              <p className="text-xs mt-1 max-w-xs">El agente Peyu responde automáticamente. Comparte el link de conexión para que tus clientes te escriban por WhatsApp.</p>
+            <div className="flex-1 flex flex-col items-center justify-center text-center p-6" style={{ background: 'var(--ld-bg-soft)' }}>
+              <div className="w-20 h-20 rounded-full bg-[#25D366]/10 flex items-center justify-center mb-4">
+                <MessageCircle className="w-9 h-9 text-[#25D366]" />
+              </div>
+              <p className="text-base font-bold text-ld-fg">Bandeja WhatsApp PEYU</p>
+              <p className="text-xs text-ld-fg-muted mt-1.5 max-w-xs leading-relaxed">
+                El agente Peyu 🐢 responde automáticamente a tus clientes. Selecciona una conversación para verla en vivo o intervenir.
+              </p>
+              <button
+                onClick={() => setShowQR(true)}
+                className="mt-5 inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-bold text-white shadow-md hover:brightness-105 transition-all"
+                style={{ background: 'linear-gradient(135deg, #25D366 0%, #128C7E 100%)' }}
+              >
+                <QrCode className="w-4 h-4" /> Conectar mi teléfono
+              </button>
             </div>
           )}
         </main>
       </div>
+
+      {showQR && <WhatsAppQRModal url={connectUrl} onClose={() => setShowQR(false)} />}
     </div>
   );
 }
