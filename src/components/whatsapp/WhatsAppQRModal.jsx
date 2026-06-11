@@ -4,7 +4,7 @@ import { X, Copy, Check, ExternalLink, Smartphone, AlertTriangle } from 'lucide-
 // Modal de conexión rápida: muestra el link de conexión WhatsApp como QR para
 // escanear con la CÁMARA del teléfono (no con el escáner interno de WhatsApp,
 // que solo acepta QRs propios de WhatsApp y marca "código QR inválido").
-export default function WhatsAppQRModal({ url, onClose }) {
+export default function WhatsAppQRModal({ url, errorDetail, onClose }) {
   const [copied, setCopied] = useState(false);
 
   const validUrl = typeof url === 'string' && url.startsWith('http');
@@ -38,9 +38,16 @@ export default function WhatsAppQRModal({ url, onClose }) {
 
         <div className="p-5 flex flex-col items-center gap-4">
           {!validUrl ? (
-            <div className="flex items-start gap-2 text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-xl p-3">
-              <AlertTriangle className="w-4 h-4 flex-shrink-0 mt-0.5" />
-              No se pudo generar el link de conexión. Intenta refrescar la página.
+            <div className="w-full space-y-2">
+              <div className="flex items-start gap-2 text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-xl p-3">
+                <AlertTriangle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                No se pudo generar el link de conexión. Intenta refrescar la página.
+              </div>
+              {errorDetail && (
+                <p className="text-[11px] text-ld-fg-muted break-all bg-ld-bg-soft border border-ld-border rounded-xl px-3 py-2">
+                  Detalle técnico: {errorDetail}
+                </p>
+              )}
             </div>
           ) : (
             <>

@@ -16,8 +16,33 @@ export default function WhatsAppInbox() {
   const [active, setActive] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showQR, setShowQR] = useState(false);
+  const [connectUrl, setConnectUrl] = useState('');
+  const [connectError, setConnectError] = useState('');
 
-  const connectUrl = base44.agents.getWhatsAppConnectURL('whatsapp_peyu');
+  // El link de conexión puede ser sync o async según la versión del SDK, y el
+  // nombre del método varía en casing. Probamos las variantes y guardamos el
+  // error real si falla, para mostrarlo en el modal.
+  useEffect(() => {
+    (async () => {
+      try {
+        const fn = base44.agents?.getWhatsAppConnectURL
+          || base44.agents?.getWhatsappConnectURL
+          || base44.agents?.getWhatsAppConnectUrl;
+        if (!fn) {
+          setConnectError('El SDK no expone el método de conexión WhatsApp (getWhatsAppConnectURL).');
+          return;
+        }
+        const result = await fn.call(base44.agents, 'whatsapp_peyu');
+        if (typeof result === 'string' && result.length > 0) {
+          setConnectUrl(result.startsWith('http') ? result : `https://${result}`);
+        } else {
+          setConnectError(`El método devolvió un valor inesperado: ${JSON.stringify(result)}`);
+        }
+      } catch (err) {
+        setConnectError(err?.message || String(err));
+      }
+    })();
+  }, []);
 
   const load = async () => {
     const convs = await base44.agents.listConversations({ agent_name: 'whatsapp_peyu' }).catch(() => []);
@@ -113,7 +138,7 @@ export default function WhatsAppInbox() {
         </main>
       </div>
 
-      {showQR && <WhatsAppQRModal url={connectUrl} onClose={() => setShowQR(false)} />}
+      {showQR && <WhatsAppQRModal url={connectUrl} errorDetail={connectError} onClose={() => setShowQR(false)} />}
     </div>
   );
 }
