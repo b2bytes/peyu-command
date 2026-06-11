@@ -194,6 +194,20 @@ Deno.serve(async (req) => {
       galeria_urls: [imageUrl, ...galeriaActual.filter(u => u !== imageUrl)],
     });
 
+    // Guardar en la GALERÍA de Social Studio (ContentAsset) — todo lo que el
+    // agente genera queda registrado automáticamente.
+    await base44.asServiceRole.entities.ContentAsset.create({
+      nombre: `Imagen IA · ${producto.nombre} (${ESTILOS[opts.estilo]?.label || 'Lifestyle'})`,
+      tipo: 'Imagen',
+      url: imageUrl,
+      formato: opts.aspect_ratio === '9:16' ? 'Story 9:16' : opts.aspect_ratio === '4:5' ? 'Vertical 4:5' : 'Cuadrado 1:1',
+      generado_por_ia: true,
+      prompt_ia: opts.escena_custom || ESTILOS[opts.estilo]?.label || 'lifestyle',
+      categoria: 'Producto',
+      producto_sku: producto.sku,
+      notas: 'Generado por el agente de marketing',
+    }).catch(() => null);
+
     return Response.json({
       success: true,
       producto_id,

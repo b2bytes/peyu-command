@@ -17,6 +17,7 @@ const AGENT_NAME = 'marketing_orchestrator';
 // ── Quick prompts iniciales ──────────────────────────────────────────────────
 const QUICK_PROMPTS = [
   { icon: ImageIcon,  label: 'Generar imagen de producto',    prompt: 'Genera una imagen lifestyle del portavasos de escritorio PEYU para Instagram.' },
+  { icon: Play,       label: 'Generar VIDEO de producto',     prompt: 'Genera un video formato reel (9:16) del pack de cachos PEYU usando sus fotos reales, con efecto cinemático de luz dorada.' },
   { icon: Calendar,   label: 'Lanzar campaña semanal',        prompt: 'Lanza una campaña semanal de contenido para PEYU esta semana: genera el plan, crea los posts y programa el calendario de publicación.' },
   { icon: TrendingUp, label: 'Tendencias LinkedIn hoy',        prompt: '¿Qué tendencias de contenido funcionan mejor en LinkedIn esta semana para una marca B2B sustentable? Dame 3 ideas con copy completo.' },
   { icon: Megaphone,  label: 'Campaña corporativa B2B',        prompt: 'Diseña una campaña de regalos corporativos B2B para PEYU: 2 semanas, Instagram + LinkedIn. Genera imágenes y copies listos para publicar.' },
@@ -25,7 +26,7 @@ const QUICK_PROMPTS = [
 ];
 
 // ── Renderiza imágenes generadas inline ─────────────────────────────────────
-function GeneratedImage({ url, label }) {
+function GeneratedImage({ url, label, isVideo }) {
   const [loaded, setLoaded] = useState(false);
   const [open, setOpen] = useState(true);
   return (
@@ -39,13 +40,17 @@ function GeneratedImage({ url, label }) {
       </button>
       {open && (
         <div className="px-3 pb-3">
-          {!loaded && <div className="w-full h-40 bg-white/5 rounded-lg animate-pulse" />}
-          <img
-            src={url}
-            alt={label || 'Imagen generada'}
-            onLoad={() => setLoaded(true)}
-            className={`w-full rounded-lg object-cover transition-opacity ${loaded ? 'opacity-100' : 'opacity-0 h-0'}`}
-          />
+          {!loaded && !isVideo && <div className="w-full h-40 bg-white/5 rounded-lg animate-pulse" />}
+          {isVideo ? (
+            <video src={url} controls className="w-full rounded-lg" onLoadedData={() => setLoaded(true)} />
+          ) : (
+            <img
+              src={url}
+              alt={label || 'Imagen generada'}
+              onLoad={() => setLoaded(true)}
+              className={`w-full rounded-lg object-cover transition-opacity ${loaded ? 'opacity-100' : 'opacity-0 h-0'}`}
+            />
+          )}
           {loaded && (
             <a href={url} target="_blank" rel="noopener noreferrer"
               className="mt-2 inline-flex items-center gap-1 text-[10px] text-violet-400 hover:text-violet-300">
@@ -67,6 +72,7 @@ function ToolCallBadge({ toolCall }) {
 
   const label = {
     generateProductPromoImage: '🖼 Generando imagen IA…',
+    agentGenerateMedia: '🎬 Generando imagen/video desde fotos reales…',
     generateWeeklyContentPlan: '📅 Creando plan semanal…',
     generateSocialContent: '✍️ Generando contenido…',
     publishContentPost: '🚀 Publicando post…',
@@ -77,6 +83,7 @@ function ToolCallBadge({ toolCall }) {
 
   const doneLabel = {
     generateProductPromoImage: '✅ Imagen generada',
+    agentGenerateMedia: '✅ Media generada y guardada en Galería',
     generateWeeklyContentPlan: '✅ Plan semanal listo',
     generateSocialContent: '✅ Contenido generado',
     publishContentPost: '✅ Post publicado',
@@ -110,6 +117,16 @@ function ChatMessage({ msg }) {
           const parsed = typeof tc.results === 'string' ? JSON.parse(tc.results) : tc.results;
           if (parsed?.image_url) imageResults.push({ url: parsed.image_url, label: 'Imagen generada con IA' });
           if (parsed?.variants) parsed.variants.forEach((v, i) => imageResults.push({ url: v.url, label: `Variante ${i + 1}` }));
+        } catch { /* ignore */ }
+      }
+      if (tc.name === 'agentGenerateMedia' && tc.results) {
+        try {
+          const parsed = typeof tc.results === 'string' ? JSON.parse(tc.results) : tc.results;
+          if (parsed?.url) imageResults.push({
+            url: parsed.url,
+            label: parsed.tipo === 'video' ? `Video generado · ${parsed.producto || ''}` : `Imagen generada · ${parsed.producto || ''}`,
+            isVideo: parsed.tipo === 'video',
+          });
         } catch { /* ignore */ }
       }
       if (tc.name === 'bulkGeneratePromoVariants' && tc.results) {
@@ -170,7 +187,7 @@ function ChatMessage({ msg }) {
 
         {/* Imágenes generadas */}
         {imageResults.map((img, i) => (
-          <GeneratedImage key={i} url={img.url} label={img.label} />
+          <GeneratedImage key={i} url={img.url} label={img.label} isVideo={img.isVideo} />
         ))}
 
         <p className={`text-[10px] text-white/20 mt-1 px-1 ${isUser ? 'text-right' : ''}`}>
@@ -204,7 +221,7 @@ export default function MarketingAgentPanel({ posts = [] }) {
       // Mensaje de bienvenida sintético (no enviado al agente, solo UI)
       setMessages([{
         role: 'assistant',
-        content: `¡Hola equipo PEYU! 👋 Soy tu **Agente de Marketing** con acceso completo a herramientas.\n\n**Ahora puedo:**\n- 🖼 **Generar imágenes** de productos con IA desde el chat\n- 📅 **Lanzar campañas semanales** completas (plan + posts + calendario)\n- 🚀 **Publicar posts** en Instagram y LinkedIn directamente\n- 📊 **Consultar métricas** de IG y LinkedIn en tiempo real\n\n¿En qué trabajamos hoy?`,
+        content: `¡Hola equipo PEYU! 👋 Soy tu **Agente de Marketing** con acceso completo a herramientas.\n\n**Ahora puedo:**\n- 🖼 **Generar imágenes** de productos con IA desde sus fotos reales\n- 🎬 **Generar VIDEOS** de productos (reels) con efectos cinematográficos\n- 🗂 Todo lo generado queda guardado en la **Galería** automáticamente\n- 📅 **Lanzar campañas semanales** completas (plan + posts + calendario)\n- 🚀 **Publicar posts** en Instagram y LinkedIn directamente\n- 📊 **Consultar métricas** de IG y LinkedIn en tiempo real\n\n¿En qué trabajamos hoy?`,
         tool_calls: [],
       }]);
     } catch {

@@ -80,7 +80,20 @@ Deno.serve(async (req) => {
       tipo_post = 'Post Imagen';
     }
 
-    // 3 · Guardar como borrador en el calendario de Social Studio
+    // 3 · Guardar en la GALERÍA de Social Studio (ContentAsset)
+    await svc.entities.ContentAsset.create({
+      nombre: `${tipo === 'video' ? 'Video' : 'Imagen'} IA · ${prod.nombre}`,
+      tipo: tipo === 'video' ? 'Video' : 'Imagen',
+      url,
+      formato: formato === 'historia' ? 'Story 9:16' : formato === 'horizontal' ? 'Horizontal 16:9' : 'Cuadrado 1:1',
+      generado_por_ia: true,
+      prompt_ia: efecto || estiloDefault,
+      categoria: 'Producto',
+      producto_sku: prod.sku,
+      notas: 'Generado por el agente desde las fotos reales del producto',
+    });
+
+    // 4 · Guardar como borrador en el calendario de Social Studio
     const post = await svc.entities.ContentPost.create({
       titulo: `${tipo === 'video' ? 'Video' : 'Imagen'} IA · ${prod.nombre}`,
       red_social,

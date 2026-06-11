@@ -17,11 +17,14 @@ import MarketingAgentPanel from '@/components/social-studio/MarketingAgentPanel'
 import LinkedInPanel from '@/components/social-studio/LinkedInPanel';
 import InstagramPanel from '@/components/social-studio/InstagramPanel';
 import CreatorPanel from '@/components/social-studio/CreatorPanel';
+import MediaGalleryPanel from '@/components/social-studio/MediaGalleryPanel';
+import StudioModeToggle from '@/components/social-studio/StudioModeToggle';
 
 const TABS = [
   { id: 'queue',     label: 'Cola',        icon: CheckSquare, accent: 'from-amber-400 to-orange-500' },
   { id: 'creator',   label: 'Crear IA',    icon: Wand2,       accent: 'from-pink-500 to-violet-600' },
   { id: 'agent',     label: 'Agente',      icon: Bot,         accent: 'from-violet-500 to-pink-500' },
+  { id: 'galeria',   label: 'Galería',     icon: ImageIcon,   accent: 'from-emerald-400 to-cyan-500' },
   { id: 'instagram', label: 'Instagram',   icon: Instagram,   accent: 'from-pink-500 to-purple-600' },
   { id: 'linkedin',  label: 'LinkedIn',    icon: Linkedin,    accent: 'from-sky-500 to-blue-600' },
   { id: 'bulk',      label: 'Lote',        icon: Layers,      accent: 'from-pink-500 to-violet-500' },
@@ -35,6 +38,17 @@ export default function SocialStudio() {
   const [refreshKey, setRefreshKey] = useState(0);
   const [stats, setStats] = useState({ pendientes: 0, aprobados: 0, publicados_hoy: 0, total: 0 });
   const [allPosts, setAllPosts] = useState([]);
+  // Modo visual del estudio: 'dark' (sobrio) | 'social' (vibrante)
+  const [mode, setMode] = useState(() => localStorage.getItem('peyu_socialstudio_mode') || 'dark');
+  useEffect(() => { localStorage.setItem('peyu_socialstudio_mode', mode); }, [mode]);
+
+  // El studio es dark-first: fuerza modo noche mientras está abierto y
+  // restaura el modo previo del admin al salir.
+  useEffect(() => {
+    const prev = document.documentElement.getAttribute('data-liquid-mode');
+    document.documentElement.setAttribute('data-liquid-mode', 'night');
+    return () => document.documentElement.setAttribute('data-liquid-mode', prev || 'day');
+  }, []);
 
   const loadStats = async () => {
     const posts = await base44.entities.ContentPost.list('-created_date', 200);
@@ -54,19 +68,31 @@ export default function SocialStudio() {
 
   return (
     <div className="h-full flex flex-col min-h-0 relative">
-      {/* Ambient glow de fondo · 2027 trend */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-40 -left-20 w-[500px] h-[500px] bg-pink-500/10 rounded-full blur-[120px]" />
-        <div className="absolute -top-20 right-0 w-[400px] h-[400px] bg-violet-500/10 rounded-full blur-[100px]" />
-        <div className="absolute bottom-0 left-1/3 w-[400px] h-[400px] bg-cyan-500/5 rounded-full blur-[100px]" />
+      {/* Ambient glow de fondo · dark (sobrio) vs social (vibrante) */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none transition-all duration-700">
+        {mode === 'social' ? (
+          <>
+            <div className="absolute inset-0 bg-gradient-to-br from-fuchsia-950/50 via-transparent to-indigo-950/50" />
+            <div className="absolute -top-40 -left-20 w-[600px] h-[600px] bg-fuchsia-500/25 rounded-full blur-[120px]" />
+            <div className="absolute -top-20 right-0 w-[500px] h-[500px] bg-violet-500/25 rounded-full blur-[100px]" />
+            <div className="absolute bottom-0 left-1/3 w-[500px] h-[500px] bg-cyan-500/20 rounded-full blur-[100px]" />
+            <div className="absolute bottom-10 right-10 w-[300px] h-[300px] bg-pink-500/15 rounded-full blur-[90px]" />
+          </>
+        ) : (
+          <>
+            <div className="absolute -top-40 -left-20 w-[500px] h-[500px] bg-pink-500/10 rounded-full blur-[120px]" />
+            <div className="absolute -top-20 right-0 w-[400px] h-[400px] bg-violet-500/10 rounded-full blur-[100px]" />
+            <div className="absolute bottom-0 left-1/3 w-[400px] h-[400px] bg-cyan-500/5 rounded-full blur-[100px]" />
+          </>
+        )}
       </div>
 
       <div className="relative flex-1 flex flex-col min-h-0 p-2 lg:p-3 gap-2">
         {/* Hero · KPI strip compacto */}
         <SocialStudioHero stats={stats} onPendientesClick={() => setTab('queue')} />
 
-        {/* Segmented control glassmorphic compacto */}
-        <div className="flex-shrink-0">
+        {/* Segmented control glassmorphic compacto + toggle de modo */}
+        <div className="flex-shrink-0 flex items-center justify-between gap-2">
           <div className="inline-flex p-0.5 bg-white/5 backdrop-blur-xl border border-white/10 rounded-xl gap-0.5 max-w-full overflow-x-auto scrollbar-hide">
             {TABS.map(t => {
               const Icon = t.icon;
@@ -95,6 +121,7 @@ export default function SocialStudio() {
               );
             })}
           </div>
+          <StudioModeToggle mode={mode} onChange={setMode} />
         </div>
 
         {/* Workspace · ocupa todo el alto restante */}
@@ -102,6 +129,7 @@ export default function SocialStudio() {
           {tab === 'queue'     && <ApprovalQueuePanel refreshKey={refreshKey} onChange={triggerRefresh} />}
           {tab === 'creator'   && <CreatorPanel />}
           {tab === 'agent'     && <MarketingAgentPanel posts={allPosts} />}
+          {tab === 'galeria'   && <MediaGalleryPanel />}
           {tab === 'instagram' && <InstagramPanel onPublished={triggerRefresh} />}
           {tab === 'linkedin'  && <LinkedInPanel onPublished={triggerRefresh} />}
           {tab === 'bulk'      && <BulkGeneratorPanel onGenerated={triggerRefresh} />}
