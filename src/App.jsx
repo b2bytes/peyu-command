@@ -291,6 +291,11 @@ function App() {
               <Route path="/Producto" element={<Navigate to="/ProductoNuevo" replace />} />
               <Route path="/PRODUCTO" element={<Navigate to="/ProductoNuevo" replace />} />
               <Route path="/shop-legacy" element={<Shop />} />
+              {/* "Mis compras" público → seguimiento de pedido (Compras admin vive en /admin/compras) */}
+              <Route path="/compras" element={<Navigate to="/seguimiento" replace />} />
+              <Route path="/Compras" element={<Navigate to="/seguimiento" replace />} />
+              <Route path="/mis-compras" element={<Navigate to="/seguimiento" replace />} />
+              <Route path="/pedidos" element={<Navigate to="/seguimiento" replace />} />
 
               {/* ── Standalone (sin PublicPageLayout) ──────────────────────────── */}
               {/* Estas páginas tienen diseño 100% propio y no deben llevar el nav general */}
@@ -345,6 +350,9 @@ function App() {
 
               {/* Admin Routes - Protected (lazy-loaded) */}
               <Route path="/admin/*" element={<AuthenticatedApp />} />
+
+              {/* Catch-all: cualquier URL desconocida muestra 404 en vez de pantalla en blanco */}
+              <Route path="*" element={<PageNotFound />} />
             </Routes>
             <Toaster />
             <PWAInstallBanner />
