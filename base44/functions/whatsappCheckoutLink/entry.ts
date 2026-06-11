@@ -109,12 +109,56 @@ Deno.serve(async (req) => {
       }],
     });
 
-    // Link de pago MP — reutiliza la lógica oficial (webhook + back_urls).
-    const mpRes = await base44.asServiceRole.functions.invoke('mpCreatePreference', { pedido_id: pedido.id });
-    const linkPago = mpRes?.data?.init_point;
-    if (!linkPago) {
+    // Link de pago MP — misma lógica que mpCreatePreference (webhook + back_urls).
+    const accessToken = Deno.env.get('MERCADOPAGO_ACCESS_TOKEN');
+    if (!accessToken) {
+      return Response.json({ error: 'MERCADOPAGO_ACCESS_TOKEN no configurado' }, { status: 500 });
+    }
+    const origin = 'https://peyuchile.cl';
+    const preference = {
+      items: [{
+        id: numeroPedido,
+        title: `PEYU Chile · Pedido ${numeroPedido}`,
+        description: descItems.slice(0, 250),
+        quantity: 1,
+        currency_id: 'CLP',
+        unit_price: total,
+      }],
+      external_reference: numeroPedido,
+      metadata: { pedido_id: pedido.id, numero_pedido: numeroPedido },
+      payer: {
+        name: cliente_nombre,
+        email: cliente_email || '',
+        phone: { number: cliente_telefono },
+      },
+      back_urls: {
+        success: `${origin}/gracias?numero=${encodeURIComponent(numeroPedido)}&email=${encodeURIComponent(cliente_email || '')}&total=${total}&mp=success`,
+        pending: `${origin}/gracias?numero=${encodeURIComponent(numeroPedido)}&email=${encodeURIComponent(cliente_email || '')}&total=${total}&mp=pending`,
+        failure: `${origin}/CarritoNuevo?mp=failure&numero=${encodeURIComponent(numeroPedido)}`,
+      },
+      auto_return: 'approved',
+      notification_url: `https://app.base44.com/api/apps/${Deno.env.get('BASE44_APP_ID')}/functions/mpWebhook`,
+      statement_descriptor: 'PEYU CHILE',
+      binary_mode: false,
+    };
+
+    const mpRes = await fetch('https://api.mercadopago.com/checkout/preferences', {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify(preference),
+    });
+    const mpData = await mpRes.json();
+    if (!mpRes.ok || !mpData.init_point) {
+      console.error('MP preference error:', mpData);
       return Response.json({ error: 'Pedido creado pero falló el link de pago. Escala al equipo con el número ' + numeroPedido }, { status: 500 });
     }
+    const linkPago = mpData.init_point;
+
+    // Auditoría + expiración a 5 días (igual que la web).
+    await base44.asServiceRole.entities.PedidoWeb.update(pedido.id, {
+      mp_preference_id: mpData.id,
+      expires_at: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString(),
+    }).catch(() => {});
 
     return Response.json({
       numero_pedido: numeroPedido,

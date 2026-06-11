@@ -30,6 +30,10 @@
     {
       "function_name": "whatsappCheckoutLink",
       "description": "Crea un pedido (canal WhatsApp) con precio real del cat\u00e1logo + env\u00edo por comuna y devuelve el link de pago MercadoPago para envi\u00e1rselo al cliente."
+    },
+    {
+      "function_name": "whatsappBuscarProductos",
+      "description": "Busca productos del cat\u00e1logo por palabra clave (ej: 'cachos') y devuelve nombre, sku, precio, stock, colores y foto_url listos para enviar al cliente."
     }
   ],
   "context_files": [],
