@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import BluexTimeline from './BluexTimeline';
+import { openPdfUrl } from '@/lib/pdf-open';
 
 /**
  * Drawer de detalle de un envío Bluex.
@@ -72,11 +73,11 @@ export default function BluexShipmentDrawer({ envio: envioInicial, onClose, onUp
       ? `data:application/pdf;base64,${labelData.base64}`
       : labelData.url;
     if (!url) {
-      window.open('https://ecommerce.blue.cl/', '_blank');
+      window.open('https://b2b.bluex.cl/', '_blank');
       return;
     }
-    // Abrir en nueva pestaña — el usuario imprime con Ctrl+P desde ahí (evita cross-origin block)
-    window.open(url, '_blank');
+    // Abrir en nueva pestaña vía Blob — los navegadores bloquean URLs data: directas
+    openPdfUrl(url);
   };
 
   const anular = async () => {
@@ -274,22 +275,18 @@ export default function BluexShipmentDrawer({ envio: envioInicial, onClose, onUp
 
                 {/* PDF local si existe */}
                 {labelSrc && (
-                  <a
-                    href={labelSrc}
-                    target="_blank"
-                    rel="noreferrer"
+                  <button
+                    onClick={() => openPdfUrl(labelSrc)}
                     className="flex items-center justify-center gap-2 w-full py-3.5 rounded-xl font-bold text-sm text-white transition-all hover:opacity-90"
                     style={{ background: 'linear-gradient(135deg,#0066CC,#0080FF)', boxShadow: '0 4px 16px rgba(0,102,204,.25)' }}
                   >
                     <FileText className="w-4 h-4" /> Abrir etiqueta PDF (local)
-                  </a>
+                  </button>
                 )}
 
                 {/* Portal BlueExpress — siempre disponible */}
                 <a
-                  href={envio.tracking_number
-                    ? `https://ecommerce.blue.cl/etiquetas/${envio.tracking_number}`
-                    : 'https://ecommerce.blue.cl/'}
+                  href="https://b2b.bluex.cl/"
                   target="_blank"
                   rel="noreferrer"
                   className="flex items-center justify-center gap-2 w-full py-3 rounded-xl font-bold text-sm text-white transition hover:opacity-90"
