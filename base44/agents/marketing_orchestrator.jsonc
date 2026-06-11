@@ -97,13 +97,30 @@
     {
       "function_name": "agentGenerateMedia",
       "description": "Genera imagen o VIDEO IA de un producto PEYU usando sus FOTOS REALES como referencia, con el efecto/estilo pedido. Par\u00e1metros: {tipo: 'imagen'|'video', sku?: string, producto?: nombre, efecto?: string, formato?: 'cuadrado'|'historia'|'horizontal', duracion?: 4|6|8}. El resultado se guarda autom\u00e1ticamente en ContentAsset (Galer\u00eda) y como ContentPost Borrador."
+    },
+    {
+      "entity_name": "B2BLead",
+      "allowed_operations": [
+        "read"
+      ]
     }
   ],
+  "context_files": [],
+  "app_user_connector_configs": [],
+  "selected_skill_names": [],
+  "selected_workspace_skill_ids": [],
+  "model": "automatic",
+  "whatsapp_greeting": null,
+  "telegram_greeting": null,
+  "line_greeting": null,
   "memory_config": {
     "enabled": true,
     "scope": "both",
     "include_other_conversation_context": false,
     "instructions": null
+  },
+  "voice_config": {
+    "voice_id": null
   },
   "name": "marketing_orchestrator"
 }
