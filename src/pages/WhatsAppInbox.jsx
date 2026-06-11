@@ -34,7 +34,9 @@ export default function WhatsAppInbox() {
         }
         const result = await fn.call(base44.agents, 'whatsapp_peyu');
         if (typeof result === 'string' && result.length > 0) {
-          setConnectUrl(result.startsWith('http') ? result : `https://${result}`);
+          // El SDK puede devolver un path relativo (serverUrl: '') — lo
+          // resolvemos contra el dominio de la app, que proxea /api a Base44.
+          setConnectUrl(new URL(result, window.location.origin).href);
         } else {
           setConnectError(`El método devolvió un valor inesperado: ${JSON.stringify(result)}`);
         }
