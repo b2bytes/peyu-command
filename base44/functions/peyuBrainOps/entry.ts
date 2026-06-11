@@ -187,9 +187,10 @@ Deno.serve(async (req) => {
         .sort((a, b) => (b.tiene_excepcion ? 1 : 0) - (a.tiene_excepcion ? 1 : 0))
         .slice(0, 10)
         .map(e => ({
-          id: e.id, tracking_number: e.tracking_number, numero_pedido: e.numero_pedido,
+          id: e.id, pedido_id: e.pedido_id, tracking_number: e.tracking_number, numero_pedido: e.numero_pedido,
           cliente_nombre: e.cliente_nombre, estado: e.estado, comuna_destino: e.comuna_destino,
           courier: e.courier, tiene_excepcion: e.tiene_excepcion,
+          tiene_etiqueta: !!(e.label_url || e.label_base64),
           ultimo_evento_descripcion: e.ultimo_evento_descripcion,
           fecha_entrega_estimada: e.fecha_entrega_estimada,
           tracking_url: e.tracking_url, label_url: e.label_url, atrasado: e.atrasado,

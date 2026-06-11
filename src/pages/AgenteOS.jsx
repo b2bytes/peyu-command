@@ -200,7 +200,7 @@ export default function AgenteOS() {
     if (crm.productos?.length)
       detalle.push(`CATÁLOGO (productos activos, para acciones de producto y generación de contenido):\n${crm.productos.slice(0, 50).map(p => `• [id:${p.id}] [sku:${p.sku}] ${p.nombre} · stock ${p.stock_actual ?? '–'}u · $${(p.precio_b2c || 0).toLocaleString('es-CL')}`).join('\n')}`);
     if (liveLists.envios_list?.length)
-      detalle.push(`Envíos BlueExpress activos:\n${liveLists.envios_list.map(e => `• [id:${e.id}] OT ${e.tracking_number || 'sin emitir'} · ${e.cliente_nombre || ''} · ${e.estado}${e.tiene_excepcion ? ' ⚠ excepción' : ''}${e.comuna_destino ? ` · ${e.comuna_destino}` : ''}`).join('\n')}`);
+      detalle.push(`Envíos BlueExpress activos (para generarEtiqueta usa el [pedido:XXX] del envío):\n${liveLists.envios_list.map(e => `• [id:${e.id}]${e.pedido_id ? ` [pedido:${e.pedido_id}]` : ''} OT ${e.tracking_number || 'sin emitir'} · ${e.cliente_nombre || ''} · ${e.estado}${e.tiene_etiqueta ? ' · etiqueta lista' : ''}${e.tiene_excepcion ? ' ⚠ excepción' : ''}${e.comuna_destino ? ` · ${e.comuna_destino}` : ''}`).join('\n')}`);
 
     const liveOps = m ? `\n\nDATOS EN VIVO (${new Date().toLocaleString('es-CL')}):
 Ventas hoy: $${(m.ingresos_hoy || 0).toLocaleString('es-CL')} en ${m.pedidos_hoy} pedidos · 7d: $${(m.ingresos_7d || 0).toLocaleString('es-CL')}

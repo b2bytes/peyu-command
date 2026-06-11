@@ -1,6 +1,41 @@
-import { Truck, ChevronRight, AlertTriangle, ExternalLink, RefreshCw, MapPin } from 'lucide-react';
+import { useState } from 'react';
+import { Truck, ChevronRight, AlertTriangle, ExternalLink, RefreshCw, MapPin, FileText, Loader2, Tag } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { base44 } from '@/api/base44Client';
+import { openPdfUrl } from '@/lib/pdf-open';
 import ActionButton from '../ActionButton';
+
+// Ver/imprimir la etiqueta Bluex de un envío sin salir del chat.
+function LabelButton({ envioId }) {
+  const [state, setState] = useState('idle'); // idle | loading | error
+
+  const ver = async () => {
+    setState('loading');
+    try {
+      const res = await base44.functions.invoke('bluexGetLabel', { envio_id: envioId });
+      const d = res?.data || {};
+      if (d.label_url || d.label_base64) {
+        openPdfUrl(d.label_url || `data:application/pdf;base64,${d.label_base64}`);
+        setState('idle');
+      } else if (d.portal_url) {
+        window.open(d.portal_url, '_blank');
+        setState('idle');
+      } else {
+        setState('error');
+      }
+    } catch {
+      setState('error');
+    }
+  };
+
+  return (
+    <button onClick={ver} disabled={state === 'loading'}
+      className="text-[11px] text-ld-action hover:underline flex items-center gap-0.5 flex-shrink-0 disabled:opacity-60">
+      {state === 'loading' ? <Loader2 className="w-3 h-3 animate-spin" /> : <FileText className="w-3 h-3" />}
+      {state === 'error' ? 'Sin etiqueta' : 'Etiqueta'}
+    </button>
+  );
+}
 
 const ESTADO_STYLE = {
   'Pendiente Emisión': 'bg-ld-highlight-soft text-ld-highlight',
@@ -70,13 +105,29 @@ export default function ShipmentsCard({ envios = [], metrics = {}, onDone }) {
                   {e.ultimo_evento_descripcion && <span className="truncate"> · {e.ultimo_evento_descripcion}</span>}
                   {e.atrasado && <span className="text-ld-highlight font-semibold flex-shrink-0"> · atrasado</span>}
                 </div>
-                {e.tracking_url && (
-                  <a href={e.tracking_url} target="_blank" rel="noopener noreferrer"
-                    className="text-[11px] text-ld-action hover:underline flex items-center gap-0.5 flex-shrink-0">
-                    Tracking <ExternalLink className="w-3 h-3" />
-                  </a>
-                )}
+                <div className="flex items-center gap-2.5 flex-shrink-0">
+                  {/* Ver etiqueta si ya fue emitida */}
+                  {e.tracking_number && e.estado !== 'Pendiente Emisión' && <LabelButton envioId={e.id} />}
+                  {e.tracking_url && (
+                    <a href={e.tracking_url} target="_blank" rel="noopener noreferrer"
+                      className="text-[11px] text-ld-action hover:underline flex items-center gap-0.5">
+                      Tracking <ExternalLink className="w-3 h-3" />
+                    </a>
+                  )}
+                </div>
               </div>
+              {/* Generar etiqueta si la OT aún no fue emitida */}
+              {e.estado === 'Pendiente Emisión' && e.pedido_id && (
+                <div className="mt-2">
+                  <ActionButton
+                    action="generarEtiqueta"
+                    payload={{ id: e.pedido_id }}
+                    label="Generar etiqueta BlueExpress"
+                    icon={Tag}
+                    onDone={onDone}
+                  />
+                </div>
+              )}
             </div>
           ))}
         </div>
