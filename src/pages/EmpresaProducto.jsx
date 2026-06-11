@@ -275,7 +275,7 @@ export default function EmpresaProducto() {
               {[
                 { icon: Recycle, t: '100% reciclado' },
                 { icon: Truck, t: 'Envío a Chile' },
-                { icon: ShieldCheck, t: '3 años garantía' },
+                { icon: ShieldCheck, t: '10 años garantía' },
               ].map((b, i) => (
                 <div key={i} className="flex flex-col items-center gap-2 rounded-2xl p-3.5 text-center" style={{ background: 'white', border: '1.5px solid #D4C4B0' }}>
                   <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: 'rgba(139,173,138,.12)' }}>
