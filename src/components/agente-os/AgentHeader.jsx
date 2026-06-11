@@ -1,9 +1,9 @@
-import { RefreshCw, Menu, MessageCircle, LayoutDashboard } from 'lucide-react';
+import { RefreshCw, Menu, MessageCircle, LayoutDashboard, Eraser } from 'lucide-react';
 import LiquidDualToggle from '@/components/LiquidDualToggle';
 
 // Header compacto del Agent OS: marca PEYU + toggle Chat/Operaciones integrado
 // (antes ocupaba una fila aparte y en móvil el header se desarmaba).
-export default function AgentHeader({ onRefresh, refreshing, onMobileMenu, view, onView }) {
+export default function AgentHeader({ onRefresh, refreshing, onMobileMenu, view, onView, onClear }) {
   return (
     <header className="flex-shrink-0 h-14 border-b border-ld-border bg-ld-bg-soft/60 backdrop-blur-xl">
       <div className="h-full px-2.5 sm:px-4 flex items-center gap-2">
@@ -50,6 +50,17 @@ export default function AgentHeader({ onRefresh, refreshing, onMobileMenu, view,
         </div>
 
         <div className="flex items-center gap-1.5 flex-shrink-0">
+          {/* Limpiar chat — el hilo ya quedó guardado automáticamente */}
+          {onClear && (
+            <button
+              onClick={onClear}
+              className="w-9 h-9 rounded-lg hover:bg-ld-bg-elevated flex items-center justify-center text-ld-fg-muted hover:text-ld-fg transition-colors"
+              title="Limpiar chat (el hilo queda guardado)"
+              aria-label="Limpiar chat"
+            >
+              <Eraser className="w-4 h-4" />
+            </button>
+          )}
           <div className="hidden sm:block"><LiquidDualToggle compact /></div>
           <button
             onClick={onRefresh}

@@ -1,4 +1,5 @@
 import { MessageSquare, Package, FileText, Users, PanelLeftClose, PanelLeft } from 'lucide-react';
+import AgentThreadsList from './AgentThreadsList';
 
 // Sidebar izquierdo delgado y colapsable: logo PEYU + accesos rápidos.
 // Los accesos disparan preguntas al agente (operan dentro del río), no navegan.
@@ -9,7 +10,7 @@ const QUICK = [
   { id: 'clientes', label: 'Clientes', icon: Users, ask: 'Muéstrame los clientes nuevos' },
 ];
 
-export default function AgentSidebar({ open, onToggle, onAsk, onNewThread }) {
+export default function AgentSidebar({ open, onToggle, onAsk, onNewThread, userEmail, activeThreadId, threadsKey, onSelectThread }) {
   return (
     <aside
       className={`flex-shrink-0 flex flex-col border-r border-ld-border bg-ld-bg-soft/50 backdrop-blur-xl transition-all duration-300 ${
@@ -45,7 +46,7 @@ export default function AgentSidebar({ open, onToggle, onAsk, onNewThread }) {
       </div>
 
       {/* Accesos rápidos */}
-      <nav className="flex-1 px-3 space-y-1">
+      <nav className="px-3 space-y-1">
         {QUICK.filter((q) => q.ask).map((q) => (
           <button
             key={q.id}
@@ -58,6 +59,18 @@ export default function AgentSidebar({ open, onToggle, onAsk, onNewThread }) {
           </button>
         ))}
       </nav>
+
+      {/* Hilos guardados de este admin */}
+      <div className="flex-1 overflow-hidden mt-3">
+        {open && (
+          <AgentThreadsList
+            userEmail={userEmail}
+            activeId={activeThreadId}
+            refreshKey={threadsKey}
+            onSelect={onSelectThread}
+          />
+        )}
+      </div>
 
       {open && (
         <div className="p-3 text-[11px] text-ld-fg-subtle italic border-t border-ld-border">

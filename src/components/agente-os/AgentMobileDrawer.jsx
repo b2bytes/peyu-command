@@ -1,4 +1,5 @@
 import { MessageSquare, Package, FileText, Users, X } from 'lucide-react';
+import AgentThreadsList from './AgentThreadsList';
 
 // Drawer móvil del Agent OS: overlay a pantalla completa con los mismos
 // accesos rápidos del sidebar. Cada acción dispara una pregunta al agente y
@@ -10,7 +11,7 @@ const QUICK = [
   { id: 'clientes', label: 'Clientes nuevos', icon: Users, ask: 'Muéstrame los clientes nuevos' },
 ];
 
-export default function AgentMobileDrawer({ open, onClose, onAsk, onNewThread }) {
+export default function AgentMobileDrawer({ open, onClose, onAsk, onNewThread, userEmail, activeThreadId, threadsKey, onSelectThread }) {
   if (!open) return null;
 
   const handleAsk = (q) => { onAsk?.(q); onClose?.(); };
@@ -56,6 +57,17 @@ export default function AgentMobileDrawer({ open, onClose, onAsk, onNewThread })
               {q.label}
             </button>
           ))}
+
+          {/* Hilos guardados de este admin */}
+          <div className="mt-3 -mx-3">
+            <AgentThreadsList
+              userEmail={userEmail}
+              activeId={activeThreadId}
+              refreshKey={threadsKey}
+              onSelect={(t) => { onSelectThread?.(t); onClose?.(); }}
+              compact
+            />
+          </div>
         </nav>
 
         <div className="p-4 text-[11px] text-ld-fg-subtle italic border-t border-ld-border">

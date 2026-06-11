@@ -1,0 +1,97 @@
+{
+  "name": "AgentOSConversation",
+  "type": "object",
+  "description": "Conversaci\u00f3n guardada del Agent OS interno (chat de founders/admin). Cada hilo queda registrado por el email del admin que lo us\u00f3, con los mensajes simplificados (rol, texto, adjuntos) para poder retomarlo despu\u00e9s.",
+  "properties": {
+    "user_email": {
+      "type": "string",
+      "title": "Email del admin que convers\u00f3"
+    },
+    "titulo": {
+      "type": "string",
+      "title": "T\u00edtulo del hilo (primer mensaje del founder)"
+    },
+    "mensajes": {
+      "type": "array",
+      "title": "Mensajes del hilo",
+      "items": {
+        "type": "object",
+        "properties": {
+          "role": {
+            "type": "string"
+          },
+          "content": {
+            "type": "string"
+          },
+          "attachments": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "url": {
+                  "type": "string"
+                },
+                "type": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "default": []
+    },
+    "mensajes_count": {
+      "type": "number",
+      "title": "N\u00b0 de mensajes",
+      "default": 0
+    },
+    "ultimo_mensaje_at": {
+      "type": "string",
+      "format": "date-time",
+      "title": "\u00daltimo mensaje"
+    }
+  },
+  "required": [
+    "user_email"
+  ],
+  "rls": {
+    "read": {
+      "$or": [
+        {
+          "data.user_email": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "create": {
+      "created_by": "{{user.email}}"
+    },
+    "update": {
+      "data.user_email": "{{user.email}}"
+    },
+    "delete": {
+      "$or": [
+        {
+          "data.user_email": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

@@ -71,8 +71,54 @@ export default function AgenteOS() {
   const [view, setView] = useState('chat'); // 'chat' | 'ops'
   const [attachments, setAttachments] = useState([]); // [{name, url, type}]
   const [uploading, setUploading] = useState(false);
+  const [userEmail, setUserEmail] = useState(null);   // admin que usa el agente
+  const [convId, setConvId] = useState(null);         // hilo guardado actual
+  const [threadsKey, setThreadsKey] = useState(0);    // refresca lista de hilos
   const bottomRef = useRef(null);
   const voice = useAgentVoice();
+
+  useEffect(() => { base44.auth.me().then((u) => setUserEmail(u?.email || null)).catch(() => {}); }, []);
+
+  // Guarda/actualiza el hilo en AgentOSConversation (por email del admin).
+  const persistConversation = async (msgs) => {
+    if (!userEmail || !msgs.length) return;
+    const simple = msgs.map((m) => ({
+      role: m.role,
+      content: m.content || '',
+      attachments: m.attachments || [],
+      at: new Date().toISOString(),
+    }));
+    const data = {
+      user_email: userEmail,
+      titulo: (simple.find((m) => m.role === 'user')?.content || 'Conversación').slice(0, 60),
+      mensajes: simple,
+      mensajes_count: simple.length,
+      ultimo_mensaje_at: new Date().toISOString(),
+    };
+    if (convId) {
+      await base44.entities.AgentOSConversation.update(convId, data).catch(() => {});
+    } else {
+      const c = await base44.entities.AgentOSConversation.create(data).catch(() => null);
+      if (c?.id) setConvId(c.id);
+    }
+    setThreadsKey((k) => k + 1);
+  };
+
+  // Limpiar chat: el hilo ya quedó guardado en cada respuesta → solo reinicia.
+  const clearChat = () => {
+    voice.stop();
+    setMessages([]);
+    setConvId(null);
+  };
+
+  // Retomar un hilo guardado.
+  const loadThread = (conv) => {
+    voice.stop();
+    setMessages((conv.mensajes || []).map((m) => ({ role: m.role, content: m.content, attachments: m.attachments || [] })));
+    setConvId(conv.id);
+    setView('chat');
+    setMobileDrawer(false);
+  };
 
   // Adjuntar documentos/imágenes: se suben al instante y quedan listos para enviar.
   const handleAttach = async (files) => {
@@ -186,12 +232,12 @@ Stock bajo (<10u): ${m.stock_bajo} SKUs · consultas sin responder: ${m.consulta
       ? { action: response.action, payload: response.payload || {}, descripcion: response.action_descripcion || '' }
       : null;
 
-    setMessages((prev) => {
-      const next = [...prev, { role: 'assistant', content: mensaje, cards, lists: liveLists, proposal }];
-      // Modo conversación: Joaquín lee la respuesta en voz alta automáticamente.
-      if (voice.voiceOn) voice.speak(next.length - 1, mensaje);
-      return next;
-    });
+    const next = [...messages, userMsg, { role: 'assistant', content: mensaje, cards, lists: liveLists, proposal }];
+    setMessages(next);
+    // Modo conversación: Joaquín lee la respuesta en voz alta automáticamente.
+    if (voice.voiceOn) voice.speak(next.length - 1, mensaje);
+    // El hilo queda guardado automáticamente para este admin.
+    persistConversation(next);
     setThinking(false);
   };
 
@@ -203,14 +249,22 @@ Stock bajo (<10u): ${m.stock_bajo} SKUs · consultas sin responder: ${m.consulta
         open={sidebarOpen}
         onToggle={() => setSidebarOpen((v) => !v)}
         onAsk={sendMessage}
-        onNewThread={() => setMessages([])}
+        onNewThread={clearChat}
+        userEmail={userEmail}
+        activeThreadId={convId}
+        threadsKey={threadsKey}
+        onSelectThread={loadThread}
       />
 
       <AgentMobileDrawer
         open={mobileDrawer}
         onClose={() => setMobileDrawer(false)}
         onAsk={sendMessage}
-        onNewThread={() => setMessages([])}
+        onNewThread={clearChat}
+        userEmail={userEmail}
+        activeThreadId={convId}
+        threadsKey={threadsKey}
+        onSelectThread={loadThread}
       />
 
       <div className="flex-1 flex flex-col min-w-0">
@@ -220,6 +274,7 @@ Stock bajo (<10u): ${m.stock_bajo} SKUs · consultas sin responder: ${m.consulta
           onMobileMenu={() => setMobileDrawer(true)}
           view={view}
           onView={setView}
+          onClear={messages.length > 0 ? clearChat : null}
         />
 
         {loading ? (
