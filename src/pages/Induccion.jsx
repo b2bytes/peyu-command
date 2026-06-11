@@ -1,7 +1,7 @@
 import { GraduationCap, Lightbulb } from 'lucide-react';
 import { VISION_GENERAL, FLUJOS, TIPS } from '@/lib/induccion-data';
 import ModulosMapa from '@/components/induccion/ModulosMapa';
-import FlujoSteps from '@/components/induccion/FlujoSteps';
+import FlujoInteractivo from '@/components/induccion/FlujoInteractivo';
 
 // ════════════════════════════════════════════════════════════════════════
 // /admin/induccion — Inducción completa del sistema PEYU para el equipo.
@@ -49,10 +49,10 @@ export default function Induccion() {
 
       {/* 3 · Flujos paso a paso */}
       <section>
-        <h2 className="font-jakarta font-bold text-lg text-ld-fg mb-1">3 · Flujos operativos paso a paso</h2>
-        <p className="text-sm text-ld-fg-muted mb-4">Lo que se hace cada día: del pedido a la entrega, etiqueta Bluex, producción láser y ciclo B2B.</p>
+        <h2 className="font-jakarta font-bold text-lg text-ld-fg mb-1">3 · Flujos operativos paso a paso (interactivos)</h2>
+        <p className="text-sm text-ld-fg-muted mb-4">Avanza opción por opción y marca cada paso como hecho — tu progreso se guarda solo. Cubre operación, ventas B2B, marketing y administración.</p>
         <div className="space-y-4">
-          {FLUJOS.map((f) => <FlujoSteps key={f.id} flujo={f} />)}
+          {FLUJOS.map((f) => <FlujoInteractivo key={f.id} flujo={f} />)}
         </div>
       </section>
 

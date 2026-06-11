@@ -158,7 +158,9 @@ Stock bajo (<10u): ${m.stock_bajo} SKUs · consultas sin responder: ${m.consulta
   };
 
   return (
-    <div className="ld-canvas flex h-full w-full overflow-hidden font-inter">
+    // absolute inset-0: ancla la página al <main relative> del Layout. h-full
+    // (porcentaje) no resolvía en Safari/iOS y la pantalla quedaba colapsada.
+    <div className="ld-canvas absolute inset-0 flex overflow-hidden font-inter">
       <AgentSidebar
         open={sidebarOpen}
         onToggle={() => setSidebarOpen((v) => !v)}

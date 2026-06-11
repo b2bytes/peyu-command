@@ -125,6 +125,32 @@ export const FLUJOS = [
       { titulo: 'Aceptada → producción y despacho', detalle: 'Al aceptarse, se genera la orden de producción y el flujo sigue igual que B2C: producir → etiqueta → despachar.', ruta: '/admin/operaciones' },
     ],
   },
+  {
+    id: 'marketing',
+    emoji: '📣',
+    titulo: 'Paso a paso: marketing y contenido',
+    intro: 'Cómo se genera y publica el contenido de PEYU: redes, blog, ads y SEO — con la IA haciendo el trabajo pesado.',
+    pasos: [
+      { titulo: 'Planifica la semana en Social Studio', detalle: 'El planner semanal genera propuestas de posts (Instagram/LinkedIn) con IA usando las fotos reales del catálogo. Tú apruebas o editas cada uno antes de publicar.', ruta: '/admin/social-studio' },
+      { titulo: 'Publica o programa', detalle: 'Los posts aprobados se publican directo a Instagram y LinkedIn (conectores ya autorizados). Cada post queda registrado con sus métricas.', ruta: '/admin/social-studio' },
+      { titulo: 'Blog y SEO', detalle: 'La IA genera artículos del blog optimizados y los CRON ajustan meta tags de productos según Search Console. Revisa keywords y oportunidades en SEO Keywords.', ruta: '/admin/seo-keywords' },
+      { titulo: 'Campañas de ads', detalle: 'En Ads Command generas campañas Google Ads completas con IA (copys, keywords, presupuesto) y las exportas o publicas.', ruta: '/admin/ads-command' },
+      { titulo: 'Mide resultados', detalle: 'Analítica muestra el embudo completo: visitas (GA4), conversión, ventas por canal. El Marketing Hub centraliza calendario y rendimiento.', ruta: '/admin/analitica' },
+    ],
+  },
+  {
+    id: 'administracion',
+    emoji: '📊',
+    titulo: 'Paso a paso: administración y finanzas',
+    intro: 'La rutina del founder para controlar la salud del negocio: caja, costos, clientes y reportes.',
+    pasos: [
+      { titulo: 'Abre el Dashboard cada mañana', detalle: 'Vista del día: ventas, pedidos nuevos, alertas de stock y leads calientes. Es el punto de partida de la jornada.', ruta: '/admin' },
+      { titulo: 'Revisa caja y costos', detalle: 'Financiero muestra ingresos vs egresos; el Centro de Costos calcula el costo REAL por producto (materiales, láser, envío) y sugiere precios.', ruta: '/admin/financiero' },
+      { titulo: 'Cuida a los clientes', detalle: 'En Clientes ves la base completa con historial; Cliente 360° une pedidos, propuestas y conversaciones de una persona en una sola ficha.', ruta: '/admin/clientes' },
+      { titulo: 'Controla el inventario', detalle: 'Inventario alerta quiebres de stock (<10u). El CRON también avisa solo por correo cuando algo se está agotando.', ruta: '/admin/inventario' },
+      { titulo: 'Cierra la semana con reportes', detalle: 'Reportes y Analítica resumen la semana; el Resumen Operativo registra todos los avances del sistema día a día.', ruta: '/admin/reportes' },
+    ],
+  },
 ];
 
 // ── 4. Tips finales ──────────────────────────────────────────────────────
