@@ -59,8 +59,11 @@ Deno.serve(async (req) => {
 
     console.log(`[generarEtiquetaB2C] Generando OT para pedido ${pedido.numero_pedido} · ${pedido.cliente_nombre} · ${pedido.ciudad}`);
 
-    // Llamar a bluexCreateShipment
-    const blueexRes = await sr.functions.invoke('bluexCreateShipment', {
+    // Llamar a bluexCreateShipment — capturamos el error REAL de Bluex para
+    // que el wizard no muestre solo "Request failed with status code 500".
+    let blueexRes;
+    try {
+      blueexRes = await sr.functions.invoke('bluexCreateShipment', {
       pedido_id,
       cliente_nombre: pedido.cliente_nombre,
       cliente_email: pedido.cliente_email,
@@ -72,7 +75,16 @@ Deno.serve(async (req) => {
       print_format: 4,
       referencia: pedido.numero_pedido,
       comentarios: `Pedido PEYU ${pedido.numero_pedido} · ${descItems}`,
-    });
+      });
+    } catch (invokeErr) {
+      const d = invokeErr?.response?.data;
+      const detail = d?.detail || d?.error || invokeErr.message;
+      console.error('[generarEtiquetaB2C] BlueEx invoke error:', JSON.stringify(d || invokeErr.message).slice(0, 500));
+      return Response.json({
+        ok: false,
+        error: `BlueExpress rechazó la emisión: ${typeof detail === 'string' ? detail : JSON.stringify(detail)}`,
+      }, { status: 500 });
+    }
 
     if (!blueexRes?.ok) {
       console.error('[generarEtiquetaB2C] BlueEx error:', blueexRes?.error);

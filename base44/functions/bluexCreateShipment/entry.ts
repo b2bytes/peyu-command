@@ -87,11 +87,12 @@ async function resolverDistrito(sr, comuna) {
   }
 }
 
+// agencyId null = retiro en domicilio/galpón (la API rechazaba '41' con AGENCY_NOT_VALID)
 const ORIGEN_CORPORATIVO = {
   districtId: 'PUD',
   districtName: 'Pudahuel',
   address: 'Galpón PEYU, Santiago',
-  agencyId: '41',
+  agencyId: null,
   geolocation: [-33.319054, -70.72056],
 };
 
@@ -236,7 +237,11 @@ Deno.serve(async (req) => {
     if (!trackingNumber) {
       return Response.json({ error: 'BlueExpress no retornó tracking number', trace: data }, { status: 502 });
     }
-    const labelContenido = body.labels?.contenido || body.label || data.labels?.contenido || null;
+    // labels puede venir como objeto {contenido} o como ARRAY [{contenido}]
+    const labelsField = body.labels || data.labels;
+    const labelContenido = Array.isArray(labelsField)
+      ? (labelsField[0]?.contenido || null)
+      : (labelsField?.contenido || body.label || null);
 
     // Crear registro Envio para rastreo
     const envio = await sr.entities.Envio.create({
