@@ -30,59 +30,54 @@ const DEFAULTS = {
   activo: true, garantia_anios: 10
 };
 
-function ProductCard({ prod, onEdit, onDelete }) {
+// Tarjeta compacta: imagen + datos esenciales en poco espacio. Toda la edición
+// detallada vive en el modal — la tarjeta es para escanear rápido el catálogo.
+function ProductCard({ prod, onEdit, onDelete, onToggleActivo }) {
   return (
-    <div className={`ld-card rounded-2xl p-4 ${!prod.activo ? 'opacity-55' : ''}`}>
-      <div className="flex items-start justify-between mb-2">
-        <div className="min-w-0">
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-mono px-1.5 py-0.5 rounded text-ld-fg-muted" style={{ background: 'var(--ld-glass-soft)', border: '1px solid var(--ld-border)' }}>{prod.sku}</span>
-            {prod.activo ? <CheckCircle2 className="w-3.5 h-3.5" style={{ color: 'var(--ld-action)' }} /> : <XCircle className="w-3.5 h-3.5 text-ld-fg-subtle" />}
-          </div>
-          <p className="font-poppins font-semibold text-sm text-ld-fg mt-1 leading-snug">{prod.nombre}</p>
-        </div>
-        <div className="flex gap-1 flex-shrink-0">
-          <button onClick={() => onEdit(prod)} className="p-1.5 rounded-lg transition-colors hover:bg-ld-action-soft"><Edit2 className="w-3.5 h-3.5 text-ld-fg-muted" /></button>
-          <button onClick={() => onDelete(prod.id)} className="p-1.5 rounded-lg transition-colors hover:bg-ld-highlight-soft"><Trash2 className="w-3.5 h-3.5" style={{ color: 'var(--ld-highlight)' }} /></button>
-        </div>
-      </div>
-
-      <div className="flex flex-wrap gap-1.5 mb-3">
-        <span className="text-xs px-2 py-0.5 rounded-full font-medium inline-flex items-center gap-1.5 text-ld-fg-soft" style={{ background: 'var(--ld-glass-soft)', border: '1px solid var(--ld-border)' }}>
-          <span className="w-1.5 h-1.5 rounded-full" style={{ background: catDot[prod.categoria] || 'var(--ld-fg-subtle)' }} />
-          {prod.categoria}
-        </span>
-        <span className="text-xs px-2 py-0.5 rounded-full font-medium text-ld-fg-muted" style={{ background: 'var(--ld-glass-soft)', border: '1px solid var(--ld-border)' }}>{prod.canal}</span>
-      </div>
-
-      <div className="grid grid-cols-2 gap-2 text-xs mb-3">
-        {prod.precio_b2c > 0 && (
-          <div className="p-2 rounded-xl" style={{ background: 'var(--ld-glass-soft)', border: '1px solid var(--ld-border)' }}>
-            <p className="text-ld-fg-muted">B2C</p>
-            <p className="font-poppins font-bold text-ld-fg">${prod.precio_b2c.toLocaleString('es-CL')}</p>
-          </div>
+    <div className={`ld-card rounded-xl overflow-hidden flex flex-col ${!prod.activo ? 'opacity-60' : ''}`}>
+      {/* Imagen compacta */}
+      <button onClick={() => onEdit(prod)} className="relative h-24 w-full flex-shrink-0" style={{ background: 'var(--ld-glass-soft)' }}>
+        {prod.imagen_url ? (
+          <img src={prod.imagen_url} alt={prod.nombre} className="w-full h-full object-contain p-1.5" loading="lazy" />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center"><Package className="w-7 h-7 text-ld-fg-subtle opacity-40" /></div>
         )}
-        {prod.precio_base_b2b > 0 && (
-          <div className="p-2 rounded-xl" style={{ background: 'var(--ld-glass-soft)', border: '1px solid var(--ld-border)' }}>
-            <p className="text-ld-fg-muted">B2B base</p>
-            <p className="font-poppins font-bold" style={{ color: 'var(--ld-action)' }}>${prod.precio_base_b2b.toLocaleString('es-CL')}</p>
-          </div>
+        <span className="absolute top-1.5 left-1.5 text-[9px] font-mono px-1 py-0.5 rounded text-ld-fg-muted" style={{ background: 'var(--ld-glass-strong)' }}>{prod.sku}</span>
+        {(prod.stock_actual ?? 0) < 10 && prod.activo && (
+          <span className="absolute top-1.5 right-1.5 text-[9px] font-bold px-1.5 py-0.5 rounded-full text-white" style={{ background: 'var(--ld-highlight)' }}>Stock {prod.stock_actual ?? 0}</span>
         )}
-      </div>
+      </button>
 
-      {/* Precios escalonados */}
-      {prod.precio_50_199 > 0 && (
-        <div className="text-xs space-y-0.5 p-2 rounded-xl" style={{ background: 'var(--ld-action-soft)', border: '1px solid var(--ld-border)' }}>
-          <p className="font-medium mb-1" style={{ color: 'var(--ld-action)' }}>Precios por volumen</p>
-          {prod.precio_50_199 > 0 && <div className="flex justify-between"><span className="text-ld-fg-muted">50-199 u</span><span className="font-medium text-ld-fg">${prod.precio_50_199.toLocaleString('es-CL')}</span></div>}
-          {prod.precio_200_499 > 0 && <div className="flex justify-between"><span className="text-ld-fg-muted">200-499 u</span><span className="font-medium text-ld-fg">${prod.precio_200_499.toLocaleString('es-CL')}</span></div>}
-          {prod.precio_500_mas > 0 && <div className="flex justify-between"><span className="text-ld-fg-muted">500+ u</span><span className="font-medium text-ld-fg">${prod.precio_500_mas.toLocaleString('es-CL')}</span></div>}
+      <div className="p-2.5 flex flex-col flex-1 gap-1.5">
+        <div className="flex items-start gap-1.5">
+          <span className="w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0" style={{ background: catDot[prod.categoria] || 'var(--ld-fg-subtle)' }} title={prod.categoria} />
+          <p className="font-poppins font-semibold text-xs text-ld-fg leading-snug flex-1 min-w-0">{prod.nombre}</p>
         </div>
-      )}
 
-      <div className="flex justify-between text-xs text-ld-fg-muted mt-2 pt-2 border-t border-ld-border">
-        <span>Láser gratis desde {prod.personalizacion_gratis_desde || 10}u</span>
-        <span>Lead time: {prod.lead_time_con_personal || '?'}d</span>
+        <div className="flex items-baseline gap-2 text-xs">
+          {prod.precio_b2c > 0 && <span className="font-bold text-ld-fg">${prod.precio_b2c.toLocaleString('es-CL')}</span>}
+          {prod.precio_base_b2b > 0 && <span className="font-semibold" style={{ color: 'var(--ld-action)' }}>B2B ${prod.precio_base_b2b.toLocaleString('es-CL')}</span>}
+        </div>
+
+        {/* Acciones */}
+        <div className="flex items-center justify-between mt-auto pt-1.5 border-t border-ld-border">
+          {/* Switch activo */}
+          <button
+            onClick={() => onToggleActivo(prod)}
+            title={prod.activo ? 'Desactivar de la tienda' : 'Activar en la tienda'}
+            className="flex items-center gap-1.5 text-[10px] font-bold"
+            style={{ color: prod.activo ? 'var(--ld-action)' : 'var(--ld-fg-subtle)' }}
+          >
+            <span className="relative inline-flex w-7 h-4 rounded-full transition-colors" style={{ background: prod.activo ? 'var(--ld-action)' : 'var(--ld-border-strong)' }}>
+              <span className={`absolute top-0.5 w-3 h-3 rounded-full bg-white transition-all ${prod.activo ? 'left-3.5' : 'left-0.5'}`} />
+            </span>
+            {prod.activo ? 'Activo' : 'Inactivo'}
+          </button>
+          <div className="flex gap-0.5">
+            <button onClick={() => onEdit(prod)} className="p-1.5 rounded-lg transition-colors hover:bg-ld-action-soft" title="Editar"><Edit2 className="w-3.5 h-3.5 text-ld-fg-muted" /></button>
+            <button onClick={() => onDelete(prod.id)} className="p-1.5 rounded-lg transition-colors hover:bg-ld-highlight-soft" title="Eliminar"><Trash2 className="w-3.5 h-3.5" style={{ color: 'var(--ld-highlight)' }} /></button>
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -123,11 +118,22 @@ export default function Catalogo() {
     loadData();
   };
 
+  // Toggle activo directo desde la tarjeta (optimista, sin abrir modal)
+  const handleToggleActivo = async (prod) => {
+    const nuevo = !prod.activo;
+    setProductos(prev => prev.map(p => p.id === prod.id ? { ...p, activo: nuevo } : p));
+    await base44.entities.Producto.update(prod.id, { activo: nuevo });
+  };
+
   const filtered = productos.filter(p =>
     (filterCat === 'todos' || p.categoria === filterCat) &&
     (filterCanal === 'todos' || p.canal === filterCanal) &&
     (p.nombre?.toLowerCase().includes(search.toLowerCase()) || p.sku?.toLowerCase().includes(search.toLowerCase()))
   );
+
+  // Activos primero (alfabético), inactivos al final en su propia sección
+  const activos = filtered.filter(p => p.activo !== false).sort((a, b) => (a.nombre || '').localeCompare(b.nombre || ''));
+  const inactivos = filtered.filter(p => p.activo === false).sort((a, b) => (a.nombre || '').localeCompare(b.nombre || ''));
 
   const byCategoria = CATEGORIAS.reduce((acc, cat) => {
     acc[cat] = productos.filter(p => p.categoria === cat).length;
@@ -135,13 +141,13 @@ export default function Catalogo() {
   }, {});
 
   return (
-    <div className="p-6 space-y-5">
+    <div className="p-4 sm:p-5 space-y-4">
       <div className="flex items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-poppins font-bold text-ld-fg">Catálogo de Productos</h1>
-          <p className="text-ld-fg-muted text-sm mt-1">{productos.length} SKUs • Personalización láser gratis desde 10u</p>
+          <h1 className="text-xl font-poppins font-bold text-ld-fg">Catálogo de Productos</h1>
+          <p className="text-ld-fg-muted text-xs mt-0.5">{productos.length} SKUs · {productos.filter(p => p.activo !== false).length} activos · Láser gratis desde 10u</p>
         </div>
-        <Button onClick={openNew} className="ld-btn-primary gap-2 border-0">
+        <Button onClick={openNew} size="sm" className="ld-btn-primary gap-1.5 border-0">
           <Plus className="w-4 h-4" />Nuevo Producto
         </Button>
       </div>
@@ -191,9 +197,26 @@ export default function Catalogo() {
           <Button onClick={openNew} variant="outline" className="mt-4 gap-2"><Plus className="w-4 h-4" />Agregar primer producto</Button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
-          {filtered.map(p => <ProductCard key={p.id} prod={p} onEdit={openEdit} onDelete={handleDelete} />)}
-        </div>
+        <>
+          {/* Activos primero */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-2.5">
+            {activos.map(p => <ProductCard key={p.id} prod={p} onEdit={openEdit} onDelete={handleDelete} onToggleActivo={handleToggleActivo} />)}
+          </div>
+
+          {/* Inactivos al final, en su propia sección */}
+          {inactivos.length > 0 && (
+            <div className="pt-2">
+              <div className="flex items-center gap-2 mb-2.5">
+                <XCircle className="w-3.5 h-3.5 text-ld-fg-subtle" />
+                <p className="text-[11px] font-bold uppercase tracking-wide text-ld-fg-muted">Inactivos ({inactivos.length}) — no aparecen en la tienda</p>
+                <div className="flex-1 h-px" style={{ background: 'var(--ld-border)' }} />
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-2.5">
+                {inactivos.map(p => <ProductCard key={p.id} prod={p} onEdit={openEdit} onDelete={handleDelete} onToggleActivo={handleToggleActivo} />)}
+              </div>
+            </div>
+          )}
+        </>
       )}
 
       {/* Modal */}
