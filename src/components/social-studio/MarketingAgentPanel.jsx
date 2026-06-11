@@ -16,13 +16,13 @@ const AGENT_NAME = 'marketing_orchestrator';
 
 // ── Quick prompts iniciales ──────────────────────────────────────────────────
 const QUICK_PROMPTS = [
-  { icon: ImageIcon,  label: 'Generar imagen de producto',    prompt: 'Genera una imagen lifestyle del portavasos de escritorio PEYU para Instagram.' },
+  { icon: Zap,        label: 'Publicar 1 post AHORA',         prompt: 'Publica 1 post ahora en Instagram. Tú eliges el mejor producto y la mejor imagen de la galería (o genera una nueva), escribe el copy con criterio de agencia y publícalo.' },
+  { icon: Calendar,   label: 'Publicar semana completa',      prompt: 'Lanza y publica una campaña semanal completa para PEYU: diagnóstico de métricas, plan editorial, imágenes/videos desde fotos reales, posts para Instagram y LinkedIn, publica el de hoy y deja el resto programado en el calendario.' },
+  { icon: ImageIcon,  label: 'Ver galería completa',          prompt: 'Muéstrame la galería completa de assets: lista las últimas imágenes y videos generados con su título, tipo y URL, y dime cuáles recomiendas usar esta semana.' },
   { icon: Play,       label: 'Generar VIDEO de producto',     prompt: 'Genera un video formato reel (9:16) del pack de cachos PEYU usando sus fotos reales, con efecto cinemático de luz dorada.' },
-  { icon: Calendar,   label: 'Lanzar campaña semanal',        prompt: 'Lanza una campaña semanal de contenido para PEYU esta semana: genera el plan, crea los posts y programa el calendario de publicación.' },
-  { icon: TrendingUp, label: 'Tendencias LinkedIn hoy',        prompt: '¿Qué tendencias de contenido funcionan mejor en LinkedIn esta semana para una marca B2B sustentable? Dame 3 ideas con copy completo.' },
-  { icon: Megaphone,  label: 'Campaña corporativa B2B',        prompt: 'Diseña una campaña de regalos corporativos B2B para PEYU: 2 semanas, Instagram + LinkedIn. Genera imágenes y copies listos para publicar.' },
+  { icon: TrendingUp, label: 'Estrategia agencia (ventas)',   prompt: 'Actúa como agencia: haz un diagnóstico de mis redes (Instagram y LinkedIn) y de mis leads B2B, y propón una estrategia de 2 semanas orientada a aumentar ventas y relaciones, con plan de ejecución concreto.' },
+  { icon: Megaphone,  label: 'Campaña corporativa B2B',       prompt: 'Diseña una campaña de regalos corporativos B2B para PEYU: 2 semanas, Instagram + LinkedIn. Genera imágenes y copies listos para publicar.' },
   { icon: BarChart2,  label: 'Diagnosis engagement bajo',     prompt: 'Mis últimos posts tuvieron menos del 2% de engagement. Analiza mis posts actuales y dame un plan concreto de 2 semanas para recuperar alcance.' },
-  { icon: Zap,        label: 'Copy B2B regalos corporativos', prompt: 'Escribe 3 versiones de copy para LinkedIn apuntando a gerentes de RRHH que buscan regalos corporativos sustentables.' },
 ];
 
 // ── Renderiza imágenes generadas inline ─────────────────────────────────────
@@ -221,7 +221,7 @@ export default function MarketingAgentPanel({ posts = [] }) {
       // Mensaje de bienvenida sintético (no enviado al agente, solo UI)
       setMessages([{
         role: 'assistant',
-        content: `¡Hola equipo PEYU! 👋 Soy tu **Agente de Marketing** con acceso completo a herramientas.\n\n**Ahora puedo:**\n- 🖼 **Generar imágenes** de productos con IA desde sus fotos reales\n- 🎬 **Generar VIDEOS** de productos (reels) con efectos cinematográficos\n- 🗂 Todo lo generado queda guardado en la **Galería** automáticamente\n- 📅 **Lanzar campañas semanales** completas (plan + posts + calendario)\n- 🚀 **Publicar posts** en Instagram y LinkedIn directamente\n- 📊 **Consultar métricas** de IG y LinkedIn en tiempo real\n\n¿En qué trabajamos hoy?`,
+        content: `¡Hola equipo PEYU! 👋 Soy tu **Agencia de Marketing IA** — opero como una agencia grande: diagnóstico con datos → estrategia → producción → publicación → optimización.\n\n**Puedo:**\n- 🗂 **Acceder a la Galería completa** desde el chat (ver, elegir y reutilizar assets)\n- 🚀 **Publicar lo que quieras**: 1 post ahora, un lote, o la semana completa\n- 🖼🎬 **Generar imágenes y videos** desde las fotos reales del catálogo\n- 📅 **Campañas semanales** completas (plan + posts + calendario)\n- 📊 **Diagnóstico de métricas** IG/LinkedIn y leads B2B para orientar contenido a **ventas**\n\nDime el objetivo y ejecuto. ¿Partimos?`,
         tool_calls: [],
       }]);
     } catch {
