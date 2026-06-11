@@ -63,7 +63,7 @@ Deno.serve(async (req) => {
     // que el wizard no muestre solo "Request failed with status code 500".
     let blueexRes;
     try {
-      blueexRes = await sr.functions.invoke('bluexCreateShipment', {
+      const invokeRes = await sr.functions.invoke('bluexCreateShipment', {
       pedido_id,
       cliente_nombre: pedido.cliente_nombre,
       cliente_email: pedido.cliente_email,
@@ -76,6 +76,8 @@ Deno.serve(async (req) => {
       referencia: pedido.numero_pedido,
       comentarios: `Pedido PEYU ${pedido.numero_pedido} · ${descItems}`,
       });
+      // invoke puede devolver la data directa o envuelta en { data } (axios-like)
+      blueexRes = invokeRes?.data ?? invokeRes;
     } catch (invokeErr) {
       const d = invokeErr?.response?.data;
       const detail = d?.detail || d?.error || invokeErr.message;

@@ -154,7 +154,9 @@ Deno.serve(async (req) => {
         if (pedido.tracking) {
           return Response.json({ ok: true, message: `Ya tiene tracking: ${pedido.tracking}`, tracking: pedido.tracking });
         }
-        const d = await base44.asServiceRole.functions.invoke('generarEtiquetaB2CBlueExpress', { pedido_id: payload.id, pedido });
+        const res = await base44.asServiceRole.functions.invoke('generarEtiquetaB2CBlueExpress', { pedido_id: payload.id, pedido });
+        // invoke puede devolver la data directa o envuelta en { data } (axios-like)
+        const d = res?.data ?? res;
         if (!d?.ok) throw new Error(d?.error || d?.reason || 'Error generando etiqueta BlueExpress');
         return Response.json({
           ok: true,

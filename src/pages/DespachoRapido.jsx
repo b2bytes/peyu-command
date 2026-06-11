@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { base44 } from '@/api/base44Client';
 import EtiquetaWizardModal from '@/components/agente-os/EtiquetaWizardModal';
+import { openPdfUrl } from '@/lib/pdf-open';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
@@ -142,10 +143,10 @@ function PanelDespacho({ selected, envio, loadingEnvio, generando, showManual, m
                 </div>
               </div>
               {labelSrc && (
-                <a href={labelSrc} target="_blank" rel="noreferrer"
+                <button onClick={() => openPdfUrl(labelSrc)}
                   className="flex items-center gap-1.5 px-3 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-bold transition flex-shrink-0">
                   <Printer className="w-3.5 h-3.5" /> Imprimir
-                </a>
+                </button>
               )}
               <a href={`https://ecommerce.blue.cl/`} target="_blank" rel="noreferrer"
                 className="flex items-center gap-1.5 px-3 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm font-semibold transition flex-shrink-0">
@@ -225,10 +226,10 @@ function PanelDespacho({ selected, envio, loadingEnvio, generando, showManual, m
                   <span className="text-[10px] text-white/60">· {envio.servicio || 'EXPRESS'}</span>
                 </div>
                 <div className="flex gap-1.5">
-                  <a href={labelSrc} target="_blank" rel="noreferrer"
+                  <button onClick={() => openPdfUrl(labelSrc)}
                     className="flex items-center gap-1 px-2.5 py-1 bg-white/20 hover:bg-white/30 rounded text-xs font-semibold text-white transition">
                     <Printer className="w-3 h-3" /> Imprimir
-                  </a>
+                  </button>
                   <a href={`https://www.bluex.cl/seguimiento?n=${envio.tracking_number}`} target="_blank" rel="noreferrer"
                     className="flex items-center gap-1 px-2.5 py-1 bg-white/20 hover:bg-white/30 rounded text-xs font-semibold text-white transition">
                     <ExternalLink className="w-3 h-3" /> Tracking
@@ -472,7 +473,7 @@ export default function DespachoRapido() {
             const [fresco] = await base44.entities.PedidoWeb.filter({ id: selected.id });
             if (fresco) { setSelected(fresco); cargarEnvio(fresco); }
           }}
-          openLabelUrl={(url) => window.open(url, '_blank')}
+          openLabelUrl={openPdfUrl}
         />
       )}
     </div>
