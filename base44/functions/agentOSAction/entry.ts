@@ -188,7 +188,8 @@ Deno.serve(async (req) => {
         if (typeof payload.precio_b2c === 'number') campos.precio_b2c = payload.precio_b2c;
         if (typeof payload.stock_actual === 'number') campos.stock_actual = payload.stock_actual;
         if (typeof payload.activo === 'boolean') campos.activo = payload.activo;
-        if (!Object.keys(campos).length) throw new Error('Nada que actualizar (acepta: precio_b2c, stock_actual, activo)');
+        if (typeof payload.imagen_url === 'string' && payload.imagen_url.startsWith('http')) campos.imagen_url = payload.imagen_url;
+        if (!Object.keys(campos).length) throw new Error('Nada que actualizar (acepta: precio_b2c, stock_actual, activo, imagen_url)');
         await svc.Producto.update(payload.id, campos);
         return Response.json({ ok: true, message: `Producto actualizado: ${Object.keys(campos).join(', ')}` });
       }

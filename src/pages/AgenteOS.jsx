@@ -22,6 +22,7 @@ import AgentMobileDrawer from '@/components/agente-os/AgentMobileDrawer';
 import { detectCards } from '@/components/agente-os/intent';
 import OpsCenter from '@/components/agente-os/OpsCenter';
 import ActionProposalCard from '@/components/agente-os/ActionProposalCard';
+import useAgentVoice from '@/hooks/useAgentVoice';
 
 const PEYU_OS_PROMPT = `Eres Peyu, el Agent OS interno de PEYU Chile (marca sustentable: "Hasta que el plástico deje de ser basura"). Hablas en español, cálido pero directo y breve. El founder te habla para administrar TODO el negocio desde este chat. Cuando te pregunten por una métrica o registros, responde con UNA o DOS frases cálidas que resuman lo clave y NOMBRA los registros concretos si los tienes en "DETALLE CONCRETO" — la pantalla mostrará automáticamente una TARJETA RICA debajo de tu mensaje con la lista completa y BOTONES DE ACCIÓN. Nunca digas "te las muestro" sin nombrarlas: usa el detalle que te paso.
 
@@ -36,7 +37,7 @@ ACCIONES EJECUTABLES — cuando el founder te PIDE HACER algo (no solo preguntar
 - updatePropuestaEstado {id, status: "Borrador"|"Enviada"|"Aceptada"|"Rechazada"|"Vencida"}
 - reenviarPropuesta {proposalId}
 - ajustarStock {id, stock_actual}
-- updateProducto {id, precio_b2c?, stock_actual?, activo?}
+- updateProducto {id, precio_b2c?, stock_actual?, activo?, imagen_url?} (imagen_url: si el founder ADJUNTÓ una imagen y pide usarla como foto del producto, usa la URL exacta del adjunto)
 - enviarEmail {to, asunto, cuerpo} (email libre vía Gmail PEYU)
 - sincronizarTracking {} (refresca tracking de todos los envíos Bluex)
 - generarImagenProducto {sku, efecto?, formato?: "cuadrado"|"historia"|"horizontal", red_social?} (crea una imagen publicitaria IA a partir de las FOTOS REALES del producto del catálogo, aplicando el efecto/estilo que pida el founder; queda como Borrador en Social Studio)
@@ -68,7 +69,22 @@ export default function AgenteOS() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [mobileDrawer, setMobileDrawer] = useState(false);
   const [view, setView] = useState('chat'); // 'chat' | 'ops'
+  const [attachments, setAttachments] = useState([]); // [{name, url, type}]
+  const [uploading, setUploading] = useState(false);
   const bottomRef = useRef(null);
+  const voice = useAgentVoice();
+
+  // Adjuntar documentos/imágenes: se suben al instante y quedan listos para enviar.
+  const handleAttach = async (files) => {
+    if (!files.length) return;
+    setUploading(true);
+    const subidos = await Promise.all(files.map(async (file) => {
+      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      return { name: file.name, url: file_url, type: file.type };
+    }));
+    setAttachments((prev) => [...prev, ...subidos]);
+    setUploading(false);
+  };
 
   const loadData = async (isRefresh = false) => {
     isRefresh ? setRefreshing(true) : setLoading(true);
@@ -96,10 +112,12 @@ export default function AgenteOS() {
 
   const sendMessage = async (text) => {
     const content = (text ?? input).trim();
-    if (!content || thinking) return;
-    const userMsg = { role: 'user', content };
+    if ((!content && attachments.length === 0) || thinking) return;
+    const adjuntos = [...attachments];
+    const userMsg = { role: 'user', content: content || 'Te adjunto estos archivos', attachments: adjuntos };
     setMessages((prev) => [...prev, userMsg]);
     setInput('');
+    setAttachments([]);
     setThinking(true);
 
     const cards = detectCards(content);
@@ -141,9 +159,16 @@ Envíos en tránsito: ${m.envios_en_transito} · entregados hoy: ${m.envios_entr
 Leads B2B hoy: ${m.leads_hoy} (calientes: ${m.leads_calientes}) · propuestas pendientes: ${m.propuestas_pendientes}
 Stock bajo (<10u): ${m.stock_bajo} SKUs · consultas sin responder: ${m.consultas_sin_responder}${detalle.length ? `\n\nDETALLE CONCRETO (úsalo para nombrar registros, la tarjeta mostrará el resto):\n${detalle.join('\n\n')}` : ''}` : '';
 
+    // Archivos adjuntos: el agente los ve (imágenes/PDFs) y conoce sus URLs
+    // exactas para acciones como updateProducto {imagen_url}.
+    const adjuntosCtx = adjuntos.length
+      ? `\n\nARCHIVOS ADJUNTOS POR EL FOUNDER (puedes verlos; usa estas URLs exactas si propones una acción con ellos):\n${adjuntos.map((a) => `• ${a.name} → ${a.url}`).join('\n')}`
+      : '';
+
     const response = await base44.integrations.Core.InvokeLLM({
-      prompt: `${PEYU_OS_PROMPT}${liveOps}\n\nCONVERSACIÓN:\n${history}\n\nPeyu:`,
+      prompt: `${PEYU_OS_PROMPT}${liveOps}${adjuntosCtx}\n\nCONVERSACIÓN:\n${history}\n\nPeyu:`,
       model: 'claude_opus_4_8',
+      ...(adjuntos.length ? { file_urls: adjuntos.map((a) => a.url) } : {}),
       response_json_schema: {
         type: 'object',
         properties: {
@@ -161,7 +186,12 @@ Stock bajo (<10u): ${m.stock_bajo} SKUs · consultas sin responder: ${m.consulta
       ? { action: response.action, payload: response.payload || {}, descripcion: response.action_descripcion || '' }
       : null;
 
-    setMessages((prev) => [...prev, { role: 'assistant', content: mensaje, cards, lists: liveLists, proposal }]);
+    setMessages((prev) => {
+      const next = [...prev, { role: 'assistant', content: mensaje, cards, lists: liveLists, proposal }];
+      // Modo conversación: Joaquín lee la respuesta en voz alta automáticamente.
+      if (voice.voiceOn) voice.speak(next.length - 1, mensaje);
+      return next;
+    });
     setThinking(false);
   };
 
@@ -207,7 +237,7 @@ Stock bajo (<10u): ${m.stock_bajo} SKUs · consultas sin responder: ${m.consulta
               ) : (
                 messages.map((msg, i) => (
                   <div key={i} className="space-y-2">
-                    <MessageBubble message={msg} crm={crm} metrics={metrics} lists={lists} onAsk={sendMessage} onDone={() => loadData(true)} />
+                    <MessageBubble message={msg} msgId={i} voice={voice} crm={crm} metrics={metrics} lists={lists} onAsk={sendMessage} onDone={() => loadData(true)} />
                     {msg.proposal && (
                       <ActionProposalCard proposal={msg.proposal} onDone={() => loadData(true)} />
                     )}
@@ -236,6 +266,11 @@ Stock bajo (<10u): ${m.stock_bajo} SKUs · consultas sin responder: ${m.consulta
             onSend={() => sendMessage()}
             onChip={sendMessage}
             loading={thinking}
+            attachments={attachments}
+            onAttach={handleAttach}
+            onRemoveAttachment={(i) => setAttachments((prev) => prev.filter((_, idx) => idx !== i))}
+            uploading={uploading}
+            voice={voice}
           />
         )}
       </div>
