@@ -20,17 +20,30 @@ const TABS = [
   { id: 'todos', label: 'Todos' },
 ];
 
+// Todos los módulos del recorrido del founder (Guía + Inducción), agrupados.
 const QUICK_LINKS = [
+  // Operación diaria
   { to: '/admin/procesar-pedidos', label: 'Procesar Pedidos' },
   { to: '/admin/despacho', label: 'Despacho Rápido' },
   { to: '/admin/bluex', label: 'Centro Logístico' },
+  { to: '/admin/operaciones', label: 'Producción' },
+  { to: '/admin/soporte', label: 'Soporte' },
+  // Ventas
   { to: '/admin/pipeline', label: 'Pipeline B2B' },
   { to: '/admin/pipeline-b2c', label: 'Pipeline B2C' },
+  { to: '/admin/cotizaciones', label: 'Cotizaciones' },
+  { to: '/admin/propuestas', label: 'Propuestas' },
   { to: '/admin/clientes', label: 'Clientes' },
-  { to: '/admin/admin-products', label: 'Productos' },
+  // Catálogo
+  { to: '/admin/catalogo', label: 'Catálogo' },
+  { to: '/admin/admin-products', label: 'Admin Products' },
+  { to: '/admin/imagenes', label: 'Imágenes' },
+  { to: '/admin/inventario', label: 'Inventario' },
+  // Control
   { to: '/admin/financiero', label: 'Financiero' },
   { to: '/admin/marketing-hub', label: 'Marketing' },
   { to: '/admin/analitica', label: 'Analítica' },
+  { to: '/admin/guia-fundadores', label: 'Guía Fundadores' },
 ];
 
 export default function OpsCenter({ onRefreshAll }) {

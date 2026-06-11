@@ -89,3 +89,113 @@
 .ld-canvas .shadow-md { box-shadow: var(--ld-shadow-md) !important; }
 .ld-canvas .shadow-lg,
 .ld-canvas .shadow-xl { box-shadow: var(--ld-shadow-lg) !important; }
+
+/* ═══════════════════════════════════════════════════════════════════
+   MODO NOCHE · Estados de color pastel
+   ────────────────────────────────────────────────────────────────────
+   Las páginas legacy usan banners/badges con fondo pastel claro
+   (bg-emerald-50, bg-amber-50, bg-blue-50…) + texto oscuro. En modo
+   noche el texto neutro se remapea a blanco y quedaba ilegible sobre
+   el pastel claro. Aquí, SOLO en noche: los pasteles pasan a tintes
+   translúcidos sobre el canvas oscuro y los textos de color oscuro
+   (700/800/900) suben a su variante clara. En modo día no se toca nada.
+   ─────────────────────────────────────────────────────────────────── */
+html[data-liquid-mode="night"] .ld-canvas .bg-emerald-50,
+html[data-liquid-mode="night"] .ld-canvas .bg-green-50,
+html[data-liquid-mode="night"] .ld-canvas .bg-teal-50 { background-color: rgba(16, 185, 129, 0.14) !important; }
+html[data-liquid-mode="night"] .ld-canvas .bg-emerald-100,
+html[data-liquid-mode="night"] .ld-canvas .bg-green-100,
+html[data-liquid-mode="night"] .ld-canvas .bg-teal-100 { background-color: rgba(16, 185, 129, 0.22) !important; }
+
+html[data-liquid-mode="night"] .ld-canvas .bg-amber-50,
+html[data-liquid-mode="night"] .ld-canvas .bg-yellow-50,
+html[data-liquid-mode="night"] .ld-canvas .bg-orange-50 { background-color: rgba(245, 158, 11, 0.14) !important; }
+html[data-liquid-mode="night"] .ld-canvas .bg-amber-100,
+html[data-liquid-mode="night"] .ld-canvas .bg-yellow-100,
+html[data-liquid-mode="night"] .ld-canvas .bg-orange-100 { background-color: rgba(245, 158, 11, 0.22) !important; }
+
+html[data-liquid-mode="night"] .ld-canvas .bg-red-50,
+html[data-liquid-mode="night"] .ld-canvas .bg-rose-50 { background-color: rgba(239, 68, 68, 0.14) !important; }
+html[data-liquid-mode="night"] .ld-canvas .bg-red-100,
+html[data-liquid-mode="night"] .ld-canvas .bg-rose-100 { background-color: rgba(239, 68, 68, 0.22) !important; }
+
+html[data-liquid-mode="night"] .ld-canvas .bg-blue-50,
+html[data-liquid-mode="night"] .ld-canvas .bg-sky-50,
+html[data-liquid-mode="night"] .ld-canvas .bg-cyan-50 { background-color: rgba(59, 130, 246, 0.14) !important; }
+html[data-liquid-mode="night"] .ld-canvas .bg-blue-100,
+html[data-liquid-mode="night"] .ld-canvas .bg-sky-100,
+html[data-liquid-mode="night"] .ld-canvas .bg-cyan-100 { background-color: rgba(59, 130, 246, 0.22) !important; }
+
+html[data-liquid-mode="night"] .ld-canvas .bg-purple-50,
+html[data-liquid-mode="night"] .ld-canvas .bg-violet-50,
+html[data-liquid-mode="night"] .ld-canvas .bg-indigo-50 { background-color: rgba(139, 92, 246, 0.14) !important; }
+html[data-liquid-mode="night"] .ld-canvas .bg-purple-100,
+html[data-liquid-mode="night"] .ld-canvas .bg-violet-100,
+html[data-liquid-mode="night"] .ld-canvas .bg-indigo-100 { background-color: rgba(139, 92, 246, 0.22) !important; }
+
+html[data-liquid-mode="night"] .ld-canvas .bg-pink-50 { background-color: rgba(236, 72, 153, 0.14) !important; }
+html[data-liquid-mode="night"] .ld-canvas .bg-pink-100 { background-color: rgba(236, 72, 153, 0.22) !important; }
+
+/* Hovers pastel → tinte translúcido en noche */
+html[data-liquid-mode="night"] .ld-canvas .hover\:bg-emerald-50:hover,
+html[data-liquid-mode="night"] .ld-canvas .hover\:bg-green-50:hover { background-color: rgba(16, 185, 129, 0.18) !important; }
+html[data-liquid-mode="night"] .ld-canvas .hover\:bg-amber-50:hover,
+html[data-liquid-mode="night"] .ld-canvas .hover\:bg-amber-100:hover { background-color: rgba(245, 158, 11, 0.18) !important; }
+html[data-liquid-mode="night"] .ld-canvas .hover\:bg-red-50:hover { background-color: rgba(239, 68, 68, 0.18) !important; }
+html[data-liquid-mode="night"] .ld-canvas .hover\:bg-blue-50:hover,
+html[data-liquid-mode="night"] .ld-canvas .hover\:bg-blue-100:hover { background-color: rgba(59, 130, 246, 0.18) !important; }
+
+/* Bordes pastel → translúcidos en noche */
+html[data-liquid-mode="night"] .ld-canvas .border-emerald-200,
+html[data-liquid-mode="night"] .ld-canvas .border-green-200,
+html[data-liquid-mode="night"] .ld-canvas .border-teal-200 { border-color: rgba(16, 185, 129, 0.35) !important; }
+html[data-liquid-mode="night"] .ld-canvas .border-amber-200,
+html[data-liquid-mode="night"] .ld-canvas .border-yellow-200,
+html[data-liquid-mode="night"] .ld-canvas .border-orange-200 { border-color: rgba(245, 158, 11, 0.35) !important; }
+html[data-liquid-mode="night"] .ld-canvas .border-red-200,
+html[data-liquid-mode="night"] .ld-canvas .border-rose-200 { border-color: rgba(239, 68, 68, 0.35) !important; }
+html[data-liquid-mode="night"] .ld-canvas .border-blue-200,
+html[data-liquid-mode="night"] .ld-canvas .border-sky-200 { border-color: rgba(59, 130, 246, 0.35) !important; }
+html[data-liquid-mode="night"] .ld-canvas .border-purple-200,
+html[data-liquid-mode="night"] .ld-canvas .border-indigo-200 { border-color: rgba(139, 92, 246, 0.35) !important; }
+
+/* Textos de color oscuro → variante clara legible en noche */
+html[data-liquid-mode="night"] .ld-canvas .text-emerald-700,
+html[data-liquid-mode="night"] .ld-canvas .text-emerald-800,
+html[data-liquid-mode="night"] .ld-canvas .text-emerald-900,
+html[data-liquid-mode="night"] .ld-canvas .text-green-700,
+html[data-liquid-mode="night"] .ld-canvas .text-green-800,
+html[data-liquid-mode="night"] .ld-canvas .text-green-900,
+html[data-liquid-mode="night"] .ld-canvas .text-teal-700,
+html[data-liquid-mode="night"] .ld-canvas .text-teal-800 { color: #6EE7B7 !important; }
+
+html[data-liquid-mode="night"] .ld-canvas .text-amber-700,
+html[data-liquid-mode="night"] .ld-canvas .text-amber-800,
+html[data-liquid-mode="night"] .ld-canvas .text-amber-900,
+html[data-liquid-mode="night"] .ld-canvas .text-yellow-700,
+html[data-liquid-mode="night"] .ld-canvas .text-yellow-800,
+html[data-liquid-mode="night"] .ld-canvas .text-orange-700,
+html[data-liquid-mode="night"] .ld-canvas .text-orange-800 { color: #FCD34D !important; }
+
+html[data-liquid-mode="night"] .ld-canvas .text-red-700,
+html[data-liquid-mode="night"] .ld-canvas .text-red-800,
+html[data-liquid-mode="night"] .ld-canvas .text-red-900,
+html[data-liquid-mode="night"] .ld-canvas .text-rose-700,
+html[data-liquid-mode="night"] .ld-canvas .text-rose-800 { color: #FCA5A5 !important; }
+
+html[data-liquid-mode="night"] .ld-canvas .text-blue-700,
+html[data-liquid-mode="night"] .ld-canvas .text-blue-800,
+html[data-liquid-mode="night"] .ld-canvas .text-blue-900,
+html[data-liquid-mode="night"] .ld-canvas .text-sky-700,
+html[data-liquid-mode="night"] .ld-canvas .text-sky-800,
+html[data-liquid-mode="night"] .ld-canvas .text-cyan-700 { color: #93C5FD !important; }
+
+html[data-liquid-mode="night"] .ld-canvas .text-purple-700,
+html[data-liquid-mode="night"] .ld-canvas .text-purple-800,
+html[data-liquid-mode="night"] .ld-canvas .text-purple-900,
+html[data-liquid-mode="night"] .ld-canvas .text-indigo-700,
+html[data-liquid-mode="night"] .ld-canvas .text-indigo-800,
+html[data-liquid-mode="night"] .ld-canvas .text-violet-700 { color: #C4B5FD !important; }
+
+html[data-liquid-mode="night"] .ld-canvas .text-pink-700,
+html[data-liquid-mode="night"] .ld-canvas .text-pink-800 { color: #F9A8D4 !important; }

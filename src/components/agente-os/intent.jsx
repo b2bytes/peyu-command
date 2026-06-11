@@ -8,13 +8,13 @@ export function detectCards(text) {
   const has = (kw) => kw.some((k) => q.includes(k));
   const cards = [];
 
-  if (has(['vendimos', 'venta', 'ventas', 'ingreso', 'facturamos', 'cuánto vend', 'cuanto vend'])) {
+  if (has(['vendimos', 'venta', 'ventas', 'ingreso', 'facturamos', 'cuánto vend', 'cuanto vend', 'caja', 'financiero', 'ganancia'])) {
     cards.push({ type: 'sales', periodo: has(['semana', '7 día', '7 dia', 'últimos']) ? '7d' : 'hoy' });
   }
   if (has(['pedido', 'pendiente', 'por despachar', 'producción', 'produccion', 'transferencia por'])) {
     cards.push({ type: 'orders' });
   }
-  if (has(['stock', 'inventario', 'agotad', 'reponer'])) {
+  if (has(['stock', 'inventario', 'agotad', 'reponer', 'producto', 'catálogo', 'catalogo', 'sku', 'precio'])) {
     cards.push({ type: 'stock' });
   }
   if (has(['cotizaci', 'propuesta', 'corporativ'])) {
