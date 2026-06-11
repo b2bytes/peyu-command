@@ -14,7 +14,10 @@ export default function Layout() {
   const { pathname } = useLocation();
   const esAgente = pathname.includes('/agente');
   return (
-    <div className="flex flex-col h-screen bg-background overflow-hidden">
+    // height 100dvh: en iOS Safari, 100vh incluye la zona de la barra de URL y
+    // cortaba el fondo de las páginas (ej. el input del Agent OS). Los
+    // navegadores sin soporte dvh ignoran el style y usan h-screen.
+    <div className="flex flex-col h-screen bg-background overflow-hidden" style={{ height: '100dvh' }}>
       <SEO
         title="Panel Admin · PEYU Chile"
         description="Panel interno de gestión PEYU. Acceso restringido."

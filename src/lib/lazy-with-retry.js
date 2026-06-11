@@ -17,7 +17,7 @@
 // Uso idéntico a React.lazy:
 //   const Dashboard = lazyWithRetry(() => import('./pages/Dashboard'));
 // ============================================================================
-import { lazy } from 'react';
+import { lazy, createElement as h } from 'react';
 
 const STALE_CHUNK_PATTERNS = [
   'Failed to fetch dynamically imported module',
@@ -56,7 +56,10 @@ export function lazyWithRetry(factory, { retries = 3, name = 'chunk' } = {}) {
       }
     }
 
-    // Todos los retries fallaron → forzar reload UNA vez por sesión.
+    // Todos los retries fallaron → limpiar caches/SW obsoletos y forzar
+    // reload UNA vez por sesión. El service worker PWA puede estar sirviendo
+    // un index.js viejo que no conoce los chunks nuevos (causa de páginas
+    // "en blanco" tras un deploy) — sin esta limpieza el reload no ayuda.
     if (typeof window !== 'undefined') {
       const key = `peyu_lazy_reload_${name}`;
       const last = Number(sessionStorage.getItem(key) || 0);
@@ -64,11 +67,36 @@ export function lazyWithRetry(factory, { retries = 3, name = 'chunk' } = {}) {
       // Cooldown de 30s entre reloads del mismo chunk
       if (now - last > 30000) {
         sessionStorage.setItem(key, String(now));
+        try {
+          if (navigator.serviceWorker) {
+            const regs = await navigator.serviceWorker.getRegistrations();
+            await Promise.all(regs.map((r) => r.unregister()));
+          }
+          if (window.caches) {
+            const keys = await caches.keys();
+            await Promise.all(keys.map((k) => caches.delete(k)));
+          }
+        } catch (_) { /* best effort */ }
         window.location.reload();
         // Devolver un componente placeholder mientras recarga
         return { default: () => null };
       }
     }
-    throw lastErr;
+
+    // Ya se intentó recargar y sigue fallando → en vez de crashear con un
+    // error críptico, mostrar un fallback amable con botón de reintento.
+    // (Sin JSX: este archivo es .js plano.)
+    return {
+      default: () =>
+        h('div', { style: { minHeight: '60vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 12, padding: 24, textAlign: 'center' } },
+          h('p', { style: { fontSize: 14, fontWeight: 700 } }, 'No pudimos cargar esta sección'),
+          h('p', { style: { fontSize: 12, opacity: 0.7, maxWidth: 360 } },
+            'Suele pasar tras una actualización del sistema. Recarga la página para obtener la versión nueva.'),
+          h('button', {
+            onClick: () => { sessionStorage.removeItem(`peyu_lazy_reload_${name}`); window.location.reload(); },
+            style: { padding: '10px 20px', borderRadius: 12, background: '#0F8B6C', color: 'white', fontSize: 13, fontWeight: 700, border: 'none', cursor: 'pointer' },
+          }, 'Recargar página')
+        ),
+    };
   });
 }
