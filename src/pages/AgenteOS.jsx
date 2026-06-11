@@ -191,6 +191,10 @@ export default function AgenteOS() {
       detalle.push(`Leads B2B activos:\n${liveLists.leads_top.map(l => `• [id:${l.id}] ${l.company_name} · ${l.contact_name || ''} · score ${l.lead_score || 0} · ${l.status}`).join('\n')}`);
     if (liveLists.stock_bajo_list?.length)
       detalle.push(`Stock bajo:\n${liveLists.stock_bajo_list.map(p => `• [id:${p.id}] ${p.sku} ${p.nombre}: ${p.stock_actual}u`).join('\n')}`);
+    if (liveLists.clientes_nuevos?.length)
+      detalle.push(`Clientes NUEVOS (últimos registrados, orden cronológico descendente):\n${liveLists.clientes_nuevos.slice(0, 8).map(c => `• [id:${c.id}] ${c.contacto || c.empresa || 'Sin nombre'}${c.empresa && c.contacto ? ` (${c.empresa})` : ''} · ${c.email || ''} · registrado ${c.created_date ? new Date(c.created_date).toLocaleDateString('es-CL') : ''}`).join('\n')}`);
+    if (liveLists.clientes_top?.length)
+      detalle.push(`Clientes TOP (mejores compradores históricos):\n${liveLists.clientes_top.slice(0, 5).map(c => `• [id:${c.id}] ${c.contacto || c.empresa || 'Sin nombre'} · $${(c.total_compras_clp || 0).toLocaleString('es-CL')} en ${c.num_pedidos || 0} pedidos`).join('\n')}`);
     // Catálogo completo: permite al agente ejecutar acciones de producto y
     // generación de imagen/video con el sku/id exacto sin pedir precisiones.
     if (crm.productos?.length)

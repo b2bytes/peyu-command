@@ -14,6 +14,15 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
 const fmt = (n) => '$' + (n || 0).toLocaleString('es-CL');
+const mapCliente = (c) => ({
+  id: c.id, empresa: c.empresa, contacto: c.contacto, email: c.email,
+  telefono: c.telefono, rut: c.rut, tipo: c.tipo, segmento: c.segmento,
+  estado: c.estado, total_compras_clp: c.total_compras_clp, num_pedidos: c.num_pedidos,
+  ticket_promedio: c.ticket_promedio, nps_score: c.nps_score, sku_favorito: c.sku_favorito,
+  canal_preferido: c.canal_preferido, pagos_al_dia: c.pagos_al_dia,
+  fecha_ultima_compra: c.fecha_ultima_compra, proximo_recontacto: c.proximo_recontacto,
+  notas: c.notas, created_date: c.created_date,
+});
 const todayISO = () => new Date().toISOString().slice(0, 10);
 const startOfDay = () => { const d = new Date(); d.setHours(0,0,0,0); return d.toISOString(); };
 const daysAgoISO = (n) => { const d = new Date(); d.setDate(d.getDate() - n); d.setHours(0,0,0,0); return d.toISOString(); };
@@ -42,7 +51,7 @@ Deno.serve(async (req) => {
       base44.asServiceRole.entities.Envio.list('-created_date', 100),
       base44.asServiceRole.entities.CorporateProposal.list('-created_date', 100),
       base44.asServiceRole.entities.Producto.filter({ activo: true }, null, 500),
-      base44.asServiceRole.entities.Cliente.list('-total_compras_clp', 100).catch(() => []),
+      base44.asServiceRole.entities.Cliente.list('-created_date', 150).catch(() => []),
     ]);
 
     // ── Filtros temporales ──────────────────────────────────────────────────
@@ -77,6 +86,11 @@ Deno.serve(async (req) => {
 
     const stockBajo = productos.filter(p => typeof p.stock_actual === 'number' && p.stock_actual < 10);
 
+    // Clientes: nuevos (recién registrados) vs top compradores históricos.
+    const clientesNuevos = clientes || []; // ya vienen ordenados por -created_date
+    const clientesNuevos7d = clientesNuevos.filter(c => isLast7d(c.created_date));
+    const clientesTop = [...clientesNuevos].sort((a, b) => (b.total_compras_clp || 0) - (a.total_compras_clp || 0));
+
     const ingresosHoy = pedidosHoy.reduce((s, p) => s + (p.total || 0), 0);
     const ingresos7d = pedidos.filter(p => isLast7d(p.created_date)).reduce((s, p) => s + (p.total || 0), 0);
 
@@ -103,6 +117,8 @@ Deno.serve(async (req) => {
       propuestas_pendientes: propuestasPendientes,
       propuestas_aceptadas_hoy: propuestasAceptadasHoy,
       stock_bajo: stockBajo.length,
+      clientes_total: clientesNuevos.length,
+      clientes_nuevos_7d: clientesNuevos7d.length,
     };
 
     // ── Listas REALES (no solo números) para que el agente muestre tarjetas ──
@@ -151,15 +167,9 @@ Deno.serve(async (req) => {
           tracking_url: e.tracking_url, label_url: e.label_url, atrasado: e.atrasado,
         })),
       // vCard inteligente: TODA la info del cliente para la página agente.
-      clientes_top: (clientes || []).slice(0, 12).map(c => ({
-        id: c.id, empresa: c.empresa, contacto: c.contacto, email: c.email,
-        telefono: c.telefono, rut: c.rut, tipo: c.tipo, segmento: c.segmento,
-        estado: c.estado, total_compras_clp: c.total_compras_clp, num_pedidos: c.num_pedidos,
-        ticket_promedio: c.ticket_promedio, nps_score: c.nps_score, sku_favorito: c.sku_favorito,
-        canal_preferido: c.canal_preferido, pagos_al_dia: c.pagos_al_dia,
-        fecha_ultima_compra: c.fecha_ultima_compra, proximo_recontacto: c.proximo_recontacto,
-        notas: c.notas,
-      })),
+      // clientes_top = mejores compradores históricos · clientes_nuevos = últimos registrados.
+      clientes_top: clientesTop.slice(0, 12).map(mapCliente),
+      clientes_nuevos: clientesNuevos.slice(0, 12).map(mapCliente),
     };
 
     // ── Pattern matching para construir respuesta narrativa ────────────────
@@ -216,6 +226,16 @@ Deno.serve(async (req) => {
         `- **Pendientes (enviadas sin respuesta)**: ${propuestasPendientes}\n` +
         `- **Aceptadas hoy**: ${propuestasAceptadasHoy}`;
       sources.push('CorporateProposal');
+    } else if (matches(['cliente', 'comprador'])) {
+      const quiereNuevos = matches(['nuevo', 'nueva', 'recien', 'recién', 'últim', 'ultim']);
+      const listaC = quiereNuevos ? clientesNuevos : clientesTop;
+      answer = `## 👥 Clientes\n\n` +
+        `- **Total registrados**: ${clientesNuevos.length}\n` +
+        `- **Nuevos últimos 7 días**: ${clientesNuevos7d.length}\n\n` +
+        (listaC.length > 0
+          ? `**${quiereNuevos ? 'Últimos registrados' : 'Top compradores'}:**\n${listaC.slice(0, 5).map(c => `- **${c.contacto || c.empresa || 'Sin nombre'}**${c.empresa && c.contacto ? ` · ${c.empresa}` : ''} · ${fmt(c.total_compras_clp)}${quiereNuevos && c.created_date ? ` · ${new Date(c.created_date).toLocaleDateString('es-CL')}` : ''}`).join('\n')}`
+          : '_Sin clientes registrados._');
+      sources.push('Cliente');
     } else if (matches(['stock', 'inventario', 'sin stock'])) {
       answer = `## 📦 Stock\n\n` +
         `- **SKUs con stock <10u**: ${stockBajo.length}\n\n` +

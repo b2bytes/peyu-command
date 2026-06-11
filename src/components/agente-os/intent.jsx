@@ -30,7 +30,8 @@ export function detectCards(text) {
     cards.push({ type: 'consultas' });
   }
   if (has(['cliente', 'comprador'])) {
-    cards.push({ type: 'clients' });
+    // "nuevos/recientes/últimos" → últimos registrados; si no → top compradores
+    cards.push({ type: 'clients', modo: has(['nuevo', 'nueva', 'recien', 'recién', 'últim', 'ultim']) ? 'nuevos' : 'top' });
   }
   // Resumen general
   if (has(['resumen', 'cómo vamos', 'como vamos', 'cómo va', 'como va', 'estado general', 'briefing', 'día de hoy'])) {
