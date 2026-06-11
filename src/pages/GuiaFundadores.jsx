@@ -21,6 +21,7 @@ export default function GuiaFundadores() {
           <p className="text-sm text-ld-fg-muted">
             Los 3 flujos esenciales del negocio, paso a paso. Avanza, marca como hecho y tu progreso se guarda solo.
             {' '}¿Quieres la inducción completa? <Link to="/admin/induccion" className="font-bold text-ld-action hover:underline">Está aquí</Link>.
+            {' '}Tip: pulsa <kbd className="px-1.5 py-0.5 rounded bg-ld-action-soft text-ld-action text-[10px] font-bold">Ctrl+K</kbd> en cualquier pantalla para saltar a un módulo al instante.
           </p>
         </div>
       </div>

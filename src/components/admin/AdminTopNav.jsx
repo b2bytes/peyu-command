@@ -1,6 +1,7 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Turtle, ShoppingCart, Building2, ChevronDown } from 'lucide-react';
-import { useState } from 'react';
+import { Turtle, ShoppingCart, Building2, ChevronDown, Search } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import AdminQuickLauncher from './AdminQuickLauncher';
 
 const MAIN_SECTIONS = [
   { label: 'Dashboard', path: '/admin', icon: '📊' },
@@ -19,6 +20,19 @@ const PUBLIC_LINKS = [
 export default function AdminTopNav() {
   const location = useLocation();
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [launcherOpen, setLauncherOpen] = useState(false);
+
+  // Atajo global Ctrl/Cmd + K → buscador rápido de módulos
+  useEffect(() => {
+    const onKey = (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        setLauncherOpen((v) => !v);
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, []);
 
   const currentSection = MAIN_SECTIONS.find(s => location.pathname.startsWith(s.path));
 
@@ -82,8 +96,17 @@ export default function AdminTopNav() {
           )}
         </div>
 
-        {/* Links públicos a la derecha */}
+        {/* Buscador rápido + links públicos a la derecha */}
         <div className="flex items-center gap-2 ml-auto">
+          <button
+            onClick={() => setLauncherOpen(true)}
+            title="Buscar módulo (Ctrl+K)"
+            className="flex items-center gap-2 px-2.5 py-2 rounded-lg bg-white/5 hover:bg-white/10 text-white/60 hover:text-white/90 transition-colors"
+          >
+            <Search className="w-4 h-4" />
+            <span className="hidden md:inline text-xs font-medium">Buscar</span>
+            <kbd className="hidden md:inline text-[9px] font-bold bg-white/10 rounded px-1.5 py-0.5 text-white/50">⌘K</kbd>
+          </button>
           {PUBLIC_LINKS.map((link) => {
             const Icon = link.icon;
             return (
@@ -101,6 +124,8 @@ export default function AdminTopNav() {
           })}
         </div>
       </div>
+
+      <AdminQuickLauncher open={launcherOpen} onClose={() => setLauncherOpen(false)} />
     </nav>
   );
 }
