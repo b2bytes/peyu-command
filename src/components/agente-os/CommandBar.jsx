@@ -51,11 +51,11 @@ export default function CommandBar({
               ))}
             </span>
             <span className="text-[11px] font-bold text-ld-fg-soft">Joaquín {voice.paused ? 'en pausa' : 'hablando…'}</span>
-            <button onClick={voice.togglePause} className="p-1 rounded-full hover:bg-ld-action-soft" title={voice.paused ? 'Reanudar' : 'Pausar'}>
-              {voice.paused ? <Play className="w-3.5 h-3.5 text-ld-action" /> : <Pause className="w-3.5 h-3.5 text-ld-action" />}
+            <button onClick={voice.togglePause} className="p-2 sm:p-1 rounded-full hover:bg-ld-action-soft" title={voice.paused ? 'Reanudar' : 'Pausar'}>
+              {voice.paused ? <Play className="w-4 h-4 sm:w-3.5 sm:h-3.5 text-ld-action" /> : <Pause className="w-4 h-4 sm:w-3.5 sm:h-3.5 text-ld-action" />}
             </button>
-            <button onClick={voice.stop} className="p-1 rounded-full hover:bg-ld-highlight-soft" title="Detener">
-              <X className="w-3.5 h-3.5" style={{ color: 'var(--ld-highlight)' }} />
+            <button onClick={voice.stop} className="p-2 sm:p-1 rounded-full hover:bg-ld-highlight-soft" title="Detener">
+              <X className="w-4 h-4 sm:w-3.5 sm:h-3.5" style={{ color: 'var(--ld-highlight)' }} />
             </button>
           </div>
         )}
@@ -88,17 +88,18 @@ export default function CommandBar({
         </div>
 
         {/* Input */}
-        <div className="ld-glass rounded-2xl flex items-end gap-1.5 p-2 pl-2">
+        <div className="ld-glass rounded-2xl flex items-end gap-2 sm:gap-1.5 p-2 pl-2">
           {/* Adjuntar documentos / imágenes */}
           <input ref={fileRef} type="file" multiple accept="image/*,.pdf,.csv,.xlsx,.json,.txt" className="hidden"
             onChange={(e) => { onAttach(Array.from(e.target.files || [])); e.target.value = ''; }} />
           <button
             onClick={() => fileRef.current?.click()}
             disabled={uploading}
-            className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 text-ld-fg-muted hover:text-ld-fg hover:bg-ld-action-soft transition-colors"
+            className="w-11 h-11 sm:w-9 sm:h-9 rounded-xl flex items-center justify-center flex-shrink-0 text-ld-fg-muted hover:text-ld-fg active:bg-ld-action-soft hover:bg-ld-action-soft transition-colors"
             title="Adjuntar documento o imagen"
+            aria-label="Adjuntar documento o imagen"
           >
-            {uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Paperclip className="w-4 h-4" />}
+            {uploading ? <Loader2 className="w-5 h-5 sm:w-4 sm:h-4 animate-spin" /> : <Paperclip className="w-5 h-5 sm:w-4 sm:h-4" />}
           </button>
 
           <textarea
@@ -108,34 +109,36 @@ export default function CommandBar({
             onChange={(e) => onChange(e.target.value)}
             onKeyDown={handleKey}
             placeholder={voice?.listening ? 'Escuchando… habla ahora 🎙' : 'Pregúntale a Peyu… (ej: ¿cuánto vendimos hoy?)'}
-            className="flex-1 bg-transparent resize-none outline-none text-sm text-ld-fg placeholder:text-ld-fg-muted py-1.5 max-h-[140px] peyu-scrollbar"
+            className="flex-1 bg-transparent resize-none outline-none text-sm text-ld-fg placeholder:text-ld-fg-muted py-3 sm:py-1.5 max-h-[140px] peyu-scrollbar"
           />
 
           {/* Modo conversación por voz (auto-lee respuestas con Joaquín) */}
           <button
             onClick={() => voice?.setVoiceOn((v) => !v)}
-            className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 transition-colors ${voice?.voiceOn ? 'bg-ld-action-soft text-ld-action' : 'text-ld-fg-muted hover:text-ld-fg hover:bg-ld-action-soft'}`}
+            className={`w-11 h-11 sm:w-9 sm:h-9 rounded-xl flex items-center justify-center flex-shrink-0 transition-colors ${voice?.voiceOn ? 'bg-ld-action-soft text-ld-action' : 'text-ld-fg-muted hover:text-ld-fg active:bg-ld-action-soft hover:bg-ld-action-soft'}`}
             title={voice?.voiceOn ? 'Voz de Joaquín activada (auto-lee respuestas)' : 'Activar voz de Joaquín'}
+            aria-label="Voz de Joaquín"
           >
-            {voice?.voiceOn ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
+            {voice?.voiceOn ? <Volume2 className="w-5 h-5 sm:w-4 sm:h-4" /> : <VolumeX className="w-5 h-5 sm:w-4 sm:h-4" />}
           </button>
 
           {/* Micrófono: dictar al agente */}
           <button
             onClick={() => voice?.startListening((t) => onChange(value ? `${value} ${t}` : t))}
-            className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 transition-colors ${voice?.listening ? 'bg-red-500 text-white animate-pulse' : 'text-ld-fg-muted hover:text-ld-fg hover:bg-ld-action-soft'}`}
+            className={`w-11 h-11 sm:w-9 sm:h-9 rounded-xl flex items-center justify-center flex-shrink-0 transition-colors ${voice?.listening ? 'bg-red-500 text-white animate-pulse' : 'text-ld-fg-muted hover:text-ld-fg active:bg-ld-action-soft hover:bg-ld-action-soft'}`}
             title={voice?.listening ? 'Detener dictado' : 'Hablar al agente'}
+            aria-label="Dictar por voz"
           >
-            <Mic className="w-4 h-4" />
+            <Mic className="w-5 h-5 sm:w-4 sm:h-4" />
           </button>
 
           <button
             onClick={onSend}
             disabled={loading || uploading || (!value.trim() && attachments.length === 0)}
-            className="ld-btn-primary w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 disabled:opacity-40"
+            className="ld-btn-primary w-11 h-11 sm:w-9 sm:h-9 rounded-xl flex items-center justify-center flex-shrink-0 disabled:opacity-40"
             aria-label="Enviar"
           >
-            {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <ArrowUp className="w-4 h-4" />}
+            {loading ? <Loader2 className="w-5 h-5 sm:w-4 sm:h-4 animate-spin" /> : <ArrowUp className="w-5 h-5 sm:w-4 sm:h-4" />}
           </button>
         </div>
       </div>
