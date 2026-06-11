@@ -4,6 +4,7 @@ import {
   Upload, Loader2, Trash2, Copy, Check, Sparkles, Image as ImageIcon,
   Film, FolderOpen, ExternalLink,
 } from 'lucide-react';
+import GalleryGeneratorModal from './GalleryGeneratorModal';
 
 // ════════════════════════════════════════════════════════════════════════
 // MediaGalleryPanel — Galería de medios de Social Studio (ContentAsset).
@@ -93,6 +94,7 @@ export default function MediaGalleryPanel() {
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [filtro, setFiltro] = useState('todos');
+  const [showGen, setShowGen] = useState(false);
   const fileRef = useRef(null);
 
   const load = async () => {
@@ -137,6 +139,7 @@ export default function MediaGalleryPanel() {
 
   return (
     <div className="h-full flex flex-col min-h-0 bg-black/20 rounded-2xl border border-white/5 overflow-hidden">
+      {showGen && <GalleryGeneratorModal onClose={() => setShowGen(false)} onGenerated={load} />}
       {/* Header */}
       <div className="flex-shrink-0 flex flex-wrap items-center justify-between gap-2 px-4 py-3 border-b border-white/10 bg-gradient-to-r from-emerald-900/20 to-cyan-900/15">
         <div className="flex items-center gap-3">
@@ -148,14 +151,22 @@ export default function MediaGalleryPanel() {
             <p className="text-[10px] text-white/40 mt-0.5">{assets.length} assets · generados por el agente o subidos por ti</p>
           </div>
         </div>
-        <button
-          onClick={() => fileRef.current?.click()}
-          disabled={uploading}
-          className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-gradient-to-br from-emerald-600 to-cyan-600 hover:from-emerald-500 hover:to-cyan-500 text-white text-xs font-bold transition-all shadow-lg shadow-emerald-500/20 disabled:opacity-50"
-        >
-          {uploading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Upload className="w-3.5 h-3.5" />}
-          {uploading ? 'Subiendo…' : 'Subir fotos/videos'}
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setShowGen(true)}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-gradient-to-br from-violet-600 to-pink-600 hover:from-violet-500 hover:to-pink-500 text-white text-xs font-bold transition-all shadow-lg shadow-violet-500/20"
+          >
+            <Sparkles className="w-3.5 h-3.5" /> Generar IA
+          </button>
+          <button
+            onClick={() => fileRef.current?.click()}
+            disabled={uploading}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-gradient-to-br from-emerald-600 to-cyan-600 hover:from-emerald-500 hover:to-cyan-500 text-white text-xs font-bold transition-all shadow-lg shadow-emerald-500/20 disabled:opacity-50"
+          >
+            {uploading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Upload className="w-3.5 h-3.5" />}
+            {uploading ? 'Subiendo…' : 'Subir fotos/videos'}
+          </button>
+        </div>
         <input ref={fileRef} type="file" accept="image/*,video/*" multiple className="hidden"
           onChange={(e) => { subir(e.target.files); e.target.value = ''; }} />
       </div>

@@ -47,7 +47,7 @@ Deno.serve(async (req) => {
     // 2 · Fotos REALES del producto (fuente de verdad visual)
     const fotos = [prod.imagen_url, ...(Array.isArray(prod.galeria_urls) ? prod.galeria_urls : [])]
       .filter((u) => typeof u === 'string' && u.startsWith('http'))
-      .slice(0, 3);
+      .slice(0, 4);
     if (!fotos.length) throw new Error(`${prod.nombre} no tiene fotos reales cargadas en el catálogo.`);
 
     const estiloDefault = tipo === 'video'
@@ -60,8 +60,8 @@ Deno.serve(async (req) => {
     if (tipo === 'video') {
       // 2a · Visión IA describe el producto real para que el video sea fiel a la foto
       const descripcion = await svc.integrations.Core.InvokeLLM({
-        prompt: 'Describe in English, with maximum visual detail (exact shape, colors, marbled recycled-plastic texture, material, proportions), the product shown in the photo, so the description can be used as a video-generation prompt. Output ONLY the description.',
-        file_urls: [fotos[0]],
+        prompt: 'Describe in English, with maximum visual detail (exact shape, colors, marbled recycled-plastic texture, material, proportions), the product shown in the photos, so the description can be used as a video-generation prompt that reproduces it EXACTLY. The product must never be redesigned or replaced. Output ONLY the description.',
+        file_urls: fotos.slice(0, 2),
       });
       const res = await svc.integrations.Core.GenerateVideo({
         prompt: `Cinematic social media product video. Product (must look EXACTLY like this): ${descripcion}. Visual effect/style requested: ${efecto || estiloDefault}. Premium eco-brand vibe (PEYU Chile, products made from 100% recycled plastic bottle caps), earthy warm tones, no text overlays, no logos.`,
@@ -73,7 +73,23 @@ Deno.serve(async (req) => {
     } else {
       // 2b · Imagen IA usando las fotos reales como referencia exacta
       const res = await svc.integrations.Core.GenerateImage({
-        prompt: `Foto publicitaria profesional para redes sociales del producto EXACTO de las imágenes de referencia: "${prod.nombre}". Respeta FIELMENTE su forma, colores y la textura marmolada del plástico reciclado — no inventes otro producto. Efecto/estilo pedido: ${efecto || estiloDefault}. Marca: PEYU Chile, productos sustentables hechos con plástico 100% reciclado de tapitas. Sin textos ni logos sobre la imagen. Composición formato ${formato === 'historia' ? 'vertical 9:16 (story/reel)' : formato === 'horizontal' ? 'horizontal 16:9' : 'cuadrado 1:1 (feed)'}.`,
+        prompt: `Foto publicitaria profesional para ${red_social} del producto EXACTO de las imágenes de referencia: "${prod.nombre}".
+
+═══ REGLA SAGRADA (NO NEGOCIABLE) ═══
+El producto de las fotos de referencia es el héroe y debe aparecer IDÉNTICO:
+• Misma forma, silueta, proporciones, colores y la textura marmolada característica del plástico reciclado PEYU.
+• PROHIBIDO inventar, rediseñar, recolorear, deformar o sustituir el producto por otro distinto.
+• Solo se REMEZCLA la ESCENA alrededor (fondo, luz, ambiente, props naturales) — nunca el producto.
+Trátalo como fotografía de producto de alta gama: el producto es sagrado.
+
+═══ ESCENA / EFECTO ═══
+${efecto || estiloDefault}
+
+═══ MARCA ═══
+PEYU Chile, productos sustentables hechos con plástico 100% reciclado de tapitas. Paleta cálida tierra/verde esmeralda/crema. SIN textos, SIN logos, SIN marcas de agua sobre la imagen.
+
+═══ COMPOSICIÓN ═══
+Formato ${formato === 'historia' ? 'vertical 9:16 (story/reel)' : formato === 'horizontal' ? 'horizontal 16:9 (banner LinkedIn)' : 'cuadrado 1:1 (feed)'}, luz natural suave, calidad fotorrealista 4K, estética de campaña premium.`,
         existing_image_urls: fotos,
       });
       url = res.url;

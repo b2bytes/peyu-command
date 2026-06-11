@@ -46,24 +46,38 @@ function isSameDay(a, b) {
   return a.toDateString() === b.toDateString();
 }
 
-// Mini chip de un post en el calendario — clicable
+// Chip de un post en el calendario — con miniatura de imagen y estado
 function PostChip({ post, onDelete, onEdit }) {
   const Icon = ICONO_RED[post.red_social] || Sparkles;
   const grad = COLOR_RED[post.red_social] || 'from-violet-500 to-pink-500';
+  const estadoDot = {
+    'Publicado': 'bg-emerald-400',
+    'Aprobado': 'bg-cyan-400',
+    'Programado': 'bg-violet-400',
+    'En revisión': 'bg-amber-400',
+  }[post.estado] || 'bg-white/40';
   return (
     <div
       onClick={() => onEdit(post)}
-      className={`group cursor-pointer relative flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-gradient-to-r ${grad} bg-opacity-90 hover:bg-opacity-100 transition-all hover:shadow-lg active:scale-[0.98]`}
+      className="group cursor-pointer relative rounded-lg overflow-hidden border border-white/10 bg-white/5 hover:border-white/30 hover:shadow-lg transition-all active:scale-[0.98]"
     >
-      <Icon className="w-2.5 h-2.5 text-white flex-shrink-0" />
-      <span className="text-[9px] text-white font-semibold truncate max-w-[60px]">{post.titulo || post.red_social}</span>
-      <button
-        onClick={(e) => { e.stopPropagation(); onDelete(post.id); }}
-        className="ml-auto opacity-0 group-hover:opacity-100 transition-opacity text-white/80 hover:text-white hover:bg-white/20 rounded p-0.5 flex-shrink-0"
-        title="Eliminar post"
-      >
-        <Trash2 className="w-2.5 h-2.5" />
-      </button>
+      {post.imagen_url && (
+        <div className="h-12 w-full overflow-hidden">
+          <img src={post.imagen_url} alt="" loading="lazy" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+        </div>
+      )}
+      <div className={`flex items-center gap-1 px-1.5 py-1 bg-gradient-to-r ${grad}`}>
+        <Icon className="w-2.5 h-2.5 text-white flex-shrink-0" />
+        <span className="text-[9px] text-white font-semibold truncate flex-1">{post.titulo || post.red_social}</span>
+        <span className={`w-1.5 h-1.5 rounded-full ${estadoDot} flex-shrink-0`} title={post.estado} />
+        <button
+          onClick={(e) => { e.stopPropagation(); onDelete(post.id); }}
+          className="opacity-0 group-hover:opacity-100 transition-opacity text-white/80 hover:text-white hover:bg-white/20 rounded p-0.5 flex-shrink-0"
+          title="Eliminar post"
+        >
+          <Trash2 className="w-2.5 h-2.5" />
+        </button>
+      </div>
     </div>
   );
 }
