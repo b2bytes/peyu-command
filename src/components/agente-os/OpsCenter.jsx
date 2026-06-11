@@ -5,6 +5,15 @@ import { getPagoStatus } from '@/lib/pago-status';
 import { Loader2, RefreshCw, Search, CheckCircle2, AlertTriangle, ExternalLink } from 'lucide-react';
 import OpsPedidoRow from './OpsPedidoRow';
 import EtiquetaWizardModal from './EtiquetaWizardModal';
+import OpsLeadsPanel from './OpsLeadsPanel';
+import OpsVentasPanel from './OpsVentasPanel';
+
+// Secciones del centro operativo — TODO se gestiona aquí, sin saltar de página.
+const SECTIONS = [
+  { id: 'pedidos', label: '📦 Pedidos & Etiquetas' },
+  { id: 'leads', label: '🎯 Leads B2B' },
+  { id: 'ventas', label: '💼 Ventas & Propuestas' },
+];
 
 // ════════════════════════════════════════════════════════════════════════
 // OpsCenter — Centro de Operaciones maestro dentro del Agent OS.
@@ -47,6 +56,7 @@ const QUICK_LINKS = [
 ];
 
 export default function OpsCenter({ onRefreshAll }) {
+  const [section, setSection] = useState('pedidos');
   const [pedidos, setPedidos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState('por_pagar');
@@ -128,6 +138,24 @@ export default function OpsCenter({ onRefreshAll }) {
     <div className="flex-1 overflow-y-auto peyu-scrollbar px-3 sm:px-4 py-4">
       <div className="max-w-[920px] mx-auto w-full space-y-4">
 
+        {/* Selector de sección — un solo lugar para gestionar todo */}
+        <div className="flex gap-1.5 overflow-x-auto scrollbar-hide">
+          {SECTIONS.map((s) => (
+            <button
+              key={s.id}
+              onClick={() => setSection(s.id)}
+              className={`flex-shrink-0 px-3.5 py-2 rounded-xl text-xs font-bold border transition-colors ${section === s.id ? 'ld-btn-primary !border-transparent' : 'ld-btn-ghost text-ld-fg-soft'}`}
+            >
+              {s.label}
+            </button>
+          ))}
+        </div>
+
+        {section === 'leads' && <OpsLeadsPanel onRefreshAll={onRefreshAll} />}
+        {section === 'ventas' && <OpsVentasPanel onRefreshAll={onRefreshAll} />}
+
+        {section === 'pedidos' && (<>
+
         {/* Feedback */}
         {feedback && (
           <div className={`rounded-xl border px-3.5 py-2.5 flex items-center gap-2 text-sm font-semibold ${feedback.ok ? 'bg-emerald-50 border-emerald-200 text-emerald-800' : 'bg-red-50 border-red-200 text-red-700'}`}>
@@ -180,6 +208,7 @@ export default function OpsCenter({ onRefreshAll }) {
             ))}
           </div>
         )}
+        </>)}
 
         {/* Accesos a módulos */}
         <div className="pt-2">
