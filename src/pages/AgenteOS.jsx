@@ -39,6 +39,9 @@ ACCIONES EJECUTABLES — cuando el founder te PIDE HACER algo (no solo preguntar
 - updateProducto {id, precio_b2c?, stock_actual?, activo?}
 - enviarEmail {to, asunto, cuerpo} (email libre vía Gmail PEYU)
 - sincronizarTracking {} (refresca tracking de todos los envíos Bluex)
+- generarImagenProducto {sku, efecto?, formato?: "cuadrado"|"historia"|"horizontal", red_social?} (crea una imagen publicitaria IA a partir de las FOTOS REALES del producto del catálogo, aplicando el efecto/estilo que pida el founder; queda como Borrador en Social Studio)
+- generarVideoProducto {sku, efecto?, formato?: "historia"|"horizontal", duracion?: 4|6|8} (crea un video IA del producto basado en su foto real; tarda ~1 min y queda como Borrador en Social Studio)
+Para imagen/video usa el [sku:XXX] exacto del CATÁLOGO en el detalle. Tienes capacidad total sobre la data del negocio: pedidos, leads, propuestas, stock, clientes, consultas, envíos y catálogo completo.
 REGLAS: usa SOLO los ids exactos que aparecen en DETALLE CONCRETO como [id:XXX]. Si no tienes el id del registro, NO propongas acción — pide al founder que precise cuál. Máximo UNA acción por respuesta.
 
 Responde SIEMPRE en el formato JSON pedido: "mensaje" (tu respuesta cálida), "action" (nombre exacto de la acción o "" si no hay), "payload" (objeto con los datos), "action_descripcion" (frase corta de lo que hará, ej: "Marcar pedido #1042 como pagado"). Si no se entiende la pregunta, pide aclaración y sugiere qué puedes hacer (ventas, pedidos, stock, cotizaciones, leads, consultas, clientes, emails, etiquetas).`;
@@ -50,6 +53,7 @@ const ACTIONS_VALIDAS = new Set([
   'marcarConsultaRespondida', 'responderConsulta', 'updateLeadEstado',
   'updatePropuestaEstado', 'enviarPropuesta', 'reenviarPropuesta', 'ajustarStock',
   'updateProducto', 'enviarEmail', 'sincronizarTracking', 'eliminarLead',
+  'generarImagenProducto', 'generarVideoProducto',
 ]);
 
 export default function AgenteOS() {
@@ -123,6 +127,10 @@ export default function AgenteOS() {
       detalle.push(`Leads B2B activos:\n${liveLists.leads_top.map(l => `• [id:${l.id}] ${l.company_name} · ${l.contact_name || ''} · score ${l.lead_score || 0} · ${l.status}`).join('\n')}`);
     if (liveLists.stock_bajo_list?.length)
       detalle.push(`Stock bajo:\n${liveLists.stock_bajo_list.map(p => `• [id:${p.id}] ${p.sku} ${p.nombre}: ${p.stock_actual}u`).join('\n')}`);
+    // Catálogo completo: permite al agente ejecutar acciones de producto y
+    // generación de imagen/video con el sku/id exacto sin pedir precisiones.
+    if (crm.productos?.length)
+      detalle.push(`CATÁLOGO (productos activos, para acciones de producto y generación de contenido):\n${crm.productos.slice(0, 50).map(p => `• [id:${p.id}] [sku:${p.sku}] ${p.nombre} · stock ${p.stock_actual ?? '–'}u · $${(p.precio_b2c || 0).toLocaleString('es-CL')}`).join('\n')}`);
     if (liveLists.envios_list?.length)
       detalle.push(`Envíos BlueExpress activos:\n${liveLists.envios_list.map(e => `• [id:${e.id}] OT ${e.tracking_number || 'sin emitir'} · ${e.cliente_nombre || ''} · ${e.estado}${e.tiene_excepcion ? ' ⚠ excepción' : ''}${e.comuna_destino ? ` · ${e.comuna_destino}` : ''}`).join('\n')}`);
 

@@ -11,6 +11,9 @@ import { Zap, Check, X, Loader2, AlertTriangle } from 'lucide-react';
 export default function ActionProposalCard({ proposal, onDone }) {
   const [status, setStatus] = useState('pending'); // pending | running | done | error | cancelled
   const [result, setResult] = useState('');
+  const [mediaUrl, setMediaUrl] = useState(null); // imagen/video generado por IA
+
+  const esGeneracion = proposal.action?.startsWith('generar') && proposal.action.includes('Producto');
 
   const ejecutar = async () => {
     setStatus('running');
@@ -20,6 +23,7 @@ export default function ActionProposalCard({ proposal, onDone }) {
         payload: proposal.payload || {},
       });
       setResult(res?.data?.message || 'Acción ejecutada ✓');
+      if (res?.data?.url) setMediaUrl(res.data.url);
       setStatus('done');
       onDone?.();
     } catch (e) {
@@ -66,14 +70,26 @@ export default function ActionProposalCard({ proposal, onDone }) {
 
             {status === 'running' && (
               <p className="flex items-center gap-1.5 mt-2.5 text-xs text-ld-fg-muted">
-                <Loader2 className="w-3.5 h-3.5 animate-spin" /> Ejecutando…
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                {esGeneracion ? 'Generando con IA desde las fotos reales del producto… puede tardar ~1 min' : 'Ejecutando…'}
               </p>
             )}
 
             {status === 'done' && (
-              <p className="flex items-center gap-1.5 mt-2.5 text-xs font-bold" style={{ color: 'var(--ld-action)' }}>
-                <Check className="w-3.5 h-3.5" /> {result}
-              </p>
+              <div className="mt-2.5">
+                <p className="flex items-center gap-1.5 text-xs font-bold" style={{ color: 'var(--ld-action)' }}>
+                  <Check className="w-3.5 h-3.5" /> {result}
+                </p>
+                {mediaUrl && (
+                  <a href={mediaUrl} target="_blank" rel="noopener noreferrer" className="block mt-2 max-w-[320px] rounded-xl overflow-hidden border border-ld-border hover:opacity-90 transition-opacity">
+                    {proposal.action === 'generarVideoProducto' ? (
+                      <video src={mediaUrl} controls className="w-full" />
+                    ) : (
+                      <img src={mediaUrl} alt="Contenido generado" className="w-full" />
+                    )}
+                  </a>
+                )}
+              </div>
             )}
 
             {status === 'error' && (

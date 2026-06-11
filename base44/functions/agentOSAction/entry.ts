@@ -199,6 +199,21 @@ Deno.serve(async (req) => {
         return Response.json({ ok: true, message: `Email enviado a ${payload.to}` });
       }
 
+      case 'generarImagenProducto':
+      case 'generarVideoProducto': {
+        const r = await base44.functions.invoke('agentGenerateMedia', {
+          tipo: action === 'generarVideoProducto' ? 'video' : 'imagen',
+          sku: payload.sku,
+          producto: payload.producto,
+          efecto: payload.efecto,
+          formato: payload.formato,
+          duracion: payload.duracion,
+          red_social: payload.red_social,
+        });
+        if (!r?.data?.ok) throw new Error(r?.data?.error || 'Error generando el contenido');
+        return Response.json({ ok: true, message: r.data.message, url: r.data.url });
+      }
+
       case 'sincronizarTracking': {
         const r = await base44.asServiceRole.functions.invoke('bluexSyncAllShipments', {});
         return Response.json({ ok: true, message: 'Tracking BlueExpress sincronizado', detail: r || null });
