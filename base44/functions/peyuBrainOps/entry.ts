@@ -91,6 +91,34 @@ Deno.serve(async (req) => {
     const clientesNuevos7d = clientesNuevos.filter(c => isLast7d(c.created_date));
     const clientesTop = [...clientesNuevos].sort((a, b) => (b.total_compras_clp || 0) - (a.total_compras_clp || 0));
 
+    // Enriquecimiento REAL: muchos Cliente tienen KPIs vacíos (num_pedidos=0,
+    // sin ticket). Cruzamos con PedidoWeb por email para mostrar data viva.
+    const pedidosPorEmail = {};
+    for (const p of pedidos) {
+      const em = (p.cliente_email || '').toLowerCase().trim();
+      if (!em) continue;
+      (pedidosPorEmail[em] = pedidosPorEmail[em] || []).push(p);
+    }
+    const mapClienteRich = (c) => {
+      const ps = pedidosPorEmail[(c.email || '').toLowerCase().trim()] || [];
+      const validos = ps.filter(p => !['Cancelado', 'Reembolsado'].includes(p.estado));
+      const totalReal = validos.reduce((s, p) => s + (p.total || 0), 0);
+      const ult = ps[0];
+      const numPedidos = Math.max(c.num_pedidos || 0, validos.length);
+      const totalCompras = Math.max(c.total_compras_clp || 0, totalReal);
+      return {
+        ...mapCliente(c),
+        num_pedidos: numPedidos,
+        total_compras_clp: totalCompras,
+        ticket_promedio: c.ticket_promedio || (numPedidos ? Math.round(totalCompras / numPedidos) : null),
+        fecha_ultima_compra: c.fecha_ultima_compra || (ult ? (ult.fecha || (ult.created_date || '').slice(0, 10)) : null),
+        ultimo_pedido: ult ? {
+          id: ult.id, numero: ult.numero_pedido, estado: ult.estado,
+          total: ult.total, items: (ult.descripcion_items || '').slice(0, 80),
+        } : null,
+      };
+    };
+
     const ingresosHoy = pedidosHoy.reduce((s, p) => s + (p.total || 0), 0);
     const ingresos7d = pedidos.filter(p => isLast7d(p.created_date)).reduce((s, p) => s + (p.total || 0), 0);
 
@@ -168,8 +196,8 @@ Deno.serve(async (req) => {
         })),
       // vCard inteligente: TODA la info del cliente para la página agente.
       // clientes_top = mejores compradores históricos · clientes_nuevos = últimos registrados.
-      clientes_top: clientesTop.slice(0, 12).map(mapCliente),
-      clientes_nuevos: clientesNuevos.slice(0, 12).map(mapCliente),
+      clientes_top: clientesTop.slice(0, 12).map(mapClienteRich),
+      clientes_nuevos: clientesNuevos.slice(0, 12).map(mapClienteRich),
     };
 
     // ── Pattern matching para construir respuesta narrativa ────────────────

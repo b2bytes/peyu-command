@@ -20,9 +20,9 @@ export default function AgentHeader({ onRefresh, refreshing, onMobileMenu, view,
           <div className="w-8 h-8 rounded-xl bg-ld-action-soft flex items-center justify-center text-base flex-shrink-0">🐢</div>
           <div className="min-w-0">
             <h1 className="text-sm font-bold text-ld-fg leading-none whitespace-nowrap">
-              Peyu <span className="text-ld-action">Agent OS</span>
+              Peyu <span className="text-ld-action hidden min-[400px]:inline">Agent OS</span>
             </h1>
-            <div className="flex items-center gap-1 mt-0.5">
+            <div className="hidden min-[480px]:flex items-center gap-1 mt-0.5">
               <span className="w-1.5 h-1.5 rounded-full bg-ld-action animate-pulse" />
               <span className="text-[10px] text-ld-fg-muted whitespace-nowrap">En línea · PEYU Chile</span>
             </div>
@@ -54,7 +54,7 @@ export default function AgentHeader({ onRefresh, refreshing, onMobileMenu, view,
           {onClear && (
             <button
               onClick={onClear}
-              className="w-9 h-9 rounded-lg hover:bg-ld-bg-elevated flex items-center justify-center text-ld-fg-muted hover:text-ld-fg transition-colors"
+              className="w-9 h-9 rounded-lg hover:bg-ld-bg-elevated hidden min-[400px]:flex items-center justify-center text-ld-fg-muted hover:text-ld-fg transition-colors"
               title="Limpiar chat (el hilo queda guardado)"
               aria-label="Limpiar chat"
             >
