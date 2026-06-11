@@ -136,6 +136,7 @@ const DespachoRapido = lazyWithRetry(() => import('./pages/DespachoRapido'), { n
 const AgenteCentral = lazyWithRetry(() => import('./pages/AgenteCentral'), { name: 'AgenteCentral' });
 const Induccion = lazyWithRetry(() => import('./pages/Induccion'), { name: 'Induccion' });
 const GuiaFundadores = lazyWithRetry(() => import('./pages/GuiaFundadores'), { name: 'GuiaFundadores' });
+const WhatsAppInbox = lazyWithRetry(() => import('./pages/WhatsAppInbox'), { name: 'WhatsAppInbox' });
 
 const AdminLoader = () => (
   <div className="fixed inset-0 flex items-center justify-center bg-background">
@@ -248,6 +249,7 @@ const AuthenticatedApp = () => {
           <Route path="despacho" element={<DespachoRapido />} />
           <Route path="induccion" element={<Induccion />} />
           <Route path="guia-fundadores" element={<GuiaFundadores />} />
+          <Route path="whatsapp" element={<WhatsAppInbox />} />
         </Route>
         <Route path="*" element={<PageNotFound />} />
       </Routes>
