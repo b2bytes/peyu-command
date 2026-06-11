@@ -42,16 +42,16 @@ function ComunaInput({ value, onChange }) {
         onFocus={() => setFocus(true)}
         onBlur={() => setTimeout(() => setFocus(false), 150)}
         placeholder="Comuna (ej: Providencia)"
-        className="w-full h-9 px-3 rounded-lg border border-slate-300 text-xs font-semibold text-slate-800 bg-white focus:outline-none focus:border-emerald-500"
+        className="w-full h-9 px-3 rounded-lg border border-[#cbd5e1] text-xs font-semibold text-[#1e293b] bg-[#ffffff] focus:outline-none focus:border-emerald-500"
       />
       {focus && sugerencias.length > 0 && (
-        <div className="absolute z-20 top-full mt-1 left-0 right-0 bg-white border border-slate-200 rounded-lg shadow-lg overflow-hidden">
+        <div className="absolute z-20 top-full mt-1 left-0 right-0 bg-[#ffffff] border border-[#e2e8f0] rounded-lg shadow-lg overflow-hidden">
           {sugerencias.map((c) => (
             <button
               key={c}
               type="button"
               onMouseDown={() => { onChange(c); setSugerencias([]); }}
-              className="w-full text-left px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-emerald-50 flex items-center gap-1.5"
+              className="w-full text-left px-3 py-2 text-xs font-semibold text-[#334155] hover:bg-[#ecfdf5] flex items-center gap-1.5"
             >
               <MapPin className="w-3 h-3 text-emerald-600 flex-shrink-0" /> {c}
               <span className="ml-auto text-[9px] text-emerald-600 font-bold">✓ cobertura Bluex</span>
@@ -91,14 +91,14 @@ export function FixDireccionForm({ pedido, onSaved }) {
         value={direccion}
         onChange={(e) => setDireccion(e.target.value)}
         placeholder="Dirección (calle y número, depto/oficina)"
-        className="w-full h-9 px-3 rounded-lg border border-slate-300 text-xs font-semibold text-slate-800 bg-white focus:outline-none focus:border-emerald-500"
+        className="w-full h-9 px-3 rounded-lg border border-[#cbd5e1] text-xs font-semibold text-[#1e293b] bg-[#ffffff] focus:outline-none focus:border-emerald-500"
       />
       <ComunaInput value={comuna} onChange={setComuna} />
       <input
         value={telefono}
         onChange={(e) => setTelefono(e.target.value)}
         placeholder="Teléfono del cliente (opcional)"
-        className="w-full h-9 px-3 rounded-lg border border-slate-300 text-xs font-semibold text-slate-800 bg-white focus:outline-none focus:border-emerald-500"
+        className="w-full h-9 px-3 rounded-lg border border-[#cbd5e1] text-xs font-semibold text-[#1e293b] bg-[#ffffff] focus:outline-none focus:border-emerald-500"
       />
       {err && <p className="text-[10px] font-bold text-red-600">{err}</p>}
       <button
@@ -131,7 +131,7 @@ export function FixComunaPicker({ pedido, onSaved }) {
 
   return (
     <div className="space-y-2">
-      <p className="text-[10px] font-bold text-slate-600">Corrige la comuna aquí mismo (sugerencias con cobertura verificada):</p>
+      <p className="text-[10px] font-bold text-[#475569]">Corrige la comuna aquí mismo (sugerencias con cobertura verificada):</p>
       <div className="flex gap-2">
         <div className="flex-1"><ComunaInput value={comuna} onChange={setComuna} /></div>
         <button

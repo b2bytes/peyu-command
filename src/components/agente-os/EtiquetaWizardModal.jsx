@@ -22,11 +22,14 @@ import { FixDireccionForm, FixComunaPicker } from '@/components/agente-os/Etique
 const normalize = (s) => String(s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
+// ⚠️ Colores con valores arbitrarios (no slate/gray/emerald-50 de Tailwind):
+// la capa admin-unify remapea esas clases a tokens día/noche y dejaba texto
+// blanco sobre burbujas claras en modo noche. Este modal es SIEMPRE claro.
 const STATUS_UI = {
-  running: { Icon: Loader2, cls: 'text-slate-400 animate-spin', bg: 'bg-white border-slate-200' },
-  ok: { Icon: CheckCircle2, cls: 'text-emerald-600', bg: 'bg-emerald-50 border-emerald-200' },
-  warn: { Icon: AlertTriangle, cls: 'text-amber-600', bg: 'bg-amber-50 border-amber-200' },
-  fail: { Icon: AlertTriangle, cls: 'text-red-600', bg: 'bg-red-50 border-red-200' },
+  running: { Icon: Loader2, cls: 'text-[#94a3b8] animate-spin', bg: 'bg-[#ffffff] border-[#e2e8f0]' },
+  ok: { Icon: CheckCircle2, cls: 'text-[#059669]', bg: 'bg-[#ecfdf5] border-[#a7f3d0]' },
+  warn: { Icon: AlertTriangle, cls: 'text-[#d97706]', bg: 'bg-[#fffbeb] border-[#fde68a]' },
+  fail: { Icon: AlertTriangle, cls: 'text-[#dc2626]', bg: 'bg-[#fef2f2] border-[#fecaca]' },
 };
 
 function Bubble({ check }) {
@@ -36,8 +39,8 @@ function Bubble({ check }) {
       <div className="flex items-start gap-2">
         <ui.Icon className={`w-4 h-4 mt-0.5 flex-shrink-0 ${ui.cls}`} />
         <div className="min-w-0 flex-1">
-          <p className="text-xs font-bold text-slate-800">{check.title}</p>
-          {check.detail && <p className="text-[11px] text-slate-600 mt-0.5 leading-relaxed">{check.detail}</p>}
+          <p className="text-xs font-bold text-[#1e293b]">{check.title}</p>
+          {check.detail && <p className="text-[11px] text-[#475569] mt-0.5 leading-relaxed">{check.detail}</p>}
           {check.fix && <div className="mt-2">{check.fix}</div>}
         </div>
       </div>
@@ -149,7 +152,7 @@ export default function EtiquetaWizardModal({ pedido: pedidoInicial, onClose, on
         title: `Paso 4 · Ya tiene OT: ${p.tracking}`,
         detail: 'Este pedido ya tiene etiqueta emitida — no se genera otra para evitar cobros duplicados. Puedes abrir la existente.',
         fix: (
-          <a href={`https://www.bluex.cl/seguimiento?n=${p.tracking}`} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 text-white text-[11px] font-bold">
+          <a href={`https://www.bluex.cl/seguimiento?n=${p.tracking}`} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#1e293b] text-white text-[11px] font-bold">
             <Printer className="w-3 h-3" /> Ver tracking
           </a>
         ),
@@ -203,19 +206,19 @@ export default function EtiquetaWizardModal({ pedido: pedidoInicial, onClose, on
   return (
     <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/45 backdrop-blur-sm" onClick={onClose}>
       <div
-        className="w-full sm:max-w-md bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl flex flex-col max-h-[88vh]"
+        className="w-full sm:max-w-md bg-[#ffffff] rounded-t-3xl sm:rounded-3xl shadow-2xl flex flex-col max-h-[88vh]"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center gap-2.5 px-4 py-3 border-b border-slate-100 flex-shrink-0">
+        <div className="flex items-center gap-2.5 px-4 py-3 border-b border-[#f1f5f9] flex-shrink-0">
           <div className="w-8 h-8 rounded-xl bg-emerald-600 flex items-center justify-center flex-shrink-0">
             <Tag className="w-4 h-4 text-white" />
           </div>
           <div className="min-w-0 flex-1">
-            <p className="text-sm font-bold text-slate-900 leading-tight">Asistente de etiqueta BlueExpress</p>
-            <p className="text-[11px] text-slate-500 truncate">{pedido.numero_pedido} · {pedido.cliente_nombre} · {pedido.ciudad || 'sin comuna'}</p>
+            <p className="text-sm font-bold text-[#0f172a] leading-tight">Asistente de etiqueta BlueExpress</p>
+            <p className="text-[11px] text-[#64748b] truncate">{pedido.numero_pedido} · {pedido.cliente_nombre} · {pedido.ciudad || 'sin comuna'}</p>
           </div>
-          <button onClick={onClose} className="w-8 h-8 rounded-lg hover:bg-slate-100 flex items-center justify-center text-slate-400">
+          <button onClick={onClose} className="w-8 h-8 rounded-lg hover:bg-[#f1f5f9] flex items-center justify-center text-[#94a3b8]">
             <X className="w-4 h-4" />
           </button>
         </div>
@@ -247,7 +250,7 @@ export default function EtiquetaWizardModal({ pedido: pedidoInicial, onClose, on
               title: 'BlueExpress devolvió un error',
               detail: `${resultado.error}. Revisa los pasos de arriba; si todo está bien puede ser un problema temporal de la API de Bluex — reintenta en unos segundos.`,
               fix: (
-                <button onClick={handleGenerar} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-white text-[11px] font-bold">
+                <button onClick={handleGenerar} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#1e293b] hover:bg-[#334155] text-white text-[11px] font-bold">
                   Reintentar
                 </button>
               ),
@@ -257,9 +260,9 @@ export default function EtiquetaWizardModal({ pedido: pedidoInicial, onClose, on
         </div>
 
         {/* Footer CTA */}
-        <div className="px-4 py-3 border-t border-slate-100 flex-shrink-0">
+        <div className="px-4 py-3 border-t border-[#f1f5f9] flex-shrink-0">
           {resultado?.ok ? (
-            <button onClick={onClose} className="w-full h-11 rounded-xl bg-slate-900 text-white text-sm font-bold">
+            <button onClick={onClose} className="w-full h-11 rounded-xl bg-[#0f172a] text-white text-sm font-bold">
               Cerrar — pedido listo para despachar 🐢
             </button>
           ) : (
