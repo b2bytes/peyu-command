@@ -8,6 +8,7 @@ import { getCartV2 } from '@/lib/shop-v2-cart';
 
 const CONV_KEY = 'vendedor_peyu_conv_id';
 const CART_DONE_KEY = 'vendedor_peyu_cart_done';
+const LEAD_DONE_KEY = 'vendedor_peyu_lead_done';
 
 export async function ensureConversation() {
   let id = localStorage.getItem(CONV_KEY);
@@ -24,6 +25,7 @@ export async function ensureConversation() {
 export function resetConversation() {
   localStorage.removeItem(CONV_KEY);
   localStorage.removeItem(CART_DONE_KEY);
+  localStorage.removeItem(LEAD_DONE_KEY);
 }
 
 // Adjunta contexto invisible (página + carrito) para que el agente venda mejor.
@@ -54,6 +56,7 @@ export const RE_PRODUCTO = /\[\[PRODUCTO:([^\]]+)\]\]/g;
 export const RE_CART = /\[\[CART:([^:\]]+):(\d+)\]\]/g;
 export const RE_CHECKOUT = /\[\[CHECKOUT\]\]/;
 export const RE_NAV = /\[\[NAV:([^|\]]+)\|([^\]]+)\]\]/g;
+export const RE_LEAD = /\[\[LEAD:([^\]]+)\]\]/g;
 
 export function stripTags(text) {
   return String(text || '')
@@ -61,7 +64,9 @@ export function stripTags(text) {
     .replace(RE_CART, '')
     .replace(/\[\[CHECKOUT\]\]/g, '')
     .replace(RE_NAV, '')
+    .replace(RE_LEAD, '')
     .replace(/\[CONTEXTO\][^\n]*/g, '')
+    .replace(/\[CATALOGO\][\s\S]*$/g, '')
     .replace(/\n{3,}/g, '\n\n')
     .trim();
 }
@@ -87,6 +92,50 @@ export function extractNavs(text) {
     out.push({ to: m[1].trim(), label: m[2].trim() });
   }
   return out;
+}
+
+// ── Captura de leads ([[LEAD:campo=valor;...]]) ─────────────────────────
+export function extractLeadActions(text) {
+  const out = [];
+  for (const m of String(text || '').matchAll(RE_LEAD)) {
+    const fields = {};
+    m[1].split(';').forEach((pair) => {
+      const idx = pair.indexOf('=');
+      if (idx > 0) {
+        const k = pair.slice(0, idx).trim().toLowerCase();
+        const v = pair.slice(idx + 1).trim();
+        if (k && v) fields[k] = v;
+      }
+    });
+    if (Object.keys(fields).length) out.push(fields);
+  }
+  return out;
+}
+
+// Guarda/actualiza el ChatLead de esta conversación (upsert en backend).
+export async function saveLeadData(conversationId, fields) {
+  await base44.functions.invoke('vendedorChatProxy', {
+    action: 'lead',
+    conversation_id: conversationId,
+    fields,
+    page_path: window.location.pathname,
+  });
+}
+
+export function leadActionDone(msgIndex) {
+  try {
+    return JSON.parse(localStorage.getItem(LEAD_DONE_KEY) || '[]').includes(msgIndex);
+  } catch { return false; }
+}
+
+export function markLeadActionDone(msgIndex) {
+  try {
+    const done = JSON.parse(localStorage.getItem(LEAD_DONE_KEY) || '[]');
+    if (!done.includes(msgIndex)) {
+      done.push(msgIndex);
+      localStorage.setItem(LEAD_DONE_KEY, JSON.stringify(done));
+    }
+  } catch { /* noop */ }
 }
 
 // Idempotencia de [[CART:]]: marca qué mensajes del hilo ya ejecutaron su add.

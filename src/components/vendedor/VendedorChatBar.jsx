@@ -4,6 +4,7 @@ import { Send, X, Loader2, Sparkles, ShoppingBag } from 'lucide-react';
 import {
   ensureConversation, sendChatMessage, fetchMessages,
   extractSkus, extractCartActions, cartActionDone, markCartActionDone,
+  extractLeadActions, leadActionDone, markLeadActionDone, saveLeadData,
 } from '@/lib/vendedor-chat';
 import { addToCartV2, cartCountV2, subscribeCartV2 } from '@/lib/shop-v2-cart';
 import { getProductImage } from '@/utils/productImages';
@@ -87,9 +88,26 @@ export default function VendedorChatBar() {
     }
   }, [productosBySku]);
 
+  // Ejecuta los [[LEAD:...]] nuevos: guarda los datos capturados en el CRM.
+  const ejecutarLeadTags = useCallback(async (mensajes) => {
+    const convId = localStorage.getItem('vendedor_peyu_conv_id');
+    if (!convId) return;
+    for (let i = 0; i < mensajes.length; i++) {
+      const m = mensajes[i];
+      if (m.role !== 'assistant' || leadActionDone(i)) continue;
+      const actions = extractLeadActions(m.content);
+      if (!actions.length) continue;
+      markLeadActionDone(i);
+      for (const fields of actions) {
+        saveLeadData(convId, fields).catch(() => {});
+      }
+    }
+  }, []);
+
   useEffect(() => {
     resolverProductos(msgs);
     ejecutarCartTags(msgs);
+    ejecutarLeadTags(msgs);
     // Auto-scroll al final
     setTimeout(() => { scrollRef.current?.scrollTo({ top: 999999, behavior: 'smooth' }); }, 80);
     // eslint-disable-next-line react-hooks/exhaustive-deps
