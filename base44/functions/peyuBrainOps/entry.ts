@@ -23,9 +23,12 @@ const mapCliente = (c) => ({
   fecha_ultima_compra: c.fecha_ultima_compra, proximo_recontacto: c.proximo_recontacto,
   notas: c.notas, created_date: c.created_date,
 });
-const todayISO = () => new Date().toISOString().slice(0, 10);
-const startOfDay = () => { const d = new Date(); d.setHours(0,0,0,0); return d.toISOString(); };
-const daysAgoISO = (n) => { const d = new Date(); d.setDate(d.getDate() - n); d.setHours(0,0,0,0); return d.toISOString(); };
+// Fechas en HORA CHILE (no UTC del servidor). Antes "hoy" se calculaba en UTC
+// (4h adelantado): las ventas de la tarde/noche chilena caían en "mañana" y el
+// agente reportaba $0 o datos desfasados. chileDate() normaliza todo a
+// America/Santiago en formato YYYY-MM-DD comparable.
+const TZ = 'America/Santiago';
+const chileDate = (d) => new Date(d).toLocaleDateString('en-CA', { timeZone: TZ });
 
 Deno.serve(async (req) => {
   try {
@@ -38,9 +41,8 @@ Deno.serve(async (req) => {
 
     const { query = '' } = await req.json();
     const q = query.toLowerCase().trim();
-    const today = todayISO();
-    const since24h = startOfDay();
-    const since7d = daysAgoISO(7);
+    const today = chileDate(new Date());
+    const hace7d = chileDate(new Date(Date.now() - 7 * 86400000));
 
     // ── Cargar data viva en paralelo ────────────────────────────────────────
     const [pedidos, leads, consultas, ailogs, envios, propuestas, productos, clientes] = await Promise.all([
@@ -54,13 +56,21 @@ Deno.serve(async (req) => {
       base44.asServiceRole.entities.Cliente.list('-created_date', 150).catch(() => []),
     ]);
 
-    // ── Filtros temporales ──────────────────────────────────────────────────
-    const isToday = (d) => d && (new Date(d) >= new Date(since24h));
-    const isLast7d = (d) => d && (new Date(d) >= new Date(since7d));
+    // ── Filtros temporales (en hora Chile) ─────────────────────────────────
+    const isToday = (d) => d && chileDate(d) === today;
+    const isLast7d = (d) => d && chileDate(d) >= hace7d;
+
+    // Venta REAL: pagada (payment_status) o ya avanzada en el flujo operativo.
+    // Antes ingresos_hoy sumaba pedidos sin pagar, cancelados y expirados —
+    // por eso el agente no cuadraba con las ventas reales.
+    const esVentaReal = (p) =>
+      p.payment_status === 'paid' ||
+      (!['Cancelado', 'Reembolsado', 'Nuevo'].includes(p.estado) &&
+        !['expired', 'failed', 'refunded'].includes(p.payment_status || ''));
 
     // ── Métricas estructuradas (siempre se devuelven) ──────────────────────
     const pedidosHoy = pedidos.filter(p => p.fecha === today || isToday(p.created_date));
-    const pedidosPagadosHoy = pedidosHoy.filter(p => !['Nuevo', 'Cancelado'].includes(p.estado));
+    const pedidosPagadosHoy = pedidosHoy.filter(esVentaReal);
     const pedidosEntregados = pedidos.filter(p => p.estado === 'Entregado');
     const pedidosEntregadosHoy = pedidosEntregados.filter(p => isToday(p.updated_date));
     const pedidosEnProduccion = pedidos.filter(p => p.estado === 'En Producción').length;
@@ -119,8 +129,11 @@ Deno.serve(async (req) => {
       };
     };
 
-    const ingresosHoy = pedidosHoy.reduce((s, p) => s + (p.total || 0), 0);
-    const ingresos7d = pedidos.filter(p => isLast7d(p.created_date)).reduce((s, p) => s + (p.total || 0), 0);
+    // Ingresos = solo ventas reales (pagadas/operativas), en hora Chile.
+    const ingresosHoy = pedidosHoy.filter(esVentaReal).reduce((s, p) => s + (p.total || 0), 0);
+    const ingresos7d = pedidos
+      .filter(p => isLast7d(p.fecha || p.created_date) && esVentaReal(p))
+      .reduce((s, p) => s + (p.total || 0), 0);
 
     const metrics = {
       pedidos_hoy: pedidosHoy.length,

@@ -175,12 +175,16 @@
   * {
     @apply border-border outline-ring/50;
   }
-  html, body {
+  html, body, #root {
     /* Mata cualquier scroll horizontal residual en mobile (decoraciones blur,
-       toggles, badges que se salen por 1-2px del viewport). Sin esto, iOS
-       Safari muestra una "tira lateral" que rompe la sensación de app. */
+       toggles, badges que se salen por 1-2px del viewport). overflow-x: clip
+       (con fallback hidden) es el fix moderno: iOS Safari a veces IGNORA
+       hidden en html/body y la página se veía "más ancha que la pantalla"
+       hasta refrescar. clip recorta sin crear scroll container. */
     overflow-x: hidden;
-    max-width: 100vw;
+    overflow-x: clip;
+    max-width: 100%;
+    width: 100%;
   }
   /* Scroll nativo momentum en iOS — crítico para que el scroll no se sienta
      "pegajoso" o lento en iPhone/iPad. */
