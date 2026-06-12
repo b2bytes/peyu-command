@@ -25,13 +25,13 @@ export default function PriceBreakdownV2({
         </div>
       )}
       <div className="flex justify-between text-xs sm:text-sm gap-2" style={{ color: '#7A6050' }}>
-        <span className="truncate">{fmtCLP(precioUnit)} (neto) × {cantidad}</span>
+        <span className="truncate">{fmtCLP(precioUnit)} × {cantidad}</span>
         <span className="font-semibold flex-shrink-0">{fmtCLP(subtotal)}</span>
       </div>
       {tipoLabel && (
         <div className="flex justify-between text-xs sm:text-sm gap-2" style={{ color: '#7A6050' }}>
           <span className="truncate min-w-0">
-            {tipoLabel}{!gratis && feeUnit > 0 ? ` ${fmtCLP(feeUnit)} neto` : ''}
+            {tipoLabel}{!gratis && feeUnit > 0 ? ` ${fmtCLP(feeUnit)}/u` : ''}
           </span>
           <span className="font-semibold flex-shrink-0" style={{ color: gratis ? '#8BAD8A' : undefined }}>
             {gratis ? 'GRATIS' : `+${fmtCLP(feeTotal)}`}

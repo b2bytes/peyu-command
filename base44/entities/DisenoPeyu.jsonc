@@ -1,7 +1,7 @@
 {
   "name": "DisenoPeyu",
   "type": "object",
-  "description": "Dise\u00f1os predefinidos PEYU para grabado l\u00e1ser. Galer\u00eda que el cliente puede elegir en el personalizador en vez de subir su propio logo. Mientras Diego no suba los reales, se poblan ejemplos marcados es_ejemplo=true.",
+  "description": "Dise\u00f1os predefinidos PEYU para grabado l\u00e1ser. Galer\u00eda que el cliente puede elegir en el personalizador en vez de subir su propio logo. La categor\u00eda es TEXTO LIBRE: los founders pueden crear todas las categor\u00edas que quieran desde el admin, sin depender de nadie.",
   "properties": {
     "nombre": {
       "type": "string",
@@ -18,21 +18,13 @@
     },
     "categoria": {
       "type": "string",
-      "title": "Categor\u00eda",
-      "enum": [
-        "Naturaleza",
-        "Frases",
-        "Geom\u00e9trico",
-        "Festividades",
-        "Corporativo",
-        "Mascotas",
-        "Otro"
-      ],
-      "default": "Otro"
+      "title": "Categor\u00eda (texto libre)",
+      "default": "Otro",
+      "description": "Categor\u00eda libre definida por los founders (ej: Naturaleza, Frases, Mascotas, F\u00fatbol, Navidad...). El personalizador agrupa autom\u00e1ticamente por las categor\u00edas existentes."
     },
     "es_ejemplo": {
       "type": "boolean",
-      "title": "Es ejemplo (placeholder hasta que Diego suba el real)",
+      "title": "Es ejemplo (placeholder)",
       "default": false
     },
     "activo": {
