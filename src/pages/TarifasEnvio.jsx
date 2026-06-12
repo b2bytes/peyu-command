@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
 import { cotizarEnvioAmbos } from '@/lib/bluex-shipping';
+import ExcelUploaderBluex from '@/components/tarifas/ExcelUploaderBluex';
 
 const TRAMOS = [
   { key: 'tarifa_base', label: '0 – 0.5 kg' },
@@ -110,6 +111,9 @@ export default function TarifasEnvio() {
           <Stat icon={MapPin} label="Regiones cubiertas" value={stats.totalRegiones} color="purple" />
           <Stat icon={Calculator} label="Tarifa promedio (0.5kg)" value={`$${stats.promedio.toLocaleString('es-CL')}`} color="amber" />
         </div>
+
+        {/* Cargar Excel más reciente */}
+        <ExcelUploaderBluex onImported={load} />
 
         {/* Calculadora rápida */}
         <div className="bg-white border border-gray-200 rounded-xl p-5">
