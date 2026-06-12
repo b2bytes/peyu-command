@@ -53,8 +53,11 @@ function Stat({ value, label }) {
   );
 }
 
-export default function HeroBoldV2({ heroImg, onPersonaliza }) {
+export default function HeroBoldV2({ heroImg, onPersonaliza, slides }) {
   const navigate = useNavigate();
+  // Slides con FOTOS REALES de productos (vienen de TiendaNueva desde la BD).
+  // Las imágenes IA estáticas quedan solo como fallback mientras carga.
+  const activeSlides = slides?.length ? slides : HERO_SLIDES;
 
   return (
     <section className="w-full px-4 sm:px-8 lg:px-12 xl:px-16 pt-4 sm:pt-6 pb-4 sm:pb-6">
@@ -148,7 +151,7 @@ export default function HeroBoldV2({ heroImg, onPersonaliza }) {
 
             <div className="relative flex-1 w-full" style={{ maxWidth: '520px' }}>
               <CarouselHeroV2
-                slides={HERO_SLIDES}
+                slides={activeSlides}
                 onSlideClick={(s) => navigate(s.to || '/CatalogoNuevo')}
               />
 

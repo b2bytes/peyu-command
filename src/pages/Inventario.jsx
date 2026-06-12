@@ -12,6 +12,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell
 } from "recharts";
+import StockPorColorDialog from "@/components/inventario/StockPorColorDialog";
+import { getColoresProducto } from "@/lib/color-parser";
 
 const STOCK_MINIMO = {
   'KIT-ESCR-001': 20,
@@ -43,6 +45,7 @@ export default function Inventario() {
   const [editingId, setEditingId] = useState(null);
   const [newStock, setNewStock] = useState('');
   const [saving, setSaving] = useState(false);
+  const [colorEdit, setColorEdit] = useState(null); // producto en edición por color
 
   const loadData = async () => {
     setLoading(true);
@@ -235,6 +238,11 @@ export default function Inventario() {
                             <div className="h-1 bg-muted rounded-full mt-1 w-16 ml-auto">
                               <div className="h-full rounded-full" style={{ width: `${pct}%`, background: status.barColor }} />
                             </div>
+                            {p.stock_por_color && Object.keys(p.stock_por_color).length > 0 && (
+                              <p className="text-[10px] text-muted-foreground mt-1 max-w-44 ml-auto truncate" title={Object.entries(p.stock_por_color).map(([c, v]) => `${c}: ${v}u`).join(' · ')}>
+                                {Object.entries(p.stock_por_color).map(([c, v]) => `${c} ${v}`).join(' · ')}
+                              </p>
+                            )}
                           </div>
                         )}
                       </td>
@@ -249,8 +257,19 @@ export default function Inventario() {
                         {p.precio_b2c ? `$${p.precio_b2c.toLocaleString('es-CL')}` : '—'}
                       </td>
                       <td className="px-4 py-3 text-right">
-                        <button onClick={() => { setEditingId(p.id); setNewStock(String(p.stock_actual || '')); }}
-                          className="p-1.5 hover:bg-muted rounded-lg">
+                        <button
+                          onClick={() => {
+                            // Productos con variantes de color → editor por color.
+                            // El resto → edición inline de stock global.
+                            if (getColoresProducto(p).length > 1) {
+                              setColorEdit(p);
+                            } else {
+                              setEditingId(p.id);
+                              setNewStock(String(p.stock_actual || ''));
+                            }
+                          }}
+                          className="p-1.5 hover:bg-muted rounded-lg"
+                          title={getColoresProducto(p).length > 1 ? 'Editar stock por color' : 'Editar stock'}>
                           <Edit2 className="w-3.5 h-3.5 text-muted-foreground" />
                         </button>
                       </td>
@@ -365,6 +384,14 @@ export default function Inventario() {
           })}
         </TabsContent>
       </Tabs>
+
+      {/* Editor de stock POR COLOR (variantes) */}
+      <StockPorColorDialog
+        producto={colorEdit}
+        open={!!colorEdit}
+        onClose={() => setColorEdit(null)}
+        onSaved={loadData}
+      />
     </div>
   );
 }

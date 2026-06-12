@@ -125,7 +125,8 @@ export default function ProductoNuevo() {
   // (Frase + Diseño PEYU + Tu diseño). En el resto: SOLO "Tu diseño".
   const esCarcasa = producto ? isProductoCarcasa(producto) : false;
   const engraggingArea = producto ? getProductEngraggingArea(producto) : null;
-  const soloArchivo = !!producto && !esCarcasa;
+  // Todos los productos grabables ofrecen las 3 opciones: Frase · Diseño PEYU · Tu diseño.
+  const soloArchivo = false;
 
   // Colores reales del producto (carcasas = 5 colores, resto = 4, etc.)
   const colores = useMemo(() => (producto ? getColoresProducto(producto) : []), [producto]);
@@ -141,12 +142,7 @@ export default function ProductoNuevo() {
     if (draft) {
       const colorValido = draft.colorId && colores.some((c) => c.id === draft.colorId);
       setColorId(colorValido ? draft.colorId : (colores.length === 1 ? colores[0].id : null));
-      // En productos NO-carcasa solo se permite "Tu diseño": descartamos frase/peyu
-      // que pudieran venir en un borrador para mantener la regla consistente.
-      const draftPers = draft.pers || PERS_VACIO;
-      setPers(esCarcasa
-        ? draftPers
-        : { ...draftPers, frase: false, peyu: false, texto: '', disenoPeyuUrl: '' });
+      setPers(draft.pers || PERS_VACIO);
       setPlacements(draft.placements || {});
       setCantidad(draft.cantidad || 1);
     } else {
@@ -172,7 +168,7 @@ export default function ProductoNuevo() {
   // Galería: imagen por color elegido (1ª) + ángulos extra de galeria_urls.
   const galleryImages = useMemo(() => {
     if (!producto) return [];
-    const main = color ? getProductImageForColor(producto, color) : getProductImage(producto);
+    const main = (esCarcasa && color) ? getProductImageForColor(producto, color) : getProductImage(producto);
     // Carcasas: la imagen por color es la ÚNICA fuente de verdad.
     if (esCarcasa) return [main];
     let extra = Array.isArray(producto.galeria_urls)
@@ -193,18 +189,26 @@ export default function ProductoNuevo() {
   // por nombre de archivo: rojo, negro, verde...) y saltamos a ella.
   useEffect(() => {
     if (!color || esCarcasa) { setGalIdx(0); return; }
-    // 1. Si el producto tiene mapa color→foto (imagenes_por_color, generado por
-    //    visionMapColorImages), la foto del color YA es la 1ª de la galería.
-    const colorImgMapped = getProductImageForColor(producto, color);
-    if (colorImgMapped && colorImgMapped !== getProductImage(producto)) { setGalIdx(0); return; }
-    // 2. Fallback: matching por nombre de archivo (rojo, negro, verde...).
+    // Matching por nombre de archivo (rojo, negro, verde...). En no-carcasas el
+    // mapa imagenes_por_color NO se usa: estaba mal poblado y mostraba fotos de
+    // otro color (bug reportado por el cliente).
     const match = findColorImageMatch(galleryImages, color);
     setGalIdx(match ? match.index : 0);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [colorId, esCarcasa]);
 
-  // La imagen principal SIEMPRE es la del color elegido.
-  const displayImg = color ? getProductImageForColor(producto, color) : getProductImage(producto);
+  // La imagen principal SIEMPRE es la del color elegido. En no-carcasas el mapa
+  // imagenes_por_color no es confiable: usamos match real por nombre de archivo
+  // en la galería; si no hay foto del color, queda la base + tinte CSS oficial.
+  const displayImg = useMemo(() => {
+    if (!producto) return null;
+    if (esCarcasa && color) return getProductImageForColor(producto, color);
+    if (color) {
+      const match = findColorImageMatch(galleryImages, color);
+      if (match) return galleryImages[match.index];
+    }
+    return getProductImage(producto);
+  }, [producto, color, esCarcasa, galleryImages]);
 
   // Tinte instantáneo al tono OFICIAL (norma catálogo B2B PDF): si el color
   // elegido NO tiene foto real (ni mapa ni match en galería), la imagen y el
@@ -236,13 +240,16 @@ export default function ProductoNuevo() {
     // esa es la base del mockup — antes se usaba siempre la "base limpia"
     // generada por IA, que ignoraba el color y a veces salía deforme
     // (bug reportado en llaveros).
-    const fotoColor = color ? getProductImageForColor(producto, color) : null;
-    const tieneFotoColor = fotoColor && fotoColor !== getProductImage(producto);
-    if (!esCarcasa && tieneFotoColor) return fotoColor;
+    if (!esCarcasa && color) {
+      // Solo una foto REAL del color (match por nombre en galería) es base válida.
+      const match = findColorImageMatch(galleryImages, color);
+      if (match) return galleryImages[match.index];
+    }
     const limpia = producto?.imagen_base_limpia_url || cleanBaseUrl;
     if (!esCarcasa && limpia) return limpia;
-    return fotoColor || displayImg;
-  }, [producto, color, displayImg, esCarcasa, cleanBaseUrl]);
+    if (esCarcasa && color) return getProductImageForColor(producto, color) || displayImg;
+    return displayImg;
+  }, [producto, color, displayImg, esCarcasa, cleanBaseUrl, galleryImages]);
 
   // Capas (combinables) para el mockup en vivo. ORDEN FIJO de apilado
   // (arriba→abajo): 1) Tu logo  2) Diseño PEYU  3) Frase.

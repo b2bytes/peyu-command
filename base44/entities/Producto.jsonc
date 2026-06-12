@@ -142,6 +142,12 @@
       "type": "number",
       "title": "Stock Actual (u)"
     },
+    "stock_por_color": {
+      "type": "object",
+      "title": "Stock por color (u)",
+      "additionalProperties": true,
+      "description": "Mapa color \u2192 unidades disponibles (ej: {\"Rojo\": 12, \"Negro\": 0}). Fuente de verdad del inventario por variante de color. stock_actual debe ser la suma. Si est\u00e1 vac\u00edo, se usa stock_actual global."
+    },
     "activo": {
       "type": "boolean",
       "title": "Activo en Cat\u00e1logo",

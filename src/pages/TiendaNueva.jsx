@@ -50,6 +50,21 @@ export default function TiendaNueva() {
     return c ? getProductImage(c) : null;
   }, [carcasas, productos]);
 
+  // Slides del hero con FOTOS REALES del catálogo (una por categoría).
+  // Reemplaza las imágenes IA "falsas" que reclamó el cliente.
+  const heroSlides = useMemo(() => {
+    const pick = (cat) => productos.find((p) => p.categoria === cat && p.imagen_url);
+    return [
+      { cat: 'Escritorio', kicker: 'Escritorio consciente', title: 'Hecho con tapitas recicladas de Santiago', to: '/CatalogoNuevo?cat=Escritorio' },
+      { cat: 'Entretenimiento', kicker: 'Entretención y juegos', title: 'Cachos 100% reciclados, todo terreno', to: '/CatalogoNuevo?cat=Entretenimiento' },
+      { cat: 'Carcasas B2C', kicker: 'Carcasas eco', title: 'Marmolado único e irrepetible', to: '/CatalogoNuevo?cat=Carcasas%20B2C' },
+      { cat: 'Hogar', kicker: 'Hogar sustentable', title: 'Piezas únicas para tu casa', to: '/CatalogoNuevo?cat=Hogar' },
+    ].map((d) => {
+      const p = pick(d.cat);
+      return p ? { ...d, img: p.imagen_url } : null;
+    }).filter(Boolean);
+  }, [productos]);
+
   return (
     <div className="min-h-screen font-inter pb-16 lg:pb-0" style={{ background: '#F8F3ED', color: '#2C1810' }}>
       <SEOHead
@@ -62,7 +77,7 @@ export default function TiendaNueva() {
       <ResumeJourneyBannerV2 />
 
       {/* 1 · HERO BOLD */}
-      <HeroBoldV2 heroImg={heroImg} />
+      <HeroBoldV2 heroImg={heroImg} slides={heroSlides} />
 
       {/* 1b · TRUST + SOCIAL PROOF */}
       <TrustSocialBarV2 />

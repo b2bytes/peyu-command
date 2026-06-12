@@ -1,13 +1,29 @@
 import { Check } from 'lucide-react';
 import { getProductImageForColor } from '@/utils/productImages';
+import { isProductoCarcasa } from '@/lib/product-engraving-areas';
 
-// Selector de color del Shop v2 (Baymard 2026 #1: variantes siempre visibles,
-// foto real + swatch, nunca dropdown oculto). Si el producto tiene imagen por
-// color (carcasas), el swatch usa la FOTO real; si no, el color sólido.
+// Selector de color del Shop v2.
+// · CARCASAS: swatch con la FOTO real del color (imagenes_por_color es confiable ahí).
+// · RESTO DE PRODUCTOS: SIEMPRE círculo de color sólido — nunca fotos. El mapa
+//   imagenes_por_color estaba mal poblado en no-carcasas y mostraba fotos de
+//   otro color (bug reportado por el cliente: "elegí rojo y aparece negro").
+// · Si el producto tiene stock_por_color, los colores agotados se deshabilitan.
 export default function ColorSwatchesV2({ colores = [], value, onSelect, error, producto }) {
   if (!colores.length) return null;
 
-  const hasPhotos = !!(producto?.imagenes_por_color && typeof producto.imagenes_por_color === 'object');
+  const esCarcasa = producto ? isProductoCarcasa(producto) : false;
+  const hasPhotos = esCarcasa && !!(producto?.imagenes_por_color && typeof producto.imagenes_por_color === 'object');
+
+  // Stock por color: solo aplica si el mapa existe y tiene datos.
+  const stockMap = producto?.stock_por_color;
+  const tieneStockPorColor = stockMap && typeof stockMap === 'object' && Object.keys(stockMap).length > 0;
+  const norm = (s) => String(s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+  const stockDe = (c) => {
+    if (!tieneStockPorColor) return null;
+    const candidatos = [c.label, c.id, ...(c.aliases || [])].map(norm);
+    const hit = Object.entries(stockMap).find(([k]) => candidatos.includes(norm(k)));
+    return hit ? Number(hit[1]) : null;
+  };
 
   return (
     <div data-color-selector>
@@ -25,29 +41,45 @@ export default function ColorSwatchesV2({ colores = [], value, onSelect, error, 
         {colores.map((c) => {
           const sel = value === c.id;
           const photo = hasPhotos ? getProductImageForColor(producto, c) : null;
-          const usePhoto = photo && producto?.imagenes_por_color && photo !== getProductImageForColor(producto, '__none__');
+          const usePhoto = hasPhotos && photo && photo !== getProductImageForColor(producto, '__none__');
+          const stock = stockDe(c);
+          const agotado = stock !== null && stock <= 0;
           return (
-            <button
-              key={c.id}
-              type="button"
-              onClick={() => onSelect(c.id)}
-              title={c.label}
-              className={`relative w-16 h-16 sm:w-[4.5rem] sm:h-[4.5rem] rounded-full border-2 overflow-hidden transition-all ${
-                sel ? 'border-[#0F8B6C] scale-110 shadow-md' : 'border-[#EBE3D6] hover:scale-105'
-              }`}
-              style={usePhoto ? undefined : c.id === 'mixto'
-                ? { background: 'conic-gradient(#4DA3DC 0 25%, #212121 25% 50%, #F0807A 50% 75%, #4BC5A5 75% 100%)' }
-                : { backgroundColor: c.hex || '#ccc' }}
-            >
-              {usePhoto && (
-                <img src={photo} alt={c.label} referrerPolicy="no-referrer" className="w-full h-full object-cover" />
-              )}
-              {sel && (
-                <span className="absolute inset-0 flex items-center justify-center bg-black/10">
-                  <Check className="w-5 h-5 sm:w-4 sm:h-4 text-white drop-shadow-lg" strokeWidth={3} />
-                </span>
-              )}
-            </button>
+            <div key={c.id} className="flex flex-col items-center gap-1">
+              <button
+                type="button"
+                onClick={() => !agotado && onSelect(c.id)}
+                disabled={agotado}
+                title={agotado ? `${c.label} — agotado` : c.label}
+                className={`relative w-14 h-14 sm:w-16 sm:h-16 rounded-full border-2 overflow-hidden transition-all ${
+                  agotado
+                    ? 'border-[#EBE3D6] opacity-35 cursor-not-allowed'
+                    : sel
+                      ? 'border-[#0F8B6C] scale-110 shadow-md'
+                      : 'border-[#EBE3D6] hover:scale-105'
+                }`}
+                style={usePhoto ? undefined : c.id === 'mixto'
+                  ? { background: 'conic-gradient(#4DA3DC 0 25%, #212121 25% 50%, #F0807A 50% 75%, #4BC5A5 75% 100%)' }
+                  : { backgroundColor: c.hex || '#ccc' }}
+              >
+                {usePhoto && (
+                  <img src={photo} alt={c.label} referrerPolicy="no-referrer" className="w-full h-full object-cover" />
+                )}
+                {agotado && (
+                  <span className="absolute inset-0 flex items-center justify-center">
+                    <span className="w-full h-0.5 bg-[#A78B6F] rotate-45" />
+                  </span>
+                )}
+                {sel && !agotado && (
+                  <span className="absolute inset-0 flex items-center justify-center bg-black/10">
+                    <Check className="w-5 h-5 sm:w-4 sm:h-4 text-white drop-shadow-lg" strokeWidth={3} />
+                  </span>
+                )}
+              </button>
+              <span className={`text-[9px] font-semibold leading-none ${sel ? 'text-[#0F8B6C]' : 'text-[#A78B6F]'}`}>
+                {agotado ? 'Agotado' : c.label}
+              </span>
+            </div>
           );
         })}
       </div>
