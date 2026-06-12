@@ -94,6 +94,13 @@ export async function cotizarEnvioBluex({ comuna, pesoKg = 0.5, servicio = 'EXPR
   }
   if (!t) return null;
 
+  // Excel oficial Bluex: "Comuna activa = no" significa que este SERVICIO no
+  // opera en esta comuna (ej. PRIORITY aéreo no disponible en RM urbana).
+  // Antes lo ignorábamos y ofrecíamos/cobrábamos tarifas de servicios que
+  // Bluex no presta ahí — causa de costos de envío incorrectos.
+  const activa = String(t.raw_columnas?.['Comuna activa'] || 'si').toLowerCase().trim();
+  if (activa === 'no') return null;
+
   const field = pickTarifaField(pesoKg);
   const fallbackOrder = ['tarifa_base', 'tarifa_2kg', 'tarifa_3kg', 'tarifa_5kg', 'tarifa_10kg', 'tarifa_15kg', 'tarifa_25kg'];
   const fieldIdx = fallbackOrder.indexOf(field);
