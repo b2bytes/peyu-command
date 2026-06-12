@@ -17,7 +17,12 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 
 const BX_BASE = 'https://bx-tracking.bluex.cl';
-const BLUEX_PRICING_CORP = 'https://cmkin.api.blue.cl/cmkin/customer/corp/pricing/v1/pricing';
+// Endpoint oficial Pricing 1.0.0 (doc Bluex): BFF e-commerce legacy-pricing.
+// El doc lista 2 hosts PROD — probamos ambos en orden.
+const PRICING_URLS = [
+  'https://eplin.api.blue.cl/eplin/external/ecommerce/bff/v1/legacy-pricing',
+  'https://cmkin.api.blue.cl/eplin/external/ecommerce/bff/v1/legacy-pricing',
+];
 
 // Bearer token OAuth corporativo PROD (mismo flujo que la emisión de OT)
 let _bearerCache = { token: null, exp: 0 };
@@ -96,37 +101,40 @@ async function resolverDistrito(sr, comuna) {
 // "pricing" en la x-api-key de PEYU (hoy responde 403; emisión y tracking sí
 // están habilitados). Mientras tanto el frontend cae a la tabla TarifaBluex.
 async function cotizarServicio({ distrito, pesoKg, alto, ancho, largo, serviceType }) {
+  // Esquema oficial Pricing 1.0.0: datosProducto.bultos[] con enteros
   const body = {
     from: { country: 'CL', district: 'PUD' }, // origen: galpón PEYU Pudahuel
     to: { country: 'CL', ...(distrito.state ? { state: distrito.state } : {}), district: distrito.code },
     serviceType,
-    serviciosComplementarios: null,
     datosProducto: {
       producto: 'P',
       familiaProducto: 'PAQU',
-      largo: String(largo || 20),
-      ancho: String(ancho || 15),
-      alto: String(alto || 10),
-      pesoFisico: String(pesoKg),
-      cantidadPiezas: 1,
-      unidades: 1,
+      bultos: [{
+        largo: Math.max(1, Math.round(largo || 20)),
+        ancho: Math.max(1, Math.round(ancho || 15)),
+        alto: Math.max(1, Math.round(alto || 10)),
+        pesoFisico: Math.max(1, Math.ceil(pesoKg)),
+        cantidad: 1,
+      }],
     },
   };
-  // API corporativa: Bearer OAuth + x-api-key (mismas credenciales que emisión)
+  // Headers oficiales: BX-TOKEN + Bearer OAuth (sso.blue.cl) + x-api-key
   const bearer = await getBearerToken();
-  const res = await fetch(BLUEX_PRICING_CORP, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${bearer}`,
-      'x-api-key': Deno.env.get('BLUEX_API_KEY') || '',
-    },
-    body: JSON.stringify(body),
-  });
-  const data = await res.json().catch(() => ({}));
-  if (!res.ok || data?.status === false) {
-    console.warn(`[bx-pricing ${serviceType}] HTTP ${res.status}:`, JSON.stringify(data).slice(0, 400));
-    return { error: `HTTP ${res.status}`, raw: data };
+  const headers = {
+    'Content-Type': 'application/json',
+    'BX-TOKEN': Deno.env.get('BLUEX_TOKEN') || '',
+    'Authorization': `Bearer ${bearer}`,
+    'x-api-key': Deno.env.get('BLUEX_API_KEY') || '',
+  };
+  let res = null, data = {};
+  for (const url of PRICING_URLS) {
+    res = await fetch(url, { method: 'POST', headers, body: JSON.stringify(body) });
+    data = await res.json().catch(() => ({}));
+    if (res.ok && data?.status !== false) break; // host respondió OK
+  }
+  if (!res?.ok || data?.status === false) {
+    console.warn(`[bx-pricing ${serviceType}] HTTP ${res?.status}:`, JSON.stringify(data).slice(0, 400));
+    return { error: `HTTP ${res?.status}`, raw: data };
   }
   // Respuesta oficial: { status: true, data: { tarifa, flete, servicioAdicional, total, fechaEstimadaEntrega } }
   const d = data?.data || {};
@@ -185,12 +193,22 @@ Deno.serve(async (req) => {
       es_estimado: false,
     };
 
+    const express = wrap(ex, 'EXPRESS');
+    let priority = wrap(py, 'PRIORITY');
+    // PRIORITY solo se ofrece si realmente aporta (precio o fecha distinta a
+    // EXPRESS). En RM urbana la API devuelve lo mismo para ambos → solo EXPRESS.
+    if (express && priority
+      && priority.costo === express.costo
+      && priority.fecha_estimada_entrega === express.fecha_estimada_entrega) {
+      priority = null;
+    }
+
     return Response.json({
       ok: true,
       distrito,
       peso_cotizado_kg: pesoKg,
-      express: wrap(ex, 'EXPRESS'),
-      priority: wrap(py, 'PRIORITY'),
+      express,
+      priority,
     });
   } catch (error) {
     console.error('[bluexCotizarTarifa]', error);
