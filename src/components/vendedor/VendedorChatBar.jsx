@@ -1,13 +1,22 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { base44 } from '@/api/base44Client';
-import { Send, X, Loader2, Sparkles } from 'lucide-react';
+import { Send, X, Loader2, Sparkles, ShoppingBag } from 'lucide-react';
 import {
   ensureConversation, sendChatMessage, fetchMessages,
   extractSkus, extractCartActions, cartActionDone, markCartActionDone,
 } from '@/lib/vendedor-chat';
-import { addToCartV2 } from '@/lib/shop-v2-cart';
+import { addToCartV2, cartCountV2, subscribeCartV2 } from '@/lib/shop-v2-cart';
 import { getProductImage } from '@/utils/productImages';
 import VendedorMensaje from './VendedorMensaje';
+import VendedorCartCard from './VendedorCartCard';
+
+// Chips de inicio rápido (primer contacto): un toque y el vendedor parte.
+const QUICK_CHIPS = [
+  '🎁 Busco un regalo',
+  '🖥️ Algo para mi escritorio',
+  '🎲 Un juego entretenido',
+  '🏢 Compra para mi empresa',
+];
 
 // ════════════════════════════════════════════════════════════════════════
 // VendedorChatBar — Vendedor IA PERSISTENTE de la tienda pública.
@@ -22,8 +31,13 @@ export default function VendedorChatBar() {
   const [msgs, setMsgs] = useState([]);
   const [sending, setSending] = useState(false);
   const [productosBySku, setProductosBySku] = useState({});
+  const [showCart, setShowCart] = useState(false);
+  const [cartCount, setCartCount] = useState(() => cartCountV2());
   const scrollRef = useRef(null);
   const pollRef = useRef(null);
+
+  // Contador del carro en vivo (se actualiza al instante cuando el agente agrega algo)
+  useEffect(() => subscribeCartV2(() => setCartCount(cartCountV2())), []);
 
   // Restaura el hilo persistente al montar (si existe).
   useEffect(() => {
@@ -81,8 +95,8 @@ export default function VendedorChatBar() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [msgs]);
 
-  const handleSend = async () => {
-    const text = input.trim();
+  const handleSend = async (textParam) => {
+    const text = (typeof textParam === 'string' ? textParam : input).trim();
     if (!text || sending) return;
     setInput('');
     setOpen(true);
@@ -133,23 +147,50 @@ export default function VendedorChatBar() {
                 </p>
               </div>
             </div>
-            <button onClick={() => setOpen(false)} className="w-8 h-8 rounded-xl flex items-center justify-center hover:bg-[#F0E8DE] transition-colors">
-              <X className="w-4 h-4" style={{ color: '#7A6050' }} />
-            </button>
+            <div className="flex items-center gap-1.5">
+              {/* Carro en vivo dentro del chat */}
+              <button
+                onClick={() => setShowCart((v) => !v)}
+                className="relative h-8 px-2.5 rounded-xl flex items-center gap-1.5 transition-colors hover:bg-[#F0E8DE]"
+                style={{ border: '1px solid #E7D8C6' }}
+                title="Ver tu carro">
+                <ShoppingBag className="w-3.5 h-3.5" style={{ color: '#C0785C' }} />
+                {cartCount > 0 && (
+                  <span className="min-w-[16px] h-4 px-1 rounded-full text-white text-[9px] font-bold flex items-center justify-center"
+                    style={{ background: '#C0785C' }}>
+                    {cartCount}
+                  </span>
+                )}
+              </button>
+              <button onClick={() => setOpen(false)} className="w-8 h-8 rounded-xl flex items-center justify-center hover:bg-[#F0E8DE] transition-colors">
+                <X className="w-4 h-4" style={{ color: '#7A6050' }} />
+              </button>
+            </div>
           </div>
 
           <div ref={scrollRef} className="flex-1 overflow-y-auto peyu-scrollbar px-3.5 py-3 space-y-3">
             {msgs.length === 0 && (
-              <div className="text-center pt-8 px-4">
+              <div className="text-center pt-6 px-4">
                 <p className="text-2xl mb-2">🐢</p>
                 <p className="text-sm font-bold" style={{ color: '#2C1810' }}>¡Hola! Soy Peyu, tu vendedor</p>
-                <p className="text-xs mt-1" style={{ color: '#7A6050' }}>
+                <p className="text-xs mt-1 mb-4" style={{ color: '#7A6050' }}>
                   Dime qué buscas y te muestro productos reales, los agrego a tu carro y pagas sin salir del chat 💚
                 </p>
+                <div className="flex flex-wrap justify-center gap-2">
+                  {QUICK_CHIPS.map((c) => (
+                    <button
+                      key={c}
+                      onClick={() => handleSend(c)}
+                      className="text-[11px] font-bold px-3 py-2 rounded-full transition-all hover:bg-[#F0E8DE] active:scale-95"
+                      style={{ background: 'white', border: '1.5px solid #D4C4B0', color: '#2C1810' }}>
+                      {c}
+                    </button>
+                  ))}
+                </div>
               </div>
             )}
             {msgs.map((m, i) => (
-              <VendedorMensaje key={i} msg={m} productosBySku={productosBySku} />
+              <VendedorMensaje key={i} msg={m} productosBySku={productosBySku} isLast={i === msgs.length - 1} />
             ))}
             {sending && (
               <div className="flex items-center gap-2 px-3 py-2">
@@ -158,6 +199,13 @@ export default function VendedorChatBar() {
               </div>
             )}
           </div>
+
+          {/* Carro pinned (toggle desde el header) */}
+          {showCart && (
+            <div className="flex-shrink-0 px-3 pb-3 pt-1 overflow-y-auto peyu-scrollbar" style={{ maxHeight: '45%' }}>
+              <VendedorCartCard showCheckout />
+            </div>
+          )}
         </div>
       )}
 
@@ -172,6 +220,7 @@ export default function VendedorChatBar() {
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => { if (e.key === 'Enter') handleSend(); }}
+          enterKeyHint="send"
           onFocus={() => msgs.length > 0 && setOpen(true)}
           placeholder="Pregúntale a Peyu 🐢 — busca, compra y paga aquí…"
           className="flex-1 min-w-0 bg-transparent outline-none text-sm py-1.5"

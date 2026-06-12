@@ -1,18 +1,25 @@
 import { Link } from 'react-router-dom';
-import { ArrowRight, ShoppingBag } from 'lucide-react';
-import { stripTags, extractSkus, extractNavs, RE_CHECKOUT } from '@/lib/vendedor-chat';
+import { ArrowRight } from 'lucide-react';
+import { stripTags, extractSkus, extractNavs, extractCartActions, RE_CHECKOUT } from '@/lib/vendedor-chat';
 import VendedorProductCard from './VendedorProductCard';
+import VendedorCartCard from './VendedorCartCard';
 
 // Burbuja de mensaje del chat vendedor. Para el agente, parsea los tags
-// [[PRODUCTO]], [[CHECKOUT]] y [[NAV]] y los renderiza como tarjetas/botones.
-export default function VendedorMensaje({ msg, productosBySku }) {
+// [[PRODUCTO]], [[CART]], [[CHECKOUT]] y [[NAV]] y los renderiza como
+// tarjetas de producto, carrito en vivo y botones — el flujo completo de
+// compra vive DENTRO de la conversación.
+export default function VendedorMensaje({ msg, productosBySku, isLast = false }) {
   const isUser = msg.role === 'user';
   const texto = stripTags(msg.content);
   const skus = isUser ? [] : extractSkus(msg.content);
   const navs = isUser ? [] : extractNavs(msg.content);
+  const tieneCart = !isUser && extractCartActions(msg.content).length > 0;
   const tieneCheckout = !isUser && RE_CHECKOUT.test(msg.content);
+  // El carrito vivo se muestra solo en el ÚLTIMO mensaje con acción de compra,
+  // para no apilar carritos repetidos en el historial.
+  const muestraCarrito = isLast && (tieneCart || tieneCheckout);
 
-  if (!texto && !skus.length && !navs.length && !tieneCheckout) return null;
+  if (!texto && !skus.length && !navs.length && !muestraCarrito) return null;
 
   return (
     <div className={`flex ${isUser ? 'justify-end' : 'justify-start'}`}>
@@ -30,19 +37,13 @@ export default function VendedorMensaje({ msg, productosBySku }) {
           </div>
         )}
 
-        {skus.map((sku) => (
+        {/* Tarjetas de producto solo si no se muestra el carrito (evita ruido) */}
+        {!muestraCarrito && skus.map((sku) => (
           <VendedorProductCard key={sku} producto={productosBySku[sku]} />
         ))}
 
-        {tieneCheckout && (
-          <Link
-            to="/CarritoNuevo"
-            className="inline-flex items-center gap-2 text-white font-bold text-sm px-5 py-3 rounded-2xl transition-all hover:scale-[1.02] active:scale-95"
-            style={{ background: 'linear-gradient(135deg,#C0785C,#A86440)', boxShadow: '0 6px 18px rgba(192,120,92,.3)' }}
-          >
-            <ShoppingBag className="w-4 h-4" /> Ir a pagar <ArrowRight className="w-4 h-4" />
-          </Link>
-        )}
+        {/* Carrito EN VIVO dentro del chat: editar, eliminar y pagar */}
+        {muestraCarrito && <VendedorCartCard showCheckout />}
 
         {navs.map((n) => (
           <Link
