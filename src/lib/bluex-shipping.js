@@ -94,13 +94,6 @@ export async function cotizarEnvioBluex({ comuna, pesoKg = 0.5, servicio = 'EXPR
   }
   if (!t) return null;
 
-  // Excel oficial Bluex: "Comuna activa = no" significa que este SERVICIO no
-  // opera en esta comuna (ej. PRIORITY aéreo no disponible en RM urbana).
-  // Antes lo ignorábamos y ofrecíamos/cobrábamos tarifas de servicios que
-  // Bluex no presta ahí — causa de costos de envío incorrectos.
-  const activa = String(t.raw_columnas?.['Comuna activa'] || 'si').toLowerCase().trim();
-  if (activa === 'no') return null;
-
   const field = pickTarifaField(pesoKg);
   const fallbackOrder = ['tarifa_base', 'tarifa_2kg', 'tarifa_3kg', 'tarifa_5kg', 'tarifa_10kg', 'tarifa_15kg', 'tarifa_25kg'];
   const fieldIdx = fallbackOrder.indexOf(field);
@@ -110,27 +103,18 @@ export async function cotizarEnvioBluex({ comuna, pesoKg = 0.5, servicio = 'EXPR
   let esEstimado = false;
 
   if (!costo) {
-    // El Excel personalizado de Bluex solo tiene los primeros 3 tramos para muchas comunas.
-    // Para pesos mayores: aplicamos un recargo porcentual sobre el último tramo disponible
-    // en vez de cobrar el precio más barato (que subestima el costo real).
-    // Recargo: +15% por cada tramo adicional (aprox. cómo Bluex escala los precios).
-    let baseRef = 0;
-    let baseIdx = -1;
+    // El Excel personalizado de Bluex es una matriz PLANA hasta 3 kg para la
+    // mayoría de las comunas (los tramos superiores vienen en 0). Cobramos el
+    // último tramo con valor REAL del contrato — sin inventar recargos.
+    // (Antes se aplicaba +15% compuesto por tramo, lo que inflaba los envíos
+    // de carritos >3kg muy por sobre la tarifa contratada.)
     for (let i = fieldIdx - 1; i >= 0; i--) {
-      if (t[fallbackOrder[i]]) { baseRef = t[fallbackOrder[i]]; baseIdx = i; break; }
-    }
-    if (!baseRef) {
-      // Último recurso: buscar cualquier tarifa disponible
-      for (let i = 0; i < fallbackOrder.length; i++) {
-        if (t[fallbackOrder[i]]) { baseRef = t[fallbackOrder[i]]; baseIdx = i; break; }
+      if (t[fallbackOrder[i]]) {
+        costo = t[fallbackOrder[i]];
+        tramoCobrado = fallbackOrder[i];
+        esEstimado = true;
+        break;
       }
-    }
-    if (baseRef) {
-      const tramosExtra = fieldIdx - baseIdx;
-      // +15% acumulado por cada tramo de peso adicional sin dato
-      costo = Math.round(baseRef * Math.pow(1.15, tramosExtra));
-      tramoCobrado = field;
-      esEstimado = true;
     }
   }
 
@@ -180,8 +164,23 @@ function tarifaPublicaFallback(pesoKg = 0.5, servicio = 'EXPRESS') {
   };
 }
 
-/** Cotiza ambos servicios (EXPRESS y PRIORITY) en paralelo, con fallback público. */
+/**
+ * Cotiza ambos servicios (EXPRESS y PRIORITY).
+ * Orden de fuentes (de más a menos confiable):
+ *   1. API BX-Pricing de Bluex EN VIVO (tarifa real del contrato, siempre actual)
+ *   2. Tabla TarifaBluex (Excel oficial importado)
+ *   3. Tarifa pública estimada (nunca bloquear el checkout)
+ */
 export async function cotizarEnvioAmbos({ comuna, pesoKg = 0.5 }) {
+  // 1) Tarifa EN VIVO desde la API oficial Bluex
+  try {
+    const r = await base44.functions.invoke('bluexCotizarTarifa', { comuna, peso_kg: pesoKg });
+    if (r?.data?.ok && (r.data.express || r.data.priority)) {
+      return { express: r.data.express, priority: r.data.priority };
+    }
+  } catch { /* sigue a la tabla */ }
+
+  // 2) Tabla del Excel oficial
   let express, priority;
   try {
     [express, priority] = await Promise.all([
