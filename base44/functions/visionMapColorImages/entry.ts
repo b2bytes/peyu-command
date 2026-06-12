@@ -34,7 +34,9 @@ Deno.serve(async (req) => {
     // actuales (limpia claves obsoletas tipo Turquesa/Amarillo) usando SOLO
     // fotos reales de la galería (excluye imágenes generadas por IA si hay
     // suficientes fotos reales).
-    const { sku = null, limit = 10, dryRun = false, rebuild = false } = body;
+    // force=true (solo con rebuild): re-verifica TAMBIÉN los productos cuyo mapa
+    // parece "alineado" — detecta asignaciones erróneas (ej. Verde → foto roja).
+    const { sku = null, limit = 10, dryRun = false, rebuild = false, force = false } = body;
 
     // Carga productos
     let productos = [];
@@ -89,6 +91,7 @@ Deno.serve(async (req) => {
         // REBUILD idempotente: salta productos cuyo mapa YA está alineado
         // (todas las claves son colores oficiales y con foto real asignada).
         if (colores.length < 2) return false;
+        if (force) return true; // re-verificación total con visión IA
         const keys = Object.keys(mapa);
         // Alineado = el mapa solo contiene colores oficiales con fotos reales
         // (los colores sin foto real quedan al tinte instantáneo como fallback).
