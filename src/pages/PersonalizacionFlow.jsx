@@ -301,11 +301,14 @@ export default function PersonalizacionFlow() {
   // Regla por producto: solo las CARCASAS permiten los 4 tipos de grabado.
   // El resto de productos (maceteros, escritorio, etc.) solo logo propio o frase.
   const esCarcasa = (producto?.categoria || '').toLowerCase().includes('carcasa');
-  const opcionesPermitidas = esCarcasa ? ['frase', 'peyu', 'archivo', 'none'] : ['frase', 'archivo', 'none'];
+  // No-carcasas: solo se puede grabar un LOGO (o nada). Frase y diseños PEYU
+  // son exclusivos de carcasas.
+  const opcionesPermitidas = esCarcasa ? ['frase', 'peyu', 'archivo', 'none'] : ['archivo', 'none'];
   useEffect(() => {
     // Si el viaje restaurado o un cambio de producto deja una opción no
-    // permitida (ej: diseño PEYU en un macetero), se resetea limpiamente.
+    // permitida (ej: diseño PEYU o frase en un macetero), se resetea limpiamente.
     if (opcion === 'peyu' && !esCarcasa) { setOpcion(null); setDisenoPeyuUrl(''); }
+    if (opcion === 'frase' && !esCarcasa) { setOpcion(null); setTexto(''); }
   }, [esCarcasa, opcion]);
 
   const imagenesPorColor = useMemo(() => {
@@ -763,8 +766,8 @@ export default function PersonalizacionFlow() {
           {subiendoLogo ? <p className="text-sm font-bold flex items-center justify-center gap-1.5" style={{ color: C.action }}><Loader2 className="w-3.5 h-3.5 animate-spin" /> Subiendo tu logo…</p>
            : archivo ? <p className="text-sm font-bold" style={{ color: C.action }}>✓ {archivo.name}{logoUrlSubido ? ' · guardado' : ''}</p>
            : logoUrlSubido ? <p className="text-sm font-bold" style={{ color: C.action }}>✓ Logo cargado y guardado</p>
-           : <><p className="text-sm font-semibold" style={{ color: C.fgSoft }}>Sube tu logo</p><p className="text-xs mt-0.5" style={{ color: C.fgMuted }}>PNG, SVG, AI, JPG · máx. 10MB</p></>}
-          <input id="pers-logo-v2" type="file" className="hidden" accept=".png,.svg,.ai,.pdf,.jpg"
+           : <><p className="text-sm font-semibold" style={{ color: C.fgSoft }}>Sube tu logo</p><p className="text-xs mt-0.5" style={{ color: C.fgMuted }}>PNG, JPG, SVG, WebP, AI o PDF · máx. 10MB</p></>}
+          <input id="pers-logo-v2" type="file" className="hidden" accept="image/*,.png,.jpg,.jpeg,.svg,.webp,.gif,.ai,.pdf"
             onChange={async e => {
               const f = e.target.files[0];
               if (!f) return;
