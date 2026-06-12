@@ -36,7 +36,8 @@ Deno.serve(async (req) => {
     // suficientes fotos reales).
     // force=true (solo con rebuild): re-verifica TAMBIÉN los productos cuyo mapa
     // parece "alineado" — detecta asignaciones erróneas (ej. Verde → foto roja).
-    const { sku = null, limit = 10, dryRun = false, rebuild = false, force = false } = body;
+    // offset: permite recorrer el catálogo en tandas pequeñas (evita timeouts).
+    const { sku = null, limit = 10, offset = 0, dryRun = false, rebuild = false, force = false } = body;
 
     // Carga productos
     let productos = [];
@@ -102,12 +103,18 @@ Deno.serve(async (req) => {
       }
       if (colores.length >= 2) return colores.some((c) => !mapa[c]); // COMPLETAR
       return Object.keys(mapa).length === 0; // DETECTAR desde cero
-    }).slice(0, Math.min(limit, 25));
+    })
+      // Orden estable por SKU para que offset/limit recorra el catálogo sin
+      // repetir productos entre tandas (el sort por updated_date cambia al escribir).
+      .sort((a, b) => String(a.sku).localeCompare(String(b.sku)));
+
+    const totalCandidatos = candidatos.length;
+    const tanda = candidatos.slice(offset, offset + Math.min(limit, 25));
 
     const report = [];
     let updated = 0;
 
-    for (const p of candidatos) {
+    for (const p of tanda) {
       const colores = getColores(p);
       const modoDeteccion = colores.length < 2;
       const mapaExistente = (p.imagenes_por_color && typeof p.imagenes_por_color === 'object') ? p.imagenes_por_color : {};
@@ -185,7 +192,9 @@ Sé estricto: solo asigna una foto si el color del producto es inequívoco.`;
     return Response.json({
       success: true,
       dry_run: dryRun,
-      candidatos: candidatos.length,
+      candidatos: totalCandidatos,
+      offset,
+      procesados: tanda.length,
       productos_actualizados: updated,
       detalle: report,
     });
