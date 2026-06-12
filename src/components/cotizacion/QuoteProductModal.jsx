@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Plus, Check, Recycle, Sparkles, TrendingDown, Package, Ruler, Weight, Palette } from 'lucide-react';
+import { X, Plus, Check, Recycle, Sparkles, TrendingDown, Package, Ruler, Weight, Palette, Eye, EyeOff, Trash2 } from 'lucide-react';
 import { getProductImage } from '@/utils/productImages';
 import { getUnitBasePrice, getB2BPriceForQty } from '@/lib/catalog-pricing';
 import { fmtCLP } from '@/lib/shop-v2-cart';
@@ -37,15 +37,17 @@ function getColores(p) {
 
 const TRAMOS_RAPIDOS = [10, 50, 100, 250, 500, 1000];
 
-export default function QuoteProductModal({ producto, onClose, onAdd, yaAgregado, logoUrl }) {
+export default function QuoteProductModal({ producto, onClose, onAdd, yaAgregado, logoUrl, onRemoveLogo }) {
   const [added, setAdded] = useState(false);
   const [qtyPreview, setQtyPreview] = useState(50);
+  const [showLogo, setShowLogo] = useState(true);
 
   useEffect(() => {
     if (producto) {
       document.body.style.overflow = 'hidden';
       setAdded(false);
       setQtyPreview(50);
+      setShowLogo(true);
       return () => { document.body.style.overflow = ''; };
     }
   }, [producto]);
@@ -100,7 +102,7 @@ export default function QuoteProductModal({ producto, onClose, onAdd, yaAgregado
           <div className="relative flex-shrink-0 p-4 pb-0">
             <div className="relative rounded-2xl overflow-hidden" style={{ height: '200px' }}>
               <LogoMockupPreview
-                logoUrl={logoUrl}
+                logoUrl={showLogo ? logoUrl : null}
                 productImg={getProductImage(producto)}
                 size="lg"
               />
@@ -116,7 +118,34 @@ export default function QuoteProductModal({ producto, onClose, onAdd, yaAgregado
                   <TrendingDown className="w-3 h-3" /> hasta −{ahorroMax}%
                 </span>
               )}
+              {logoUrl && showLogo && (
+                <span className="absolute bottom-3 left-3 z-10 inline-flex items-center gap-1 bg-white/95 backdrop-blur text-[10px] font-bold px-2.5 py-1 rounded-full text-[#4B4F54] shadow-sm">
+                  <Sparkles className="w-3 h-3 text-[#D96B4D]" /> Simulación con tu logo
+                </span>
+              )}
             </div>
+
+            {/* Control explícito del logo: el cliente ve QUÉ logo se está usando,
+                puede ocultarlo para ver el producto limpio, o quitarlo del todo
+                (también lo elimina de la cotización guardada). */}
+            {logoUrl && (
+              <div className="mt-2 flex items-center gap-2.5 bg-white border border-[#EBE3D6] rounded-xl px-3 py-2">
+                <img src={logoUrl} alt="Tu logo" className="w-8 h-8 object-contain rounded-lg bg-[#FAF7F2] border border-[#EBE3D6] flex-shrink-0" />
+                <p className="flex-1 min-w-0 text-[11px] leading-tight text-[#4B4F54]">
+                  <span className="font-bold text-[#2A2420]">Tu logo guardado.</span> Vista previa referencial del grabado láser.
+                </p>
+                <button onClick={() => setShowLogo((v) => !v)}
+                  className="flex-shrink-0 inline-flex items-center gap-1 text-[10px] font-bold text-[#0F8B6C] bg-[#0F8B6C]/8 hover:bg-[#0F8B6C]/15 px-2 py-1.5 rounded-lg transition-colors">
+                  {showLogo ? <><EyeOff className="w-3 h-3" /> Sin logo</> : <><Eye className="w-3 h-3" /> Con logo</>}
+                </button>
+                {onRemoveLogo && (
+                  <button onClick={onRemoveLogo} title="Quitar este logo de la cotización"
+                    className="flex-shrink-0 inline-flex items-center gap-1 text-[10px] font-bold text-[#D96B4D] bg-[#D96B4D]/8 hover:bg-[#D96B4D]/15 px-2 py-1.5 rounded-lg transition-colors">
+                    <Trash2 className="w-3 h-3" /> Quitar
+                  </button>
+                )}
+              </div>
+            )}
           </div>
 
           {/* ── CUERPO SCROLLEABLE ── */}

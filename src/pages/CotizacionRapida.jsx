@@ -78,7 +78,7 @@ function MobileProgressBar({ step }) {
 }
 
 // ── Panel lateral izquierdo (solo desktop) ──────────────────────────────────
-function DesktopLeftPanel({ step, onGoTo, items, qtyTotal, totalNeto, ahorroTotal, logoUrl, form }) {
+function DesktopLeftPanel({ step, onGoTo, items, qtyTotal, totalNeto, ahorroTotal, logoUrl, form, onRemoveLogo }) {
   return (
     <aside className="hidden lg:flex flex-col gap-3 w-60 xl:w-72 flex-shrink-0 lg:h-full lg:min-h-0 lg:overflow-y-auto peyu-scrollbar pr-1">
       {/* Logo + brand */}
@@ -166,9 +166,17 @@ function DesktopLeftPanel({ step, onGoTo, items, qtyTotal, totalNeto, ahorroTota
               </p>
             )}
             {logoUrl && (
-              <p className="text-[10px] font-semibold text-center flex items-center justify-center gap-1" style={{ color: C.action }}>
-                <Check className="w-3 h-3" /> Logo incluido para grabado
-              </p>
+              <div className="flex items-center justify-center gap-1.5">
+                <img src={logoUrl} alt="logo" className="w-5 h-5 object-contain rounded flex-shrink-0" style={{ border: `1px solid ${C.border}`, background: C.bgSoft }} />
+                <p className="text-[10px] font-semibold flex items-center gap-1" style={{ color: C.action }}>
+                  <Check className="w-3 h-3" /> Logo para grabado
+                </p>
+                {onRemoveLogo && (
+                  <button onClick={onRemoveLogo} className="text-[10px] font-bold underline" style={{ color: C.terra }}>
+                    Quitar
+                  </button>
+                )}
+              </div>
             )}
             {form.company_name && (
               <p className="text-[10px] text-center truncate" style={{ color: C.fgMuted }}>{form.company_name}</p>
@@ -352,6 +360,23 @@ export default function CotizacionRapida() {
   const removeItem = (sku) => {
     setItems((prev) => prev.filter((it) => it.producto.sku !== sku));
     getCartV2().filter((l) => l.sku === sku).forEach((l) => removeFromCartV2(l.id));
+  };
+
+  // Quitar el logo DE VERDAD: limpia el estado, el viaje guardado (vía auto-save)
+  // y las líneas del carro único que lo traían de sesiones anteriores. Sin esto,
+  // un logo viejo re-hidrataba la cotización al recargar y "perseguía" al cliente.
+  const removeLogo = () => {
+    setLogoUrl(null);
+    getCartV2().forEach((l) => {
+      if (l.logoUrl || l.disenoPeyuUrl) {
+        updateCartItemV2(l.id, {
+          logoUrl: null,
+          disenoPeyuUrl: null,
+          mockupUrl: null,
+          personalizacion: ['[Logo personalizado]', '[Diseño PEYU]'].includes(l.personalizacion) ? null : l.personalizacion,
+        });
+      }
+    });
   };
 
   const datosOk = form.company_name.trim() && form.rut.trim() && form.contact_name.trim() && form.email.trim() && form.phone.trim();
@@ -696,6 +721,7 @@ export default function CotizacionRapida() {
             ahorroTotal={ahorroTotal}
             logoUrl={logoUrl}
             form={form}
+            onRemoveLogo={removeLogo}
           />
 
           {/* Centro desktop: paso 1 = catálogo GIGANTE · pasos 2-3 = mockup en vivo */}
@@ -826,6 +852,7 @@ export default function CotizacionRapida() {
         onAdd={addProducto}
         yaAgregado={preview ? selectedSkus.includes(preview.sku) : false}
         logoUrl={logoUrl}
+        onRemoveLogo={removeLogo}
       />
     </div>
   );
