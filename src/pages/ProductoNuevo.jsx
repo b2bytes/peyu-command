@@ -232,9 +232,16 @@ export default function ProductoNuevo() {
   // o la generada al vuelo (cleanBaseUrl) cuando el cliente carga su diseño.
   const [cleanBaseUrl, setCleanBaseUrl] = useState(null);
   const colorImg = useMemo(() => {
+    // Si el producto tiene FOTO REAL del color elegido (imagenes_por_color),
+    // esa es la base del mockup — antes se usaba siempre la "base limpia"
+    // generada por IA, que ignoraba el color y a veces salía deforme
+    // (bug reportado en llaveros).
+    const fotoColor = color ? getProductImageForColor(producto, color) : null;
+    const tieneFotoColor = fotoColor && fotoColor !== getProductImage(producto);
+    if (!esCarcasa && tieneFotoColor) return fotoColor;
     const limpia = producto?.imagen_base_limpia_url || cleanBaseUrl;
     if (!esCarcasa && limpia) return limpia;
-    return color ? getProductImageForColor(producto, color) : displayImg;
+    return fotoColor || displayImg;
   }, [producto, color, displayImg, esCarcasa, cleanBaseUrl]);
 
   // Capas (combinables) para el mockup en vivo. ORDEN FIJO de apilado

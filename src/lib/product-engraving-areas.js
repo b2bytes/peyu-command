@@ -14,6 +14,7 @@ const AREAS = {
   COASTER: { left: 15, right: 85, top: 20, bottom: 80 },     // Coasters redondos
   PALETA: { left: 8, right: 92, top: 10, bottom: 90 },       // Paletas
   ESCRITORIO: { left: 8, right: 92, top: 8, bottom: 92 },    // Objetos escritorio (taza, libreta, etc)
+  LLAVERO: { left: 32, right: 68, top: 30, bottom: 70 },     // Llaveros (área pequeña central, sobre la placa)
   CORPORATIVO: { left: 10, right: 90, top: 12, bottom: 88 }, // Artículos corporativos
   LIBRE: { left: 8, right: 92, top: 8, bottom: 92 },          // Fallback general
 };
@@ -33,7 +34,12 @@ export function getProductEngraggingArea(producto) {
     return producto.area_grabado;
   }
 
-  // 2. Deducir de categoría
+  // 2. Productos con área propia por NOMBRE (antes que la categoría genérica:
+  //    un llavero es "Hogar" pero su área de grabado es la placa, no toda la foto)
+  const nomEarly = producto.nombre?.toLowerCase() || '';
+  if (nomEarly.includes('llavero')) return AREAS.LLAVERO;
+
+  // 3. Deducir de categoría
   const cat = producto.categoria?.toLowerCase() || '';
   if (cat.includes('carcasa')) return AREAS.CARCASA;
   if (cat.includes('cacho')) return AREAS.CACHO;
@@ -44,21 +50,17 @@ export function getProductEngraggingArea(producto) {
   if (cat.includes('corporativo')) return AREAS.CORPORATIVO;
   if (cat.includes('hogar')) return AREAS.ESCRITORIO;
 
-  // 3. Deducir del nombre (fallback inteligente)
-  const nom = producto.nombre?.toLowerCase() || '';
+  // 4. Deducir del nombre (fallback inteligente)
+  const nom = nomEarly;
   if (nom.includes('carcasa') || nom.includes('case')) return AREAS.CARCASA;
   if (nom.includes('cacho')) return AREAS.CACHO;
   if (nom.includes('posavaso') || nom.includes('coaster')) return AREAS.POSAVASO;
   if (nom.includes('paleta')) return AREAS.PALETA;
   if (nom.includes('taza') || nom.includes('vaso') || nom.includes('libreta')) return AREAS.ESCRITORIO;
 
-  // 4. Fallback: si no tiene color específico, es probablemente carcasa (la mayoría)
-  // Si tiene `colores_v2` o `imagenes_por_color`, tiene variantes → carcasa
-  if (producto.colores || producto.colores_v2 || producto.imagenes_por_color) {
-    return AREAS.CARCASA;
-  }
-
-  // Default seguro
+  // Default seguro. (Antes: "tiene colores → es carcasa", lo que rompía el
+  // mockup de Jenga, llaveros y otros productos con variantes de color: se
+  // les aplicaban las reglas exclusivas de carcasas.)
   return AREAS.LIBRE;
 }
 
