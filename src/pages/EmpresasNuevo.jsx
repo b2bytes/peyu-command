@@ -391,30 +391,61 @@ export default function EmpresasNuevo() {
         </main>
       </div>
 
-      {/* ── BODY MOBILE: flujo vertical completo (sin perder funciones) ────── */}
-      <div className="lg:hidden pb-24">
+      {/* ── BODY MOBILE: flujo vertical completo con CTA sticky abajo ────── */}
+      <div className="lg:hidden pb-28">
         <section className="max-w-6xl mx-auto px-3 sm:px-6 pt-3 pb-4">
-          {/* Hero compacto de 1 línea: el CTA "Cotizar" ya vive en el header */}
-          <div className="mb-3">
-            <h1 className="font-fraunces text-lg leading-tight font-bold" style={{ color: C.fg }}>
+          {/* Hero compacto con recorrido claro: 3 pasos numerados */}
+          <div className="mb-4">
+            <span className="inline-block text-[10px] font-bold px-2.5 py-1 rounded-lg mb-2" style={{ background: C.action, color: 'white' }}>
+              ✨ Regalos corporativos sustentables
+            </span>
+            <h1 className="font-fraunces text-xl leading-tight font-bold mb-2" style={{ color: C.fg }}>
               Plástico reciclado <span style={{ color: C.action }}>con tu logo grabado</span>
             </h1>
-            <p className="text-[11px] font-semibold" style={{ color: C.fgSoft }}>
-              Elige tus productos y pide tu cotización — respuesta en 24h
+
+            {/* Mini-recorrido B2B en mobile: 3 pasos claros */}
+            <div className="flex items-center gap-1.5 mb-2.5">
+              {JOURNEY.map((s, i) => (
+                <div key={i} className="flex items-center gap-1.5">
+                  <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl" style={{
+                    background: i === 0 ? 'rgba(15,139,108,.10)' : 'white',
+                    border: i === 0 ? `1.5px solid ${C.action}` : `1px solid ${C.border}`,
+                  }}>
+                    <div className="w-5 h-5 rounded-full flex items-center justify-center"
+                      style={{ background: i === 0 ? C.actionGrad : C.border }}>
+                      <s.Icon className="w-2.5 h-2.5" style={{ color: i === 0 ? 'white' : C.fgMuted }} />
+                    </div>
+                    <span className="text-[10px] font-bold" style={{ color: i === 0 ? C.action : C.fgMuted }}>{s.label}</span>
+                  </div>
+                  {i < JOURNEY.length - 1 && <ArrowRight className="w-3 h-3 flex-shrink-0" style={{ color: C.border }} />}
+                </div>
+              ))}
+            </div>
+
+            <p className="text-[11px] font-semibold leading-relaxed" style={{ color: C.fgSoft }}>
+              Elige productos del catálogo, cotiza al instante con precios por volumen real y recibe tu propuesta formal en 24h hábiles.
             </p>
           </div>
 
           {savedQuote && <div className="mb-3">{ResumeQuoteChip}</div>}
 
-          {/* Sellos en 1 línea deslizable (antes: grilla de 2 filas) */}
+          {/* Sellos en 1 línea deslizable */}
           <div className="mb-3">{TrustStrip}</div>
+
+          {/* CTA directo: puente claro a cotizar */}
+          <Link
+            to="/CotizacionRapida"
+            className="flex items-center justify-center gap-2 w-full h-12 rounded-2xl text-white font-bold text-sm mb-4 transition-all active:scale-[0.98]"
+            style={{ background: C.actionGrad, boxShadow: C.actionShadow }}>
+            <Building2 className="w-4 h-4" /> Quiero cotizar ahora <ArrowRight className="w-4 h-4" />
+          </Link>
 
           <div className="mb-3">{SearchAndChips}</div>
 
           {ProductGrid('grid-cols-2')}
         </section>
 
-        {/* Clientes en franja compacta (1 línea, scroll horizontal) */}
+        {/* Clientes en franja compacta */}
         <section className="max-w-6xl mx-auto px-4 py-2">{ClientsStrip}</section>
 
         <section className="max-w-3xl mx-auto px-4 py-3">{CTACard}</section>

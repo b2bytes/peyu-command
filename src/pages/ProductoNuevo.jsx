@@ -236,20 +236,23 @@ export default function ProductoNuevo() {
   // o la generada al vuelo (cleanBaseUrl) cuando el cliente carga su diseño.
   const [cleanBaseUrl, setCleanBaseUrl] = useState(null);
   const colorImg = useMemo(() => {
-    // Si el producto tiene FOTO REAL del color elegido (imagenes_por_color),
-    // esa es la base del mockup — antes se usaba siempre la "base limpia"
-    // generada por IA, que ignoraba el color y a veces salía deforme
-    // (bug reportado en llaveros).
+    // Base del mockup: SIEMPRE usa la foto real del producto, nunca la "base limpia"
+    // generada por IA (que en productos no-carcasa deforma la imagen — bug llaveros,
+    // cachos, paletas). La foto real es la fuente de verdad.
+    //
+    // ① CARCASA con color → foto real del color (imagenes_por_color).
+    if (esCarcasa && color) {
+      const colorPhoto = getProductImageForColor(producto, color);
+      if (colorPhoto) return colorPhoto;
+    }
+    // ② NO-CARCASA con color → foto real que coincide con ese color en la galería.
     if (!esCarcasa && color) {
-      // Solo una foto REAL del color (match por nombre en galería) es base válida.
       const match = findColorImageMatch(galleryImages, color);
       if (match) return galleryImages[match.index];
     }
-    const limpia = producto?.imagen_base_limpia_url || cleanBaseUrl;
-    if (!esCarcasa && limpia) return limpia;
-    if (esCarcasa && color) return getProductImageForColor(producto, color) || displayImg;
-    return displayImg;
-  }, [producto, color, displayImg, esCarcasa, cleanBaseUrl, galleryImages]);
+    // ③ Fallback universal: la imagen principal del producto (SIEMPRE real, nunca IA).
+    return getProductImage(producto);
+  }, [producto, color, esCarcasa, galleryImages]);
 
   // Capas (combinables) para el mockup en vivo. ORDEN FIJO de apilado
   // (arriba→abajo): 1) Tu logo  2) Diseño PEYU  3) Frase.
@@ -265,10 +268,10 @@ export default function ProductoNuevo() {
   const persOk = persCompleta(pers) && (!hayAlgunoActivado(pers) || pers.aprobada);
   const muestraMockup = capas.length > 0;
 
-  // AUTOMÁTICO: al activar una personalización, si el producto aún no tiene su
-  // foto "base limpia" (sin la marca PEYU grabada), se genera sola en segundo
-  // plano y el mockup cambia al lienzo limpio — el logo del cliente reemplaza
-  // a PEYU sin ningún clic extra.
+  // La foto real del producto es la base del mockup. La "base limpia" generada
+  // por IA solo se usa como fallback si la foto real no está disponible.
+  // Este efecto ya no cambia la base del mockup — solo genera la limpia en
+  // segundo plano por si acaso. El mockup siempre usa la foto real (colorImg).
   const cleanRequestedRef = useRef(false);
   useEffect(() => {
     if (!producto || esCarcasa || !muestraMockup) return;
@@ -276,7 +279,7 @@ export default function ProductoNuevo() {
     cleanRequestedRef.current = true;
     base44.functions.invoke('generateCleanBaseImage', { productoId: producto.id })
       .then((res) => { if (res?.data?.clean_url) setCleanBaseUrl(res.data.clean_url); })
-      .catch(() => { /* sin base limpia: el mockup sigue con la foto normal */ });
+      .catch(() => {});
   }, [producto, esCarcasa, muestraMockup, cleanBaseUrl]);
 
   // Mobile: cuando el cliente carga su logo o elige un diseño PEYU, la página

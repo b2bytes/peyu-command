@@ -1,8 +1,8 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { base44 } from '@/api/base44Client';
-import { Send, X, Loader2, Sparkles, ShoppingBag } from 'lucide-react';
+import { Send, X, Loader2, Sparkles, ShoppingBag, MessageCircle, Minus } from 'lucide-react';
 import {
-  ensureConversation, sendChatMessage, fetchMessages,
+  ensureConversation, sendChatMessage, fetchMessages, resetConversation,
   extractSkus, extractCartActions, cartActionDone, markCartActionDone,
   extractLeadActions, leadActionDone, markLeadActionDone, saveLeadData,
 } from '@/lib/vendedor-chat';
@@ -11,7 +11,6 @@ import { getProductImage } from '@/utils/productImages';
 import VendedorMensaje from './VendedorMensaje';
 import VendedorCartCard from './VendedorCartCard';
 
-// Chips de inicio rápido (primer contacto): un toque y el vendedor parte.
 const QUICK_CHIPS = [
   '🎁 Busco un regalo',
   '🖥️ Algo para mi escritorio',
@@ -19,13 +18,6 @@ const QUICK_CHIPS = [
   '🏢 Compra para mi empresa',
 ];
 
-// ════════════════════════════════════════════════════════════════════════
-// VendedorChatBar — Vendedor IA PERSISTENTE de la tienda pública.
-// Input central FIJO en la parte inferior de todas las páginas públicas.
-// El agente trae productos al chat, los agrega al carrito ([[CART]]) y
-// activa el flujo de pago ([[CHECKOUT]]) sin salir de la conversación.
-// El hilo persiste en localStorage: sobrevive recargas y navegación.
-// ════════════════════════════════════════════════════════════════════════
 export default function VendedorChatBar() {
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState('');
@@ -34,21 +26,26 @@ export default function VendedorChatBar() {
   const [productosBySku, setProductosBySku] = useState({});
   const [showCart, setShowCart] = useState(false);
   const [cartCount, setCartCount] = useState(() => cartCountV2());
+  const [unread, setUnread] = useState(0);
   const scrollRef = useRef(null);
   const pollRef = useRef(null);
+  const inputRef = useRef(null);
+  const lastAsstCountRef = useRef(0);
 
-  // Contador del carro en vivo (se actualiza al instante cuando el agente agrega algo)
   useEffect(() => subscribeCartV2(() => setCartCount(cartCountV2())), []);
 
-  // Restaura el hilo persistente al montar (si existe).
   useEffect(() => {
     const convId = localStorage.getItem('vendedor_peyu_conv_id');
     if (!convId) return;
-    fetchMessages(convId).then((m) => { if (m.length) setMsgs(m); }).catch(() => {});
+    fetchMessages(convId).then((m) => {
+      if (m.length) {
+        setMsgs(m);
+        lastAsstCountRef.current = m.filter((x) => x.role === 'assistant').length;
+      }
+    }).catch(() => {});
     return () => clearInterval(pollRef.current);
   }, []);
 
-  // Resuelve los productos de los SKUs que el agente menciona (tarjetas).
   const resolverProductos = useCallback(async (mensajes) => {
     const skus = new Set();
     mensajes.forEach((m) => { if (m.role === 'assistant') extractSkus(m.content).forEach((s) => skus.add(s)); });
@@ -62,13 +59,12 @@ export default function VendedorChatBar() {
     if (Object.keys(nuevos).length) setProductosBySku((prev) => ({ ...prev, ...nuevos }));
   }, [productosBySku]);
 
-  // Ejecuta los [[CART:SKU:qty]] nuevos (idempotente por índice de mensaje).
   const ejecutarCartTags = useCallback(async (mensajes) => {
     for (let i = 0; i < mensajes.length; i++) {
       const m = mensajes[i];
       if (m.role !== 'assistant' || cartActionDone(i)) continue;
       const actions = extractCartActions(m.content);
-      if (!actions.length) { continue; }
+      if (!actions.length) continue;
       for (const a of actions) {
         let p = productosBySku[a.sku];
         if (!p) {
@@ -88,7 +84,6 @@ export default function VendedorChatBar() {
     }
   }, [productosBySku]);
 
-  // Ejecuta los [[LEAD:...]] nuevos: guarda los datos capturados en el CRM.
   const ejecutarLeadTags = useCallback(async (mensajes) => {
     const convId = localStorage.getItem('vendedor_peyu_conv_id');
     if (!convId) return;
@@ -108,7 +103,12 @@ export default function VendedorChatBar() {
     resolverProductos(msgs);
     ejecutarCartTags(msgs);
     ejecutarLeadTags(msgs);
-    // Auto-scroll al final
+    // Notificar mensajes no leídos si el panel está cerrado
+    const newAsstCount = msgs.filter((m) => m.role === 'assistant').length;
+    if (!open && newAsstCount > lastAsstCountRef.current) {
+      setUnread((u) => u + (newAsstCount - lastAsstCountRef.current));
+    }
+    lastAsstCountRef.current = newAsstCount;
     setTimeout(() => { scrollRef.current?.scrollTo({ top: 999999, behavior: 'smooth' }); }, 80);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [msgs]);
@@ -118,6 +118,7 @@ export default function VendedorChatBar() {
     if (!text || sending) return;
     setInput('');
     setOpen(true);
+    setUnread(0);
     setSending(true);
     setMsgs((prev) => [...prev, { role: 'user', content: text }]);
     try {
@@ -125,7 +126,6 @@ export default function VendedorChatBar() {
       const baseCount = msgs.filter((m) => m.role === 'assistant').length;
       await sendChatMessage(convId, text);
 
-      // Polling hasta que el agente responda (máx ~50s)
       clearInterval(pollRef.current);
       let ticks = 0;
       pollRef.current = setInterval(async () => {
@@ -147,15 +147,28 @@ export default function VendedorChatBar() {
     }
   };
 
+  const handleOpen = () => {
+    setOpen(true);
+    setUnread(0);
+    setTimeout(() => {
+      inputRef.current?.focus();
+      scrollRef.current?.scrollTo({ top: 999999, behavior: 'smooth' });
+    }, 100);
+  };
+
+  const handleClose = () => setOpen(false);
+
+  // ── Layout mobile: full-screen (100vh) con safe areas ─────────────────
   return (
-    <div className="fixed left-1/2 -translate-x-1/2 z-[70] w-[calc(100%-1rem)] max-w-xl bottom-[4.5rem] lg:bottom-4 pb-safe">
-      {/* Panel de conversación */}
+    <>
+      {/* Panel de conversación — full-screen en mobile, flotante en desktop */}
       {open && (
-        <div
-          className="mb-2 rounded-3xl overflow-hidden flex flex-col shadow-2xl"
-          style={{ background: 'rgba(248,243,237,.97)', backdropFilter: 'blur(20px)', border: '1.5px solid #D4C4B0', height: 'min(58vh, 480px)' }}
-        >
-          <div className="flex items-center justify-between px-4 py-2.5 flex-shrink-0" style={{ borderBottom: '1px solid #E7D8C6', background: 'white' }}>
+        <div className="fixed inset-0 lg:inset-auto z-[70] flex flex-col lg:left-1/2 lg:-translate-x-1/2 lg:w-[calc(100%-1rem)] lg:max-w-xl lg:bottom-4 lg:mb-2 lg:rounded-3xl lg:overflow-hidden lg:shadow-2xl lg:max-h-[min(65vh,600px)]"
+          style={{ background: 'rgba(248,243,237,.97)', backdropFilter: 'blur(20px)', border: '1.5px solid #D4C4B0' }}>
+
+          {/* Header */}
+          <div className="flex items-center justify-between px-4 py-2.5 flex-shrink-0 pt-safe"
+            style={{ borderBottom: '1px solid #E7D8C6', background: 'white' }}>
             <div className="flex items-center gap-2">
               <span className="w-8 h-8 rounded-full flex items-center justify-center text-base" style={{ background: 'rgba(15,139,108,.12)' }}>🐢</span>
               <div>
@@ -166,7 +179,6 @@ export default function VendedorChatBar() {
               </div>
             </div>
             <div className="flex items-center gap-1.5">
-              {/* Carro en vivo dentro del chat */}
               <button
                 onClick={() => setShowCart((v) => !v)}
                 className="relative h-8 px-2.5 rounded-xl flex items-center gap-1.5 transition-colors hover:bg-[#F0E8DE]"
@@ -180,12 +192,14 @@ export default function VendedorChatBar() {
                   </span>
                 )}
               </button>
-              <button onClick={() => setOpen(false)} className="w-8 h-8 rounded-xl flex items-center justify-center hover:bg-[#F0E8DE] transition-colors">
-                <X className="w-4 h-4" style={{ color: '#7A6050' }} />
+              <button onClick={handleClose} className="w-8 h-8 rounded-xl flex items-center justify-center hover:bg-[#F0E8DE] transition-colors">
+                <Minus className="w-4 h-4 lg:hidden" style={{ color: '#7A6050' }} />
+                <X className="w-4 h-4 hidden lg:block" style={{ color: '#7A6050' }} />
               </button>
             </div>
           </div>
 
+          {/* Mensajes — ocupa el espacio disponible */}
           <div ref={scrollRef} className="flex-1 overflow-y-auto peyu-scrollbar px-3.5 py-3 space-y-3">
             {msgs.length === 0 && (
               <div className="text-center pt-6 px-4">
@@ -218,41 +232,55 @@ export default function VendedorChatBar() {
             )}
           </div>
 
-          {/* Carro pinned (toggle desde el header) */}
+          {/* Carro pinned */}
           {showCart && (
             <div className="flex-shrink-0 px-3 pb-3 pt-1 overflow-y-auto peyu-scrollbar" style={{ maxHeight: '45%' }}>
               <VendedorCartCard showCheckout />
             </div>
           )}
+
+          {/* Input — pegado abajo con safe area */}
+          <div className="flex-shrink-0 px-3 py-2.5 pb-safe" style={{ borderTop: '1px solid #E7D8C6', background: 'white' }}>
+            <div className="flex items-center gap-2 rounded-full pl-4 pr-1.5 py-1.5"
+              style={{ background: '#F8F3ED', border: '1.5px solid #D4C4B0' }}>
+              <input
+                ref={inputRef}
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={(e) => { if (e.key === 'Enter') handleSend(); }}
+                enterKeyHint="send"
+                placeholder="Pregúntale a Peyu…"
+                className="flex-1 min-w-0 bg-transparent outline-none text-sm py-1.5"
+                style={{ color: '#2C1810' }}
+              />
+              <button
+                onClick={handleSend}
+                disabled={sending || !input.trim()}
+                className="w-9 h-9 rounded-full flex items-center justify-center text-white transition-all active:scale-90 disabled:opacity-50 flex-shrink-0"
+                style={{ background: 'linear-gradient(135deg,#0F8B6C,#0B6E55)' }}>
+                {sending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+              </button>
+            </div>
+          </div>
         </div>
       )}
 
-      {/* Input central fijo */}
-      <div
-        className="flex items-center gap-2 rounded-full pl-4 pr-1.5 py-1.5 shadow-xl"
-        style={{ background: 'rgba(255,255,255,.97)', backdropFilter: 'blur(16px)', border: '1.5px solid #D4C4B0' }}
-        onClick={() => !open && msgs.length > 0 && setOpen(true)}
-      >
-        <Sparkles className="w-4 h-4 flex-shrink-0" style={{ color: '#C0785C' }} />
-        <input
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyDown={(e) => { if (e.key === 'Enter') handleSend(); }}
-          enterKeyHint="send"
-          onFocus={() => msgs.length > 0 && setOpen(true)}
-          placeholder="Pregúntale a Peyu 🐢 — busca, compra y paga aquí…"
-          className="flex-1 min-w-0 bg-transparent outline-none text-sm py-1.5"
-          style={{ color: '#2C1810' }}
-        />
+      {/* Botón flotante — solo visible cuando el chat está cerrado */}
+      {!open && (
         <button
-          onClick={handleSend}
-          disabled={sending || !input.trim()}
-          className="w-9 h-9 rounded-full flex items-center justify-center text-white transition-all active:scale-90 disabled:opacity-50 flex-shrink-0"
-          style={{ background: 'linear-gradient(135deg,#0F8B6C,#0B6E55)' }}
-        >
-          {sending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+          onClick={handleOpen}
+          className="fixed bottom-[4.5rem] right-4 lg:bottom-6 lg:right-6 z-[65] w-14 h-14 rounded-2xl flex items-center justify-center text-white shadow-xl transition-all active:scale-90 hover:-translate-y-1"
+          style={{ background: 'linear-gradient(135deg,#0F8B6C,#0B6E55)', boxShadow: '0 8px 32px rgba(15,139,108,.35)' }}
+          title="Hablar con Peyu">
+          <MessageCircle className="w-6 h-6" />
+          {unread > 0 && (
+            <span className="absolute -top-1.5 -right-1.5 min-w-[20px] h-5 px-1 rounded-full text-white text-[10px] font-bold flex items-center justify-center"
+              style={{ background: '#D96B4D', border: '2px solid white' }}>
+              {unread}
+            </span>
+          )}
         </button>
-      </div>
-    </div>
+      )}
+    </>
   );
 }
