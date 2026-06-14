@@ -577,11 +577,19 @@ export default function ProductoNuevo() {
 
           {/* ── Configurador: derecha desktop (scroll propio) · flujo mobile ── */}
           <div className="flex-1 min-w-0 lg:flex-none lg:w-[400px] xl:w-[440px] lg:h-full lg:min-h-0 lg:flex lg:flex-col">
-            {/* Imagen principal mobile: con grabado activo, el MOCKUP EN VIVO toma
-                el lugar de la foto — aparece de inmediato, sin scroll eterno. */}
-            <div className="lg:hidden mb-3 scroll-mt-16" data-product-gallery>
+            {/* ── Imagen principal mobile — MOCKUP EN VIVO grande y centrado ──
+                Cuando el cliente personaliza, el mockup ocupa el ancho completo
+                con altura generosa para que se aprecie cada detalle del grabado.
+                La foto del color se ve igual de grande y nítida. */}
+            <div className="lg:hidden -mx-3 sm:-mx-6 mb-3 scroll-mt-16" data-product-gallery>
               {muestraMockup ? (
-                <>
+                <div className="bg-white rounded-none sm:rounded-2xl overflow-hidden border-b border-[#D4C4B0] sm:border sm:mx-3 shadow-sm">
+                  <div className="px-3 py-2 flex items-center justify-between bg-white/80 backdrop-blur border-b border-[#D4C4B0]/40">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-[#C0785C] flex items-center gap-1.5">
+                      <Sparkles className="w-3 h-3" /> Tu diseño en vivo
+                    </span>
+                    <span className="text-[9px] font-semibold text-[#A08070]">Mueve y escala el grabado</span>
+                  </div>
                   <MockupLivePreviewV2
                     ref={mockupRefMobile}
                     productImageUrl={colorImg}
@@ -592,17 +600,18 @@ export default function ProductoNuevo() {
                     esCarcasa={esCarcasa}
                     customArea={engraggingArea}
                   />
-                  {/* Aprobación SIEMPRE junto al mockup */}
                   <MockupApproveBarV2 pers={pers} setPers={setPers} />
-                </>
+                </div>
               ) : (
-                <ProductGalleryV2
-                  images={galleryImages}
-                  active={galIdx}
-                  onSelect={setGalIdx}
-                  badge={esCompostable ? 'Compostable' : '100% Reciclado'}
-                  fallback={getProductImage(producto)}
-                />
+                <div className="sm:mx-3">
+                  <ProductGalleryV2
+                    images={galleryImages}
+                    active={galIdx}
+                    onSelect={setGalIdx}
+                    badge={esCompostable ? 'Compostable' : '100% Reciclado'}
+                    fallback={getProductImage(producto)}
+                  />
+                </div>
               )}
             </div>
 
@@ -650,10 +659,10 @@ export default function ProductoNuevo() {
                   <button
                     type="button"
                     onClick={() => document.querySelector('[data-product-gallery]')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
-                    className="lg:hidden w-full mt-2.5 h-10 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-colors"
-                    style={{ background: 'rgba(192,120,92,.1)', border: '1.5px solid rgba(192,120,92,.3)', color: C.action }}
+                    className="lg:hidden w-full mt-2.5 h-10 rounded-xl text-[11px] font-bold flex items-center justify-center gap-1.5 transition-all active:scale-[0.98]"
+                    style={{ background: 'white', border: '1.5px solid #D4C4B0', color: C.action }}
                   >
-                    ↑ Ver tu mockup en vivo
+                    <Sparkles className="w-3.5 h-3.5" /> Ver tu diseño grabado
                   </button>
                 )}
               </div>
