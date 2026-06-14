@@ -42,11 +42,10 @@ export default function CookieBanner() {
     <div
       role="dialog"
       aria-label="Aviso de cookies"
-      className="fixed bottom-[4.5rem] left-0 right-0 z-[80] p-2 sm:p-3 lg:bottom-4 lg:left-4 lg:right-auto lg:max-w-md"
-      style={{ marginBottom: 'env(safe-area-inset-bottom)' }}
+      className="fixed top-0 left-0 right-0 z-[100] p-2 lg:top-auto lg:bottom-4 lg:left-4 lg:right-auto lg:max-w-md"
     >
       {/* Mobile: barra ultra compacta de 1 línea · Desktop: card completa */}
-      <div className="bg-slate-900/95 backdrop-blur-xl border border-white/20 rounded-xl lg:rounded-2xl shadow-2xl px-3 py-2 lg:p-5 text-white">
+      <div className="bg-slate-900/95 backdrop-blur-xl border border-white/20 rounded-none lg:rounded-2xl shadow-2xl px-3 py-1.5 lg:p-5 text-white">
         {/* MOBILE COMPACT — solo botones + link mini */}
         <div className="flex items-center gap-2 lg:hidden">
           <Cookie className="w-4 h-4 text-teal-300 flex-shrink-0" />
@@ -56,13 +55,13 @@ export default function CookieBanner() {
           </p>
           <button
             onClick={() => persist({ analytics: false, marketing: false })}
-            className="h-7 px-2.5 rounded-md bg-white/10 hover:bg-white/20 border border-white/15 text-[10px] font-semibold whitespace-nowrap"
+            className="h-6 px-2 rounded-md bg-white/10 hover:bg-white/20 border border-white/15 text-[9px] font-semibold whitespace-nowrap"
           >
             Solo necesarias
           </button>
           <button
             onClick={() => persist({ analytics: true, marketing: true })}
-            className="h-7 px-3 rounded-md bg-gradient-to-r from-teal-500 to-cyan-500 text-[10px] font-bold shadow-md whitespace-nowrap"
+            className="h-6 px-2.5 rounded-md bg-gradient-to-r from-teal-500 to-cyan-500 text-[9px] font-bold shadow-md whitespace-nowrap"
           >
             Aceptar
           </button>

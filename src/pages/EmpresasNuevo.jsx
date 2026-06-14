@@ -245,7 +245,7 @@ export default function EmpresasNuevo() {
   );
 
   return (
-    <div className="min-h-screen lg:h-screen lg:min-h-0 lg:flex lg:flex-col lg:overflow-hidden font-inter" style={{ background: C.bg, color: C.fg }}>
+    <div className="min-h-screen lg:h-screen lg:min-h-0 lg:flex lg:flex-col lg:overflow-hidden font-inter max-w-[100vw] overflow-x-hidden" style={{ background: C.bg, color: C.fg }}>
       <SEOHead
         title="B2B Corporativo — PEYU | Regalos Mayoristas Sostenibles"
         description="Soluciones B2B para empresas: precios por volumen, personalización masiva con logo, facturación y despacho a todo Chile."
@@ -391,69 +391,51 @@ export default function EmpresasNuevo() {
         </main>
       </div>
 
-      {/* ── BODY MOBILE: flujo vertical completo con CTA sticky abajo ────── */}
-      <div className="lg:hidden pb-28 max-w-[100vw] overflow-x-hidden">
-        <section className="max-w-6xl mx-auto px-3 sm:px-6 pt-3 pb-4">
-          {/* Hero compacto con recorrido claro: 3 pasos numerados */}
-          <div className="mb-4">
-            <span className="inline-block text-[10px] font-bold px-2.5 py-1 rounded-lg mb-2" style={{ background: C.action, color: 'white' }}>
-              ✨ Regalos corporativos sustentables
-            </span>
-            <h1 className="font-fraunces text-xl leading-tight font-bold mb-2" style={{ color: C.fg }}>
-              Plástico reciclado <span style={{ color: C.action }}>con tu logo grabado</span>
-            </h1>
-
-            {/* Mini-recorrido B2B en mobile: 3 pasos claros */}
-            <div className="flex items-center gap-1.5 mb-2.5">
-              {JOURNEY.map((s, i) => (
-                <div key={i} className="flex items-center gap-1.5">
-                  <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl" style={{
-                    background: i === 0 ? 'rgba(15,139,108,.10)' : 'white',
-                    border: i === 0 ? `1.5px solid ${C.action}` : `1px solid ${C.border}`,
-                  }}>
-                    <div className="w-5 h-5 rounded-full flex items-center justify-center"
-                      style={{ background: i === 0 ? C.actionGrad : C.border }}>
-                      <s.Icon className="w-2.5 h-2.5" style={{ color: i === 0 ? 'white' : C.fgMuted }} />
-                    </div>
-                    <span className="text-[10px] font-bold" style={{ color: i === 0 ? C.action : C.fgMuted }}>{s.label}</span>
-                  </div>
-                  {i < JOURNEY.length - 1 && <ArrowRight className="w-3 h-3 flex-shrink-0" style={{ color: C.border }} />}
-                </div>
-              ))}
+      {/* ── BODY MOBILE: flujo vertical compacto, sin scroll horizontal ─── */}
+      <div className="lg:hidden pb-[7rem] max-w-[100vw] overflow-x-hidden">
+        <section className="w-full px-3 pt-2 pb-4">
+          {/* Hero ultra compacto */}
+          <div className="mb-3">
+            <div className="flex items-center gap-2 mb-2">
+              <span className="inline-block text-[9px] font-bold px-2 py-1 rounded-lg flex-shrink-0" style={{ background: C.action, color: 'white' }}>
+                ✨ B2B
+              </span>
+              <h1 className="font-fraunces text-lg leading-tight font-bold truncate" style={{ color: C.fg }}>
+                Plástico reciclado <span style={{ color: C.action }}>con tu logo</span>
+              </h1>
             </div>
-
-            <p className="text-[11px] font-semibold leading-relaxed" style={{ color: C.fgSoft }}>
-              Elige productos del catálogo, cotiza al instante con precios por volumen real y recibe tu propuesta formal en 24h hábiles.
+            <p className="text-[11px] leading-relaxed" style={{ color: C.fgSoft }}>
+              Elige productos · cotiza al instante · propuesta en 24h
             </p>
           </div>
 
-          {savedQuote && <div className="mb-3">{ResumeQuoteChip}</div>}
+          {/* Cotización guardada (si existe) — compacto, no bloquea */}
+          {savedQuote && (
+            <Link
+              to="/CotizacionRapida"
+              className="flex items-center gap-2 p-2.5 rounded-xl mb-3 transition-all active:scale-[0.98]"
+              style={{ background: 'rgba(15,139,108,.08)', border: '1.5px solid rgba(15,139,108,.25)' }}
+            >
+              <History className="w-3.5 h-3.5 flex-shrink-0" style={{ color: C.action }} />
+              <span className="text-[11px] font-bold truncate" style={{ color: C.action }}>
+                Cotización guardada — continuar
+              </span>
+              <ArrowRight className="w-3.5 h-3.5 flex-shrink-0 ml-auto" style={{ color: C.action }} />
+            </Link>
+          )}
 
-          {/* Sellos en 1 línea deslizable */}
-          <div className="mb-3">{TrustStrip}</div>
-
-          {/* CTA directo: puente claro a cotizar */}
-          <Link
-            to="/CotizacionRapida"
-            className="flex items-center justify-center gap-2 w-full h-12 rounded-2xl text-white font-bold text-sm mb-4 transition-all active:scale-[0.98]"
-            style={{ background: C.actionGrad, boxShadow: C.actionShadow }}>
-            <Building2 className="w-4 h-4" /> Quiero cotizar ahora <ArrowRight className="w-4 h-4" />
-          </Link>
-
+          {/* Buscador + chips de categoría */}
           <div className="mb-3">{SearchAndChips}</div>
 
+          {/* Productos */}
           {ProductGrid('grid-cols-2')}
+
+          {/* Footer compacto al final */}
+          <footer className="mt-6 pt-3 text-center text-[9px] flex items-center justify-center gap-2" style={{ borderTop: `1.5px solid ${C.border}`, color: C.fgMuted }}>
+            <Recycle className="w-3 h-3 flex-shrink-0" style={{ color: '#8BAD8A' }} />
+            <span className="font-semibold">PEYU · Plástico 100% reciclado · Santiago 🇨🇱</span>
+          </footer>
         </section>
-
-        {/* Clientes en franja compacta */}
-        <section className="max-w-6xl mx-auto px-4 py-2">{ClientsStrip}</section>
-
-        <section className="max-w-3xl mx-auto px-4 py-3">{CTACard}</section>
-
-        <footer className="py-6 text-center text-[9px] flex items-center justify-center gap-2" style={{ borderTop: `1.5px solid ${C.border}`, color: C.fgMuted }}>
-          <Recycle className="w-3.5 h-3.5" style={{ color: '#8BAD8A' }} />
-          <span className="font-semibold">PEYU · Plástico 100% reciclado · Hecho en Santiago 🇨🇱</span>
-        </footer>
       </div>
 
       {/* Tabs de navegación mobile (Inicio · Tienda · Blog · B2B · Carrito) */}

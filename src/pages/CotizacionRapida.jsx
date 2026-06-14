@@ -801,21 +801,21 @@ export default function CotizacionRapida() {
                   onClick={handleCTA}
                   disabled={!canAdvance || enviando}
                   className="flex-1 h-14 rounded-2xl font-bold text-base flex items-center justify-center gap-2 transition-all active:scale-[0.98] disabled:opacity-50 hover:-translate-y-0.5"
-                  style={{ background: canAdvance ? C.actionGrad : '#E9DFD0', color: canAdvance ? 'white' : '#A08070', border: canAdvance ? 'none' : `1.5px solid ${C.border}`, boxShadow: canAdvance ? C.actionShadow : 'none' }}
-                >
+                  style={{ background: canAdvance ? C.actionGrad : '#D4C4B0', color: canAdvance ? 'white' : '#5C4638', border: canAdvance ? 'none' : `1.5px solid ${C.border}`, boxShadow: canAdvance ? C.actionShadow : 'none' }}
+                  >
                   {enviando ? <><Loader2 className="w-5 h-5 animate-spin" /> Enviando...</>
                     : <>{step === 2 && <Building2 className="w-5 h-5" />}<span>{ctaLabel}</span>{step < 2 && <ArrowRight className="w-5 h-5" />}</>}
-                </button>
-              </div>
-              {!canAdvance && step === 0 && <p className="text-center text-xs mt-2 font-semibold" style={{ color: C.fgMuted }}>Agrega al menos un producto para continuar</p>}
-              {!canAdvance && step === 1 && <p className="text-center text-xs mt-2 font-semibold" style={{ color: C.fgMuted }}>Completa: empresa, RUT, nombre, email y teléfono</p>}
-            </div>
+                  </button>
+                  </div>
+                  {!canAdvance && step === 0 && <p className="text-center text-xs mt-2 font-semibold" style={{ color: C.fgMuted }}>Agrega al menos un producto para continuar</p>}
+                  {!canAdvance && step === 1 && <p className="text-center text-xs mt-2 font-semibold" style={{ color: C.fgMuted }}>Completa: empresa, RUT, nombre, email y teléfono</p>}
+                    </div>
           </div>
         </div>
       </div>
 
       {/* ── CTA MOBILE STICKY ──────────────────────────────────────────────── */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50 px-3 max-w-[100vw]"
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-[90] px-3 max-w-[100vw]"
         style={{
           paddingBottom: 'max(env(safe-area-inset-bottom, 0px), 12px)',
           paddingTop: '8px',
@@ -849,7 +849,7 @@ export default function CotizacionRapida() {
           onClick={handleCTA}
           disabled={!canAdvance || enviando}
           className="w-full h-12 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 transition-all active:scale-[0.98] disabled:opacity-50"
-          style={{ background: canAdvance ? C.actionGrad : '#E9DFD0', color: canAdvance ? 'white' : '#A08070', border: canAdvance ? 'none' : `1.5px solid ${C.border}`, boxShadow: canAdvance ? C.actionShadow : 'none' }}
+          style={{ background: canAdvance ? C.actionGrad : '#D4C4B0', color: canAdvance ? 'white' : '#5C4638', border: canAdvance ? 'none' : `1.5px solid ${C.border}`, boxShadow: canAdvance ? C.actionShadow : 'none' }}
         >
           {enviando ? <><Loader2 className="w-4 h-4 animate-spin" /> Enviando...</>
             : <>{step === 2 && <Building2 className="w-4 h-4" />}<span>{ctaLabel}</span>{step < 2 && <ArrowRight className="w-4 h-4" />}</>}

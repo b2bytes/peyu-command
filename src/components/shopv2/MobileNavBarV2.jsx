@@ -102,7 +102,7 @@ export default function MobileNavBarV2({
 
   return (
     <div
-      className="lg:hidden fixed bottom-0 inset-x-0 z-50 pb-safe max-w-[100vw]"
+      className="lg:hidden fixed bottom-0 inset-x-0 z-[90] pb-safe max-w-[100vw]"
       style={{
         background: 'rgba(248,243,237,.97)',
         borderTop: '1.5px solid #D4C4B0',

@@ -46,27 +46,27 @@ export default function B2BCatalogCard({ producto }) {
       </div>
 
       {/* Info compacta */}
-      <div className="flex flex-col flex-1 p-2.5 sm:p-3">
-        <p className="text-[8px] font-bold uppercase tracking-widest mb-0.5" style={{ color: '#A08070' }}>
+      <div className="flex flex-col flex-1 p-2">
+        <p className="text-[7px] font-bold uppercase tracking-wider mb-0.5 truncate" style={{ color: '#A08070' }}>
           {producto.categoria?.replace(' B2C', '')}
         </p>
-        <h3 className="font-fraunces text-sm leading-snug mb-1.5 flex-1 line-clamp-2" style={{ color: '#2C1810' }}>
+        <h3 className="font-fraunces text-xs leading-tight mb-1 flex-1 line-clamp-2" style={{ color: '#2C1810' }}>
           {producto.nombre}
         </h3>
 
         {/* Precio desde + CTA lineal a cotización */}
-        <div className="flex items-center justify-between gap-2 pt-1.5" style={{ borderTop: '1px solid #EDE3D6' }}>
+        <div className="flex items-center justify-between gap-1 pt-1" style={{ borderTop: '1px solid #EDE3D6' }}>
           <div className="min-w-0">
-            <p className="text-[9px] leading-none" style={{ color: '#A08070' }}>desde 50u</p>
-            <p className="font-bold text-sm leading-tight" style={{ color: '#0F8B6C' }}>{fmtCLP(precioDesde)}/u</p>
+            <p className="text-[8px] leading-none" style={{ color: '#A08070' }}>desde 50u</p>
+            <p className="font-bold text-xs leading-tight truncate" style={{ color: '#0F8B6C' }}>{fmtCLP(precioDesde)}/u</p>
           </div>
           <button
             onClick={cotizar}
-            className="flex items-center gap-1 text-[11px] font-bold px-2.5 h-8 rounded-xl text-white flex-shrink-0 transition-all hover:scale-105 active:scale-95"
+            className="flex items-center gap-0.5 text-[10px] font-bold px-2 h-7 rounded-lg text-white flex-shrink-0 transition-all active:scale-95"
             style={{ background: 'linear-gradient(135deg,#0F8B6C,#0B6E55)' }}
             aria-label={`Cotizar ${producto.nombre}`}
           >
-            <Plus className="w-3.5 h-3.5" /> Cotizar
+            <Plus className="w-3 h-3" /> Cotizar
           </button>
         </div>
       </div>

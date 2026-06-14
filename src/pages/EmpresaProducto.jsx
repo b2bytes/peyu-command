@@ -307,7 +307,7 @@ export default function EmpresaProducto() {
 
       {/* ── NAVBAR FIJA MOBILE ── */}
       <div
-        className="lg:hidden fixed bottom-0 inset-x-0 z-50 pb-safe px-3 py-2.5 max-w-[100vw]"
+        className="lg:hidden fixed bottom-0 inset-x-0 z-[90] pb-safe px-3 py-2.5 max-w-[100vw]"
         style={{ background: 'rgba(248,243,237,.97)', borderTop: '1.5px solid #D4C4B0', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', boxShadow: '0 -4px 24px rgba(44,24,16,.1)' }}
       >
         <div className="flex gap-2 max-w-lg mx-auto">
