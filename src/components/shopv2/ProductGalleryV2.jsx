@@ -76,7 +76,7 @@ export default function ProductGalleryV2({
                 i === active ? 'border-[#0F8B6C] shadow-md' : 'border-[#EBE3D6] hover:border-[#0F8B6C]/40'
               }`}
             >
-              <img src={img} alt="" referrerPolicy="no-referrer" className="w-full h-full" style={{ objectFit: 'contain', padding: '4px' }} />
+              <img src={img} alt="" referrerPolicy="no-referrer" className="w-full h-full" style={{ objectFit: 'contain', padding: '4px', filter: imgFilter || undefined, transition: 'filter .25s ease' }} />
               {i === active && (
                 <span className="absolute inset-0 flex items-center justify-center bg-[#0F8B6C]/15">
                   <Check className="w-4 h-4 text-[#0F8B6C]" strokeWidth={3} />

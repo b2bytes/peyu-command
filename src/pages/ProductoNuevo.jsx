@@ -609,6 +609,7 @@ export default function ProductoNuevo() {
                     active={galIdx}
                     onSelect={setGalIdx}
                     badge={esCompostable ? 'Compostable' : '100% Reciclado'}
+                    imgFilter={colorFilter}
                     fallback={getProductImage(producto)}
                   />
                 </div>
