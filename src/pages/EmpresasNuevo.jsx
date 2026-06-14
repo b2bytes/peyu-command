@@ -392,7 +392,7 @@ export default function EmpresasNuevo() {
       </div>
 
       {/* ── BODY MOBILE: flujo vertical completo con CTA sticky abajo ────── */}
-      <div className="lg:hidden pb-28">
+      <div className="lg:hidden pb-28 max-w-[100vw] overflow-x-hidden">
         <section className="max-w-6xl mx-auto px-3 sm:px-6 pt-3 pb-4">
           {/* Hero compacto con recorrido claro: 3 pasos numerados */}
           <div className="mb-4">

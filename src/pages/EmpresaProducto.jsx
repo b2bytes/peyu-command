@@ -101,7 +101,7 @@ export default function EmpresaProducto() {
   const esCompostable = producto.material?.includes('Trigo');
 
   return (
-    <div className="min-h-screen font-inter pb-24 lg:pb-8" style={{ background: '#F8F3ED', color: '#2C1810' }}>
+    <div className="min-h-screen font-inter pb-24 lg:pb-8 max-w-[100vw] overflow-x-hidden" style={{ background: '#F8F3ED', color: '#2C1810' }}>
       <B2BHeader backTo="/EmpresasNuevo" />
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-3 sm:py-6">
@@ -307,25 +307,25 @@ export default function EmpresaProducto() {
 
       {/* ── NAVBAR FIJA MOBILE ── */}
       <div
-        className="lg:hidden fixed bottom-0 inset-x-0 z-50 pb-safe px-4 py-3"
-        style={{ background: 'rgba(248,243,237,.97)', borderTop: '1.5px solid #D4C4B0', backdropFilter: 'blur(20px)', boxShadow: '0 -4px 24px rgba(44,24,16,.1)' }}
+        className="lg:hidden fixed bottom-0 inset-x-0 z-50 pb-safe px-3 py-2.5 max-w-[100vw]"
+        style={{ background: 'rgba(248,243,237,.97)', borderTop: '1.5px solid #D4C4B0', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', boxShadow: '0 -4px 24px rgba(44,24,16,.1)' }}
       >
-        <div className="flex gap-2.5 max-w-lg mx-auto">
+        <div className="flex gap-2 max-w-lg mx-auto">
           <button
             onClick={() => navigate('/EmpresasNuevo')}
-            className="flex-shrink-0 h-12 px-4 rounded-2xl flex items-center gap-1.5 font-bold text-sm transition-all"
+            className="flex-shrink-0 h-11 px-3.5 rounded-2xl flex items-center gap-1 font-bold text-xs transition-all active:scale-[0.97]"
             style={{ background: 'white', border: '1.5px solid #D4C4B0', color: '#7A6050' }}
           >
-            <ArrowLeft className="w-4 h-4" /> <span className="text-sm">Atrás</span>
+            <ArrowLeft className="w-4 h-4" /> Atrás
           </button>
           <button
             onClick={goToCotizar}
-            className="flex-1 h-12 rounded-2xl text-white font-bold text-sm flex items-center justify-center gap-2"
+            className="flex-1 h-11 rounded-2xl text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-all active:scale-[0.98]"
             style={{ background: 'linear-gradient(135deg,#0F8B6C,#0B6E55)', boxShadow: '0 4px 16px rgba(15,139,108,.3)' }}
           >
-            <ShoppingBag className="w-4 h-4" />
+            <ShoppingBag className="w-3.5 h-3.5" />
             Cotizar · {fmtCLP(neto)} neto
-            <ArrowRight className="w-3.5 h-3.5" />
+            <ArrowRight className="w-3 h-3" />
           </button>
         </div>
       </div>

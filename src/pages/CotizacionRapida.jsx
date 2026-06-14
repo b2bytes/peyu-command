@@ -489,15 +489,18 @@ export default function CotizacionRapida() {
         </div>
       )}
 
-      {/* Mockup + uploader en mobile (en desktop vive en el panel central) */}
-      <div className="lg:hidden">
-        <MockupGalleryB2B
-          items={items.length > 0 ? items : (primerProducto ? [{ producto: primerProducto }] : [])}
-          logoUrl={logoUrl}
-          onLogoChange={setLogoUrl}
-          showUploader={true}
-        />
-      </div>
+      {/* Mockup + uploader en mobile: solo visible cuando ya hay productos seleccionados.
+          Antes de agregar productos, el catálogo ocupa todo el espacio sin distraer. */}
+      {items.length > 0 && (
+        <div className="lg:hidden">
+          <MockupGalleryB2B
+            items={items}
+            logoUrl={logoUrl}
+            onLogoChange={setLogoUrl}
+            showUploader={true}
+          />
+        </div>
+      )}
     </div>
   );
 
@@ -611,7 +614,7 @@ export default function CotizacionRapida() {
 
   // ── LAYOUT PRINCIPAL (cockpit 1 pantalla en desktop) ──────────────────────
   return (
-    <div className="min-h-screen lg:h-screen lg:min-h-0 lg:flex lg:flex-col lg:overflow-hidden font-inter" style={{ background: C.bg }}>
+    <div className="min-h-screen lg:h-screen lg:min-h-0 lg:flex lg:flex-col lg:overflow-hidden font-inter max-w-[100vw] overflow-x-hidden" style={{ background: C.bg }}>
       <SEOHead
         title="Cotización Rápida B2B — PEYU | Precios Corporativos"
         description="Cotiza tu pedido corporativo en 3 pasos. Precios por volumen, personalización láser, facturación y despacho a Chile."
@@ -772,7 +775,7 @@ export default function CotizacionRapida() {
           </main>
 
           {/* Columna derecha: contenido del paso con scroll propio + CTA fijo */}
-          <div className="flex-1 min-w-0 pb-36 lg:pb-0 lg:flex-none lg:w-[400px] xl:w-[440px] lg:h-full lg:min-h-0 lg:flex lg:flex-col">
+          <div className="flex-1 min-w-0 pb-44 lg:pb-0 lg:flex-none lg:w-[400px] xl:w-[440px] lg:h-full lg:min-h-0 lg:flex lg:flex-col">
             <div className="rounded-3xl p-4 lg:p-5 shadow-sm lg:flex-1 lg:min-h-0 lg:overflow-y-auto peyu-scrollbar" style={{ background: C.surface, border: `1.5px solid ${C.border}` }}>
               <AnimatePresence mode="wait">
                 <motion.div key={step} initial={{ opacity: 0, x: 16 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -16 }} transition={trans}>
@@ -812,10 +815,10 @@ export default function CotizacionRapida() {
       </div>
 
       {/* ── CTA MOBILE STICKY ──────────────────────────────────────────────── */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50 px-4"
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50 px-3 max-w-[100vw]"
         style={{
-          paddingBottom: 'max(env(safe-area-inset-bottom, 0px), 16px)',
-          paddingTop: '10px',
+          paddingBottom: 'max(env(safe-area-inset-bottom, 0px), 12px)',
+          paddingTop: '8px',
           background: 'rgba(248,243,237,.97)',
           borderTop: `1.5px solid ${C.border}`,
           backdropFilter: 'blur(16px)',
@@ -823,27 +826,36 @@ export default function CotizacionRapida() {
           boxShadow: '0 -4px 20px rgba(44,24,16,.10)',
         }}>
         {items.length > 0 && (
-          <div className="flex items-center gap-2 mb-2 px-1">
+          <div className="flex items-center gap-2 mb-1.5 px-1">
             <div className="flex-1 min-w-0">
-              <p className="text-xs font-semibold truncate" style={{ color: C.fg }}>
+              <p className="text-[11px] font-semibold truncate" style={{ color: C.fg }}>
                 {items.length} {items.length === 1 ? 'producto' : 'productos'} · {qtyTotal.toLocaleString('es-CL')} u
               </p>
-              <p className="text-[10px]" style={{ color: C.fgMuted }}>Neto {fmtCLP(totalNeto)}{ahorroTotal > 0 ? ` · ahorras ${fmtCLP(ahorroTotal)}` : ''}</p>
+              <p className="text-[9px]" style={{ color: C.fgMuted }}>Neto {fmtCLP(totalNeto)}{ahorroTotal > 0 ? ` · ahorras ${fmtCLP(ahorroTotal)}` : ''}</p>
             </div>
             <span className="text-sm font-fraunces font-bold flex-shrink-0" style={{ color: C.action }}>{fmtCLP(totalConIVA)}</span>
           </div>
         )}
+        {step > 0 && (
+          <button
+            onClick={back}
+            className="w-full h-10 mb-1.5 rounded-xl font-semibold text-xs flex items-center justify-center gap-1.5 transition-all active:scale-[0.98]"
+            style={{ border: `1.5px solid ${C.border}`, color: C.fgSoft, background: 'white' }}
+          >
+            <ArrowLeft className="w-3.5 h-3.5" /> Volver
+          </button>
+        )}
         <button
           onClick={handleCTA}
           disabled={!canAdvance || enviando}
-          className="w-full h-14 rounded-2xl font-bold text-base flex items-center justify-center gap-2 transition-all active:scale-[0.98] disabled:opacity-50"
+          className="w-full h-12 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 transition-all active:scale-[0.98] disabled:opacity-50"
           style={{ background: canAdvance ? C.actionGrad : '#E9DFD0', color: canAdvance ? 'white' : '#A08070', border: canAdvance ? 'none' : `1.5px solid ${C.border}`, boxShadow: canAdvance ? C.actionShadow : 'none' }}
         >
-          {enviando ? <><Loader2 className="w-5 h-5 animate-spin" /> Enviando...</>
-            : <>{step === 2 && <Building2 className="w-5 h-5" />}<span>{ctaLabel}</span>{step < 2 && <ArrowRight className="w-5 h-5" />}</>}
+          {enviando ? <><Loader2 className="w-4 h-4 animate-spin" /> Enviando...</>
+            : <>{step === 2 && <Building2 className="w-4 h-4" />}<span>{ctaLabel}</span>{step < 2 && <ArrowRight className="w-4 h-4" />}</>}
         </button>
-        {!canAdvance && step === 0 && <p className="text-center text-xs mt-1.5 font-semibold" style={{ color: C.fgMuted }}>Agrega al menos un producto para continuar</p>}
-        {!canAdvance && step === 1 && <p className="text-center text-xs mt-1.5 font-semibold" style={{ color: C.fgMuted }}>Completa: empresa, RUT, nombre, email y teléfono</p>}
+        {!canAdvance && step === 0 && <p className="text-center text-[10px] mt-1 font-semibold" style={{ color: C.fgMuted }}>Agrega al menos un producto para continuar</p>}
+        {!canAdvance && step === 1 && <p className="text-center text-[10px] mt-1 font-semibold" style={{ color: C.fgMuted }}>Completa: empresa, RUT, nombre, email y teléfono</p>}
       </div>
 
       <QuoteProductModal
