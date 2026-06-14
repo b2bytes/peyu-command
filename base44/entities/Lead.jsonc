@@ -120,7 +120,7 @@
     "create": {
       "$or": [
         {
-          "data.created_by": "{{user.email}}"
+          "created_by_id": "{{user.id}}"
         },
         {
           "user_condition": {
@@ -132,7 +132,7 @@
     "read": {
       "$or": [
         {
-          "data.created_by": "{{user.email}}"
+          "created_by_id": "{{user.id}}"
         },
         {
           "data.assigned_to": "{{user.email}}"
@@ -147,7 +147,7 @@
     "update": {
       "$or": [
         {
-          "data.created_by": "{{user.email}}"
+          "created_by_id": "{{user.id}}"
         },
         {
           "data.assigned_to": "{{user.email}}"
