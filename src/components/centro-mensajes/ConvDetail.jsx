@@ -185,7 +185,7 @@ export default function ConvDetail({ item, onClose, onAction, actionLoading, onR
           <Loader2 className="w-4 h-4 animate-spin mr-2" /> Cargando…
         </div>
       ) : isGmail ? (
-        <div className="flex-1 overflow-y-auto peyu-scrollbar px-5 py-4">
+        <div className="flex-1 min-h-0 overflow-y-auto peyu-scrollbar px-5 py-4">
           <div className="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-5">
             <h3 className="font-bold text-slate-100 mb-1">{item.asunto || '(sin asunto)'}</h3>
             <p className="text-xs text-slate-400 mb-4">
@@ -203,7 +203,7 @@ export default function ConvDetail({ item, onClose, onAction, actionLoading, onR
           <p className="text-xs text-slate-500 mt-1">La conversación está vacía o no se pudo cargar.</p>
         </div>
       ) : (
-        <div ref={scrollRef} className="flex-1 overflow-y-auto peyu-scrollbar px-4 py-4 space-y-3">
+        <div ref={scrollRef} className="flex-1 min-h-0 overflow-y-auto peyu-scrollbar px-4 py-4 space-y-3">
           {messages.map((msg, i) => {
             const isUser = msg.role === 'user' || msg.role === 'customer';
             return (
