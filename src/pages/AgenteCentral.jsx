@@ -581,8 +581,10 @@ Stock bajo (<10u): ${m.stock_bajo} SKUs`;
         {!loading && (
           <QuickActionBar
             productos={crm.productos}
+            pedidos={crm.pedidos}
             onCreateQuote={handleCreateQuote}
             onCreateOP={handleCreateOP}
+            onPedidosRefresh={() => loadData(true)}
           />
         )}
 

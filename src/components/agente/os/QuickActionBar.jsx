@@ -5,7 +5,8 @@
 // verde solo en acentos, sin pestañas.
 // ============================================================================
 import { useState } from 'react';
-import { FileText, Factory, X, Loader2, Zap } from 'lucide-react';
+import { base44 } from '@/api/base44Client';
+import { FileText, Factory, X, Loader2, Zap, Package, Truck, CreditCard, RefreshCw } from 'lucide-react';
 
 function Field({ label, children }) {
   return (
@@ -41,14 +42,17 @@ function Modal({ title, icon: Icon, onClose, children }) {
   );
 }
 
-export default function QuickActionBar({ productos = [], onCreateQuote, onCreateOP }) {
-  const [open, setOpen] = useState(null); // 'quote' | 'op'
+export default function QuickActionBar({ productos = [], pedidos = [], onCreateQuote, onCreateOP, onPedidosRefresh }) {
+  const [open, setOpen] = useState(null); // 'quote' | 'op' | 'etiqueta' | 'pagar' | 'sync'
   const [busy, setBusy] = useState(false);
+  const [resultMsg, setResultMsg] = useState('');
 
   // ── Cotización ──
   const [q, setQ] = useState({ empresa: '', contacto: '', email: '', sku: '', cantidad: 50 });
   // ── Orden de producción ──
   const [op, setOp] = useState({ empresa: '', sku: '', cantidad: 100, prioridad: 'Normal' });
+  // ── Bluexpress ──
+  const [bx, setBx] = useState({ pedidoId: '', accion: '' });
 
   const submitQuote = async () => {
     if (!q.empresa.trim() || !q.sku) return;
@@ -66,6 +70,28 @@ export default function QuickActionBar({ productos = [], onCreateQuote, onCreate
     setBusy(false);
     setOpen(null);
     setOp({ empresa: '', sku: '', cantidad: 100, prioridad: 'Normal' });
+  };
+
+  const pedidosPendientes = (pedidos || []).filter(p => !['Entregado', 'Cancelado'].includes(p.estado));
+  const pedidosSinTracking = pedidosPendientes.filter(p => !p.tracking);
+
+  const submitBluexWith = async (accion) => {
+    setBusy(true);
+    setResultMsg('');
+    try {
+      const res = await base44.functions.invoke('agentOSAction', {
+        action: accion === 'pagar' ? 'marcarPedidoPagado'
+               : accion === 'etiqueta' ? 'generarEtiqueta'
+               : accion === 'cancelar' ? 'cancelarPedido'
+               : 'sincronizarTracking',
+        payload: accion === 'sync' ? {} : { id: bx.pedidoId },
+      });
+      setResultMsg(res?.data?.message || 'Acción completada ✓');
+      if (onPedidosRefresh) onPedidosRefresh();
+    } catch (e) {
+      setResultMsg(`Error: ${e?.response?.data?.error || e?.message || 'falló'}`);
+    }
+    setBusy(false);
   };
 
   return (
@@ -89,6 +115,33 @@ export default function QuickActionBar({ productos = [], onCreateQuote, onCreate
           >
             <Factory className="w-4 h-4 text-[#f0a085]" />
             Crear orden de producción
+          </button>
+
+          <div className="w-px h-5 bg-[#2a4a40] mx-1 flex-shrink-0" />
+
+          <span className="hidden sm:inline-flex items-center gap-1 text-[11px] font-semibold text-[#7fa295] uppercase tracking-wide flex-shrink-0">
+            <Truck className="w-3.5 h-3.5 text-[#3dd9b0]" /> Bluex
+          </span>
+          <button
+            onClick={() => setOpen('pagar')}
+            className="flex items-center gap-1.5 text-xs font-medium text-[#dcefe7] bg-[#10231d] border border-[#2a4a40] hover:border-[#0F8B6C]/60 hover:bg-[#14291f] px-2.5 py-1.5 rounded-full transition flex-shrink-0"
+          >
+            <CreditCard className="w-3.5 h-3.5 text-[#3dd9b0]" />
+            Marcar pagado
+          </button>
+          <button
+            onClick={() => setOpen('etiqueta')}
+            className="flex items-center gap-1.5 text-xs font-medium text-[#dcefe7] bg-[#10231d] border border-[#2a4a40] hover:border-[#0F8B6C]/60 hover:bg-[#14291f] px-2.5 py-1.5 rounded-full transition flex-shrink-0"
+          >
+            <Package className="w-3.5 h-3.5 text-[#3dd9b0]" />
+            Generar etiqueta
+          </button>
+          <button
+            onClick={() => { setBx({ pedidoId: '', accion: 'sync' }); submitBluexWith('sync'); }}
+            className="flex items-center gap-1.5 text-xs font-medium text-[#dcefe7] bg-[#10231d] border border-[#2a4a40] hover:border-[#0F8B6C]/60 hover:bg-[#14291f] px-2.5 py-1.5 rounded-full transition flex-shrink-0"
+          >
+            <RefreshCw className="w-3.5 h-3.5 text-[#7fa295]" />
+            Sincronizar tracking
           </button>
         </div>
       </div>
@@ -167,6 +220,50 @@ export default function QuickActionBar({ productos = [], onCreateQuote, onCreate
             >
               {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : <Factory className="w-4 h-4" />}
               Crear orden
+            </button>
+          </div>
+        </Modal>
+      )}
+
+      {/* Modal Bluexpress: Marcar pagado / Generar etiqueta */}
+      {(open === 'pagar' || open === 'etiqueta' || open === 'cancelar') && (
+        <Modal title={open === 'pagar' ? 'Marcar pedido como pagado' : open === 'etiqueta' ? 'Generar etiqueta BlueExpress' : 'Cancelar pedido'} icon={open === 'pagar' ? CreditCard : open === 'etiqueta' ? Package : X} onClose={() => { setOpen(null); setResultMsg(''); }}>
+          <div className="space-y-3">
+            <Field label="Pedido">
+              <select className={inputCls} value={bx.pedidoId} onChange={(e) => setBx({ ...bx, pedidoId: e.target.value })}>
+                <option value="">Elige un pedido…</option>
+                {pedidosPendientes.slice(0, 30).map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.numero_pedido || p.id.slice(-6)} · {p.cliente_nombre} · {p.estado}
+                    {p.tracking ? ` · ${p.tracking}` : ''}
+                  </option>
+                ))}
+              </select>
+            </Field>
+            {open === 'pagar' && (
+              <p className="text-[11px] text-[#6f7d77] leading-relaxed">
+                El pedido pasará a estado <strong>Confirmado</strong> y <strong>payment_status: paid</strong>.
+                Luego podrás generar su etiqueta BlueExpress.
+              </p>
+            )}
+            {open === 'etiqueta' && (
+              <p className="text-[11px] text-[#6f7d77] leading-relaxed">
+                Genera la etiqueta de envío BlueExpress. Requiere que el pedido esté pagado.
+                Se crea la OT y se obtiene el tracking number.
+              </p>
+            )}
+            {resultMsg && (
+              <div className={`text-xs font-semibold p-2.5 rounded-xl ${resultMsg.startsWith('Error') ? 'bg-red-50 text-red-700 border border-red-200' : 'bg-emerald-50 text-emerald-700 border border-emerald-200'}`}>
+                {resultMsg}
+              </div>
+            )}
+            <button
+              onClick={() => submitBluexWith(open)}
+              disabled={busy || !bx.pedidoId}
+              className="w-full h-11 rounded-xl bg-[#0F8B6C] hover:bg-[#0b6e55] text-white font-semibold flex items-center justify-center gap-2 transition disabled:opacity-40"
+            >
+              {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : open === 'pagar' ? <CreditCard className="w-4 h-4" /> : <Package className="w-4 h-4" />}
+              {open === 'pagar' ? 'Marcar como pagado' : open === 'etiqueta' ? 'Generar etiqueta' : 'Cancelar pedido'}
             </button>
           </div>
         </Modal>

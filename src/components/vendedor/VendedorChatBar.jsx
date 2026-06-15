@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { base44 } from '@/api/base44Client';
-import { Send, X, Loader2, Sparkles, ShoppingBag, MessageCircle, Minus } from 'lucide-react';
+import { Send, X, Loader2, Sparkles, ShoppingBag, Minus } from 'lucide-react';
 import {
   ensureConversation, sendChatMessage, fetchMessages, resetConversation,
   extractSkus, extractCartActions, cartActionDone, markCartActionDone,
@@ -170,7 +170,9 @@ export default function VendedorChatBar() {
           <div className="flex items-center justify-between px-4 py-2.5 flex-shrink-0 pt-safe"
             style={{ borderBottom: '1px solid #E7D8C6', background: 'white' }}>
             <div className="flex items-center gap-2">
-              <span className="w-8 h-8 rounded-full flex items-center justify-center text-base" style={{ background: 'rgba(15,139,108,.12)' }}>🐢</span>
+              <span className="w-8 h-8 rounded-full flex items-center justify-center overflow-hidden" style={{ background: 'rgba(15,139,108,.12)' }}>
+                <img src="https://media.base44.com/images/public/69d99b9d61f699701129c103/b67ed29f9_image.png" alt="PEYU" className="w-5 h-5 object-contain" draggable={false} />
+              </span>
               <div>
                 <p className="text-xs font-bold" style={{ color: '#2C1810' }}>Peyu · Vendedor</p>
                 <p className="text-[10px] font-semibold flex items-center gap-1" style={{ color: '#0F8B6C' }}>
@@ -269,10 +271,16 @@ export default function VendedorChatBar() {
       {!open && (
         <button
           onClick={handleOpen}
-          className="fixed bottom-[4.5rem] right-4 lg:bottom-6 lg:right-6 z-[65] w-14 h-14 rounded-2xl flex items-center justify-center text-white shadow-xl transition-all active:scale-90 hover:-translate-y-1"
+          className="fixed bottom-[4.5rem] right-4 lg:bottom-6 lg:right-6 z-[65] w-[60px] h-[60px] rounded-2xl flex items-center justify-center shadow-xl transition-all active:scale-90 hover:-translate-y-1 overflow-hidden p-1"
           style={{ background: 'linear-gradient(135deg,#0F8B6C,#0B6E55)', boxShadow: '0 8px 32px rgba(15,139,108,.35)' }}
           title="Hablar con Peyu">
-          <MessageCircle className="w-6 h-6" />
+          <img
+            src="https://media.base44.com/images/public/69d99b9d61f699701129c103/b67ed29f9_image.png"
+            alt="PEYU"
+            className="w-[42px] h-[42px] object-contain"
+            style={{ filter: 'brightness(0) invert(1)' }}
+            draggable={false}
+          />
           {unread > 0 && (
             <span className="absolute -top-1.5 -right-1.5 min-w-[20px] h-5 px-1 rounded-full text-white text-[10px] font-bold flex items-center justify-center"
               style={{ background: '#D96B4D', border: '2px solid white' }}>
