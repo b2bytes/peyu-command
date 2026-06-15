@@ -26,8 +26,13 @@ async function buildCatalogDigest(sr) {
     .filter((p) => p.sku && p.nombre)
     .map((p) => {
       const b2c = p.precio_b2c ? `$${p.precio_b2c}` : 'sin precio B2C';
-      const tramos = p.precio_b2b_tramos?.t10_49 ? ` | B2B 10-49u: $${p.precio_b2b_tramos.t10_49}+IVA` : '';
-      return `${p.sku} | ${p.nombre} | ${p.categoria} | ${b2c} | canal: ${p.canal || 'B2B + B2C'}${tramos}`;
+      const b2bUnit = p.precio_b2b_tramos?.unitario ? `$${p.precio_b2b_tramos.unitario}+IVA` : null;
+      const b2bVol = p.precio_b2b_tramos?.t10_49 ? `$${p.precio_b2b_tramos.t10_49}+IVA` : null;
+      let b2bInfo = '';
+      if (b2bUnit && b2bVol) b2bInfo = ` | B2B unit: ${b2bUnit}, 10-49u: ${b2bVol}`;
+      else if (b2bUnit) b2bInfo = ` | B2B unit: ${b2bUnit}`;
+      else if (b2bVol) b2bInfo = ` | B2B 10-49u: ${b2bVol}`;
+      return `${p.sku} | ${p.nombre} | ${p.categoria} | ${b2c} | canal: ${p.canal || 'B2B + B2C'}${b2bInfo}`;
     });
   return `\n\n[CATALOGO] Este es el catálogo REAL y COMPLETO de la tienda (SKU | nombre | categoría | precio B2C IVA incl. | canal | ref B2B). Cualquier palabra del cliente que calce con un nombre de aquí ES un producto. Usa SOLO estos SKUs, nombres y precios:\n${lines.join('\n')}`;
 }
