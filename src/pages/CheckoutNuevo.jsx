@@ -251,22 +251,37 @@ export default function CheckoutNuevo() {
         : `Carrito v2: ${carrito.length} items | Bluex ${envioBluex.servicio} (${(envioBluex.peso_kg || 0)}kg) → $${(envioBluex.costo_real || envioBluex.costo).toLocaleString('es-CL')}`,
     };
 
+    // Reintento automático: hasta 2 intentos extra con espera creciente para
+    // absorber fallos de red transitorios. El 1er intento falla rápido, pero los
+    // siguientes tienen delay para esquivar microcortes.
     let pedido;
-    try {
-      pedido = await base44.entities.PedidoWeb.create(datosPedido);
-    } catch (e) {
-      console.error('Error creando pedido:', e);
-      // Registrar el error para diagnóstico
+    let ultimoError = null;
+    const MAX_INTENTOS = 3;
+    for (let intento = 0; intento < MAX_INTENTOS; intento++) {
+      try {
+        pedido = await base44.entities.PedidoWeb.create(datosPedido);
+        ultimoError = null;
+        break;
+      } catch (e) {
+        ultimoError = e;
+        console.error(`Error creando pedido (intento ${intento + 1}/${MAX_INTENTOS}):`, e);
+        if (intento < MAX_INTENTOS - 1) {
+          await new Promise(r => setTimeout(r, 800 * (intento + 1)));
+        }
+      }
+    }
+    if (ultimoError) {
+      // Registrar el error para diagnóstico en producción
       try {
         await base44.entities.ErrorLog.create({
           source: 'frontend_window',
           severity: 'high',
-          message: `CheckoutNuevo: PedidoWeb.create falló — ${e?.message || 'sin mensaje'}`,
+          message: `CheckoutNuevo: PedidoWeb.create falló tras ${MAX_INTENTOS} intentos — ${ultimoError?.message || 'sin mensaje'}`,
           url: window.location.href,
           user_agent: navigator.userAgent,
           viewport: `${window.innerWidth}x${window.innerHeight}`,
           user_email: cliente.email || '',
-          extra: { total, medioPago, canal: 'Web Propia', itemsCount: carrito.length, stack: (e?.stack || '').slice(0, 2000) },
+          extra: { total, medioPago, canal: 'Web Propia', itemsCount: carrito.length, stack: (ultimoError?.stack || '').slice(0, 2000), intentos: MAX_INTENTOS },
         }).catch(() => {});
       } catch (_) {}
       setErrorPago('No pudimos crear tu pedido. Revisa tu conexión e intenta nuevamente.');
