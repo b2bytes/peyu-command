@@ -32,6 +32,7 @@ export default function VendedorProductCard({ producto }) {
     <div className="flex gap-3 bg-white rounded-2xl p-3 border border-[#E7D8C6] shadow-sm max-w-sm hover:shadow-md transition-shadow">
       <Link to={`/ProductoNuevo?id=${producto.id}`} className="flex-shrink-0">
         <img src={img} alt={producto.nombre} referrerPolicy="no-referrer"
+          onError={(e) => { e.target.src = 'https://media.base44.com/images/public/69d99b9d61f699701129c103/4a2230d61_generated_image.png'; e.target.onerror = null; }}
           className="w-[72px] h-[72px] rounded-xl object-cover bg-[#F8F3ED] border border-[#EBE3D6]" />
       </Link>
       <div className="flex-1 min-w-0 flex flex-col justify-between">

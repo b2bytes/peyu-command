@@ -815,7 +815,7 @@ export default function CotizacionRapida() {
       </div>
 
       {/* ── CTA MOBILE STICKY ──────────────────────────────────────────────── */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-[90] px-3 max-w-[100vw]"
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-[80] px-3 max-w-[100vw]"
         style={{
           paddingBottom: 'max(env(safe-area-inset-bottom, 0px), 12px)',
           paddingTop: '8px',

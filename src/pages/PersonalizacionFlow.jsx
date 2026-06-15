@@ -47,6 +47,15 @@ const STEPS = [
 
 const fmtCLP = (n) => `$${Math.round(n).toLocaleString('es-CL')}`;
 
+// Limpia nombres de archivo: muestra solo el nombre real sin UUIDs largos.
+const sanitizeFileName = (name) => {
+  if (!name) return '';
+  // Si es un UUID largo (36+ chars con guiones), mostrar "Archivo subido"
+  if (/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}/i.test(name)) return 'Archivo subido';
+  // Truncar nombres muy largos
+  return name.length > 36 ? name.slice(0, 33) + '…' : name;
+};
+
 // ── Desktop Stepper lateral ──────────────────────────────────────────────────
 function DesktopStepper({ step, onGoTo }) {
   return (
@@ -761,7 +770,7 @@ export default function PersonalizacionFlow() {
         >
           <Upload className="w-7 h-7 mx-auto mb-2" style={{ color: (archivo || logoUrlSubido) ? C.action : C.fgMuted }} />
           {subiendoLogo ? <p className="text-sm font-bold flex items-center justify-center gap-1.5" style={{ color: C.action }}><Loader2 className="w-3.5 h-3.5 animate-spin" /> Subiendo tu logo…</p>
-           : archivo ? <p className="text-sm font-bold" style={{ color: C.action }}>✓ {archivo.name}{logoUrlSubido ? ' · guardado' : ''}</p>
+           : archivo ? <p className="text-sm font-bold" style={{ color: C.action }}>✓ {sanitizeFileName(archivo.name)}{logoUrlSubido ? ' · guardado' : ''}</p>
            : logoUrlSubido ? <p className="text-sm font-bold" style={{ color: C.action }}>✓ Logo cargado y guardado</p>
            : <><p className="text-sm font-semibold" style={{ color: C.fgSoft }}>Sube tu logo</p><p className="text-xs mt-0.5" style={{ color: C.fgMuted }}>PNG, SVG, AI, JPG · máx. 10MB</p></>}
           <input id="pers-logo-v2" type="file" className="hidden" accept=".png,.svg,.ai,.pdf,.jpg"
@@ -925,7 +934,7 @@ export default function PersonalizacionFlow() {
 
   // ── LAYOUT PRINCIPAL ───────────────────────────────────────────────────────
   return (
-    <div className="min-h-screen lg:h-screen lg:min-h-0 lg:flex lg:flex-col lg:overflow-hidden font-inter" style={{ background: C.bg }}>
+    <div className="min-h-screen lg:h-screen lg:min-h-0 lg:flex lg:flex-col lg:overflow-hidden font-inter max-w-[100vw] overflow-x-hidden" style={{ background: C.bg }}>
       <PublicSEO
         pageKey="personalizar"
         breadcrumbs={[
@@ -1128,7 +1137,7 @@ export default function PersonalizacionFlow() {
       </div>
 
       {/* ── CTA MOBILE STICKY ────────────────────────────────────────────────── */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50 px-4"
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-[80] px-4"
         style={{
           paddingBottom: 'max(env(safe-area-inset-bottom, 0px), 16px)',
           paddingTop: '10px',

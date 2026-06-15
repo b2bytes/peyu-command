@@ -405,7 +405,7 @@ export default function ProductoNuevo() {
   const persResumen = resumenPersonalizacion(pers);
 
   return (
-    <div className="min-h-screen lg:h-screen lg:min-h-0 lg:flex lg:flex-col lg:overflow-hidden font-inter pb-20 lg:pb-0" style={{ background: C.bg, color: C.fg }}>
+    <div className="min-h-screen lg:h-screen lg:min-h-0 lg:flex lg:flex-col lg:overflow-hidden font-inter pb-24 lg:pb-0 max-w-[100vw] overflow-x-hidden" style={{ background: C.bg, color: C.fg }}>
       <SEOHead
         title={`${producto.nombre} - PEYU Chile`}
         description={producto.descripcion || `Compra ${producto.nombre} personalizado. Regalos corporativos sostenibles hechos con plástico 100% reciclado.`}

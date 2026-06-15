@@ -163,7 +163,7 @@ export default function VendedorChatBar() {
     <>
       {/* Panel de conversación — full-screen en mobile, flotante en desktop */}
       {open && (
-        <div className="fixed inset-0 lg:inset-auto z-[70] flex flex-col lg:left-1/2 lg:-translate-x-1/2 lg:w-[calc(100%-1rem)] lg:max-w-xl lg:bottom-4 lg:mb-2 lg:rounded-3xl lg:overflow-hidden lg:shadow-2xl lg:max-h-[min(65vh,600px)]"
+        <div className="fixed inset-0 lg:inset-auto z-[110] flex flex-col lg:left-1/2 lg:-translate-x-1/2 lg:w-[calc(100%-1rem)] lg:max-w-xl lg:bottom-4 lg:mb-2 lg:rounded-3xl lg:overflow-hidden lg:shadow-2xl lg:max-h-[min(65vh,600px)]"
           style={{ background: 'rgba(248,243,237,.97)', backdropFilter: 'blur(20px)', border: '1.5px solid #D4C4B0' }}>
 
           {/* Header */}
@@ -241,8 +241,8 @@ export default function VendedorChatBar() {
             </div>
           )}
 
-          {/* Input — pegado abajo con safe area */}
-          <div className="flex-shrink-0 px-3 py-2.5 pb-safe" style={{ borderTop: '1px solid #E7D8C6', background: 'white' }}>
+          {/* Input — pegado abajo con safe area + margen para nav bar móvil */}
+          <div className="flex-shrink-0 px-3 py-2.5" style={{ borderTop: '1px solid #E7D8C6', background: 'white', paddingBottom: 'max(env(safe-area-inset-bottom, 12px), 70px)' }}>
             <div className="flex items-center gap-2 rounded-full pl-4 pr-1.5 py-1.5"
               style={{ background: '#F8F3ED', border: '1.5px solid #D4C4B0' }}>
               <input

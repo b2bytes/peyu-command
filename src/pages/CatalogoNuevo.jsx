@@ -122,7 +122,7 @@ export default function CatalogoNuevo() {
   }
 
   return (
-    <div className="font-inter" style={{ background: '#F8F3ED', color: '#2C1810' }}>
+    <div className="font-inter max-w-[100vw] overflow-x-hidden" style={{ background: '#F8F3ED', color: '#2C1810' }}>
       <SEOHead
         title="Catálogo Completo — PEYU Chile"
         description="Explora nuestro catálogo completo de regalos corporativos sustentables. Carcasas iPhone, organizadores, maceteros y más en plástico 100% reciclado."
