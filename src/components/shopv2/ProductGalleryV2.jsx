@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Recycle, ZoomIn, Check } from 'lucide-react';
 
 // ════════════════════════════════════════════════════════════════════════
@@ -14,6 +14,17 @@ export default function ProductGalleryV2({
   const ref = useRef(null);
 
   const main = images[active] || images[0] || fallback;
+
+  // ── Transición de carga: cuando cambia la imagen principal (color/ángulo),
+  //     mostramos un shimmer hasta que la nueva imagen cargue. Así el cliente
+  //     ve feedback INMEDIATO de que algo cambió, en vez de la foto anterior
+  //     congelada mientras se descarga la nueva.
+  const [imgLoaded, setImgLoaded] = useState(false);
+  const [imgKey, setImgKey] = useState(0);
+  useEffect(() => {
+    setImgLoaded(false);
+    setImgKey((k) => k + 1);
+  }, [main]);
 
   const handleMove = (e) => {
     const r = ref.current?.getBoundingClientRect();
@@ -36,20 +47,27 @@ export default function ProductGalleryV2({
         onTouchEnd={() => setZoom(false)}
         className="relative aspect-square rounded-3xl overflow-hidden bg-white border border-[#EBE3D6] shadow-[0_12px_40px_-18px_rgba(74,63,51,0.35)] cursor-zoom-in group"
       >
+        {/* Shimmer sutil mientras carga la nueva imagen (cambio de color/ángulo) */}
+        {!imgLoaded && (
+          <div className="absolute inset-0 peyu-shimmer z-10" style={{ padding: '12px' }} />
+        )}
         <img
+          key={imgKey}
           src={main}
           alt="Producto"
           referrerPolicy="no-referrer"
           fetchpriority="high"
           loading="eager"
-          onError={(e) => { if (fallback) e.target.src = fallback; }}
+          onLoad={() => setImgLoaded(true)}
+          onError={(e) => { setImgLoaded(true); if (fallback) e.target.src = fallback; }}
           className="w-full h-full transition-transform duration-200 ease-out"
           style={{
             objectFit: 'contain',
             objectPosition: 'center',
             padding: '12px',
             filter: imgFilter || undefined,
-            transition: 'filter .25s ease, transform .2s ease-out',
+            transition: imgLoaded ? 'filter .25s ease, transform .2s ease-out, opacity .18s ease' : 'none',
+            opacity: imgLoaded ? 1 : 0,
             ...(zoom ? {
               transform: 'scale(2)',
               transformOrigin: `${pos.x}% ${pos.y}%`,

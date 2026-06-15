@@ -273,6 +273,16 @@ export default function ProductoNuevo() {
   const persOk = persCompleta(pers) && (!hayAlgunoActivado(pers) || pers.aprobada);
   const muestraMockup = capas.length > 0;
 
+  // ═══ Pre-carga de imágenes de color ════════════════════════════════════
+  // Apenas el producto carga, forzamos al navegador a descargar TODAS las fotos
+  // de color (imagenes_por_color) en segundo plano. Así cuando el cliente cambia
+  // de color en los swatches, la imagen YA está en caché y el cambio es instantáneo.
+  const colorPreloadUrls = useMemo(() => {
+    if (!producto || !producto.imagenes_por_color) return [];
+    const mapa = producto.imagenes_por_color;
+    return Object.values(mapa).filter((u) => typeof u === 'string' && u.startsWith('http'));
+  }, [producto]);
+
   // La foto real del producto es la base del mockup. La "base limpia" generada
   // por IA solo se usa como fallback si la foto real no está disponible.
   // Este efecto ya no cambia la base del mockup — solo genera la limpia en
@@ -411,6 +421,14 @@ export default function ProductoNuevo() {
 
   return (
     <div className="min-h-screen lg:h-screen lg:min-h-0 lg:flex lg:flex-col lg:overflow-hidden font-inter pb-28 lg:pb-0" style={{ background: C.bg, color: C.fg, maxWidth: '100vw', overflowX: 'hidden' }}>
+      {/* Pre-carga invisible de todas las fotos de color para cambio instantáneo */}
+      {colorPreloadUrls.length > 0 && (
+        <div aria-hidden="true" className="hidden">
+          {colorPreloadUrls.map((url) => (
+            <img key={url} src={url} alt="" referrerPolicy="no-referrer" />
+          ))}
+        </div>
+      )}
       <SEOHead
         title={`${producto.nombre} - PEYU Chile`}
         description={producto.descripcion || `Compra ${producto.nombre} personalizado. Regalos corporativos sostenibles hechos con plástico 100% reciclado.`}

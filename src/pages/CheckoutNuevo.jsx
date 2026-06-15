@@ -222,7 +222,7 @@ export default function CheckoutNuevo() {
       giro: billing.tipo_documento === 'Factura' ? billing.giro.trim() : '',
       direccion_facturacion: billing.tipo_documento === 'Factura' ? billing.direccion_facturacion.trim() : '',
       comuna_facturacion: billing.tipo_documento === 'Factura' ? billing.comuna_facturacion.trim() : '',
-      sku: carrito[0]?.sku || carrito[0]?.productoId || null,
+      sku: carrito[0]?.sku || carrito[0]?.productoId || '',
       descripcion_items: items,
       items_detalle: itemsDetalle,
       color: colorTopLevel,
@@ -244,7 +244,7 @@ export default function CheckoutNuevo() {
       logo_url: itemConLogo ? (itemConLogo.logoUrl || itemConLogo.logo_url) : '',
       mockup_url: itemConMockup ? (uploadedMockups[itemConMockup.id] || (!(itemConMockup.mockupUrl || '').startsWith('data:') ? (itemConMockup.mockupUrl || itemConMockup.mockup_url || '') : '')) : '',
       logo_recibido: !!(itemConLogo || itemConMockup),
-      courier: esRetiroPedido ? 'Retiro en Tienda' : `BlueExpress ${envioBluex.servicio}`,
+      courier: esRetiroPedido ? 'Retiro en Tienda' : 'BlueExpress',
       ciudad: esRetiroPedido ? 'Macul' : cliente.ciudad,
       notas: esRetiroPedido
         ? `Carrito v2: ${carrito.length} items | Retiro en tienda Pedro de Valdivia 6603, Macul`
