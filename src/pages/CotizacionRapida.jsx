@@ -614,7 +614,7 @@ export default function CotizacionRapida() {
 
   // ── LAYOUT PRINCIPAL (cockpit 1 pantalla en desktop) ──────────────────────
   return (
-    <div className="min-h-screen lg:h-screen lg:min-h-0 lg:flex lg:flex-col lg:overflow-hidden font-inter max-w-[100vw] overflow-x-hidden" style={{ background: C.bg }}>
+    <div className="min-h-screen lg:h-screen lg:min-h-0 lg:flex lg:flex-col lg:overflow-hidden font-inter pb-[9rem] lg:pb-0" style={{ background: C.bg, maxWidth: '100vw', overflowX: 'hidden' }}>
       <SEOHead
         title="Cotización Rápida B2B — PEYU | Precios Corporativos"
         description="Cotiza tu pedido corporativo en 3 pasos. Precios por volumen, personalización láser, facturación y despacho a Chile."
@@ -826,6 +826,8 @@ export default function CotizacionRapida() {
           backdropFilter: 'blur(18px) saturate(170%)',
           WebkitBackdropFilter: 'blur(18px) saturate(170%)',
           boxShadow: '0 -6px 28px rgba(44,24,16,.14)',
+          transform: 'translateZ(0)',
+          WebkitTransform: 'translateZ(0)',
         }}>
         {items.length > 0 && (
           <div className="flex items-center gap-2 mb-1.5 px-1">

@@ -101,7 +101,7 @@ export default function EmpresaProducto() {
   const esCompostable = producto.material?.includes('Trigo');
 
   return (
-    <div className="min-h-screen font-inter pb-28 lg:pb-8" style={{ background: '#F8F3ED', color: '#2C1810', maxWidth: '100vw', overflowX: 'hidden' }}>
+    <div className="min-h-screen font-inter pb-[8.5rem] lg:pb-8" style={{ background: '#F8F3ED', color: '#2C1810', maxWidth: '100vw', overflowX: 'hidden' }}>
       <B2BHeader backTo="/EmpresasNuevo" />
 
       <div className="max-w-6xl mx-auto px-3 sm:px-6 py-3 sm:py-6" style={{ maxWidth: '100%', overflowX: 'hidden' }}>
@@ -306,7 +306,7 @@ export default function EmpresaProducto() {
       {/* ── NAVBAR FIJA MOBILE ── */}
       <div
         className="lg:hidden fixed bottom-0 inset-x-0 z-[90] pb-safe"
-        style={{ background: 'rgba(248,243,237,.98)', borderTop: '1.5px solid #D4C4B0', backdropFilter: 'blur(20px) saturate(170%)', WebkitBackdropFilter: 'blur(20px) saturate(170%)', boxShadow: '0 -6px 30px rgba(44,24,16,.12)', maxWidth: '100vw', overflowX: 'hidden' }}
+        style={{ background: 'rgba(248,243,237,.98)', borderTop: '1.5px solid #D4C4B0', backdropFilter: 'blur(20px) saturate(170%)', WebkitBackdropFilter: 'blur(20px) saturate(170%)', boxShadow: '0 -6px 30px rgba(44,24,16,.12)', maxWidth: '100vw', overflowX: 'hidden', transform: 'translateZ(0)', WebkitTransform: 'translateZ(0)' }}
       >
         <div className="flex items-stretch gap-2 px-3 py-2.5" style={{ maxWidth: '100%' }}>
           <button

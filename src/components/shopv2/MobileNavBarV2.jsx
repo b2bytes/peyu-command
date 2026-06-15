@@ -112,6 +112,8 @@ export default function MobileNavBarV2({
         backdropFilter: 'blur(20px) saturate(160%)',
         WebkitBackdropFilter: 'blur(20px) saturate(160%)',
         boxShadow: '0 -6px 28px rgba(44,24,16,.14)',
+        transform: 'translateZ(0)',
+        WebkitTransform: 'translateZ(0)',
       }}
     >
       {isAction ? (
