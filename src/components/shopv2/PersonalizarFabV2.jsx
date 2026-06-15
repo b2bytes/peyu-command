@@ -21,12 +21,13 @@ export default function PersonalizarFabV2() {
   return (
     <Link
       to="/personalizar"
-      className={`fixed right-4 sm:right-6 bottom-20 lg:bottom-6 z-[95] inline-flex items-center gap-2 text-white font-bold text-sm px-5 py-3.5 rounded-full transition-all duration-300 hover:scale-105 active:scale-95 ${
+      className={`fixed right-4 sm:right-6 lg:bottom-6 z-[95] inline-flex items-center gap-2 text-white font-bold text-sm px-5 py-3.5 rounded-full transition-all duration-300 hover:scale-105 active:scale-95 ${
         visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'
       }`}
       style={{
         background: 'linear-gradient(135deg,#C0785C,#A86440)',
         boxShadow: '0 10px 30px rgba(192,120,92,.45)',
+        bottom: 'calc(env(safe-area-inset-bottom) + 5rem)',
       }}
       aria-label="Personalizar un producto"
     >

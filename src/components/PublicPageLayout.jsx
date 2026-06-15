@@ -19,7 +19,7 @@ export default function PublicPageLayout() {
   return (
     <div className="min-h-screen flex flex-col font-inter bg-background text-foreground">
       <PublicNavBar />
-      <main className="flex-1 pb-20 lg:pb-0">
+      <main className="flex-1 pb-24 lg:pb-0">
         <Outlet />
       </main>
       {/* MobileNavBarV2 en modo exploración (sin props = NavTabs).
