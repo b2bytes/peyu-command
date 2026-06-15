@@ -3,7 +3,7 @@ import { useLocation, Link, useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import SEOHead from '@/components/SEOHead';
 import {
-  ArrowLeft, Recycle, Truck, Check, Loader2, ShoppingBag, Sparkles, Lock,
+  ArrowLeft, Recycle, Truck, Check, Loader2, ShoppingBag, Sparkles, Lock, ShoppingCart,
 } from 'lucide-react';
 import CheckoutStepperV2 from '@/components/shopv2/CheckoutStepperV2';
 import ColorSwatchesV2 from '@/components/shopv2/ColorSwatchesV2';
@@ -720,25 +720,30 @@ export default function ProductoNuevo() {
 
             {/* CTA desktop fijo bajo la columna (siempre visible, sin scroll) */}
             <div className="hidden lg:block mt-3 lg:flex-shrink-0">
-              <button
-                onClick={handleAdd}
-                disabled={added || !persOk}
-                className="w-full h-14 rounded-2xl text-white font-bold text-base flex items-center justify-center gap-2 transition-all hover:-translate-y-0.5 active:scale-[0.98] disabled:opacity-60 disabled:hover:translate-y-0"
-                style={{ background: C.actionGrad, boxShadow: C.actionShadow }}
-              >
-                {added ? (
-                  <><Check className="w-5 h-5" /> ¡Agregado!</>
-                ) : hayAlgunoActivado(pers) && !pers.aprobada ? (
-                  <><Sparkles className="w-5 h-5" /> Aprueba tu personalización</>
-                ) : (
-                  <><ShoppingBag className="w-5 h-5" /> {ctaLabel}</>
-                )}
-              </button>
-              {!persOk && hayAlgunoActivado(pers) && (
-                <p className="text-center text-xs mt-2 font-semibold" style={{ color: C.fgMuted }}>
-                  Revisa el mockup y aprueba tu diseño para continuar
-                </p>
-              )}
+             <button
+               onClick={handleAdd}
+               disabled={added || !persOk}
+               className="w-full h-14 rounded-2xl text-white font-bold text-base flex items-center justify-center gap-2 transition-all hover:-translate-y-0.5 active:scale-[0.98] disabled:opacity-60 disabled:hover:translate-y-0"
+               style={{ background: C.actionGrad, boxShadow: C.actionShadow }}
+             >
+               {added ? (
+                 <><Check className="w-5 h-5" /> ¡Agregado!</>
+               ) : hayAlgunoActivado(pers) && !pers.aprobada ? (
+                 <><Sparkles className="w-5 h-5" /> Aprueba tu personalización</>
+               ) : (
+                 <><ShoppingBag className="w-5 h-5" /> {ctaLabel}</>
+               )}
+             </button>
+             {!persOk && hayAlgunoActivado(pers) && (
+               <p className="text-center text-xs mt-2 font-semibold" style={{ color: C.fgMuted }}>
+                 Revisa el mockup y aprueba tu diseño para continuar
+               </p>
+             )}
+             {persOk && (
+               <Link to="/CatalogoNuevo" className="block text-center text-xs font-semibold mt-2 hover:underline" style={{ color: C.fgMuted }}>
+                 ← Seguir comprando
+               </Link>
+             )}
             </div>
           </div>
         </div>

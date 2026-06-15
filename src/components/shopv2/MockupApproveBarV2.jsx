@@ -11,18 +11,24 @@ import { CheckCircle2, Pencil, Sparkles } from 'lucide-react';
 export default function MockupApproveBarV2({ pers, setPers }) {
   if (pers.aprobada) {
     return (
-      <div className="mt-3 flex items-center justify-between rounded-2xl px-4 py-3"
-        style={{ background: 'rgba(15,139,108,.12)', border: '1.5px solid rgba(15,139,108,.35)' }}>
-        <span className="text-sm font-bold flex items-center gap-2" style={{ color: '#0F8B6C' }}>
-          <CheckCircle2 className="w-5 h-5" /> Mockup aprobado
-        </span>
-        <button
-          onClick={() => setPers({ ...pers, aprobada: false })}
-          className="text-xs font-bold flex items-center gap-1 px-3 py-1.5 rounded-xl transition-colors hover:bg-white"
-          style={{ color: '#7A6050', border: '1px solid #D4C4B0' }}
-        >
-          <Pencil className="w-3 h-3" /> Editar
-        </button>
+      <div className="mt-3 space-y-2">
+        <div className="flex items-center justify-between rounded-2xl px-4 py-3"
+          style={{ background: 'rgba(15,139,108,.12)', border: '1.5px solid rgba(15,139,108,.35)' }}>
+          <span className="text-sm font-bold flex items-center gap-2" style={{ color: '#0F8B6C' }}>
+            <CheckCircle2 className="w-5 h-5" /> Mockup aprobado
+          </span>
+          <button
+            onClick={() => setPers({ ...pers, aprobada: false })}
+            className="text-xs font-bold flex items-center gap-1 px-3 py-1.5 rounded-xl transition-colors hover:bg-white"
+            style={{ color: '#7A6050', border: '1px solid #D4C4B0' }}
+          >
+            <Pencil className="w-3 h-3" /> Editar
+          </button>
+        </div>
+        {/* Pista visual: ya puedes agregar al carrito */}
+        <p className="text-[11px] text-center font-semibold" style={{ color: '#8BAD8A' }}>
+          ✅ Listo — usa el botón <strong style={{ color: '#C0785C' }}>"Agregar al carrito"</strong> para continuar
+        </p>
       </div>
     );
   }

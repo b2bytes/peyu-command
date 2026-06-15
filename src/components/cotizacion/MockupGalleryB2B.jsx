@@ -218,6 +218,12 @@ export default function MockupGalleryB2B({
             <p className="text-[10px] text-center text-[#A78B6F]">
               Vista previa instantánea activa · IA genera resultado foto-realista (~20s/producto)
             </p>
+            {/* Si ya hay al menos un mockup generado, muestra guía de continuar */}
+            {Object.keys(mockupUrls).length > 0 && (
+              <p className="text-[11px] text-center font-bold text-[#0F8B6C] mt-1">
+                ✅ Mockups listos — continúa abajo para finalizar tu cotización
+              </p>
+            )}
           </>
         )}
 
