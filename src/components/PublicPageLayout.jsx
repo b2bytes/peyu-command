@@ -5,7 +5,7 @@ import VendedorChatBar from '@/components/vendedor/VendedorChatBar';
 
 // Rutas que renderizan su PROPIA MobileNavBarV2 en modo acción (CTA comprar/pagar).
 // En ellas NO mostramos los tabs de navegación para no tapar el botón de compra.
-const ACTION_ROUTES = ['/ProductoNuevo', '/CarritoNuevo', '/CheckoutNuevo'];
+const ACTION_ROUTES = ['/ProductoNuevo', '/CarritoNuevo', '/CheckoutNuevo', '/EmpresaProducto'];
 
 /**
  * PublicPageLayout — wrapper universal para TODAS las páginas públicas.

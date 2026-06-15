@@ -241,8 +241,8 @@ export default function VendedorChatBar() {
             </div>
           )}
 
-          {/* Input — pegado abajo con safe area + margen para nav bar móvil */}
-          <div className="flex-shrink-0 px-3 py-2.5" style={{ borderTop: '1px solid #E7D8C6', background: 'white', paddingBottom: 'max(env(safe-area-inset-bottom, 12px), 70px)' }}>
+          {/* Input — pegado abajo con safe area. En mobile full-screen el panel cubre todo. */}
+          <div className="flex-shrink-0 px-3 py-2.5 pb-safe" style={{ borderTop: '1px solid #E7D8C6', background: 'white' }}>
             <div className="flex items-center gap-2 rounded-full pl-4 pr-1.5 py-1.5"
               style={{ background: '#F8F3ED', border: '1.5px solid #D4C4B0' }}>
               <input
@@ -271,7 +271,7 @@ export default function VendedorChatBar() {
       {!open && (
         <button
           onClick={handleOpen}
-          className="fixed bottom-[4.5rem] right-4 lg:bottom-6 lg:right-6 z-[65] w-[60px] h-[60px] rounded-2xl flex items-center justify-center shadow-xl transition-all active:scale-90 hover:-translate-y-1 overflow-hidden p-1"
+          className="fixed bottom-[5rem] right-4 lg:bottom-6 lg:right-6 z-[95] w-[60px] h-[60px] rounded-2xl flex items-center justify-center shadow-xl transition-all active:scale-90 hover:-translate-y-1 overflow-hidden p-1"
           style={{ background: 'linear-gradient(135deg,#0F8B6C,#0B6E55)', boxShadow: '0 8px 32px rgba(15,139,108,.35)' }}
           title="Hablar con Peyu">
           <img

@@ -43,8 +43,8 @@ export default function FloatingActionDock({
 
   return (
     <div
-      className="fixed right-3 sm:right-4 z-40 flex flex-col items-end gap-2"
-      style={{ bottom: 'calc(env(safe-area-inset-bottom) + 4rem)' }}
+      className="fixed right-3 sm:right-4 z-[95] flex flex-col items-end gap-2"
+      style={{ bottom: 'calc(env(safe-area-inset-bottom) + 5rem)' }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >

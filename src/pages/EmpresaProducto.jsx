@@ -129,7 +129,7 @@ export default function EmpresaProducto() {
   const esCompostable = producto.material?.includes('Trigo');
 
   return (
-    <div className={`min-h-screen font-inter ${showForm ? 'pb-[15rem]' : 'pb-[9rem]'} lg:pb-8 transition-[padding]`} style={{ background: '#F8F3ED', color: '#2C1810', maxWidth: '100vw', overflowX: 'hidden' }}>
+    <div className={`min-h-screen font-inter ${showForm ? 'pb-[11rem]' : 'pb-[5.5rem]'} lg:pb-8 transition-[padding]`} style={{ background: '#F8F3ED', color: '#2C1810', maxWidth: '100vw', overflowX: 'hidden' }}>
       <B2BHeader backTo="/EmpresasNuevo" />
 
       <div className="max-w-6xl mx-auto px-3 sm:px-6 py-3 sm:py-6" style={{ maxWidth: '100%', overflowX: 'hidden' }}>
