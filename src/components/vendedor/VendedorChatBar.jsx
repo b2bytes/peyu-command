@@ -271,8 +271,7 @@ export default function VendedorChatBar() {
       {!open && (
         <button
           onClick={handleOpen}
-          className="fixed right-4 lg:bottom-6 lg:right-6 z-[95] w-[60px] h-[60px] rounded-2xl flex items-center justify-center shadow-xl transition-all active:scale-90 hover:-translate-y-1 overflow-hidden p-1"
-          style={{ bottom: 'calc(env(safe-area-inset-bottom) + 5rem)' }}
+          className="fixed right-4 bottom-20 lg:bottom-6 lg:right-6 z-[95] w-[60px] h-[60px] rounded-2xl flex items-center justify-center shadow-xl transition-all active:scale-90 hover:-translate-y-1 overflow-hidden p-1"
           style={{ background: 'linear-gradient(135deg,#0F8B6C,#0B6E55)', boxShadow: '0 8px 32px rgba(15,139,108,.35)' }}
           title="Hablar con Peyu">
           <img

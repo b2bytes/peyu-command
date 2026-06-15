@@ -17,7 +17,7 @@ export default function PublicPageLayout() {
   const isActionRoute = ACTION_ROUTES.some((r) => pathname.startsWith(r));
 
   return (
-    <div className="min-h-screen flex flex-col font-inter bg-background text-foreground">
+    <div className="min-h-screen flex flex-col font-inter" style={{ background: '#F8F3ED', color: '#2C1810' }}>
       <PublicNavBar />
       <main className="flex-1 pb-24 lg:pb-0">
         <Outlet />
