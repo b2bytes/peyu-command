@@ -189,7 +189,6 @@ export default function CheckoutNuevo() {
     const itemsDetalle = carrito.map(i => {
       // Usa la URL subida si existe (mockup capturado del canvas), sino la original.
       const mockupFinal = uploadedMockups[i.id] || (!(i.mockupUrl || '').startsWith('data:') ? (i.mockupUrl || i.mockup_url || '') : '');
-      const imagenBase = i.imagen_base || i.imagen || '';
       return {
         sku: i.sku || '',
         nombre: i.nombre || '',
@@ -197,14 +196,12 @@ export default function CheckoutNuevo() {
         pack_resumen: i.pack_resumen || '',
         personalizacion: i.personalizacion || '',
         tipo_personalizacion: i.personalizacion ? tipoLineaCombinado(i) : '',
-        fee_personalizacion: feePersItem(i),
+        fee_personalizacion: Number(feePersItem(i)) || 0,
         logo_url: i.logoUrl || i.logo_url || '',
-        mockup_url: mockupFinal,
+        mockup_url: mockupFinal || '',
         posicion_grabado: posicionLinea(i),
-        precio_unitario: i.precio || 0,
-        cantidad: i.cantidad || 1,
-        imagen_base: imagenBase,
-        capas_grabado: Array.isArray(i.capas_grabado) ? i.capas_grabado : [],
+        precio_unitario: Number(i.precio) || 0,
+        cantidad: Number(i.cantidad) || 1,
       };
     });
     const colorTopLevel = carrito.length === 1 ? (carrito[0]?.color || '') : '';
@@ -229,16 +226,16 @@ export default function CheckoutNuevo() {
       descripcion_items: items,
       items_detalle: itemsDetalle,
       color: colorTopLevel,
-      cantidad: carrito.reduce((s, i) => s + (i.cantidad || 1), 0),
-      subtotal,
-      costo_envio: envio,
-      fee_personalizacion: cargoPersonalizacion,
+      cantidad: carrito.reduce((s, i) => s + (Number(i.cantidad) || 1), 0),
+      subtotal: Number(subtotal) || 0,
+      costo_envio: Number(envio) || 0,
+      fee_personalizacion: Number(cargoPersonalizacion) || 0,
       tipo_personalizacion: (() => {
         const tipos = Array.from(new Set(carrito.filter(i => i.personalizacion).map(i => getTipoPersonalizacion(i)).filter(Boolean)));
         return tipos.length === 1 ? tipos[0] : (tipos.length > 1 ? 'mixto' : '');
       })(),
-      descuento: ahorroTotal,
-      total,
+      descuento: Number(ahorroTotal) || 0,
+      total: Number(total) || 0,
       medio_pago: medioPago,
       estado: 'Nuevo',
       direccion_envio: direccionCompleta,
@@ -259,6 +256,19 @@ export default function CheckoutNuevo() {
       pedido = await base44.entities.PedidoWeb.create(datosPedido);
     } catch (e) {
       console.error('Error creando pedido:', e);
+      // Registrar el error para diagnóstico
+      try {
+        await base44.entities.ErrorLog.create({
+          source: 'frontend_window',
+          severity: 'high',
+          message: `CheckoutNuevo: PedidoWeb.create falló — ${e?.message || 'sin mensaje'}`,
+          url: window.location.href,
+          user_agent: navigator.userAgent,
+          viewport: `${window.innerWidth}x${window.innerHeight}`,
+          user_email: cliente.email || '',
+          extra: { total, medioPago, canal: 'Web Propia', itemsCount: carrito.length, stack: (e?.stack || '').slice(0, 2000) },
+        }).catch(() => {});
+      } catch (_) {}
       setErrorPago('No pudimos crear tu pedido. Revisa tu conexión e intenta nuevamente.');
       setCreando(false);
       return;
