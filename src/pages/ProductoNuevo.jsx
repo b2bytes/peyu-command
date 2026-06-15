@@ -183,27 +183,31 @@ export default function ProductoNuevo() {
     return [main, ...extra].slice(0, 6);
   }, [producto, color, esCarcasa]);
 
-  // Al cambiar de color, la imagen principal se sincroniza sola: en carcasas la
-  // 1ª imagen YA es la del color (imagenes_por_color); en el resto de productos
-  // buscamos en la galería la foto que coincide con el color elegido (matching
-  // por nombre de archivo: rojo, negro, verde...) y saltamos a ella.
+  // Al cambiar de color, saltamos a la imagen correcta en la galería.
+  // Prioridad: imagenes_por_color (foto real) > match por nombre > índice 0.
   useEffect(() => {
     if (!color || esCarcasa) { setGalIdx(0); return; }
-    // Matching por nombre de archivo (rojo, negro, verde...). En no-carcasas el
-    // mapa imagenes_por_color NO se usa: estaba mal poblado y mostraba fotos de
-    // otro color (bug reportado por el cliente).
+    // Si imagenes_por_color tiene foto real para este color, va al índice 0
+    // (la galería arranca con la imagen principal, que displayImg ya resolvió).
+    const colorPhoto = getProductImageForColor(producto, color);
+    if (colorPhoto && colorPhoto !== getProductImage(producto)) {
+      setGalIdx(0);
+      return;
+    }
     const match = findColorImageMatch(galleryImages, color);
     setGalIdx(match ? match.index : 0);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [colorId, esCarcasa]);
 
-  // La imagen principal SIEMPRE es la del color elegido. En no-carcasas el mapa
-  // imagenes_por_color no es confiable: usamos match real por nombre de archivo
-  // en la galería; si no hay foto del color, queda la base + tinte CSS oficial.
+  // La imagen principal SIEMPRE es la del color elegido.
+  // Prioridad: 1) imagenes_por_color (foto real del color) → 2) match por nombre en galería → 3) base + tinte.
   const displayImg = useMemo(() => {
     if (!producto) return null;
     if (esCarcasa && color) return getProductImageForColor(producto, color);
     if (color) {
+      const colorPhoto = getProductImageForColor(producto, color);
+      const base = getProductImage(producto);
+      if (colorPhoto !== base) return colorPhoto;
       const match = findColorImageMatch(galleryImages, color);
       if (match) return galleryImages[match.index];
     }
@@ -236,22 +240,23 @@ export default function ProductoNuevo() {
   // o la generada al vuelo (cleanBaseUrl) cuando el cliente carga su diseño.
   const [cleanBaseUrl, setCleanBaseUrl] = useState(null);
   const colorImg = useMemo(() => {
-    // Base del mockup: SIEMPRE usa la foto real del producto, nunca la "base limpia"
-    // generada por IA (que en productos no-carcasa deforma la imagen — bug llaveros,
-    // cachos, paletas). La foto real es la fuente de verdad.
-    //
+    if (!producto) return null;
+    const base = getProductImage(producto);
+
     // ① CARCASA con color → foto real del color (imagenes_por_color).
     if (esCarcasa && color) {
       const colorPhoto = getProductImageForColor(producto, color);
-      if (colorPhoto) return colorPhoto;
+      if (colorPhoto && colorPhoto !== base) return colorPhoto;
     }
-    // ② NO-CARCASA con color → foto real que coincide con ese color en la galería.
+    // ② NO-CARCASA con color: imagenes_por_color primero, galería después.
     if (!esCarcasa && color) {
+      const colorPhoto = getProductImageForColor(producto, color);
+      if (colorPhoto !== base) return colorPhoto;
       const match = findColorImageMatch(galleryImages, color);
       if (match) return galleryImages[match.index];
     }
     // ③ Fallback universal: la imagen principal del producto (SIEMPRE real, nunca IA).
-    return getProductImage(producto);
+    return base;
   }, [producto, color, esCarcasa, galleryImages]);
 
   // Capas (combinables) para el mockup en vivo. ORDEN FIJO de apilado

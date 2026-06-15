@@ -26,15 +26,10 @@ export function getColorTintFilter(producto, color, hasRealPhoto = false) {
   if (!producto || !color?.hex) return '';
   if (color.id === 'mixto') return '';
   if (hasRealPhoto) return '';
-  // Fuente de verdad: si el mapa imagenes_por_color tiene foto REAL para este
-  // color, NUNCA se tiñe (aunque esa foto coincida con la imagen principal —
-  // ej. la foto base ya es azul y Azul mapea a ella).
-  const mapa = (producto.imagenes_por_color && typeof producto.imagenes_por_color === 'object') ? producto.imagenes_por_color : {};
-  const hayFotoMapa = Object.keys(mapa).some(
-    (k) => mapa[k] && (norm(k) === norm(color.id) || norm(k) === norm(color.label)),
-  );
-  if (hayFotoMapa) return '';
+  // Solo bloqueamos el tinte si existe una foto REAL DIFERENTE de la base
+  // para este color específico. Si imagenes_por_color mapea a la misma URL
+  // base, aplicamos tinte normalmente (no hay foto real del color).
   const mapped = getProductImageForColor(producto, color);
-  if (mapped !== getProductImage(producto)) return ''; // hay foto real por color
+  if (mapped && mapped !== getProductImage(producto)) return ''; // hay foto real por color
   return buildColorFilter(color.hex);
 }
