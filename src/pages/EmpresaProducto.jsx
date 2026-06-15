@@ -9,6 +9,7 @@ import { base44 } from '@/api/base44Client';
 import {
   ArrowLeft, Recycle, ShieldCheck, Truck, Check, Loader2,
   Sparkles, Package, TrendingDown, Plus, Minus, ArrowRight,
+  Building2, Send,
 } from 'lucide-react';
 import B2BHeader from '@/components/b2b/B2BHeader';
 import B2BPriceTable from '@/components/b2b/B2BPriceTable';
@@ -33,6 +34,13 @@ export default function EmpresaProducto() {
   const [activeImg, setActiveImg] = useState(0);
   const [logoUrl, setLogoUrl] = useState(null); // logo subido en esta ficha → viaja al cotizador
   const [colorId, setColorId] = useState(null); // color oficial elegido (norma catálogo PDF)
+
+  // ── Captura de lead B2B inline (reemplaza el paso CotizacionRapida) ──
+  const [showForm, setShowForm] = useState(false);
+  const [form, setForm] = useState({ company: '', name: '', email: '', phone: '' });
+  const [sending, setSending] = useState(false);
+  const [sent, setSent] = useState(false);
+  const [sendError, setSendError] = useState('');
 
   useEffect(() => {
     if (!id) { setLoading(false); return; }
@@ -72,11 +80,31 @@ export default function EmpresaProducto() {
     ? producto.incluye_items_v2
     : (producto?.incluye ? [producto.incluye] : []);
 
-  const goToCotizar = () => {
-    // FLUJO CONTINUO: el logo cargado en esta ficha viaja al cotizador por URL
-    // (CotizacionRapida lo lee con ?logo=) — nunca se pide una segunda vez.
-    const logoParam = logoUrl ? `&logo=${encodeURIComponent(logoUrl)}` : '';
-    navigate(`/CotizacionRapida?sku=${producto?.sku}&qty=${qty}${logoParam}`);
+  const goToCotizar = () => setShowForm(true);
+
+  const submitLead = async () => {
+    if (!form.company.trim() || !form.name.trim() || !form.email.trim()) {
+      setSendError('Completa empresa, nombre y email.');
+      return;
+    }
+    setSendError('');
+    setSending(true);
+    try {
+      await base44.functions.invoke('captureB2BLeadV2', {
+        contact_name: form.name.trim(),
+        company_name: form.company.trim(),
+        email: form.email.trim(),
+        phone: form.phone.trim() || undefined,
+        qty_estimate: qty,
+        product_interest: `${producto?.sku} — ${producto?.nombre || ''} · ${qty}u`,
+        logo_url: logoUrl || undefined,
+      });
+      setSent(true);
+    } catch {
+      setSendError('Error al enviar. Intenta de nuevo.');
+    } finally {
+      setSending(false);
+    }
   };
 
   if (loading) return (
@@ -101,7 +129,7 @@ export default function EmpresaProducto() {
   const esCompostable = producto.material?.includes('Trigo');
 
   return (
-    <div className="min-h-screen font-inter pb-[8.5rem] lg:pb-8" style={{ background: '#F8F3ED', color: '#2C1810', maxWidth: '100vw', overflowX: 'hidden' }}>
+    <div className={`min-h-screen font-inter ${showForm ? 'pb-[15rem]' : 'pb-[9rem]'} lg:pb-8 transition-[padding]`} style={{ background: '#F8F3ED', color: '#2C1810', maxWidth: '100vw', overflowX: 'hidden' }}>
       <B2BHeader backTo="/EmpresasNuevo" />
 
       <div className="max-w-6xl mx-auto px-3 sm:px-6 py-3 sm:py-6" style={{ maxWidth: '100%', overflowX: 'hidden' }}>
@@ -286,19 +314,58 @@ export default function EmpresaProducto() {
               ))}
             </div>
 
-            {/* CTA desktop */}
-            <div className="hidden lg:flex flex-col gap-2">
-              <button
-                onClick={goToCotizar}
-                className="flex-1 h-14 rounded-2xl text-white font-bold text-base flex items-center justify-center gap-2 transition-all hover:scale-[1.01] active:scale-[0.98]"
-                style={{ background: 'linear-gradient(135deg,#0F8B6C,#0B6E55)', boxShadow: '0 8px 28px rgba(15,139,108,.28)' }}
-              >
-                Continuar cotización <ArrowRight className="w-5 h-5" />
-              </button>
-              <p className="text-[11px] text-center px-1" style={{ color: '#A08070' }}>
-                {fmtCLP(neto)} neto + IVA · Sin compromiso · Presupuesto formal en 24h
-              </p>
-            </div>
+            {/* CTA desktop — captura lead inline */}
+            {sent ? (
+              <div className="hidden lg:flex flex-col items-center gap-2 p-5 rounded-2xl" style={{ background: '#0F8B6C08', border: '1.5px solid #0F8B6C30' }}>
+                <Check className="w-8 h-8" style={{ color: '#0F8B6C' }} />
+                <p className="font-bold text-base" style={{ color: '#0F8B6C' }}>¡Cotización enviada!</p>
+                <p className="text-xs text-center" style={{ color: '#7A6050' }}>Te responderemos en 24h hábiles.</p>
+                <Link to="/EmpresasNuevo" className="text-xs font-bold mt-1 underline" style={{ color: '#0F8B6C' }}>Seguir explorando el catálogo →</Link>
+              </div>
+            ) : showForm ? (
+              <div className="hidden lg:flex flex-col gap-3 p-4 rounded-2xl" style={{ background: 'white', border: '1.5px solid #D4C4B0' }}>
+                <p className="font-bold text-sm" style={{ color: '#2C1810' }}>
+                  <Building2 className="w-4 h-4 inline mr-1.5" style={{ color: '#0F8B6C' }} />
+                  Datos para tu cotización
+                </p>
+                <input value={form.company} onChange={e => setForm(f => ({ ...f, company: e.target.value }))}
+                  placeholder="Empresa *" className="h-11 px-4 rounded-xl text-sm focus:outline-none" style={{ border: '1.5px solid #D4C4B0', background: '#F8F3ED' }} />
+                <div className="grid grid-cols-2 gap-2">
+                  <input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
+                    placeholder="Nombre *" className="h-11 px-4 rounded-xl text-sm focus:outline-none" style={{ border: '1.5px solid #D4C4B0', background: '#F8F3ED' }} />
+                  <input value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))}
+                    placeholder="Teléfono" className="h-11 px-4 rounded-xl text-sm focus:outline-none" style={{ border: '1.5px solid #D4C4B0', background: '#F8F3ED' }} />
+                </div>
+                <input value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
+                  placeholder="Email *" type="email" className="h-11 px-4 rounded-xl text-sm focus:outline-none" style={{ border: '1.5px solid #D4C4B0', background: '#F8F3ED' }} />
+                {sendError && <p className="text-xs font-bold" style={{ color: '#D96B4D' }}>{sendError}</p>}
+                <div className="flex gap-2">
+                  <button onClick={() => setShowForm(false)}
+                    className="h-11 px-4 rounded-xl font-bold text-sm transition-all active:scale-95"
+                    style={{ border: '1.5px solid #D4C4B0', color: '#7A6050', background: 'white' }}>
+                    Cancelar
+                  </button>
+                  <button onClick={submitLead} disabled={sending}
+                    className="flex-1 h-11 rounded-xl text-white font-bold text-sm flex items-center justify-center gap-2 transition-all active:scale-[0.98] disabled:opacity-60"
+                    style={{ background: 'linear-gradient(135deg,#0F8B6C,#0B6E55)', boxShadow: '0 4px 16px rgba(15,139,108,.3)' }}>
+                    {sending ? 'Enviando…' : <>{fmtCLP(neto)} neto · Enviar <Send className="w-4 h-4" /></>}
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="hidden lg:flex flex-col gap-2">
+                <button
+                  onClick={goToCotizar}
+                  className="flex-1 h-14 rounded-2xl text-white font-bold text-base flex items-center justify-center gap-2 transition-all hover:scale-[1.01] active:scale-[0.98]"
+                  style={{ background: 'linear-gradient(135deg,#0F8B6C,#0B6E55)', boxShadow: '0 8px 28px rgba(15,139,108,.28)' }}
+                >
+                  Solicitar cotización <ArrowRight className="w-5 h-5" />
+                </button>
+                <p className="text-[11px] text-center px-1" style={{ color: '#A08070' }}>
+                  {fmtCLP(neto)} neto + IVA · Sin compromiso · Presupuesto formal en 24h
+                </p>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -308,27 +375,71 @@ export default function EmpresaProducto() {
         className="lg:hidden fixed bottom-0 inset-x-0 z-[90] pb-safe"
         style={{ background: 'rgba(248,243,237,.98)', borderTop: '1.5px solid #D4C4B0', backdropFilter: 'blur(20px) saturate(170%)', WebkitBackdropFilter: 'blur(20px) saturate(170%)', boxShadow: '0 -6px 30px rgba(44,24,16,.12)', maxWidth: '100vw', overflowX: 'hidden', transform: 'translateZ(0)', WebkitTransform: 'translateZ(0)' }}
       >
-        <div className="flex items-stretch gap-2 px-3 py-2.5" style={{ maxWidth: '100%' }}>
-          <button
-            onClick={() => navigate('/EmpresasNuevo')}
-            className="flex-shrink-0 h-12 px-3.5 rounded-2xl flex items-center gap-1 font-bold text-xs transition-all active:scale-[0.97]"
-            style={{ background: 'white', border: '1.5px solid #D4C4B0', color: '#7A6050' }}
-          >
-            <ArrowLeft className="w-4 h-4" /> Atrás
-          </button>
-          <div className="flex-1 min-w-0 flex flex-col justify-center">
-            <button
-              onClick={goToCotizar}
-              className="w-full h-12 rounded-2xl text-white font-bold text-sm flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
-              style={{ background: 'linear-gradient(135deg,#0F8B6C,#0B6E55)', boxShadow: '0 4px 16px rgba(15,139,108,.3)' }}
-            >
-              Continuar <ArrowRight className="w-4 h-4" />
-            </button>
-            <p className="text-[10px] text-center mt-0.5 font-semibold" style={{ color: '#A08070' }}>
-              {fmtCLP(neto)} neto + IVA
-            </p>
+        {sent ? (
+          <div className="flex flex-col items-center px-3 py-3 gap-1">
+            <div className="flex items-center gap-2">
+              <Check className="w-5 h-5" style={{ color: '#0F8B6C' }} />
+              <span className="font-bold text-sm" style={{ color: '#0F8B6C' }}>¡Cotización enviada!</span>
+            </div>
+            <Link to="/EmpresasNuevo" className="text-[10px] font-bold underline" style={{ color: '#0F8B6C' }}>
+              Seguir explorando el catálogo →
+            </Link>
           </div>
-        </div>
+        ) : showForm ? (
+          <div className="px-3 py-2.5 space-y-2" style={{ maxWidth: '100%' }}>
+            <div className="flex items-center gap-2">
+              <Building2 className="w-4 h-4 flex-shrink-0" style={{ color: '#0F8B6C' }} />
+              <span className="text-xs font-bold" style={{ color: '#2C1810' }}>Datos de cotización</span>
+            </div>
+            <div className="grid grid-cols-2 gap-1.5">
+              <input value={form.company} onChange={e => setForm(f => ({ ...f, company: e.target.value }))}
+                placeholder="Empresa *" className="h-10 px-3 rounded-xl text-xs focus:outline-none" style={{ border: '1.5px solid #D4C4B0', background: 'white' }} />
+              <input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
+                placeholder="Nombre *" className="h-10 px-3 rounded-xl text-xs focus:outline-none" style={{ border: '1.5px solid #D4C4B0', background: 'white' }} />
+            </div>
+            <div className="grid grid-cols-2 gap-1.5">
+              <input value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
+                placeholder="Email *" type="email" className="h-10 px-3 rounded-xl text-xs focus:outline-none" style={{ border: '1.5px solid #D4C4B0', background: 'white' }} />
+              <input value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))}
+                placeholder="Teléfono" className="h-10 px-3 rounded-xl text-xs focus:outline-none" style={{ border: '1.5px solid #D4C4B0', background: 'white' }} />
+            </div>
+            {sendError && <p className="text-[10px] font-bold" style={{ color: '#D96B4D' }}>{sendError}</p>}
+            <div className="flex gap-2">
+              <button onClick={() => setShowForm(false)}
+                className="flex-shrink-0 h-10 px-4 rounded-xl font-bold text-xs transition-all active:scale-95"
+                style={{ border: '1.5px solid #D4C4B0', color: '#7A6050', background: 'white' }}>
+                Cancelar
+              </button>
+              <button onClick={submitLead} disabled={sending}
+                className="flex-1 h-10 rounded-xl text-white font-bold text-sm flex items-center justify-center gap-2 transition-all active:scale-[0.98] disabled:opacity-60"
+                style={{ background: 'linear-gradient(135deg,#0F8B6C,#0B6E55)', boxShadow: '0 4px 16px rgba(15,139,108,.3)' }}>
+                {sending ? 'Enviando…' : <>{fmtCLP(neto)} · Enviar <Send className="w-3.5 h-3.5" /></>}
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="flex items-stretch gap-2 px-3 py-2.5" style={{ maxWidth: '100%' }}>
+            <button
+              onClick={() => navigate('/EmpresasNuevo')}
+              className="flex-shrink-0 h-12 px-3.5 rounded-2xl flex items-center gap-1 font-bold text-xs transition-all active:scale-[0.97]"
+              style={{ background: 'white', border: '1.5px solid #D4C4B0', color: '#7A6050' }}
+            >
+              <ArrowLeft className="w-4 h-4" /> Atrás
+            </button>
+            <div className="flex-1 min-w-0 flex flex-col justify-center">
+              <button
+                onClick={goToCotizar}
+                className="w-full h-12 rounded-2xl text-white font-bold text-sm flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
+                style={{ background: 'linear-gradient(135deg,#0F8B6C,#0B6E55)', boxShadow: '0 4px 16px rgba(15,139,108,.3)' }}
+              >
+                Solicitar cotización <ArrowRight className="w-4 h-4" />
+              </button>
+              <p className="text-[10px] text-center mt-0.5 font-semibold" style={{ color: '#A08070' }}>
+                {fmtCLP(neto)} neto + IVA
+              </p>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

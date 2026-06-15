@@ -12,12 +12,11 @@ import { base44 } from '@/api/base44Client';
 import SEOHead from '@/components/SEOHead';
 import {
   Building2, Loader2, Search, Recycle, TrendingDown, Sparkles,
-  ShieldCheck, Truck, FileText, ArrowRight, ArrowLeft, Star, Check,
-  ChevronRight, Package, ShoppingCart, History,
+  ShieldCheck, Truck, FileText, ArrowRight, ArrowLeft, Check,
+  ChevronRight, Package,
 } from 'lucide-react';
 import B2BCatalogCard from '@/components/b2b/B2BCatalogCard';
 import MobileNavBarV2 from '@/components/shopv2/MobileNavBarV2';
-import { loadQuoteJourney } from '@/lib/cotizacion-journey';
 
 const C = {
   bg: '#F8F3ED',
@@ -33,11 +32,9 @@ const C = {
   terra: '#D96B4D',
 };
 
-// Recorrido B2B coordinado: este es el paso 1; los siguientes viven en /CotizacionRapida.
+// Catálogo B2B end-to-end: todo en una sola página.
 const JOURNEY = [
   { label: 'Catálogo B2B', Icon: Package },
-  { label: 'Cotización', Icon: Building2 },
-  { label: 'Propuesta', Icon: ShoppingCart },
 ];
 
 const CATEGORIAS = ['Todos', 'Corporativo', 'Escritorio', 'Hogar', 'Entretenimiento'];
@@ -65,8 +62,6 @@ export default function EmpresasNuevo() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [cat, setCat] = useState('Todos');
-  const [savedQuote, setSavedQuote] = useState(null);
-
   // Fondo crema fijo (Warm Dusk): forzamos modo día mientras está abierta.
   useEffect(() => {
     const html = document.documentElement;
@@ -89,10 +84,6 @@ export default function EmpresasNuevo() {
         setProductos(b2b);
       })
       .finally(() => setLoading(false));
-
-    // Coordinación del recorrido: si hay una cotización a medias, se ofrece retomarla.
-    const saved = loadQuoteJourney();
-    if (saved && (saved.items?.length || saved.form?.company_name)) setSavedQuote(saved);
   }, []);
 
   const filtrados = useMemo(() => {
@@ -112,25 +103,6 @@ export default function EmpresasNuevo() {
   }, [productos]);
 
   // ── Bloques reutilizados desktop + mobile (sin duplicar lógica) ───────────
-  const ResumeQuoteChip = savedQuote && (
-    <Link
-      to="/CotizacionRapida"
-      className="flex items-center gap-3 p-3 rounded-2xl transition-all hover:-translate-y-0.5"
-      style={{ background: 'rgba(15,139,108,.07)', border: '1.5px solid rgba(15,139,108,.3)' }}
-    >
-      <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: 'rgba(15,139,108,.12)' }}>
-        <History className="w-4 h-4" style={{ color: C.action }} />
-      </div>
-      <div className="flex-1 min-w-0 text-left">
-        <p className="text-xs font-bold" style={{ color: C.action }}>Tienes una cotización a medias</p>
-        <p className="text-[11px] truncate" style={{ color: C.fgSoft }}>
-          {savedQuote.items?.length ? `${savedQuote.items.length} producto${savedQuote.items.length === 1 ? '' : 's'} guardado${savedQuote.items.length === 1 ? '' : 's'}` : 'Tus datos quedaron guardados'} — retómala en 1 clic
-        </p>
-      </div>
-      <ArrowRight className="w-4 h-4 flex-shrink-0" style={{ color: C.action }} />
-    </Link>
-  );
-
   const SearchAndChips = (
     <div className="flex flex-col gap-3">
       <div className="relative">
@@ -199,23 +171,6 @@ export default function EmpresasNuevo() {
     </div>
   );
 
-  const CTACard = (
-    <div className="rounded-2xl p-5 text-center" style={{ background: C.actionGrad }}>
-      <Star className="w-7 h-7 text-white/70 mx-auto mb-2" />
-      <h2 className="font-fraunces text-xl text-white mb-1.5">Pide tu cotización</h2>
-      <p className="text-xs text-white/80 mb-4 leading-relaxed">
-        Precios por volumen real • Grabado gratis • Respuesta en 24h hábiles
-      </p>
-      <Link
-        to="/CotizacionRapida"
-        className="inline-flex items-center gap-2 font-bold text-sm px-5 py-3 rounded-2xl transition-all hover:scale-105 active:scale-95"
-        style={{ background: 'white', color: C.action, boxShadow: '0 4px 16px rgba(0,0,0,0.15)' }}
-      >
-        Cotizar ahora <ArrowRight className="w-4 h-4" />
-      </Link>
-    </div>
-  );
-
   // Sellos en franja compacta de 1 línea (scroll horizontal) — versión mobile
   // del TrustGrid: mismo contenido, sin ocupar 2 filas de pantalla.
   const TrustStrip = (
@@ -281,53 +236,29 @@ export default function EmpresasNuevo() {
             </div>
           </div>
 
-          {/* Desktop: recorrido B2B inline (este es el paso 1) */}
+          {/* Desktop: Paso único del catálogo */}
           <div className="hidden lg:flex items-center gap-1 flex-1 justify-center">
-            {JOURNEY.map((s, i) => {
-              const active = i === 0;
-              const inner = (
-                <div
-                  className="flex items-center gap-2 px-3 py-1.5 rounded-xl transition-all"
-                  style={{
-                    background: active ? 'rgba(15,139,108,.10)' : 'transparent',
-                    border: active ? `1.5px solid ${C.action}` : '1.5px solid transparent',
-                    opacity: active ? 1 : 0.55,
-                  }}
-                >
-                  <div className="w-6 h-6 rounded-full flex items-center justify-center"
-                    style={{ background: active ? C.actionGrad : C.border }}>
-                    <s.Icon className="w-2.5 h-2.5" style={{ color: active ? 'white' : C.fgMuted }} />
-                  </div>
-                  <span className="text-xs font-bold" style={{ color: active ? C.action : C.fgMuted }}>
-                    {s.label}
-                  </span>
-                  {i < JOURNEY.length - 1 && <ChevronRight className="w-3 h-3 ml-1" style={{ color: C.border }} />}
+            {JOURNEY.map((s, i) => (
+              <div key={i}
+                className="flex items-center gap-2 px-3 py-1.5 rounded-xl"
+                style={{ background: 'rgba(15,139,108,.10)', border: `1.5px solid ${C.action}` }}
+              >
+                <div className="w-6 h-6 rounded-full flex items-center justify-center" style={{ background: C.actionGrad }}>
+                  <s.Icon className="w-2.5 h-2.5" style={{ color: 'white' }} />
                 </div>
-              );
-              // El paso Cotización es navegable directo (continúa el recorrido)
-              return i === 1
-                ? <Link key={i} to="/CotizacionRapida" className="hover:opacity-100 transition-opacity">{inner}</Link>
-                : <div key={i}>{inner}</div>;
-            })}
+                <span className="text-xs font-bold" style={{ color: C.action }}>{s.label}</span>
+              </div>
+            ))}
           </div>
 
-          {/* CTA en header (desktop) — continúa el recorrido */}
-          <Link
-            to="/CotizacionRapida"
-            className="hidden lg:flex items-center gap-2 px-5 h-10 rounded-xl text-white font-bold text-sm transition-all hover:-translate-y-0.5 active:scale-[0.97]"
-            style={{ background: C.actionGrad, boxShadow: C.actionShadow, flexShrink: 0 }}
-          >
-            <Building2 className="w-4 h-4" /> Pedir cotización <ArrowRight className="w-4 h-4" />
-          </Link>
+          {/* Sin CTA en header — el catálogo es autosuficiente */}
+          <div className="hidden lg:flex items-center gap-2">
+            <span className="text-xs font-semibold" style={{ color: C.fgMuted }}>
+              {filtrados.length} productos B2B
+            </span>
+          </div>
 
-          {/* CTA mobile compacto */}
-          <Link
-            to="/CotizacionRapida"
-            className="lg:hidden flex items-center gap-1.5 px-3 h-9 rounded-xl text-white font-bold text-xs flex-shrink-0"
-            style={{ background: C.actionGrad, boxShadow: C.actionShadow }}
-          >
-            Cotizar <ArrowRight className="w-3.5 h-3.5" />
-          </Link>
+          {/* Mobile: sin CTA compacto — limpio y directo al catálogo */}
         </div>
       </header>
 
@@ -349,21 +280,11 @@ export default function EmpresasNuevo() {
             </p>
           </div>
 
-          {ResumeQuoteChip}
-
-          <Link
-            to="/CotizacionRapida"
-            className="flex items-center justify-center gap-2 h-12 rounded-2xl text-white font-bold text-sm transition-all hover:-translate-y-0.5 active:scale-[0.98]"
-            style={{ background: C.actionGrad, boxShadow: C.actionShadow }}
-          >
-            Pedir cotización <ArrowRight className="w-4 h-4" />
-          </Link>
+          <p className="text-sm leading-relaxed font-semibold mt-2" style={{ color: C.fgSoft }}>
+            Elige un producto, explora precios por volumen, carga tu logo y solicita tu cotización en un solo paso.
+          </p>
 
           {TrustGrid('grid-cols-2')}
-
-          <p className="text-[10px] font-bold text-center flex items-center justify-center gap-1 mt-1" style={{ color: '#5B7D5A' }}>
-            <Check className="w-3 h-3" /> Tu cotización se guarda automáticamente
-          </p>
         </aside>
 
         {/* Centro: catálogo GIGANTE con scroll propio (sin columna derecha:
@@ -378,15 +299,12 @@ export default function EmpresasNuevo() {
           </div>
           {/* Franja compacta de clientes (1 línea, scroll horizontal) */}
           <div className="flex-shrink-0">{ClientsStrip}</div>
-          {/* Barra info inferior del recorrido */}
-          <div className="flex-shrink-0 flex items-center justify-between gap-3 px-4 py-2.5 rounded-2xl"
+          {/* Barra info inferior */}
+          <div className="flex-shrink-0 flex items-center justify-center gap-3 px-4 py-2.5 rounded-2xl"
             style={{ background: 'rgba(255,255,255,.94)', border: `1px solid ${C.border}` }}>
-            <p className="text-[11px] font-semibold truncate" style={{ color: C.fgMuted }}>
-              {filtrados.length} productos B2B · grabado láser de tu logo gratis desde 10 unidades
+            <p className="text-[11px] font-semibold text-center" style={{ color: C.fgMuted }}>
+              {filtrados.length} productos B2B · grabado láser de tu logo gratis desde 10 unidades · elige un producto para comenzar
             </p>
-            <Link to="/CotizacionRapida" className="text-xs font-bold flex items-center gap-1 flex-shrink-0" style={{ color: C.action }}>
-              Continuar al paso 2 <ArrowRight className="w-3.5 h-3.5" />
-            </Link>
           </div>
         </main>
       </div>
@@ -408,21 +326,6 @@ export default function EmpresasNuevo() {
               Elige productos · cotiza al instante · propuesta en 24h
             </p>
           </div>
-
-          {/* Cotización guardada (si existe) — compacto, no bloquea */}
-          {savedQuote && (
-            <Link
-              to="/CotizacionRapida"
-              className="flex items-center gap-2 p-2.5 rounded-xl mb-3 transition-all active:scale-[0.98]"
-              style={{ background: 'rgba(15,139,108,.08)', border: '1.5px solid rgba(15,139,108,.25)' }}
-            >
-              <History className="w-3.5 h-3.5 flex-shrink-0" style={{ color: C.action }} />
-              <span className="text-[11px] font-bold truncate" style={{ color: C.action }}>
-                Cotización guardada — continuar
-              </span>
-              <ArrowRight className="w-3.5 h-3.5 flex-shrink-0 ml-auto" style={{ color: C.action }} />
-            </Link>
-          )}
 
           {/* Buscador + chips de categoría */}
           <div className="mb-3">{SearchAndChips}</div>

@@ -14,11 +14,11 @@ export default function B2BCatalogCard({ producto }) {
   const precioDesde = getB2BPriceForQty(producto, 50)?.precio ?? getUnitBasePrice(producto);
   const ahorroMax = getB2BPriceForQty(producto, 1000)?.ahorroPct || 0;
 
-  // Flujo lineal selección → cotización: agrega el producto y entra al wizard.
+  // Botón rápido: va directo a la ficha de detalle B2B.
   const cotizar = (e) => {
     e.preventDefault();
     e.stopPropagation();
-    navigate(`/CotizacionRapida?sku=${encodeURIComponent(producto.sku)}&qty=50`);
+    navigate(`/EmpresaProducto?id=${producto.id}&qty=50`);
   };
 
   return (
