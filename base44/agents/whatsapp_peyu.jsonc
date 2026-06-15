@@ -34,6 +34,17 @@
     {
       "function_name": "whatsappBuscarProductos",
       "description": "Busca productos del cat\u00e1logo por palabra clave (ej: 'cachos') y devuelve nombre, sku, precio, stock, colores y foto_url listos para enviar al cliente."
+    },
+    {
+      "function_name": "generateChatQuotePDF",
+      "description": "Genera una cotizaci\u00f3n PDF profesional t\u00e9cnico-econ\u00f3mica con precios B2B por volumen, la env\u00eda autom\u00e1ticamente al email del cliente v\u00eda Resend y devuelve confirmaci\u00f3n. \u00dasala cuando el cliente B2B pida cotizaci\u00f3n, presupuesto o PDF. Requiere: sku, qty, empresa, contacto, email."
+    },
+    {
+      "entity_name": "Cotizacion",
+      "allowed_operations": [
+        "create",
+        "read"
+      ]
     }
   ],
   "context_files": [],

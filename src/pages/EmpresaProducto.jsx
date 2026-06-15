@@ -7,7 +7,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { useLocation, Link, useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import {
-  ArrowLeft, Recycle, ShieldCheck, Truck, Check, Loader2, ShoppingBag,
+  ArrowLeft, Recycle, ShieldCheck, Truck, Check, Loader2,
   Sparkles, Package, TrendingDown, Plus, Minus, ArrowRight,
 } from 'lucide-react';
 import B2BHeader from '@/components/b2b/B2BHeader';
@@ -101,10 +101,10 @@ export default function EmpresaProducto() {
   const esCompostable = producto.material?.includes('Trigo');
 
   return (
-    <div className="min-h-screen font-inter pb-24 lg:pb-8 max-w-[100vw] overflow-x-hidden" style={{ background: '#F8F3ED', color: '#2C1810' }}>
+    <div className="min-h-screen font-inter pb-28 lg:pb-8" style={{ background: '#F8F3ED', color: '#2C1810', maxWidth: '100vw', overflowX: 'hidden' }}>
       <B2BHeader backTo="/EmpresasNuevo" />
 
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-3 sm:py-6">
+      <div className="max-w-6xl mx-auto px-3 sm:px-6 py-3 sm:py-6" style={{ maxWidth: '100%', overflowX: 'hidden' }}>
         {/* Breadcrumb desktop */}
         <div className="hidden lg:flex items-center gap-2 text-xs mb-5" style={{ color: '#A08070' }}>
           <Link to="/EmpresasNuevo" className="hover:underline font-semibold" style={{ color: '#7A6050' }}>Catálogo empresarial</Link>
@@ -112,7 +112,7 @@ export default function EmpresaProducto() {
           <span style={{ color: '#2C1810' }}>{producto.nombre}</span>
         </div>
 
-        <div className="grid lg:grid-cols-2 gap-6 lg:gap-12 lg:items-start">
+        <div className="grid lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-12 lg:items-start">
 
           {/* ── GALERÍA ── */}
           <div className="lg:sticky lg:top-24 lg:self-start space-y-3">
@@ -149,17 +149,17 @@ export default function EmpresaProducto() {
           </div>
 
           {/* ── CONFIGURADOR ── */}
-          <div className="space-y-6 lg:pb-8">
+          <div className="space-y-4 sm:space-y-6 lg:pb-8">
             {/* Encabezado */}
             <div>
-              <p className="text-xs font-bold uppercase tracking-wider mb-1.5" style={{ color: '#A08070' }}>
+              <p className="text-[10px] sm:text-xs font-bold uppercase tracking-wider mb-1" style={{ color: '#A08070' }}>
                 {producto.categoria?.replace(' B2C', '')}
               </p>
-              <h1 className="font-fraunces text-2xl sm:text-4xl leading-[1.05] mb-2" style={{ color: '#2C1810' }}>
+              <h1 className="font-fraunces text-xl sm:text-3xl lg:text-4xl leading-[1.08] mb-1.5" style={{ color: '#2C1810', wordBreak: 'break-word' }}>
                 {producto.nombre}
               </h1>
               {producto.descripcion && (
-                <p className="text-sm leading-relaxed" style={{ color: '#7A6050' }}>{producto.descripcion}</p>
+                <p className="text-[13px] sm:text-sm leading-relaxed" style={{ color: '#7A6050' }}>{producto.descripcion}</p>
               )}
             </div>
 
@@ -270,63 +270,64 @@ export default function EmpresaProducto() {
               </div>
             )}
 
-            {/* Trust badges desktop */}
-            <div className="grid grid-cols-3 gap-2">
+            {/* Trust badges */}
+            <div className="grid grid-cols-3 gap-1.5 sm:gap-2">
               {[
                 { icon: Recycle, t: '100% reciclado' },
                 { icon: Truck, t: 'Envío a Chile' },
                 { icon: ShieldCheck, t: '10 años garantía' },
               ].map((b, i) => (
-                <div key={i} className="flex flex-col items-center gap-2 rounded-2xl p-3.5 text-center" style={{ background: 'white', border: '1.5px solid #D4C4B0' }}>
-                  <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: 'rgba(139,173,138,.12)' }}>
-                    <b.icon className="w-5 h-5" style={{ color: '#8BAD8A' }} />
+                <div key={i} className="flex flex-col items-center gap-1 sm:gap-2 rounded-xl sm:rounded-2xl p-2 sm:p-3.5 text-center" style={{ background: 'white', border: '1.5px solid #D4C4B0' }}>
+                  <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl flex items-center justify-center" style={{ background: 'rgba(139,173,138,.12)' }}>
+                    <b.icon className="w-4 h-4 sm:w-5 sm:h-5" style={{ color: '#8BAD8A' }} />
                   </div>
-                  <span className="text-[10px] sm:text-xs font-bold leading-tight" style={{ color: '#7A6050' }}>{b.t}</span>
+                  <span className="text-[9px] sm:text-xs font-bold leading-tight" style={{ color: '#7A6050' }}>{b.t}</span>
                 </div>
               ))}
             </div>
 
             {/* CTA desktop */}
-            <div className="hidden lg:flex gap-3">
+            <div className="hidden lg:flex flex-col gap-2">
               <button
                 onClick={goToCotizar}
-                className="flex-1 h-14 rounded-2xl text-white font-bold text-base flex items-center justify-center gap-2 transition-all hover:scale-[1.01]"
+                className="flex-1 h-14 rounded-2xl text-white font-bold text-base flex items-center justify-center gap-2 transition-all hover:scale-[1.01] active:scale-[0.98]"
                 style={{ background: 'linear-gradient(135deg,#0F8B6C,#0B6E55)', boxShadow: '0 8px 28px rgba(15,139,108,.28)' }}
               >
-                <ShoppingBag className="w-5 h-5" />
-                Agregar a cotización · {fmtCLP(neto)} neto
+                Continuar cotización <ArrowRight className="w-5 h-5" />
               </button>
+              <p className="text-[11px] text-center px-1" style={{ color: '#A08070' }}>
+                {fmtCLP(neto)} neto + IVA · Sin compromiso · Presupuesto formal en 24h
+              </p>
             </div>
-
-            <p className="text-[11px] text-center hidden lg:block" style={{ color: '#A08070' }}>
-              Precio neto referencial sin IVA. Sin compromiso. Recibirás tu presupuesto formal en 24h.
-            </p>
           </div>
         </div>
       </div>
 
       {/* ── NAVBAR FIJA MOBILE ── */}
       <div
-        className="lg:hidden fixed bottom-0 inset-x-0 z-[90] pb-safe px-3 py-2.5 max-w-[100vw]"
-        style={{ background: 'rgba(248,243,237,.97)', borderTop: '1.5px solid #D4C4B0', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', boxShadow: '0 -4px 24px rgba(44,24,16,.1)' }}
+        className="lg:hidden fixed bottom-0 inset-x-0 z-[90] pb-safe"
+        style={{ background: 'rgba(248,243,237,.98)', borderTop: '1.5px solid #D4C4B0', backdropFilter: 'blur(20px) saturate(170%)', WebkitBackdropFilter: 'blur(20px) saturate(170%)', boxShadow: '0 -6px 30px rgba(44,24,16,.12)', maxWidth: '100vw', overflowX: 'hidden' }}
       >
-        <div className="flex gap-2 max-w-lg mx-auto">
+        <div className="flex items-stretch gap-2 px-3 py-2.5" style={{ maxWidth: '100%' }}>
           <button
             onClick={() => navigate('/EmpresasNuevo')}
-            className="flex-shrink-0 h-11 px-3.5 rounded-2xl flex items-center gap-1 font-bold text-xs transition-all active:scale-[0.97]"
+            className="flex-shrink-0 h-12 px-3.5 rounded-2xl flex items-center gap-1 font-bold text-xs transition-all active:scale-[0.97]"
             style={{ background: 'white', border: '1.5px solid #D4C4B0', color: '#7A6050' }}
           >
             <ArrowLeft className="w-4 h-4" /> Atrás
           </button>
-          <button
-            onClick={goToCotizar}
-            className="flex-1 h-11 rounded-2xl text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-all active:scale-[0.98]"
-            style={{ background: 'linear-gradient(135deg,#0F8B6C,#0B6E55)', boxShadow: '0 4px 16px rgba(15,139,108,.3)' }}
-          >
-            <ShoppingBag className="w-3.5 h-3.5" />
-            Cotizar · {fmtCLP(neto)} neto
-            <ArrowRight className="w-3 h-3" />
-          </button>
+          <div className="flex-1 min-w-0 flex flex-col justify-center">
+            <button
+              onClick={goToCotizar}
+              className="w-full h-12 rounded-2xl text-white font-bold text-sm flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
+              style={{ background: 'linear-gradient(135deg,#0F8B6C,#0B6E55)', boxShadow: '0 4px 16px rgba(15,139,108,.3)' }}
+            >
+              Continuar <ArrowRight className="w-4 h-4" />
+            </button>
+            <p className="text-[10px] text-center mt-0.5 font-semibold" style={{ color: '#A08070' }}>
+              {fmtCLP(neto)} neto + IVA
+            </p>
+          </div>
         </div>
       </div>
     </div>
