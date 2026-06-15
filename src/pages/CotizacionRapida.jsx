@@ -815,15 +815,17 @@ export default function CotizacionRapida() {
       </div>
 
       {/* ── CTA MOBILE STICKY ──────────────────────────────────────────────── */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-[80] px-3 max-w-[100vw]"
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-[80] px-2.5"
         style={{
+          maxWidth: '100vw',
+          overflowX: 'hidden',
           paddingBottom: 'max(env(safe-area-inset-bottom, 0px), 12px)',
           paddingTop: '8px',
-          background: 'rgba(248,243,237,.97)',
+          background: 'rgba(248,243,237,.98)',
           borderTop: `1.5px solid ${C.border}`,
-          backdropFilter: 'blur(16px)',
-          WebkitBackdropFilter: 'blur(16px)',
-          boxShadow: '0 -4px 20px rgba(44,24,16,.10)',
+          backdropFilter: 'blur(18px) saturate(170%)',
+          WebkitBackdropFilter: 'blur(18px) saturate(170%)',
+          boxShadow: '0 -6px 28px rgba(44,24,16,.14)',
         }}>
         {items.length > 0 && (
           <div className="flex items-center gap-2 mb-1.5 px-1">
@@ -848,8 +850,8 @@ export default function CotizacionRapida() {
         <button
           onClick={handleCTA}
           disabled={!canAdvance || enviando}
-          className="w-full h-12 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 transition-all active:scale-[0.98] disabled:opacity-50"
-          style={{ background: canAdvance ? C.actionGrad : '#D4C4B0', color: canAdvance ? 'white' : '#5C4638', border: canAdvance ? 'none' : `1.5px solid ${C.border}`, boxShadow: canAdvance ? C.actionShadow : 'none' }}
+          className="w-full h-12 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 px-3 transition-all active:scale-[0.98] disabled:opacity-50"
+          style={{ background: canAdvance ? C.actionGrad : '#D4C4B0', color: canAdvance ? 'white' : '#5C4638', border: canAdvance ? 'none' : `1.5px solid ${C.border}`, boxShadow: canAdvance ? C.actionShadow : 'none', minWidth: 0 }}
         >
           {enviando ? <><Loader2 className="w-4 h-4 animate-spin" /> Enviando...</>
             : <>{step === 2 && <Building2 className="w-4 h-4" />}<span>{ctaLabel}</span>{step < 2 && <ArrowRight className="w-4 h-4" />}</>}

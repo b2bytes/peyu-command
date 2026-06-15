@@ -55,27 +55,28 @@ function NavTabs({ cartCount }) {
 function ActionBar({ backTo, backLabel, ctaLabel, onCta, ctaDisabled, ctaLoading, total }) {
   const navigate = useNavigate();
   return (
-    <div className="flex items-center gap-2 px-3 py-2.5">
+    <div className="flex items-stretch gap-2 px-2.5 py-2.5" style={{ maxWidth: '100vw' }}>
       <button
         onClick={() => backTo ? navigate(backTo) : navigate(-1)}
-        className="flex-shrink-0 h-12 px-4 rounded-2xl flex items-center gap-1.5 font-bold transition-all active:scale-[0.97]"
+        className="flex-shrink-0 h-12 w-12 sm:w-auto sm:px-4 rounded-2xl flex items-center justify-center gap-1.5 font-bold transition-all active:scale-[0.97]"
         style={{ background: 'white', border: '1.5px solid #D4C4B0', color: '#7A6050' }}
+        aria-label={backLabel || 'Atrás'}
       >
-        <ArrowLeft className="w-4 h-4" />
-        <span className="text-sm">{backLabel || 'Atrás'}</span>
+        <ArrowLeft className="w-4 h-4 flex-shrink-0" />
+        <span className="hidden sm:inline text-sm">{backLabel || 'Atrás'}</span>
       </button>
       <button
         onClick={onCta}
         disabled={ctaDisabled || ctaLoading}
-        className="flex-1 h-12 rounded-2xl text-white font-bold text-sm flex items-center justify-center gap-2 transition-all active:scale-[0.98] disabled:opacity-55"
-        style={{ background: 'linear-gradient(135deg,#C0785C,#A86440)', boxShadow: '0 4px 16px rgba(192,120,92,.3)' }}
+        className="flex-1 min-w-0 h-12 rounded-2xl text-white font-bold text-sm flex items-center justify-center gap-1.5 px-3 transition-all active:scale-[0.98] disabled:opacity-55"
+        style={{ background: 'linear-gradient(135deg,#C0785C,#A86440)', boxShadow: '0 6px 20px rgba(192,120,92,.35)' }}
       >
         {ctaLoading ? (
-          <><div className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" /> Procesando…</>
+          <><div className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin flex-shrink-0" /><span className="truncate">Procesando…</span></>
         ) : (
           <>
-            <span className="truncate">{ctaLabel}</span>
-            {total != null && <span className="opacity-80 flex-shrink-0">· {fmtCLP(total)}</span>}
+            <span className="truncate min-w-0">{ctaLabel}</span>
+            {total != null && <span className="opacity-90 flex-shrink-0 text-xs">· {fmtCLP(total)}</span>}
             {!ctaLoading && <ArrowRight className="w-3.5 h-3.5 flex-shrink-0" />}
           </>
         )}
@@ -102,13 +103,15 @@ export default function MobileNavBarV2({
 
   return (
     <div
-      className="lg:hidden fixed bottom-0 inset-x-0 z-[90] pb-safe max-w-[100vw]"
+      className="lg:hidden fixed bottom-0 inset-x-0 z-[90] pb-safe"
       style={{
-        background: 'rgba(248,243,237,.97)',
+        maxWidth: '100vw',
+        overflowX: 'hidden',
+        background: 'rgba(248,243,237,.98)',
         borderTop: '1.5px solid #D4C4B0',
         backdropFilter: 'blur(20px) saturate(160%)',
         WebkitBackdropFilter: 'blur(20px) saturate(160%)',
-        boxShadow: '0 -4px 24px rgba(44,24,16,.1)',
+        boxShadow: '0 -6px 28px rgba(44,24,16,.14)',
       }}
     >
       {isAction ? (
