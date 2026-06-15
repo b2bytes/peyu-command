@@ -57,11 +57,13 @@ const norm = (s) => String(s || '').toLowerCase().normalize('NFD').replace(/[\u0
 const COMUNA_ALIASES = { 'santiago': 'santiago centro' };
 
 // Resuelve el código de distrito Bluex (ej. PRO para Providencia).
-// Fuente 1: tarifario importado (raw_columnas['Codigo Comuna']). Fuente 2: BX-Geo.
+// Fuente 1: tarifario importado (raw_columnas['Codigo Comuna'])
+// Fuente 2: BluexGeoData (1,670 localidades del archivo oficial BX-GEO_DATA)
 async function resolverDistrito(sr, comuna) {
   const candidates = [norm(comuna)];
   if (COMUNA_ALIASES[candidates[0]]) candidates.push(COMUNA_ALIASES[candidates[0]]);
 
+  // 1) Tarifario oficial Bluex (rápido, incluye lead_time y región)
   for (const cand of candidates) {
     try {
       const tarifas = await sr.entities.TarifaBluex.filter({ comuna_normalizada: cand }, undefined, 1);
@@ -72,27 +74,45 @@ async function resolverDistrito(sr, comuna) {
           code, name: t.comuna, region: t.region,
           state: Number(t.raw_columnas?.['ID Región']) || null,
           lead_time_dias: t.lead_time_dias || null,
+          fuente: 'tarifario',
         };
       }
     } catch { /* sigue */ }
   }
-  // Fallback: BX-Geolocation
-  try {
-    const res = await fetch(`${BX_BASE}/bx-geo/state/all`, { headers: bxHeaders() });
-    if (!res.ok) return null;
-    const json = await res.json();
-    for (const pais of json?.data || []) {
-      for (const state of pais.states || []) {
-        for (const ciudad of state.ciudades || []) {
-          for (const d of ciudad.districts || []) {
-            if (candidates.includes(norm(d.name))) {
-              return { code: d.code, name: d.name, region: state.name };
-            }
-          }
-        }
+
+  // 2) BluexGeoData: cobertura completa (1,670 localidades oficiales BlueExpress)
+  for (const cand of candidates) {
+    try {
+      const geo = await sr.entities.BluexGeoData.filter({ comuna_normalizada: cand }, undefined, 1);
+      const g = geo?.[0];
+      if (g?.cod_localidad) {
+        return {
+          code: g.cod_localidad,
+          name: g.nom_comuna,
+          region: g.nom_region || '',
+          state: g.cod_region || null,
+          lead_time_dias: null,
+          fuente: 'bluex_geo_data',
+        };
       }
-    }
-  } catch { /* sin geo */ }
+    } catch { /* sigue */ }
+    // También buscar por localidad_normalizada
+    try {
+      const geoLoc = await sr.entities.BluexGeoData.filter({ localidad_normalizada: cand }, undefined, 1);
+      const gl = geoLoc?.[0];
+      if (gl?.cod_localidad) {
+        return {
+          code: gl.cod_localidad,
+          name: gl.nom_comuna,
+          region: gl.nom_region || '',
+          state: gl.cod_region || null,
+          lead_time_dias: null,
+          fuente: 'bluex_geo_data_loc',
+        };
+      }
+    } catch { /* sigue */ }
+  }
+
   return null;
 }
 

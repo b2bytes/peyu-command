@@ -41,8 +41,8 @@ function bxHeaders() {
 const norm = (s) => String(s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
 
 // Resuelve el código de distrito Bluex REAL para una comuna.
-// Fuente 1: tarifario oficial Bluex importado (TarifaBluex.raw_columnas['Codigo Comuna'])
-// Fuente 2 (fallback): API BX-Geolocation
+// Fuente 1: tarifario oficial (TarifaBluex.raw_columnas['Codigo Comuna'])
+// Fuente 2: BluexGeoData (1,670 localidades oficiales BlueExpress)
 async function resolverDistrito(sr, comuna) {
   const objetivo = norm(comuna);
   // 1) Tarifario oficial en la base (rápido y confiable)
@@ -51,40 +51,21 @@ async function resolverDistrito(sr, comuna) {
     const t = tarifas?.[0];
     const code = t?.raw_columnas?.['Codigo Comuna'];
     if (code) return { code, name: t.comuna, region: t.region, fuente: 'tarifario' };
-  } catch { /* sigue al fallback */ }
-  // 2) Fallback: BX-Geolocation API
+  } catch { /* sigue */ }
+
+  // 2) BluexGeoData: cobertura completa (1,670 localidades oficiales BlueExpress)
   try {
-    const res = await fetch(`${BX_BASE}/bx-geo/state/all`, { headers: bxHeaders() });
-    if (!res.ok) return null;
-    const json = await res.json();
-    const paises = json?.data || [];
-    // 1ra pasada: match exacto por distrito (comuna/localidad)
-    for (const pais of paises) {
-      for (const state of pais.states || []) {
-        for (const ciudad of state.ciudades || []) {
-          for (const d of ciudad.districts || []) {
-            if (norm(d.name) === objetivo) {
-              return { code: d.code, name: d.name, region: state.name, ciudad: ciudad.name };
-            }
-          }
-        }
-      }
-    }
-    // 2da pasada: match por ciudad → primer distrito de la ciudad
-    for (const pais of paises) {
-      for (const state of pais.states || []) {
-        for (const ciudad of state.ciudades || []) {
-          if (norm(ciudad.name) === objetivo) {
-            const d = (ciudad.districts || [])[0];
-            if (d) return { code: d.code, name: d.name, region: state.name, ciudad: ciudad.name };
-          }
-        }
-      }
-    }
-    return null;
-  } catch {
-    return null;
-  }
+    const geo = await sr.entities.BluexGeoData.filter({ comuna_normalizada: objetivo }, undefined, 1);
+    const g = geo?.[0];
+    if (g?.cod_localidad) return { code: g.cod_localidad, name: g.nom_comuna, region: g.nom_region, fuente: 'bluex_geo_data' };
+  } catch { /* sigue */ }
+  try {
+    const geoLoc = await sr.entities.BluexGeoData.filter({ localidad_normalizada: objetivo }, undefined, 1);
+    const gl = geoLoc?.[0];
+    if (gl?.cod_localidad) return { code: gl.cod_localidad, name: gl.nom_comuna, region: gl.nom_region, fuente: 'bluex_geo_data_loc' };
+  } catch { /* sigue */ }
+
+  return null;
 }
 
 // agencyId null = retiro en domicilio/galpón (la API rechazaba '41' con AGENCY_NOT_VALID)

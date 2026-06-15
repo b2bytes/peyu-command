@@ -1,0 +1,68 @@
+{
+  "name": "BluexGeoData",
+  "type": "object",
+  "description": "C\u00f3digos de geolocalizaci\u00f3n oficiales BlueExpress (fuente: archivos BX-GEO_DATA + Localidades principales). Vincula comuna \u2194 c\u00f3digo de distrito para cotizaci\u00f3n y emisi\u00f3n de OT. Un registro por localidad/distrito.",
+  "properties": {
+    "cod_region": {
+      "type": "number",
+      "title": "C\u00f3digo regi\u00f3n BlueExpress"
+    },
+    "nom_region": {
+      "type": "string",
+      "title": "Nombre regi\u00f3n"
+    },
+    "cod_comuna": {
+      "type": "number",
+      "title": "C\u00f3digo comuna BlueExpress"
+    },
+    "nom_comuna": {
+      "type": "string",
+      "title": "Nombre comuna"
+    },
+    "cod_localidad": {
+      "type": "string",
+      "title": "C\u00f3digo distrito/localidad BlueExpress (ej: PRO, LRN, PUD)"
+    },
+    "nom_localidad": {
+      "type": "string",
+      "title": "Nombre localidad/distrito"
+    },
+    "comuna_normalizada": {
+      "type": "string",
+      "title": "Comuna sin tildes / min\u00fasculas (para matching r\u00e1pido)",
+      "maxLength": 200
+    },
+    "localidad_normalizada": {
+      "type": "string",
+      "title": "Localidad sin tildes / min\u00fasculas (para matching r\u00e1pido)",
+      "maxLength": 200
+    }
+  },
+  "required": [
+    "cod_comuna",
+    "nom_comuna",
+    "cod_localidad"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
