@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Truck, Loader2, MapPin, Zap } from 'lucide-react';
-import { cotizarEnvioBluex, calcularPesoFacturable } from '@/lib/bluex-shipping';
+import { cotizarEnvioAmbos, calcularPesoFacturable } from '@/lib/bluex-shipping';
 import { fmtCLP } from '@/lib/shop-v2-cart';
 
 // ════════════════════════════════════════════════════════════════════════
@@ -33,7 +33,13 @@ export default function ShippingEstimatorV2({ producto, cantidad = 1 }) {
     try { localStorage.setItem(KEY, valor); } catch { /* noop */ }
     const pesoKg = Math.max(0.5, calcularPesoFacturable(producto, cantidad));
     let res = null;
-    try { res = await cotizarEnvioBluex({ comuna: valor, pesoKg }); } catch { res = null; }
+    try {
+      // Probamos AMBOS servicios (EXPRESS + PRIORITY): "la reina", "padre hurtado" y
+      // otras comunas solo tienen tarifa PRIORITY en el contrato Bluex. EXPRESS es
+      // preferido; PRIORITY es fallback automático si EXPRESS no existe.
+      const ambos = await cotizarEnvioAmbos({ comuna: valor, pesoKg });
+      res = ambos?.express || ambos?.priority || null;
+    } catch { res = null; }
     if (reqId !== reqRef.current) return; // respuesta vieja: descartar
     setTarifa(res);
     setSinTarifa(!res);

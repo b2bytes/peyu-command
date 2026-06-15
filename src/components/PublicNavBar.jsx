@@ -28,7 +28,6 @@ export default function PublicNavBar() {
       icon: Building2,
       submenu: [
         { label: 'Catálogo B2B', path: '/EmpresasNuevo' },
-        { label: 'Cotización rápida', path: '/CotizacionRapida' },
       ]
     },
     { label: 'Blog', path: '/blog', icon: BookOpen },
