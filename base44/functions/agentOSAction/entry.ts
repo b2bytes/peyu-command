@@ -101,6 +101,67 @@ Deno.serve(async (req) => {
         return Response.json({ ok: true, message: 'Lead eliminado' });
       }
 
+      case 'autoCotizarLead': {
+        // Genera una propuesta corporativa para un lead concreto desde el chat:
+        // elige el mejor producto del catálogo según su interés y cantidad,
+        // crea la CorporateProposal y avanza el lead a "Propuesta enviada".
+        if (!payload.id) throw new Error('Falta id de lead');
+        const [lead] = await svc.B2BLead.filter({ id: payload.id });
+        if (!lead) throw new Error('Lead no encontrado');
+        const qty = parseInt(lead.qty_estimate) || 50;
+
+        // Elegir mejor producto del catálogo B2B por palabras clave del interés.
+        const catalogo = await svc.Producto.filter({ activo: true, canal: 'B2B + B2C' }).catch(() => []);
+        if (!catalogo.length) throw new Error('No hay productos B2B activos en el catálogo');
+        const interes = (lead.product_interest || '').toLowerCase();
+        const tieneTarifaB2B = (p) => {
+          const t = p.precio_b2b_tramos;
+          return t && typeof t === 'object' && Object.values(t).some((v) => Number(v) > 0);
+        };
+        const scored = catalogo.map((p) => {
+          const name = (p.nombre || '').toLowerCase();
+          let score = 0;
+          for (const w of interes.split(/\s+/).filter((x) => x.length > 2)) if (name.includes(w)) score += 10;
+          if (tieneTarifaB2B(p)) score += 8; // priorizar cotizables
+          if ((p.stock_actual || 0) >= qty) score += 3;
+          return { p, score };
+        }).sort((a, b) => b.score - a.score);
+        // Preferir el mejor con tarifa B2B oficial; si ninguno la tiene, el top.
+        const producto = scored.find((s) => tieneTarifaB2B(s.p))?.p || scored[0]?.p || catalogo[0];
+
+        const items = [{
+          nombre: producto.nombre,
+          sku: producto.sku,
+          qty,
+          // createCorporateProposal exige tabla B2B oficial (precio_b2b_tramos).
+          precio_b2b_tramos: producto.precio_b2b_tramos || null,
+          precio_b2c: producto.precio_b2c || null,
+          personalizacion: !!lead.personalization_needs,
+        }];
+
+        const propRes = await base44.functions.invoke('createCorporateProposal', {
+          leadId: lead.id,
+          items,
+          notes: lead.notes || '',
+        });
+        const d = propRes?.data ?? propRes;
+        const proposalId = d?.proposal_id;
+        if (!proposalId) {
+          // Producto sin tarifa B2B oficial → mensaje claro en vez de fallar mudo.
+          if (d?.error === 'precio_a_consultar') {
+            throw new Error(`"${producto.nombre}" no tiene tarifa B2B oficial cargada. Cárgala en el catálogo B2B antes de cotizar.`);
+          }
+          throw new Error(d?.error || 'No se pudo crear la propuesta');
+        }
+
+        await svc.B2BLead.update(lead.id, { status: 'Propuesta enviada' });
+        return Response.json({
+          ok: true,
+          message: `Propuesta creada para ${lead.company_name || lead.contact_name} (${qty}u · ${producto.nombre}). Revísala en Ventas & Propuestas para enviarla.`,
+          proposalId,
+        });
+      }
+
       case 'updatePropuestaEstado': {
         if (!payload.id || !payload.status) throw new Error('Falta id o status');
         await svc.CorporateProposal.update(payload.id, { status: payload.status });

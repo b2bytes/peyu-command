@@ -1,6 +1,6 @@
-import { Target, ChevronRight, Trash2 } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Target, Trash2, CalendarDays, FileText } from 'lucide-react';
 import ActionButton from '../ActionButton';
+import { fmtFechaCompleta } from '@/lib/fecha-relativa';
 
 const fmtNum = (n) => (n != null ? Number(n).toLocaleString('es-CL') : '—');
 
@@ -24,9 +24,7 @@ export default function LeadsCard({ leads = [], onDone }) {
           </span>
           <span className="text-sm font-semibold text-ld-fg">Leads B2B activos</span>
         </div>
-        <Link to="/admin/pipeline" className="text-xs text-ld-action hover:underline flex items-center gap-0.5">
-          Pipeline <ChevronRight className="w-3 h-3" />
-        </Link>
+        <span className="text-[11px] text-ld-fg-subtle">{leads.length}</span>
       </div>
 
       <div className="space-y-2.5">
@@ -48,11 +46,18 @@ export default function LeadsCard({ leads = [], onDone }) {
                 <span className="text-[10px] px-2 py-0.5 rounded-full bg-ld-bg-soft text-ld-fg-muted font-medium">{l.status}</span>
               </div>
             </div>
+            {/* Fecha precisa: cuándo llegó el lead y por qué canal */}
+            {l.created_date && (
+              <div className="text-[10px] text-ld-fg-subtle mt-1.5 flex items-center gap-1">
+                <CalendarDays className="w-2.5 h-2.5" /> Llegó {fmtFechaCompleta(l.created_date)}{l.source ? ` · ${l.source}` : ''}
+              </div>
+            )}
             <div className="flex items-center gap-1.5 mt-2.5 flex-wrap">
               {l.status !== 'Contactado' && (
                 <ActionButton action="updateLeadEstado" payload={{ id: l.id, status: 'Contactado' }} label="Marcar contactado" confirm={false} onDone={onDone} />
               )}
               <ActionButton action="updateLeadEstado" payload={{ id: l.id, status: 'En revisión' }} label="A revisión" confirm={false} onDone={onDone} />
+              <ActionButton action="autoCotizarLead" payload={{ id: l.id }} label="Generar propuesta" icon={FileText} variant="primary" confirm={true} onDone={onDone} />
               <ActionButton action="eliminarLead" payload={{ id: l.id }} label="Eliminar" icon={Trash2} confirm={true} onDone={onDone} className="ml-auto bg-ld-highlight-soft text-ld-highlight hover:text-ld-highlight" />
             </div>
           </div>

@@ -1,8 +1,9 @@
-import { Package, Truck, CreditCard, Factory, Tag, CheckCircle2, Loader2 } from 'lucide-react';
+import { Package, Truck, CreditCard, Factory, Tag, CheckCircle2, Loader2, Clock } from 'lucide-react';
 import { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import ActionButton from '../ActionButton';
 import EtiquetaViewerModal from '../EtiquetaViewerModal';
+import { fmtRelativo, fmtFechaHora } from '@/lib/fecha-relativa';
 
 const fmtCLP = (n) => (n != null ? `$${Number(n).toLocaleString('es-CL')}` : '—');
 
@@ -85,6 +86,19 @@ function PedidoRow({ p, etapa, onDone }) {
           </div>
         </div>
         <span className="text-[13px] font-semibold text-ld-fg flex-shrink-0">{fmtCLP(p.total)}</span>
+      </div>
+      {/* Fechas precisas del pedido: generado y, si aplica, pagado */}
+      <div className="mt-1 flex items-center gap-2 flex-wrap text-[10px] text-ld-fg-subtle">
+        {(p.created_date || p.fecha) && (
+          <span className="inline-flex items-center gap-1" title={fmtFechaHora(p.created_date || p.fecha) || ''}>
+            <Clock className="w-2.5 h-2.5" /> Generado {fmtRelativo(p.created_date || p.fecha)}
+          </span>
+        )}
+        {p.comprobante_enviado_at && (
+          <span className="inline-flex items-center gap-1 text-ld-action" title={fmtFechaHora(p.comprobante_enviado_at) || ''}>
+            <CheckCircle2 className="w-2.5 h-2.5" /> Pagado {fmtRelativo(p.comprobante_enviado_at)}
+          </span>
+        )}
       </div>
       <div className="mt-1.5 flex items-center gap-2 flex-wrap">
         {etapa === 'por_pagar' && (

@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { MessageCircle, Mail, Check } from 'lucide-react';
+import { MessageCircle, Mail, Check, Clock } from 'lucide-react';
 import ActionButton from '../ActionButton';
+import { fmtFechaCompleta } from '@/lib/fecha-relativa';
 
 // Tarjeta de consultas SIN RESPONDER con datos reales (nombre, canal, mensaje)
 // + acciones: marcar respondida / responder por email. Arregla el bug donde
@@ -35,7 +36,18 @@ export default function ConsultasCard({ consultas = [], onDone }) {
                 <div className="text-sm font-medium text-ld-fg truncate">{c.nombre || 'Sin nombre'}</div>
                 <div className="text-[11px] text-ld-fg-muted">{c.canal || 'Web'}{c.email ? ` · ${c.email}` : ''}</div>
               </div>
+              {c.calidad && (
+                <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium flex-shrink-0 ${c.calidad === 'Caliente' ? 'bg-ld-highlight-soft text-ld-highlight' : 'bg-ld-bg-soft text-ld-fg-muted'}`}>
+                  {c.calidad}
+                </span>
+              )}
             </div>
+            {/* Fecha precisa de llegada — para priorizar la respuesta */}
+            {c.created_date && (
+              <div className="text-[10px] text-ld-fg-subtle mt-1 flex items-center gap-1">
+                <Clock className="w-2.5 h-2.5" /> Llegó {fmtFechaCompleta(c.created_date)}
+              </div>
+            )}
             {c.mensaje && <p className="text-xs text-ld-fg-soft mt-1.5 line-clamp-3 leading-relaxed">{c.mensaje}</p>}
 
             {replyTo === c.id ? (

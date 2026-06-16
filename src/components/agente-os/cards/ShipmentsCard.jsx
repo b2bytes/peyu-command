@@ -1,8 +1,9 @@
 import { useState } from 'react';
-import { Truck, AlertTriangle, RefreshCw, MapPin, FileText, Loader2, Tag } from 'lucide-react';
+import { Truck, AlertTriangle, RefreshCw, MapPin, FileText, Loader2, Tag, Clock, CalendarCheck } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import ActionButton from '../ActionButton';
 import EtiquetaViewerModal from '../EtiquetaViewerModal';
+import { fmtRelativo, fmtFecha, fmtFechaHora } from '@/lib/fecha-relativa';
 
 // Ver/imprimir la etiqueta Bluex de un envío DENTRO del chat (visor embebido).
 function LabelButton({ envio }) {
@@ -109,6 +110,23 @@ export default function ShipmentsCard({ envios = [], metrics = {}, onDone }) {
                   {/* Ver etiqueta (visor in-place) si ya fue emitida */}
                   {e.tracking_number && e.estado !== 'Pendiente Emisión' && <LabelButton envio={e} />}
                 </div>
+              </div>
+              {/* Fechas precisas del envío: emisión OT, entrega estimada / real */}
+              <div className="flex items-center gap-2 flex-wrap text-[10px] text-ld-fg-subtle mt-1">
+                {(e.fecha_emision || e.created_date) && (
+                  <span className="inline-flex items-center gap-1" title={fmtFechaHora(e.fecha_emision || e.created_date) || ''}>
+                    <Clock className="w-2.5 h-2.5" /> OT emitida {fmtRelativo(e.fecha_emision || e.created_date)}
+                  </span>
+                )}
+                {e.fecha_entrega_real ? (
+                  <span className="inline-flex items-center gap-1 text-ld-action" title={fmtFechaHora(e.fecha_entrega_real) || ''}>
+                    <CalendarCheck className="w-2.5 h-2.5" /> Entregado {fmtRelativo(e.fecha_entrega_real)}
+                  </span>
+                ) : e.fecha_entrega_estimada && (
+                  <span className="inline-flex items-center gap-1">
+                    <CalendarCheck className="w-2.5 h-2.5" /> Entrega est. {fmtFecha(e.fecha_entrega_estimada)}
+                  </span>
+                )}
               </div>
               {/* Generar etiqueta si la OT aún no fue emitida */}
               {e.estado === 'Pendiente Emisión' && e.pedido_id && (

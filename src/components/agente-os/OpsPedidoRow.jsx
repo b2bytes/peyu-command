@@ -1,5 +1,6 @@
 import { getPagoStatus } from '@/lib/pago-status';
-import { Loader2, BadgeCheck, Tag, Printer } from 'lucide-react';
+import { Loader2, BadgeCheck, Tag, Printer, Clock, CheckCircle2 } from 'lucide-react';
+import { fmtRelativo, fmtFechaHora } from '@/lib/fecha-relativa';
 
 const ESTADOS = ['Nuevo', 'Confirmado', 'En Producción', 'Listo para Despacho', 'Despachado', 'Entregado', 'Cancelado', 'Reembolsado'];
 const TONE = {
@@ -34,6 +35,19 @@ export default function OpsPedidoRow({ pedido, busy, onAction, onOpenLabel }) {
           <p className="text-xs text-ld-fg-muted mt-0.5 truncate">
             {pedido.cliente_nombre} · {fmt(pedido.total)} · {pedido.ciudad || (esRetiro ? 'Retiro en tienda' : '—')}
           </p>
+          {/* Fechas precisas: cuándo se generó y, si aplica, cuándo se pagó */}
+          <div className="flex items-center gap-2 flex-wrap text-[10px] text-ld-fg-subtle mt-0.5">
+            {(pedido.created_date || pedido.fecha) && (
+              <span className="inline-flex items-center gap-1" title={fmtFechaHora(pedido.created_date || pedido.fecha) || ''}>
+                <Clock className="w-2.5 h-2.5" /> Generado {fmtRelativo(pedido.created_date || pedido.fecha)}
+              </span>
+            )}
+            {pedido.comprobante_enviado_at && (
+              <span className="inline-flex items-center gap-1 text-emerald-600" title={fmtFechaHora(pedido.comprobante_enviado_at) || ''}>
+                <CheckCircle2 className="w-2.5 h-2.5" /> Pagado {fmtRelativo(pedido.comprobante_enviado_at)}
+              </span>
+            )}
+          </div>
         </div>
 
         <div className="flex items-center gap-1.5 flex-wrap">

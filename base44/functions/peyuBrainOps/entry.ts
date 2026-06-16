@@ -29,6 +29,12 @@ const mapCliente = (c) => ({
 // America/Santiago en formato YYYY-MM-DD comparable.
 const TZ = 'America/Santiago';
 const chileDate = (d) => new Date(d).toLocaleDateString('en-CA', { timeZone: TZ });
+// Hora exacta en formato chileno legible: "16 jun, 14:32"
+const chileHora = (d) => {
+  if (!d) return '';
+  try { return new Date(d).toLocaleString('es-CL', { timeZone: TZ, day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }); }
+  catch { return ''; }
+};
 
 Deno.serve(async (req) => {
   try {
@@ -169,7 +175,7 @@ Deno.serve(async (req) => {
       // Historial COMPLETO de consultas sin responder (no truncamos a 8).
       // El founder pidió ver todo el historial pendiente de forma persistente.
       consultas_pendientes: consultasSinResponder.slice(0, 50).map(c => ({
-        id: c.id, nombre: c.nombre, email: c.email, telefono: c.telefono,
+        id: c.id, nombre: c.nombre, email: c.email || c.created_by || null, telefono: c.telefono,
         canal: c.canal, mensaje: c.mensaje || c.consulta || c.descripcion || '',
         calidad: c.calidad, created_date: c.created_date,
       })),
@@ -184,15 +190,21 @@ Deno.serve(async (req) => {
           cliente_email: p.cliente_email, total: p.total, estado: p.estado,
           medio_pago: p.medio_pago, tracking: p.tracking, ciudad: p.ciudad,
           payment_status: p.payment_status || '', fecha: p.fecha || (p.created_date || '').slice(0, 10),
+          // Fechas precisas para el CRM/ERP: cuándo se generó, se pagó y se actualizó.
+          created_date: p.created_date, updated_date: p.updated_date,
+          comprobante_enviado_at: p.comprobante_enviado_at || null,
         })),
       leads_top: leadsActivos.slice(0, 8).map(l => ({
         id: l.id, company_name: l.company_name, contact_name: l.contact_name,
         email: l.email, phone: l.phone, lead_score: l.lead_score, status: l.status,
         product_interest: l.product_interest, qty_estimate: l.qty_estimate,
+        // Cuándo llegó el lead y cuándo lo contactaste por última vez.
+        created_date: l.created_date, updated_date: l.updated_date, source: l.source,
       })),
       propuestas_pendientes_list: propuestas.filter(p => p.status === 'Enviada').slice(0, 8).map(p => ({
         id: p.id, numero: p.numero, empresa: p.empresa, contacto: p.contacto,
         email: p.email, total: p.total, status: p.status,
+        created_date: p.created_date, fecha_envio: p.fecha_envio, fecha_vencimiento: p.fecha_vencimiento,
       })),
       stock_bajo_list: stockBajo.slice(0, 10).map(p => ({
         id: p.id, sku: p.sku, nombre: p.nombre, stock_actual: p.stock_actual,
@@ -211,6 +223,9 @@ Deno.serve(async (req) => {
           ultimo_evento_descripcion: e.ultimo_evento_descripcion,
           fecha_entrega_estimada: e.fecha_entrega_estimada,
           tracking_url: e.tracking_url, label_url: e.label_url, atrasado: e.atrasado,
+          // Fechas precisas del envío: cuándo se emitió la OT y último evento.
+          created_date: e.created_date, fecha_emision: e.fecha_emision,
+          fecha_entrega_real: e.fecha_entrega_real, ultimo_evento_at: e.ultimo_evento_at,
         })),
       // vCard inteligente: TODA la info del cliente para la página agente.
       // clientes_top = mejores compradores históricos · clientes_nuevos = últimos registrados.
@@ -230,7 +245,7 @@ Deno.serve(async (req) => {
         `- **Calientes (score ≥70)**: ${leadsCalientes.length}\n` +
         `- **Activos totales**: ${leadsActivos.length}\n\n` +
         (leadsHoy.length > 0
-          ? `**Últimos hoy:**\n${leadsHoy.slice(0, 3).map(l => `- **${l.company_name || 'sin nombre'}** · ${l.contact_name || 'N/A'} · score ${l.lead_score || 0}`).join('\n')}`
+          ? `**Últimos hoy:**\n${leadsHoy.slice(0, 3).map(l => `- **${l.company_name || 'sin nombre'}** · ${l.contact_name || 'N/A'} · score ${l.lead_score || 0} · llegó ${chileHora(l.created_date)}`).join('\n')}`
           : '_Sin leads hoy._');
       sources.push('B2BLead');
     } else if (matches(['consulta', 'chat público', 'whatsapp', 'mensaje'])) {
@@ -238,7 +253,7 @@ Deno.serve(async (req) => {
         `- **Hoy**: ${consultasHoy.length} consultas\n` +
         `- **Sin responder**: ${consultasSinResponder.length}\n\n` +
         (consultasHoy.length > 0
-          ? `**Recientes:**\n${consultasHoy.slice(0, 3).map(c => `- **${c.nombre}** · ${c.canal} · ${c.calidad || 'sin clasificar'}`).join('\n')}`
+          ? `**Recientes:**\n${consultasHoy.slice(0, 3).map(c => `- **${c.nombre}** · ${c.canal} · ${c.calidad || 'sin clasificar'} · ${chileHora(c.created_date)}`).join('\n')}`
           : '_Sin consultas hoy._');
       sources.push('Consulta');
     } else if (matches(['conversaci', 'agente', 'peyu chat', 'asistente'])) {
@@ -264,7 +279,7 @@ Deno.serve(async (req) => {
         `- **Listos para despachar**: ${pedidosListos}\n` +
         `- **Últimos 7 días**: ${fmt(ingresos7d)}\n\n` +
         (pedidosHoy.length > 0
-          ? `**Hoy:**\n${pedidosHoy.slice(0, 3).map(p => `- ${p.numero_pedido || p.id?.slice(-6)} · ${p.cliente_nombre} · ${fmt(p.total)} · ${p.estado}`).join('\n')}`
+          ? `**Hoy:**\n${pedidosHoy.slice(0, 3).map(p => `- ${p.numero_pedido || p.id?.slice(-6)} · ${p.cliente_nombre} · ${fmt(p.total)} · ${p.estado} · ${chileHora(p.created_date)}`).join('\n')}`
           : '_Sin pedidos hoy._');
       sources.push('PedidoWeb');
     } else if (matches(['propuesta', 'cotizaci'])) {
