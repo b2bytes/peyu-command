@@ -14,6 +14,26 @@ const RETIRO_EN_TIENDA = {
   es_retiro: true,
 };
 
+// Cotización de respaldo: garantiza que el cliente SIEMPRE tenga una opción de
+// envío seleccionable aunque la API/tabla de tarifas falle. Tarifa estándar
+// transparente que se ajusta con BlueExpress al despachar. Evita que el
+// checkout se trabe en "selecciona una forma de envío".
+function cotizacionFallback(items = []) {
+  const unidades = items.reduce((s, i) => s + (i.cantidad || 1), 0);
+  const pesoEstimado = Math.max(0.5, unidades * 0.3);
+  let base;
+  if (pesoEstimado <= 1) base = 4990;
+  else if (pesoEstimado <= 3) base = 6490;
+  else if (pesoEstimado <= 6) base = 8990;
+  else base = 12990;
+  return {
+    peso_total_kg: Math.round(pesoEstimado * 1000) / 1000,
+    detalle_peso: [],
+    express: { servicio: 'EXPRESS', comuna: '', region: '', costo: base, lead_time_dias: 3, es_estimado: true },
+    priority: null,
+  };
+}
+
 /**
  * Selector de envío Bluex con cotización REAL por comuna y peso del carrito.
  * La comuna llega desde el formulario de envío (props.comuna), no se ingresa
@@ -80,13 +100,19 @@ export default function ShippingSelector({
       .then(res => {
         if (cancelled) return;
         if (!res || (!res.express && !res.priority)) {
-          setError(`No encontramos tarifa Bluex para "${c}". Te contactaremos para cotizar manualmente.`);
-          setCotizacion(null);
+          // Nunca dejamos el checkout sin opción: tarifa estándar SELECCIONABLE.
+          setCotizacion(cotizacionFallback(items));
+          setError(`No encontramos tarifa exacta para "${c}". Aplicamos una tarifa estándar; ajustaremos con BlueExpress al despachar.`);
         } else {
           setCotizacion(res);
         }
       })
-      .catch(e => { if (!cancelled) setError(e.message || 'Error al cotizar envío'); })
+      .catch(() => {
+        if (cancelled) return;
+        // Falla de red / API: igual ofrecemos una opción seleccionable para no bloquear la compra.
+        setCotizacion(cotizacionFallback(items));
+        setError('No pudimos calcular el envío en este momento. Aplicamos una tarifa estándar; la confirmaremos con BlueExpress.');
+      })
       .finally(() => { if (!cancelled) setLoading(false); });
 
     return () => { cancelled = true; };

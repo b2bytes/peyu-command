@@ -123,7 +123,7 @@ export default function CheckoutNuevo() {
     }
 
     if (!envioBluex) {
-      setErrorPago('Selecciona una forma de envío antes de continuar.');
+      setErrorPago('Elige una forma de envío para continuar (o selecciona "Retiro en Tienda", siempre disponible).');
       setTimeout(() => document.querySelector('[data-shipping-selector]')?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 100);
       return;
     }
