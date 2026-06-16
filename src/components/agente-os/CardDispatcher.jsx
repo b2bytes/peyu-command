@@ -8,6 +8,7 @@ import ConsultasCard from './cards/ConsultasCard';
 import LeadsCard from './cards/LeadsCard';
 import ProposalsCard from './cards/ProposalsCard';
 import ShipmentsCard from './cards/ShipmentsCard';
+import PipelineCard from './cards/PipelineCard';
 
 // Renderiza la tarjeta rica correcta según el tipo detectado, hidratada con
 // los datos reales del CRM + las listas/métricas en vivo de peyuBrainOps.
@@ -20,6 +21,8 @@ export default function CardDispatcher({ card, crm, metrics, lists = {}, onAsk, 
       return <SalesCard metrics={metrics} periodo={card.periodo} />;
     case 'orders':
       return <OrdersCard pedidos={crm.pedidos} lista={lists.pedidos_pendientes} onDone={onDone} />;
+    case 'pipeline':
+      return <PipelineCard lista={lists.pedidos_pendientes || crm.pedidos} onDone={onDone} />;
     case 'stock':
       return <StockCard productos={crm.productos} lista={lists.stock_bajo_list} onDone={onDone} />;
     case 'quotes':

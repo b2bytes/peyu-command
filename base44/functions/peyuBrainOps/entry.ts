@@ -180,6 +180,7 @@ Deno.serve(async (req) => {
           id: p.id, numero_pedido: p.numero_pedido, cliente_nombre: p.cliente_nombre,
           cliente_email: p.cliente_email, total: p.total, estado: p.estado,
           medio_pago: p.medio_pago, tracking: p.tracking, ciudad: p.ciudad,
+          payment_status: p.payment_status || '',
         })),
       leads_top: leadsActivos.slice(0, 8).map(l => ({
         id: l.id, company_name: l.company_name, contact_name: l.contact_name,

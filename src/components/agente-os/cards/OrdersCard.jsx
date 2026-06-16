@@ -1,8 +1,12 @@
-import { Package, ChevronRight, Truck } from 'lucide-react';
+import { Package, ChevronRight, Truck, Tag } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import ActionButton from '../ActionButton';
 
 const fmtCLP = (n) => (n != null ? `$${Number(n).toLocaleString('es-CL')}` : '—');
+
+// ¿Pagado? (payment_status paid o estado post-pago).
+const ESTADOS_PAGADOS = ['Confirmado', 'En Producción', 'Listo para Despacho', 'Despachado', 'Entregado'];
+const estaPagado = (p) => p.payment_status === 'paid' || ESTADOS_PAGADOS.includes(p.estado);
 
 const ESTADO_STYLE = {
   'Nuevo': 'bg-ld-highlight-soft text-ld-highlight',
@@ -59,7 +63,30 @@ export default function OrdersCard({ pedidos = [], lista, onDone }) {
                   </span>
                 </div>
               </div>
-              {NEXT[p.estado] && (
+              {/* En "Listo para Despacho" sin OT → la acción real es generar la
+                  etiqueta BlueExpress, no solo cambiar el estado. */}
+              {p.estado === 'Listo para Despacho' && !p.tracking ? (
+                <div className="mt-2.5">
+                  <ActionButton
+                    action="generarEtiqueta"
+                    payload={{ id: p.id }}
+                    label="Generar etiqueta BlueExpress"
+                    icon={Tag}
+                    variant="primary"
+                    onDone={onDone}
+                  />
+                </div>
+              ) : !estaPagado(p) ? (
+                <div className="mt-2.5">
+                  <ActionButton
+                    action="marcarPedidoPagado"
+                    payload={{ id: p.id }}
+                    label="Marcar pagado"
+                    icon={Truck}
+                    onDone={onDone}
+                  />
+                </div>
+              ) : NEXT[p.estado] && (
                 <div className="mt-2.5">
                   <ActionButton
                     action="updatePedidoEstado"

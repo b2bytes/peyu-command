@@ -6,7 +6,7 @@ const fmtCLP = (n) => (n != null ? `$${Number(n).toLocaleString('es-CL')}` : '�
 export default function DailySummaryCard({ metrics = {}, onAsk }) {
   const stats = [
     { icon: TrendingUp, label: 'Ventas hoy', value: fmtCLP(metrics.ingresos_hoy), sub: `${metrics.pedidos_hoy || 0} pedidos`, ask: '¿Cuánto vendimos hoy?' },
-    { icon: Package, label: 'En producción', value: metrics.pedidos_en_produccion ?? 0, sub: `${metrics.pedidos_listos ?? 0} por despachar`, ask: 'Muéstrame los pedidos pendientes' },
+    { icon: Package, label: 'En producción', value: metrics.pedidos_en_produccion ?? 0, sub: `${metrics.pedidos_listos ?? 0} por despachar`, ask: 'Muéstrame el pipeline de pedidos' },
     { icon: Truck, label: 'En tránsito', value: metrics.envios_en_transito ?? 0, sub: `${metrics.envios_entregados_hoy ?? 0} entregados hoy`, ask: '¿Cómo van los despachos?' },
     { icon: Users, label: 'Leads B2B hoy', value: metrics.leads_hoy ?? 0, sub: `${metrics.leads_calientes ?? 0} calientes`, ask: 'Cotizaciones B2B recientes' },
   ];
