@@ -1,12 +1,15 @@
-import { FileText, ChevronRight, Send, Check } from 'lucide-react';
+import { useState } from 'react';
+import { FileText, ChevronRight, Send, Check, Eye } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import ActionButton from '../ActionButton';
+import PropuestaViewerModal from '../PropuestaViewerModal';
 
 const fmtCLP = (n) => (n != null ? `$${Number(n).toLocaleString('es-CL')}` : '—');
 
 // Propuestas corporativas pendientes (enviadas sin respuesta) + acciones:
 // reenviar / marcar aceptada. Acepta `cotizaciones` (CRM) o `lista` (brain).
 export default function ProposalsCard({ cotizaciones = [], lista, onDone }) {
+  const [verPropuesta, setVerPropuesta] = useState(null); // { id, titulo }
   const pendientes = lista
     ? lista
     : cotizaciones.filter((c) => c.status === 'Enviada' || c.status === 'Borrador').slice(0, 6);
@@ -47,6 +50,12 @@ export default function ProposalsCard({ cotizaciones = [], lista, onDone }) {
               </div>
             </div>
             <div className="flex items-center gap-1.5 mt-2.5 flex-wrap">
+              <button
+                onClick={() => setVerPropuesta({ id: c.id, titulo: `${c.empresa || ''}${c.numero ? ` · ${c.numero}` : ''}` })}
+                className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg ld-glass-soft text-ld-fg-soft hover:text-ld-fg hover:border-ld-action/50 transition-colors"
+              >
+                <Eye className="w-3.5 h-3.5" /> Ver propuesta
+              </button>
               {c.email && (
                 <ActionButton action="reenviarPropuesta" payload={{ proposalId: c.id }} label="Reenviar" icon={Send} onDone={onDone} />
               )}
@@ -55,6 +64,14 @@ export default function ProposalsCard({ cotizaciones = [], lista, onDone }) {
           </div>
         ))}
       </div>
+
+      {verPropuesta && (
+        <PropuestaViewerModal
+          proposalId={verPropuesta.id}
+          titulo={verPropuesta.titulo}
+          onClose={() => setVerPropuesta(null)}
+        />
+      )}
     </div>
   );
 }

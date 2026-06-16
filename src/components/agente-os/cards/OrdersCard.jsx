@@ -1,5 +1,6 @@
-import { Package, Truck, Tag } from 'lucide-react';
+import { Package, Truck, Tag, Clock } from 'lucide-react';
 import ActionButton from '../ActionButton';
+import { fmtRelativo, fmtFechaHora } from '@/lib/fecha-relativa';
 
 const fmtCLP = (n) => (n != null ? `$${Number(n).toLocaleString('es-CL')}` : '—');
 
@@ -52,6 +53,11 @@ export default function OrdersCard({ pedidos = [], lista, onDone }) {
                 <div className="min-w-0">
                   <div className="text-sm font-medium text-ld-fg truncate">{p.cliente_nombre || 'Cliente'}</div>
                   <div className="text-[11px] text-ld-fg-muted truncate">{p.numero_pedido || p.id?.slice(-6)} · {p.medio_pago || ''}</div>
+                  {(p.created_date || p.fecha) && (
+                    <div className="text-[10px] text-ld-fg-subtle mt-0.5 flex items-center gap-1" title={fmtFechaHora(p.created_date || p.fecha) || ''}>
+                      <Clock className="w-2.5 h-2.5" /> {fmtRelativo(p.created_date || p.fecha)}
+                    </div>
+                  )}
                 </div>
                 <div className="flex items-center gap-2 flex-shrink-0">
                   <span className="text-sm font-semibold text-ld-fg">{fmtCLP(p.total)}</span>

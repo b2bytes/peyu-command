@@ -38,8 +38,8 @@ export default function CardDispatcher({ card, crm, metrics, lists = {}, onAsk, 
       return <ConsultasCard consultas={lists.consultas_pendientes || crm.consultas} onDone={onDone} />;
     case 'clients':
       return card.modo === 'nuevos'
-        ? <ClientsCard clientes={lists.clientes_nuevos || crm.clientes} titulo="Clientes nuevos (últimos registrados)" mostrarFecha />
-        : <ClientsCard clientes={lists.clientes_top || crm.clientes} titulo="Clientes top (mejores compradores)" />;
+        ? <ClientsCard clientes={lists.clientes_nuevos || crm.clientes} titulo="Clientes nuevos (últimos registrados)" mostrarFecha onChanged={onDone} />
+        : <ClientsCard clientes={lists.clientes_top || crm.clientes} titulo="Clientes top (mejores compradores)" onChanged={onDone} />;
     default:
       return null;
   }

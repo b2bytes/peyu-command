@@ -5,7 +5,7 @@ import ClientVCard from './ClientVCard';
 // Clientes en la página agente: vCards inteligentes con TODA la info real
 // (contacto, RUT, KPIs de compra, NPS, notas). Soporta dos modos: clientes
 // nuevos (últimos registrados, con fecha) o top compradores históricos.
-export default function ClientsCard({ clientes = [], titulo = 'Clientes', mostrarFecha = false }) {
+export default function ClientsCard({ clientes = [], titulo = 'Clientes', mostrarFecha = false, onChanged }) {
   const lista = clientes.slice(0, 12);
 
   return (
@@ -32,7 +32,7 @@ export default function ClientsCard({ clientes = [], titulo = 'Clientes', mostra
                   Registrado el {new Date(c.created_date).toLocaleDateString('es-CL', { day: 'numeric', month: 'long', year: 'numeric' })}
                 </p>
               )}
-              <ClientVCard cliente={c} />
+              <ClientVCard cliente={c} onChanged={onChanged} />
             </div>
           ))}
         </div>

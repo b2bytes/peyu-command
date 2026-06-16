@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { Mail, Phone, Hash, Star, TrendingUp, ShoppingBag, ChevronDown, MessageCircle, Crown, AlertTriangle, Package, Wallet, CalendarDays, ExternalLink } from 'lucide-react';
+import { Mail, Phone, Hash, Star, TrendingUp, ShoppingBag, ChevronDown, MessageCircle, Crown, AlertTriangle, Package, Wallet, CalendarDays, ExternalLink, Pencil } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import ClienteEditModal from '../ClienteEditModal';
 
 const fmtCLP = (n) => (n != null ? `$${Number(n).toLocaleString('es-CL')}` : '—');
 const fmtFecha = (d) => {
@@ -28,8 +29,9 @@ const PEDIDO_ESTADO_CLS = {
 // vCard inteligente de un cliente: datos reales (cruzados con sus pedidos por
 // peyuBrainOps), último pedido, contacto accionable y CTA a la ficha 360°.
 // Diseñada mobile-first: tap targets grandes, info clave visible sin expandir.
-export default function ClientVCard({ cliente }) {
+export default function ClientVCard({ cliente, onChanged }) {
   const [open, setOpen] = useState(false);
+  const [editing, setEditing] = useState(false);
   const c = cliente;
   const nombre = c.contacto || c.empresa || 'Cliente';
   const est = ESTADO_STYLE[c.estado] || ESTADO_STYLE.Activo;
@@ -147,12 +149,26 @@ export default function ClientVCard({ cliente }) {
                 <MessageCircle className="w-3.5 h-3.5" /> WhatsApp
               </a>
             )}
+            {c.id && (
+              <button onClick={() => setEditing(true)}
+                className="flex-1 ld-btn-ghost rounded-xl py-2 text-center text-xs font-bold text-ld-fg-soft inline-flex items-center justify-center gap-1.5">
+                <Pencil className="w-3 h-3" /> Editar
+              </button>
+            )}
             <Link to={`/admin/cliente-360?email=${encodeURIComponent(c.email || '')}`}
               className="flex-1 ld-btn-ghost rounded-xl py-2 text-center text-xs font-bold text-ld-fg-soft inline-flex items-center justify-center gap-1.5">
               Ficha 360° <ExternalLink className="w-3 h-3" />
             </Link>
           </div>
         </div>
+      )}
+
+      {editing && (
+        <ClienteEditModal
+          cliente={c}
+          onClose={() => setEditing(false)}
+          onSaved={onChanged}
+        />
       )}
     </div>
   );
