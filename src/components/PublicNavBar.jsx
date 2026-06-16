@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, X, ChevronDown, ShoppingBag, Building2, BookOpen, Users, LifeBuoy, Phone, ChevronRight, ShoppingCart } from 'lucide-react';
+import { Menu, X, ChevronDown, ShoppingBag, Building2, BookOpen, Users, LifeBuoy, Phone, ChevronRight, ShoppingCart, User } from 'lucide-react';
 import { cartCountV2, subscribeCartV2 } from '@/lib/shop-v2-cart';
 
 // Menú profesional para todas las páginas públicas de PEYU
@@ -35,6 +35,7 @@ export default function PublicNavBar() {
   ];
 
   const helpLinks = [
+    { label: 'Mi cuenta', path: '/mi-cuenta', icon: User },
     { label: 'Soporte', path: '/soporte', icon: LifeBuoy },
     { label: 'Seguimiento', path: '/seguimiento' },
     { label: 'FAQ', path: '/faq' },
@@ -122,6 +123,15 @@ export default function PublicNavBar() {
                 </div>
               </div>
             </div>
+
+            {/* Mi cuenta */}
+            <Link
+              to="/mi-cuenta"
+              className="ml-1 p-2.5 rounded-lg hover:bg-[#F8F3ED] transition-colors"
+              aria-label="Mi cuenta"
+            >
+              <User className="w-5 h-5 text-[#2C1810]" />
+            </Link>
 
             {/* Cart Button */}
             <Link

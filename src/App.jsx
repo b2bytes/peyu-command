@@ -31,6 +31,7 @@ import CatalogoCorporativo from './pages/CatalogoCorporativo';
 import PersonalizacionFlow from './pages/PersonalizacionFlow';
 import SoportePublico from './pages/SoportePublico';
 import SeguimientoPedido from './pages/SeguimientoPedido';
+import MiCuenta from './pages/MiCuenta';
 import CatalogoVisual from './pages/CatalogoVisual';
 import Nosotros from './pages/Nosotros';
 import Blog from './pages/Blog';
@@ -356,6 +357,7 @@ function App() {
                 {/* PersonalizacionFlow tiene su propio header wizard — excluido del PublicPageLayout */}
                 <Route path="/soporte" element={<SoportePublico />} />
                 <Route path="/seguimiento" element={<SeguimientoPedido />} />
+                <Route path="/mi-cuenta" element={<MiCuenta />} />
                 <Route path="/catalogo-visual" element={<CatalogoVisual />} />
                 <Route path="/fiestas-patrias" element={<FiestasPatrias />} />
                 <Route path="/fiestas-patrias/canasta" element={<FiestasCanasta />} />
