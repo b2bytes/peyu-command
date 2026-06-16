@@ -8,9 +8,6 @@
 // cambian al tiro, sin esperar fotos ni IA. No aplica a carcasas (tienen foto
 // real por color) ni a la opción Mixto (multicolor).
 // ============================================================================
-import { buildColorFilter } from '@/lib/color-transform';
-import { getProductImage, getProductImageForColor } from '@/utils/productImages';
-
 /**
  * Filtro CSS que tiñe la foto del producto al color oficial elegido.
  * Devuelve '' (sin filtro) cuando: no hay color, es Mixto, o existe una
@@ -22,14 +19,12 @@ import { getProductImage, getProductImageForColor } from '@/utils/productImages'
  */
 const norm = (s) => String(s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
 
-export function getColorTintFilter(producto, color, hasRealPhoto = false) {
-  if (!producto || !color?.hex) return '';
-  if (color.id === 'mixto') return '';
-  if (hasRealPhoto) return '';
-  // Solo bloqueamos el tinte si existe una foto REAL DIFERENTE de la base
-  // para este color específico. Si imagenes_por_color mapea a la misma URL
-  // base, aplicamos tinte normalmente (no hay foto real del color).
-  const mapped = getProductImageForColor(producto, color);
-  if (mapped && mapped !== getProductImage(producto)) return ''; // hay foto real por color
-  return buildColorFilter(color.hex);
+export function getColorTintFilter() {
+  // ⛔ DESACTIVADO (feedback fundadores): el tinte CSS sobre la foto completa
+  // se veía como una "capa de color ficticia" encima del producto en vez de
+  // aplicar el color real. Ahora SIEMPRE devolvemos '' — la foto real del
+  // producto se muestra intacta y el color elegido se comunica mediante el
+  // swatch seleccionado (que ya muestra el HEX/foto real del color). Las
+  // carcasas siguen usando su foto real por color (imagenes_por_color).
+  return '';
 }

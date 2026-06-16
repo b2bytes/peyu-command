@@ -267,11 +267,11 @@ export default function VendedorChatBar() {
         </div>
       )}
 
-      {/* Botón flotante — solo visible cuando el chat está cerrado */}
+      {/* MOBILE: botón flotante — solo visible cuando el chat está cerrado */}
       {!open && (
         <button
           onClick={handleOpen}
-          className="fixed right-4 bottom-20 lg:bottom-6 lg:right-6 z-[95] w-[60px] h-[60px] rounded-2xl flex items-center justify-center shadow-xl transition-all active:scale-90 hover:-translate-y-1 overflow-hidden p-1"
+          className="lg:hidden fixed right-4 bottom-20 z-[95] w-[60px] h-[60px] rounded-2xl flex items-center justify-center shadow-xl transition-all active:scale-90 hover:-translate-y-1 overflow-hidden p-1"
           style={{ background: 'linear-gradient(135deg,#0F8B6C,#0B6E55)', boxShadow: '0 8px 32px rgba(15,139,108,.35)' }}
           title="Hablar con Peyu">
           <img
@@ -288,6 +288,38 @@ export default function VendedorChatBar() {
             </span>
           )}
         </button>
+      )}
+
+      {/* DESKTOP: barra de chat SIEMPRE visible y centrada abajo. Al escribir o
+          hacer foco se abre el panel completo. (Feedback fundadores) */}
+      {!open && (
+        <div className="hidden lg:flex fixed bottom-4 left-1/2 -translate-x-1/2 z-[95] w-[calc(100%-2rem)] max-w-xl items-center gap-2 rounded-full pl-3 pr-1.5 py-1.5 shadow-2xl"
+          style={{ background: 'rgba(255,255,255,.97)', backdropFilter: 'blur(20px)', border: '1.5px solid #D4C4B0', boxShadow: '0 10px 40px rgba(15,139,108,.18)' }}>
+          <span className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden" style={{ background: 'rgba(15,139,108,.12)' }}>
+            <img src="https://media.base44.com/images/public/69d99b9d61f699701129c103/b67ed29f9_image.png" alt="PEYU" className="w-5 h-5 object-contain" draggable={false} />
+          </span>
+          <input
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onFocus={handleOpen}
+            onKeyDown={(e) => { if (e.key === 'Enter') handleSend(); }}
+            enterKeyHint="send"
+            placeholder="Pregúntale a Peyu… compra aquí mismo 🐢"
+            className="flex-1 min-w-0 bg-transparent outline-none text-sm py-1.5"
+            style={{ color: '#2C1810' }}
+          />
+          {unread > 0 && (
+            <span className="min-w-[20px] h-5 px-1 rounded-full text-white text-[10px] font-bold flex items-center justify-center flex-shrink-0"
+              style={{ background: '#D96B4D' }}>{unread}</span>
+          )}
+          <button
+            onClick={() => (input.trim() ? handleSend() : handleOpen())}
+            className="w-9 h-9 rounded-full flex items-center justify-center text-white transition-all active:scale-90 flex-shrink-0"
+            style={{ background: 'linear-gradient(135deg,#0F8B6C,#0B6E55)' }}
+            title="Hablar con Peyu">
+            <Send className="w-4 h-4" />
+          </button>
+        </div>
       )}
     </>
   );

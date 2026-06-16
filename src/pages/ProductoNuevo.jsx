@@ -17,6 +17,8 @@ import ProductIncludesV2 from '@/components/shopv2/ProductIncludesV2';
 import DescripcionCollapsibleV2 from '@/components/shopv2/DescripcionCollapsibleV2';
 import MobileNavBarV2 from '@/components/shopv2/MobileNavBarV2';
 import PaymentMethodsBadgesV2 from '@/components/shopv2/PaymentMethodsBadgesV2';
+import QtyDiscountNoticeV2 from '@/components/shopv2/QtyDiscountNoticeV2';
+import IntencionCompraV2 from '@/components/shopv2/IntencionCompraV2';
 import { getProductImage, getProductImageForColor } from '@/utils/productImages';
 import { getColoresProducto } from '@/lib/color-parser';
 import { findColorImageMatch } from '@/lib/color-image-matcher';
@@ -673,6 +675,9 @@ export default function ProductoNuevo() {
                 />
               )}
 
+              {/* Intención de compra: persona (B2C) o empresa (B2B) → precios por volumen */}
+              <IntencionCompraV2 producto={producto} />
+
               {/* Personalización en vivo — circuito completo. En mobile el mockup
                   vive ARRIBA (reemplaza la foto principal): al cargar logo/diseño
                   la página sube sola para que se vea al instante. */}
@@ -714,6 +719,9 @@ export default function ProductoNuevo() {
                 descuentoPct={descuentoPct}
                 descuentoMonto={descuentoMonto}
               />
+
+              {/* Aviso de descuentos por cantidad + grabado gratis desde 10u */}
+              <QtyDiscountNoticeV2 cantidad={cantidad} moq={moq} />
 
               {/* El cotizador de envío vive solo en el carrito/checkout, donde se
                   piden los datos de envío. En la ficha de producto se eliminó. */}
