@@ -116,6 +116,21 @@ Deno.serve(async (req) => {
     const CW = pw - MX * 2;                        // ancho útil (178)
     let y = 0;
 
+    // jsPDF 4.x eliminó doc.setGlobalAlpha. Para sombras semitransparentes se
+    // usa GState (saveGraphicsState → setGState(opacity) → restoreGraphicsState).
+    // Helper resiliente: si la versión no soporta GState, dibuja sin opacidad.
+    const shadowRect = (x, yy, w, h, r) => {
+      doc.setFillColor(0, 0, 0);
+      try {
+        doc.saveGraphicsState();
+        doc.setGState(new doc.GState({ opacity: 0.07 }));
+        doc.roundedRect(x, yy, w, h, r, r, 'F');
+        doc.restoreGraphicsState();
+      } catch {
+        // Sin soporte de opacidad: omitimos la sombra para no romper el PDF.
+      }
+    };
+
     // helper de texto rápido con suavizado mejorado
     const T = (txt, x, yy, { size = 9, font = 'normal', color = INK, align = 'left', spacing = 0, maxWidth = 999 } = {}) => {
       doc.setFont('helvetica', font);
@@ -147,10 +162,7 @@ Deno.serve(async (req) => {
     // Logo PEYU — chip arena cuadrado 20x20, con sombra suave
     const lgS = 20, lgX = MX, lgY = 14;
     // Sombra suave del chip
-    doc.setFillColor(0, 0, 0);
-    doc.setGlobalAlpha(0.08);
-    doc.roundedRect(lgX + 0.5, lgY + 0.5, lgS, lgS, 3, 3, 'F');
-    doc.setGlobalAlpha(1);
+    shadowRect(lgX + 0.5, lgY + 0.5, lgS, lgS, 3);
 
     if (peyuLogo) {
      try {
@@ -188,11 +200,8 @@ Deno.serve(async (req) => {
     // ═══════════════════════════════════════════════════
     const cardH = 46;
     // Sombra suave de card
-    doc.setFillColor(0, 0, 0);
-    doc.setGlobalAlpha(0.06);
-    doc.roundedRect(MX + 1, y + 1, CW, cardH, 4, 4, 'F');
-    doc.setGlobalAlpha(1);
-    
+    shadowRect(MX + 1, y + 1, CW, cardH, 4);
+
     doc.setFillColor(...SAND);
     doc.roundedRect(MX, y, CW, cardH, 4, 4, 'F');
     // Acento vertical eco a la izquierda con sombra
@@ -214,10 +223,7 @@ Deno.serve(async (req) => {
       try {
         const cl = 24, clx = pw / 2, cly = y + 5;
         // Fondo con sombra
-        doc.setFillColor(0, 0, 0);
-        doc.setGlobalAlpha(0.08);
-        doc.roundedRect(clx - cl/2 + 0.5, cly + 0.5, cl, cl, 3, 3, 'F');
-        doc.setGlobalAlpha(1);
+        shadowRect(clx - cl/2 + 0.5, cly + 0.5, cl, cl, 3);
         // Card blanca
         doc.setFillColor(...WHITE);
         doc.roundedRect(clx - cl/2, cly, cl, cl, 3, 3, 'F');
