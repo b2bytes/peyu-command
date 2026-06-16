@@ -274,6 +274,7 @@ function App() {
               <Route path="/tienda" element={<Navigate to="/CatalogoNuevo" replace />} />
               <Route path="/Tienda" element={<Navigate to="/CatalogoNuevo" replace />} />
               <Route path="/Tienda-legacy" element={<Navigate to="/" replace />} />
+              <Route path="/CentroLogistico" element={<Navigate to="/admin/bluex" replace />} />
               <Route path="/Inicio" element={<Navigate to="/" replace />} />
               <Route path="/inicio" element={<Navigate to="/" replace />} />
               <Route path="/home" element={<Navigate to="/" replace />} />
