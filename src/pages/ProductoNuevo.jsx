@@ -16,7 +16,6 @@ import ProductGalleryV2 from '@/components/shopv2/ProductGalleryV2';
 import ProductIncludesV2 from '@/components/shopv2/ProductIncludesV2';
 import DescripcionCollapsibleV2 from '@/components/shopv2/DescripcionCollapsibleV2';
 import MobileNavBarV2 from '@/components/shopv2/MobileNavBarV2';
-import ShippingEstimatorV2 from '@/components/shopv2/ShippingEstimatorV2';
 import PaymentMethodsBadgesV2 from '@/components/shopv2/PaymentMethodsBadgesV2';
 import { getProductImage, getProductImageForColor } from '@/utils/productImages';
 import { getColoresProducto } from '@/lib/color-parser';
@@ -716,8 +715,8 @@ export default function ProductoNuevo() {
                 descuentoMonto={descuentoMonto}
               />
 
-              {/* Envío BlueExpress en vivo (tarifario oficial por comuna) */}
-              <ShippingEstimatorV2 producto={producto} cantidad={cantidad} />
+              {/* El cotizador de envío vive solo en el carrito/checkout, donde se
+                  piden los datos de envío. En la ficha de producto se eliminó. */}
 
               {/* Trust + medios de pago mobile — UNA franja compacta (menos scroll) */}
               <div className="lg:hidden space-y-2">
