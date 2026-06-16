@@ -20,7 +20,9 @@ export default function CardDispatcher({ card, crm, metrics, lists = {}, onAsk, 
     case 'sales':
       return <SalesCard metrics={metrics} periodo={card.periodo} />;
     case 'orders':
-      return <OrdersCard pedidos={crm.pedidos} lista={lists.pedidos_pendientes} onDone={onDone} />;
+      // Con filtro (por_pagar / por_etiqueta) usamos el CRM completo para no
+      // perder pedidos; sin filtro, la lista priorizada del brain.
+      return <OrdersCard pedidos={crm.pedidos} lista={card.filtro ? null : lists.pedidos_pendientes} filtro={card.filtro} onDone={onDone} />;
     case 'pipeline':
       // CRM completo (60 pedidos) cuando exista; si no, la lista del brain.
       return <PipelineCard lista={crm.pedidos?.length ? crm.pedidos : (lists.pedidos_pendientes || [])} onDone={onDone} />;

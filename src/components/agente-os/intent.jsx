@@ -11,9 +11,18 @@ export function detectCards(text) {
   if (has(['vendimos', 'venta', 'ventas', 'ingreso', 'facturamos', 'cuánto vend', 'cuanto vend', 'caja', 'financiero', 'ganancia'])) {
     cards.push({ type: 'sales', periodo: has(['semana', '7 día', '7 dia', 'últimos']) ? '7d' : 'hoy' });
   }
+  // Pedidos POR CONFIRMAR PAGO: el founder quiere ver los que falta marcar pagados.
+  const quierePorPagar = has(['confirmar pago', 'confirmar por pagado', 'por confirmar pago', 'por pagar', 'marcar pagado', 'marcar pagados', 'falta pagar', 'sin pagar', 'pago pendiente', 'pagos pendientes', 'transferencia por']);
+  // Pedidos PARA CREAR ETIQUETA: pagados sin OT, listos para emitir BlueExpress.
+  const quiereEtiqueta = has(['crear etiqueta', 'para etiqueta', 'generar etiqueta', 'hacer etiqueta', 'emitir etiqueta', 'sacar etiqueta', 'para despachar', 'por despachar', 'listos para despacho', 'listo para despacho']);
+
   if (has(['pipeline', 'flujo de pedidos', 'flujo completo', 'embudo de pedidos', 'gestionar pedidos', 'gestionar todo', 'confirmar pagos', 'generar etiquetas', 'etiquetas en lote', 'varios pedidos', 'en lote', 'de principio a fin'])) {
     cards.push({ type: 'pipeline' });
-  } else if (has(['pedido', 'pendiente', 'por despachar', 'producción', 'produccion', 'transferencia por'])) {
+  } else if (quierePorPagar) {
+    cards.push({ type: 'orders', filtro: 'por_pagar' });
+  } else if (quiereEtiqueta) {
+    cards.push({ type: 'orders', filtro: 'por_etiqueta' });
+  } else if (has(['pedido', 'pendiente', 'producción', 'produccion'])) {
     cards.push({ type: 'orders' });
   }
   if (has(['stock', 'inventario', 'agotad', 'reponer', 'producto', 'catálogo', 'catalogo', 'sku', 'precio'])) {

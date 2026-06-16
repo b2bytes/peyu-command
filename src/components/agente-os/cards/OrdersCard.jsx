@@ -25,26 +25,49 @@ const NEXT = {
   'Despachado': 'Entregado',
 };
 
+// ¿Tiene etiqueta/OT ya emitida?
+const tieneOT = (p) => !!(p.tracking && String(p.tracking).trim());
+const VIVOS = (p) => !['Cancelado', 'Reembolsado'].includes(p.estado);
+
 // Pedidos pendientes con acción: avanzar al siguiente estado del flujo.
 // Acepta `pedidos` (CRM completo) o `lista` (datos ya filtrados de brain).
-export default function OrdersCard({ pedidos = [], lista, onDone }) {
-  const pendientes = lista
-    ? lista
-    : pedidos.filter((p) => !['Entregado', 'Cancelado', 'Reembolsado'].includes(p.estado)).slice(0, 6);
+// `filtro`: 'por_pagar' (faltan marcar pagados) | 'por_etiqueta' (pagados sin OT).
+export default function OrdersCard({ pedidos = [], lista, filtro, onDone }) {
+  let pendientes;
+  if (filtro === 'por_pagar') {
+    pendientes = pedidos.filter((p) => VIVOS(p) && !estaPagado(p)).slice(0, 12);
+  } else if (filtro === 'por_etiqueta') {
+    pendientes = pedidos.filter((p) => VIVOS(p) && estaPagado(p) && !tieneOT(p) && p.estado !== 'Entregado').slice(0, 12);
+  } else if (lista) {
+    pendientes = lista;
+  } else {
+    pendientes = pedidos.filter((p) => !['Entregado', 'Cancelado', 'Reembolsado'].includes(p.estado)).slice(0, 6);
+  }
+
+  const titulo = filtro === 'por_pagar'
+    ? 'Pedidos por confirmar pago'
+    : filtro === 'por_etiqueta'
+      ? 'Pedidos para crear etiqueta'
+      : 'Pedidos pendientes';
+  const vacio = filtro === 'por_pagar'
+    ? 'No hay pedidos por confirmar pago 🎉'
+    : filtro === 'por_etiqueta'
+      ? 'No hay pedidos pagados pendientes de etiqueta 🎉'
+      : 'No hay pedidos pendientes 🎉';
 
   return (
     <div className="ld-glass rounded-2xl p-4 sm:p-5">
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
           <span className="w-7 h-7 rounded-lg bg-ld-action-soft flex items-center justify-center">
-            <Package className="w-4 h-4 text-ld-action" />
+            {filtro === 'por_etiqueta' ? <Tag className="w-4 h-4 text-ld-action" /> : <Package className="w-4 h-4 text-ld-action" />}
           </span>
-          <span className="text-sm font-semibold text-ld-fg">Pedidos pendientes</span>
+          <span className="text-sm font-semibold text-ld-fg">{titulo}</span>
         </div>
         <span className="text-[11px] text-ld-fg-subtle">{pendientes.length}</span>
       </div>
       {pendientes.length === 0 ? (
-        <p className="text-sm text-ld-fg-muted">No hay pedidos pendientes 🎉</p>
+        <p className="text-sm text-ld-fg-muted">{vacio}</p>
       ) : (
         <div className="space-y-2.5">
           {pendientes.map((p) => (
@@ -66,9 +89,31 @@ export default function OrdersCard({ pedidos = [], lista, onDone }) {
                   </span>
                 </div>
               </div>
-              {/* En "Listo para Despacho" sin OT → la acción real es generar la
-                  etiqueta BlueExpress, no solo cambiar el estado. */}
-              {p.estado === 'Listo para Despacho' && !p.tracking ? (
+              {/* Filtro "por_etiqueta": la acción siempre es generar etiqueta.
+                  Filtro "por_pagar": siempre marcar pagado. Sin filtro: lógica
+                  por estado (etiqueta en "Listo para Despacho" sin OT, etc.). */}
+              {filtro === 'por_etiqueta' ? (
+                <div className="mt-2.5">
+                  <ActionButton
+                    action="generarEtiqueta"
+                    payload={{ id: p.id }}
+                    label="Generar etiqueta BlueExpress"
+                    icon={Tag}
+                    variant="primary"
+                    onDone={onDone}
+                  />
+                </div>
+              ) : filtro === 'por_pagar' ? (
+                <div className="mt-2.5">
+                  <ActionButton
+                    action="marcarPedidoPagado"
+                    payload={{ id: p.id }}
+                    label="Marcar pagado"
+                    icon={Truck}
+                    onDone={onDone}
+                  />
+                </div>
+              ) : p.estado === 'Listo para Despacho' && !p.tracking ? (
                 <div className="mt-2.5">
                   <ActionButton
                     action="generarEtiqueta"
