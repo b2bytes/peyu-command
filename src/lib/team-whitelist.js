@@ -10,6 +10,10 @@ export const TEAM_EMAILS = [
   'corporativos@peyuchile.cl',
   'jsanchez@peyuchile.cl',
   'ti@peyuchile.cl',
+  // Agencia b2bytes — emails externos del canal. Cualquier correo que NO sea
+  // @peyuchile.cl se identifica automáticamente como lado "agencia".
+  // 👉 Reemplaza con el correo real de b2bytes:
+  'contacto@b2bytes.cl',
 ];
 
 // Normalizamos la lista una sola vez al cargar el módulo.

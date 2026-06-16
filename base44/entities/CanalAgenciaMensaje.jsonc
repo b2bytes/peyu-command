@@ -1,0 +1,70 @@
+{
+  "name": "CanalAgenciaMensaje",
+  "type": "object",
+  "description": "Mensaje del canal de comunicaci\u00f3n interno entre PEYU (equipo) y la agencia (b2bytes). Vive dentro de la app, en una vista del admin. Permite enviar/recibir mensajes y marcar algunos como 'reporte'. El lado (peyu | agencia) se deriva del dominio del email del autor.",
+  "properties": {
+    "lado": {
+      "type": "string",
+      "title": "Lado que env\u00eda",
+      "enum": [
+        "peyu",
+        "agencia"
+      ],
+      "description": "peyu = equipo PEYU (@peyuchile.cl) \u00b7 agencia = b2bytes / agencia externa."
+    },
+    "autor_email": {
+      "type": "string",
+      "title": "Email del autor"
+    },
+    "autor_nombre": {
+      "type": "string",
+      "title": "Nombre del autor"
+    },
+    "mensaje": {
+      "type": "string",
+      "title": "Mensaje"
+    },
+    "es_reporte": {
+      "type": "boolean",
+      "title": "Marcado como reporte",
+      "default": false,
+      "description": "true = este mensaje es un reporte formal (no un mensaje de chat normal)."
+    },
+    "leido_por_peyu": {
+      "type": "boolean",
+      "title": "Le\u00eddo por PEYU",
+      "default": false
+    },
+    "leido_por_agencia": {
+      "type": "boolean",
+      "title": "Le\u00eddo por la agencia",
+      "default": false
+    }
+  },
+  "required": [
+    "lado",
+    "mensaje"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
