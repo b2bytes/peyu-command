@@ -489,13 +489,19 @@ Deno.serve(async (req) => {
             replyTo: 'ventas@peyuchile.cl',
             fromName: 'PEYU Chile',
           });
-          // Marca el flag de transferencia para no reenviar las instrucciones.
-          if (esTransferencia && pedido.id) {
+          // Marca los flags de idempotencia: esta función es la ÚNICA fuente del
+          // correo de confirmación inicial al cliente. Marcamos
+          // email_confirmacion_enviado (para TODO medio de pago) para que
+          // enviarConfirmacionPedido NUNCA mande un segundo correo duplicado, y
+          // email_instrucciones_transferencia_enviado solo en transferencias.
+          if (pedido.id) {
             await base44.asServiceRole.entities.PedidoWeb.update(pedido.id, {
-              email_instrucciones_transferencia_enviado: true,
+              email_confirmacion_enviado: true,
+              email_confirmacion_enviado_at: new Date().toISOString(),
+              ...(esTransferencia ? { email_instrucciones_transferencia_enviado: true } : {}),
               historial: [
                 ...(pedido.historial || []),
-                { at: new Date().toISOString(), type: 'email_sent', actor: 'onNewPedidoWeb', channel: 'email', detail: 'Instrucciones de transferencia enviadas vía Gmail' },
+                { at: new Date().toISOString(), type: 'email_sent', actor: 'onNewPedidoWeb', channel: 'email', detail: esTransferencia ? 'Confirmación + instrucciones de transferencia enviadas vía Gmail' : 'Confirmación de pedido enviada vía Gmail' },
               ],
             });
           }
