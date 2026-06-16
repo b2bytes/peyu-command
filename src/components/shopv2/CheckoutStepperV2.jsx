@@ -54,7 +54,9 @@ export default function CheckoutStepperV2({ current = 'tienda', className }) {
 
         return (
           <div key={p.id} className="flex items-center gap-1 sm:gap-1.5">
-            {clickable ? <Link to={p.to}>{inner}</Link> : inner}
+            {clickable ? (
+              <Link to={p.to} aria-label={`Ir a ${p.label}`} title={p.label}>{inner}</Link>
+            ) : inner}
             {i < PASOS.length - 1 && (
               <span className="w-3 sm:w-6 h-px" style={{ background: done ? 'rgba(192,120,92,.4)' : '#D4C4B0' }} />
             )}
