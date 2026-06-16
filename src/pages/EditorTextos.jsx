@@ -207,7 +207,7 @@ export default function EditorTextos() {
 
   return (
     <div className="min-h-screen font-inter p-4 sm:p-8" style={{ background: C.bg, color: C.fg }}>
-      <div className="max-w-3xl mx-auto">
+      <div className={`mx-auto transition-all ${tab === 'blog' ? 'max-w-6xl' : 'max-w-3xl'}`}>
         <div className="flex items-center gap-2.5 mb-1">
           <FileText className="w-5 h-5" style={{ color: C.action }} />
           <h1 className="font-fraunces text-2xl">Contenido del sitio</h1>
