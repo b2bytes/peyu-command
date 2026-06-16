@@ -2,8 +2,10 @@ import SEO from '@/components/SEO';
 import { MessageCircle, Mail, MapPin, Phone, Clock } from 'lucide-react';
 import PublicHero from '@/components/public/PublicHero';
 import PublicCTA from '@/components/public/PublicCTA';
+import useTextosPagina from '@/hooks/useTextosPagina';
 
 export default function Contacto() {
+  const { t } = useTextosPagina('contacto');
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'LocalBusiness',
@@ -29,9 +31,9 @@ export default function Contacto() {
       />
 
       <PublicHero
-        eyebrow="Contacto"
-        title={<>Hablemos. <span className="ld-display-italic" style={{ color: 'var(--ld-highlight)' }}>De verdad.</span></>}
-        subtitle="Estamos aquí para ayudarte. Respondemos en menos de 24 horas hábiles."
+        eyebrow={t('contacto.hero.eyebrow', 'Contacto')}
+        title={<>{t('contacto.hero.titulo', 'Hablemos.')} <span className="ld-display-italic" style={{ color: 'var(--ld-highlight)' }}>{t('contacto.hero.titulo_destacado', 'De verdad.')}</span></>}
+        subtitle={t('contacto.hero.subtitulo', 'Estamos aquí para ayudarte. Respondemos en menos de 24 horas hábiles.')}
       />
 
       {/* Canales primarios */}

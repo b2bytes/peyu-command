@@ -1,5 +1,6 @@
 import SEO from '@/components/SEO';
 import LegalPage from '@/components/public/LegalPage';
+import useTextosPagina from '@/hooks/useTextosPagina';
 import {
   CUTOFF_TIME,
   HANDLING_DAYS,
@@ -13,6 +14,7 @@ const formatRange = (r) => (r.min === r.max ? `${r.min}` : `${r.min}–${r.max}`
 const formatCLP = (n) => '$' + n.toLocaleString('es-CL');
 
 export default function Envios() {
+  const { t } = useTextosPagina('envios');
   return (
     <>
       <SEO
@@ -21,9 +23,9 @@ export default function Envios() {
         canonical="https://peyuchile.cl/envios"
       />
       <LegalPage
-        eyebrow="Logística"
-        title={<>Envíos a <span className="ld-display-italic" style={{ color: 'var(--ld-highlight)' }}>todo Chile.</span></>}
-        subtitle="Plazos, tarifas y cobertura nacional · BlueExpress Express"
+        eyebrow={t('envios.hero.eyebrow', 'Logística')}
+        title={<>{t('envios.hero.titulo', 'Envíos a')} <span className="ld-display-italic" style={{ color: 'var(--ld-highlight)' }}>{t('envios.hero.titulo_destacado', 'todo Chile.')}</span></>}
+        subtitle={t('envios.hero.subtitulo', 'Plazos, tarifas y cobertura nacional · BlueExpress Express')}
       >
         <h2>Cobertura</h2>
         <p>Enviamos a todo Chile mediante <strong>BlueExpress Express</strong> como courier principal. También retiro presencial en nuestras tiendas de Providencia y Macul.</p>

@@ -1,7 +1,9 @@
 import SEO from '@/components/SEO';
 import LegalPage from '@/components/public/LegalPage';
+import useTextosPagina from '@/hooks/useTextosPagina';
 
 export default function Cambios() {
+  const { t } = useTextosPagina('cambios');
   return (
     <>
       <SEO
@@ -10,9 +12,9 @@ export default function Cambios() {
         canonical="https://peyuchile.cl/cambios"
       />
       <LegalPage
-        eyebrow="Política de Devoluciones"
-        title={<>Cambios y <span className="ld-display-italic" style={{ color: 'var(--ld-highlight)' }}>devoluciones.</span></>}
-        subtitle="30 días para devolver · Cumple Ley del Consumidor 19.496 · Pro-Consumidor 21.398"
+        eyebrow={t('cambios.hero.eyebrow', 'Política de Devoluciones')}
+        title={<>{t('cambios.hero.titulo', 'Cambios y')} <span className="ld-display-italic" style={{ color: 'var(--ld-highlight)' }}>{t('cambios.hero.titulo_destacado', 'devoluciones.')}</span></>}
+        subtitle={t('cambios.hero.subtitulo', '30 días para devolver · Cumple Ley del Consumidor 19.496 · Pro-Consumidor 21.398')}
       >
         <h2>Resumen rápido</h2>
         <ul>

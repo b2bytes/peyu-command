@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import SEO from '@/components/SEO';
 import PublicHero from '@/components/public/PublicHero';
 import PublicCTA from '@/components/public/PublicCTA';
+import useTextosPagina from '@/hooks/useTextosPagina';
 
 const FAQS = [
   { q: '¿Los productos son realmente 100% reciclados?', a: 'Sí. Todos nuestros productos se fabrican con plástico 100% post-consumo reciclado en Chile. Puedes traer tu propio plástico a nuestras tiendas y te lo transformamos.' },
@@ -20,6 +21,7 @@ const FAQS = [
 
 export default function FAQ() {
   const [openIdx, setOpenIdx] = useState(0);
+  const { t } = useTextosPagina('faq');
 
   const jsonLd = {
     '@context': 'https://schema.org',
@@ -41,9 +43,9 @@ export default function FAQ() {
       />
 
       <PublicHero
-        eyebrow="Soporte"
-        title={<>Preguntas <span className="ld-display-italic" style={{ color: 'var(--ld-highlight)' }}>frecuentes.</span></>}
-        subtitle="Todo lo que necesitas saber antes de comprar."
+        eyebrow={t('faq.hero.eyebrow', 'Soporte')}
+        title={<>{t('faq.hero.titulo', 'Preguntas')} <span className="ld-display-italic" style={{ color: 'var(--ld-highlight)' }}>{t('faq.hero.titulo_destacado', 'frecuentes.')}</span></>}
+        subtitle={t('faq.hero.subtitulo', 'Todo lo que necesitas saber antes de comprar.')}
       />
 
       <section className="px-4 sm:px-8 pb-10">
