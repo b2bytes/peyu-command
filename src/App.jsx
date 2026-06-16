@@ -133,7 +133,8 @@ const ConciliarCatalogo = lazyWithRetry(() => import('./pages/ConciliarCatalogo'
 const CatalogoB2BOficial = lazyWithRetry(() => import('./pages/CatalogoB2BOficial'), { name: 'CatalogoB2BOficial' });
 const MigrarPreciosB2B = lazyWithRetry(() => import('./pages/MigrarPreciosB2B'), { name: 'MigrarPreciosB2B' });
 const DespachoRapido = lazyWithRetry(() => import('./pages/DespachoRapido'), { name: 'DespachoRapido' });
-const AgenteCentral = lazyWithRetry(() => import('./pages/AgenteCentral'), { name: 'AgenteCentral' });
+// AgenteCentral fue unificado en AgenteOS — ambas rutas /admin/agente y
+// /admin/agente-central ahora renderizan el mismo Agent OS (Warm Dusk).
 const Induccion = lazyWithRetry(() => import('./pages/Induccion'), { name: 'Induccion' });
 const GuiaFundadores = lazyWithRetry(() => import('./pages/GuiaFundadores'), { name: 'GuiaFundadores' });
 const WhatsAppInbox = lazyWithRetry(() => import('./pages/WhatsAppInbox'), { name: 'WhatsAppInbox' });
@@ -243,7 +244,7 @@ const AuthenticatedApp = () => {
           <Route path="seo-keywords" element={<SEOKeywords />} />
           <Route path="recategorizar" element={<RecategorizarCatalogo />} />
           <Route path="agente" element={<AgenteOS />} />
-          <Route path="agente-central" element={<AgenteCentral />} />
+          <Route path="agente-central" element={<AgenteOS />} />
           <Route path="conciliar-catalogo" element={<ConciliarCatalogo />} />
           <Route path="catalogo-b2b-oficial" element={<CatalogoB2BOficial />} />
           <Route path="migrar-precios-b2b" element={<MigrarPreciosB2B />} />
