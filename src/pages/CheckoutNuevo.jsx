@@ -45,6 +45,10 @@ export default function CheckoutNuevo() {
   const [envioBluex, setEnvioBluex] = useState(null);
   const [creando, setCreando] = useState(false);
   const [errorPago, setErrorPago] = useState(null);
+  // Guard SÍNCRONO contra doble pedido: `creando` (estado) tarda un tick en
+  // propagarse, así que dos taps rápidos en móvil podían crear 2 pedidos antes
+  // de que el guard de estado actuara. Este ref bloquea en el mismo instante.
+  const enviandoRef = useRef(false);
 
   // ── CÁLCULOS ───────────────────────────────────────────────────────
   const subtotal = carrito.reduce((s, i) => s + (i.precio || 0) * (i.cantidad || 1), 0);
@@ -95,10 +99,12 @@ export default function CheckoutNuevo() {
   }, [cliente.email, cliente.nombre, cliente.telefono, carrito, subtotal, total]);
 
   const crearPedido = async () => {
-    if (creando) return;
+    // Bloqueo síncrono inmediato: evita doble pedido por doble tap en móvil.
+    if (enviandoRef.current || creando) return;
+    enviandoRef.current = true;
     setErrorPago(null);
 
-    if (!carrito.length) { setErrorPago('Tu carrito está vacío.'); return; }
+    if (!carrito.length) { setErrorPago('Tu carrito está vacío.'); enviandoRef.current = false; return; }
 
     // La validación de dirección se hace más abajo (después de detectar retiro en tienda)
 
@@ -107,6 +113,7 @@ export default function CheckoutNuevo() {
     if (Object.keys(bErrs).length > 0) {
       setErrorPago('Completa los datos de facturación para emitir la factura.');
       setTimeout(() => document.querySelector('[data-billing-section]')?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 100);
+      enviandoRef.current = false;
       return;
     }
 
@@ -117,7 +124,9 @@ export default function CheckoutNuevo() {
       const errs = validarShippingForm(cliente);
       setErrors(errs);
       if (Object.keys(errs).length > 0) {
+        setErrorPago('Revisa los campos de envío marcados en rojo.');
         setTimeout(() => document.querySelector('[class*="border-red-300"]')?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 100);
+        enviandoRef.current = false;
         return;
       }
     }
@@ -125,6 +134,7 @@ export default function CheckoutNuevo() {
     if (!envioBluex) {
       setErrorPago('Elige una forma de envío para continuar (o selecciona "Retiro en Tienda", siempre disponible).');
       setTimeout(() => document.querySelector('[data-shipping-selector]')?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 100);
+      enviandoRef.current = false;
       return;
     }
 
@@ -286,6 +296,7 @@ export default function CheckoutNuevo() {
       } catch (_) {}
       setErrorPago('No pudimos crear tu pedido. Revisa tu conexión e intenta nuevamente.');
       setCreando(false);
+      enviandoRef.current = false;
       return;
     }
 
@@ -312,11 +323,13 @@ export default function CheckoutNuevo() {
         }
         setErrorPago('No pudimos iniciar Mercado Pago. Intenta de nuevo o usa transferencia.');
         setCreando(false);
+        enviandoRef.current = false;
         return;
       } catch (e) {
         console.error('Error MP:', e);
         setErrorPago('No pudimos iniciar Mercado Pago. Intenta de nuevo o usa transferencia.');
         setCreando(false);
+        enviandoRef.current = false;
         return;
       }
     }
@@ -550,6 +563,14 @@ export default function CheckoutNuevo() {
               <h1 className="font-fraunces text-2xl sm:text-3xl lg:hidden">Finaliza tu compra</h1>
 
               {formSections}
+
+              {/* Error de pago visible en mobile (el banner del CTA es desktop-only) */}
+              {errorPago && (
+                <div className="lg:hidden rounded-xl p-3 flex items-start gap-2" style={{ background: 'rgba(192,120,92,.08)', border: '1px solid rgba(192,120,92,.3)' }}>
+                  <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: '#C0785C' }} />
+                  <p className="text-xs font-semibold" style={{ color: '#C0785C' }}>{errorPago}</p>
+                </div>
+              )}
 
               {/* Resumen en mobile (mismos datos en vivo) */}
               <div className="lg:hidden">
