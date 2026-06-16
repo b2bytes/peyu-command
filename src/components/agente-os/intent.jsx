@@ -11,7 +11,7 @@ export function detectCards(text) {
   if (has(['vendimos', 'venta', 'ventas', 'ingreso', 'facturamos', 'cuánto vend', 'cuanto vend', 'caja', 'financiero', 'ganancia'])) {
     cards.push({ type: 'sales', periodo: has(['semana', '7 día', '7 dia', 'últimos']) ? '7d' : 'hoy' });
   }
-  if (has(['pipeline', 'flujo de pedidos', 'embudo de pedidos', 'gestionar pedidos', 'gestionar todo'])) {
+  if (has(['pipeline', 'flujo de pedidos', 'flujo completo', 'embudo de pedidos', 'gestionar pedidos', 'gestionar todo', 'confirmar pagos', 'generar etiquetas', 'etiquetas en lote', 'varios pedidos', 'en lote', 'de principio a fin'])) {
     cards.push({ type: 'pipeline' });
   } else if (has(['pedido', 'pendiente', 'por despachar', 'producción', 'produccion', 'transferencia por'])) {
     cards.push({ type: 'orders' });
