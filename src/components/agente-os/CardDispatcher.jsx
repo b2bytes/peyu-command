@@ -22,7 +22,8 @@ export default function CardDispatcher({ card, crm, metrics, lists = {}, onAsk, 
     case 'orders':
       return <OrdersCard pedidos={crm.pedidos} lista={lists.pedidos_pendientes} onDone={onDone} />;
     case 'pipeline':
-      return <PipelineCard lista={lists.pedidos_pendientes || crm.pedidos} onDone={onDone} />;
+      // CRM completo (60 pedidos) cuando exista; si no, la lista del brain.
+      return <PipelineCard lista={crm.pedidos?.length ? crm.pedidos : (lists.pedidos_pendientes || [])} onDone={onDone} />;
     case 'stock':
       return <StockCard productos={crm.productos} lista={lists.stock_bajo_list} onDone={onDone} />;
     case 'quotes':

@@ -1,4 +1,5 @@
-import { MessageSquare, Package, FileText, Users, PanelLeftClose, PanelLeft } from 'lucide-react';
+import { MessageSquare, Package, FileText, Users, PanelLeftClose, PanelLeft, LayoutGrid } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import AgentThreadsList from './AgentThreadsList';
 
 // Sidebar izquierdo delgado y colapsable: logo PEYU + accesos rápidos.
@@ -71,6 +72,16 @@ export default function AgentSidebar({ open, onToggle, onAsk, onNewThread, userE
           />
         )}
       </div>
+
+      {/* Salida discreta al panel admin clásico (no atrapa al founder) */}
+      <Link
+        to="/admin"
+        className={`flex items-center gap-3 rounded-xl text-sm text-ld-fg-muted hover:bg-ld-bg-elevated hover:text-ld-fg transition-colors mx-3 ${open ? 'px-3 py-2.5' : 'p-2.5 justify-center'}`}
+        title="Ir al panel admin"
+      >
+        <LayoutGrid className="w-4.5 h-4.5 flex-shrink-0" />
+        {open && 'Panel admin'}
+      </Link>
 
       {open && (
         <div className="p-3 text-[11px] text-ld-fg-subtle italic border-t border-ld-border">

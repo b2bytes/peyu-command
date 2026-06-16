@@ -46,6 +46,8 @@ Para imagen/video usa el [sku:XXX] exacto del CATÁLOGO en el detalle. Tienes ca
 Cuando el founder quiera GESTIONAR pedidos de punta a punta ("pipeline", "gestionar pedidos", "flujo de pedidos", "cómo voy con los despachos"), la pantalla muestra una TARJETA PIPELINE con los pedidos agrupados por etapa (por confirmar pago → producción → generar etiqueta → despachar), cada uno con su botón de acción. Resume en 1-2 frases qué etapa tiene más pendientes.
 REGLAS: usa SOLO los ids exactos que aparecen en DETALLE CONCRETO como [id:XXX]. Si no tienes el id del registro, NO propongas acción — pide al founder que precise cuál. Máximo UNA acción por respuesta.
 
+REGLA DE ORO — NUNCA INVENTES DATOS: responde EXCLUSIVAMENTE con las cifras y registros que aparecen en "DATOS EN VIVO" y "DETALLE CONCRETO". Si te preguntan por algo que NO está en esos datos (un pedido, cliente o número que no ves), di con honestidad "no lo tengo a la vista ahora" o pide que precise — JAMÁS inventes montos, nombres, estados ni cantidades. Si los DATOS EN VIVO dicen 0 o vacío, repórtalo tal cual (ej: "hoy no hay ventas registradas aún"), no rellenes con suposiciones.
+
 Responde SIEMPRE en el formato JSON pedido: "mensaje" (tu respuesta cálida), "action" (nombre exacto de la acción o "" si no hay), "payload" (objeto con los datos), "action_descripcion" (frase corta de lo que hará, ej: "Marcar pedido #1042 como pagado"). Si no se entiende la pregunta, pide aclaración y sugiere qué puedes hacer (ventas, pedidos, stock, cotizaciones, leads, consultas, clientes, emails, etiquetas).`;
 
 // Whitelist de acciones que el front acepta del LLM (defensa en profundidad;
@@ -187,7 +189,7 @@ export default function AgenteOS() {
     if (liveLists.consultas_pendientes?.length)
       detalle.push(`Consultas sin responder:\n${liveLists.consultas_pendientes.map(c => `• [id:${c.id}] ${c.nombre || 'Sin nombre'} (${c.canal || 'web'})${c.email ? ` ${c.email}` : ''}: "${(c.mensaje || '').slice(0, 80)}"`).join('\n')}`);
     if (liveLists.pedidos_pendientes?.length)
-      detalle.push(`Pedidos pendientes:\n${liveLists.pedidos_pendientes.map(p => `• [id:${p.id}] ${p.numero_pedido || p.id?.slice(-6)} · ${p.cliente_nombre} · $${(p.total || 0).toLocaleString('es-CL')} · ${p.estado}`).join('\n')}`);
+      detalle.push(`Pedidos en curso (estado operativo + estado de pago real):\n${liveLists.pedidos_pendientes.map(p => `• [id:${p.id}] ${p.numero_pedido || p.id?.slice(-6)} · ${p.cliente_nombre} · $${(p.total || 0).toLocaleString('es-CL')} · ${p.estado} · pago: ${p.payment_status === 'paid' ? 'PAGADO' : (['Confirmado','En Producción','Listo para Despacho','Despachado','Entregado'].includes(p.estado) ? 'PAGADO' : 'POR CONFIRMAR')}${p.tracking ? ` · OT ${p.tracking}` : ''}`).join('\n')}`);
     if (liveLists.leads_top?.length)
       detalle.push(`Leads B2B activos:\n${liveLists.leads_top.map(l => `• [id:${l.id}] ${l.company_name} · ${l.contact_name || ''} · score ${l.lead_score || 0} · ${l.status}`).join('\n')}`);
     if (liveLists.stock_bajo_list?.length)

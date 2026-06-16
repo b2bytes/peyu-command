@@ -1,6 +1,5 @@
-import { Package, ChevronRight, Truck, CreditCard, Factory, Tag, CheckCircle2, ExternalLink, Loader2 } from 'lucide-react';
+import { Package, Truck, CreditCard, Factory, Tag, CheckCircle2, Loader2 } from 'lucide-react';
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { openPdfUrl } from '@/lib/pdf-open';
 import ActionButton from '../ActionButton';
@@ -97,8 +96,11 @@ function PedidoRow({ p, etapa, onDone }) {
 // despachar. Una sola pantalla, gestión real sin salir del chat.
 // ════════════════════════════════════════════════════════════════════════
 export default function PipelineCard({ lista = [], onDone }) {
+  // Excluye pedidos cancelados/reembolsados; los entregados sí cuentan (etapa
+  // "despachado"). Así el pipeline refleja solo el flujo accionable real.
+  const enCurso = lista.filter((p) => !['Cancelado', 'Reembolsado'].includes(p.estado));
   const grupos = COLUMNAS.reduce((acc, c) => ({ ...acc, [c.id]: [] }), {});
-  for (const p of lista) {
+  for (const p of enCurso) {
     const e = etapaDe(p);
     if (grupos[e]) grupos[e].push(p);
   }
@@ -112,12 +114,10 @@ export default function PipelineCard({ lista = [], onDone }) {
           </span>
           <span className="text-sm font-semibold text-ld-fg">Pipeline de pedidos</span>
         </div>
-        <Link to="/admin/procesar-pedidos" className="text-xs text-ld-action hover:underline flex items-center gap-0.5">
-          Centro de pedidos <ChevronRight className="w-3 h-3" />
-        </Link>
+        <span className="text-[11px] text-ld-fg-subtle">{enCurso.length} en curso</span>
       </div>
 
-      {lista.length === 0 ? (
+      {enCurso.length === 0 ? (
         <p className="text-sm text-ld-fg-muted">No hay pedidos en curso 🎉</p>
       ) : (
         <div className="space-y-3">

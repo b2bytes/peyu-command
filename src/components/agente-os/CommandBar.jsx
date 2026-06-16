@@ -6,7 +6,7 @@ import { ArrowUp, Loader2, Paperclip, Mic, Volume2, VolumeX, Pause, Play, X, Fil
 const CHIPS = [
   'Resumen del día',
   'Ventas de hoy',
-  'Pedidos pendientes',
+  'Gestionar pedidos',
   'Envíos BlueExpress',
   'Pipeline B2B',
   'Cotizaciones B2B',

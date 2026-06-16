@@ -24,8 +24,11 @@ export default function Layout() {
         noindex
       />
 
-      {/* Top Navigation — unificado en todas las páginas */}
-      <AdminTopNav />
+      {/* Top Navigation — unificado en todas las páginas EXCEPTO el Agent OS,
+          que es el epicentro conversacional a pantalla completa: tiene su propio
+          header + sidebar de hilos, y la barra admin rompía la sensación de
+          "una sola pantalla" e invitaba a saltar a otras páginas. */}
+      {!esAgente && <AdminTopNav />}
 
       {/* Main · canvas Liquid Dual (respeta día/noche) */}
       <main className="flex-1 min-w-0 overflow-y-auto overflow-x-hidden ld-canvas relative">

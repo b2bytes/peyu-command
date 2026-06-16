@@ -173,14 +173,17 @@ Deno.serve(async (req) => {
         canal: c.canal, mensaje: c.mensaje || c.consulta || c.descripcion || '',
         calidad: c.calidad, created_date: c.created_date,
       })),
+      // Pipeline COMPLETO de pedidos en curso (hasta 40) con todos los campos que
+      // necesitan el PipelineCard y el agente para no inventar: estado de pago,
+      // tracking, fecha. Antes truncaba a 8 → el agente "no veía" pedidos reales.
       pedidos_pendientes: pedidos
         .filter(p => !['Entregado', 'Cancelado', 'Reembolsado'].includes(p.estado))
-        .slice(0, 8)
+        .slice(0, 40)
         .map(p => ({
           id: p.id, numero_pedido: p.numero_pedido, cliente_nombre: p.cliente_nombre,
           cliente_email: p.cliente_email, total: p.total, estado: p.estado,
           medio_pago: p.medio_pago, tracking: p.tracking, ciudad: p.ciudad,
-          payment_status: p.payment_status || '',
+          payment_status: p.payment_status || '', fecha: p.fecha || (p.created_date || '').slice(0, 10),
         })),
       leads_top: leadsActivos.slice(0, 8).map(l => ({
         id: l.id, company_name: l.company_name, contact_name: l.contact_name,

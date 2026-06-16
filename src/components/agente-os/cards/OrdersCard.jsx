@@ -1,5 +1,4 @@
-import { Package, ChevronRight, Truck, Tag } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Package, Truck, Tag } from 'lucide-react';
 import ActionButton from '../ActionButton';
 
 const fmtCLP = (n) => (n != null ? `$${Number(n).toLocaleString('es-CL')}` : '—');
@@ -41,9 +40,7 @@ export default function OrdersCard({ pedidos = [], lista, onDone }) {
           </span>
           <span className="text-sm font-semibold text-ld-fg">Pedidos pendientes</span>
         </div>
-        <Link to="/admin/procesar-pedidos" className="text-xs text-ld-action hover:underline flex items-center gap-0.5">
-          Ver todos <ChevronRight className="w-3 h-3" />
-        </Link>
+        <span className="text-[11px] text-ld-fg-subtle">{pendientes.length}</span>
       </div>
       {pendientes.length === 0 ? (
         <p className="text-sm text-ld-fg-muted">No hay pedidos pendientes 🎉</p>

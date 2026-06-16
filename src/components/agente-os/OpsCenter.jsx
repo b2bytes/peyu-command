@@ -1,8 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
-import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { getPagoStatus } from '@/lib/pago-status';
-import { Loader2, RefreshCw, Search, CheckCircle2, AlertTriangle, ExternalLink } from 'lucide-react';
+import { Loader2, RefreshCw, Search, CheckCircle2, AlertTriangle } from 'lucide-react';
 import OpsPedidoRow from './OpsPedidoRow';
 import EtiquetaWizardModal from './EtiquetaWizardModal';
 import OpsLeadsPanel from './OpsLeadsPanel';
@@ -27,32 +26,6 @@ const TABS = [
   { id: 'por_despachar', label: 'Por despachar' },
   { id: 'despachados', label: 'Despachados' },
   { id: 'todos', label: 'Todos' },
-];
-
-// Todos los módulos del recorrido del founder (Guía + Inducción), agrupados.
-const QUICK_LINKS = [
-  // Operación diaria
-  { to: '/admin/procesar-pedidos', label: 'Procesar Pedidos' },
-  { to: '/admin/despacho', label: 'Despacho Rápido' },
-  { to: '/admin/bluex', label: 'Centro Logístico' },
-  { to: '/admin/operaciones', label: 'Producción' },
-  { to: '/admin/soporte', label: 'Soporte' },
-  // Ventas
-  { to: '/admin/pipeline', label: 'Pipeline B2B' },
-  { to: '/admin/pipeline-b2c', label: 'Pipeline B2C' },
-  { to: '/admin/cotizaciones', label: 'Cotizaciones' },
-  { to: '/admin/propuestas', label: 'Propuestas' },
-  { to: '/admin/clientes', label: 'Clientes' },
-  // Catálogo
-  { to: '/admin/catalogo', label: 'Catálogo' },
-  { to: '/admin/admin-products', label: 'Admin Products' },
-  { to: '/admin/imagenes', label: 'Imágenes' },
-  { to: '/admin/inventario', label: 'Inventario' },
-  // Control
-  { to: '/admin/financiero', label: 'Financiero' },
-  { to: '/admin/marketing-hub', label: 'Marketing' },
-  { to: '/admin/analitica', label: 'Analítica' },
-  { to: '/admin/guia-fundadores', label: 'Guía Fundadores' },
 ];
 
 export default function OpsCenter({ onRefreshAll }) {
@@ -209,18 +182,6 @@ export default function OpsCenter({ onRefreshAll }) {
           </div>
         )}
         </>)}
-
-        {/* Accesos a módulos */}
-        <div className="pt-2">
-          <p className="text-[10px] font-bold uppercase tracking-wide text-ld-fg-muted mb-2">Todos los módulos</p>
-          <div className="flex flex-wrap gap-1.5">
-            {QUICK_LINKS.map((l) => (
-              <Link key={l.to} to={l.to} className="ld-btn-ghost inline-flex items-center gap-1 px-2.5 py-1.5 rounded-full text-[11px] font-bold text-ld-fg-soft">
-                {l.label} <ExternalLink className="w-2.5 h-2.5 opacity-60" />
-              </Link>
-            ))}
-          </div>
-        </div>
 
       </div>
 
