@@ -60,14 +60,14 @@ const TEAM = [
   {
     nombre: 'Joaquín Nilo',
     rol: 'Co-founder & CEO',
-    desc: 'Ingeniero industrial. Obsesionado con cerrar el ciclo del plástico. Ex-consultor de Supply Chain que apostó por la economía circular cuando nadie lo hacía.',
+    desc: 'Ingeniero industrial con trayectoria en Supply Chain. Lidera la estrategia de economía circular de PEYU, garantizando que cada producto cierre el ciclo del plástico con estándares de calidad y trazabilidad de nivel industrial.',
     initials: 'JN',
     color: '#C0785C',
   },
   {
     nombre: 'Carlos Moscoso',
     rol: 'Co-founder & Head of Sales',
-    desc: 'El vendedor de los regalos sostenibles. Convierte cada cotización corporativa en una historia de impacto. Responde WhatsApps más rápido que cualquier bot.',
+    desc: 'Responsable de la estrategia comercial y de las alianzas corporativas. Acompaña a cada empresa en su programa de regalería sostenible, traduciendo objetivos de marca y compromisos ESG en soluciones personalizadas de alto impacto.',
     initials: 'CM',
     color: '#0F8B6C',
   },
