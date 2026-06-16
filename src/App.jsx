@@ -62,6 +62,9 @@ import B2BPropuestaPublica from './pages/B2BPropuesta';
 import FunnelDesignLab from './pages/FunnelDesignLab';
 import IndiceTest from './pages/IndiceTest';
 import ResumenOperativo from './pages/ResumenOperativo';
+import FiestasPatrias from './pages/FiestasPatrias';
+import FiestasCanasta from './pages/FiestasCanasta';
+import FiestasEmpresas from './pages/FiestasEmpresas';
 
 // ── ADMIN PAGES (lazy + retry) ───────────────────────────────────────
 // Cargadas on-demand. Cada lazy() está envuelto en lazyWithRetry para
@@ -354,6 +357,9 @@ function App() {
                 <Route path="/soporte" element={<SoportePublico />} />
                 <Route path="/seguimiento" element={<SeguimientoPedido />} />
                 <Route path="/catalogo-visual" element={<CatalogoVisual />} />
+                <Route path="/fiestas-patrias" element={<FiestasPatrias />} />
+                <Route path="/fiestas-patrias/canasta" element={<FiestasCanasta />} />
+                <Route path="/fiestas-patrias/empresas" element={<FiestasEmpresas />} />
               </Route>
 
               {/* Admin Routes - Protected (lazy-loaded) */}
