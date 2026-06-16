@@ -1,12 +1,28 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ChevronDown, Check } from 'lucide-react';
 
 // CollapsibleSectionV2 — Checkout Shop v2. Tema Warm Clay 2027.
 // Mobile-first: header compacto, contenido animado, tap target ≥ 44px.
+// Soporta modo NO controlado (defaultOpen) y CONTROLADO (open + onToggle):
+// en móvil el checkout abre solo el paso activo y auto-avanza al completar,
+// reduciendo el scroll y acelerando el flujo.
 export default function CollapsibleSectionV2({
   step, title, subtitle, complete = false, summary, defaultOpen = false, children,
+  open: openProp, onToggle,
 }) {
-  const [open, setOpen] = useState(defaultOpen);
+  const isControlled = openProp !== undefined;
+  const [openState, setOpenState] = useState(defaultOpen);
+  const open = isControlled ? openProp : openState;
+
+  // En modo no controlado, sincroniza si defaultOpen cambia (responsive).
+  useEffect(() => {
+    if (!isControlled) setOpenState(defaultOpen);
+  }, [defaultOpen, isControlled]);
+
+  const toggle = () => {
+    if (isControlled) onToggle?.(!open);
+    else setOpenState((o) => !o);
+  };
 
   return (
     <section
@@ -16,7 +32,7 @@ export default function CollapsibleSectionV2({
       {/* Header — tap target mínimo 52px en mobile */}
       <button
         type="button"
-        onClick={() => setOpen((o) => !o)}
+        onClick={toggle}
         className="w-full flex items-center gap-3 px-4 py-3.5 sm:p-5 text-left transition-colors"
         style={{ minHeight: 52, background: 'white' }}
         onMouseOver={e => e.currentTarget.style.background = '#FAF6F0'}

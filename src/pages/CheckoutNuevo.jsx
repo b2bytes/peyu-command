@@ -349,6 +349,37 @@ export default function CheckoutNuevo() {
     [carrito]
   );
 
+  // ── Acordeón móvil: una sección abierta a la vez + auto-avance ─────────
+  // En móvil abrir TODAS las secciones de golpe genera un muro largo y lento.
+  // Aquí controlamos cuál está abierta (envío → forma → pago → facturación) y
+  // saltamos a la siguiente al completar cada paso. En desktop (lg) todo abierto.
+  const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' && window.innerWidth < 1024);
+  useEffect(() => {
+    const onResize = () => setIsMobile(window.innerWidth < 1024);
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
+  // Sección abierta en móvil: 'envio' | 'forma' | 'pago' | 'facturacion' | null
+  const [openSection, setOpenSection] = useState('envio');
+  // Auto-avance: al completar envío → abre forma; al elegir envío → abre pago.
+  const prevEnvioCompleto = useRef(false);
+  const prevEnvioElegido = useRef(false);
+  useEffect(() => {
+    if (!isMobile) return;
+    if (envioCompleto && !prevEnvioCompleto.current && openSection === 'envio') setOpenSection('forma');
+    prevEnvioCompleto.current = envioCompleto;
+  }, [envioCompleto, isMobile, openSection]);
+  useEffect(() => {
+    if (!isMobile) return;
+    if (envioBluex && !prevEnvioElegido.current && openSection === 'forma') setOpenSection('pago');
+    prevEnvioElegido.current = !!envioBluex;
+  }, [envioBluex, isMobile, openSection]);
+
+  // Props del acordeón: en móvil controlado (1 abierta), en desktop siempre abierto.
+  const sectionProps = (id) => isMobile
+    ? { open: openSection === id, onToggle: (next) => setOpenSection(next ? id : null) }
+    : { defaultOpen: true };
+
   if (carrito.length === 0) {
     // ¿Volvió atrás tras una compra reciente (< 30 min)? Mostramos confirmación,
     // no un genérico "carrito vacío" que parece un error.
@@ -411,7 +442,7 @@ export default function CheckoutNuevo() {
         step={1}
         title="Datos de envío"
         subtitle="¿A dónde enviamos tu pedido?"
-        defaultOpen
+        {...sectionProps('envio')}
         complete={envioCompleto}
         summary={envioCompleto ? `${cliente.nombre} · ${cliente.ciudad}, ${cliente.region}` : null}
       >
@@ -428,7 +459,7 @@ export default function CheckoutNuevo() {
           step={2}
           title="Forma de envío"
           subtitle="Tarifa BlueExpress según tu comuna"
-          defaultOpen
+          {...sectionProps('forma')}
           complete={!!envioBluex}
           summary={envioBluex ? `BlueExpress ${envioBluex.servicio} · ${envio === 0 ? 'GRATIS' : fmtCLP(envio)}` : null}
         >
@@ -449,7 +480,7 @@ export default function CheckoutNuevo() {
         step={3}
         title="Método de pago"
         subtitle="Elige cómo quieres pagar"
-        defaultOpen
+        {...sectionProps('pago')}
         complete={!!medioPago}
         summary={medioPago ? (medioPago === 'Transferencia' ? 'Transferencia bancaria' : 'Mercado Pago') : null}
       >

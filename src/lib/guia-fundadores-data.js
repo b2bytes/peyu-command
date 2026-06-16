@@ -1,58 +1,76 @@
 // ════════════════════════════════════════════════════════════════════════
-// GUÍA FUNDADORES — Contenido educativo paso a paso para los founders:
-// 1) administrar productos · 2) generar etiquetas · 3) gestionar ventas.
-// La página /admin/guia-fundadores renderiza esto con FlujoInteractivo.
-// Editar el contenido aquí, no en la página.
+// GUÍA FUNDADORES — Guía paso a paso para entender y operar el sistema PEYU.
+// Centrada en el AGENT OS (la página del agente): qué es, cómo pedirle cosas,
+// comandos exactos que entiende, + cómo sacar/imprimir etiquetas y operar el
+// resto del sistema. La página /admin/guia-fundadores renderiza esto con
+// FlujoInteractivo. Editar el contenido aquí, no en la página.
 // ════════════════════════════════════════════════════════════════════════
 
 export const GUIAS = [
   {
-    id: 'gf-productos',
-    emoji: '📦',
-    titulo: 'Administrar productos del catálogo',
-    intro: 'Cómo crear, editar y mantener sano el catálogo: precios, stock, colores e imágenes.',
+    id: 'gf-agente-intro',
+    emoji: '🤖',
+    titulo: 'Entender el Agent OS (la página del agente)',
+    intro: 'Qué es, para qué sirve y cómo se usa el cerebro operativo de PEYU. Empieza por aquí.',
     pasos: [
-      { titulo: 'Abre el Catálogo', detalle: 'En Catálogo ves todos los productos con su SKU, categoría, precio B2C, tramos B2B y stock. Es la fuente de verdad de lo que se vende en la tienda.', ruta: '/admin/catalogo' },
-      { titulo: 'Edita precios y stock', detalle: 'Desde la ficha del producto ajusta precio B2C, los 8 tramos B2B (sin IVA) y el stock actual. Los cambios se reflejan al instante en la tienda pública y en las cotizaciones B2B.', ruta: '/admin/catalogo' },
-      { titulo: 'Gestiona colores e imágenes por color', detalle: 'Los productos con variantes (ej. carcasas) usan "colores" + "imágenes por color": al elegir un color en la ficha pública se muestra su foto. Revisa que cada color tenga imagen asignada.', ruta: '/admin/imagenes' },
-      { titulo: 'Cuida las imágenes con Admin Products', detalle: 'Admin Products es la gestión avanzada: subir/generar imágenes con IA, detectar duplicados, auditar calidad visual y sincronizar con Google Merchant Center.', ruta: '/admin/admin-products' },
-      { titulo: 'Activa o desactiva productos', detalle: 'El switch "Activo" controla si el producto aparece en la tienda. Nunca borres un producto con historial de ventas: desactívalo. Así conservas la trazabilidad de pedidos antiguos.', ruta: '/admin/catalogo' },
-      { titulo: 'Vigila el stock', detalle: 'Inventario alerta los quiebres (<10u) y un robot envía aviso por correo cuando algo se agota. Ajusta el stock tras cada producción o llegada de material.', ruta: '/admin/inventario' },
+      { titulo: 'Qué es el Agent OS', detalle: 'Es tu asistente que opera el negocio por chat. Conoce los datos REALES (pedidos, leads, stock, clientes) y puede ejecutar acciones reales con tu confirmación. En vez de buscar entre menús, le hablas en español como a un colaborador.', ruta: '/admin/agente' },
+      { titulo: 'Cómo se ve la pantalla', detalle: 'Al centro está el chat. A la izquierda, la barra del agente con accesos rápidos y métricas en vivo (ventas del día, pedidos nuevos, leads). Abajo, la barra de comando donde escribes. En el celular, todo se abre desde el menú inferior.', ruta: '/admin/agente' },
+      { titulo: 'Escribe tu primera orden', detalle: 'Abre /admin/agente y escribe algo simple como "muéstrame las ventas de hoy" o "¿qué pedidos nuevos hay?". El agente responde con tarjetas visuales: pedidos, leads o métricas, no solo texto.', ruta: '/admin/agente' },
+      { titulo: 'Confirma antes de ejecutar', detalle: 'Cuando le pides una ACCIÓN (marcar pagado, generar etiqueta, cambiar estado), el agente te muestra una tarjeta de propuesta y NO actúa hasta que pulsas "Confirmar". Así nunca cambia nada por error.', ruta: '/admin/agente' },
+      { titulo: 'Adjunta archivos e imágenes', detalle: 'Puedes subir el comprobante de una transferencia o el logo de un cliente directamente en el chat. El agente lo lee y lo usa en la acción (ej. confirmar un pago, preparar una propuesta).', ruta: '/admin/agente' },
+      { titulo: 'Tus conversaciones se guardan', detalle: 'Cada hilo queda registrado con tu correo: puedes retomar una conversación anterior desde la lista de hilos. Útil para no repetir contexto y para que el otro founder vea qué se hizo.', ruta: '/admin/agente' },
+    ],
+  },
+  {
+    id: 'gf-agente-comandos',
+    emoji: '💬',
+    titulo: 'Qué órdenes puedes darle al agente',
+    intro: 'Los comandos reales que el Agent OS entiende y ejecuta. Cópialos tal cual o adáptalos.',
+    pasos: [
+      { titulo: 'Consultar el negocio', detalle: 'Pregúntale sin miedo: "ventas de hoy", "pedidos nuevos sin procesar", "leads B2B calientes", "qué productos tienen poco stock", "resumen de la semana". Responde con datos reales al instante.', ruta: '/admin/agente' },
+      { titulo: 'Procesar un pedido B2C', detalle: 'Ejemplos: "marca el pedido WEB-1042 como pagado", "cambia el pedido #1042 a En Producción", "¿qué falta para despachar el pedido de Javiera?". El agente actualiza el estado y dispara los correos al cliente.', ruta: '/admin/agente' },
+      { titulo: 'Generar una etiqueta por chat', detalle: 'Escribe "genera la etiqueta del pedido WEB-1042". El agente revisa pago, dirección y cobertura Bluex, y si todo está OK crea la Orden de Transporte y te entrega el PDF para imprimir.', ruta: '/admin/agente' },
+      { titulo: 'Gestionar leads y empresas', detalle: 'Ejemplos: "muéstrame los leads nuevos", "mueve el lead de Falabella a Contactado", "genera una propuesta para este lead". El agente abre la tarjeta del lead y ejecuta el cambio.', ruta: '/admin/agente' },
+      { titulo: 'Revisar clientes y stock', detalle: '"ficha del cliente juan@correo.cl", "cuánto ha comprado esta empresa", "baja 20 unidades de stock del SKU X". El agente busca el registro real y te muestra la tarjeta editable.', ruta: '/admin/agente' },
+      { titulo: 'Regla de oro', detalle: 'Háblale claro y con el dato que identifica (N° de pedido, email, nombre de empresa). Si algo no le queda claro, te lo pregunta antes de actuar. Nunca asume ni ejecuta a ciegas.', ruta: '/admin/agente' },
     ],
   },
   {
     id: 'gf-etiquetas',
     emoji: '🏷️',
-    titulo: 'Generar etiquetas de envío (BlueExpress)',
-    intro: 'Del pedido pagado a la etiqueta impresa en 5 pasos, con el asistente haciendo el checklist por ti.',
+    titulo: 'Sacar e imprimir etiquetas de envío (BlueExpress)',
+    intro: 'Del pedido pagado a la etiqueta impresa. Puedes hacerlo por el agente o en Despacho Rápido.',
     pasos: [
-      { titulo: 'Verifica que el pedido esté pagado', detalle: 'Solo se emiten etiquetas de pedidos pagados. MercadoPago se confirma solo; transferencias debes marcarlas "Pagado" en Procesar Pedidos tras verificar el abono.', ruta: '/admin/procesar-pedidos' },
-      { titulo: 'Abre Despacho Rápido y elige el pedido', detalle: 'Busca por N° de pedido, cliente o tracking. Solo aparecen pedidos pagados pendientes de despacho — si no aparece, revisa su estado de pago.', ruta: '/admin/despacho' },
-      { titulo: 'Deja que el asistente revise todo', detalle: 'Al pulsar "Generar etiqueta" el wizard chequea: ① pago confirmado ② dirección y comuna completas ③ cobertura Bluex (346 comunas del tarifario) ④ que no exista una OT previa (evita doble cobro).' },
-      { titulo: 'Corrige lo que falte sin salir del modal', detalle: 'Si falta la dirección o comuna, el formulario inline con autocompletado te deja corregirla ahí mismo. Cada corrección re-corre el checklist automáticamente.' },
-      { titulo: 'Emite la OT e imprime el PDF', detalle: 'Con todo en verde, el botón final crea la Orden de Transporte real en Bluex y la etiqueta PDF queda lista para imprimir. El cliente recibe su tracking por correo solo, y el Centro Logístico sincroniza el estado cada 6 horas.', ruta: '/admin/bluex' },
+      { titulo: 'Confirma que el pedido esté pagado', detalle: 'Solo se emiten etiquetas de pedidos pagados. MercadoPago se confirma solo; las transferencias debes marcarlas "Pagado" (en Procesar Pedidos o pidiéndoselo al agente) tras verificar el abono.', ruta: '/admin/procesar-pedidos' },
+      { titulo: 'Opción A — pídelo al agente', detalle: 'En /admin/agente escribe "genera la etiqueta del pedido WEB-1042". Es la vía más rápida: el agente hace el checklist y te devuelve el PDF listo para imprimir.', ruta: '/admin/agente' },
+      { titulo: 'Opción B — Despacho Rápido', detalle: 'Abre Despacho Rápido y busca por N° de pedido, cliente o tracking. Solo aparecen pedidos pagados pendientes de despacho. Pulsa "Generar etiqueta" sobre el pedido.', ruta: '/admin/despacho' },
+      { titulo: 'Deja que el asistente revise todo', detalle: 'El wizard chequea: ① pago confirmado ② dirección y comuna completas ③ cobertura Bluex (346 comunas del tarifario) ④ que NO exista una OT previa (evita doble cobro). Lo que falte aparece en rojo.', ruta: '/admin/despacho' },
+      { titulo: 'Corrige sin salir del modal', detalle: 'Si falta dirección o comuna, el formulario inline con autocompletado te deja arreglarla ahí mismo. Cada corrección re-corre el checklist solo, hasta que todo queda en verde.', ruta: '/admin/despacho' },
+      { titulo: 'Emite la OT e imprime el PDF', detalle: 'Con todo en verde, el botón final crea la Orden de Transporte real en Bluex y abre la etiqueta PDF: imprímela y pégala en el paquete. El cliente recibe su tracking por correo automáticamente.', ruta: '/admin/despacho' },
+      { titulo: 'Sigue el envío después', detalle: 'El Centro Logístico sincroniza el estado de cada envío con Bluex cada pocas horas y avisa si hay atrasos o incidencias. Ahí ves el timeline de cada paquete sin entrar a la web de Bluex.', ruta: '/admin/bluex' },
     ],
   },
   {
-    id: 'gf-ventas',
-    emoji: '💰',
-    titulo: 'Gestionar ventas (B2C y B2B)',
-    intro: 'Cómo controlar el dinero que entra: pedidos web, pipeline de empresas y cierre de la semana.',
+    id: 'gf-sistema',
+    emoji: '🧭',
+    titulo: 'Entender el resto del sistema paso a paso',
+    intro: 'Los módulos clave y cuándo usar cada uno. El agente puede llevarte a casi todos por chat.',
     pasos: [
-      { titulo: 'Empieza el día en el Dashboard', detalle: 'Ventas del día, pedidos nuevos, leads calientes y alertas en una sola vista. Es tu punto de partida cada mañana.', ruta: '/admin' },
-      { titulo: 'Procesa los pedidos B2C', detalle: 'En Procesar Pedidos confirmas pagos, corriges direcciones y avanzas estados (Nuevo → Confirmado → En Producción → Despachado → Entregado). Los correos al cliente salen solos en cada etapa.', ruta: '/admin/procesar-pedidos' },
-      { titulo: 'Atiende el pipeline B2B', detalle: 'Las empresas cotizan solas en la web y aparecen como leads con score IA. Mueve cada lead por el kanban: Nuevo → Contactado → Propuesta enviada → Aceptado.', ruta: '/admin/pipeline' },
-      { titulo: 'Cierra con propuestas formales', detalle: 'Desde el lead genera la Propuesta Corporativa (PDF con mockups, anticipo 50%). Se envía por correo, se trackea si la abren y los recordatorios salen automáticos.', ruta: '/admin/propuestas' },
-      { titulo: 'Usa el Agent OS para operar por chat', detalle: 'Pídele en lenguaje natural: "marca el pedido #1042 como pagado", "genera la etiqueta", "muéstrame los leads calientes". Ejecuta con tu confirmación.', ruta: '/admin/agente' },
-      { titulo: 'Controla caja y cierra la semana', detalle: 'Financiero muestra ingresos vs egresos y el costo real por producto. Analítica y Reportes resumen conversión y ventas por canal para decidir la semana siguiente.', ruta: '/admin/financiero' },
+      { titulo: 'Empieza el día en el Dashboard', detalle: 'Ventas del día, pedidos nuevos, leads calientes y alertas en una sola vista. Es tu punto de partida cada mañana. Si quieres el resumen hablado, pídeselo al agente: "resumen de hoy".', ruta: '/admin' },
+      { titulo: 'Catálogo — qué se vende', detalle: 'Aquí viven los productos: SKU, precio B2C, los 8 tramos B2B (sin IVA), stock y colores. Es la fuente de verdad de la tienda. Nunca borres un producto con ventas: desactívalo con el switch "Activo".', ruta: '/admin/catalogo' },
+      { titulo: 'Procesar Pedidos — el dinero B2C', detalle: 'Confirmas pagos, corriges direcciones y avanzas estados (Nuevo → Confirmado → En Producción → Despachado → Entregado). Los correos al cliente salen solos en cada etapa.', ruta: '/admin/procesar-pedidos' },
+      { titulo: 'Pipeline B2B — las empresas', detalle: 'Las empresas cotizan solas en la web y entran como leads con score IA. Mueve cada uno por el kanban: Nuevo → Contactado → Propuesta enviada → Aceptado. El agente también lo hace por chat.', ruta: '/admin/pipeline' },
+      { titulo: 'Propuestas — cerrar empresas', detalle: 'Desde un lead generas la Propuesta Corporativa (PDF con mockups y anticipo 50%). Se envía por correo, se trackea si la abren y los recordatorios salen automáticos.', ruta: '/admin/propuestas' },
+      { titulo: 'Inventario y Financiero — el control', detalle: 'Inventario alerta los quiebres de stock; Financiero muestra ingresos vs egresos y el costo real por producto. Revísalos al cerrar la semana para decidir qué producir y cuánto pautar.', ruta: '/admin/inventario' },
     ],
   },
 ];
 
 export const TIPS_FUNDADORES = [
-  'Nunca borres productos con ventas históricas — desactívalos para conservar la trazabilidad.',
+  'El Agent OS (/admin/agente) es tu atajo a casi todo: pregúntale o pídele acciones en español, siempre confirma antes de ejecutar.',
+  'Para que el agente actúe sin errores, dale el dato que identifica: N° de pedido (WEB-1042), email del cliente o nombre de la empresa.',
   'Jamás generes 2 etiquetas para el mismo pedido: el asistente lo bloquea, pero el modo manual no.',
+  'Nunca borres productos con ventas históricas — desactívalos para conservar la trazabilidad.',
   'Los correos de confirmación, tracking y reseña salen SOLOS — no dupliques correos manuales.',
-  'Ante cualquier duda, el Agent OS (/admin/agente) conoce los datos reales y ejecuta acciones con tu confirmación.',
   'La inducción completa del sistema (todos los flujos) está en /admin/induccion.',
 ];
