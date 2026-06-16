@@ -1,9 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
-import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { getPagoStatus } from '@/lib/pago-status';
 import {
-  X, CheckCircle2, AlertTriangle, Loader2, Tag, Printer, BadgeCheck, Truck, ExternalLink,
+  X, CheckCircle2, AlertTriangle, Loader2, Tag, Printer, BadgeCheck, Truck,
 } from 'lucide-react';
 import { FixDireccionForm, FixComunaPicker } from '@/components/agente-os/EtiquetaFixForms';
 
@@ -55,6 +54,7 @@ export default function EtiquetaWizardModal({ pedido: pedidoInicial, onClose, on
   const [generando, setGenerando] = useState(false);
   const [resultado, setResultado] = useState(null); // { ok, message, tracking, label_url } | { ok:false, error }
   const [marcandoPago, setMarcandoPago] = useState(false);
+  const [abriendoEtiqueta, setAbriendoEtiqueta] = useState(false);
   const runRef = useRef(0);
   const bottomRef = useRef(null);
 
@@ -132,14 +132,7 @@ export default function EtiquetaWizardModal({ pedido: pedidoInicial, onClose, on
         status: 'warn',
         title: 'Paso 3 · Comuna sin tarifa en el sistema',
         detail: `"${p.ciudad}" no aparece en el tarifario cargado (346 comunas). Suele ser un nombre mal escrito. Bluex intentará resolverla igual con su API de geografía, pero lo seguro es corregirla:`,
-        fix: (
-          <div className="space-y-2">
-            <FixComunaPicker pedido={p} onSaved={handleDatosCorregidos} />
-            <Link to="/admin/tarifas-envio" className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-600 text-white text-[11px] font-bold">
-              Revisar Tarifas Bluex <ExternalLink className="w-3 h-3" />
-            </Link>
-          </div>
-        ),
+        fix: <FixComunaPicker pedido={p} onSaved={handleDatosCorregidos} />,
       });
     }
 
@@ -150,11 +143,11 @@ export default function EtiquetaWizardModal({ pedido: pedidoInicial, onClose, on
       upd({
         status: 'warn',
         title: `Paso 4 · Ya tiene OT: ${p.tracking}`,
-        detail: 'Este pedido ya tiene etiqueta emitida — no se genera otra para evitar cobros duplicados. Puedes abrir la existente.',
+        detail: 'Este pedido ya tiene etiqueta emitida — no se genera otra para evitar cobros duplicados. Puedes abrir la existente sin salir del chat.',
         fix: (
-          <a href={`https://www.bluex.cl/seguimiento?n=${p.tracking}`} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#1e293b] text-white text-[11px] font-bold">
-            <Printer className="w-3 h-3" /> Ver tracking
-          </a>
+          <button onClick={() => handleVerEtiquetaExistente(p)} disabled={abriendoEtiqueta} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#1e293b] hover:bg-[#334155] text-white text-[11px] font-bold disabled:opacity-60">
+            {abriendoEtiqueta ? <Loader2 className="w-3 h-3 animate-spin" /> : <Printer className="w-3 h-3" />} Ver etiqueta
+          </button>
         ),
       });
       return;
@@ -173,6 +166,18 @@ export default function EtiquetaWizardModal({ pedido: pedidoInicial, onClose, on
     setPedido(actualizado);
     onDone?.();
     runChecks(actualizado);
+  }
+
+  // Abre la etiqueta YA emitida en el visor in-place (vía openLabelUrl).
+  async function handleVerEtiquetaExistente(p) {
+    setAbriendoEtiqueta(true);
+    try {
+      const envios = await base44.entities.Envio.filter({ pedido_id: p.id }).catch(() => []);
+      const envio = envios?.[0];
+      const url = envio?.label_url || (envio?.label_base64 ? `data:application/pdf;base64,${envio.label_base64}` : null);
+      if (url) openLabelUrl?.(url);
+    } catch { /* noop */ }
+    setAbriendoEtiqueta(false);
   }
 
   async function handleMarcarPagado() {

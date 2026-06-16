@@ -1,39 +1,42 @@
 import { useState } from 'react';
-import { Truck, ChevronRight, AlertTriangle, ExternalLink, RefreshCw, MapPin, FileText, Loader2, Tag } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Truck, AlertTriangle, RefreshCw, MapPin, FileText, Loader2, Tag } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
-import { openPdfUrl } from '@/lib/pdf-open';
 import ActionButton from '../ActionButton';
+import EtiquetaViewerModal from '../EtiquetaViewerModal';
 
-// Ver/imprimir la etiqueta Bluex de un envío sin salir del chat.
-function LabelButton({ envioId }) {
+// Ver/imprimir la etiqueta Bluex de un envío DENTRO del chat (visor embebido).
+function LabelButton({ envio }) {
   const [state, setState] = useState('idle'); // idle | loading | error
+  const [labelUrl, setLabelUrl] = useState(null);
 
   const ver = async () => {
     setState('loading');
     try {
-      const res = await base44.functions.invoke('bluexGetLabel', { envio_id: envioId });
+      const res = await base44.functions.invoke('bluexGetLabel', { envio_id: envio.id });
       const d = res?.data || {};
-      if (d.label_url || d.label_base64) {
-        openPdfUrl(d.label_url || `data:application/pdf;base64,${d.label_base64}`);
-        setState('idle');
-      } else if (d.portal_url) {
-        window.open(d.portal_url, '_blank');
-        setState('idle');
-      } else {
-        setState('error');
-      }
+      const url = d.label_url || (d.label_base64 ? `data:application/pdf;base64,${d.label_base64}` : null);
+      if (url) { setLabelUrl(url); setState('idle'); }
+      else setState('error');
     } catch {
       setState('error');
     }
   };
 
   return (
-    <button onClick={ver} disabled={state === 'loading'}
-      className="text-[11px] text-ld-action hover:underline flex items-center gap-0.5 flex-shrink-0 disabled:opacity-60">
-      {state === 'loading' ? <Loader2 className="w-3 h-3 animate-spin" /> : <FileText className="w-3 h-3" />}
-      {state === 'error' ? 'Sin etiqueta' : 'Etiqueta'}
-    </button>
+    <>
+      <button onClick={ver} disabled={state === 'loading'}
+        className="text-[11px] text-ld-action hover:underline flex items-center gap-0.5 flex-shrink-0 disabled:opacity-60">
+        {state === 'loading' ? <Loader2 className="w-3 h-3 animate-spin" /> : <FileText className="w-3 h-3" />}
+        {state === 'error' ? 'Sin etiqueta' : 'Etiqueta'}
+      </button>
+      {labelUrl && (
+        <EtiquetaViewerModal
+          labelUrl={labelUrl}
+          titulo={`OT ${envio.tracking_number || ''} · ${envio.cliente_nombre || ''}`}
+          onClose={() => setLabelUrl(null)}
+        />
+      )}
+    </>
   );
 }
 
@@ -60,9 +63,6 @@ export default function ShipmentsCard({ envios = [], metrics = {}, onDone }) {
           </span>
           <span className="text-sm font-semibold text-ld-fg">Envíos BlueExpress</span>
         </div>
-        <Link to="/admin/bluex" className="text-xs text-ld-action hover:underline flex items-center gap-0.5">
-          Centro Logístico <ChevronRight className="w-3 h-3" />
-        </Link>
       </div>
 
       {/* KPIs rápidos */}
@@ -106,14 +106,8 @@ export default function ShipmentsCard({ envios = [], metrics = {}, onDone }) {
                   {e.atrasado && <span className="text-ld-highlight font-semibold flex-shrink-0"> · atrasado</span>}
                 </div>
                 <div className="flex items-center gap-2.5 flex-shrink-0">
-                  {/* Ver etiqueta si ya fue emitida */}
-                  {e.tracking_number && e.estado !== 'Pendiente Emisión' && <LabelButton envioId={e.id} />}
-                  {e.tracking_url && (
-                    <a href={e.tracking_url} target="_blank" rel="noopener noreferrer"
-                      className="text-[11px] text-ld-action hover:underline flex items-center gap-0.5">
-                      Tracking <ExternalLink className="w-3 h-3" />
-                    </a>
-                  )}
+                  {/* Ver etiqueta (visor in-place) si ya fue emitida */}
+                  {e.tracking_number && e.estado !== 'Pendiente Emisión' && <LabelButton envio={e} />}
                 </div>
               </div>
               {/* Generar etiqueta si la OT aún no fue emitida */}

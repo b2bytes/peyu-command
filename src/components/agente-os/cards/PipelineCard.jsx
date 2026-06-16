@@ -1,8 +1,8 @@
 import { Package, Truck, CreditCard, Factory, Tag, CheckCircle2, Loader2 } from 'lucide-react';
 import { useState } from 'react';
 import { base44 } from '@/api/base44Client';
-import { openPdfUrl } from '@/lib/pdf-open';
 import ActionButton from '../ActionButton';
+import EtiquetaViewerModal from '../EtiquetaViewerModal';
 
 const fmtCLP = (n) => (n != null ? `$${Number(n).toLocaleString('es-CL')}` : '—');
 
@@ -27,30 +27,49 @@ const COLUMNAS = [
   { id: 'despachado',   label: 'Despachados',        icon: CheckCircle2, color: 'text-ld-action' },
 ];
 
-// Abre la etiqueta BlueExpress de un pedido ya emitido (busca su Envio).
+// Abre la etiqueta BlueExpress de un pedido ya emitido EN UN VISOR DENTRO DEL
+// CHAT (modal con el PDF embebido) — sin enviar a páginas externas.
 function VerEtiqueta({ pedido }) {
   const [busy, setBusy] = useState(false);
+  const [labelUrl, setLabelUrl] = useState(null);
+  const [errorMsg, setErrorMsg] = useState('');
+
   const ver = async () => {
     setBusy(true);
+    setErrorMsg('');
     try {
       const envios = await base44.entities.Envio.filter({ pedido_id: pedido.id }).catch(() => []);
       const envio = envios?.[0];
       if (envio?.id) {
         const res = await base44.functions.invoke('bluexGetLabel', { envio_id: envio.id });
         const d = res?.data || {};
-        if (d.label_url || d.label_base64) openPdfUrl(d.label_url || `data:application/pdf;base64,${d.label_base64}`);
-        else if (d.portal_url) window.open(d.portal_url, '_blank');
-      } else if (pedido.tracking) {
-        window.open(`https://www.bluex.cl/seguimiento?n=${pedido.tracking}`, '_blank');
+        const url = d.label_url || (d.label_base64 ? `data:application/pdf;base64,${d.label_base64}` : null);
+        if (url) setLabelUrl(url);
+        else setErrorMsg('Sin etiqueta');
+      } else {
+        setErrorMsg('Sin envío');
       }
-    } catch { /* noop */ }
+    } catch {
+      setErrorMsg('Error');
+    }
     setBusy(false);
   };
+
   return (
-    <button onClick={ver} disabled={busy}
-      className="text-[11px] text-ld-action hover:underline flex items-center gap-0.5 disabled:opacity-60">
-      {busy ? <Loader2 className="w-3 h-3 animate-spin" /> : <Tag className="w-3 h-3" />} Etiqueta
-    </button>
+    <>
+      <button onClick={ver} disabled={busy}
+        className="text-[11px] text-ld-action hover:underline flex items-center gap-0.5 disabled:opacity-60">
+        {busy ? <Loader2 className="w-3 h-3 animate-spin" /> : <Tag className="w-3 h-3" />}
+        {errorMsg || 'Etiqueta'}
+      </button>
+      {labelUrl && (
+        <EtiquetaViewerModal
+          labelUrl={labelUrl}
+          titulo={`${pedido.numero_pedido || pedido.id?.slice(-6)} · ${pedido.cliente_nombre || ''}${pedido.tracking ? ` · OT ${pedido.tracking}` : ''}`}
+          onClose={() => setLabelUrl(null)}
+        />
+      )}
+    </>
   );
 }
 

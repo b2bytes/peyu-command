@@ -4,6 +4,7 @@ import { getPagoStatus } from '@/lib/pago-status';
 import { Loader2, RefreshCw, Search, CheckCircle2, AlertTriangle } from 'lucide-react';
 import OpsPedidoRow from './OpsPedidoRow';
 import EtiquetaWizardModal from './EtiquetaWizardModal';
+import EtiquetaViewerModal from './EtiquetaViewerModal';
 import OpsLeadsPanel from './OpsLeadsPanel';
 import OpsVentasPanel from './OpsVentasPanel';
 
@@ -37,6 +38,7 @@ export default function OpsCenter({ onRefreshAll }) {
   const [busyId, setBusyId] = useState(null);
   const [feedback, setFeedback] = useState(null); // { ok, message, label_url }
   const [wizardPedido, setWizardPedido] = useState(null); // asistente de etiqueta Bluex
+  const [viewerLabel, setViewerLabel] = useState(null);   // { url, titulo } — visor de etiqueta in-place
 
   const load = async () => {
     setLoading(true);
@@ -77,7 +79,7 @@ export default function OpsCenter({ onRefreshAll }) {
     try {
       const res = await base44.functions.invoke('agentOSAction', { action, payload });
       setFeedback({ ok: true, message: res?.data?.message || 'Listo ✓', label_url: res?.data?.label_url });
-      if (res?.data?.label_url) openLabelUrl(res.data.label_url);
+      if (res?.data?.label_url) setViewerLabel({ url: res.data.label_url, titulo: payload.id ? (pedidos.find((x) => x.id === payload.id)?.numero_pedido || '') : '' });
       await load();
       onRefreshAll?.();
     } catch (err) {
@@ -86,25 +88,19 @@ export default function OpsCenter({ onRefreshAll }) {
     setBusyId(null);
   };
 
-  const openLabelUrl = (url) => {
+  // Abre la etiqueta en el visor DENTRO del chat (sin pestañas externas).
+  const openLabelUrl = (url, titulo = '') => {
     if (!url) return;
-    if (url.startsWith('data:')) {
-      const base64 = url.split(',')[1];
-      const bytes = atob(base64);
-      const arr = new Uint8Array(bytes.length);
-      for (let i = 0; i < bytes.length; i++) arr[i] = bytes.charCodeAt(i);
-      window.open(URL.createObjectURL(new Blob([arr], { type: 'application/pdf' })), '_blank');
-    } else {
-      window.open(url, '_blank');
-    }
+    setViewerLabel({ url, titulo });
   };
 
   const openLabel = async (pedido) => {
-    // Busca el Envio asociado para abrir la etiqueta; fallback al tracking público.
+    // Busca el Envio asociado y muestra su etiqueta en el visor in-place.
     const envios = await base44.entities.Envio.filter({ tracking_number: pedido.tracking }).catch(() => []);
     const envio = envios?.[0];
-    if (envio?.label_url) openLabelUrl(envio.label_url);
-    else window.open(`https://www.bluex.cl/seguimiento?n=${pedido.tracking}`, '_blank');
+    const url = envio?.label_url || (envio?.label_base64 ? `data:application/pdf;base64,${envio.label_base64}` : null);
+    if (url) setViewerLabel({ url, titulo: `${pedido.numero_pedido || ''} · ${pedido.cliente_nombre || ''}${pedido.tracking ? ` · OT ${pedido.tracking}` : ''}` });
+    else setFeedback({ ok: false, message: 'No hay etiqueta guardada para este pedido. Genérala primero.' });
   };
 
   return (
@@ -192,6 +188,15 @@ export default function OpsCenter({ onRefreshAll }) {
           onClose={() => setWizardPedido(null)}
           onDone={() => { load(); onRefreshAll?.(); }}
           openLabelUrl={openLabelUrl}
+        />
+      )}
+
+      {/* Visor de etiqueta DENTRO del chat (PDF embebido, imprimir/descargar) */}
+      {viewerLabel && (
+        <EtiquetaViewerModal
+          labelUrl={viewerLabel.url}
+          titulo={viewerLabel.titulo}
+          onClose={() => setViewerLabel(null)}
         />
       )}
     </div>
