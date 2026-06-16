@@ -1,0 +1,60 @@
+{
+  "name": "TextoPagina",
+  "type": "object",
+  "description": "Texto editable de una p\u00e1gina p\u00fablica del sitio (about, FAQ, env\u00edos, etc.). Modelo clave\u2192valor: cada registro es un fragmento de copy identificado por una clave estable (ej. 'nosotros.hero.titulo'). Las p\u00e1ginas leen estos textos con fallback al copy por defecto del c\u00f3digo, as\u00ed nada se rompe si una clave no existe. Editable por founders desde el admin.",
+  "properties": {
+    "clave": {
+      "type": "string",
+      "title": "Clave \u00fanica (ej. nosotros.hero.titulo)",
+      "description": "Identificador estable del fragmento de texto. Convenci\u00f3n: pagina.seccion.campo."
+    },
+    "pagina": {
+      "type": "string",
+      "title": "P\u00e1gina",
+      "description": "P\u00e1gina p\u00fablica a la que pertenece el texto (ej. nosotros, faq, envios)."
+    },
+    "etiqueta": {
+      "type": "string",
+      "title": "Etiqueta legible",
+      "description": "Nombre amigable del campo para mostrar en el admin (ej. 'T\u00edtulo del hero')."
+    },
+    "valor": {
+      "type": "string",
+      "title": "Texto",
+      "description": "Contenido editable que se muestra en la p\u00e1gina."
+    },
+    "multilinea": {
+      "type": "boolean",
+      "title": "Texto largo (multil\u00ednea)",
+      "default": false
+    },
+    "orden": {
+      "type": "number",
+      "title": "Orden dentro de la p\u00e1gina",
+      "default": 0
+    }
+  },
+  "required": [
+    "clave",
+    "pagina",
+    "valor"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {},
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

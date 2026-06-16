@@ -143,6 +143,7 @@ const Induccion = lazyWithRetry(() => import('./pages/Induccion'), { name: 'Indu
 const GuiaFundadores = lazyWithRetry(() => import('./pages/GuiaFundadores'), { name: 'GuiaFundadores' });
 const WhatsAppInbox = lazyWithRetry(() => import('./pages/WhatsAppInbox'), { name: 'WhatsAppInbox' });
 const CentroMensajes = lazyWithRetry(() => import('./pages/CentroMensajes'), { name: 'CentroMensajes' });
+const EditorTextos = lazyWithRetry(() => import('./pages/EditorTextos'), { name: 'EditorTextos' });
 
 const AdminLoader = () => (
   <div className="fixed inset-0 flex items-center justify-center bg-background">
@@ -257,6 +258,7 @@ const AuthenticatedApp = () => {
           <Route path="guia-fundadores" element={<GuiaFundadores />} />
           <Route path="whatsapp" element={<WhatsAppInbox />} />
           <Route path="mensajes" element={<CentroMensajes />} />
+          <Route path="textos" element={<EditorTextos />} />
         </Route>
         <Route path="*" element={<PageNotFound />} />
       </Routes>

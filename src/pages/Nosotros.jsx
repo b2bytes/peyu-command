@@ -3,6 +3,7 @@ import {
   Recycle, Zap, ShieldCheck, MapPin, Users, Factory, Leaf,
   ArrowRight, CircleDot, Sprout, FlaskConical, Gem
 } from 'lucide-react';
+import useTextosPagina from '@/hooks/useTextosPagina';
 
 // ── Iconografía eco-inteligente 2027: SF-style, thin stroke, conceptual
 const VALORES = [
@@ -91,6 +92,7 @@ function StatusPill({ children, color = '#0F8B6C' }) {
 }
 
 export default function Nosotros() {
+  const { t } = useTextosPagina('nosotros');
   return (
     <div className="min-h-screen font-inter pb-24 lg:pb-0" style={{ background: '#F8F3ED', color: '#2C1810' }}>
 
@@ -100,14 +102,13 @@ export default function Nosotros() {
 
         <h1 className="font-fraunces text-4xl sm:text-5xl lg:text-6xl leading-[0.95] tracking-tight mt-5 mb-5"
           style={{ color: '#2C1810' }}>
-          Desde una terraza<br />
-          <em className="not-italic" style={{ color: '#C0785C' }}>hasta una fábrica</em><br />
-          con 6 inyectoras.
+          {t('nosotros.hero.linea1', 'Desde una terraza')}<br />
+          <em className="not-italic" style={{ color: '#C0785C' }}>{t('nosotros.hero.linea2', 'hasta una fábrica')}</em><br />
+          {t('nosotros.hero.linea3', 'con 6 inyectoras.')}
         </h1>
 
         <p className="text-base sm:text-lg leading-relaxed max-w-2xl mx-auto" style={{ color: '#7A6050' }}>
-          Peyu nació de una idea simple: el plástico que botamos puede convertirse en el regalo más bonito de la oficina.
-          Hoy somos la plataforma líder en gifting corporativo sostenible de Chile.
+          {t('nosotros.hero.subtitulo', 'Peyu nació de una idea simple: el plástico que botamos puede convertirse en el regalo más bonito de la oficina. Hoy somos la plataforma líder en gifting corporativo sostenible de Chile.')}
         </p>
 
         {/* Ambient glow decoration */}
@@ -158,13 +159,8 @@ export default function Nosotros() {
 
         <div className="rounded-3xl overflow-hidden" style={{ background: 'white', border: '1.5px solid #E8DDD0', boxShadow: '0 4px 24px rgba(44,24,16,.06)' }}>
           <div className="p-7 md:p-9 space-y-4 text-sm leading-relaxed" style={{ color: '#7A6050', borderBottom: '1px solid #F2EBE0' }}>
-            <p>
-              Todo comenzó en 2019, cuando Joaquín Nilo empezó a fundir botellas plásticas de su barrio en la terraza. El primer prototipo era feo. Pero la idea era perfecta:{' '}
-              <strong style={{ color: '#2C1810' }}>el plástico que ya existe es la mejor materia prima del mundo</strong>.
-            </p>
-            <p>
-              Carlos Moscoso se sumó con su visión comercial: empresas chilenas necesitan regalos corporativos con propósito ESG. Juntos crearon Peyu — la tortuga marina que navega lento pero llega siempre.
-            </p>
+            <p>{t('nosotros.historia.parrafo1', 'Todo comenzó en 2019, cuando Joaquín Nilo empezó a fundir botellas plásticas de su barrio en la terraza. El primer prototipo era feo. Pero la idea era perfecta: el plástico que ya existe es la mejor materia prima del mundo.')}</p>
+            <p>{t('nosotros.historia.parrafo2', 'Carlos Moscoso se sumó con su visión comercial: empresas chilenas necesitan regalos corporativos con propósito ESG. Juntos crearon Peyu — la tortuga marina que navega lento pero llega siempre.')}</p>
           </div>
 
           {/* Timeline con iconos por hito */}
