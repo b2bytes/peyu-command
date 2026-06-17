@@ -311,11 +311,41 @@ export default function ProductoNuevo() {
     }, 200);
   }, [pers.logoUrl, pers.disenoPeyuUrl]);
 
+  // ── Stock disponible REAL del color elegido ──────────────────────────────
+  // Si el producto tiene stock_por_color (carcasas), el tope es el stock de ESE
+  // color. Si no hay variantes, es stock_actual global. Si no hay dato de stock,
+  // no limitamos (null = sin tope, comportamiento legacy seguro).
+  const stockDisponible = useMemo(() => {
+    if (!producto) return null;
+    const mapa = producto.stock_por_color;
+    const tieneMapa = mapa && typeof mapa === 'object' && Object.keys(mapa).length > 0;
+    if (tieneMapa && color) {
+      const norm = (s) => String(s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+      const cand = [color.label, color.id, ...(color.aliases || [])].map(norm);
+      const hit = Object.entries(mapa).find(([k]) => cand.includes(norm(k)));
+      return hit ? Number(hit[1]) : 0; // color sin entrada en el mapa = agotado
+    }
+    if (typeof producto.stock_actual === 'number') return producto.stock_actual;
+    return null;
+  }, [producto, color]);
+
+  // Tope de cantidad para el stepper (1 si no hay dato, para no romper el flujo).
+  const maxCantidad = stockDisponible === null ? 9999 : Math.max(0, stockDisponible);
+  const agotado = stockDisponible !== null && stockDisponible <= 0;
+
+  // Si cambia el color/stock y la cantidad supera lo disponible, la ajustamos.
+  useEffect(() => {
+    if (stockDisponible !== null && cantidad > stockDisponible) {
+      setCantidad(Math.max(1, stockDisponible));
+    }
+  }, [stockDisponible]); // eslint-disable-line
+
   // Stock/urgencia sutil: solo si el dato existe y es bajo.
-  const stock = producto?.stock_actual;
+  const stock = stockDisponible;
   const stockBajo = typeof stock === 'number' && stock > 0 && stock <= 8;
 
   const handleAdd = async () => {
+    if (agotado) return; // sin stock del color elegido → no se puede agregar
     if (requiereColor && !colorId) {
       setColorError(true);
       document.querySelector('[data-color-selector]')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -469,12 +499,12 @@ export default function ProductoNuevo() {
           {/* CTA en header (desktop) */}
           <button
             onClick={handleAdd}
-            disabled={added || !persOk}
+            disabled={added || !persOk || agotado}
             className="hidden lg:flex items-center gap-2 px-5 h-10 rounded-xl text-white font-bold text-sm transition-all hover:-translate-y-0.5 active:scale-[0.97] disabled:opacity-60 disabled:hover:translate-y-0"
             style={{ background: C.actionGrad, boxShadow: C.actionShadow, flexShrink: 0 }}
           >
             {added ? <Check className="w-4 h-4" /> : <ShoppingBag className="w-4 h-4" />}
-            <span>{added ? '¡Agregado!' : `Agregar · ${fmtCLP(total)}`}</span>
+            <span>{added ? '¡Agregado!' : agotado ? 'Agotado' : `Agregar · ${fmtCLP(total)}`}</span>
           </button>
         </div>
       </header>
@@ -705,8 +735,18 @@ export default function ProductoNuevo() {
                     </p>
                   )}
                 </div>
-                <QtyStepperV2 value={cantidad} onChange={setCantidad} min={1} />
+                <QtyStepperV2 value={cantidad} onChange={setCantidad} min={1} max={maxCantidad} />
               </div>
+              {stockDisponible !== null && !agotado && cantidad >= stockDisponible && (
+                <p className="text-[11px] font-semibold -mt-1.5" style={{ color: C.action }}>
+                  Stock máximo disponible{color ? ` en ${color.label}` : ''}: {stockDisponible}u
+                </p>
+              )}
+              {agotado && (
+                <p className="text-[11px] font-bold -mt-1.5" style={{ color: '#D96B4D' }}>
+                  {color ? `${color.label} agotado` : 'Producto agotado'} — elige otro color o vuelve pronto.
+                </p>
+              )}
 
               {/* Precio en vivo con desglose IVA */}
               <PriceBreakdownV2
@@ -752,12 +792,14 @@ export default function ProductoNuevo() {
             <div className="hidden lg:block mt-3 lg:flex-shrink-0">
              <button
                onClick={handleAdd}
-               disabled={added || !persOk}
+               disabled={added || !persOk || agotado}
                className="w-full h-14 rounded-2xl text-white font-bold text-base flex items-center justify-center gap-2 transition-all hover:-translate-y-0.5 active:scale-[0.98] disabled:opacity-60 disabled:hover:translate-y-0"
                style={{ background: C.actionGrad, boxShadow: C.actionShadow }}
              >
                {added ? (
                  <><Check className="w-5 h-5" /> ¡Agregado!</>
+               ) : agotado ? (
+                 <>Agotado</>
                ) : hayAlgunoActivado(pers) && !pers.aprobada ? (
                  <><Sparkles className="w-5 h-5" /> Aprueba tu personalización</>
                ) : (
@@ -783,9 +825,9 @@ export default function ProductoNuevo() {
       <MobileNavBarV2
         backTo="/CatalogoNuevo"
         backLabel="Tienda"
-        ctaLabel={added ? '✓ ¡Agregado!' : hayAlgunoActivado(pers) && !pers.aprobada ? 'Aprueba tu diseño' : 'Agregar al carrito'}
+        ctaLabel={added ? '✓ ¡Agregado!' : agotado ? 'Agotado' : hayAlgunoActivado(pers) && !pers.aprobada ? 'Aprueba tu diseño' : 'Agregar al carrito'}
         onCta={handleAdd}
-        ctaDisabled={added || !persOk}
+        ctaDisabled={added || !persOk || agotado}
         total={added ? null : total}
       />
     </div>

@@ -49,7 +49,10 @@ export default function Inventario() {
 
   const loadData = async () => {
     setLoading(true);
-    const data = await base44.entities.Producto.list('-stock_actual', 100);
+    // Orden estable por nombre (NO por stock): así actualizar el stock de un
+    // producto no lo hace saltar de posición ni desaparecer. Límite 500 para
+    // cubrir el catálogo completo (>180 SKUs, ej. todas las carcasas por modelo).
+    const data = await base44.entities.Producto.list('nombre', 500);
     setProductos(data);
     setLoading(false);
   };
