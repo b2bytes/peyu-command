@@ -379,6 +379,7 @@ export default function ProductoNuevo() {
       personalizacion_gratis_desde: moq,
       cantidad,
       color: color?.label || null,
+      stockColor: stockDisponible, // tope real del color elegido (null = sin límite)
       personalizacion: resumenPersonalizacion(pers),
       texto: pers.texto || null,
       logoUrl: pers.logoUrl || null,

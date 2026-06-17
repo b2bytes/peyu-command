@@ -544,16 +544,43 @@ Deno.serve(async (req) => {
     })());
 
     // ── 3. STOCK ─────────────────────────────────────────────────
-    if (pedido.sku && pedido.cantidad) {
-      try {
-        const productos = await base44.asServiceRole.entities.Producto.filter({ sku: pedido.sku });
-        if (productos.length > 0) {
-          const prod = productos[0];
-          const nuevoStock = Math.max(0, (prod.stock_actual || 0) - pedido.cantidad);
+    // Descuenta stock por línea. Si el producto maneja stock_por_color
+    // (carcasas) y la línea trae color, descuenta de ESE color y recomputa
+    // stock_actual = suma del mapa (fuente de verdad por variante). Si no hay
+    // mapa de color, descuenta del stock_actual global como antes.
+    try {
+      // Normaliza color para hacer match contra las llaves del mapa.
+      const normColor = (s) => String(s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+
+      // Líneas a descontar: items_detalle estructurado o, en su defecto, el SKU principal.
+      const lineas = (Array.isArray(pedido.items_detalle) && pedido.items_detalle.length > 0)
+        ? pedido.items_detalle.map((it) => ({ sku: it.sku, cantidad: it.cantidad || 1, color: it.color }))
+        : (pedido.sku && pedido.cantidad ? [{ sku: pedido.sku, cantidad: pedido.cantidad, color: pedido.color }] : []);
+
+      for (const linea of lineas) {
+        if (!linea.sku || !linea.cantidad) continue;
+        const productos = await base44.asServiceRole.entities.Producto.filter({ sku: linea.sku });
+        if (productos.length === 0) continue;
+        const prod = productos[0];
+        const mapa = prod.stock_por_color;
+        const tieneMapa = mapa && typeof mapa === 'object' && Object.keys(mapa).length > 0;
+
+        if (tieneMapa && linea.color) {
+          // Descuenta del color comprado y recomputa el total como suma del mapa.
+          const nuevoMapa = { ...mapa };
+          const cands = [normColor(linea.color)];
+          const key = Object.keys(nuevoMapa).find((k) => cands.includes(normColor(k)));
+          if (key) {
+            nuevoMapa[key] = Math.max(0, (Number(nuevoMapa[key]) || 0) - linea.cantidad);
+          }
+          const total = Object.values(nuevoMapa).reduce((s, v) => s + (Number(v) || 0), 0);
+          await base44.asServiceRole.entities.Producto.update(prod.id, { stock_por_color: nuevoMapa, stock_actual: total });
+        } else {
+          const nuevoStock = Math.max(0, (prod.stock_actual || 0) - linea.cantidad);
           await base44.asServiceRole.entities.Producto.update(prod.id, { stock_actual: nuevoStock });
         }
-      } catch (e) { console.warn('Stock update failed:', e.message); }
-    }
+      }
+    } catch (e) { console.warn('Stock update failed:', e.message); }
 
     // ── 4. PERSONALIZATION JOB ──────────────────────────────────
     if (pedido.requiere_personalizacion && pedido.texto_personalizacion) {

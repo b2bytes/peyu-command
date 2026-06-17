@@ -115,9 +115,19 @@ export default function CarritoNuevo() {
                        )}
                      </div>
                      <div className="flex items-center justify-between mt-2 gap-2">
-                      <QtyStepperV2 value={cant} onChange={(v) => setQty(item.id, v)} min={1} />
+                      <QtyStepperV2
+                        value={cant}
+                        onChange={(v) => setQty(item.id, v)}
+                        min={1}
+                        max={typeof item.stockColor === 'number' ? Math.max(1, item.stockColor) : 9999}
+                      />
                       <span className="font-poppins font-bold text-sm sm:text-base flex-shrink-0" style={{ color: '#2C1810' }}>{fmtCLP(lineaProducto)}</span>
                      </div>
+                     {typeof item.stockColor === 'number' && cant >= item.stockColor && (
+                       <p className="text-[9px] sm:text-[10px] font-semibold mt-1" style={{ color: '#C0785C' }}>
+                         Stock máximo{item.color ? ` en ${item.color}` : ''}: {item.stockColor}u
+                       </p>
+                     )}
                      {teaser && (
                        <button
                          onClick={() => setQty(item.id, cant + teaser.necesita)}
