@@ -49,10 +49,12 @@ export default function Inventario() {
 
   const loadData = async () => {
     setLoading(true);
-    // Orden estable por nombre (NO por stock): así actualizar el stock de un
-    // producto no lo hace saltar de posición ni desaparecer. Límite 500 para
-    // cubrir el catálogo completo (>180 SKUs, ej. todas las carcasas por modelo).
-    const data = await base44.entities.Producto.list('nombre', 500);
+    // Solo productos ACTIVOS: el catálogo tiene duplicados que los founders
+    // desactivaron (activo:false). El inventario debe mostrar únicamente los
+    // visibles en tienda. Orden estable por nombre (NO por stock): así
+    // actualizar el stock de un producto no lo hace saltar de posición ni
+    // desaparecer. Límite 500 para cubrir el catálogo activo completo.
+    const data = await base44.entities.Producto.filter({ activo: true }, 'nombre', 500);
     setProductos(data);
     setLoading(false);
   };
