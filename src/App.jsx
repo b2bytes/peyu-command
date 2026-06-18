@@ -147,6 +147,7 @@ const WhatsAppInbox = lazyWithRetry(() => import('./pages/WhatsAppInbox'), { nam
 const CentroMensajes = lazyWithRetry(() => import('./pages/CentroMensajes'), { name: 'CentroMensajes' });
 const EditorTextos = lazyWithRetry(() => import('./pages/EditorTextos'), { name: 'EditorTextos' });
 const CanalAgencia = lazyWithRetry(() => import('./pages/CanalAgencia'), { name: 'CanalAgencia' });
+const CrearCampanas = lazyWithRetry(() => import('./pages/CrearCampanas'), { name: 'CrearCampanas' });
 
 const AdminLoader = () => (
   <div className="fixed inset-0 flex items-center justify-center bg-background">
@@ -263,6 +264,7 @@ const AuthenticatedApp = () => {
           <Route path="mensajes" element={<CentroMensajes />} />
           <Route path="textos" element={<EditorTextos />} />
           <Route path="canal-agencia" element={<CanalAgencia />} />
+          <Route path="crear-campanas" element={<CrearCampanas />} />
         </Route>
         <Route path="*" element={<PageNotFound />} />
       </Routes>
