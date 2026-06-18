@@ -50,6 +50,7 @@ import RegalarGiftCard from './pages/RegalarGiftCard';
 import Gracias from './pages/Gracias';
 import FoundersPresentation from './pages/FoundersPresentation';
 import StorefrontChat from './pages/StorefrontChat';
+import AgentCockpit from './pages/AgentCockpit';
 import BrandLab from './pages/BrandLab';
 import PeyuV2 from './pages/PeyuV2';
 import TiendaNueva from './pages/TiendaNueva';
@@ -329,6 +330,7 @@ function App() {
               <Route path="/v2" element={<PeyuV2 />} />
               <Route path="/founders-presentation" element={<FoundersPresentation />} />
               <Route path="/storefront-chat" element={<StorefrontChat />} />
+              <Route path="/agent-cockpit" element={<AgentCockpit />} />
               <Route path="/design-lab" element={<FunnelDesignLab />} />
               <Route path="/test-index" element={<IndiceTest />} />
               {/* EmpresasNuevo = cockpit B2B con header wizard propio (sin doble navegación) */}
