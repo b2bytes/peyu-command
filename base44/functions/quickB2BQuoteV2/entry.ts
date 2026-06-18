@@ -615,8 +615,33 @@ Deno.serve(async (req) => {
     const esRecotizacion = !!existing;
 
     // 1) Email al CLIENTE con relato + PDF adjunto.
+    //    Entrega INMEDIATA vía Gmail (ti@peyuchile.cl) como método principal —
+    //    es la conexión estable y verificada. Resend queda como respaldo.
+    const clientHtml = buildClientEmail({
+      numero, contacto: contact_name, empresa: company_name,
+      lineas, totalNeto, iva, totalConIva, qtyTotal,
+      deliveryDate: delivery_date, personalizacion: personalization_needs,
+    });
+    const clientSubject = `Tu cotización PEYU ${numero} · ${qtyTotal} unidades 100% recicladas`;
+
     let emailEnviado = false;
-    if (RESEND_API_KEY && pdfBase64 && email && /\S+@\S+\.\S+/.test(email)) {
+    if (pdfBase64 && email && /\S+@\S+\.\S+/.test(email)) {
+      try {
+        emailEnviado = await sendQuoteViaGmail(base44, {
+          to: email,
+          subject: clientSubject,
+          html: clientHtml,
+          pdfBase64,
+          filename,
+        });
+        if (!emailEnviado) console.error('Gmail cliente: no enviado');
+      } catch (e) {
+        console.error('Gmail cliente error:', e?.message || e);
+      }
+    }
+
+    // Respaldo: si Gmail no envió, intentamos vía Resend con el PDF adjunto.
+    if (!emailEnviado && RESEND_API_KEY && pdfBase64 && email && /\S+@\S+\.\S+/.test(email)) {
       try {
         const r = await fetch('https://api.resend.com/emails', {
           method: 'POST',
@@ -625,40 +650,15 @@ Deno.serve(async (req) => {
             from: 'PEYU Chile <ventas@peyuchile.cl>',
             to: [email],
             reply_to: 'ventas@peyuchile.cl',
-            subject: `🐢 Tu cotización PEYU ${numero} · ${qtyTotal} unidades, 100% recicladas`,
-            html: buildClientEmail({
-              numero, contacto: contact_name, empresa: company_name,
-              lineas, totalNeto, iva, totalConIva, qtyTotal,
-              deliveryDate: delivery_date, personalizacion: personalization_needs,
-            }),
+            subject: `🐢 ${clientSubject}`,
+            html: clientHtml,
             attachments: [{ filename, content: pdfBase64 }],
           }),
         });
         emailEnviado = r.ok;
-        if (!r.ok) console.error('Resend cliente error:', await r.text());
+        if (!r.ok) console.error('Resend respaldo cliente error:', await r.text());
       } catch (e) {
-        console.error('Error email cliente:', e?.message || e);
-      }
-    }
-
-    // Fallback estable: si Resend no envió (dominio no verificado), mandamos el
-    // correo al cliente vía Gmail (ti@peyuchile.cl) con el PDF adjunto.
-    if (!emailEnviado && pdfBase64 && email && /\S+@\S+\.\S+/.test(email)) {
-      try {
-        emailEnviado = await sendQuoteViaGmail(base44, {
-          to: email,
-          subject: `Tu cotización PEYU ${numero} · ${qtyTotal} unidades 100% recicladas`,
-          html: buildClientEmail({
-            numero, contacto: contact_name, empresa: company_name,
-            lineas, totalNeto, iva, totalConIva, qtyTotal,
-            deliveryDate: delivery_date, personalizacion: personalization_needs,
-          }),
-          pdfBase64,
-          filename,
-        });
-        if (!emailEnviado) console.error('Gmail fallback cliente: no enviado');
-      } catch (e) {
-        console.error('Gmail fallback cliente error:', e?.message || e);
+        console.error('Resend respaldo cliente error:', e?.message || e);
       }
     }
 
