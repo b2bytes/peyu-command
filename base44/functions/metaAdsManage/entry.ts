@@ -93,6 +93,72 @@ Deno.serve(async (req) => {
       return Response.json(out);
     }
 
+    // ── Eventos del pixel por tipo + frecuencia (últimos 28 días) ───────────
+    if (action === 'pixel_events') {
+      const pixRes = await fetch(`${base}/${accountId}/adspixels?fields=id,name,last_fired_time&access_token=${t}`);
+      const pix = await pixRes.json();
+      if (pix.error) return Response.json({ ok: false, ...diagnoseMetaError(pix.error) });
+      const out = { ok: true, pixels: [] };
+      for (const p of (pix.data || [])) {
+        const stats = await fetch(`${base}/${p.id}/stats?aggregation=event&start_time=${Math.floor(Date.now()/1000) - 28*86400}&access_token=${t}`);
+        const sj = await stats.json();
+        const counts = {};
+        for (const row of (sj.data || [])) {
+          const arr = Array.isArray(row.data) ? row.data : [row];
+          for (const d of arr) {
+            const ev = d.value || d.event || d.event_type;
+            const c = Number(d.count || d.value_count || 0);
+            if (ev && typeof ev === 'string') counts[ev] = (counts[ev] || 0) + c;
+          }
+        }
+        out.pixels.push({
+          id: p.id, name: p.name, last_fired_time: p.last_fired_time || null,
+          events: Object.entries(counts).map(([event, count]) => ({ event, count })).sort((a, b) => b.count - a.count),
+        });
+      }
+      return Response.json(out);
+    }
+
+    // ── Posts recientes de la Página (Facebook) ─────────────────────────────
+    if (action === 'fb_posts') {
+      const pgRes = await fetch(`${base}/me/accounts?fields=id,name,access_token&limit=5&access_token=${t}`);
+      const pg = await pgRes.json();
+      if (pg.error) return Response.json({ ok: false, ...diagnoseMetaError(pg.error) });
+      const page = (pg.data || [])[0];
+      if (!page) return Response.json({ ok: false, error: 'No hay Página de Facebook conectada al System User.' });
+      const pageToken = page.access_token || token;
+      const postsRes = await fetch(`${base}/${page.id}/posts?fields=id,message,created_time,permalink_url,shares,likes.summary(true),comments.summary(true)&limit=15&access_token=${encodeURIComponent(pageToken)}`);
+      const posts = await postsRes.json();
+      if (posts.error) return Response.json({ ok: false, ...diagnoseMetaError(posts.error) });
+      return Response.json({
+        ok: true, page: { id: page.id, name: page.name },
+        posts: (posts.data || []).map(p => ({
+          id: p.id, message: p.message || '', created_time: p.created_time, url: p.permalink_url,
+          likes: p.likes?.summary?.total_count ?? 0, comments: p.comments?.summary?.total_count ?? 0, shares: p.shares?.count ?? 0,
+        })),
+      });
+    }
+
+    // ── Posts recientes de Instagram business + insights de cuenta ──────────
+    if (action === 'ig_posts') {
+      const pgRes = await fetch(`${base}/me/accounts?fields=id,instagram_business_account{id,username,followers_count,media_count}&limit=5&access_token=${t}`);
+      const pg = await pgRes.json();
+      if (pg.error) return Response.json({ ok: false, ...diagnoseMetaError(pg.error) });
+      const igAcct = (pg.data || []).map(p => p.instagram_business_account).find(Boolean);
+      if (!igAcct) return Response.json({ ok: false, error: 'No hay cuenta de Instagram business conectada.' });
+      const mediaRes = await fetch(`${base}/${igAcct.id}/media?fields=id,caption,media_type,media_url,permalink,timestamp,like_count,comments_count&limit=15&access_token=${t}`);
+      const media = await mediaRes.json();
+      if (media.error) return Response.json({ ok: false, ...diagnoseMetaError(media.error) });
+      return Response.json({
+        ok: true,
+        instagram: { id: igAcct.id, username: igAcct.username, followers: igAcct.followers_count ?? null, media_count: igAcct.media_count ?? null },
+        posts: (media.data || []).map(m => ({
+          id: m.id, caption: m.caption || '', type: m.media_type, url: m.permalink, image: m.media_url,
+          timestamp: m.timestamp, likes: m.like_count ?? 0, comments: m.comments_count ?? 0,
+        })),
+      });
+    }
+
     // ── Listar campañas con su estado y presupuesto ─────────────────────────
     if (action === 'list_campaigns') {
       const fields = 'id,name,status,effective_status,objective,daily_budget,lifetime_budget,start_time,stop_time';

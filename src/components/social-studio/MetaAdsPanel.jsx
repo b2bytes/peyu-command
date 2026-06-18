@@ -8,7 +8,7 @@ import { base44 } from '@/api/base44Client';
 import {
   Send, Loader2, User, Facebook, TrendingUp, AlertCircle, RefreshCw,
   CheckCircle2, BarChart2, Target, Zap, Eye, MousePointerClick,
-  DollarSign, Activity, Instagram, ShieldCheck, XCircle,
+  DollarSign, Activity, Instagram, ShieldCheck, XCircle, ScanSearch, Webhook,
 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import AgentLayout from './AgentLayout';
@@ -21,6 +21,9 @@ const QUICK_PROMPTS = [
   { icon: AlertCircle,      label: 'Detectar fatiga creativa', prompt: 'Revisa la frecuencia y el CTR de mis campañas activas y dime cuáles tienen fatiga de creativo o audiencia saturada, y qué hacer.' },
   { icon: Zap,              label: 'Plan Advantage+ B2C',      prompt: 'Diséñame un plan para migrar/escalar mis ventas B2C con Advantage+ Shopping Campaigns: estructura, presupuesto, públicos y estrategia creativa para PEYU.' },
   { icon: ShieldCheck,      label: 'Verificar pixel e integración', prompt: 'Corre un diagnóstico completo de mi integración con Meta: verifica que el pixel esté activo y disparando, la página de Facebook y la cuenta de Instagram conectadas, y dime si todo está listo para optimizar a Compras/Leads o qué falta configurar.' },
+  { icon: ScanSearch,       label: 'Auditar setup completo',   prompt: 'Hazme una auditoría profunda del setup completo de Meta: qué eventos dispara el pixel y con qué frecuencia, qué audiencias tengo, dominios verificados, página e Instagram. Dime qué está bien y qué falta para vender más.' },
+  { icon: Activity,         label: '¿Qué eventos dispara el pixel?', prompt: 'Muéstrame qué eventos está disparando mi pixel (Purchase, AddToCart, Lead, ViewContent…) y con qué frecuencia en los últimos 28 días. Dime si tengo el evento de Compra configurado y, si no, cómo lo activamos vía Conversions API.' },
+  { icon: Webhook,          label: 'Probar evento de compra',  prompt: 'Envía un evento de prueba de Compra (Purchase) a mi pixel vía Conversions API para verificar que Meta lo recibe correctamente. Explícame cómo verlo en el Test Events de Meta.' },
 ];
 
 // Diagnóstico accionable según el motivo que devuelve metaAdsPerformance.
