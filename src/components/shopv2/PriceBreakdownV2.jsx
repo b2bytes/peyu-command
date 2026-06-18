@@ -6,7 +6,9 @@ export default function PriceBreakdownV2({
   precioUnit, cantidad, tipoLabel, feeUnit = 0, feeTotal = 0, gratis,
   descuentoPct = 0, descuentoMonto = 0,
   productoNombre, colorLabel,
+  precioUnitOriginal = 0, mayoristaLabel = '', mayoristaPct = 0,
 }) {
+  const esMayorista = !!mayoristaLabel && precioUnitOriginal > precioUnit;
   const subtotal = precioUnit * cantidad;
   const total = subtotal + feeTotal - descuentoMonto;
   // Los precios B2C ya incluyen IVA: lo desglosamos hacia atrás para transparencia.
@@ -28,6 +30,12 @@ export default function PriceBreakdownV2({
         <span className="truncate">{fmtCLP(precioUnit)} × {cantidad}</span>
         <span className="font-semibold flex-shrink-0">{fmtCLP(subtotal)}</span>
       </div>
+      {esMayorista && (
+        <div className="flex justify-between text-xs sm:text-sm font-bold rounded-lg px-2 py-1 gap-2" style={{ color: '#5B7D5A', background: 'rgba(139,173,138,.12)' }}>
+          <span className="truncate">🏭 Precio mayorista ({mayoristaLabel}){mayoristaPct > 0 ? ` · −${mayoristaPct}%` : ''}</span>
+          <span className="flex-shrink-0 line-through opacity-70" style={{ color: '#A08070' }}>{fmtCLP(precioUnitOriginal)}/u</span>
+        </div>
+      )}
       {tipoLabel && (
         <div className="flex justify-between text-xs sm:text-sm gap-2" style={{ color: '#7A6050' }}>
           <span className="truncate min-w-0">

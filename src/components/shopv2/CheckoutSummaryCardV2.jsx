@@ -46,11 +46,13 @@ export default function CheckoutSummaryCardV2({
         {ahorroTotal > 0 && (
           <div className="rounded-xl p-2.5 space-y-1" style={{ background: 'rgba(139,173,138,.1)', border: '1px solid rgba(139,173,138,.3)' }}>
             <div className="flex justify-between font-bold" style={{ color: '#5B7D5A' }}>
-              <span>Descuento por cantidad</span><span>−{fmtCLP(ahorroTotal)}</span>
+              <span>Ahorro por volumen</span><span>−{fmtCLP(ahorroTotal)}</span>
             </div>
             {(descLineas || []).filter((l) => l.ahorro > 0).map((l) => (
               <div key={l.sku || l.nombre} className="flex justify-between text-[11px]" style={{ color: '#7A6050' }}>
-                <span className="truncate pr-2">{l.nombre} ({l.unidades}u · −{l.pct}%)</span>
+                <span className="truncate pr-2">
+                  {l.beneficioAplicado === 'mayorista' ? '🏭 ' : ''}{l.nombre} ({l.unidades}u · {l.beneficioAplicado === 'mayorista' ? `mayorista −${l.pct}%` : `−${l.pct}%`})
+                </span>
                 <span className="font-semibold flex-shrink-0">−{fmtCLP(l.ahorro)}</span>
               </div>
             ))}

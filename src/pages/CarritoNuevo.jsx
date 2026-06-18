@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { base44 } from '@/api/base44Client';
 import { ShoppingBag, Trash2, ArrowRight, Recycle, ArrowLeft, ShieldCheck } from 'lucide-react';
 import MobileNavBarV2 from '@/components/shopv2/MobileNavBarV2';
 import CheckoutStepperV2 from '@/components/shopv2/CheckoutStepperV2';
@@ -22,18 +23,45 @@ import { computeQtyDiscountBySku, getNextQtyTeaserForSku, getQtyDiscountPct } fr
 export default function CarritoNuevo() {
   const navigate = useNavigate();
   const [items, setItems] = useState([]);
+  const [productosBySku, setProductosBySku] = useState({});
 
   useEffect(() => { setItems(getCartV2()); }, []);
+
+  // Carga los productos del carrito para conocer sus tramos B2B (precio mayorista
+  // ≥10u). Si falla, el carrito sigue funcionando con el flujo B2C de siempre.
+  useEffect(() => {
+    const skus = [...new Set(getCartV2().map((i) => i.sku).filter(Boolean))];
+    if (skus.length === 0) return;
+    base44.entities.Producto.list('-updated_date', 300)
+      .then((all) => {
+        const map = {};
+        for (const p of all || []) {
+          if (p.sku && skus.includes(p.sku)) map[p.sku] = p;
+        }
+        setProductosBySku(map);
+      })
+      .catch(() => {});
+  }, [items.length]);
 
   const setQty = (id, cantidad) => setItems(updateCartItemV2(id, { cantidad }));
   const remove = (id) => setItems(removeFromCartV2(id));
 
   const subtotal = items.reduce((s, i) => s + (i.precio || 0) * (i.cantidad || 1), 0);
   const cargoPersonalizacion = calcularCargoPersonalizacionCarrito(items);
-  // Descuento automático B2C por cantidad del mismo SKU (2u → 10% · 3+u → 15%).
-  // Siempre se calcula y se muestra el detalle en el resumen.
-  const { lineas: descLineas, ahorroTotal } = computeQtyDiscountBySku({ carrito: items });
+  // Descuento automático: ≥10u del mismo SKU → PRECIO MAYORISTA B2B real (+IVA);
+  // bajo 10u → descuento B2C de siempre (2u −10% · 3+u −15%). Una sola fuente.
+  const { lineas: descLineas, ahorroTotal } = useMemo(
+    () => computeQtyDiscountBySku({ carrito: items, productosBySku }),
+    [items, productosBySku]
+  );
   const total = subtotal + cargoPersonalizacion - ahorroTotal;
+
+  // Mapa sku → línea de descuento, para badges por ítem (mayorista vs % cantidad).
+  const descBySku = useMemo(() => {
+    const m = {};
+    for (const l of descLineas) m[l.sku || l.nombre] = l;
+    return m;
+  }, [descLineas]);
 
   // Navega al checkout v2 propio (mobile-first, BlueExpress inline). Aislado.
   const irACheckout = () => {
@@ -79,9 +107,15 @@ export default function CarritoNuevo() {
                const moq = item.moq_personalizacion || item.personalizacion_gratis_desde || 10;
                const gratis = item.personalizacion && (item.cantidad || 1) >= moq;
                const cant = item.cantidad || 1;
-               const lineaProducto = (item.precio || 0) * cant;
-               const pctLinea = item.cyber ? 0 : getQtyDiscountPct(cant);
-               const teaser = item.cyber ? null : getNextQtyTeaserForSku(cant);
+               // Línea de descuento agrupada por SKU (mayorista o % cantidad).
+               const linea = descBySku[item.sku || item.nombre];
+               const esMayorista = linea?.beneficioAplicado === 'mayorista';
+               // Precio mostrado de la línea: si hay mayorista, usa el unitario mayorista.
+               const precioMostrado = esMayorista ? linea.precioMayoristaUnit : (item.precio || 0);
+               const lineaProducto = precioMostrado * cant;
+               const pctLinea = item.cyber ? 0 : (linea?.pct || getQtyDiscountPct(cant));
+               // El teaser para sumar más solo aplica bajo el escalón mayorista.
+               const teaser = item.cyber || esMayorista ? null : getNextQtyTeaserForSku(cant);
                return (
                  <div key={item.id} className="flex gap-2 bg-white rounded-xl sm:rounded-2xl p-2 sm:p-2.5" style={{ border: '1.5px solid #D4C4B0' }}>
                    <div className="relative flex-shrink-0 w-14 h-14 sm:w-24 sm:h-24">
@@ -117,7 +151,9 @@ export default function CarritoNuevo() {
                        {gratis && (
                          <span className="text-[8px] sm:text-[9px] font-bold px-1 sm:px-1.5 py-0.5 rounded-full" style={{ background: 'rgba(139,173,138,.15)', color: '#5B7D5A' }}>✓</span>
                        )}
-                       {pctLinea > 0 && (
+                       {esMayorista ? (
+                         <span className="text-[8px] sm:text-[9px] font-bold text-white px-1 sm:px-1.5 py-0.5 rounded-full" style={{ background: '#5B7D5A' }}>🏭 Mayorista{pctLinea > 0 ? ` −${pctLinea}%` : ''}</span>
+                       ) : pctLinea > 0 && (
                          <span className="text-[8px] sm:text-[9px] font-bold text-white px-1 sm:px-1.5 py-0.5 rounded-full" style={{ background: '#8BAD8A' }}>−{pctLinea}%</span>
                        )}
                      </div>
@@ -175,12 +211,14 @@ export default function CarritoNuevo() {
               {ahorroTotal > 0 && (
                 <div className="rounded-xl p-3 space-y-1.5" style={{ background: 'rgba(139,173,138,.1)', border: '1px solid rgba(139,173,138,.3)' }}>
                   <div className="flex justify-between text-sm font-bold" style={{ color: '#5B7D5A' }}>
-                    <span>Descuento por cantidad</span>
+                    <span>Ahorro por volumen</span>
                     <span>−{fmtCLP(ahorroTotal)}</span>
                   </div>
                   {descLineas.filter((l) => l.ahorro > 0).map((l) => (
                     <div key={l.sku || l.nombre} className="flex justify-between text-[11px]" style={{ color: '#7A6050' }}>
-                      <span className="truncate pr-2">{l.nombre} ({l.unidades}u · −{l.pct}%)</span>
+                      <span className="truncate pr-2">
+                        {l.beneficioAplicado === 'mayorista' ? '🏭 ' : ''}{l.nombre} ({l.unidades}u · {l.beneficioAplicado === 'mayorista' ? `mayorista −${l.pct}%` : `−${l.pct}%`})
+                      </span>
                       <span className="font-semibold flex-shrink-0">−{fmtCLP(l.ahorro)}</span>
                     </div>
                   ))}
@@ -225,7 +263,7 @@ export default function CarritoNuevo() {
           )}
           {ahorroTotal > 0 && (
             <div className="flex justify-between text-sm font-bold rounded-xl px-3 py-2" style={{ color: '#5B7D5A', background: 'rgba(139,173,138,.1)', border: '1px solid rgba(139,173,138,.25)' }}>
-              <span>Descuento por cantidad</span><span>−{fmtCLP(ahorroTotal)}</span>
+              <span>Ahorro por volumen</span><span>−{fmtCLP(ahorroTotal)}</span>
             </div>
           )}
           <div className="flex justify-between pt-2.5" style={{ borderTop: '1px solid #D4C4B0' }}>

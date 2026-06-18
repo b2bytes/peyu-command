@@ -33,7 +33,7 @@ import {
 } from '@/lib/pers-combinable';
 import { getProductEngraggingArea, isProductoCarcasa } from '@/lib/product-engraving-areas';
 import { applyAutoPlacement } from '@/lib/auto-placement';
-import { getQtyDiscountPct } from '@/lib/volume-discount';
+import { getQtyDiscountPct, getMayoristaUnitPrice } from '@/lib/volume-discount';
 
 // ════════════════════════════════════════════════════════════════════════
 // /ProductoNuevo?id= — Ficha de producto Shop v2 en formato COCKPIT de 1
@@ -238,11 +238,23 @@ export default function ProductoNuevo() {
   const gratis = cantidad >= moq;
   const feeTotal = gratis ? 0 : feeUnit * cantidad;
 
-  // Descuento por cantidad: 2u → 10% · 3+u → 15%
-  const descuentoPct = getQtyDiscountPct(cantidad);
-  const descuentoMonto = Math.floor(precioUnit * cantidad * (descuentoPct / 100));
+  // 🏭 Precio MAYORISTA desde 10u del mismo producto (precio B2B real + IVA).
+  // Si aplica, prevalece sobre el descuento B2C por cantidad (es mejor beneficio).
+  const mayorista = useMemo(
+    () => getMayoristaUnitPrice(producto, cantidad, precioUnit),
+    [producto, cantidad, precioUnit]
+  );
 
-  const total = precioUnit * cantidad + feeTotal - descuentoMonto;
+  // Precio unitario efectivo y descuento mostrado:
+  //   ≥10u con tramos B2B → unitario mayorista (con IVA), % real del tramo
+  //   <10u (o sin tramos) → flujo B2C de siempre: 2u −10% · 3+u −15%
+  const precioEfectivoUnit = mayorista ? mayorista.precioUnit : precioUnit;
+  const descuentoPct = mayorista ? mayorista.ahorroPct : getQtyDiscountPct(cantidad);
+  const descuentoMonto = mayorista
+    ? (precioUnit - mayorista.precioUnit) * cantidad
+    : Math.floor(precioUnit * cantidad * (descuentoPct / 100));
+
+  const total = precioEfectivoUnit * cantidad + feeTotal;
 
   // Imagen base (lienzo) del mockup: versión LIMPIA sin marca PEYU si existe,
   // o la generada al vuelo (cleanBaseUrl) cuando el cliente carga su diseño.
@@ -560,7 +572,7 @@ export default function ProductoNuevo() {
               </div>
               <div className="flex justify-between text-[11px]">
                 <span style={{ color: C.fgSoft }}>Cantidad</span>
-                <span className="font-bold" style={{ color: C.fg }}>{cantidad} u{descuentoPct > 0 ? ` · −${descuentoPct}%` : ''}</span>
+                <span className="font-bold" style={{ color: C.fg }}>{cantidad} u{mayorista ? ` · mayorista −${mayorista.ahorroPct}%` : descuentoPct > 0 ? ` · −${descuentoPct}%` : ''}</span>
               </div>
               <div className="flex justify-between pt-1.5" style={{ borderTop: `1px solid ${C.border}` }}>
                 <span className="text-[11px] font-bold" style={{ color: C.fg }}>Total</span>
@@ -758,14 +770,17 @@ export default function ProductoNuevo() {
 
               {/* Precio en vivo con desglose IVA */}
               <PriceBreakdownV2
-                precioUnit={precioUnit}
+                precioUnit={mayorista ? mayorista.precioUnit : precioUnit}
+                precioUnitOriginal={mayorista ? precioUnit : 0}
                 cantidad={cantidad}
                 tipoLabel={labelCombinada(pers)}
                 feeUnit={feeUnit}
                 feeTotal={feeTotal}
                 gratis={gratis}
-                descuentoPct={descuentoPct}
-                descuentoMonto={descuentoMonto}
+                descuentoPct={mayorista ? 0 : descuentoPct}
+                descuentoMonto={mayorista ? 0 : descuentoMonto}
+                mayoristaLabel={mayorista ? mayorista.label : ''}
+                mayoristaPct={mayorista ? mayorista.ahorroPct : 0}
               />
 
               {/* Aviso de descuentos por cantidad + grabado gratis desde 10u */}

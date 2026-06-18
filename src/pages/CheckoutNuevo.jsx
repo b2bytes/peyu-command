@@ -25,6 +25,23 @@ import { trackPurchase } from '@/lib/analytics-peyu';
 export default function CheckoutNuevo() {
   const navigate = useNavigate();
   const [carrito] = useState(() => getCartV2());
+  const [productosBySku, setProductosBySku] = useState({});
+
+  // Carga los productos del carrito para aplicar el PRECIO MAYORISTA B2B (≥10u).
+  // Mismo criterio que el carrito: si falla, queda el flujo B2C de siempre.
+  useEffect(() => {
+    const skus = [...new Set(carrito.map((i) => i.sku).filter(Boolean))];
+    if (skus.length === 0) return;
+    base44.entities.Producto.list('-updated_date', 300)
+      .then((all) => {
+        const map = {};
+        for (const p of all || []) {
+          if (p.sku && skus.includes(p.sku)) map[p.sku] = p;
+        }
+        setProductosBySku(map);
+      })
+      .catch(() => {});
+  }, [carrito]);
 
   // Datos persistidos del checkout (sobreviven recargas / navegación atrás).
   const saved = useRef(readShopCheckout()).current;
@@ -53,10 +70,24 @@ export default function CheckoutNuevo() {
   // ── CÁLCULOS ───────────────────────────────────────────────────────
   const subtotal = carrito.reduce((s, i) => s + (i.precio || 0) * (i.cantidad || 1), 0);
   const cargoPersonalizacion = calcularCargoPersonalizacionCarrito(carrito);
-  // Descuento automático B2C por cantidad del mismo SKU (2u → 10% · 3+u → 15%).
-  const { lineas: descLineas, ahorroTotal } = computeQtyDiscountBySku({ carrito });
+  // Ahorro por volumen: ≥10u del mismo SKU → PRECIO MAYORISTA B2B real (+IVA);
+  // bajo 10u → descuento B2C de siempre (2u −10% · 3+u −15%). Misma fuente que
+  // ficha y carrito, ahora con los productos para que el mayorista persista.
+  const { lineas: descLineas, ahorroTotal } = computeQtyDiscountBySku({ carrito, productosBySku });
   const envio = envioBluex ? envioBluex.costo : 0;
   const total = Math.max(0, subtotal + cargoPersonalizacion - ahorroTotal + envio);
+
+  // Precio unitario efectivo por SKU (mayorista si aplica) para persistir en el
+  // pedido el precio realmente cobrado, no el B2C tachado.
+  const precioUnitEfectivo = useMemo(() => {
+    const m = {};
+    for (const l of descLineas) {
+      if (l.beneficioAplicado === 'mayorista' && l.precioMayoristaUnit) {
+        m[l.sku || l.nombre] = l.precioMayoristaUnit;
+      }
+    }
+    return m;
+  }, [descLineas]);
 
   // Sección de envío "completa" → marca el check verde y muestra resumen al cerrarla.
   const envioCompleto = Object.keys(validarShippingForm(cliente)).length === 0;
@@ -210,7 +241,7 @@ export default function CheckoutNuevo() {
         logo_url: i.logoUrl || i.logo_url || '',
         mockup_url: mockupFinal || '',
         posicion_grabado: posicionLinea(i),
-        precio_unitario: Number(i.precio) || 0,
+        precio_unitario: Number(precioUnitEfectivo[i.sku || i.nombre] ?? i.precio) || 0,
         cantidad: Number(i.cantidad) || 1,
       };
     });
