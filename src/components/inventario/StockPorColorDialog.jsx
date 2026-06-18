@@ -8,18 +8,33 @@ import { getColoresProducto } from '@/lib/color-parser';
 
 // Editor de stock POR COLOR de un producto. Guarda el mapa stock_por_color y
 // sincroniza stock_actual = suma de colores (fuente de verdad por variante).
+const normColor = (s) => String(s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+
 export default function StockPorColorDialog({ producto, open, onClose, onSaved }) {
-  const colores = useMemo(() => (producto ? getColoresProducto(producto) : []), [producto]);
+  const coloresOficiales = useMemo(() => (producto ? getColoresProducto(producto) : []), [producto]);
   const [valores, setValores] = useState({});
   const [saving, setSaving] = useState(false);
+
+  // Filas a mostrar: los colores oficiales + cualquier color extra que el mapa
+  // guardado tenga pero que ya no esté en la lista oficial (ej. tonos viejos de
+  // Woo). Así el total editado SIEMPRE cuadra con stock_actual y no hay desfase
+  // de visualización entre la tabla y el editor.
+  const colores = useMemo(() => {
+    const mapa = producto?.stock_por_color || {};
+    const filas = [...coloresOficiales];
+    Object.keys(mapa).forEach((k) => {
+      const yaEsta = coloresOficiales.some((c) => normColor(c.label) === normColor(k));
+      if (!yaEsta) filas.push({ id: `extra-${k}`, label: k, hex: '#ccc', extra: true });
+    });
+    return filas;
+  }, [producto, coloresOficiales]);
 
   useEffect(() => {
     if (!producto) return;
     const mapa = producto.stock_por_color || {};
     const init = {};
     colores.forEach((c) => {
-      const norm = (s) => String(s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
-      const hit = Object.entries(mapa).find(([k]) => norm(k) === norm(c.label));
+      const hit = Object.entries(mapa).find(([k]) => normColor(k) === normColor(c.label));
       init[c.label] = hit ? String(hit[1]) : '';
     });
     setValores(init);
@@ -57,7 +72,10 @@ export default function StockPorColorDialog({ producto, open, onClose, onSaved }
                 style={c.id === 'mixto'
                   ? { background: 'conic-gradient(#4DA3DC 0 25%, #212121 25% 50%, #F0807A 50% 75%, #4BC5A5 75% 100%)' }
                   : { backgroundColor: c.hex || '#ccc' }} />
-              <span className="flex-1 text-sm font-medium">{c.label}</span>
+              <span className="flex-1 text-sm font-medium">
+                {c.label}
+                {c.extra && <span className="ml-1.5 text-[10px] text-amber-600">(fuera de catálogo)</span>}
+              </span>
               <Input
                 type="number"
                 min="0"
