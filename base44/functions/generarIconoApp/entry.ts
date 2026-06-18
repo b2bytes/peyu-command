@@ -8,7 +8,7 @@ import { Image } from 'https://deno.land/x/imagescript@1.2.17/mod.ts';
 // No usa IA: el arte y la tipografía del logo quedan EXACTOS.
 // ============================================================================
 
-const LOGO_URL = 'https://media.base44.com/images/public/69d99b9d61f699701129c103/9ebc95dcf_image.png';
+const LOGO_URL = 'https://media.base44.com/images/public/69d99b9d61f699701129c103/32d006be8_image.png';
 const SIZE = 1024;
 const PADDING = 90; // margen para que el logo respire dentro del cuadrado
 
