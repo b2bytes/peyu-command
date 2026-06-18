@@ -56,11 +56,14 @@ const VARIANTS = [
 ];
 
 // ── FAB Personalizar — rediseño con personalidad ──────────────────────────
-function PersonalizarFab({ v }) {
+// wide=true → pill ancho centrado (móvil, encima de la barra). Sin wide → compacto.
+function PersonalizarFab({ v, wide }) {
   return (
     <motion.div
       whileHover={{ y: -2 }}
-      className="relative inline-flex items-center gap-2 pl-3.5 pr-4 h-11 rounded-full font-bold text-[13px] text-white overflow-hidden"
+      className={`relative inline-flex items-center justify-center gap-2 h-11 rounded-full font-bold text-[13px] text-white overflow-hidden ${
+        wide ? 'w-full max-w-[230px] px-5' : 'pl-3.5 pr-4'
+      }`}
       style={{
         background: `linear-gradient(135deg, ${v.accent}, ${v.accent}cc)`,
         boxShadow: `0 8px 24px ${v.accent}55, inset 0 1px 0 rgba(255,255,255,.25)`,
@@ -72,7 +75,7 @@ function PersonalizarFab({ v }) {
       >
         <Sparkles className="w-4 h-4" />
       </motion.span>
-      Personalizar
+      Personalizar tu regalo
       {/* destello que recorre el botón */}
       <motion.span
         className="absolute inset-0 -skew-x-12"
@@ -123,7 +126,7 @@ function BottomNav({ v }) {
   ];
   return (
     <div
-      className="flex items-center justify-around px-3 py-2.5 rounded-2xl backdrop-blur-xl"
+      className="w-full flex items-center justify-around px-4 py-2.5 rounded-2xl backdrop-blur-xl"
       style={{
         background: v.dark ? 'rgba(20,40,35,.7)' : 'rgba(255,255,255,.82)',
         border: `1px solid ${v.dark ? 'rgba(255,255,255,.12)' : v.accent + '22'}`,
@@ -131,7 +134,7 @@ function BottomNav({ v }) {
       }}
     >
       {items.map(({ icon: Icon, label, badge, active }) => (
-        <div key={label} className="relative flex flex-col items-center gap-1">
+        <div key={label} className="relative flex flex-col items-center gap-1 px-1.5">
           <motion.div whileTap={{ scale: 0.85 }} className="relative">
             <Icon
               className="w-5 h-5"
@@ -215,7 +218,7 @@ function PhoneFrame({ v }) {
       {/* notch */}
       <div className="absolute top-2.5 left-1/2 -translate-x-1/2 w-20 h-4 rounded-full bg-black/80 z-20" />
       <div
-        className="relative rounded-[1.8rem] overflow-hidden h-[480px] flex flex-col"
+        className="relative rounded-[1.8rem] overflow-hidden h-[500px] flex flex-col"
         style={{ background: v.bg }}
       >
         {/* contenido scroll-fake */}
@@ -250,14 +253,16 @@ function PhoneFrame({ v }) {
           </div>
         </div>
 
-        {/* FAB + widget flotantes */}
-        <div className="absolute bottom-16 left-0 right-0 px-3.5 flex items-end justify-between pointer-events-none">
-          <PersonalizarFab v={v} />
+        {/* Widget tortuga: flota SOLO arriba-derecha, separado del FAB */}
+        <div className="absolute top-9 right-3.5 z-10 scale-90 origin-top-right pointer-events-none">
           <PeyuWidget v={v} />
         </div>
 
-        {/* bottom nav */}
-        <div className="px-2.5 pb-2.5">
+        {/* Zona inferior: FAB Personalizar (pill ancho) + barra, apilados sin tocarse */}
+        <div className="px-2.5 pb-2.5 pt-1 space-y-2.5">
+          <div className="flex justify-center">
+            <PersonalizarFab v={v} wide />
+          </div>
           <BottomNav v={v} />
         </div>
       </div>
@@ -340,16 +345,16 @@ export default function RedesignMockups2027() {
           <span className="text-xs font-bold uppercase tracking-wider" style={{ color: v.accent }}>Vista detallada</span>
           <span className="font-bold" style={{ color: v.dark ? '#fff' : '#1e293b' }}>· {v.name}</span>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-6 items-center">
           <div className="flex flex-col items-center gap-3">
             <PersonalizarFab v={v} />
             <p className="text-xs font-semibold" style={{ color: v.dark ? 'rgba(255,255,255,.7)' : '#475569' }}>Botón Personalizar</p>
           </div>
-          <div className="flex flex-col items-center gap-3">
+          <div className="flex flex-col items-center gap-3 py-2">
             <PeyuWidget v={v} />
             <p className="text-xs font-semibold" style={{ color: v.dark ? 'rgba(255,255,255,.7)' : '#475569' }}>Widget tortuga 🐢</p>
           </div>
-          <div className="flex flex-col items-center gap-3 w-full max-w-[220px] mx-auto">
+          <div className="flex flex-col items-center gap-3 w-full max-w-[260px] mx-auto">
             <BottomNav v={v} />
             <p className="text-xs font-semibold" style={{ color: v.dark ? 'rgba(255,255,255,.7)' : '#475569' }}>Barra inferior</p>
           </div>
