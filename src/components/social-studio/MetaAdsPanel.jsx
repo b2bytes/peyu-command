@@ -10,8 +10,8 @@ import {
   CheckCircle2, BarChart2, Target, Zap, Eye, MousePointerClick,
   DollarSign, Activity, Instagram, ShieldCheck, XCircle, ScanSearch, Webhook,
 } from 'lucide-react';
-import ReactMarkdown from 'react-markdown';
 import AgentLayout from './AgentLayout';
+import MetaAgentMarkdown from './MetaAgentMarkdown';
 
 const AGENT_NAME = 'meta_ads_strategist';
 
@@ -104,19 +104,7 @@ function ChatMessage({ msg }) {
             {isUser ? (
               <p className="leading-relaxed">{msg.content}</p>
             ) : (
-              <ReactMarkdown
-                className="prose prose-sm prose-invert max-w-none [&>*:first-child]:mt-0 [&>*:last-child]:mb-0"
-                components={{
-                  p: ({ children }) => <p className="my-1.5 leading-relaxed">{children}</p>,
-                  ul: ({ children }) => <ul className="my-2 ml-4 list-disc space-y-1">{children}</ul>,
-                  ol: ({ children }) => <ol className="my-2 ml-4 list-decimal space-y-1">{children}</ol>,
-                  li: ({ children }) => <li className="text-white/85">{children}</li>,
-                  strong: ({ children }) => <strong className="text-blue-300 font-bold">{children}</strong>,
-                  h3: ({ children }) => <h3 className="text-sm font-semibold text-blue-300 mt-3 mb-1">{children}</h3>,
-                }}
-              >
-                {msg.content}
-              </ReactMarkdown>
+              <MetaAgentMarkdown content={msg.content} />
             )}
           </div>
         )}
