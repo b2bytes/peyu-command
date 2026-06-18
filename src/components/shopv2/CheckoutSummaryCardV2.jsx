@@ -13,8 +13,8 @@ export default function CheckoutSummaryCardV2({
   envioBluex, envio, total, errorPago, medioPago,
 }) {
   return (
-    <div className="bg-white rounded-3xl p-5" style={{ border: '1.5px solid #D4C4B0', boxShadow: '0 4px 24px rgba(44,24,16,.08)' }}>
-      <h2 className="font-fraunces text-xl mb-4" style={{ color: '#2C1810' }}>Tu pedido</h2>
+    <div className="bg-white rounded-2xl p-4" style={{ border: '1px solid #E3D6C4', boxShadow: '0 2px 16px rgba(44,24,16,.06)' }}>
+      <h2 className="font-fraunces text-lg mb-3.5" style={{ color: '#2C1810' }}>Tu pedido</h2>
 
       <div className="space-y-2.5 max-h-52 overflow-y-auto peyu-scrollbar pr-1 mb-4">
         {carrito.map((item) => (

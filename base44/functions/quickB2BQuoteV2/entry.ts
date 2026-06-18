@@ -388,6 +388,55 @@ function buildTeamEmail({ numero, leadScore, urgency, empresa, contacto, email, 
   </div>`;
 }
 
+// ─── Gmail API fallback (multipart/mixed con PDF adjunto) ────────────────
+// Resend exige dominio verificado; si falla, enviamos el correo al cliente
+// vía Gmail (ti@peyuchile.cl), que ya está conectado y es estable.
+function encHeader(str) {
+  if (!str) return '';
+  if (/^[\x20-\x7E]*$/.test(str)) return str;
+  return `=?UTF-8?B?${btoa(unescape(encodeURIComponent(str)))}?=`;
+}
+function toB64Url(bin) {
+  return btoa(bin).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+async function sendQuoteViaGmail(base44, { to, subject, html, pdfBase64, filename }) {
+  const { accessToken } = await base44.asServiceRole.connectors.getConnection('gmail');
+  const boundary = `peyu-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+  const plain = html.replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
+  const parts = [
+    `From: ${encHeader('PEYU Chile')} <ti@peyuchile.cl>`,
+    `To: ${to}`,
+    'Reply-To: ventas@peyuchile.cl',
+    `Subject: ${encHeader(subject)}`,
+    'MIME-Version: 1.0',
+    `Content-Type: multipart/mixed; boundary="${boundary}"`,
+    '',
+    `--${boundary}`,
+    'Content-Type: text/html; charset="UTF-8"',
+    'Content-Transfer-Encoding: base64',
+    '',
+    btoa(unescape(encodeURIComponent(html))).replace(/(.{76})/g, '$1\r\n'),
+    '',
+    `--${boundary}`,
+    'Content-Type: application/pdf',
+    'Content-Transfer-Encoding: base64',
+    `Content-Disposition: attachment; filename="${filename}"`,
+    '',
+    pdfBase64.replace(/(.{76})/g, '$1\r\n'),
+    '',
+    `--${boundary}--`,
+  ].join('\r\n');
+  // El MIME mezcla texto ya UTF-8-safe y base64 ASCII: codificamos byte a byte.
+  let raw = '';
+  for (let i = 0; i < parts.length; i++) raw += parts.charCodeAt(i) <= 0xFF ? parts[i] : '?';
+  const res = await fetch('https://gmail.googleapis.com/gmail/v1/users/me/messages/send', {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ raw: toB64Url(raw) }),
+  });
+  return res.ok;
+}
+
 Deno.serve(async (req) => {
   try {
     if (req.method !== 'POST') {
@@ -589,6 +638,27 @@ Deno.serve(async (req) => {
         if (!r.ok) console.error('Resend cliente error:', await r.text());
       } catch (e) {
         console.error('Error email cliente:', e?.message || e);
+      }
+    }
+
+    // Fallback estable: si Resend no envió (dominio no verificado), mandamos el
+    // correo al cliente vía Gmail (ti@peyuchile.cl) con el PDF adjunto.
+    if (!emailEnviado && pdfBase64 && email && /\S+@\S+\.\S+/.test(email)) {
+      try {
+        emailEnviado = await sendQuoteViaGmail(base44, {
+          to: email,
+          subject: `Tu cotización PEYU ${numero} · ${qtyTotal} unidades 100% recicladas`,
+          html: buildClientEmail({
+            numero, contacto: contact_name, empresa: company_name,
+            lineas, totalNeto, iva, totalConIva, qtyTotal,
+            deliveryDate: delivery_date, personalizacion: personalization_needs,
+          }),
+          pdfBase64,
+          filename,
+        });
+        if (!emailEnviado) console.error('Gmail fallback cliente: no enviado');
+      } catch (e) {
+        console.error('Gmail fallback cliente error:', e?.message || e);
       }
     }
 
