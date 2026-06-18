@@ -2,7 +2,7 @@ import { useState, useMemo, useCallback } from 'react';
 import { FOUNDERS_LAYOUTS, ROUND_INFO } from '@/lib/founders-layouts';
 import LayoutCard from '@/components/founders/LayoutCard';
 import LayoutPreviewModal from '@/components/founders/LayoutPreviewModal';
-import RedesignMockups2027 from '@/components/founders/RedesignMockups2027';
+import MobileMockupsComplete from '@/components/founders/MobileMockupsComplete';
 import { Sparkles, Filter, Heart, ArrowRight, LayoutGrid, Rows3 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
@@ -110,8 +110,8 @@ export default function FoundersPresentation() {
         </div>
       </header>
 
-      {/* 4 mockups del rediseño 2026→2027 (solo visual, no afecta la tienda) */}
-      <RedesignMockups2027 />
+      {/* Mockups móviles COMPLETOS: flujo Inicio·Tienda·Producto·Carrito (solo visual) */}
+      <MobileMockupsComplete />
 
       {/* Filtros + view mode toggle */}
       <div className="sticky top-0 z-20 bg-white/85 backdrop-blur-xl border-b border-slate-200/70">
