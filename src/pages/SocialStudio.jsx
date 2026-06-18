@@ -1,51 +1,56 @@
 // ============================================================================
-// SocialStudio · 2027 trend UI
+// SocialStudio · Centro de Comandos único de 3 columnas
 // ----------------------------------------------------------------------------
-// Filosofía: el contenido visual es el rey. Layout edge-to-edge,
-// stat bar viva arriba, segmented control glassmorphic, imágenes grandes.
+// Filosofía: un solo cockpit agentico. Columna izquierda = TODAS las funciones
+// (Agente, Cola, Crear IA, Ads, Galería, Instagram, LinkedIn, Lote, Semanal,
+// Backlinks). Centro = workspace donde TODO sucede (chat del agente + cada
+// panel montado aquí). Derecha = contexto vivo (KPIs + estado de redes).
 // ============================================================================
 import { useState, useEffect } from 'react';
-import { Sparkles, Layers, CheckSquare, Calendar, Link2, Image as ImageIcon, Send, Clock, Bot, Linkedin, Instagram, Wand2, Megaphone } from 'lucide-react';
+import {
+  Bot, Megaphone, CheckSquare, Wand2, Image as ImageIcon, Instagram,
+  Linkedin, Layers, Calendar, Link2, Sparkles, Send, Clock,
+} from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import BulkGeneratorPanel from '@/components/social-studio/BulkGeneratorPanel';
 import ApprovalQueuePanel from '@/components/social-studio/ApprovalQueuePanel';
 import WeeklyPlannerPanel from '@/components/social-studio/WeeklyPlannerPanel';
 import BacklinksInsightsPanel from '@/components/social-studio/BacklinksInsightsPanel';
-import SocialStudioHero from '@/components/social-studio/SocialStudioHero';
-import LinkedInConnectBanner from '@/components/social-studio/LinkedInConnectBanner';
 import MarketingAgentPanel from '@/components/social-studio/MarketingAgentPanel';
 import AdsAgentPanel from '@/components/social-studio/AdsAgentPanel';
 import LinkedInPanel from '@/components/social-studio/LinkedInPanel';
 import InstagramPanel from '@/components/social-studio/InstagramPanel';
 import CreatorPanel from '@/components/social-studio/CreatorPanel';
 import MediaGalleryPanel from '@/components/social-studio/MediaGalleryPanel';
-import StudioModeToggle from '@/components/social-studio/StudioModeToggle';
 
-const TABS = [
-  { id: 'queue',     label: 'Cola',        icon: CheckSquare, accent: 'from-amber-400 to-orange-500' },
-  { id: 'creator',   label: 'Crear IA',    icon: Wand2,       accent: 'from-pink-500 to-violet-600' },
-  { id: 'agent',     label: 'Agente',      icon: Bot,         accent: 'from-violet-500 to-pink-500' },
-  { id: 'ads',       label: 'Ads',         icon: Megaphone,   accent: 'from-cyan-500 to-blue-600' },
-  { id: 'galeria',   label: 'Galería',     icon: ImageIcon,   accent: 'from-emerald-400 to-cyan-500' },
-  { id: 'instagram', label: 'Instagram',   icon: Instagram,   accent: 'from-pink-500 to-purple-600' },
-  { id: 'linkedin',  label: 'LinkedIn',    icon: Linkedin,    accent: 'from-sky-500 to-blue-600' },
-  { id: 'bulk',      label: 'Lote',        icon: Layers,      accent: 'from-pink-500 to-violet-500' },
-  { id: 'planner',   label: 'Semanal',     icon: Calendar,    accent: 'from-cyan-400 to-blue-500' },
-  { id: 'backlinks', label: 'Backlinks',   icon: Link2,       accent: 'from-emerald-400 to-teal-500' },
+// ── Definición de TODAS las funciones del estudio ───────────────────────────
+const SECTIONS = [
+  { id: 'agent',     label: 'Agente IA',  desc: 'Conversa y ejecuta todo',   icon: Bot,        accent: 'from-violet-500 to-pink-600',   text: 'text-violet-300', group: 'comando' },
+  { id: 'ads',       label: 'Ads',        desc: 'Google + Meta · CSV',       icon: Megaphone,  accent: 'from-cyan-500 to-blue-600',     text: 'text-cyan-300',   group: 'comando' },
+  { id: 'queue',     label: 'Cola',       desc: 'Aprobar y publicar',        icon: CheckSquare, accent: 'from-amber-400 to-orange-500',  text: 'text-amber-300',  group: 'contenido' },
+  { id: 'creator',   label: 'Crear IA',   desc: 'Imágenes y videos',         icon: Wand2,      accent: 'from-pink-500 to-violet-600',   text: 'text-pink-300',   group: 'contenido' },
+  { id: 'galeria',   label: 'Galería',    desc: 'Todos los assets',          icon: ImageIcon,  accent: 'from-emerald-400 to-cyan-500',  text: 'text-emerald-300',group: 'contenido' },
+  { id: 'bulk',      label: 'Lote',       desc: 'Variantes en serie',        icon: Layers,     accent: 'from-pink-500 to-violet-500',   text: 'text-pink-300',   group: 'contenido' },
+  { id: 'planner',   label: 'Semanal',    desc: 'Plan editorial',            icon: Calendar,   accent: 'from-cyan-400 to-blue-500',     text: 'text-cyan-300',   group: 'contenido' },
+  { id: 'instagram', label: 'Instagram',  desc: 'Estado y publicación',      icon: Instagram,  accent: 'from-pink-500 to-purple-600',   text: 'text-pink-300',   group: 'canales' },
+  { id: 'linkedin',  label: 'LinkedIn',   desc: 'Estado y publicación',      icon: Linkedin,   accent: 'from-sky-500 to-blue-600',      text: 'text-sky-300',    group: 'canales' },
+  { id: 'backlinks', label: 'Backlinks',  desc: 'Insights SEO',              icon: Link2,      accent: 'from-emerald-400 to-teal-500',  text: 'text-emerald-300',group: 'canales' },
+];
+
+const GROUPS = [
+  { id: 'comando',   label: 'Centro de comando' },
+  { id: 'contenido', label: 'Contenido' },
+  { id: 'canales',   label: 'Canales' },
 ];
 
 export default function SocialStudio() {
-  // Por defecto abrimos cola — es el inbox de decisión, lo más usado día a día
-  const [tab, setTab] = useState('queue');
+  // Por defecto abrimos el Agente — es el corazón del cockpit
+  const [section, setSection] = useState('agent');
   const [refreshKey, setRefreshKey] = useState(0);
   const [stats, setStats] = useState({ pendientes: 0, aprobados: 0, publicados_hoy: 0, total: 0 });
-  const [allPosts, setAllPosts] = useState([]);
-  // Modo visual del estudio: 'dark' (sobrio) | 'social' (vibrante)
-  const [mode, setMode] = useState(() => localStorage.getItem('peyu_socialstudio_mode') || 'dark');
-  useEffect(() => { localStorage.setItem('peyu_socialstudio_mode', mode); }, [mode]);
+  const [redes, setRedes] = useState({ ig: null, li: null });
 
-  // El studio es dark-first: fuerza modo noche mientras está abierto y
-  // restaura el modo previo del admin al salir.
+  // El studio es dark-first: fuerza modo noche mientras está abierto.
   useEffect(() => {
     const prev = document.documentElement.getAttribute('data-liquid-mode');
     document.documentElement.setAttribute('data-liquid-mode', 'night');
@@ -54,7 +59,6 @@ export default function SocialStudio() {
 
   const loadStats = async () => {
     const posts = await base44.entities.ContentPost.list('-created_date', 200);
-    setAllPosts(posts);
     const hoy = new Date().toISOString().slice(0, 10);
     setStats({
       pendientes: posts.filter(p => p.estado === 'En revisión').length,
@@ -64,82 +68,249 @@ export default function SocialStudio() {
     });
   };
 
+  // Estado de redes (best-effort, no bloquea el cockpit)
+  const loadRedes = async () => {
+    try {
+      const [ig, li] = await Promise.all([
+        base44.functions.invoke('instagramStatus', {}).then(r => r.data).catch(() => null),
+        base44.functions.invoke('linkedInStatus', {}).then(r => r.data).catch(() => null),
+      ]);
+      setRedes({ ig, li });
+    } catch { /* best-effort */ }
+  };
+
   useEffect(() => { loadStats(); }, [refreshKey]);
+  useEffect(() => { loadRedes(); }, []);
 
   const triggerRefresh = () => setRefreshKey(k => k + 1);
+  const active = SECTIONS.find(s => s.id === section);
+
+  // ── Render del workspace central según sección activa ─────────────────────
+  const renderWorkspace = () => {
+    switch (section) {
+      case 'agent':     return <MarketingAgentPanel />;
+      case 'ads':       return <AdsAgentPanel />;
+      case 'queue':     return <ApprovalQueuePanel refreshKey={refreshKey} onChange={triggerRefresh} />;
+      case 'creator':   return <CreatorPanel />;
+      case 'galeria':   return <MediaGalleryPanel />;
+      case 'bulk':      return <BulkGeneratorPanel onGenerated={triggerRefresh} />;
+      case 'planner':   return <WeeklyPlannerPanel onGenerated={triggerRefresh} />;
+      case 'instagram': return <InstagramPanel onPublished={triggerRefresh} />;
+      case 'linkedin':  return <LinkedInPanel onPublished={triggerRefresh} />;
+      case 'backlinks': return <BacklinksInsightsPanel />;
+      default:          return <MarketingAgentPanel />;
+    }
+  };
+
+  // Las secciones "comando" (agent/ads) ya traen su propio layout 3-col interno,
+  // así que las dejamos ocupar todo el centro sin padding extra. El resto se
+  // monta dentro del marco del cockpit.
+  const isAgentic = section === 'agent' || section === 'ads';
 
   return (
     <div className="h-full flex flex-col min-h-0 relative">
-      {/* Ambient glow de fondo · dark (sobrio) vs social (vibrante) */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none transition-all duration-700">
-        {mode === 'social' ? (
-          <>
-            <div className="absolute inset-0 bg-gradient-to-br from-fuchsia-950/50 via-transparent to-indigo-950/50" />
-            <div className="absolute -top-40 -left-20 w-[600px] h-[600px] bg-fuchsia-500/25 rounded-full blur-[120px]" />
-            <div className="absolute -top-20 right-0 w-[500px] h-[500px] bg-violet-500/25 rounded-full blur-[100px]" />
-            <div className="absolute bottom-0 left-1/3 w-[500px] h-[500px] bg-cyan-500/20 rounded-full blur-[100px]" />
-            <div className="absolute bottom-10 right-10 w-[300px] h-[300px] bg-pink-500/15 rounded-full blur-[90px]" />
-          </>
-        ) : (
-          <>
-            <div className="absolute -top-40 -left-20 w-[500px] h-[500px] bg-pink-500/10 rounded-full blur-[120px]" />
-            <div className="absolute -top-20 right-0 w-[400px] h-[400px] bg-violet-500/10 rounded-full blur-[100px]" />
-            <div className="absolute bottom-0 left-1/3 w-[400px] h-[400px] bg-cyan-500/5 rounded-full blur-[100px]" />
-          </>
-        )}
+      {/* Ambient glow de fondo */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -top-40 -left-20 w-[500px] h-[500px] bg-violet-500/10 rounded-full blur-[120px]" />
+        <div className="absolute -top-20 right-0 w-[400px] h-[400px] bg-cyan-500/10 rounded-full blur-[100px]" />
+        <div className="absolute bottom-0 left-1/3 w-[400px] h-[400px] bg-pink-500/5 rounded-full blur-[100px]" />
       </div>
 
-      <div className="relative flex-1 flex flex-col min-h-0 p-2 lg:p-3 gap-2">
-        {/* Hero · KPI strip compacto */}
-        <SocialStudioHero stats={stats} onPendientesClick={() => setTab('queue')} />
+      <div className="relative flex-1 flex min-h-0 p-2 lg:p-3 gap-2.5">
 
-        {/* Segmented control glassmorphic compacto + toggle de modo */}
-        <div className="flex-shrink-0 flex items-center justify-between gap-2">
-          <div className="inline-flex p-0.5 bg-white/5 backdrop-blur-xl border border-white/10 rounded-xl gap-0.5 max-w-full overflow-x-auto scrollbar-hide">
-            {TABS.map(t => {
-              const Icon = t.icon;
-              const active = tab === t.id;
+        {/* ── COLUMNA IZQUIERDA · todas las funciones ─────────────────────── */}
+        <aside className="hidden md:flex flex-col w-56 lg:w-60 flex-shrink-0 rounded-2xl bg-black/30 border border-white/10 overflow-hidden">
+          <div className="flex-shrink-0 flex items-center gap-2.5 px-4 py-3 border-b border-white/10">
+            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-violet-500 to-pink-600 flex items-center justify-center shadow-lg shadow-violet-500/30">
+              <Sparkles className="w-4 h-4 text-white" />
+            </div>
+            <div>
+              <p className="text-sm font-bold text-white leading-none">Social Studio</p>
+              <p className="text-[10px] text-white/40 mt-0.5">Centro de comandos</p>
+            </div>
+          </div>
+
+          <nav className="flex-1 overflow-y-auto peyu-scrollbar-light p-2.5 space-y-3">
+            {GROUPS.map(group => (
+              <div key={group.id}>
+                <p className="text-[9px] text-white/30 uppercase tracking-wider mb-1.5 px-1.5">{group.label}</p>
+                <div className="space-y-1">
+                  {SECTIONS.filter(s => s.group === group.id).map(s => {
+                    const Icon = s.icon;
+                    const isActive = section === s.id;
+                    return (
+                      <button
+                        key={s.id}
+                        onClick={() => setSection(s.id)}
+                        className={`relative w-full flex items-center gap-2.5 p-2 rounded-xl text-left transition-all group ${
+                          isActive ? 'bg-white/[0.07] border border-white/15' : 'border border-transparent hover:bg-white/[0.04]'
+                        }`}
+                      >
+                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 transition-all ${
+                          isActive ? `bg-gradient-to-br ${s.accent} shadow-md` : 'bg-white/[0.06] group-hover:bg-white/10'
+                        }`}>
+                          <Icon className={`w-4 h-4 ${isActive ? 'text-white' : 'text-white/50 group-hover:text-white/80'}`} />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className={`text-xs font-semibold leading-tight ${isActive ? 'text-white' : 'text-white/70 group-hover:text-white'}`}>{s.label}</p>
+                          <p className="text-[9px] text-white/35 leading-tight truncate">{s.desc}</p>
+                        </div>
+                        {s.id === 'queue' && stats.pendientes > 0 && (
+                          <span className="flex-shrink-0 px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-amber-500/30 text-amber-200">
+                            {stats.pendientes}
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
+          </nav>
+        </aside>
+
+        {/* ── COLUMNA CENTRAL · workspace donde TODO sucede ────────────────── */}
+        <main className="flex-1 min-w-0 flex flex-col min-h-0">
+          {/* Selector compacto en mobile (la columna izquierda se oculta) */}
+          <div className="md:hidden flex-shrink-0 mb-2 flex gap-1 overflow-x-auto scrollbar-hide">
+            {SECTIONS.map(s => {
+              const Icon = s.icon;
+              const isActive = section === s.id;
               return (
                 <button
-                  key={t.id}
-                  onClick={() => setTab(t.id)}
-                  className={`relative flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-all ${
-                    active ? 'text-white' : 'text-white/50 hover:text-white/80'
+                  key={s.id}
+                  onClick={() => setSection(s.id)}
+                  className={`relative flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-medium whitespace-nowrap transition-all ${
+                    isActive ? 'text-white' : 'text-white/50'
                   }`}
                 >
-                  {active && (
-                    <span className={`absolute inset-0 rounded-lg bg-gradient-to-br ${t.accent} opacity-90 shadow-md`} />
-                  )}
+                  {isActive && <span className={`absolute inset-0 rounded-lg bg-gradient-to-br ${s.accent} opacity-90`} />}
                   <Icon className="w-3.5 h-3.5 relative z-10" />
-                  <span className="relative z-10">{t.label}</span>
-                  {t.id === 'queue' && stats.pendientes > 0 && (
-                    <span className={`relative z-10 px-1.5 rounded-full text-[9px] font-bold ${
-                      active ? 'bg-white/25 text-white' : 'bg-amber-500/30 text-amber-200'
-                    }`}>
-                      {stats.pendientes}
-                    </span>
-                  )}
+                  <span className="relative z-10">{s.label}</span>
                 </button>
               );
             })}
           </div>
-          <StudioModeToggle mode={mode} onChange={setMode} />
-        </div>
 
-        {/* Workspace · ocupa todo el alto restante */}
-        <div className="flex-1 min-h-0 rounded-2xl flex flex-col overflow-hidden">
-          {tab === 'queue'     && <ApprovalQueuePanel refreshKey={refreshKey} onChange={triggerRefresh} />}
-          {tab === 'creator'   && <CreatorPanel />}
-          {tab === 'agent'     && <MarketingAgentPanel />}
-          {tab === 'ads'       && <AdsAgentPanel />}
-          {tab === 'galeria'   && <MediaGalleryPanel />}
-          {tab === 'instagram' && <InstagramPanel onPublished={triggerRefresh} />}
-          {tab === 'linkedin'  && <LinkedInPanel onPublished={triggerRefresh} />}
-          {tab === 'bulk'      && <BulkGeneratorPanel onGenerated={triggerRefresh} />}
-          {tab === 'planner'   && <WeeklyPlannerPanel onGenerated={triggerRefresh} />}
-          {tab === 'backlinks' && <BacklinksInsightsPanel />}
-        </div>
+          {isAgentic ? (
+            // Agente / Ads ya traen su propio cockpit 3-col interno
+            <div className="flex-1 min-h-0">{renderWorkspace()}</div>
+          ) : (
+            // El resto de paneles se enmarcan en el cockpit con header de sección
+            <div className="flex-1 min-h-0 flex flex-col rounded-2xl bg-black/25 border border-white/10 overflow-hidden">
+              <div className={`flex-shrink-0 flex items-center gap-3 px-4 py-2.5 border-b border-white/10 bg-gradient-to-r ${active?.accent ? 'from-white/[0.04] to-transparent' : ''}`}>
+                {active && (
+                  <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${active.accent} flex items-center justify-center shadow-md`}>
+                    <active.icon className="w-4 h-4 text-white" />
+                  </div>
+                )}
+                <div>
+                  <p className="text-sm font-bold text-white leading-none">{active?.label}</p>
+                  <p className="text-[10px] text-white/40 mt-0.5">{active?.desc}</p>
+                </div>
+              </div>
+              <div className="flex-1 min-h-0 p-3">{renderWorkspace()}</div>
+            </div>
+          )}
+        </main>
+
+        {/* ── COLUMNA DERECHA · contexto vivo (KPIs + redes) ───────────────── */}
+        <aside className="hidden xl:flex flex-col w-64 flex-shrink-0 rounded-2xl bg-black/30 border border-white/10 overflow-y-auto peyu-scrollbar-light">
+          <div className="p-4 space-y-4">
+            {/* KPIs de contenido */}
+            <div>
+              <p className="text-[9px] text-white/30 uppercase tracking-wider mb-2 px-0.5">Estado del contenido</p>
+              <div className="grid grid-cols-2 gap-2">
+                <KpiCard label="Pendientes" value={stats.pendientes} accent="text-amber-300" onClick={() => setSection('queue')} />
+                <KpiCard label="Aprobados" value={stats.aprobados} accent="text-emerald-300" onClick={() => setSection('queue')} />
+                <KpiCard label="Hoy" value={stats.publicados_hoy} accent="text-sky-300" />
+                <KpiCard label="Total" value={stats.total} accent="text-white/80" />
+              </div>
+            </div>
+
+            {/* Estado de redes */}
+            <div>
+              <p className="text-[9px] text-white/30 uppercase tracking-wider mb-2 px-0.5">Redes conectadas</p>
+              <div className="space-y-2">
+                <RedRow
+                  icon={Instagram}
+                  label="Instagram"
+                  data={redes.ig}
+                  followers={redes.ig?.followers_count ?? redes.ig?.profile?.followers_count}
+                  accent="from-pink-500 to-purple-600"
+                  onClick={() => setSection('instagram')}
+                />
+                <RedRow
+                  icon={Linkedin}
+                  label="LinkedIn"
+                  data={redes.li}
+                  followers={redes.li?.followers ?? redes.li?.follower_count}
+                  accent="from-sky-500 to-blue-600"
+                  onClick={() => setSection('linkedin')}
+                />
+              </div>
+            </div>
+
+            {/* Atajos del agente */}
+            <div>
+              <p className="text-[9px] text-white/30 uppercase tracking-wider mb-2 px-0.5">Atajos rápidos</p>
+              <div className="space-y-1.5">
+                <ShortcutBtn icon={Send} label="Publicar 1 post ahora" onClick={() => setSection('agent')} />
+                <ShortcutBtn icon={Calendar} label="Lanzar semana completa" onClick={() => setSection('planner')} />
+                <ShortcutBtn icon={Megaphone} label="Crear campaña de Ads" onClick={() => setSection('ads')} />
+                <ShortcutBtn icon={Wand2} label="Generar imagen/video" onClick={() => setSection('creator')} />
+              </div>
+            </div>
+          </div>
+        </aside>
       </div>
     </div>
+  );
+}
+
+// ── Sub-componentes de la columna derecha ───────────────────────────────────
+function KpiCard({ label, value, accent, onClick }) {
+  return (
+    <button
+      onClick={onClick}
+      disabled={!onClick}
+      className={`rounded-xl bg-white/[0.04] border border-white/[0.07] p-2.5 text-left transition-all ${onClick ? 'hover:bg-white/[0.07] cursor-pointer' : 'cursor-default'}`}
+    >
+      <p className={`text-2xl font-black leading-none ${accent}`}>{value}</p>
+      <p className="text-[9px] text-white/40 mt-1 uppercase tracking-wide">{label}</p>
+    </button>
+  );
+}
+
+function RedRow({ icon: Icon, label, data, followers, accent, onClick }) {
+  const connected = !!data && !data.error;
+  return (
+    <button
+      onClick={onClick}
+      className="w-full flex items-center gap-2.5 p-2.5 rounded-xl bg-white/[0.04] border border-white/[0.07] hover:bg-white/[0.07] transition-all text-left"
+    >
+      <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${accent} flex items-center justify-center flex-shrink-0`}>
+        <Icon className="w-4 h-4 text-white" />
+      </div>
+      <div className="min-w-0 flex-1">
+        <p className="text-xs font-semibold text-white/85 leading-tight">{label}</p>
+        <p className="text-[10px] text-white/40 leading-tight">
+          {connected ? (followers != null ? `${Number(followers).toLocaleString('es-CL')} seguidores` : 'Conectado') : 'Sin conectar'}
+        </p>
+      </div>
+      <span className={`w-2 h-2 rounded-full flex-shrink-0 ${connected ? 'bg-emerald-400' : 'bg-white/20'}`} />
+    </button>
+  );
+}
+
+function ShortcutBtn({ icon: Icon, label, onClick }) {
+  return (
+    <button
+      onClick={onClick}
+      className="w-full flex items-center gap-2 p-2 rounded-lg bg-white/[0.03] border border-white/[0.06] hover:bg-white/[0.07] hover:border-white/15 transition-all text-left group"
+    >
+      <Icon className="w-3.5 h-3.5 text-violet-400 flex-shrink-0 group-hover:text-violet-300" />
+      <span className="text-[11px] text-white/70 group-hover:text-white leading-tight">{label}</span>
+    </button>
   );
 }
