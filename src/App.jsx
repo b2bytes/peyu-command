@@ -148,6 +148,7 @@ const CentroMensajes = lazyWithRetry(() => import('./pages/CentroMensajes'), { n
 const EditorTextos = lazyWithRetry(() => import('./pages/EditorTextos'), { name: 'EditorTextos' });
 const CanalAgencia = lazyWithRetry(() => import('./pages/CanalAgencia'), { name: 'CanalAgencia' });
 const CrearCampanas = lazyWithRetry(() => import('./pages/CrearCampanas'), { name: 'CrearCampanas' });
+const SecuenciasAutomaticas = lazyWithRetry(() => import('./pages/SecuenciasAutomaticas'), { name: 'SecuenciasAutomaticas' });
 
 const AdminLoader = () => (
   <div className="fixed inset-0 flex items-center justify-center bg-background">
@@ -265,6 +266,7 @@ const AuthenticatedApp = () => {
           <Route path="textos" element={<EditorTextos />} />
           <Route path="canal-agencia" element={<CanalAgencia />} />
           <Route path="crear-campanas" element={<CrearCampanas />} />
+          <Route path="secuencias" element={<SecuenciasAutomaticas />} />
         </Route>
         <Route path="*" element={<PageNotFound />} />
       </Routes>
