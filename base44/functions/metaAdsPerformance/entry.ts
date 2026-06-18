@@ -14,6 +14,43 @@ function fmtAccountId(raw) {
   return s.startsWith('act_') ? s : `act_${s.replace(/\D/g, '')}`;
 }
 
+// Clasifica el error de Meta en un diagnóstico claro y accionable para el equipo.
+function diagnoseMetaError(err) {
+  const code = err?.code;
+  const sub = err?.error_subcode;
+  const msg = err?.message || 'Error desconocido de Meta.';
+
+  // Token inválido / malformado / expirado
+  if (code === 190) {
+    return {
+      reason: 'token_invalido',
+      error: 'El token de Meta es inválido o expiró. Genera un token nuevo del Usuario del Sistema (con scopes ads_read + ads_management) y actualiza el secreto META_SYSTEM_USER_TOKEN.',
+      detail: msg,
+    };
+  }
+  // Falta de permisos sobre la cuenta publicitaria
+  if (code === 200 || code === 10 || code === 272) {
+    return {
+      reason: 'sin_permiso',
+      error: 'El Usuario del Sistema no tiene permiso ads_read / ads_management sobre la cuenta publicitaria. Asigna la cuenta al System User con "Administrar campañas" en Meta Business Settings y regenera el token.',
+      detail: msg,
+    };
+  }
+  // Cuenta inexistente / ID mal escrito / sin acceso
+  if (code === 100) {
+    return {
+      reason: 'cuenta_no_encontrada',
+      error: 'No se encuentra la cuenta publicitaria. Revisa que META_AD_ACCOUNT_ID sea correcto (solo el número, sin act_) y que esté asignada al Usuario del Sistema.',
+      detail: msg,
+    };
+  }
+  // Rate limit
+  if (code === 17 || code === 4 || code === 80004) {
+    return { reason: 'rate_limit', error: 'Meta está limitando las consultas temporalmente. Intenta de nuevo en unos minutos.', detail: msg };
+  }
+  return { reason: 'otro', error: msg, detail: msg };
+}
+
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
@@ -37,7 +74,7 @@ Deno.serve(async (req) => {
     const acctRes = await fetch(`${base}/${accountId}?fields=name,currency,account_status,amount_spent&access_token=${encodeURIComponent(token)}`);
     const acct = await acctRes.json();
     if (acct.error) {
-      return Response.json({ connected: false, error: acct.error.message || 'Token inválido o sin acceso a la cuenta.' });
+      return Response.json({ connected: false, ...diagnoseMetaError(acct.error) });
     }
 
     // 2) Campañas con sus insights del periodo
@@ -50,7 +87,7 @@ Deno.serve(async (req) => {
     const insRes = await fetch(insightsUrl);
     const ins = await insRes.json();
     if (ins.error) {
-      return Response.json({ connected: false, error: ins.error.message || 'Error al consultar insights.' });
+      return Response.json({ connected: false, ...diagnoseMetaError(ins.error) });
     }
 
     const rows = (ins.data || []).map((d) => {

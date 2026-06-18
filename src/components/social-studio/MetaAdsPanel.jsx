@@ -21,6 +21,35 @@ const QUICK_PROMPTS = [
   { icon: Zap,              label: 'Plan Advantage+ B2C',      prompt: 'Diséñame un plan para migrar/escalar mis ventas B2C con Advantage+ Shopping Campaigns: estructura, presupuesto, públicos y estrategia creativa para PEYU.' },
 ];
 
+// Diagnóstico accionable según el motivo que devuelve metaAdsPerformance.
+const META_DIAG = {
+  sin_permiso: {
+    title: 'Falta permiso sobre la cuenta',
+    steps: [
+      'Meta Business Settings → Usuarios del sistema',
+      'Selecciona tu System User → "Agregar activos" → Cuentas publicitarias',
+      'Marca tu cuenta y activa "Administrar campañas" (ads_read + ads_management)',
+      'Genera un token NUEVO con esos scopes y actualiza META_SYSTEM_USER_TOKEN',
+    ],
+  },
+  token_invalido: {
+    title: 'Token inválido o expirado',
+    steps: [
+      'En el System User, genera un token nuevo',
+      'Marca los scopes ads_read y ads_management',
+      'Actualiza el secreto META_SYSTEM_USER_TOKEN con ese token',
+    ],
+  },
+  cuenta_no_encontrada: {
+    title: 'Cuenta publicitaria no encontrada',
+    steps: [
+      'Revisa META_AD_ACCOUNT_ID (solo el número, sin act_)',
+      'Confirma que la cuenta esté asignada al System User',
+    ],
+  },
+  rate_limit: { title: 'Meta limitando consultas', steps: ['Espera unos minutos y vuelve a actualizar.'] },
+};
+
 function fmtMoney(n, currency = 'CLP') {
   if (n == null) return '—';
   return new Intl.NumberFormat('es-CL', { style: 'currency', currency, maximumFractionDigits: 0 }).format(n);
@@ -203,12 +232,14 @@ export default function MetaAdsPanel() {
       ) : !perf?.connected ? (
         <div className="rounded-xl bg-amber-500/[0.08] border border-amber-500/25 p-3">
           <p className="text-[11px] font-bold text-amber-200 flex items-center gap-1.5 mb-1.5">
-            <AlertCircle className="w-3.5 h-3.5" /> Esperando permiso de Meta
+            <AlertCircle className="w-3.5 h-3.5" /> {META_DIAG[perf?.reason]?.title || 'Conexión Meta pendiente'}
           </p>
           <p className="text-[10px] text-white/60 leading-snug mb-2">{perf?.error || 'Conexión no disponible.'}</p>
-          <p className="text-[9px] text-white/45 leading-snug">
-            En Meta Business Settings → Usuarios del sistema → asigna tu cuenta publicitaria con permiso <strong className="text-amber-200">Administrar campañas</strong> (ads_management + ads_read).
-          </p>
+          {META_DIAG[perf?.reason]?.steps && (
+            <ol className="text-[9px] text-white/50 leading-snug space-y-0.5 ml-3 list-decimal">
+              {META_DIAG[perf.reason].steps.map((s, i) => <li key={i}>{s}</li>)}
+            </ol>
+          )}
         </div>
       ) : (
         <>
