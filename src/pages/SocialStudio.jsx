@@ -9,7 +9,7 @@
 import { useState, useEffect } from 'react';
 import {
   Bot, Megaphone, CheckSquare, Wand2, Image as ImageIcon, Instagram,
-  Linkedin, Layers, Calendar, Link2, Sparkles, Send, Clock,
+  Linkedin, Layers, Calendar, Link2, Sparkles, Send, Clock, Facebook,
 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import BulkGeneratorPanel from '@/components/social-studio/BulkGeneratorPanel';
@@ -22,11 +22,13 @@ import LinkedInPanel from '@/components/social-studio/LinkedInPanel';
 import InstagramPanel from '@/components/social-studio/InstagramPanel';
 import CreatorPanel from '@/components/social-studio/CreatorPanel';
 import MediaGalleryPanel from '@/components/social-studio/MediaGalleryPanel';
+import MetaAdsPanel from '@/components/social-studio/MetaAdsPanel';
 
 // ── Definición de TODAS las funciones del estudio ───────────────────────────
 const SECTIONS = [
   { id: 'agent',     label: 'Agente IA',  desc: 'Conversa y ejecuta todo',   icon: Bot,        accent: 'from-violet-500 to-pink-600',   text: 'text-violet-300', group: 'comando' },
-  { id: 'ads',       label: 'Ads',        desc: 'Google + Meta · CSV',       icon: Megaphone,  accent: 'from-cyan-500 to-blue-600',     text: 'text-cyan-300',   group: 'comando' },
+  { id: 'ads',       label: 'Google Ads', desc: 'Campañas + CSV',            icon: Megaphone,  accent: 'from-cyan-500 to-blue-600',     text: 'text-cyan-300',   group: 'comando' },
+  { id: 'meta',      label: 'Meta Ads',   desc: 'Facebook · Instagram · IA', icon: Facebook,   accent: 'from-blue-600 to-indigo-600',   text: 'text-blue-300',   group: 'comando' },
   { id: 'queue',     label: 'Cola',       desc: 'Aprobar y publicar',        icon: CheckSquare, accent: 'from-amber-400 to-orange-500',  text: 'text-amber-300',  group: 'contenido' },
   { id: 'creator',   label: 'Crear IA',   desc: 'Imágenes y videos',         icon: Wand2,      accent: 'from-pink-500 to-violet-600',   text: 'text-pink-300',   group: 'contenido' },
   { id: 'galeria',   label: 'Galería',    desc: 'Todos los assets',          icon: ImageIcon,  accent: 'from-emerald-400 to-cyan-500',  text: 'text-emerald-300',group: 'contenido' },
@@ -90,6 +92,7 @@ export default function SocialStudio() {
     switch (section) {
       case 'agent':     return <MarketingAgentPanel />;
       case 'ads':       return <AdsAgentPanel />;
+      case 'meta':      return <MetaAdsPanel />;
       case 'queue':     return <ApprovalQueuePanel refreshKey={refreshKey} onChange={triggerRefresh} />;
       case 'creator':   return <CreatorPanel />;
       case 'galeria':   return <MediaGalleryPanel />;
@@ -105,7 +108,7 @@ export default function SocialStudio() {
   // Las secciones "comando" (agent/ads) ya traen su propio layout 3-col interno,
   // así que las dejamos ocupar todo el centro sin padding extra. El resto se
   // monta dentro del marco del cockpit.
-  const isAgentic = section === 'agent' || section === 'ads';
+  const isAgentic = section === 'agent' || section === 'ads' || section === 'meta';
 
   return (
     <div className="h-full flex flex-col min-h-0 relative">
