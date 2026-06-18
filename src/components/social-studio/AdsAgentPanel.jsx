@@ -1,29 +1,37 @@
 // ============================================================================
 // AdsAgentPanel · Agente de Ads PAGADOS (Google Ads + Meta) con poder real.
-// Usa base44.agents SDK → el agente genera campañas completas (las 4 variantes),
-// las exporta a CSV de Google Ads Editor y forecastea/analiza performance.
+// Layout agentico de 3 columnas (estilo PEYU v2): acciones · chat · contexto.
+// Genera campañas (4 variantes), exporta CSV de Google Ads, forecastea.
 // ============================================================================
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { base44 } from '@/api/base44Client';
 import {
-  Send, Loader2, Bot, User, RefreshCw, Megaphone, Target, ShoppingBag,
-  Sparkles, Search, CheckCircle2, Download, TrendingUp, BarChart2,
+  Send, Loader2, Bot, User, Megaphone, Target, ShoppingBag,
+  Sparkles, Search, CheckCircle2, Download, TrendingUp, BarChart2, Zap,
 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
+import AgentLayout from './AgentLayout';
 
 const AGENT_NAME = 'ads_strategist_2026';
 
 const QUICK_PROMPTS = [
-  { icon: Megaphone, label: 'Campaña PEYU general (PMax)', prompt: 'Crea una campaña Performance Max always-on de marca PEYU para B2C, presupuesto CLP $18.000/día, dirigida a la home (https://peyuchile.cl/). Genera los visuales con IA, explícame el racional y luego ofréceme el CSV para Google Ads.' },
+  { icon: Megaphone, label: 'PEYU general (PMax)', prompt: 'Crea una campaña Performance Max always-on de marca PEYU para B2C, presupuesto CLP $18.000/día, dirigida a la home (https://peyuchile.cl/). Genera los visuales con IA, explícame el racional y luego ofréceme el CSV para Google Ads.' },
   { icon: Target, label: 'Fiestas Patrias · Empresas', prompt: 'Crea una campaña Search para Fiestas Patrias dirigida a EMPRESAS que buscan regalos corporativos, presupuesto CLP $22.000/día, landing https://peyuchile.cl/fiestas-patrias/empresas. Enfócate en RRHH y compras, con logo láser gratis y entrega a tiempo para el 18. Luego ofréceme el CSV.' },
   { icon: ShoppingBag, label: 'Carcasas B2C (Demand Gen)', prompt: 'Crea una campaña Demand Gen visual para vender carcasas recicladas de celular a B2C, presupuesto CLP $15.000/día, landing https://peyuchile.cl/CatalogoNuevo. Genera 4 visuales con IA. Luego exporta el CSV.' },
   { icon: Search, label: 'Shopping del catálogo', prompt: 'Crea una campaña Shopping del catálogo PEYU para B2C, presupuesto CLP $16.000/día, landing https://peyuchile.cl/CatalogoNuevo, con negative keywords exhaustivas. Luego ofréceme el CSV.' },
   { icon: TrendingUp, label: 'Plan Meta Ads (Instagram)', prompt: 'Diseña un plan completo de Meta Ads (Instagram + Facebook) para regalos corporativos B2B: objetivo, públicos (lookalike + retargeting), ángulos creativos, copies y presupuesto, listo para cargar en Meta Ads Manager.' },
-  { icon: BarChart2, label: '¿Qué tipo de campaña conviene?', prompt: 'Tengo CLP $20.000/día para vender más este mes. ¿Qué tipo de campaña Google Ads me conviene (Search, Shopping, PMax o Demand Gen) y por qué? Recomiéndame el mejor mix 2026.' },
+  { icon: BarChart2, label: '¿Qué campaña conviene?', prompt: 'Tengo CLP $20.000/día para vender más este mes. ¿Qué tipo de campaña Google Ads me conviene (Search, Shopping, PMax o Demand Gen) y por qué? Recomiéndame el mejor mix 2026.' },
+];
+
+const CAMPAIGN_TYPES = [
+  { label: 'Search (AI Max)', desc: 'Intención alta · conversión directa', icon: Search },
+  { label: 'Shopping', desc: 'Catálogo con feed', icon: ShoppingBag },
+  { label: 'Performance Max', desc: 'IA optimiza todo el inventario', icon: Zap },
+  { label: 'Demand Gen', desc: 'Descubrimiento visual', icon: Sparkles },
 ];
 
 // ── Render de una campaña generada + descarga de CSV ────────────────────────
-function CampaignResult({ draft, onExported }) {
+function CampaignResult({ draft }) {
   const [exporting, setExporting] = useState(false);
   const [csvUrl, setCsvUrl] = useState(draft?.exported_csv_url || null);
 
@@ -32,7 +40,7 @@ function CampaignResult({ draft, onExported }) {
     setExporting(true);
     try {
       const res = await base44.functions.invoke('adsExportEditor', { draft_id: draft.id });
-      if (res?.data?.file_url) { setCsvUrl(res.data.file_url); onExported?.(); }
+      if (res?.data?.file_url) setCsvUrl(res.data.file_url);
     } finally { setExporting(false); }
   };
 
@@ -116,8 +124,6 @@ function ToolCallBadge({ toolCall }) {
 
 function ChatMessage({ msg }) {
   const isUser = msg.role === 'user';
-
-  // Extrae los drafts de campaña generados por el agente
   const drafts = [];
   if (msg.tool_calls?.length) {
     for (const tc of msg.tool_calls) {
@@ -137,7 +143,7 @@ function ChatMessage({ msg }) {
       }`}>
         {isUser ? <User className="w-4 h-4 text-white" /> : <Megaphone className="w-4 h-4 text-white" />}
       </div>
-      <div className={`max-w-[82%] ${isUser ? 'flex flex-col items-end' : ''}`}>
+      <div className={`max-w-[88%] ${isUser ? 'flex flex-col items-end' : ''}`}>
         {!isUser && msg.tool_calls?.length > 0 && (
           <div className="flex flex-wrap gap-1 mb-1.5">
             {msg.tool_calls.map((tc, i) => <ToolCallBadge key={i} toolCall={tc} />)}
@@ -197,7 +203,7 @@ export default function AdsAgentPanel() {
       setConversation(conv);
       setMessages([{
         role: 'assistant',
-        content: `¡Hola! 🎯 Soy tu **Estratega de Ads pagados** — Google Ads + Meta Ads.\n\nCreo campañas **profesionales y completas** en todas sus variantes y te las dejo listas para Google Ads:\n- 🔍 **Search (AI Max)** · intención alta, conversión directa\n- 🛍 **Shopping** · catálogo con feed\n- 🚀 **Performance Max** · la IA de Google optimiza todo el inventario\n- ✨ **Demand Gen** · descubrimiento visual en YouTube/Discover\n- 📱 **Meta Ads** · plan listo para Meta Ads Manager\n\nGenero copy, keywords, assets y forecast, y te entrego el **CSV para subir a Google Ads Editor** en 1 click.\n\nDime el objetivo y la creo. ¿Partimos?`,
+        content: `¡Hola! 🎯 Soy tu **Estratega de Ads pagados** — Google Ads + Meta Ads.\n\nCreo campañas profesionales completas en todas sus variantes y te las dejo listas para Google Ads: genero copy, keywords, assets y forecast, y te entrego el **CSV para subir a Google Ads Editor** en 1 click.\n\nElige una campaña rápida de la izquierda o dime el objetivo. ¿Partimos?`,
         tool_calls: [],
       }]);
     } catch {
@@ -231,55 +237,71 @@ export default function AdsAgentPanel() {
     }
   };
 
-  return (
-    <div className="h-full flex flex-col min-h-0 bg-black/20 rounded-2xl border border-white/5 overflow-hidden">
-      {/* Header */}
-      <div className="flex-shrink-0 flex items-center justify-between px-4 py-3 border-b border-white/10 bg-gradient-to-r from-cyan-900/30 to-blue-900/20">
-        <div className="flex items-center gap-3">
-          <div className="relative">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center shadow-lg shadow-cyan-500/30">
-              <Megaphone className="w-4 h-4 text-white" />
-            </div>
-            <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-green-400 border-2 border-slate-950" />
-          </div>
-          <div>
-            <p className="text-sm font-bold text-white leading-none">Estratega de Ads PEYU</p>
-            <p className="text-[10px] text-white/40 mt-0.5">Google Ads · Meta · CSV listo para subir</p>
-          </div>
+  // ── Columna izquierda · acciones rápidas ──────────────────────────────────
+  const left = (
+    <div className="p-3 space-y-1">
+      <p className="text-[9px] text-white/30 uppercase tracking-wider mb-1.5 px-1">Campañas rápidas</p>
+      {QUICK_PROMPTS.map((qp) => {
+        const Icon = qp.icon;
+        return (
+          <button
+            key={qp.label}
+            onClick={() => sendMessage(qp.prompt)}
+            disabled={initing || loading}
+            className="w-full flex items-center gap-2 p-2 rounded-lg bg-white/[0.03] border border-white/[0.06] hover:bg-white/[0.07] hover:border-white/15 transition-all text-left group disabled:opacity-40"
+          >
+            <Icon className="w-3.5 h-3.5 text-cyan-400 flex-shrink-0 group-hover:text-cyan-300" />
+            <span className="text-[11px] text-white/70 group-hover:text-white leading-tight">{qp.label}</span>
+          </button>
+        );
+      })}
+    </div>
+  );
+
+  // ── Columna derecha · contexto (tipos de campaña) ─────────────────────────
+  const right = (
+    <div className="p-3 space-y-3">
+      <div>
+        <p className="text-[9px] text-white/30 uppercase tracking-wider mb-2 px-1">Tipos de campaña 2026</p>
+        <div className="space-y-1.5">
+          {CAMPAIGN_TYPES.map((t) => {
+            const Icon = t.icon;
+            return (
+              <div key={t.label} className="flex items-start gap-2 p-2 rounded-lg bg-white/[0.03] border border-white/[0.06]">
+                <Icon className="w-3.5 h-3.5 text-cyan-400 flex-shrink-0 mt-0.5" />
+                <div className="min-w-0">
+                  <p className="text-[11px] font-semibold text-white/85 leading-tight">{t.label}</p>
+                  <p className="text-[9px] text-white/40 leading-tight mt-0.5">{t.desc}</p>
+                </div>
+              </div>
+            );
+          })}
         </div>
-        <button
-          onClick={initConversation}
-          disabled={initing}
-          className="text-white/30 hover:text-white/70 transition-colors p-1.5 rounded-lg hover:bg-white/5 disabled:opacity-30"
-          title="Nueva conversación"
-        >
-          <RefreshCw className={`w-3.5 h-3.5 ${initing ? 'animate-spin' : ''}`} />
-        </button>
       </div>
+      <div className="rounded-xl bg-cyan-500/[0.06] border border-cyan-500/15 p-3">
+        <p className="text-[10px] font-bold text-cyan-200 mb-1.5 flex items-center gap-1.5"><Download className="w-3 h-3" /> Cómo subir el CSV</p>
+        <ol className="text-[9px] text-white/55 space-y-1 ml-3 list-decimal leading-snug">
+          <li>Descarga el CSV de la campaña</li>
+          <li>Abre Google Ads Editor</li>
+          <li>File → Import → from file</li>
+          <li>Revisa y publica</li>
+        </ol>
+      </div>
+    </div>
+  );
 
-      {/* Quick prompts */}
-      {messages.length <= 1 && !initing && (
-        <div className="flex-shrink-0 px-3 py-2 border-b border-white/[0.06]">
-          <p className="text-[9px] text-white/30 uppercase tracking-wider mb-1.5 px-1">Campañas rápidas</p>
-          <div className="grid grid-cols-2 lg:grid-cols-3 gap-1">
-            {QUICK_PROMPTS.map((qp) => {
-              const Icon = qp.icon;
-              return (
-                <button
-                  key={qp.label}
-                  onClick={() => sendMessage(qp.prompt)}
-                  className="flex items-center gap-1.5 p-2 rounded-lg bg-white/[0.04] border border-white/10 hover:bg-white/[0.08] hover:border-white/20 transition-all text-left group"
-                >
-                  <Icon className="w-3 h-3 text-cyan-400 flex-shrink-0 group-hover:text-cyan-300" />
-                  <span className="text-[10px] text-white/70 group-hover:text-white leading-tight">{qp.label}</span>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      )}
-
-      {/* Messages */}
+  return (
+    <AgentLayout
+      accent="cyan"
+      title="Estratega de Ads PEYU"
+      subtitle="Google Ads · Meta · CSV listo para subir"
+      HeaderIcon={Megaphone}
+      left={left}
+      right={right}
+      onReset={initConversation}
+      resetting={initing}
+    >
+      {/* Stream */}
       <div className="flex-1 overflow-y-auto peyu-scrollbar-light min-h-0 p-4 space-y-4">
         {initing ? (
           <div className="flex items-center justify-center h-full gap-2 text-white/30">
@@ -308,25 +330,25 @@ export default function AdsAgentPanel() {
       </div>
 
       {/* Input */}
-      <div className="flex-shrink-0 px-3 py-2 border-t border-white/10 bg-black/20">
-        <div className="flex gap-2 items-center">
+      <div className="flex-shrink-0 px-3 py-3 border-t border-white/10 bg-black/20">
+        <div className="flex gap-2 items-center max-w-3xl mx-auto">
           <input
             value={input}
             onChange={e => setInput(e.target.value)}
             onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } }}
             placeholder="Crea campañas Google/Meta, exporta CSV, forecastea…"
             disabled={initing}
-            className="flex-1 bg-white/[0.06] border border-white/15 text-white placeholder:text-white/25 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-cyan-500/50 transition-all disabled:opacity-40"
+            className="flex-1 bg-white/[0.06] border border-white/15 text-white placeholder:text-white/25 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-cyan-500/50 transition-all disabled:opacity-40"
           />
           <button
             onClick={() => sendMessage()}
             disabled={loading || !input.trim() || initing}
-            className="w-9 h-9 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center flex-shrink-0 transition-all shadow-lg shadow-cyan-500/20"
+            className="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center flex-shrink-0 transition-all shadow-lg shadow-cyan-500/20"
           >
             {loading ? <Loader2 className="w-4 h-4 text-white animate-spin" /> : <Send className="w-4 h-4 text-white" />}
           </button>
         </div>
       </div>
-    </div>
+    </AgentLayout>
   );
 }

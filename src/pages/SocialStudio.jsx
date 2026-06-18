@@ -130,7 +130,7 @@ export default function SocialStudio() {
         <div className="flex-1 min-h-0 rounded-2xl flex flex-col overflow-hidden">
           {tab === 'queue'     && <ApprovalQueuePanel refreshKey={refreshKey} onChange={triggerRefresh} />}
           {tab === 'creator'   && <CreatorPanel />}
-          {tab === 'agent'     && <MarketingAgentPanel posts={allPosts} />}
+          {tab === 'agent'     && <MarketingAgentPanel />}
           {tab === 'ads'       && <AdsAgentPanel />}
           {tab === 'galeria'   && <MediaGalleryPanel />}
           {tab === 'instagram' && <InstagramPanel onPublished={triggerRefresh} />}
