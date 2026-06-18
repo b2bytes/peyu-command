@@ -2,6 +2,7 @@ import { Outlet, useLocation } from 'react-router-dom';
 import PublicNavBar from '@/components/PublicNavBar';
 import MobileNavBarV2 from '@/components/shopv2/MobileNavBarV2';
 import VendedorChatBar from '@/components/vendedor/VendedorChatBar';
+import MetaRouteTracker from '@/components/MetaRouteTracker';
 
 // Rutas que renderizan su PROPIA MobileNavBarV2 en modo acción (CTA comprar/pagar).
 // En ellas NO mostramos los tabs de navegación para no tapar el botón de compra.
@@ -18,6 +19,7 @@ export default function PublicPageLayout() {
 
   return (
     <div className="min-h-screen flex flex-col font-inter" style={{ background: '#F8F3ED', color: '#2C1810' }}>
+      <MetaRouteTracker />
       <PublicNavBar />
       <main className="flex-1 pb-24 lg:pb-0">
         <Outlet />

@@ -5,10 +5,16 @@
 // e-commerce de PEYU, con guardas para que nunca rompan si fbq aún no cargó.
 // ============================================================================
 
-function track(event, params) {
+function track(event, params, eventID) {
   if (typeof window === 'undefined' || typeof window.fbq !== 'function') return;
   try {
-    window.fbq('track', event, params || {});
+    // El 4º argumento { eventID } permite deduplicar con la Conversions API
+    // server-side (Meta cuenta una sola vez si el event_id coincide).
+    if (eventID) {
+      window.fbq('track', event, params || {}, { eventID });
+    } else {
+      window.fbq('track', event, params || {});
+    }
   } catch {
     // fbq puede no estar listo o bloqueado por el navegador — silencioso.
   }
@@ -53,4 +59,34 @@ export function trackLead({ value, currency = 'CLP', content_name } = {}) {
     currency,
     content_name,
   });
+}
+
+// Compra confirmada (página de gracias). event_id permite deduplicar con el
+// Purchase server-side que envía mpWebhook (mismo formato: pedido-{n°}).
+export function trackPurchase({ value, currency = 'CLP', order_id } = {}) {
+  const eventID = order_id ? `pedido-${order_id}` : undefined;
+  track('Purchase', {
+    value: value != null ? Number(value) : undefined,
+    currency,
+    content_type: 'product',
+  }, eventID);
+}
+
+// Registro completado (suscripción a newsletter, creación de cuenta).
+export function trackCompleteRegistration({ content_name, value, currency = 'CLP' } = {}) {
+  track('CompleteRegistration', {
+    content_name,
+    value: value != null ? Number(value) : undefined,
+    currency,
+  });
+}
+
+// Búsqueda interna del sitio
+export function trackSearch({ search_string } = {}) {
+  track('Search', { search_string });
+}
+
+// Contacto (clic en botón de contacto / envío de formulario de consulta)
+export function trackContact({ content_name } = {}) {
+  track('Contact', { content_name });
 }
