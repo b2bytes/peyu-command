@@ -6,6 +6,8 @@
 // se conecte. Emite un evento para que el header actualice el contador en vivo.
 // ════════════════════════════════════════════════════════════════════════
 
+import { trackAddToCart } from '@/lib/meta-pixel';
+
 const STORAGE_KEY = 'carrito_v2';
 const EVENT = 'carrito_v2_updated';
 
@@ -31,6 +33,13 @@ export function addToCartV2(item) {
   const items = getCartV2();
   items.push({ id: Math.random().toString(36).slice(2), ...item });
   persist(items);
+  // 📊 Meta Pixel — AddToCart con valor real de la línea.
+  trackAddToCart({
+    id: item.sku,
+    name: item.nombre,
+    value: (item.precio || 0) * (item.cantidad || 1),
+    quantity: item.cantidad || 1,
+  });
   return items;
 }
 

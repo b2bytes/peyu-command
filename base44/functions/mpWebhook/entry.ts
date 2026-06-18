@@ -130,6 +130,24 @@ Deno.serve(async (req) => {
       } catch (e) {
         console.warn('Comprobante Gmail falló (no bloqueante):', e.message);
       }
+
+      // 📊 Meta Conversions API — registra la COMPRA real en el pixel de PEYU.
+      // Server-side: a prueba de bloqueadores, mide conversiones para optimizar
+      // campañas a Compras. event_id = numero_pedido para deduplicar con el
+      // pixel del navegador. No bloqueante.
+      try {
+        await base44.asServiceRole.functions.invoke('metaConversionsAPI', {
+          event_name: 'Purchase',
+          value: Number(pedido.total || transactionAmount || 0),
+          currency: 'CLP',
+          email: pedido.cliente_email,
+          phone: pedido.cliente_telefono || undefined,
+          event_id: `pedido-${pedido.numero_pedido}`,
+          event_source_url: 'https://peyuchile.cl/CheckoutNuevo',
+        });
+      } catch (e) {
+        console.warn('Meta Conversions API Purchase falló (no bloqueante):', e.message);
+      }
     }
 
     // [LEGACY desactivado] Email de confirmación vía Resend.

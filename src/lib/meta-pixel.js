@@ -1,0 +1,56 @@
+// ============================================================================
+// lib/meta-pixel.js · Helper centralizado para disparar eventos del Meta Pixel
+// (fbq) desde el frontend. El código base del pixel (init + PageView) vive en
+// index.html. Aquí se exponen funciones tipadas para los eventos estándar de
+// e-commerce de PEYU, con guardas para que nunca rompan si fbq aún no cargó.
+// ============================================================================
+
+function track(event, params) {
+  if (typeof window === 'undefined' || typeof window.fbq !== 'function') return;
+  try {
+    window.fbq('track', event, params || {});
+  } catch {
+    // fbq puede no estar listo o bloqueado por el navegador — silencioso.
+  }
+}
+
+// Vio un producto (ficha de detalle)
+export function trackViewContent({ id, name, value, currency = 'CLP' } = {}) {
+  track('ViewContent', {
+    content_ids: id ? [String(id)] : undefined,
+    content_name: name,
+    content_type: 'product',
+    value: value != null ? Number(value) : undefined,
+    currency,
+  });
+}
+
+// Agregó al carrito
+export function trackAddToCart({ id, name, value, quantity = 1, currency = 'CLP' } = {}) {
+  track('AddToCart', {
+    content_ids: id ? [String(id)] : undefined,
+    content_name: name,
+    content_type: 'product',
+    contents: id ? [{ id: String(id), quantity: Number(quantity) }] : undefined,
+    value: value != null ? Number(value) : undefined,
+    currency,
+  });
+}
+
+// Inició el checkout
+export function trackInitiateCheckout({ value, num_items, currency = 'CLP' } = {}) {
+  track('InitiateCheckout', {
+    value: value != null ? Number(value) : undefined,
+    num_items: num_items != null ? Number(num_items) : undefined,
+    currency,
+  });
+}
+
+// Lead B2B (formulario corporativo / cotización)
+export function trackLead({ value, currency = 'CLP', content_name } = {}) {
+  track('Lead', {
+    value: value != null ? Number(value) : undefined,
+    currency,
+    content_name,
+  });
+}

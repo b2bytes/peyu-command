@@ -10,6 +10,7 @@ import CartQuoteBridgeV2 from '@/components/shopv2/CartQuoteBridgeV2';
 import {
   getCartV2, updateCartItemV2, removeFromCartV2, fmtCLP,
 } from '@/lib/shop-v2-cart';
+import { trackInitiateCheckout } from '@/lib/meta-pixel';
 import { calcularCargoPersonalizacionCarrito } from '@/lib/personalizacion-config';
 import { computeQtyDiscountBySku, getNextQtyTeaserForSku, getQtyDiscountPct } from '@/lib/volume-discount';
 
@@ -35,7 +36,11 @@ export default function CarritoNuevo() {
   const total = subtotal + cargoPersonalizacion - ahorroTotal;
 
   // Navega al checkout v2 propio (mobile-first, BlueExpress inline). Aislado.
-  const irACheckout = () => navigate('/CheckoutNuevo');
+  const irACheckout = () => {
+    // 📊 Meta Pixel — InitiateCheckout con el total y nº de items del carrito.
+    trackInitiateCheckout({ value: total, num_items: items.length });
+    navigate('/CheckoutNuevo');
+  };
 
   if (items.length === 0) {
     return (

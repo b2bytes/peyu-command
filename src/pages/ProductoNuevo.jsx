@@ -25,6 +25,7 @@ import { findColorImageMatch } from '@/lib/color-image-matcher';
 import { getColorTintFilter } from '@/lib/color-tint';
 import { MOQ_PERSONALIZACION_GRATIS } from '@/lib/personalizacion-config';
 import { addToCartV2, fmtCLP } from '@/lib/shop-v2-cart';
+import { trackViewContent } from '@/lib/meta-pixel';
 import { saveDraftV2, loadDraftV2, clearDraftV2 } from '@/lib/shop-v2-draft';
 import {
   PERS_VACIO, tiposActivos, feeUnitarioCombinado, labelCombinada,
@@ -121,6 +122,12 @@ export default function ProductoNuevo() {
     cargar();
     return () => { cancelled = true; };
   }, [id]);
+
+  // 📊 Meta Pixel — ViewContent al cargar la ficha del producto.
+  useEffect(() => {
+    if (!producto) return;
+    trackViewContent({ id: producto.sku, name: producto.nombre, value: producto.precio_b2c || 9990 });
+  }, [producto]);
 
   // ¿Es carcasa? Solo en carcasas se permiten las 3 personalizaciones
   // (Frase + Diseño PEYU + Tu diseño). En el resto: SOLO "Tu diseño".
