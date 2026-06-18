@@ -110,6 +110,14 @@ Deno.serve(async (req) => {
       return Response.json({ ok: true, action, entity_type: entityType, id, daily_budget_clp: clp });
     }
 
+    // ── Eliminar (solo campaign / adset / ad) ───────────────────────────────
+    if (action === 'delete') {
+      const res = await fetch(`${base}/${id}?access_token=${t}`, { method: 'DELETE' });
+      const data = await res.json();
+      if (data.error) return Response.json({ ok: false, ...diagnoseMetaError(data.error) });
+      return Response.json({ ok: true, action, entity_type: entityType, id, deleted: data.success !== false });
+    }
+
     return Response.json({ ok: false, error: `Acción no soportada: ${action}` });
   } catch (error) {
     return Response.json({ ok: false, error: error.message }, { status: 500 });
