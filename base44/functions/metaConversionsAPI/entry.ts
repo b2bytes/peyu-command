@@ -66,9 +66,19 @@ Deno.serve(async (req) => {
     if (!token || !accountId) return Response.json({ ok: false, error: 'Faltan credenciales de Meta.' });
 
     const eventName = body.event_name;
-    const validEvents = ['Purchase', 'Lead', 'AddToCart', 'InitiateCheckout', 'CompleteRegistration', 'ViewContent', 'Search', 'Contact'];
-    if (!eventName || !validEvents.includes(eventName)) {
-      return Response.json({ ok: false, error: `event_name inválido. Usa uno de: ${validEvents.join(', ')}.` });
+    // Eventos estándar de Meta (con semántica conocida) + cualquier evento
+    // PERSONALIZADO (custom event) que el equipo quiera disparar server-side,
+    // ej: Click_BotonCotizar, View_VideoProducto, ScrollDepth_75Percent.
+    // Meta acepta nombres custom siempre que sean alfanuméricos/_; validamos
+    // formato para evitar nombres inválidos, pero no restringimos a la lista.
+    const standardEvents = ['Purchase', 'Lead', 'AddToCart', 'InitiateCheckout', 'CompleteRegistration', 'ViewContent', 'Search', 'Contact', 'AddPaymentInfo', 'AddToWishlist', 'CompletePayment', 'Donate', 'FindLocation', 'Schedule', 'StartTrial', 'SubmitApplication', 'Subscribe'];
+    if (!eventName || typeof eventName !== 'string') {
+      return Response.json({ ok: false, error: 'event_name requerido.' });
+    }
+    const isStandard = standardEvents.includes(eventName);
+    // Custom events: solo letras, números y guion bajo (regla de Meta).
+    if (!isStandard && !/^[A-Za-z0-9_]{1,50}$/.test(eventName)) {
+      return Response.json({ ok: false, error: `event_name inválido: "${eventName}". Usa un evento estándar o un nombre personalizado con solo letras, números y guion bajo (máx 50).` });
     }
 
     const base = `https://graph.facebook.com/${GRAPH_VERSION}`;
