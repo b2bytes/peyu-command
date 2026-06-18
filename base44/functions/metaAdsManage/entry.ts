@@ -51,6 +51,48 @@ Deno.serve(async (req) => {
     const base = `https://graph.facebook.com/${GRAPH_VERSION}`;
     const t = encodeURIComponent(token);
 
+    // ── Diagnóstico de integración (pixel + página + cuenta) ────────────────
+    if (action === 'diagnostico') {
+      const out = { ok: true, account_id: accountId };
+
+      // Cuenta publicitaria
+      const acctRes = await fetch(`${base}/${accountId}?fields=name,currency,account_status&access_token=${t}`);
+      const acct = await acctRes.json();
+      if (acct.error) return Response.json({ ok: false, ...diagnoseMetaError(acct.error) });
+      out.account = { name: acct.name, currency: acct.currency, status: acct.account_status, status_ok: acct.account_status === 1 };
+
+      // Píxeles (datasets) de la cuenta + su última actividad
+      const pixRes = await fetch(`${base}/${accountId}/adspixels?fields=id,name,last_fired_time,is_unavailable&access_token=${t}`);
+      const pix = await pixRes.json();
+      out.pixels = (pix.data || []).map(p => ({
+        id: p.id,
+        name: p.name,
+        last_fired_time: p.last_fired_time || null,
+        active: !p.is_unavailable && !!p.last_fired_time,
+      }));
+      out.pixel_ok = out.pixels.some(p => p.active);
+
+      // Página de Facebook asignada al System User
+      const pgRes = await fetch(`${base}/me/accounts?fields=id,name&limit=10&access_token=${t}`);
+      const pg = await pgRes.json();
+      out.pages = (pg.data || []).map(p => ({ id: p.id, name: p.name }));
+      out.page_ok = out.pages.length > 0;
+
+      // Conjunto Instagram conectado (vía página)
+      out.instagram_ok = false;
+      if (out.pages[0]) {
+        const igRes = await fetch(`${base}/${out.pages[0].id}?fields=instagram_business_account{id,username}&access_token=${t}`);
+        const ig = await igRes.json();
+        if (ig.instagram_business_account) {
+          out.instagram = { id: ig.instagram_business_account.id, username: ig.instagram_business_account.username };
+          out.instagram_ok = true;
+        }
+      }
+
+      out.todo_ok = out.account.status_ok && out.pixel_ok && out.page_ok;
+      return Response.json(out);
+    }
+
     // ── Listar campañas con su estado y presupuesto ─────────────────────────
     if (action === 'list_campaigns') {
       const fields = 'id,name,status,effective_status,objective,daily_budget,lifetime_budget,start_time,stop_time';

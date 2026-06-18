@@ -8,6 +8,7 @@ import { base44 } from '@/api/base44Client';
 import {
   Send, Loader2, User, Facebook, TrendingUp, AlertCircle, RefreshCw,
   CheckCircle2, BarChart2, Target, Zap, Eye, MousePointerClick,
+  DollarSign, Activity, Instagram, ShieldCheck, XCircle,
 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import AgentLayout from './AgentLayout';
@@ -19,6 +20,7 @@ const QUICK_PROMPTS = [
   { icon: Target,           label: '¿Qué campaña escalar?',    prompt: 'Analiza el rendimiento de los últimos 30 días y dime qué campaña debería escalar (subir presupuesto) y cuál pausar, con el racional basado en CPA, ROAS y frecuencia.' },
   { icon: AlertCircle,      label: 'Detectar fatiga creativa', prompt: 'Revisa la frecuencia y el CTR de mis campañas activas y dime cuáles tienen fatiga de creativo o audiencia saturada, y qué hacer.' },
   { icon: Zap,              label: 'Plan Advantage+ B2C',      prompt: 'Diséñame un plan para migrar/escalar mis ventas B2C con Advantage+ Shopping Campaigns: estructura, presupuesto, públicos y estrategia creativa para PEYU.' },
+  { icon: ShieldCheck,      label: 'Verificar pixel e integración', prompt: 'Corre un diagnóstico completo de mi integración con Meta: verifica que el pixel esté activo y disparando, la página de Facebook y la cuenta de Instagram conectadas, y dime si todo está listo para optimizar a Compras/Leads o qué falta configurar.' },
 ];
 
 // Diagnóstico accionable según el motivo que devuelve metaAdsPerformance.
@@ -134,12 +136,18 @@ export default function MetaAdsPanel() {
   // Estado de rendimiento (columna derecha)
   const [perf, setPerf] = useState(null);
   const [perfLoading, setPerfLoading] = useState(true);
+  // Salud de la integración (pixel + página + IG)
+  const [health, setHealth] = useState(null);
 
   const loadPerf = useCallback(async () => {
     setPerfLoading(true);
     try {
-      const res = await base44.functions.invoke('metaAdsPerformance', { date_preset: 'last_30d' });
-      setPerf(res.data);
+      const [perfRes, healthRes] = await Promise.all([
+        base44.functions.invoke('metaAdsPerformance', { date_preset: 'last_30d' }),
+        base44.functions.invoke('metaAdsManage', { action: 'diagnostico' }),
+      ]);
+      setPerf(perfRes.data);
+      setHealth(healthRes.data?.ok ? healthRes.data : null);
     } catch (e) {
       setPerf({ connected: false, error: e.message });
     } finally {
@@ -243,10 +251,19 @@ export default function MetaAdsPanel() {
         </div>
       ) : (
         <>
+          {/* Salud de la integración */}
+          {health && <HealthCard health={health} />}
+
           {/* KPIs agregados */}
           <div className="grid grid-cols-2 gap-2">
             <KpiBox label="Inversión" value={fmtMoney(perf.totals.spend, currency)} icon={TrendingUp} accent="text-blue-300" />
             <KpiBox label="Conversiones" value={fmtNum(perf.totals.conversions)} icon={Target} accent="text-emerald-300" />
+            {perf.totals.conversion_value > 0 && (
+              <KpiBox label="Ingresos" value={fmtMoney(perf.totals.conversion_value, currency)} icon={DollarSign} accent="text-green-300" />
+            )}
+            {perf.totals.roas > 0 && (
+              <KpiBox label="ROAS" value={`${perf.totals.roas.toFixed(2)}x`} icon={Activity} accent="text-teal-300" />
+            )}
             <KpiBox label="CTR" value={`${perf.totals.ctr.toFixed(2)}%`} icon={MousePointerClick} accent="text-violet-300" />
             <KpiBox label="CPA" value={fmtMoney(perf.totals.cpa, currency)} icon={Zap} accent="text-amber-300" />
             <KpiBox label="Impresiones" value={fmtNum(perf.totals.impressions)} icon={Eye} accent="text-sky-300" />
@@ -263,12 +280,13 @@ export default function MetaAdsPanel() {
                 {perf.campaigns.slice(0, 8).map((c) => (
                   <div key={c.campaign_id} className="rounded-lg bg-white/[0.03] border border-white/[0.06] p-2">
                     <p className="text-[11px] font-semibold text-white/85 truncate">{c.campaign_name}</p>
-                    <div className="flex items-center gap-2 mt-1 text-[9px] text-white/50">
+                    <div className="flex items-center gap-2 mt-1 text-[9px] text-white/50 flex-wrap">
                       <span>{fmtMoney(c.spend, currency)}</span>
                       <span>·</span>
                       <span>CTR {c.ctr.toFixed(1)}%</span>
                       <span>·</span>
                       <span>{fmtNum(c.conversions)} conv</span>
+                      {c.roas > 0 && (<><span>·</span><span className="text-teal-300 font-semibold">ROAS {c.roas.toFixed(2)}x</span></>)}
                     </div>
                   </div>
                 ))}
@@ -351,6 +369,38 @@ function KpiBox({ label, value, icon: Icon, accent }) {
         <span className="text-[9px] text-white/40 uppercase tracking-wide">{label}</span>
       </div>
       <p className={`text-sm font-black leading-none ${accent}`}>{value}</p>
+    </div>
+  );
+}
+
+function HealthRow({ ok, label, detail }) {
+  return (
+    <div className="flex items-center gap-2">
+      {ok ? <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0" />
+          : <XCircle className="w-3.5 h-3.5 text-amber-400 flex-shrink-0" />}
+      <span className="text-[10px] text-white/70">{label}</span>
+      {detail && <span className="text-[9px] text-white/35 truncate ml-auto">{detail}</span>}
+    </div>
+  );
+}
+
+function HealthCard({ health }) {
+  const activePixel = (health.pixels || []).find(p => p.active);
+  const allOk = health.todo_ok;
+  return (
+    <div className={`rounded-xl border p-2.5 space-y-1.5 ${
+      allOk ? 'bg-emerald-500/[0.06] border-emerald-500/20' : 'bg-amber-500/[0.06] border-amber-500/20'
+    }`}>
+      <div className="flex items-center gap-1.5 mb-0.5">
+        <ShieldCheck className={`w-3.5 h-3.5 ${allOk ? 'text-emerald-400' : 'text-amber-400'}`} />
+        <span className="text-[10px] font-bold text-white/80 uppercase tracking-wide">
+          {allOk ? 'Integración OK' : 'Revisar integración'}
+        </span>
+      </div>
+      <HealthRow ok={health.pixel_ok} label="Pixel" detail={activePixel ? activePixel.name?.slice(0, 18) : 'inactivo'} />
+      <HealthRow ok={health.page_ok} label="Página FB" detail={health.pages?.[0]?.name} />
+      <HealthRow ok={health.instagram_ok} label="Instagram" detail={health.instagram?.username ? `@${health.instagram.username}` : '—'} />
+      <HealthRow ok={health.account?.status_ok} label="Cuenta activa" detail={health.account?.currency} />
     </div>
   );
 }

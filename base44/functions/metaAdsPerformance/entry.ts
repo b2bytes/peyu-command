@@ -82,6 +82,7 @@ Deno.serve(async (req) => {
       'campaign_name', 'campaign_id',
       'spend', 'impressions', 'clicks', 'ctr', 'cpc', 'cpm',
       'reach', 'frequency', 'actions', 'cost_per_action_type',
+      'action_values', 'purchase_roas',
     ].join(',');
     const insightsUrl = `${base}/${accountId}/insights?level=campaign&date_preset=${datePreset}&fields=${fields}&limit=200&access_token=${encodeURIComponent(token)}`;
     const insRes = await fetch(insightsUrl);
@@ -97,6 +98,13 @@ Deno.serve(async (req) => {
       const conversions = conv ? Number(conv.value) : 0;
       const spend = Number(d.spend || 0);
       const cpa = conversions > 0 ? spend / conversions : 0;
+      // Valor de conversión real (revenue) y ROAS desde Meta
+      const valObj = (d.action_values || []).find(a =>
+        ['purchase', 'offsite_conversion.fb_pixel_purchase', 'omni_purchase'].includes(a.action_type)
+      );
+      const conversion_value = valObj ? Number(valObj.value) : 0;
+      const roasObj = (d.purchase_roas || [])[0];
+      const roas = roasObj ? Number(roasObj.value) : (spend > 0 && conversion_value > 0 ? conversion_value / spend : 0);
       return {
         campaign_id: d.campaign_id,
         campaign_name: d.campaign_name,
@@ -109,18 +117,22 @@ Deno.serve(async (req) => {
         reach: Number(d.reach || 0),
         frequency: Number(d.frequency || 0),
         conversions,
+        conversion_value,
+        roas,
         cpa,
       };
     });
 
     // 3) KPIs agregados del periodo
     const totals = rows.reduce((t, r) => {
-      t.spend += r.spend; t.impressions += r.impressions; t.clicks += r.clicks; t.conversions += r.conversions;
+      t.spend += r.spend; t.impressions += r.impressions; t.clicks += r.clicks;
+      t.conversions += r.conversions; t.conversion_value += r.conversion_value;
       return t;
-    }, { spend: 0, impressions: 0, clicks: 0, conversions: 0 });
+    }, { spend: 0, impressions: 0, clicks: 0, conversions: 0, conversion_value: 0 });
     const totalCtr = totals.impressions > 0 ? (totals.clicks / totals.impressions) * 100 : 0;
     const totalCpc = totals.clicks > 0 ? totals.spend / totals.clicks : 0;
     const totalCpa = totals.conversions > 0 ? totals.spend / totals.conversions : 0;
+    const totalRoas = totals.spend > 0 && totals.conversion_value > 0 ? totals.conversion_value / totals.spend : 0;
 
     return Response.json({
       connected: true,
@@ -131,7 +143,7 @@ Deno.serve(async (req) => {
         account_status: acct.account_status,
       },
       date_preset: datePreset,
-      totals: { ...totals, ctr: totalCtr, cpc: totalCpc, cpa: totalCpa },
+      totals: { ...totals, ctr: totalCtr, cpc: totalCpc, cpa: totalCpa, roas: totalRoas },
       campaigns: rows.sort((a, b) => b.spend - a.spend),
     });
   } catch (error) {
