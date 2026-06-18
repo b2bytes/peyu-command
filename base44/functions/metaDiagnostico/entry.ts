@@ -9,16 +9,23 @@ Deno.serve(async (req) => {
     if (!user || user.role !== 'admin') return Response.json({ error: 'Forbidden' }, { status: 403 });
 
     const token = Deno.env.get('META_SYSTEM_USER_TOKEN');
-    let acct = (Deno.env.get('META_AD_ACCOUNT_ID') || '').trim();
+    const acct = (Deno.env.get('META_AD_ACCOUNT_ID') || '').trim();
     const acctNorm = acct.startsWith('act_') ? acct : `act_${acct}`;
     const base = `https://graph.facebook.com/${V}`;
-    const out = { account_id_ingresado: acct, account_id_normalizado: acctNorm };
+    const t = encodeURIComponent(token);
+    const out = { account_id: acct, account_id_normalizado: acctNorm };
 
-    // ¿Qué cuentas ve el token?
-    out.adaccounts_visibles = await fetch(`${base}/me/adaccounts?fields=id,name,account_status,currency&access_token=${encodeURIComponent(token)}`).then(r => r.json()).catch(e => ({ err: e.message }));
+    // 1. ¿A quién pertenece este token? (System User vs persona)
+    out.quien_soy = await fetch(`${base}/me?fields=id,name&access_token=${t}`).then(r => r.json()).catch(e => ({ err: e.message }));
 
-    // Intentar leer la cuenta directamente
-    out.cuenta_directa = await fetch(`${base}/${acctNorm}?fields=id,name,account_status,currency,business&access_token=${encodeURIComponent(token)}`).then(r => r.json()).catch(e => ({ err: e.message }));
+    // 2. ¿Qué permisos / scopes trae el token realmente?
+    out.token_debug = await fetch(`${base}/debug_token?input_token=${t}&access_token=${t}`).then(r => r.json()).catch(e => ({ err: e.message }));
+
+    // 3. ¿Qué businesses ve el token?
+    out.businesses = await fetch(`${base}/me/businesses?fields=id,name&access_token=${t}`).then(r => r.json()).catch(e => ({ err: e.message }));
+
+    // 4. Cuentas owned + client (no solo /me/adaccounts)
+    out.adaccounts = await fetch(`${base}/me/adaccounts?fields=id,name,account_status&access_token=${t}`).then(r => r.json()).catch(e => ({ err: e.message }));
 
     return Response.json(out);
   } catch (error) {
