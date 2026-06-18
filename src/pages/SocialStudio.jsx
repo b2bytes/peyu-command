@@ -5,7 +5,7 @@
 // stat bar viva arriba, segmented control glassmorphic, imágenes grandes.
 // ============================================================================
 import { useState, useEffect } from 'react';
-import { Sparkles, Layers, CheckSquare, Calendar, Link2, Image as ImageIcon, Send, Clock, Bot, Linkedin, Instagram, Wand2 } from 'lucide-react';
+import { Sparkles, Layers, CheckSquare, Calendar, Link2, Image as ImageIcon, Send, Clock, Bot, Linkedin, Instagram, Wand2, Megaphone } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import BulkGeneratorPanel from '@/components/social-studio/BulkGeneratorPanel';
 import ApprovalQueuePanel from '@/components/social-studio/ApprovalQueuePanel';
@@ -14,6 +14,7 @@ import BacklinksInsightsPanel from '@/components/social-studio/BacklinksInsights
 import SocialStudioHero from '@/components/social-studio/SocialStudioHero';
 import LinkedInConnectBanner from '@/components/social-studio/LinkedInConnectBanner';
 import MarketingAgentPanel from '@/components/social-studio/MarketingAgentPanel';
+import AdsAgentPanel from '@/components/social-studio/AdsAgentPanel';
 import LinkedInPanel from '@/components/social-studio/LinkedInPanel';
 import InstagramPanel from '@/components/social-studio/InstagramPanel';
 import CreatorPanel from '@/components/social-studio/CreatorPanel';
@@ -24,6 +25,7 @@ const TABS = [
   { id: 'queue',     label: 'Cola',        icon: CheckSquare, accent: 'from-amber-400 to-orange-500' },
   { id: 'creator',   label: 'Crear IA',    icon: Wand2,       accent: 'from-pink-500 to-violet-600' },
   { id: 'agent',     label: 'Agente',      icon: Bot,         accent: 'from-violet-500 to-pink-500' },
+  { id: 'ads',       label: 'Ads',         icon: Megaphone,   accent: 'from-cyan-500 to-blue-600' },
   { id: 'galeria',   label: 'Galería',     icon: ImageIcon,   accent: 'from-emerald-400 to-cyan-500' },
   { id: 'instagram', label: 'Instagram',   icon: Instagram,   accent: 'from-pink-500 to-purple-600' },
   { id: 'linkedin',  label: 'LinkedIn',    icon: Linkedin,    accent: 'from-sky-500 to-blue-600' },
@@ -129,6 +131,7 @@ export default function SocialStudio() {
           {tab === 'queue'     && <ApprovalQueuePanel refreshKey={refreshKey} onChange={triggerRefresh} />}
           {tab === 'creator'   && <CreatorPanel />}
           {tab === 'agent'     && <MarketingAgentPanel posts={allPosts} />}
+          {tab === 'ads'       && <AdsAgentPanel />}
           {tab === 'galeria'   && <MediaGalleryPanel />}
           {tab === 'instagram' && <InstagramPanel onPublished={triggerRefresh} />}
           {tab === 'linkedin'  && <LinkedInPanel onPublished={triggerRefresh} />}
