@@ -13,7 +13,7 @@ import EngravedLayer from '@/components/shopv2/EngravedLayer';
 //   capas    : item.capas_grabado → [{ tipo, url?, texto?, size, x, y }]
 //   alt      : nombre del producto
 // ════════════════════════════════════════════════════════════════════════
-export default function CartItemThumbV2({ imagen, capas = [], alt, fallback }) {
+export default function CartItemThumbV2({ imagen, capas = [], alt, fallback, snapshotUrl }) {
   const [tint, setTint] = useState('light');
   const [engraved, setEngraved] = useState({}); // url -> { dataUrl, ok, svg }
 
@@ -43,6 +43,26 @@ export default function CartItemThumbV2({ imagen, capas = [], alt, fallback }) {
     });
     return () => { cancelled = true; };
   }, [capas, tint]);
+
+  // ── CAMINO FIEL: si la ficha capturó un snapshot real del mockup aprobado
+  // (html2canvas), lo mostramos TAL CUAL como imagen plana. Es el diseño exacto
+  // que el cliente vio y aprobó — nada se recompone, nada se desarma. ───────
+  if (snapshotUrl) {
+    return (
+      <div className="relative w-full aspect-square rounded-xl overflow-hidden border border-[#D8CFC0] bg-[#FAF7F2]">
+        <img
+          src={snapshotUrl}
+          alt={alt}
+          referrerPolicy="no-referrer"
+          className="absolute inset-0 w-full h-full object-contain"
+          onError={(e) => {
+            // Si el snapshot no carga, cae a la foto base del producto.
+            if (fallback && e.currentTarget.src !== fallback) e.currentTarget.src = fallback;
+          }}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="relative w-full aspect-square rounded-xl overflow-hidden border border-[#D8CFC0] bg-[#FAF7F2]">

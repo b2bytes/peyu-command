@@ -13,6 +13,7 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell
 } from "recharts";
 import StockPorColorDialog from "@/components/inventario/StockPorColorDialog";
+import StockColoresResumen from "@/components/inventario/StockColoresResumen";
 import { getColoresProducto } from "@/lib/color-parser";
 
 const STOCK_MINIMO = {
@@ -169,6 +170,7 @@ export default function Inventario() {
       <Tabs defaultValue="tabla">
         <TabsList className="bg-muted">
           <TabsTrigger value="tabla">Tabla de Stock</TabsTrigger>
+          <TabsTrigger value="colores">Stock por Color</TabsTrigger>
           <TabsTrigger value="visual">Vista Visual</TabsTrigger>
           <TabsTrigger value="categoria">Por Categoría</TabsTrigger>
         </TabsList>
@@ -287,6 +289,11 @@ export default function Inventario() {
               </tbody>
             </table>
           </div>
+        </TabsContent>
+
+        {/* ── STOCK POR COLOR (solo lectura) ── */}
+        <TabsContent value="colores" className="mt-4">
+          <StockColoresResumen productos={productos} />
         </TabsContent>
 
         {/* ── VISUAL ── */}

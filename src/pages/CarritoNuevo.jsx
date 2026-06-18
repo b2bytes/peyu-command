@@ -81,9 +81,11 @@ export default function CarritoNuevo() {
                  <div key={item.id} className="flex gap-2 bg-white rounded-xl sm:rounded-2xl p-2 sm:p-2.5" style={{ border: '1.5px solid #D4C4B0' }}>
                    <div className="relative flex-shrink-0 w-14 h-14 sm:w-24 sm:h-24">
                     <CartItemThumbV2
-                      imagen={item.mockupUrl || item.imagen}
+                      snapshotUrl={item.mockupUrl && item.mockupUrl.startsWith('data:') ? item.mockupUrl : null}
+                      imagen={item.imagen_base || item.imagen}
                       capas={item.capas_grabado || []}
                       alt={item.nombre}
+                      fallback={item.imagen}
                     />
                     {(item.capas_grabado?.length > 0 || item.logoUrl || item.personalizacion) && (
                       <span className="absolute -top-1 -right-1 bg-[#D96B4D] text-white text-[8px] sm:text-[9px] font-bold px-1 sm:px-1.5 py-0.5 rounded-full shadow z-10">

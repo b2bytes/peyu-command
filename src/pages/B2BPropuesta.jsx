@@ -12,6 +12,7 @@ import {
   Leaf, Building2, Zap, AlertCircle, ChevronDown, ChevronUp,
 } from 'lucide-react';
 import { fmtCLP } from '@/lib/shop-v2-cart';
+import LineaProductoPropuesta from '@/components/b2b/LineaProductoPropuesta';
 
 const IVA = 0.19;
 
@@ -57,60 +58,6 @@ function ImpactBar({ qtyTotal }) {
           </div>
         ))}
       </div>
-    </div>
-  );
-}
-
-function LineaProducto({ linea, idx }) {
-  const [open, setOpen] = useState(false);
-  const descPct = linea.descuento_pct || linea.ahorro_pct || 0;
-  return (
-    <div className="rounded-2xl overflow-hidden" style={{ border: '1.5px solid #EDE3D6', background: idx % 2 === 0 ? 'white' : '#FAF7F2' }}>
-      <button
-        onClick={() => setOpen(o => !o)}
-        className="w-full flex items-center justify-between gap-3 px-4 py-3.5 text-left"
-      >
-        <div className="flex items-center gap-3 min-w-0">
-          <div className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0"
-            style={{ background: '#0F8B6C15' }}>
-            <Package className="w-4 h-4" style={{ color: '#0F8B6C' }} />
-          </div>
-          <div className="min-w-0">
-            <p className="text-sm font-bold truncate" style={{ color: '#2C1810' }}>
-              {linea.cantidad || linea.qty}× {linea.nombre || linea.name}
-            </p>
-            <p className="text-[11px]" style={{ color: '#A08070' }}>
-              {fmtCLP(linea.precio_unitario)}/u · {linea.tier || linea.tramo}
-              {descPct > 0 && <span className="ml-1.5 text-[#D96B4D]">−{descPct}%</span>}
-            </p>
-          </div>
-        </div>
-        <div className="flex items-center gap-2.5 flex-shrink-0">
-          <span className="font-bold" style={{ color: '#2C1810' }}>
-            {fmtCLP(linea.line_total || linea.subtotal)}
-          </span>
-          {open ? <ChevronUp className="w-4 h-4" style={{ color: '#A08070' }} /> : <ChevronDown className="w-4 h-4" style={{ color: '#A08070' }} />}
-        </div>
-      </button>
-      {open && (
-        <div className="px-4 pb-4 pt-0">
-          <div className="h-px mb-3" style={{ background: '#EDE3D6' }} />
-          <div className="grid grid-cols-2 gap-2 text-[11px]">
-            {[
-              { l: 'Cantidad', v: `${linea.cantidad || linea.qty} unidades` },
-              { l: 'Precio unitario (neto)', v: fmtCLP(linea.precio_unitario) },
-              { l: 'Tramo aplicado', v: linea.tier || linea.tramo || '—' },
-              { l: 'Subtotal neto', v: fmtCLP(linea.line_total || linea.subtotal) },
-              { l: 'Logo láser', v: (linea.cantidad || linea.qty) >= 10 ? '✓ Gratis' : 'Aplica cargo' },
-            ].map(({ l, v }) => (
-              <div key={l} className="rounded-xl p-2.5" style={{ background: '#F8F3ED' }}>
-                <p style={{ color: '#A08070' }}>{l}</p>
-                <p className="font-bold mt-0.5" style={{ color: '#2C1810' }}>{v}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
     </div>
   );
 }
@@ -194,14 +141,30 @@ export default function B2BPropuesta() {
   const [error, setError] = useState('');
   const [accepted, setAccepted] = useState(false);
   const [showAccept, setShowAccept] = useState(action === 'accept');
+  const [productosMap, setProductosMap] = useState({}); // sku → Producto (ficha técnica)
 
   useEffect(() => {
     if (!proposalId) { setLoading(false); setError('Sin ID de propuesta.'); return; }
     base44.entities.CorporateProposal.filter({ id: proposalId })
-      .then(rows => {
+      .then(async (rows) => {
         if (!rows || !rows[0]) { setError('Propuesta no encontrada.'); return; }
-        setProp(rows[0]);
-        if (rows[0].status === 'Aceptada') setAccepted(true);
+        const p = rows[0];
+        setProp(p);
+        if (p.status === 'Aceptada') setAccepted(true);
+        // Enriquecer las líneas con la ficha técnica real de cada producto (por SKU).
+        try {
+          const items = p.items_json ? JSON.parse(p.items_json) : [];
+          const skus = [...new Set(items.map((l) => l.sku).filter(Boolean))];
+          if (skus.length) {
+            const all = await base44.entities.Producto.list('-updated_date', 500);
+            const map = {};
+            skus.forEach((sku) => {
+              const hit = all.find((pr) => pr.sku === sku);
+              if (hit) map[sku] = hit;
+            });
+            setProductosMap(map);
+          }
+        } catch { /* la ficha técnica es best-effort */ }
       })
       .catch(() => setError('No se pudo cargar la propuesta.'))
       .finally(() => setLoading(false));
@@ -326,12 +289,12 @@ export default function B2BPropuesta() {
           </div>
         </div>
 
-        {/* Detalle de productos */}
+        {/* Detalle de productos con ficha técnica real de lo cotizado */}
         <div>
-          <p className="text-[10px] font-bold uppercase tracking-widest mb-2.5 px-1" style={{ color: '#A08070' }}>Detalle del pedido</p>
+          <p className="text-[10px] font-bold uppercase tracking-widest mb-2.5 px-1" style={{ color: '#A08070' }}>Productos cotizados · ficha técnica</p>
           <div className="space-y-2">
             {items.map((linea, i) => (
-              <LineaProducto key={i} linea={linea} idx={i} />
+              <LineaProductoPropuesta key={i} linea={linea} producto={productosMap[linea.sku]} idx={i} />
             ))}
           </div>
         </div>
