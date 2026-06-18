@@ -32,9 +32,22 @@ Deno.serve(async (req) => {
     const targetH = Math.round(logo.height * scale);
     logo.resize(targetW, targetH);
 
-    // 3 · Canvas 1024×1024 blanco opaco
+    // 2b · Hacer transparente el fondo claro del logo (todo pixel casi-blanco → alpha 0)
+    for (let i = 0; i < logo.width * logo.height; i++) {
+      const x = (i % logo.width) + 1;
+      const y = Math.floor(i / logo.width) + 1;
+      const px = logo.getPixelAt(x, y);
+      const r = (px >> 24) & 0xff;
+      const g = (px >> 16) & 0xff;
+      const b = (px >> 8) & 0xff;
+      if (r > 235 && g > 235 && b > 235) {
+        logo.setPixelAt(x, y, 0x00000000); // transparente
+      }
+    }
+
+    // 3 · Canvas 1024×1024 TRANSPARENTE
     const canvas = new Image(SIZE, SIZE);
-    canvas.fill(0xffffffff); // blanco RGBA
+    canvas.fill(0x00000000); // RGBA transparente
 
     // 4 · Componer el logo centrado
     const x = Math.round((SIZE - targetW) / 2);
