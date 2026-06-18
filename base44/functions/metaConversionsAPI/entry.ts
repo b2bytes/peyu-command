@@ -50,15 +50,21 @@ function diagnoseMetaError(err) {
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
-    if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
-    if (user.role !== 'admin') return Response.json({ error: 'Forbidden' }, { status: 403 });
+    const body = await req.json().catch(() => ({}));
+
+    // Auth: las llamadas internas server-side (mpWebhook, onNewB2BLead) pasan
+    // internal:true y vienen vía asServiceRole — se confían. Las llamadas desde
+    // el agente/UI exigen un admin autenticado.
+    if (!body.internal) {
+      const user = await base44.auth.me();
+      if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
+      if (user.role !== 'admin') return Response.json({ error: 'Forbidden' }, { status: 403 });
+    }
 
     const token = Deno.env.get('META_SYSTEM_USER_TOKEN');
     const accountId = fmtAccountId(Deno.env.get('META_AD_ACCOUNT_ID'));
     if (!token || !accountId) return Response.json({ ok: false, error: 'Faltan credenciales de Meta.' });
 
-    const body = await req.json().catch(() => ({}));
     const eventName = body.event_name;
     const validEvents = ['Purchase', 'Lead', 'AddToCart', 'InitiateCheckout', 'CompleteRegistration', 'ViewContent', 'Search', 'Contact'];
     if (!eventName || !validEvents.includes(eventName)) {
@@ -97,6 +103,7 @@ Deno.serve(async (req) => {
     const custom_data = {};
     if (body.value != null) custom_data.value = Number(body.value);
     custom_data.currency = body.currency || 'CLP';
+    if (body.content_name) custom_data.content_name = String(body.content_name);
     if (Array.isArray(body.contents) && body.contents.length) {
       custom_data.contents = body.contents.map(c => ({
         id: String(c.id), quantity: Number(c.quantity || 1), item_price: c.item_price != null ? Number(c.item_price) : undefined,

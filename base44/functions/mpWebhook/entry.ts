@@ -137,6 +137,7 @@ Deno.serve(async (req) => {
       // pixel del navegador. No bloqueante.
       try {
         await base44.asServiceRole.functions.invoke('metaConversionsAPI', {
+          internal: true,
           event_name: 'Purchase',
           value: Number(pedido.total || transactionAmount || 0),
           currency: 'CLP',

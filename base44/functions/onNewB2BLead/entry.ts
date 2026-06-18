@@ -181,6 +181,27 @@ ${lead.notes ? `\nNotas:\n${lead.notes}` : ''}
       log.steps.push({ step: 'notify', ok: false, error: e.message });
     }
 
+    // 5) META CONVERSIONS API — registra el LEAD real en el pixel de PEYU.
+    // Server-side: con advanced matching (email/teléfono hasheados) mide la
+    // calidad real y permite optimizar campañas a Leads. event_id = leadId para
+    // deduplicar. No bloqueante. El valor refleja la calidad del lead (score).
+    try {
+      await base44.asServiceRole.functions.invoke('metaConversionsAPI', {
+        internal: true,
+        event_name: 'Lead',
+        value: leadScore || undefined,
+        currency: 'CLP',
+        email: lead.email || undefined,
+        phone: lead.phone || undefined,
+        event_id: `lead-${leadId}`,
+        event_source_url: 'https://peyuchile.cl/EmpresasNuevo',
+        content_name: lead.product_interest || 'Cotización B2B',
+      });
+      log.steps.push({ step: 'meta_lead', ok: true });
+    } catch (e) {
+      log.steps.push({ step: 'meta_lead', ok: false, error: e.message });
+    }
+
     return Response.json({
       success: true,
       leadScore,
