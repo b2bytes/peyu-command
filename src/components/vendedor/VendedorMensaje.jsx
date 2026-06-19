@@ -1,13 +1,15 @@
 import { Link } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
 import { stripTags, extractSkus, extractNavs, extractCartActions, RE_CHECKOUT } from '@/lib/vendedor-chat';
-import VendedorProductCard from './VendedorProductCard';
+import VendedorMarkdown from './VendedorMarkdown';
+import VendedorProductGrid from './VendedorProductGrid';
 import VendedorCartCard from './VendedorCartCard';
 
 // Burbuja de mensaje del chat vendedor. Para el agente, parsea los tags
 // [[PRODUCTO]], [[CART]], [[CHECKOUT]] y [[NAV]] y los renderiza como
 // tarjetas de producto, carrito en vivo y botones — el flujo completo de
-// compra vive DENTRO de la conversación.
+// compra vive DENTRO de la conversación. El texto se renderiza con formato
+// real (negritas, listas) en vez del markdown crudo.
 export default function VendedorMensaje({ msg, productosBySku, isLast = false }) {
   const isUser = msg.role === 'user';
   const texto = stripTags(msg.content);
@@ -18,29 +20,28 @@ export default function VendedorMensaje({ msg, productosBySku, isLast = false })
   // El carrito vivo se muestra solo en el ÚLTIMO mensaje con acción de compra,
   // para no apilar carritos repetidos en el historial.
   const muestraCarrito = isLast && (tieneCart || tieneCheckout);
+  const productos = skus.map((s) => productosBySku[s]).filter(Boolean);
 
-  if (!texto && !skus.length && !navs.length && !muestraCarrito) return null;
+  if (!texto && !productos.length && !navs.length && !muestraCarrito) return null;
 
   return (
     <div className={`flex ${isUser ? 'justify-end' : 'justify-start'}`}>
-      <div className={`max-w-[88%] space-y-2 ${isUser ? 'items-end' : 'items-start'} flex flex-col`}>
+      <div className={`${isUser ? 'max-w-[85%] items-end' : 'max-w-[92%] lg:max-w-[88%] items-start'} space-y-2 flex flex-col w-full`}>
         {texto && (
           <div
-            className={`rounded-2xl px-3.5 py-2.5 text-[13px] leading-relaxed whitespace-pre-wrap ${
-              isUser ? 'text-white rounded-br-md' : 'rounded-bl-md'
-            }`}
+            className={`rounded-2xl px-3.5 py-2.5 ${isUser ? 'rounded-br-md' : 'rounded-bl-md shadow-sm'}`}
             style={isUser
               ? { background: 'linear-gradient(135deg,#0F8B6C,#0B6E55)' }
-              : { background: 'white', border: '1px solid #E7D8C6', color: '#2C1810' }}
+              : { background: 'white', border: '1px solid #E7D8C6' }}
           >
-            {texto}
+            <VendedorMarkdown isUser={isUser}>{texto}</VendedorMarkdown>
           </div>
         )}
 
         {/* Tarjetas de producto solo si no se muestra el carrito (evita ruido) */}
-        {!muestraCarrito && skus.map((sku) => (
-          <VendedorProductCard key={sku} producto={productosBySku[sku]} />
-        ))}
+        {!muestraCarrito && productos.length > 0 && (
+          <VendedorProductGrid productos={productos} />
+        )}
 
         {/* Carrito EN VIVO dentro del chat: editar, eliminar y pagar */}
         {muestraCarrito && <VendedorCartCard showCheckout />}

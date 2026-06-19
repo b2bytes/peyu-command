@@ -161,20 +161,20 @@ export default function VendedorChatBar() {
   // ── Layout mobile: full-screen (100vh) con safe areas ─────────────────
   return (
     <>
-      {/* Panel de conversación — full-screen en mobile, flotante en desktop */}
+      {/* Panel de conversación — full-screen en mobile, panel lateral grande en desktop */}
       {open && (
-        <div className="fixed inset-0 lg:inset-auto z-[110] flex flex-col lg:left-1/2 lg:-translate-x-1/2 lg:w-[calc(100%-1rem)] lg:max-w-xl lg:bottom-4 lg:mb-2 lg:rounded-3xl lg:overflow-hidden lg:shadow-2xl lg:max-h-[min(65vh,600px)]"
-          style={{ background: 'rgba(248,243,237,.97)', backdropFilter: 'blur(20px)', border: '1.5px solid #D4C4B0' }}>
+        <div className="fixed inset-0 lg:inset-auto z-[110] flex flex-col lg:right-5 lg:bottom-5 lg:left-auto lg:w-[440px] xl:w-[480px] lg:rounded-3xl lg:overflow-hidden lg:shadow-2xl lg:h-[calc(100vh-2.5rem)] lg:max-h-[760px]"
+          style={{ background: 'rgba(248,243,237,.98)', backdropFilter: 'blur(20px)', border: '1.5px solid #D4C4B0', boxShadow: '0 24px 70px rgba(44,24,16,.28)' }}>
 
           {/* Header */}
-          <div className="flex items-center justify-between px-4 py-2.5 flex-shrink-0 pt-safe"
+          <div className="flex items-center justify-between px-4 py-3 flex-shrink-0 pt-safe"
             style={{ borderBottom: '1px solid #E7D8C6', background: 'white' }}>
-            <div className="flex items-center gap-2">
-              <span className="w-8 h-8 rounded-full flex items-center justify-center overflow-hidden" style={{ background: 'rgba(15,139,108,.12)' }}>
-                <img src="https://media.base44.com/images/public/69d99b9d61f699701129c103/b67ed29f9_image.png" alt="PEYU" className="w-5 h-5 object-contain" draggable={false} />
+            <div className="flex items-center gap-2.5">
+              <span className="w-10 h-10 rounded-full flex items-center justify-center overflow-hidden" style={{ background: 'rgba(15,139,108,.12)' }}>
+                <img src="https://media.base44.com/images/public/69d99b9d61f699701129c103/b67ed29f9_image.png" alt="PEYU" className="w-6 h-6 object-contain" draggable={false} />
               </span>
               <div>
-                <p className="text-xs font-bold" style={{ color: '#2C1810' }}>Peyu · Vendedor</p>
+                <p className="text-sm font-bold" style={{ color: '#2C1810' }}>Peyu · Vendedor</p>
                 <p className="text-[10px] font-semibold flex items-center gap-1" style={{ color: '#0F8B6C' }}>
                   <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: '#0F8B6C' }} /> En línea — compra aquí mismo
                 </p>
@@ -202,12 +202,12 @@ export default function VendedorChatBar() {
           </div>
 
           {/* Mensajes — ocupa el espacio disponible */}
-          <div ref={scrollRef} className="flex-1 overflow-y-auto peyu-scrollbar px-3.5 py-3 space-y-3">
+          <div ref={scrollRef} className="flex-1 overflow-y-auto peyu-scrollbar px-3.5 lg:px-4 py-3 lg:py-4 space-y-3">
             {msgs.length === 0 && (
-              <div className="text-center pt-6 px-4">
-                <p className="text-2xl mb-2">🐢</p>
-                <p className="text-sm font-bold" style={{ color: '#2C1810' }}>¡Hola! Soy Peyu, tu vendedor</p>
-                <p className="text-xs mt-1 mb-4" style={{ color: '#7A6050' }}>
+              <div className="text-center pt-8 lg:pt-12 px-4">
+                <p className="text-4xl mb-3">🐢</p>
+                <p className="text-base font-bold" style={{ color: '#2C1810' }}>¡Hola! Soy Peyu, tu vendedor</p>
+                <p className="text-sm mt-1.5 mb-5 max-w-xs mx-auto" style={{ color: '#7A6050' }}>
                   Dime qué buscas y te muestro productos reales, los agrego a tu carro y pagas sin salir del chat 💚
                 </p>
                 <div className="flex flex-wrap justify-center gap-2">
@@ -215,7 +215,7 @@ export default function VendedorChatBar() {
                     <button
                       key={c}
                       onClick={() => handleSend(c)}
-                      className="text-[11px] font-bold px-3 py-2 rounded-full transition-all hover:bg-[#F0E8DE] active:scale-95"
+                      className="text-xs font-bold px-3.5 py-2.5 rounded-full transition-all hover:bg-[#F0E8DE] hover:-translate-y-0.5 active:scale-95"
                       style={{ background: 'white', border: '1.5px solid #D4C4B0', color: '#2C1810' }}>
                       {c}
                     </button>
