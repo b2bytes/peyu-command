@@ -95,8 +95,10 @@ function autoLayout(capas, area, esCarcasa = true) {
 function clampToArea(x, y, sizePct, tipo, area) {
   const A = area || AREA_CARCASA;
   const aw = A.right - A.left;
+  // La frase ahora puede envolver en varias líneas → reservamos un poco más de
+  // alto para que su bloque no se salga del área de grabado por arriba/abajo.
   const halfW = tipo === 'frase' ? Math.min(sizePct * 0.9, aw / 2) : sizePct / 2;
-  const halfH = tipo === 'frase' ? sizePct * 0.18 : sizePct / 2;
+  const halfH = tipo === 'frase' ? Math.max(sizePct * 0.28, 8) : sizePct / 2;
   return {
     x: Math.max(A.left + halfW, Math.min(A.right - halfW, x)),
     y: Math.max(A.top + halfH, Math.min(A.bottom - halfH, y)),

@@ -52,17 +52,35 @@ function maskStyle(dataUrl) {
 
 export default function EngravedLayer({ eng, tipo, texto, sizePct, tint, productImg }) {
    // ── FRASE ────────────────────────────────────────────────────────────
+   // El texto se AUTO-ADAPTA al espacio de grabado: se envuelve en varias líneas
+   // y reduce su tamaño de letra cuanto más largo es, para caber siempre dentro
+   // del ancho del área láser (definido por sizePct) sin cortarse ni desbordar.
    if (tipo === 'frase') {
-     if (!texto?.trim()) return null;
+     const txt = texto?.trim();
+     if (!txt) return null;
+     // Escala dinámica: arranca grande y se achica progresivamente con el largo.
+     // Calibrado para que ~3 chars se vean grandes y ~80 chars sigan legibles.
+     const len = txt.length;
+     const escala = Math.max(0.16, Math.min(0.42, 5.2 / Math.sqrt(len + 4)));
+     // El ancho de la frase se limita al ancho del área de grabado (sizePct del
+     // lienzo). Multiplicamos por ~2.2 porque sizePct es relativo al lienzo y la
+     // frase puede ocupar un poco más de su "slot" base sin salirse del producto.
+     const anchoMax = Math.min(46, sizePct * 2.2);
      return (
        <span
          className="pointer-events-none"
          style={{
-           fontSize: `${sizePct * 0.42}px`,
+           fontSize: `${sizePct * escala}px`,
+           lineHeight: 1.12,
            fontFamily: '"Hanken Grotesk", sans-serif', fontWeight: 600,
            color: INK[tint],
-           letterSpacing: '0.12em', whiteSpace: 'nowrap',
-           maxWidth: '38vw', overflow: 'hidden', textOverflow: 'ellipsis', display: 'inline-block',
+           letterSpacing: '0.08em',
+           textAlign: 'center',
+           whiteSpace: 'normal',
+           wordBreak: 'break-word',
+           overflowWrap: 'break-word',
+           maxWidth: `${anchoMax}vw`,
+           display: 'inline-block',
            // Bisel del láser en el texto (mismo lenguaje que los gráficos).
            textShadow: tint === 'light'
              ? '0 0.8px 0.5px rgba(0,0,0,0.55), 0 -0.6px 0.5px rgba(255,255,255,0.25)'
@@ -70,7 +88,7 @@ export default function EngravedLayer({ eng, tipo, texto, sizePct, tint, product
            mixBlendMode: tint === 'light' ? 'soft-light' : 'multiply',
          }}
        >
-         {texto.toUpperCase()}
+         {txt.toUpperCase()}
        </span>
      );
    }

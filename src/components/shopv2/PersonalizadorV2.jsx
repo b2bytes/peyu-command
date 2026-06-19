@@ -94,13 +94,14 @@ export default function PersonalizadorV2({ pers, setPers, gratis, moq = 10, solo
       {/* FRASE */}
       {pers.frase && (
         <div className="mt-3">
-          <input
+          <textarea
             value={pers.texto}
-            onChange={(e) => editar({ texto: e.target.value.slice(0, 20) })}
-            placeholder="Tu nombre, frase o empresa..."
-            className="w-full h-11 px-4 rounded-xl bg-white border border-[#EBE3D6] text-center font-bold tracking-wide text-[#2A2420] placeholder:text-[#A78B6F] focus:outline-none focus:border-[#0F8B6C] focus:ring-2 focus:ring-[#0F8B6C]/15"
+            onChange={(e) => editar({ texto: e.target.value.slice(0, 120) })}
+            placeholder="Tu nombre, frase, dedicatoria o empresa..."
+            rows={2}
+            className="w-full px-4 py-3 rounded-xl bg-white border border-[#EBE3D6] text-center font-bold tracking-wide text-[#2A2420] placeholder:text-[#A78B6F] focus:outline-none focus:border-[#0F8B6C] focus:ring-2 focus:ring-[#0F8B6C]/15 resize-none leading-snug"
           />
-          <p className="text-[11px] text-right text-[#A78B6F] mt-1 font-bold">{pers.texto.length}/20</p>
+          <p className="text-[11px] text-right text-[#A78B6F] mt-1 font-bold">{pers.texto.length}/120 · el grabado se ajusta solo al espacio</p>
         </div>
       )}
 
