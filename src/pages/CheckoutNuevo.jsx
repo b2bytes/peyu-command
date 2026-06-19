@@ -16,6 +16,7 @@ import { calcularCargoPersonalizacionCarrito, calcularCargoPersonalizacion, getT
 import { computeQtyDiscountBySku } from '@/lib/volume-discount';
 import { normalizarRut } from '@/lib/rut-chile';
 import { trackPurchase } from '@/lib/analytics-peyu';
+import { trackInitiateCheckout } from '@/lib/meta-pixel';
 
 // ════════════════════════════════════════════════════════════════════════
 // /CheckoutNuevo — Checkout 1 página mobile-first del Shop v2 (Tema 6).
@@ -88,6 +89,22 @@ export default function CheckoutNuevo() {
     }
     return m;
   }, [descLineas]);
+
+  // 📊 Meta Pixel — InitiateCheckout al entrar al checkout (faltaba: Meta solo
+  // veía PageView aquí). Una sola vez por carga, con value + contents reales.
+  const icSentRef = useRef(false);
+  useEffect(() => {
+    if (icSentRef.current || carrito.length === 0) return;
+    icSentRef.current = true;
+    trackInitiateCheckout({
+      value: total,
+      num_items: carrito.reduce((s, i) => s + (Number(i.cantidad) || 1), 0),
+      contents: carrito
+        .filter((i) => i.sku)
+        .map((i) => ({ id: String(i.sku), quantity: Number(i.cantidad) || 1, item_price: Number(i.precio) || 0 })),
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [carrito.length]);
 
   // Sección de envío "completa" → marca el check verde y muestra resumen al cerrarla.
   const envioCompleto = Object.keys(validarShippingForm(cliente)).length === 0;

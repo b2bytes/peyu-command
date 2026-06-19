@@ -20,36 +20,55 @@ function track(event, params, eventID) {
   }
 }
 
-// Vio un producto (ficha de detalle)
-export function trackViewContent({ id, name, value, currency = 'CLP' } = {}) {
+// ID de evento estable y único por disparo. Meta deduplica el evento del
+// navegador contra el del server (Conversions API) cuando comparten event_id.
+// Para Purchase usamos el nº de pedido (pedido-N) → matchea al server. Para el
+// resto generamos un ID único de navegador que el server-side puede reusar.
+function genEventID(prefix) {
+  const rnd = Math.random().toString(36).slice(2, 10);
+  return `${prefix}-${Date.now()}-${rnd}`;
+}
+
+// Vio un producto (ficha de detalle). Devuelve el eventID para que el
+// server-side (metaConversionsAPI) pueda reusarlo y deduplicar.
+export function trackViewContent({ id, name, value, currency = 'CLP', contents } = {}) {
+  const eventID = genEventID('vc');
   track('ViewContent', {
     content_ids: id ? [String(id)] : undefined,
     content_name: name,
     content_type: 'product',
+    contents: contents || (id ? [{ id: String(id), quantity: 1, item_price: value != null ? Number(value) : undefined }] : undefined),
     value: value != null ? Number(value) : undefined,
     currency,
-  });
+  }, eventID);
+  return eventID;
 }
 
 // Agregó al carrito
 export function trackAddToCart({ id, name, value, quantity = 1, currency = 'CLP' } = {}) {
+  const eventID = genEventID('atc');
   track('AddToCart', {
     content_ids: id ? [String(id)] : undefined,
     content_name: name,
     content_type: 'product',
-    contents: id ? [{ id: String(id), quantity: Number(quantity) }] : undefined,
+    contents: id ? [{ id: String(id), quantity: Number(quantity), item_price: value != null ? Number(value) / Math.max(1, Number(quantity)) : undefined }] : undefined,
     value: value != null ? Number(value) : undefined,
     currency,
-  });
+  }, eventID);
+  return eventID;
 }
 
 // Inició el checkout
-export function trackInitiateCheckout({ value, num_items, currency = 'CLP' } = {}) {
+export function trackInitiateCheckout({ value, num_items, contents, currency = 'CLP' } = {}) {
+  const eventID = genEventID('ic');
   track('InitiateCheckout', {
     value: value != null ? Number(value) : undefined,
     num_items: num_items != null ? Number(num_items) : undefined,
+    contents: contents || undefined,
+    content_type: 'product',
     currency,
-  });
+  }, eventID);
+  return eventID;
 }
 
 // Lead B2B (formulario corporativo / cotización)

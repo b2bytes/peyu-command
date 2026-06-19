@@ -124,8 +124,12 @@ export default function ProductoNuevo() {
   }, [id]);
 
   // 📊 Meta Pixel — ViewContent al cargar la ficha del producto.
+  // Solo una vez por SKU para no inflar el evento. Incluye value + contents
+  // y un eventID interno para deduplicar con la Conversions API server-side.
+  const vcSentRef = useRef(null);
   useEffect(() => {
-    if (!producto) return;
+    if (!producto || vcSentRef.current === producto.sku) return;
+    vcSentRef.current = producto.sku;
     trackViewContent({ id: producto.sku, name: producto.nombre, value: producto.precio_b2c || 9990 });
   }, [producto]);
 
