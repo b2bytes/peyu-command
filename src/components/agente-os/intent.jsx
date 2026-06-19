@@ -16,7 +16,13 @@ export function detectCards(text) {
   // Pedidos PARA CREAR ETIQUETA: pagados sin OT, listos para emitir BlueExpress.
   const quiereEtiqueta = has(['crear etiqueta', 'para etiqueta', 'generar etiqueta', 'hacer etiqueta', 'emitir etiqueta', 'sacar etiqueta', 'para despachar', 'por despachar', 'listos para despacho', 'listo para despacho']);
 
-  if (has(['pipeline', 'flujo de pedidos', 'flujo completo', 'embudo de pedidos', 'gestionar pedidos', 'gestionar todo', 'confirmar pagos', 'generar etiquetas', 'etiquetas en lote', 'varios pedidos', 'en lote', 'de principio a fin'])) {
+  // Etiquetas POR VOLUMEN / impresión masiva → tarjeta dedicada de selección
+  // múltiple + generación en lote + impresión rápida desde el chat.
+  const quiereEtiquetasMasivo = has(['etiquetas en lote', 'etiquetas por volumen', 'generar etiquetas', 'imprimir etiquetas', 'imprimir todas', 'todas las etiquetas', 'etiquetas masivo', 'etiquetas masivas', 'varias etiquetas', 'imprimir despacho', 'imprimir despachos']);
+
+  if (quiereEtiquetasMasivo) {
+    cards.push({ type: 'bulk_labels' });
+  } else if (has(['pipeline', 'flujo de pedidos', 'flujo completo', 'embudo de pedidos', 'gestionar pedidos', 'gestionar todo', 'confirmar pagos', 'varios pedidos', 'en lote', 'de principio a fin'])) {
     cards.push({ type: 'pipeline' });
   } else if (quierePorPagar) {
     cards.push({ type: 'orders', filtro: 'por_pagar' });

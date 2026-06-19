@@ -227,6 +227,76 @@ Deno.serve(async (req) => {
         });
       }
 
+      case 'generarEtiquetasMasivo': {
+        // Generación POR VOLUMEN de etiquetas BlueExpress desde el chat.
+        // Si vienen payload.ids → usa esos pedidos; si no, detecta automáticamente
+        // los "Listo para Despacho" pagados sin tracking. Genera cada OT reusando
+        // generarEtiquetaB2CBlueExpress y devuelve resultados listos para imprimir.
+        const ESTADOS_PAGADOS = ['Confirmado', 'En Producción', 'Listo para Despacho', 'Despachado', 'Entregado'];
+        let pedidos = [];
+        if (Array.isArray(payload.ids) && payload.ids.length) {
+          const todos = await Promise.all(payload.ids.map((id) => svc.PedidoWeb.filter({ id }).then((r) => r[0]).catch(() => null)));
+          pedidos = todos.filter(Boolean);
+        } else {
+          const listos = await svc.PedidoWeb.filter({ estado: 'Listo para Despacho' }, '-fecha', 100);
+          pedidos = listos.filter((p) => !p.tracking);
+        }
+
+        // Filtrar a los elegibles: pagados y sin tracking ya emitido.
+        const elegibles = pedidos.filter((p) => {
+          const pagadoOk = p.payment_status === 'paid' || ESTADOS_PAGADOS.includes(p.estado);
+          return pagadoOk && !p.tracking;
+        });
+
+        if (!elegibles.length) {
+          return Response.json({ ok: true, message: 'No hay pedidos pagados sin etiqueta para generar.', generadas: 0, resultados: [] });
+        }
+
+        const resultados = [];
+        let okCount = 0;
+        for (const pedido of elegibles) {
+          try {
+            const res = await base44.asServiceRole.functions.invoke('generarEtiquetaB2CBlueExpress', { pedido_id: pedido.id, pedido });
+            const d = res?.data ?? res;
+            if (d?.ok) {
+              okCount++;
+              resultados.push({
+                pedido_id: pedido.id,
+                numero_pedido: pedido.numero_pedido,
+                cliente_nombre: pedido.cliente_nombre,
+                ok: true,
+                tracking: d.tracking_number || null,
+                label_url: d.label_url || null,
+              });
+            } else {
+              resultados.push({
+                pedido_id: pedido.id,
+                numero_pedido: pedido.numero_pedido,
+                cliente_nombre: pedido.cliente_nombre,
+                ok: false,
+                error: d?.error || d?.reason || 'Error generando etiqueta',
+              });
+            }
+          } catch (e) {
+            resultados.push({
+              pedido_id: pedido.id,
+              numero_pedido: pedido.numero_pedido,
+              cliente_nombre: pedido.cliente_nombre,
+              ok: false,
+              error: e.message,
+            });
+          }
+        }
+
+        return Response.json({
+          ok: true,
+          message: `${okCount} de ${elegibles.length} etiquetas generadas`,
+          generadas: okCount,
+          total: elegibles.length,
+          resultados,
+        });
+      }
+
       case 'cancelarPedido': {
         if (!payload.id) throw new Error('Falta id de pedido');
         const [pedido] = await svc.PedidoWeb.filter({ id: payload.id });

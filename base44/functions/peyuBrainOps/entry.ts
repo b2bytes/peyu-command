@@ -270,6 +270,8 @@ Deno.serve(async (req) => {
         `- **Pedidos listos para despacho**: ${pedidosListos}\n` +
         `- **Pedidos despachados (total)**: ${pedidosDespachados}\n` +
         `- **Pedidos entregados (total)**: ${pedidosEntregados.length}\n\n` +
+        `### 🏷️ Etiquetas por volumen\n` +
+        `Puedo generar las etiquetas BlueExpress de **todos los pedidos listos para despacho de una vez** e imprimirlas desde acá. Pídeme _"generar etiquetas"_ o _"imprimir etiquetas"_ y te muestro la lista para seleccionar y emitir en lote.\n\n` +
         `### ⚡ Automatización por eventos BlueExpress\n` +
         `BlueExpress notifica cada cambio de estado en tiempo real (webhook) y dispara secuencias automáticas:\n` +
         `- **Retirado / En tránsito / En reparto** → email de seguimiento al cliente.\n` +

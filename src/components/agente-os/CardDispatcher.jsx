@@ -9,6 +9,7 @@ import LeadsCard from './cards/LeadsCard';
 import ProposalsCard from './cards/ProposalsCard';
 import ShipmentsCard from './cards/ShipmentsCard';
 import PipelineCard from './cards/PipelineCard';
+import BulkLabelsCard from './cards/BulkLabelsCard';
 
 // Renderiza la tarjeta rica correcta según el tipo detectado, hidratada con
 // los datos reales del CRM + las listas/métricas en vivo de peyuBrainOps.
@@ -36,6 +37,10 @@ export default function CardDispatcher({ card, crm, metrics, lists = {}, onAsk, 
       return <LeadsCard leads={lists.leads_top || crm.leads} onDone={onDone} />;
     case 'shipments':
       return <ShipmentsCard envios={lists.envios_list || []} metrics={metrics} onDone={onDone} />;
+    case 'bulk_labels':
+      // Etiquetas por volumen: usa el CRM completo de pedidos para detectar los
+      // pagados sin tracking; la tarjeta filtra los elegibles internamente.
+      return <BulkLabelsCard pedidos={crm.pedidos?.length ? crm.pedidos : (lists.pedidos_pendientes || [])} onDone={onDone} />;
     case 'consultas':
       return <ConsultasCard consultas={lists.consultas_pendientes || crm.consultas} onDone={onDone} />;
     case 'clients':
