@@ -15,6 +15,7 @@
 import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { trackPurchase, trackContact } from '@/lib/meta-pixel';
+import { track } from '@/lib/activity-tracker';
 
 export default function MetaRouteTracker() {
   const location = useLocation();
@@ -22,6 +23,15 @@ export default function MetaRouteTracker() {
   useEffect(() => {
     const path = location.pathname.toLowerCase();
     const params = new URLSearchParams(location.search);
+
+    // Recorrido del cliente: cada cambio de página registra una visita en
+    // nuestra base de datos (ActivityLog → journey 360° en /admin/trazabilidad)
+    // y dispara PageView al píxel de Meta (en SPA no se recarga index.html, así
+    // que sin esto Meta perdía las visitas internas al navegar entre páginas).
+    track.pageView(location.pathname + location.search);
+    if (typeof window !== 'undefined' && typeof window.fbq === 'function') {
+      try { window.fbq('track', 'PageView'); } catch { /* fbq aún no listo */ }
+    }
 
     if (path.startsWith('/gracias')) {
       const numero = params.get('numero') || undefined;
