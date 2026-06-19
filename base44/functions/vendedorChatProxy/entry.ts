@@ -26,15 +26,22 @@ async function buildCatalogDigest(sr) {
     .filter((p) => p.sku && p.nombre)
     .map((p) => {
       const b2c = p.precio_b2c ? `$${p.precio_b2c}` : 'sin precio B2C';
-      const b2bUnit = p.precio_b2b_tramos?.unitario ? `$${p.precio_b2b_tramos.unitario}+IVA` : null;
-      const b2bVol = p.precio_b2b_tramos?.t10_49 ? `$${p.precio_b2b_tramos.t10_49}+IVA` : null;
-      let b2bInfo = '';
-      if (b2bUnit && b2bVol) b2bInfo = ` | B2B unit: ${b2bUnit}, 10-49u: ${b2bVol}`;
-      else if (b2bUnit) b2bInfo = ` | B2B unit: ${b2bUnit}`;
-      else if (b2bVol) b2bInfo = ` | B2B 10-49u: ${b2bVol}`;
+      const t = p.precio_b2b_tramos || {};
+      // Inyectamos TODOS los tramos B2B netos (sin IVA) para que el agente pueda
+      // calcular el precio mayorista B2C exacto = tramo × 1.19 (idéntico al checkout).
+      const tramos = [];
+      if (t.unitario) tramos.push(`1-9u:$${t.unitario}`);
+      if (t.t10_49) tramos.push(`10-49u:$${t.t10_49}`);
+      if (t.t50_99) tramos.push(`50-99u:$${t.t50_99}`);
+      if (t.t100_249) tramos.push(`100-249u:$${t.t100_249}`);
+      if (t.t250_499) tramos.push(`250-499u:$${t.t250_499}`);
+      if (t.t500_999) tramos.push(`500-999u:$${t.t500_999}`);
+      if (t.t1000_1999) tramos.push(`1000-1999u:$${t.t1000_1999}`);
+      if (t.t2000_mas) tramos.push(`2000+u:$${t.t2000_mas}`);
+      const b2bInfo = tramos.length ? ` | B2B neto/u (sin IVA) por tramo: ${tramos.join(', ')}` : '';
       return `${p.sku} | ${p.nombre} | ${p.categoria} | ${b2c} | canal: ${p.canal || 'B2B + B2C'}${b2bInfo}`;
     });
-  return `\n\n[CATALOGO] Este es el catálogo REAL y COMPLETO de la tienda (SKU | nombre | categoría | precio B2C IVA incl. | canal | ref B2B). Cualquier palabra del cliente que calce con un nombre de aquí ES un producto. Usa SOLO estos SKUs, nombres y precios:\n${lines.join('\n')}`;
+  return `\n\n[CATALOGO] Este es el catálogo REAL y COMPLETO de la tienda (SKU | nombre | categoría | precio B2C IVA incl. | canal | ref B2B). Cualquier palabra del cliente que calce con un nombre de aquí ES un producto. Usa SOLO estos SKUs, nombres y precios. Los precios B2B por tramo son NETOS (sin IVA): para el precio MAYORISTA B2C con IVA multiplica el tramo correspondiente por 1,19:\n${lines.join('\n')}`;
 }
 
 // Limpia bloques internos de los mensajes del usuario antes de devolverlos al front.
