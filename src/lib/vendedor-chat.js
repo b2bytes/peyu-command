@@ -57,6 +57,8 @@ export const RE_CART = /\[\[CART:([^:\]]+):(\d+)\]\]/g;
 export const RE_CHECKOUT = /\[\[CHECKOUT\]\]/;
 export const RE_NAV = /\[\[NAV:([^|\]]+)\|([^\]]+)\]\]/g;
 export const RE_LEAD = /\[\[LEAD:([^\]]+)\]\]/g;
+// Propuesta PDF B2B: [[QUOTE_PDF:sku=...;qty=...;empresa=...;contacto=...;email=...;telefono=...]]
+export const RE_QUOTE = /\[\[QUOTE_PDF:([^\]]+)\]\]/g;
 
 export function stripTags(text) {
   return String(text || '')
@@ -65,6 +67,7 @@ export function stripTags(text) {
     .replace(/\[\[CHECKOUT\]\]/g, '')
     .replace(RE_NAV, '')
     .replace(RE_LEAD, '')
+    .replace(RE_QUOTE, '')
     .replace(/\[CONTEXTO\][^\n]*/g, '')
     .replace(/\[CATALOGO\][\s\S]*$/g, '')
     .replace(/\n{3,}/g, '\n\n')
@@ -108,6 +111,36 @@ export function extractLeadActions(text) {
       }
     });
     if (Object.keys(fields).length) out.push(fields);
+  }
+  return out;
+}
+
+// Extrae la solicitud de propuesta PDF B2B del mensaje del agente.
+// Formato: [[QUOTE_PDF:sku=ABC;qty=200;empresa=Acme;contacto=Juan;email=j@acme.cl;telefono=...]]
+export function extractQuoteRequests(text) {
+  const out = [];
+  for (const m of String(text || '').matchAll(RE_QUOTE)) {
+    const fields = {};
+    m[1].split(';').forEach((pair) => {
+      const idx = pair.indexOf('=');
+      if (idx > 0) {
+        const k = pair.slice(0, idx).trim().toLowerCase();
+        const v = pair.slice(idx + 1).trim();
+        if (k && v) fields[k] = v;
+      }
+    });
+    if (fields.sku && fields.qty) {
+      out.push({
+        sku: fields.sku,
+        qty: Math.max(1, parseInt(fields.qty, 10) || 1),
+        empresa: fields.empresa || '',
+        contacto: fields.contacto || fields.nombre || '',
+        email: fields.email || '',
+        telefono: fields.telefono || '',
+        fecha_requerida: fields.fecha || '',
+        personalizacion: fields.personalizacion || 'Láser UV',
+      });
+    }
   }
   return out;
 }

@@ -1,9 +1,10 @@
 import { Link } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
-import { stripTags, extractSkus, extractNavs, extractCartActions, RE_CHECKOUT } from '@/lib/vendedor-chat';
+import { stripTags, extractSkus, extractNavs, extractCartActions, extractQuoteRequests, RE_CHECKOUT } from '@/lib/vendedor-chat';
 import VendedorMarkdown from './VendedorMarkdown';
 import VendedorProductGrid from './VendedorProductGrid';
 import VendedorCartCard from './VendedorCartCard';
+import VendedorQuoteCard from './VendedorQuoteCard';
 
 // Burbuja de mensaje del chat vendedor. Para el agente, parsea los tags
 // [[PRODUCTO]], [[CART]], [[CHECKOUT]] y [[NAV]] y los renderiza como
@@ -17,12 +18,13 @@ export default function VendedorMensaje({ msg, productosBySku, isLast = false })
   const navs = isUser ? [] : extractNavs(msg.content);
   const tieneCart = !isUser && extractCartActions(msg.content).length > 0;
   const tieneCheckout = !isUser && RE_CHECKOUT.test(msg.content);
+  const quotes = isUser ? [] : extractQuoteRequests(msg.content);
   // El carrito vivo se muestra solo en el ÚLTIMO mensaje con acción de compra,
   // para no apilar carritos repetidos en el historial.
   const muestraCarrito = isLast && (tieneCart || tieneCheckout);
   const productos = skus.map((s) => productosBySku[s]).filter(Boolean);
 
-  if (!texto && !productos.length && !navs.length && !muestraCarrito) return null;
+  if (!texto && !productos.length && !navs.length && !muestraCarrito && !quotes.length) return null;
 
   return (
     <div className={`flex ${isUser ? 'justify-end' : 'justify-start'}`}>
@@ -45,6 +47,11 @@ export default function VendedorMensaje({ msg, productosBySku, isLast = false })
 
         {/* Carrito EN VIVO dentro del chat: editar, eliminar y pagar */}
         {muestraCarrito && <VendedorCartCard showCheckout />}
+
+        {/* Propuesta PDF B2B: genera y entrega la cotización formal en el chat */}
+        {quotes.map((q, qi) => (
+          <VendedorQuoteCard key={`${q.sku}-${qi}`} req={q} />
+        ))}
 
         {navs.map((n) => (
           <Link
