@@ -262,14 +262,20 @@ Deno.serve(async (req) => {
         `- **Conversaciones únicas hoy**: ${conversacionesUnicas}\n\n` +
         `Las conversaciones se ven en **Centro de Comando → Conversaciones en vivo** o directo en /admin/monitoreo-ia`;
       sources.push('AILog');
-    } else if (matches(['entreg', 'envío', 'envio', 'despach', 'tracking'])) {
+    } else if (matches(['entreg', 'envío', 'envio', 'despach', 'tracking', 'secuencia', 'automatiz', 'post-venta', 'postventa'])) {
       answer = `## 📦 Envíos & Entregas\n\n` +
         `- **Entregados hoy**: ${enviosEntregadosHoy.length}\n` +
         `- **En tránsito**: ${enviosEnTransito}\n` +
         `- **Con excepción**: ${enviosConExcepcion}\n` +
         `- **Pedidos listos para despacho**: ${pedidosListos}\n` +
         `- **Pedidos despachados (total)**: ${pedidosDespachados}\n` +
-        `- **Pedidos entregados (total)**: ${pedidosEntregados.length}`;
+        `- **Pedidos entregados (total)**: ${pedidosEntregados.length}\n\n` +
+        `### ⚡ Automatización por eventos BlueExpress\n` +
+        `BlueExpress notifica cada cambio de estado en tiempo real (webhook) y dispara secuencias automáticas:\n` +
+        `- **Retirado / En tránsito / En reparto** → email de seguimiento al cliente.\n` +
+        `- **Entregado** → se activa la **secuencia post-venta**: marca el pedido entregado, registra el evento en su historial y envía email de "¡llegó!" + solicitud de reseña con cupón 10% OFF.\n` +
+        `- **Intento fallido / Incidencia** → email para reagendar + alerta interna.\n` +
+        `Todo es idempotente (no se duplica) y se ve en vivo en **/admin/procesar-pedidos**.`;
       sources.push('Envio', 'PedidoWeb');
     } else if (matches(['pedido', 'venta', 'orden b2c', 'compra'])) {
       answer = `## 🛒 Pedidos B2C\n\n` +

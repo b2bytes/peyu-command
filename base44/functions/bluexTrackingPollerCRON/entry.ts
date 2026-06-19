@@ -181,11 +181,12 @@ Deno.serve(async (req) => {
           await sr.entities.Envio.update(envio.id, { notificaciones_enviadas: enviadas });
         }
 
-        // Sincronizar PedidoWeb si entregado
-        if (updated.estado === 'Entregado' && updated.pedido_id) {
-          const pedido = await sr.entities.PedidoWeb.get(updated.pedido_id).catch(() => null);
-          if (pedido && pedido.estado !== 'Entregado') {
-            await sr.entities.PedidoWeb.update(updated.pedido_id, { estado: 'Entregado' });
+        // ENTREGA → secuencia post-venta (idempotente vía flag del pedido)
+        if (updated.estado === 'Entregado' && updated.pedido_id && estadoAnterior !== 'Entregado') {
+          try {
+            await base44.functions.invoke('entregaSecuenciaPostVenta', { internal: true, pedido_id: updated.pedido_id });
+          } catch (e) {
+            errores.push({ envio_id: updated.id, error: `postventa: ${e.message}` });
           }
         }
       } catch (err) {

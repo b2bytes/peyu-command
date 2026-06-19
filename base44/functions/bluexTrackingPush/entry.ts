@@ -157,11 +157,15 @@ Deno.serve(async (req) => {
       }
     }
 
-    // ── Sincronizar PedidoWeb cuando se entrega
-    if (nuevoEstado === 'Entregado' && envio.pedido_id) {
-      const pedido = await sr.entities.PedidoWeb.get(envio.pedido_id).catch(() => null);
-      if (pedido && pedido.estado !== 'Entregado') {
-        await sr.entities.PedidoWeb.update(envio.pedido_id, { estado: 'Entregado' });
+    // ── ENTREGA → dispara la secuencia post-venta inteligente.
+    // entregaSecuenciaPostVenta marca el pedido entregado, registra el evento
+    // en el historial y envía el email de "¡llegó!" + reseña con cupón. Sólo se
+    // dispara una vez por entrega (idempotente). No bloqueante.
+    if (nuevoEstado === 'Entregado' && envio.pedido_id && estadoAnterior !== 'Entregado') {
+      try {
+        await sr.functions.invoke('entregaSecuenciaPostVenta', { internal: true, pedido_id: envio.pedido_id });
+      } catch (e) {
+        console.error('[bluexTrackingPush] secuencia post-venta falló:', e.message);
       }
     }
 

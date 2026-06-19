@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import PedidoKanbanCard from '../components/pedidos/PedidoKanbanCard';
 import PedidoDetailDrawer from '../components/pedidos/PedidoDetailDrawer';
 import PaymentStatusTabs from '../components/pedidos/PaymentStatusTabs';
+import BluexEventStream from '../components/pedidos/BluexEventStream';
 
 const COLUMNAS = [
   { key: 'Nuevo', label: 'Nuevo', color: 'bg-amber-500' },
@@ -118,6 +119,9 @@ export default function ProcesarPedidos() {
           <StatCard icon={AlertTriangle} label="Urgentes (+24h)" value={stats.urgentes} color="red" urgent={stats.urgentes > 0} />
           <StatCard icon={Users} label="Clientes únicos" value={stats.clientesUnicos} color="blue" />
         </div>
+
+        {/* Eventos BlueExpress en vivo + secuencias automáticas */}
+        <BluexEventStream />
 
         {/* Tabs de payment_status */}
         <PaymentStatusTabs active={paymentTab} onChange={setPaymentTab} counts={paymentCounts} />
