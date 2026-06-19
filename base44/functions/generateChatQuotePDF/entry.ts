@@ -133,22 +133,29 @@ Deno.serve(async (req) => {
       ].filter(Boolean).join(' · '),
     });
 
-    // 4. Generar PDF — DISEÑO UNIFICADO PEYU 2026 (misma plantilla que
-    // generateProposalPDF / exportCotizacionPDF / quickB2BQuoteV2).
+    // 4. Generar PDF — PROPUESTA PEYU 2026 · viaje de marca + económico.
     const INK = [18, 28, 24], FOREST = [11, 70, 52], TEAL = [15, 139, 108], LEAF = [52, 168, 128],
           MINT = [235, 248, 244], SAND = [250, 246, 238], STONE = [100, 110, 104],
           STONE2 = [140, 150, 145], CREAM = [170, 220, 205], WHITE = [255, 255, 255];
     const PMX = 16;
     const fmtCLP = (n) => '$' + (n || 0).toLocaleString('es-CL');
-    // safeTxt: datos del cliente/producto siempre perfectos (WinAnsi, sin glifos rotos)
+    // safeTxt: WinAnsi soporta tildes y ñ — solo limpiamos glifos no imprimibles
+    // (emojis, comillas curvas, guiones largos) preservando acentos correctos.
     const safeTxt = (s) => {
       if (s === undefined || s === null) return '';
       return String(s)
-        .replace(/[✓✔☑]/g, '>').replace(/[✗✘❌]/g, 'x').replace(/[♻]/g, '')
+        .replace(/[✓✔☑]/g, '>').replace(/[✗✘❌]/g, 'x').replace(/[♻🐢🌱💚]/g, '')
         .replace(/[–—]/g, '-').replace(/[""«»]/g, '"').replace(/['']/g, "'")
-        .replace(/…/g, '...').replace(/[·•]/g, '-').replace(/°/g, 'o')
+        .replace(/…/g, '...').replace(/[•]/g, '-')
         .replace(/[\u0000-\u001F\u007F]/g, '').replace(/[^\x20-\xFF]/g, '');
     };
+
+    // ── Condiciones de pago reales (Joaquín):
+    //   • Con retiro: 50% adelanto, 50% contra entrega.
+    //   • Con despacho: abono 100%.
+    //   • Segunda compra del cliente: hasta 30 días.
+    const formaPagoRetiro = 'Retiro en tienda: 50% al confirmar, 50% contra entrega.';
+    const formaPagoDespacho = 'Despacho a domicilio: abono del 100% al confirmar.';
 
     const doc = new jsPDF({ unit: 'mm', format: 'a4' });
     const pw = 210, ph = 297, RX = pw - PMX, CW = pw - PMX * 2;
@@ -161,67 +168,94 @@ Deno.serve(async (req) => {
       if (spacing) doc.setCharSpace(0);
     };
 
+    // Logo tortuga PEYU vectorial (caparazón + cabeza) — reemplaza el "PEYU" plano.
+    const drawTurtle = (cx, cy, r, col) => {
+      doc.setFillColor(...col);
+      doc.ellipse(cx, cy, r, r * 0.82, 'F');            // caparazón
+      doc.circle(cx + r * 0.95, cy - r * 0.15, r * 0.34, 'F'); // cabeza
+      // patitas
+      doc.ellipse(cx - r * 0.6, cy + r * 0.6, r * 0.26, r * 0.18, 'F');
+      doc.ellipse(cx + r * 0.55, cy + r * 0.62, r * 0.26, r * 0.18, 'F');
+      doc.ellipse(cx - r * 0.78, cy - r * 0.35, r * 0.22, r * 0.16, 'F');
+      // placas del caparazón (sutil)
+      doc.setFillColor(...FOREST);
+      doc.circle(cx, cy - r * 0.05, r * 0.16, 'F');
+      doc.circle(cx - r * 0.42, cy + r * 0.12, r * 0.13, 'F');
+      doc.circle(cx + r * 0.42, cy + r * 0.12, r * 0.13, 'F');
+    };
+
     // ═══ HERO ═══
-    const heroH = 62;
+    const heroH = 60;
     doc.setFillColor(...FOREST); doc.rect(0, 0, pw, heroH, 'F');
-    doc.setFillColor(...TEAL); doc.circle(pw - 6, 8, 30, 'F');
-    doc.setFillColor(...LEAF); doc.circle(pw + 6, heroH - 4, 22, 'F');
+    doc.setFillColor(...TEAL); doc.circle(pw - 4, 6, 28, 'F');
+    doc.setFillColor(...LEAF); doc.circle(pw + 8, heroH - 2, 20, 'F');
     doc.setFillColor(...CREAM); doc.rect(0, heroH, pw, 2, 'F');
 
-    T('PEYU', PMX, 20, { size: 22, font: 'bold', color: WHITE });
-    T('Plastico que renace - 100% reciclado - Hecho en Chile', PMX, 27, { size: 8, color: CREAM });
-    T('COTIZACION N°', RX, 16, { size: 7, font: 'bold', color: CREAM, align: 'right', spacing: 1 });
-    T(numero, RX, 24, { size: 14, font: 'bold', color: WHITE, align: 'right' });
+    drawTurtle(PMX + 5, 17, 6, CREAM);
+    T('PEYU', PMX + 16, 20, { size: 22, font: 'bold', color: WHITE });
+    T('Plástico que renace · 100% reciclado · Hecho en Chile', PMX, 28, { size: 8, color: CREAM });
+    T('PROPUESTA N°', RX, 15, { size: 7, font: 'bold', color: CREAM, align: 'right', spacing: 1 });
+    T(numero, RX, 23, { size: 14, font: 'bold', color: WHITE, align: 'right' });
 
-    T('Cotizacion Comercial', PMX, 44, { size: 20, font: 'bold', color: WHITE });
-    T(`Preparada para ${(empresa || contacto || 'Cliente').substring(0, 40)}`, PMX, 52, { size: 10, color: [210, 228, 220] });
-    T(`Emision  ${hoy.toLocaleDateString('es-CL')}`, RX, 44, { size: 8, color: [210, 228, 220], align: 'right' });
-    T(`Valida hasta  ${vence.toLocaleDateString('es-CL')}`, RX, 50, { size: 8, color: [210, 228, 220], align: 'right' });
+    T('Propuesta Comercial', PMX, 44, { size: 20, font: 'bold', color: WHITE });
+    T(`Preparada para ${(empresa || contacto || 'Cliente').substring(0, 38)}`, PMX, 52, { size: 10, color: [210, 228, 220] });
+    T(`Emisión  ${hoy.toLocaleDateString('es-CL')}`, RX, 44, { size: 8, color: [210, 228, 220], align: 'right' });
+    T(`Válida hasta  ${vence.toLocaleDateString('es-CL')}`, RX, 50, { size: 8, color: [210, 228, 220], align: 'right' });
 
-    y = heroH + 10;
+    y = heroH + 9;
+
+    // ═══ RELATO DE MARCA (el viaje eco) ═══
+    const relatoH = 22;
+    doc.setFillColor(...MINT); doc.roundedRect(PMX, y, CW, relatoH, 3, 3, 'F');
+    doc.setFillColor(...LEAF); doc.roundedRect(PMX, y, 2.5, relatoH, 1, 1, 'F');
+    T('TU REGALO TIENE UNA HISTORIA', PMX + 8, y + 7, { size: 7, font: 'bold', color: TEAL, spacing: 0.8 });
+    T('Cada producto PEYU nace de tapitas plásticas que rescatamos del mar y de la calle. Las', PMX + 8, y + 12.5, { size: 8, color: STONE });
+    T('fundimos, moldeamos y grabamos tu logo con láser: un objeto útil que cuenta que tu marca elige', PMX + 8, y + 16.5, { size: 8, color: STONE });
+    T('cuidar el planeta. No regalas un objeto, regalas un gesto.', PMX + 8, y + 20.5, { size: 8, color: STONE });
+    y += relatoH + 8;
 
     // ═══ CARD CLIENTE + TOTAL ═══
-    const cardH = 40;
+    const cardH = 38;
     doc.setFillColor(...SAND); doc.roundedRect(PMX, y, CW, cardH, 4, 4, 'F');
     doc.setFillColor(...TEAL); doc.roundedRect(PMX, y, 2.5, cardH, 1, 1, 'F');
     const cpx = PMX + 8;
     T('CLIENTE', cpx, y + 8, { size: 7, font: 'bold', color: STONE2, spacing: 1 });
-    T((empresa || contacto || 'Cliente').substring(0, 40), cpx, y + 16, { size: 13, font: 'bold', color: INK });
-    let fY = y + 22;
-    if (contacto) { T(contacto.substring(0, 48), cpx, fY, { size: 8.5, color: STONE }); fY += 4.5; }
-    if (email) { T(email.substring(0, 48), cpx, fY, { size: 8.5, color: STONE }); fY += 4.5; }
-    if (telefono) T(telefono.substring(0, 40), cpx, fY, { size: 7.5, color: STONE });
+    T((empresa || contacto || 'Cliente').substring(0, 36), cpx, y + 15.5, { size: 13, font: 'bold', color: INK });
+    let fY = y + 21.5;
+    if (contacto && empresa) { T(contacto.substring(0, 46), cpx, fY, { size: 8.5, color: STONE }); fY += 4.5; }
+    if (email) { T(email.substring(0, 46), cpx, fY, { size: 8.5, color: STONE }); fY += 4.5; }
+    if (telefono) T(telefono.substring(0, 40), cpx, fY, { size: 8, color: STONE });
 
-    T('MONTO TOTAL', RX - 8, y + 8, { size: 7, font: 'bold', color: TEAL, align: 'right', spacing: 1 });
-    T(fmtCLP(total), RX - 8, y + 20, { size: 19, font: 'bold', color: FOREST, align: 'right' });
-    T('CLP (IVA incluido)', RX - 8, y + 26, { size: 7, color: STONE, align: 'right' });
-    y += cardH + 6;
+    T('INVERSIÓN TOTAL', RX - 8, y + 8, { size: 7, font: 'bold', color: TEAL, align: 'right', spacing: 1 });
+    T(fmtCLP(total), RX - 8, y + 20, { size: 20, font: 'bold', color: FOREST, align: 'right' });
+    T('CLP · IVA incluido', RX - 8, y + 26, { size: 7.5, color: STONE, align: 'right' });
+    y += cardH + 7;
 
     // ═══ STRIP MÉTRICAS ═══
     const mH = 17;
     doc.setFillColor(...MINT); doc.roundedRect(PMX, y, CW, mH, 3, 3, 'F');
     const metr = [
       ['CANTIDAD', `${cantidad} u`],
-      ['LEAD TIME', `${leadTime} dias`],
-      ['PERSONALIZACION', requierePersonal ? personalizacion : 'No'],
-      ['VALIDEZ', '15 dias'],
+      ['LEAD TIME', `${leadTime} días`],
+      ['PERSONALIZACIÓN', requierePersonal ? personalizacion : 'No'],
+      ['VALIDEZ', '15 días'],
     ];
     const mCol = CW / 4;
     metr.forEach((m, i) => {
       const mx = PMX + i * mCol + mCol / 2;
-      T(m[0], mx, y + 6.5, { size: 6, font: 'bold', color: STONE2, align: 'center', spacing: 0.5 });
+      T(m[0], mx, y + 6.5, { size: 6, font: 'bold', color: STONE2, align: 'center', spacing: 0.4 });
       T(String(m[1]).substring(0, 16), mx, y + 13, { size: 9.5, font: 'bold', color: FOREST, align: 'center' });
       if (i > 0) { doc.setDrawColor(...CREAM); doc.setLineWidth(0.3); doc.line(PMX + i * mCol, y + 4, PMX + i * mCol, y + mH - 4); }
     });
-    y += mH + 10;
+    y += mH + 9;
 
     // ═══ TABLA ═══
-    T('DETALLE ECONOMICO', PMX, y, { size: 7, font: 'bold', color: STONE2, spacing: 1 });
+    T('DETALLE ECONÓMICO', PMX, y, { size: 7, font: 'bold', color: STONE2, spacing: 1 });
     y += 5;
-    const COL_PROD = PMX + 4, COL_PERS = PMX + 92, COL_CANT = PMX + 128, COL_UNIT = PMX + 154, COL_TOT = RX - 4;
+    const COL_PROD = PMX + 4, COL_PERS = PMX + 90, COL_CANT = PMX + 124, COL_UNIT = PMX + 150, COL_TOT = RX - 4;
     doc.setFillColor(...INK); doc.roundedRect(PMX, y, CW, 9, 2, 2, 'F');
     T('PRODUCTO', COL_PROD, y + 6, { size: 7, font: 'bold', color: WHITE, spacing: 0.4 });
-    T('PERSONALIZACION', COL_PERS, y + 6, { size: 6.5, font: 'bold', color: WHITE });
+    T('PERSONALIZ.', COL_PERS, y + 6, { size: 6.5, font: 'bold', color: WHITE });
     T('CANT.', COL_CANT, y + 6, { size: 7, font: 'bold', color: WHITE, align: 'center' });
     T('P. UNIT.', COL_UNIT, y + 6, { size: 7, font: 'bold', color: WHITE, align: 'right' });
     T('TOTAL', COL_TOT, y + 6, { size: 7, font: 'bold', color: WHITE, align: 'right' });
@@ -229,9 +263,9 @@ Deno.serve(async (req) => {
 
     // Fila producto
     doc.setFillColor(...MINT); doc.roundedRect(PMX, y - 4, CW, 11, 1.5, 1.5, 'F');
-    T((producto.nombre || sku).substring(0, 40), COL_PROD, y + 1, { size: 9, font: 'bold', color: INK });
+    T((producto.nombre || sku).substring(0, 38), COL_PROD, y + 1, { size: 9, font: 'bold', color: INK });
     T(sku, COL_PROD, y + 4.5, { size: 6.5, color: STONE2 });
-    T(requierePersonal ? personalizacion : '-', COL_PERS, y + 1, { size: 8, color: STONE });
+    T(requierePersonal ? personalizacion : '-', COL_PERS, y + 1, { size: 7.5, color: STONE });
     T(`${cantidad}`, COL_CANT, y + 1, { size: 9, font: 'bold', color: STONE, align: 'center' });
     T(fmtCLP(precioUnit), COL_UNIT, y + 1, { size: 9, color: INK, align: 'right' });
     T(fmtCLP(subtotal), COL_TOT, y + 1, { size: 9, font: 'bold', color: FOREST, align: 'right' });
@@ -239,65 +273,80 @@ Deno.serve(async (req) => {
 
     if (feePersonal > 0) {
       doc.setFillColor(...WHITE); doc.roundedRect(PMX, y - 4, CW, 10, 1.5, 1.5, 'F');
-      T('Fee Personalizacion (<10u)', COL_PROD, y + 1.5, { size: 9, color: INK });
+      T('Fee personalización (<10u)', COL_PROD, y + 1.5, { size: 9, color: INK });
       T(fmtCLP(feePersonal), COL_TOT, y + 1.5, { size: 9, font: 'bold', color: FOREST, align: 'right' });
       y += 10;
     }
 
-    // ═══ TOTALES ═══
-    y += 4;
-    const TLX = pw - 78, TVX = RX;
-    doc.setDrawColor(...TEAL); doc.setLineWidth(0.8); doc.line(TLX, y, TVX, y);
-    y += 7;
-    T('TOTAL (IVA INCLUIDO)', TLX, y, { size: 12, font: 'bold', color: FOREST });
-    T(fmtCLP(total), TVX, y, { size: 13, font: 'bold', color: FOREST, align: 'right' });
+    // ═══ TOTALES (sin solapamiento: línea ancha + label arriba, monto debajo) ═══
+    y += 5;
+    const TBX = pw - 86; // inicio del bloque de totales
+    doc.setDrawColor(...TEAL); doc.setLineWidth(0.9); doc.line(TBX, y, RX, y);
+    y += 8;
+    T('TOTAL (IVA INCLUIDO)', TBX, y, { size: 10.5, font: 'bold', color: FOREST });
+    T(fmtCLP(total), RX, y, { size: 14, font: 'bold', color: FOREST, align: 'right' });
     y += 7;
     if (cantidad >= 10 && requierePersonal) {
-      T('> Laser UV de tu logo incluido GRATIS desde 10 unidades', PMX, y, { size: 7.5, font: 'bold', color: TEAL });
+      T('> Grabado láser UV de tu logo INCLUIDO GRATIS desde 10 unidades', PMX, y, { size: 7.5, font: 'bold', color: TEAL });
       y += 6;
     }
 
-    // ═══ CONDICIONES ═══
-    y += 4;
+    // ═══ CONDICIONES COMERCIALES (datos reales Joaquín) ═══
+    y += 3;
     const conds = [
-      'Forma de pago: 50% anticipo al confirmar - 50% contra entrega.',
-      `Lead time estimado: ${leadTime} dias habiles ${requierePersonal ? 'con' : 'sin'} personalizacion.`,
-      `Validez: 15 dias corridos (hasta ${vence.toLocaleDateString('es-CL')}).`,
-      'Personalizacion laser UV incluida desde 10 unidades (logo AI/PDF vectorial).',
-      'Despacho a coordinar. Envio gratis sobre $40.000 via Bluex/Starken.',
-      'Material 100% plastico reciclado post-consumo. Certificacion disponible a solicitud.',
-      'Cotizacion generada desde el chat Peyu. Para confirmar, responde a ventas@peyuchile.cl indicando el numero.',
+      formaPagoRetiro,
+      formaPagoDespacho,
+      'Segunda compra del cliente: opción de pago a 30 días.',
+      `Lead time estimado: ${leadTime} días hábiles ${requierePersonal ? 'con' : 'sin'} personalización.`,
+      `Validez de la propuesta: 15 días corridos (hasta ${vence.toLocaleDateString('es-CL')}).`,
+      'Personalización láser UV incluida desde 10 unidades (logo en AI/PDF vectorial).',
+      'Despacho a coordinar vía BlueExpress/Starken a todo Chile.',
+      'Material 100% plástico reciclado post-consumo. Certificación a solicitud.',
     ];
-    const condH = 14 + conds.length * 5.5;
-    if (y + condH > ph - 26) { doc.addPage(); y = 20; }
+    const condH = 14 + conds.length * 5.3;
+    if (y + condH > ph - 40) { doc.addPage(); y = 20; }
     doc.setFillColor(...SAND); doc.roundedRect(PMX, y, CW, condH, 3, 3, 'F');
     T('CONDICIONES COMERCIALES', PMX + 8, y + 8, { size: 7, font: 'bold', color: STONE2, spacing: 1 });
     conds.forEach((c, i) => {
-      const cy = y + 15 + i * 5.5;
+      const cy = y + 15 + i * 5.3;
       T('>', PMX + 8, cy, { size: 8, font: 'bold', color: TEAL });
-      T(c, PMX + 12.5, cy, { size: 8, color: STONE });
+      T(c, PMX + 12.5, cy, { size: 7.8, color: STONE });
     });
-    y += condH + 6;
+    y += condH + 7;
 
-    // ═══ IMPACTO AMBIENTAL ═══
-    if (cantidad >= 50 && y + 16 < ph - 26) {
-      doc.setFillColor(...MINT); doc.roundedRect(PMX, y, CW, 14, 3, 3, 'F');
-      const kgRescatados = Math.round(cantidad * 0.05 * 10) / 10;
-      T('IMPACTO DE TU COMPRA', PMX + 8, y + 5.5, { size: 6.5, font: 'bold', color: TEAL, spacing: 0.8 });
-      T(`Esta orden rescata ~${kgRescatados}kg de plastico y ahorra ${(cantidad * 12.5).toLocaleString('es-CL')}L de agua vs produccion virgen.`, PMX + 8, y + 10.5, { size: 8, color: STONE });
-    }
+    // ═══ IMPACTO AMBIENTAL + CTA APROBAR ═══
+    if (y + 30 > ph - 40) { doc.addPage(); y = 20; }
+    // Impacto
+    doc.setFillColor(...MINT); doc.roundedRect(PMX, y, CW, 15, 3, 3, 'F');
+    const kgRescatados = Math.round(cantidad * 0.05 * 10) / 10;
+    const tapitas = Math.round(cantidad * 18);
+    T('EL IMPACTO DE ESTA ORDEN', PMX + 8, y + 6, { size: 6.5, font: 'bold', color: TEAL, spacing: 0.8 });
+    T(`Rescata ~${tapitas.toLocaleString('es-CL')} tapitas (~${kgRescatados}kg de plástico) y ahorra ${(cantidad * 12.5).toLocaleString('es-CL')}L de agua vs producción virgen.`, PMX + 8, y + 11.5, { size: 8, color: STONE });
+    y += 15 + 7;
 
-    // ═══ FOOTER (todas las páginas) ═══
+    // CTA Aprobar propuesta (botón con link a WhatsApp)
+    const waLink = `https://wa.me/56979471933?text=${encodeURIComponent(`Hola PEYU, apruebo la propuesta ${numero}. Quiero avanzar.`)}`;
+    const btnW = 110, btnH = 13, btnX = PMX, btnY = y;
+    doc.setFillColor(...TEAL); doc.roundedRect(btnX, btnY, btnW, btnH, 6.5, 6.5, 'F');
+    T('APROBAR PROPUESTA  >', btnX + btnW / 2, btnY + 8.5, { size: 10, font: 'bold', color: WHITE, align: 'center' });
+    doc.link(btnX, btnY, btnW, btnH, { url: waLink });
+    T('Responde a corporativos@peyuchile.cl', RX, btnY + 5, { size: 7.5, color: STONE, align: 'right' });
+    T('o escríbenos al +56 9 7947 1933', RX, btnY + 10, { size: 7.5, color: STONE, align: 'right' });
+    y += btnH + 8;
+
+    // ═══ FOOTER (todas las páginas) · datos legales reales ═══
     const pages = doc.getNumberOfPages();
     for (let pg = 1; pg <= pages; pg++) {
       doc.setPage(pg);
-      const fy = ph - 18;
-      doc.setFillColor(...INK); doc.rect(0, fy, pw, 18, 'F');
+      const fy = ph - 22;
+      doc.setFillColor(...INK); doc.rect(0, fy, pw, 22, 'F');
       doc.setFillColor(...TEAL); doc.rect(0, fy, pw, 1.5, 'F');
-      T('PEYU Chile SpA', PMX, fy + 8, { size: 9, font: 'bold', color: WHITE });
-      T('Plastico que renace - Hecho en Chile', PMX, fy + 13, { size: 7, color: CREAM });
-      T('peyuchile.cl', RX, fy + 8, { size: 7.5, color: [210, 228, 220], align: 'right' });
-      T('+56 9 3504 0242 - ventas@peyuchile.cl', RX, fy + 13, { size: 7, color: [210, 228, 220], align: 'right' });
+      T('PEYUCHILE SpA', PMX, fy + 7.5, { size: 9, font: 'bold', color: WHITE });
+      T('RUT 77.069.974-6 · Giro: producción y reciclaje', PMX, fy + 12.5, { size: 6.5, color: CREAM });
+      T('Pedro de Valdivia 6603, Macul, Santiago', PMX, fy + 17, { size: 6.5, color: CREAM });
+      T('peyuchile.cl', RX, fy + 7.5, { size: 8, font: 'bold', color: [210, 228, 220], align: 'right' });
+      T('corporativos@peyuchile.cl', RX, fy + 12.5, { size: 6.5, color: [210, 228, 220], align: 'right' });
+      T('+56 9 7947 1933', RX, fy + 17, { size: 6.5, color: [210, 228, 220], align: 'right' });
     }
 
     // Devolver PDF como base64 (chunked: evita stack overflow en PDFs grandes)
@@ -340,8 +389,9 @@ Deno.serve(async (req) => {
                     <tr><td style="padding:6px 0;color:#666;border-top:2px solid #0F8B6C">Total (IVA incl.)</td><td style="padding:6px 0;text-align:right;font-weight:800;color:#0F8B6C;border-top:2px solid #0F8B6C">$${total.toLocaleString('es-CL')}</td></tr>
                   </table>
                   ${cantidad >= 10 ? '<p style="color:#0F8B6C;font-weight:600;font-size:13px">✓ Personalización láser UV incluida GRATIS desde 10 unidades.</p>' : ''}
-                  <p style="font-size:13px;color:#666">Validez: 15 días · Lead time estimado: ${leadTime} días hábiles. Para confirmar, responde este correo indicando el número de cotización.</p>
-                  <a href="https://wa.me/56935040242?text=${encodeURIComponent(`Hola PEYU, quiero confirmar la cotización ${numero}`)}" style="display:inline-block;background:#0F8B6C;color:#fff;text-decoration:none;padding:12px 22px;border-radius:999px;font-weight:700;font-size:14px;margin-top:8px">Confirmar por WhatsApp</a>
+                  <p style="font-size:13px;color:#666">Cada producto nace de tapitas que rescatamos del mar y de la calle 🌱 No regalas un objeto, regalas un gesto.</p>
+                  <p style="font-size:13px;color:#666">Validez: 15 días · Lead time estimado: ${leadTime} días hábiles. Para aprobar, responde este correo a corporativos@peyuchile.cl indicando el número.</p>
+                  <a href="https://wa.me/56979471933?text=${encodeURIComponent(`Hola PEYU, apruebo la propuesta ${numero}. Quiero avanzar.`)}" style="display:inline-block;background:#0F8B6C;color:#fff;text-decoration:none;padding:12px 22px;border-radius:999px;font-weight:700;font-size:14px;margin-top:8px">Aprobar propuesta por WhatsApp →</a>
                 </div>
               </div>`,
             attachments: [{ filename: `Cotizacion-Peyu-${numero}.pdf`, content: base64 }],
