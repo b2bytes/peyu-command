@@ -190,7 +190,29 @@ Deno.serve(async (req) => {
       body: html,
     });
 
-    return Response.json({ ok: true, estado: nuevoEstado, email_enviado: true });
+    // META CONVERSIONS API — cierra el gap de Purchase server-side para pedidos
+    // que NO pasan por MercadoPago (transferencia bancaria confirmada a mano).
+    // mpWebhook ya dispara el Purchase de los pedidos MercadoPago, así que aquí
+    // SOLO disparamos cuando el medio de pago es Transferencia y el pedido recién
+    // se confirma. event_id = pedido-{n°} deduplica con cualquier evento previo.
+    let meta_purchase = false;
+    if (nuevoEstado === 'Confirmado' && pedido?.medio_pago === 'Transferencia' && (pedido?.total || 0) > 0) {
+      try {
+        await base44.asServiceRole.functions.invoke('metaConversionsAPI', {
+          internal: true,
+          event_name: 'Purchase',
+          value: Number(pedido.total),
+          currency: 'CLP',
+          email: pedido.cliente_email || undefined,
+          phone: pedido.cliente_telefono || undefined,
+          event_id: `pedido-${pedido.numero_pedido}`,
+          event_source_url: 'https://peyuchile.cl/gracias',
+        });
+        meta_purchase = true;
+      } catch { /* no bloqueante */ }
+    }
+
+    return Response.json({ ok: true, estado: nuevoEstado, email_enviado: true, meta_purchase });
   } catch (error) {
     console.error('onPedidoWebStatusChange error:', error);
     return Response.json({ error: error.message }, { status: 500 });
