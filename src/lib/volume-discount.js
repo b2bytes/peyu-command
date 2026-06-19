@@ -56,7 +56,7 @@ const numPos = (v) => (Number.isFinite(Number(v)) && Number(v) > 0 ? Number(v) :
  * @param {object} producto  producto con precio_b2b_tramos
  * @param {number} unidades  cantidad del mismo SKU en el carrito
  * @param {number} precioB2C precio unitario B2C con IVA (para calcular ahorroPct y proteger margen)
- * @returns {{ precioUnit:number, label:string, ahorroPct:number }|null}
+ * @returns {{ precioUnit:number, precioUnitNeto:number, label:string, ahorroPct:number }|null}
  */
 export function getMayoristaUnitPrice(producto, unidades, precioB2C = 0) {
   if (!producto || unidades < MOQ_MAYORISTA) return null;
@@ -72,7 +72,8 @@ export function getMayoristaUnitPrice(producto, unidades, precioB2C = 0) {
       // B2C unitario, no aplica (protege al cliente y el margen).
       if (precioB2C > 0 && conIva >= precioB2C) return null;
       const ahorroPct = precioB2C > 0 ? Math.round((1 - conIva / precioB2C) * 100) : 0;
-      return { precioUnit: conIva, label: TRAMOS_MAYORISTA[i].label, ahorroPct };
+      // precioUnitNeto = base sin IVA de la fórmula (tramo oficial B2B).
+      return { precioUnit: conIva, precioUnitNeto: neto, label: TRAMOS_MAYORISTA[i].label, ahorroPct };
     }
   }
   return null;

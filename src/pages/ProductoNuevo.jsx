@@ -781,6 +781,7 @@ export default function ProductoNuevo() {
                 descuentoMonto={mayorista ? 0 : descuentoMonto}
                 mayoristaLabel={mayorista ? mayorista.label : ''}
                 mayoristaPct={mayorista ? mayorista.ahorroPct : 0}
+                precioUnitNetoMayorista={mayorista ? mayorista.precioUnitNeto : 0}
               />
 
               {/* Aviso de descuentos por cantidad + grabado gratis desde 10u */}
