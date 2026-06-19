@@ -14,6 +14,17 @@ import CartItemThumbV2 from '@/components/shopv2/CartItemThumbV2';
 export default function MockupClientePreview({ pedido, variant = 'admin' }) {
   if (!pedido) return null;
 
+  // Extrae el ARTE ORIGINAL para producción desde las capas de grabado (la URL
+  // EXACTA que subió el cliente o el diseño PEYU elegido). NUNCA el mockup
+  // compuesto: producción siempre graba la imagen original sin recortar.
+  const getArteOriginal = (logoTop, capas) => {
+    if (Array.isArray(capas)) {
+      const conUrl = capas.find((c) => (c.tipo === 'archivo' || c.tipo === 'peyu') && c.url);
+      if (conUrl?.url) return conUrl.url;
+    }
+    return logoTop || '';
+  };
+
   // Recolectar todas las imágenes del cliente (mockup + logo) de líneas y top-level.
   const items = Array.isArray(pedido.items_detalle) ? pedido.items_detalle : [];
   const piezas = [];
@@ -24,6 +35,8 @@ export default function MockupClientePreview({ pedido, variant = 'admin' }) {
         nombre: it.nombre || 'Producto',
         mockup: it.mockup_url || '',
         logo: it.logo_url || '',
+        // Arte ORIGINAL para grabar (imagen sin recortar que subió el cliente).
+        arteOriginal: getArteOriginal(it.logo_url, it.capas_grabado),
         texto: it.personalizacion || '',
         posicion: it.posicion_grabado || '',
         // Reconstrucción del diseño v2 (foto base + capas) — igual que el carrito.
@@ -41,6 +54,7 @@ export default function MockupClientePreview({ pedido, variant = 'admin' }) {
       nombre: pedido.sku || pedido.descripcion_items || 'Pedido',
       mockup: pedido.mockup_url || '',
       logo: pedido.logo_url || '',
+      arteOriginal: pedido.logo_url || '',
       texto: pedido.texto_personalizacion || '',
       posicion: '',
       imagenBase: '',
@@ -108,6 +122,31 @@ export default function MockupClientePreview({ pedido, variant = 'admin' }) {
                 </span>
               </div>
             ) : null}
+            {/* ARTE ORIGINAL PARA PRODUCCIÓN — la imagen EXACTA que subió el
+                cliente (o el diseño PEYU), completa y sin recortar. Es lo que
+                producción debe grabar, NUNCA el mockup compuesto. */}
+            {!isPublic && p.arteOriginal && (
+              <div className="border-t border-purple-200 bg-emerald-50/70 p-2.5">
+                <div className="flex items-center gap-1.5 mb-2">
+                  <ImageIcon className="w-3.5 h-3.5 text-emerald-700" />
+                  <span className="text-[11px] font-bold text-emerald-800">Imagen original para grabar</span>
+                </div>
+                <div className="rounded-lg overflow-hidden border border-emerald-200 bg-white flex items-center justify-center min-h-[120px]">
+                  <img
+                    src={p.arteOriginal}
+                    alt={`Arte original de ${p.nombre}`}
+                    referrerPolicy="no-referrer"
+                    className="w-full h-auto max-h-72 object-contain"
+                    loading="lazy"
+                  />
+                </div>
+                <a href={p.arteOriginal} target="_blank" rel="noreferrer" download
+                  className="mt-2 w-full inline-flex items-center justify-center gap-1.5 text-[11px] font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg py-2 transition-colors">
+                  <Download className="w-3.5 h-3.5" /> Descargar original para producción
+                </a>
+              </div>
+            )}
+
             <div className="p-2.5 space-y-1.5">
               <p className={`text-xs font-semibold ${isPublic ? 'text-ld-fg' : 'text-gray-900'} line-clamp-1`}>{p.nombre}</p>
               {p.texto && (
@@ -120,16 +159,16 @@ export default function MockupClientePreview({ pedido, variant = 'admin' }) {
                 {p.mockup && (
                   <a href={p.mockup} target="_blank" rel="noreferrer"
                     className="inline-flex items-center gap-1 text-[11px] font-bold text-purple-700 hover:underline">
-                    <ExternalLink className="w-3 h-3" /> Ver mockup
+                    <ExternalLink className="w-3 h-3" /> Ver mockup (referencial)
                   </a>
                 )}
-                {p.logo && (
+                {p.logo && p.logo !== p.arteOriginal && (
                   <a href={p.logo} target="_blank" rel="noreferrer" download
                     className="inline-flex items-center gap-1 text-[11px] font-bold text-teal-700 hover:underline">
-                    <Download className="w-3 h-3" /> {p.mockup ? 'Logo original' : 'Descargar logo'}
+                    <Download className="w-3 h-3" /> Logo original
                   </a>
                 )}
-                {!p.mockup && !p.logo && (
+                {!p.mockup && !p.logo && !p.arteOriginal && (
                   <span className="inline-flex items-center gap-1 text-[11px] text-gray-400">
                     <ImageIcon className="w-3 h-3" /> Sin arte adjunto
                   </span>

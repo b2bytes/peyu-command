@@ -159,16 +159,22 @@ export default function EngravedLayer({ eng, tipo, texto, sizePct, tint, product
   // Capa 2: textura del material recortada con la misma silueta del logo.
   // IMPORTANTE: logos de cliente (tipo='archivo') reciben tratamiento especial para
   // reemplazar visualmente el logo PEYU existente en la foto.
+  //
+  // PROPORCIÓN REAL: NO usamos el Box cuadrado (1/1) — eso RECORTA imágenes
+  // verticales/altas (ej: un dibujo de pájaro alargado). En su lugar la imagen
+  // define su propia altura natural (object-contain con altura automática) y la
+  // textura se superpone con position:absolute sobre esa misma silueta. Así el
+  // grabado del cliente se ve COMPLETO, nunca cortado.
   const clientLogoOpacity = tipo === 'archivo' ? 0.95 : 0.92;
   const clientLogoBrightness = tipo === 'archivo' 
     ? (tint === 'light' ? 1.4 : 0.85)
     : (tint === 'light' ? 1.3 : 1);
 
   return (
-    <Box>
+    <div className="relative w-full pointer-events-none">
       <img
         src={eng.dataUrl} alt="Tu diseño" draggable={false}
-        className="absolute inset-0 w-full h-full object-contain"
+        className="block w-full h-auto object-contain"
         style={{
           mixBlendMode: baseBlend,
           opacity: clientLogoOpacity,
@@ -180,6 +186,6 @@ export default function EngravedLayer({ eng, tipo, texto, sizePct, tint, product
         }}
       />
       {TextureLayer}
-    </Box>
+    </div>
   );
   }
