@@ -265,7 +265,21 @@ Deno.serve(async (req) => {
       }
     });
 
-    y += mH + 12;
+    y += mH + 10;
+
+    // ═══════════════════════════════════════════════════
+    //  RELATO DE MARCA — el viaje eco
+    // ═══════════════════════════════════════════════════
+    const relatoH = 22;
+    doc.setFillColor(...MINT);
+    doc.roundedRect(MX, y, CW, relatoH, 3, 3, 'F');
+    doc.setFillColor(...LEAF);
+    doc.roundedRect(MX, y, 2.5, relatoH, 1, 1, 'F');
+    T('TU REGALO TIENE UNA HISTORIA', MX + 8, y + 7, { size: 7, font: 'bold', color: TEAL, spacing: 0.8 });
+    T('Cada producto PEYU nace de tapitas plasticas que rescatamos del mar y de la calle. Las fundimos,', MX + 8, y + 12.5, { size: 8, color: STONE });
+    T('moldeamos y grabamos tu logo con laser: un objeto util que cuenta que tu marca elige cuidar el', MX + 8, y + 16.5, { size: 8, color: STONE });
+    T('planeta. No regalas un objeto, regalas un gesto.', MX + 8, y + 20.5, { size: 8, color: STONE });
+    y += relatoH + 10;
 
     // ═══════════════════════════════════════════════════
     //  MOCKUP + ESG (dos columnas)
@@ -477,8 +491,10 @@ Deno.serve(async (req) => {
     // ═══════════════════════════════════════════════════
     if (y > ph - 58) { doc.addPage(); y = 20; }
     const conds = [
-      `Anticipo ${p.anticipo_pct || 50}% para iniciar produccion. Saldo contra despacho.`,
-      `Entrega en ${p.lead_time_dias || 7} dias habiles desde anticipo y aprobacion de mockup.`,
+      'Retiro en tienda: 50% al confirmar, 50% contra entrega.',
+      'Despacho a domicilio: abono del 100% al confirmar.',
+      'Segunda compra del cliente: opcion de pago a 30 dias.',
+      `Entrega en ${p.lead_time_dias || 7} dias habiles desde el pago y aprobacion de mockup.`,
       garantiaTermino,
       'Grabado laser UV gratis desde 10 unidades. Area estandar 40x25mm.',
       esRetiro
@@ -507,10 +523,12 @@ Deno.serve(async (req) => {
     doc.setFillColor(...TEAL);
     doc.rect(0, footerY, pw, 1.5, 'F');
 
-    T('PEYU Chile SpA', MX, footerY + 8, { size: 10, font: 'bold', color: WHITE });
-    T('Plastico que renace - Providencia - Macul', MX, footerY + 13.5, { size: 7.5, color: CREAM });
-    T('peyuchile.cl', RX, footerY + 8, { size: 7.5, color: [210, 228, 220], align: 'right' });
-    T('+56 9 3504 0242 - ventas@peyuchile.cl', RX, footerY + 13.5, { size: 7, color: [210, 228, 220], align: 'right' });
+    T('PEYUCHILE SpA', MX, footerY + 7.5, { size: 9.5, font: 'bold', color: WHITE });
+    T('RUT 77.069.974-6 - Giro: produccion y reciclaje', MX, footerY + 12.5, { size: 6.5, color: CREAM });
+    T('Pedro de Valdivia 6603, Macul, Santiago', MX, footerY + 16.5, { size: 6.5, color: CREAM });
+    T('peyuchile.cl', RX, footerY + 7.5, { size: 8, font: 'bold', color: [210, 228, 220], align: 'right' });
+    T('corporativos@peyuchile.cl', RX, footerY + 12.5, { size: 6.5, color: [210, 228, 220], align: 'right' });
+    T('+56 9 7947 1933', RX, footerY + 16.5, { size: 6.5, color: [210, 228, 220], align: 'right' });
 
     // ═══════════════════════════════════════════════════
     //  ENCODING + RETURN

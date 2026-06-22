@@ -103,6 +103,37 @@
     "es_express": {
       "type": "boolean",
       "title": "Pedido Express (+12%)"
+    },
+    "aprobada_at": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Aprobada por el cliente en"
+    },
+    "pago_confirmado": {
+      "type": "boolean",
+      "title": "Pago / anticipo confirmado",
+      "default": false,
+      "description": "true cuando el equipo confirma el anticipo. Detiene la secuencia de recordatorios del embudo."
+    },
+    "embudo": {
+      "type": "object",
+      "title": "Estado de la secuencia de embudo post-aprobaci\u00f3n",
+      "description": "Trackea qu\u00e9 toques de la secuencia (toque_0 inmediato, toque_1 recordatorio, toque_2 \u00faltimo aviso) ya se enviaron al cliente que aprob\u00f3 la propuesta.",
+      "additionalProperties": true,
+      "properties": {
+        "toque_0_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "toque_1_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "toque_2_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
     }
   },
   "required": [

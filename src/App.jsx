@@ -65,6 +65,7 @@ import B2BPropuestaPublica from './pages/B2BPropuesta';
 import FunnelDesignLab from './pages/FunnelDesignLab';
 import IndiceTest from './pages/IndiceTest';
 import ResumenOperativo from './pages/ResumenOperativo';
+import AprobarPropuesta from './pages/AprobarPropuesta';
 import FiestasPatrias from './pages/FiestasPatrias';
 import FiestasCanasta from './pages/FiestasCanasta';
 import FiestasEmpresas from './pages/FiestasEmpresas';
@@ -342,6 +343,7 @@ function App() {
               {/* EmpresasNuevo = cockpit B2B con header wizard propio (sin doble navegación) */}
               <Route path="/EmpresasNuevo" element={<EmpresasNuevo />} />
               <Route path="/resumen-operativo" element={<ResumenOperativo />} />
+              <Route path="/aprobar-propuesta" element={<AprobarPropuesta />} />
 
               {/* ── RUTAS PÚBLICAS — todas con PublicNavBar permanente ──────────── */}
               <Route element={<PublicPageLayout />}>

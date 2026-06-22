@@ -324,12 +324,12 @@ Deno.serve(async (req) => {
     T(`Rescata ~${tapitas.toLocaleString('es-CL')} tapitas (~${kgRescatados}kg de plástico) y ahorra ${(cantidad * 12.5).toLocaleString('es-CL')}L de agua vs producción virgen.`, PMX + 8, y + 11.5, { size: 8, color: STONE });
     y += 15 + 7;
 
-    // CTA Aprobar propuesta (botón con link a WhatsApp)
-    const waLink = `https://wa.me/56979471933?text=${encodeURIComponent(`Hola PEYU, apruebo la propuesta ${numero}. Quiero avanzar.`)}`;
+    // CTA Aprobar propuesta — link a la página pública que dispara el embudo.
+    const aprobarLink = `https://peyuchile.cl/aprobar-propuesta?cot=${cot.id}`;
     const btnW = 110, btnH = 13, btnX = PMX, btnY = y;
     doc.setFillColor(...TEAL); doc.roundedRect(btnX, btnY, btnW, btnH, 6.5, 6.5, 'F');
     T('APROBAR PROPUESTA  >', btnX + btnW / 2, btnY + 8.5, { size: 10, font: 'bold', color: WHITE, align: 'center' });
-    doc.link(btnX, btnY, btnW, btnH, { url: waLink });
+    doc.link(btnX, btnY, btnW, btnH, { url: aprobarLink });
     T('Responde a corporativos@peyuchile.cl', RX, btnY + 5, { size: 7.5, color: STONE, align: 'right' });
     T('o escríbenos al +56 9 7947 1933', RX, btnY + 10, { size: 7.5, color: STONE, align: 'right' });
     y += btnH + 8;
