@@ -4,6 +4,7 @@ import {
   ArrowRight, CircleDot, Sprout, FlaskConical, Gem
 } from 'lucide-react';
 import useTextosPagina from '@/hooks/useTextosPagina';
+import SEOHead from '@/components/SEOHead';
 
 // ── Iconografía eco-inteligente 2027: SF-style, thin stroke, conceptual
 const VALORES = [
@@ -95,12 +96,19 @@ export default function Nosotros() {
   const { t } = useTextosPagina('nosotros');
   return (
     <div className="min-h-screen font-inter pb-24 lg:pb-0" style={{ background: '#F8F3ED', color: '#2C1810' }}>
+      <SEOHead
+        title="Nosotros — PEYU Chile | Economía circular hecha en Chile"
+        description="Conoce la historia de PEYU: desde fundir botellas en una terraza hasta una fábrica con 6 inyectoras. Más de 500.000 kg de plástico reciclado y +50 empresas clientes."
+        url="https://peyuchile.cl/nosotros"
+        type="website"
+      />
 
       {/* ── HERO ───────────────────────────────────────────────────────────── */}
       <section className="max-w-4xl mx-auto px-4 sm:px-6 pt-14 pb-12 text-center">
         <StatusPill color="#0F8B6C">PEYU · Chile · 2026</StatusPill>
 
         <h1 className="font-fraunces text-4xl sm:text-5xl lg:text-6xl leading-[0.95] tracking-tight mt-5 mb-5"
+          aria-label="Desde una terraza hasta una fábrica con 6 inyectoras"
           style={{ color: '#2C1810' }}>
           {t('nosotros.hero.linea1', 'Desde una terraza')}<br />
           <em className="not-italic" style={{ color: '#C0785C' }}>{t('nosotros.hero.linea2', 'hasta una fábrica')}</em><br />
