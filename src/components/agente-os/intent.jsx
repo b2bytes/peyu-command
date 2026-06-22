@@ -44,10 +44,16 @@ export function detectCards(text) {
     'imágenes del producto', 'imagenes del producto', 'imágenes de los productos', 'imagenes de los productos',
     'traer el catálogo', 'traer el catalogo', 'todo el catálogo', 'todo el catalogo',
   ]);
-  if (quiereGestionCatalogo) {
-    cards.push({ type: 'catalog', categoria: has(['carcasa']) ? 'Carcasas B2C' : undefined });
-  } else if (has(['stock', 'inventario', 'agotad', 'reponer', 'producto', 'catálogo', 'catalogo', 'sku', 'precio'])) {
-    cards.push({ type: 'stock' });
+  // Stock / inventario: abrimos el GESTOR COMPLETO (buscador, filtros, edición
+  // de stock e imágenes por producto) con el filtro de stock pre-aplicado, en
+  // vez de la card de solo lectura. Así el founder actualiza todo en el chat.
+  const quiereStock = has(['stock', 'inventario', 'agotad', 'reponer', 'producto', 'catálogo', 'catalogo', 'sku', 'precio']);
+  if (quiereGestionCatalogo || quiereStock) {
+    cards.push({
+      type: 'catalog',
+      categoria: has(['carcasa']) ? 'Carcasas B2C' : undefined,
+      stock: has(['agotad', 'sin stock', 'cero']) ? 'agotado' : has(['stock bajo', 'bajo stock', 'poco stock', 'reponer']) ? 'bajo' : undefined,
+    });
   }
   if (has(['cotizaci', 'propuesta', 'corporativ'])) {
     cards.push({ type: 'proposals' });

@@ -35,9 +35,9 @@ export default function CardDispatcher({ card, crm, metrics, lists = {}, onAsk, 
     case 'stock':
       return <StockCard productos={crm.productos} lista={lists.stock_bajo_list} onDone={onDone} />;
     case 'catalog':
-      // Gestor de catálogo completo: editar, subir/cambiar imágenes, agregar
-      // y administrar productos (carcasas + otros) desde el chat.
-      return <CatalogManagerCard categoriaInicial={card.categoria} />;
+      // Gestor de catálogo completo: buscador, filtros por categoría/stock,
+      // editar, subir/cambiar/quitar imágenes y agregar productos desde el chat.
+      return <CatalogManagerCard categoriaInicial={card.categoria} stockInicial={card.stock} />;
     case 'quotes':
       return <QuotesCard cotizaciones={crm.cotizaciones} />;
     case 'proposals':

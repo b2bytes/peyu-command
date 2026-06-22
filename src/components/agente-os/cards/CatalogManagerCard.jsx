@@ -6,14 +6,22 @@ import ProductCreatePanel from '../catalog/ProductCreatePanel';
 
 const CATEGORIAS = ['Todas', 'Carcasas B2C', 'Escritorio', 'Hogar', 'Entretenimiento', 'Corporativo'];
 
+// Filtros rápidos de stock para actualizaciones masivas dentro del chat.
+const FILTROS_STOCK = [
+  { id: 'todos', label: 'Todo stock' },
+  { id: 'bajo', label: 'Stock bajo (<10u)' },
+  { id: 'agotado', label: 'Agotados (0u)' },
+];
+
 // Gestor de catálogo embebido en el chat del Agente: grilla de productos
 // (carcasas + otros) con buscador, filtro por categoría, edición inline de cada
 // producto (incl. subir/cambiar imágenes) y alta de productos nuevos.
-export default function CatalogManagerCard({ categoriaInicial }) {
+export default function CatalogManagerCard({ categoriaInicial, stockInicial }) {
   const [productos, setProductos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState('');
   const [categoria, setCategoria] = useState(categoriaInicial || 'Todas');
+  const [filtroStock, setFiltroStock] = useState(stockInicial || 'todos');
   const [editId, setEditId] = useState(null);
   const [creating, setCreating] = useState(false);
 
@@ -30,6 +38,11 @@ export default function CatalogManagerCard({ categoriaInicial }) {
   useEffect(() => { cargar(); }, [cargar]);
 
   const visibles = productos.filter((p) => {
+    // Filtro de stock para actualizaciones masivas.
+    const stock = typeof p.stock_actual === 'number' ? p.stock_actual : null;
+    if (filtroStock === 'bajo' && !(stock !== null && stock < 10)) return false;
+    if (filtroStock === 'agotado' && stock !== 0) return false;
+    // Buscador por nombre o SKU.
     if (!query) return true;
     const q = query.toLowerCase();
     return (p.nombre || '').toLowerCase().includes(q) || (p.sku || '').toLowerCase().includes(q);
@@ -71,7 +84,7 @@ export default function CatalogManagerCard({ categoriaInicial }) {
           />
         </div>
       </div>
-      <div className="flex items-center gap-1.5 mb-3 overflow-x-auto scrollbar-hide">
+      <div className="flex items-center gap-1.5 mb-2 overflow-x-auto scrollbar-hide">
         {CATEGORIAS.map((c) => (
           <button
             key={c}
@@ -79,6 +92,18 @@ export default function CatalogManagerCard({ categoriaInicial }) {
             className={`px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap transition-colors ${categoria === c ? 'ld-btn-primary' : 'ld-btn-ghost text-ld-fg-soft'}`}
           >
             {c}
+          </button>
+        ))}
+      </div>
+      {/* Filtros rápidos de stock para actualizaciones masivas */}
+      <div className="flex items-center gap-1.5 mb-3 overflow-x-auto scrollbar-hide">
+        {FILTROS_STOCK.map((f) => (
+          <button
+            key={f.id}
+            onClick={() => setFiltroStock(f.id)}
+            className={`px-3 py-1 rounded-full text-[11px] font-semibold whitespace-nowrap transition-colors border ${filtroStock === f.id ? 'border-ld-action text-ld-action bg-ld-action-soft' : 'border-ld-border text-ld-fg-muted hover:text-ld-fg'}`}
+          >
+            {f.label}
           </button>
         ))}
       </div>
