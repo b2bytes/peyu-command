@@ -249,13 +249,16 @@ export default function MetaAdsPanel() {
     setLoading(true);
     // Recordamos el envío para poder reintentarlo si el agente no responde.
     lastSentRef.current = { content: msg || 'Analiza esta imagen.', file_urls: fileUrls };
-    // Watchdog: si en 75s no llegó respuesta del asistente, rescatamos al
-    // usuario en vez de dejar el "analizando" colgado para siempre.
+    // Watchdog: si en 200s no llegó respuesta del asistente, rescatamos al
+    // usuario en vez de dejar el "analizando" colgado para siempre. Se calibró a
+    // 200s porque el deep search de competencia/keywords (gemini_3_1_pro con
+    // internet) puede tardar ~165s; un watchdog más corto marcaba "se demoró"
+    // mientras el agente seguía investigando correctamente.
     if (watchdogRef.current) clearTimeout(watchdogRef.current);
     watchdogRef.current = setTimeout(() => {
       setLoading(false);
       setStalled(true);
-    }, 75000);
+    }, 200000);
     try {
       await base44.agents.addMessage(conversation, {
         role: 'user',
@@ -275,7 +278,7 @@ export default function MetaAdsPanel() {
     setStalled(false);
     setLoading(true);
     if (watchdogRef.current) clearTimeout(watchdogRef.current);
-    watchdogRef.current = setTimeout(() => { setLoading(false); setStalled(true); }, 75000);
+    watchdogRef.current = setTimeout(() => { setLoading(false); setStalled(true); }, 200000);
     try {
       await base44.agents.addMessage(conversation, { role: 'user', ...payload });
     } catch {
