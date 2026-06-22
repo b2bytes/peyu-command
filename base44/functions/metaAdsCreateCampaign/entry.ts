@@ -145,6 +145,9 @@ Deno.serve(async (req) => {
     if (cfg.advantage_audience) {
       // Advantage+ Audience: deja que la IA de Meta expanda más allá del público semilla.
       targeting.targeting_automation = { advantage_audience: 1 };
+      // Meta NO permite age_max < 65 con Advantage+ (solo lo toma como "sugerencia").
+      // Para evitar el error de validación, con Advantage+ siempre fijamos age_max=65.
+      targeting.age_max = 65;
     }
     const adset = await graphPost(`${accountId}/adsets`, {
       name: `${campaignName} · Ad Set`,
