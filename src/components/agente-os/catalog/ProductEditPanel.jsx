@@ -54,6 +54,12 @@ export default function ProductEditPanel({ producto, onSaved, onClose }) {
     onSaved?.();
   };
 
+  const quitarImagen = async () => {
+    setImagenUrl('');
+    await call('removeImage', { id: producto.id });
+    onSaved?.();
+  };
+
   const agregarGaleria = async (url) => {
     const res = await call('addGallery', { id: producto.id, imagen_url: url });
     setGaleria(res?.data?.galeria_urls || [...galeria, url]);
@@ -88,9 +94,14 @@ export default function ProductEditPanel({ producto, onSaved, onClose }) {
 
   return (
     <div className="mt-2 rounded-xl border border-ld-border bg-ld-bg-soft/40 p-3.5 space-y-3.5">
-      {/* Imagen principal */}
+      {/* Imagen principal — cambiar o quitar directo en el chat */}
       <Field label="Imagen principal">
-        <ProductImageUploader current={imagenUrl} onUploaded={cambiarImagen} label="Cambiar foto" />
+        <ProductImageUploader
+          current={imagenUrl}
+          onUploaded={cambiarImagen}
+          onRemove={imagenUrl ? quitarImagen : undefined}
+          label={imagenUrl ? 'Cambiar foto' : 'Subir foto'}
+        />
       </Field>
 
       <div className="grid grid-cols-2 gap-2.5">

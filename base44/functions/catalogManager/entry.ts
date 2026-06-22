@@ -10,6 +10,7 @@
 //   - update      { id, campos:{...} }                   → edita campos editables
 //   - create      { campos:{ sku, nombre, categoria... } } → nuevo producto
 //   - setImage    { id, imagen_url }                     → imagen principal
+//   - removeImage { id }                                 → quita imagen principal
 //   - addGallery  { id, imagen_url }                     → agrega a galería
 //   - removeGallery { id, imagen_url }                   → quita de galería
 //   - setColorImage { id, color, imagen_url }            → imagen por color
@@ -81,6 +82,12 @@ Deno.serve(async (req) => {
         if (!payload.id || !payload.imagen_url) throw new Error('Falta id o imagen_url');
         await Producto.update(payload.id, { imagen_url: payload.imagen_url });
         return Response.json({ ok: true, message: 'Imagen principal actualizada ✓' });
+      }
+
+      case 'removeImage': {
+        if (!payload.id) throw new Error('Falta id de producto');
+        await Producto.update(payload.id, { imagen_url: '' });
+        return Response.json({ ok: true, message: 'Imagen principal quitada ✓' });
       }
 
       case 'addGallery': {
