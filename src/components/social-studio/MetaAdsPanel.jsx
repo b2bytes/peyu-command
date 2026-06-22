@@ -15,6 +15,7 @@ import AgentLayout from './AgentLayout';
 import MetaAgentMarkdown from './MetaAgentMarkdown';
 import SaveKnowledgeButton from '@/components/agente-os/SaveKnowledgeButton';
 import useAgentVoice from '@/hooks/useAgentVoice';
+import AgentProcessTimeline from './AgentProcessTimeline';
 
 const AGENT_NAME = 'meta_ads_strategist';
 
@@ -71,22 +72,6 @@ function fmtNum(n) {
   return new Intl.NumberFormat('es-CL', { maximumFractionDigits: 0 }).format(n);
 }
 
-function ToolCallBadge({ toolCall }) {
-  const status = toolCall?.status || 'pending';
-  const isRunning = status === 'running' || status === 'in_progress' || status === 'pending';
-  const isDone = status === 'completed' || status === 'success';
-  return (
-    <div className={`inline-flex items-center gap-1.5 text-[10px] font-semibold px-2.5 py-1 rounded-full mt-1 ${
-      isDone ? 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/25'
-             : 'bg-blue-500/15 text-blue-300 border border-blue-500/25'
-    }`}>
-      {isRunning && <Loader2 className="w-3 h-3 animate-spin" />}
-      {isDone && <CheckCircle2 className="w-3 h-3" />}
-      {isDone ? '✅ Rendimiento consultado' : '📊 Consultando Meta Ads…'}
-    </div>
-  );
-}
-
 function ChatMessage({ msg, msgId, voice }) {
   const isUser = msg.role === 'user';
   const speakingThis = voice?.speakingId === msgId;
@@ -100,9 +85,7 @@ function ChatMessage({ msg, msgId, voice }) {
       </div>
       <div className={`max-w-[88%] ${isUser ? 'flex flex-col items-end' : ''}`}>
         {!isUser && msg.tool_calls?.length > 0 && (
-          <div className="flex flex-wrap gap-1 mb-1.5">
-            {msg.tool_calls.map((tc, i) => <ToolCallBadge key={i} toolCall={tc} />)}
-          </div>
+          <AgentProcessTimeline toolCalls={msg.tool_calls} />
         )}
         {/* Imágenes adjuntas por el founder — el agente las VE (computer vision) */}
         {isUser && msg.file_urls?.length > 0 && (
