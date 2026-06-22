@@ -132,6 +132,7 @@ const SEOMetaBulk = lazyWithRetry(() => import('./pages/SEOMetaBulk'), { name: '
 const ChatLeads = lazyWithRetry(() => import('./pages/ChatLeads'), { name: 'ChatLeads' });
 const LaunchRoadmap = lazyWithRetry(() => import('./pages/LaunchRoadmap'), { name: 'LaunchRoadmap' });
 const MobileCockpit = lazyWithRetry(() => import('./pages/MobileCockpit'), { name: 'MobileCockpit' });
+const AdminAppHome = lazyWithRetry(() => import('./pages/AdminAppHome'), { name: 'AdminAppHome' });
 const ContratoImpulsia = lazyWithRetry(() => import('./pages/ContratoImpulsia'), { name: 'ContratoImpulsia' });
 const SEOKeywords = lazyWithRetry(() => import('./pages/SEOKeywords'), { name: 'SEOKeywords' });
 const RecategorizarCatalogo = lazyWithRetry(() => import('./pages/RecategorizarCatalogo'), { name: 'RecategorizarCatalogo' });
@@ -252,6 +253,7 @@ const AuthenticatedApp = () => {
           <Route path="chat-leads" element={<ChatLeads />} />
           <Route path="launch-roadmap" element={<LaunchRoadmap />} />
           <Route path="movil" element={<MobileCockpit />} />
+          <Route path="inicio-app" element={<AdminAppHome />} />
           <Route path="contrato-impulsia" element={<ContratoImpulsia />} />
           <Route path="seo-keywords" element={<SEOKeywords />} />
           <Route path="recategorizar" element={<RecategorizarCatalogo />} />

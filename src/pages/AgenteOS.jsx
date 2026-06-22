@@ -19,6 +19,8 @@ import CommandBar from '@/components/agente-os/CommandBar';
 import WelcomeScreen from '@/components/agente-os/WelcomeScreen';
 import MessageBubble from '@/components/agente-os/MessageBubble';
 import AgentMobileDrawer from '@/components/agente-os/AgentMobileDrawer';
+import AdminBottomTabBar from '@/components/agente-os/mobile/AdminBottomTabBar';
+import AdminMoreSheet from '@/components/agente-os/mobile/AdminMoreSheet';
 import { detectCards } from '@/components/agente-os/intent';
 import OpsCenter from '@/components/agente-os/OpsCenter';
 import ActionProposalCard from '@/components/agente-os/ActionProposalCard';
@@ -76,6 +78,7 @@ export default function AgenteOS() {
   const [thinking, setThinking] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [mobileDrawer, setMobileDrawer] = useState(false);
+  const [moreOpen, setMoreOpen] = useState(false); // sheet "Más" del bottom tab bar móvil
   const [view, setView] = useState('chat'); // 'chat' | 'ops'
   const [attachments, setAttachments] = useState([]); // [{name, url, type}]
   const [uploading, setUploading] = useState(false);
@@ -351,20 +354,30 @@ Stock bajo (<10u): ${m.stock_bajo} SKUs · consultas sin responder: ${m.consulta
         )}
 
         {view === 'chat' && (
-          <CommandBar
-            value={input}
-            onChange={setInput}
-            onSend={() => sendMessage()}
-            onChip={sendMessage}
-            loading={thinking}
-            attachments={attachments}
-            onAttach={handleAttach}
-            onRemoveAttachment={(i) => setAttachments((prev) => prev.filter((_, idx) => idx !== i))}
-            uploading={uploading}
-            voice={voice}
-          />
+          // pb extra en móvil: deja espacio para el bottom tab bar fijo, que si
+          // no tapaba el input del chat.
+          <div className="pb-20 md:pb-0">
+            <CommandBar
+              value={input}
+              onChange={setInput}
+              onSend={() => sendMessage()}
+              onChip={sendMessage}
+              loading={thinking}
+              attachments={attachments}
+              onAttach={handleAttach}
+              onRemoveAttachment={(i) => setAttachments((prev) => prev.filter((_, idx) => idx !== i))}
+              uploading={uploading}
+              voice={voice}
+            />
+          </div>
         )}
       </div>
+
+      {/* Navegación móvil 2027: bottom tab bar + sheet "Más" con todos los
+          módulos. Permite operar y navegar a todo el admin desde el Agente sin
+          salir, en versión móvil. En desktop manda el sidebar de hilos. */}
+      <AdminBottomTabBar onMore={() => setMoreOpen(true)} />
+      <AdminMoreSheet open={moreOpen} onClose={() => setMoreOpen(false)} />
     </div>
   );
 }

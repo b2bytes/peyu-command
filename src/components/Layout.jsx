@@ -6,6 +6,7 @@ import { Outlet, useLocation } from 'react-router-dom';
 import SEO from '@/components/SEO';
 import PeyuCompanion from '@/components/admin/PeyuCompanion';
 import AdminTopNav from '@/components/admin/AdminTopNav';
+import AdminInstallBanner from '@/components/agente-os/mobile/AdminInstallBanner';
 
 export default function Layout() {
   // En las páginas de agente conversacional, los FABs flotantes (Comando +
@@ -38,6 +39,9 @@ export default function Layout() {
             Responde data viva, knowledge RAG y ejecuta comandos backend. */}
         {!esAgente && <PeyuCompanion />}
       </main>
+      {/* Banner para instalar PEYU OS en el celular (solo founders/admin).
+          En el Agente NO se muestra: ahí el bottom tab bar ocupa esa zona. */}
+      {!esAgente && <AdminInstallBanner />}
     </div>
   );
 }

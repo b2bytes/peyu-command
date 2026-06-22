@@ -1,5 +1,5 @@
 import { MessageSquare, Package, FileText, Users, PanelLeftClose, PanelLeft, LayoutGrid,
-  Megaphone, Truck, Boxes, GitBranch, Sparkles } from 'lucide-react';
+  Megaphone, Truck, Boxes, GitBranch, Sparkles, Home } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import AgentThreadsList from './AgentThreadsList';
 
@@ -15,6 +15,7 @@ const QUICK = [
 // Accesos directos a los módulos admin más usados — el founder coordina toda la
 // plataforma desde la página Agente sin perderse buscando rutas.
 const ADMIN_LINKS = [
+  { to: '/admin/inicio-app', label: 'Home App', icon: Home },
   { to: '/admin/social-studio', label: 'Social Studio', icon: Sparkles },
   { to: '/admin/marketing-hub', label: 'Marketing', icon: Megaphone },
   { to: '/admin/pipeline', label: 'Pipeline B2B', icon: GitBranch },

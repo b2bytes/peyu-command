@@ -1,5 +1,5 @@
 import { MessageSquare, Package, FileText, Users, X,
-  Sparkles, Megaphone, GitBranch, Truck, Boxes } from 'lucide-react';
+  Sparkles, Megaphone, GitBranch, Truck, Boxes, Home } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import AgentThreadsList from './AgentThreadsList';
 
@@ -14,6 +14,7 @@ const QUICK = [
 ];
 
 const ADMIN_LINKS = [
+  { to: '/admin/inicio-app', label: 'Home App', icon: Home },
   { to: '/admin/social-studio', label: 'Social Studio', icon: Sparkles },
   { to: '/admin/marketing-hub', label: 'Marketing', icon: Megaphone },
   { to: '/admin/pipeline', label: 'Pipeline B2B', icon: GitBranch },
