@@ -9,6 +9,7 @@ import {
   Send, Loader2, User, Facebook, TrendingUp, AlertCircle, RefreshCw,
   CheckCircle2, BarChart2, Target, Zap, Eye, MousePointerClick,
   DollarSign, Activity, Instagram, ShieldCheck, XCircle, ScanSearch, Webhook,
+  ImagePlus, X,
 } from 'lucide-react';
 import AgentLayout from './AgentLayout';
 import MetaAgentMarkdown from './MetaAgentMarkdown';
@@ -95,6 +96,16 @@ function ChatMessage({ msg }) {
             {msg.tool_calls.map((tc, i) => <ToolCallBadge key={i} toolCall={tc} />)}
           </div>
         )}
+        {/* Imágenes adjuntas por el founder — el agente las VE (computer vision) */}
+        {isUser && msg.file_urls?.length > 0 && (
+          <div className="flex flex-wrap gap-2 mb-1.5 justify-end">
+            {msg.file_urls.map((url, i) => (
+              <a key={i} href={url} target="_blank" rel="noopener noreferrer">
+                <img src={url} alt="Adjunto" className="max-h-44 rounded-xl border border-teal-500/30 object-cover" />
+              </a>
+            ))}
+          </div>
+        )}
         {msg.content && (
           <div className={`rounded-2xl px-4 py-3 text-sm ${
             isUser
@@ -122,6 +133,9 @@ export default function MetaAdsPanel() {
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [initing, setIniting] = useState(true);
+  const [attachments, setAttachments] = useState([]); // [{name, url}]
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef(null);
   const bottomRef = useRef(null);
 
   // Estado de rendimiento (columna derecha)
@@ -179,13 +193,37 @@ export default function MetaAdsPanel() {
 
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages, loading]);
 
+  // Adjuntar imágenes: se suben al instante y quedan listas para que el agente
+  // las analice con computer vision al enviar el mensaje.
+  const handleAttach = async (files) => {
+    const imgs = Array.from(files).filter((f) => f.type.startsWith('image/'));
+    if (!imgs.length) return;
+    setUploading(true);
+    try {
+      const subidos = await Promise.all(imgs.map(async (file) => {
+        const { file_url } = await base44.integrations.Core.UploadFile({ file });
+        return { name: file.name, url: file_url };
+      }));
+      setAttachments((prev) => [...prev, ...subidos]);
+    } finally {
+      setUploading(false);
+    }
+  };
+
   const sendMessage = async (text) => {
     const msg = (text || input).trim();
-    if (!msg || loading || !conversation) return;
+    const fileUrls = attachments.map((a) => a.url);
+    // Permite enviar solo imagen (sin texto) para que el agente la analice.
+    if ((!msg && fileUrls.length === 0) || loading || !conversation) return;
     setInput('');
+    setAttachments([]);
     setLoading(true);
     try {
-      await base44.agents.addMessage(conversation, { role: 'user', content: msg });
+      await base44.agents.addMessage(conversation, {
+        role: 'user',
+        content: msg || 'Analiza esta imagen.',
+        ...(fileUrls.length ? { file_urls: fileUrls } : {}),
+      });
     } finally {
       setLoading(false);
     }
@@ -330,22 +368,61 @@ export default function MetaAdsPanel() {
       </div>
 
       <div className="flex-shrink-0 px-3 py-3 border-t border-white/10 bg-black/20">
-        <div className="flex gap-2 items-center max-w-3xl mx-auto">
-          <input
-            value={input}
-            onChange={e => setInput(e.target.value)}
-            onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } }}
-            placeholder="Diagnostica campañas, detecta fatiga, plan Advantage+…"
-            disabled={initing}
-            className="flex-1 bg-white/[0.06] border border-white/15 text-white placeholder:text-white/25 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-blue-500/50 transition-all disabled:opacity-40"
-          />
-          <button
-            onClick={() => sendMessage()}
-            disabled={loading || !input.trim() || initing}
-            className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 hover:from-blue-400 hover:to-indigo-500 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center flex-shrink-0 transition-all shadow-lg shadow-blue-500/20"
-          >
-            {loading ? <Loader2 className="w-4 h-4 text-white animate-spin" /> : <Send className="w-4 h-4 text-white" />}
-          </button>
+        <div className="max-w-3xl mx-auto space-y-2">
+          {/* Preview de imágenes adjuntas listas para enviar al agente */}
+          {(attachments.length > 0 || uploading) && (
+            <div className="flex flex-wrap gap-2">
+              {attachments.map((a, i) => (
+                <div key={i} className="relative group">
+                  <img src={a.url} alt={a.name} className="w-14 h-14 rounded-lg object-cover border border-white/15" />
+                  <button
+                    onClick={() => setAttachments((prev) => prev.filter((_, idx) => idx !== i))}
+                    className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-black/80 border border-white/20 flex items-center justify-center text-white/70 hover:text-white"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </div>
+              ))}
+              {uploading && (
+                <div className="w-14 h-14 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center">
+                  <Loader2 className="w-4 h-4 text-white/40 animate-spin" />
+                </div>
+              )}
+            </div>
+          )}
+          <div className="flex gap-2 items-center">
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              multiple
+              className="hidden"
+              onChange={(e) => { handleAttach(e.target.files); e.target.value = ''; }}
+            />
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              disabled={initing || uploading}
+              title="Adjuntar imagen para que el agente la analice"
+              className="w-10 h-10 rounded-xl bg-white/[0.06] border border-white/15 hover:bg-white/[0.12] disabled:opacity-30 flex items-center justify-center flex-shrink-0 transition-all"
+            >
+              <ImagePlus className="w-4 h-4 text-white/70" />
+            </button>
+            <input
+              value={input}
+              onChange={e => setInput(e.target.value)}
+              onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } }}
+              placeholder="Diagnostica campañas, sube un creativo para analizar, plan Advantage+…"
+              disabled={initing}
+              className="flex-1 bg-white/[0.06] border border-white/15 text-white placeholder:text-white/25 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-blue-500/50 transition-all disabled:opacity-40"
+            />
+            <button
+              onClick={() => sendMessage()}
+              disabled={loading || (!input.trim() && attachments.length === 0) || initing}
+              className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 hover:from-blue-400 hover:to-indigo-500 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center flex-shrink-0 transition-all shadow-lg shadow-blue-500/20"
+            >
+              {loading ? <Loader2 className="w-4 h-4 text-white animate-spin" /> : <Send className="w-4 h-4 text-white" />}
+            </button>
+          </div>
         </div>
       </div>
     </AgentLayout>
