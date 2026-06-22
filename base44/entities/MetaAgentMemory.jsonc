@@ -1,0 +1,63 @@
+{
+  "name": "MetaAgentMemory",
+  "type": "object",
+  "description": "Memoria persistente del Estratega de Meta Ads. Cada registro es un recuerdo (decisi\u00f3n, aprendizaje, instrucci\u00f3n del founder, resultado de campa\u00f1a, preferencia) que el agente guarda y recupera entre conversaciones para tener memoria a largo plazo. Respaldo de la memoria vectorial Pinecone.",
+  "properties": {
+    "texto": {
+      "type": "string",
+      "title": "Recuerdo",
+      "description": "El contenido del recuerdo, en lenguaje natural."
+    },
+    "kind": {
+      "type": "string",
+      "title": "Tipo de recuerdo",
+      "enum": [
+        "decision",
+        "aprendizaje",
+        "instruccion",
+        "campa\u00f1a",
+        "preferencia",
+        "resultado",
+        "contexto"
+      ],
+      "default": "contexto"
+    },
+    "keywords": {
+      "type": "array",
+      "title": "Palabras clave (para recuperaci\u00f3n por relevancia)",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    },
+    "author": {
+      "type": "string",
+      "title": "Autor / fuente"
+    }
+  },
+  "required": [
+    "texto"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

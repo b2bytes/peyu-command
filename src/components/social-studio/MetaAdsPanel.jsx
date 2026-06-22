@@ -9,7 +9,7 @@ import {
   Send, Loader2, User, Facebook, TrendingUp, AlertCircle, RefreshCw,
   CheckCircle2, BarChart2, Target, Zap, Eye, MousePointerClick,
   DollarSign, Activity, Instagram, ShieldCheck, XCircle, ScanSearch, Webhook,
-  ImagePlus, X,
+  ImagePlus, X, Brain, Search, Lightbulb, ShoppingBag,
 } from 'lucide-react';
 import AgentLayout from './AgentLayout';
 import MetaAgentMarkdown from './MetaAgentMarkdown';
@@ -25,6 +25,10 @@ const QUICK_PROMPTS = [
   { icon: ScanSearch,       label: 'Auditar setup completo',   prompt: 'Hazme una auditoría profunda del setup completo de Meta: qué eventos dispara el pixel y con qué frecuencia, qué audiencias tengo, dominios verificados, página e Instagram. Dime qué está bien y qué falta para vender más.' },
   { icon: Activity,         label: '¿Qué eventos dispara el pixel?', prompt: 'Muéstrame qué eventos está disparando mi pixel (Purchase, AddToCart, Lead, ViewContent…) y con qué frecuencia en los últimos 28 días. Dime si tengo el evento de Compra configurado y, si no, cómo lo activamos vía Conversions API.' },
   { icon: Webhook,          label: 'Probar evento de compra',  prompt: 'Envía un evento de prueba de Compra (Purchase) a mi pixel vía Conversions API para verificar que Meta lo recibe correctamente. Explícame cómo verlo en el Test Events de Meta.' },
+  { icon: Search,           label: 'Analizar competencia real', prompt: 'Investiga en vivo mi competencia real en Chile: quién más vende carcasas eco y regalos corporativos sustentables, su ángulo, presencia en Meta/Instagram y precios. Dime dónde puede ganarles PEYU.' },
+  { icon: Lightbulb,        label: 'Keywords para SEO + anuncios', prompt: 'Tráeme keywords reales de alta intención de mi segmento (B2C eco y B2B regalo corporativo), marcadas con su mejor uso (SEO, GEO local, targeting Meta, copy de anuncio) y los clusters GEO de Chile con más oportunidad. Quiero usarlas en SEO y en mis campañas.' },
+  { icon: ShoppingBag,      label: 'Productos para promocionar',  prompt: 'Muéstrame productos de mi catálogo con stock que valga la pena promocionar, con su URL de ficha lista para usar como CTA, y recomiéndame cuál llevar a una campaña primero.' },
+  { icon: Brain,            label: '¿Qué recuerdas de mí?',        prompt: 'Recupera de tu memoria lo que ya sabes de mis preferencias, objetivos de ROAS/presupuesto, decisiones y aprendizajes de campañas pasadas. Hazme un resumen de lo que recuerdas.' },
 ];
 
 // Diagnóstico accionable según el motivo que devuelve metaAdsPerformance.
@@ -135,8 +139,11 @@ export default function MetaAdsPanel() {
   const [initing, setIniting] = useState(true);
   const [attachments, setAttachments] = useState([]); // [{name, url}]
   const [uploading, setUploading] = useState(false);
+  const [stalled, setStalled] = useState(false); // el agente no respondió a tiempo
   const fileInputRef = useRef(null);
   const bottomRef = useRef(null);
+  const watchdogRef = useRef(null);
+  const lastSentRef = useRef(null); // último mensaje enviado, para reintentar
 
   // Estado de rendimiento (columna derecha)
   const [perf, setPerf] = useState(null);
@@ -171,7 +178,7 @@ export default function MetaAdsPanel() {
       setConversation(conv);
       setMessages([{
         role: 'assistant',
-        content: `¡Hola! 📘 Soy tu **Estratega de Meta Ads** — Facebook + Instagram, nivel agencia 2026 (Advantage+, consolidación de conjuntos, creativo como targeting).\n\nLeo el rendimiento real de tus campañas activas, diagnostico y te doy acciones concretas para vender más. Elige una acción rápida de la izquierda o pídeme un diagnóstico. ¿Partimos?`,
+        content: `¡Hola! 📘 Soy tu **Superagente de Meta Ads** — Facebook + Instagram, nivel agencia 2026.\n\nAhora con **memoria** (recuerdo tus decisiones y preferencias entre conversaciones), **visión** (súbeme creativos o capturas y los analizo), **inteligencia de mercado en vivo** (competencia real + keywords SEO/GEO) y acceso a tu **catálogo** para armar CTAs con links reales.\n\nLeo el rendimiento real de tus campañas, diagnostico y ejecuto. Elige una acción rápida de la izquierda o pídeme un diagnóstico. ¿Partimos?`,
         tool_calls: [],
       }]);
     } catch {
@@ -186,10 +193,23 @@ export default function MetaAdsPanel() {
   useEffect(() => {
     if (!conversation?.id) return;
     const unsub = base44.agents.subscribeToConversation(conversation.id, (data) => {
-      setMessages(data.messages || []);
+      const msgs = data.messages || [];
+      setMessages(msgs);
+      // Si el último mensaje es del asistente y ya trae contenido, la respuesta
+      // llegó → apaga el "analizando" y desarma el watchdog. Esto evita que el
+      // indicador se quede colgado ("piensa y no responde").
+      const last = msgs[msgs.length - 1];
+      if (last?.role === 'assistant' && last.content?.trim()) {
+        setLoading(false);
+        setStalled(false);
+        if (watchdogRef.current) { clearTimeout(watchdogRef.current); watchdogRef.current = null; }
+      }
     });
     return unsub;
   }, [conversation?.id]);
+
+  // Limpia el watchdog al desmontar.
+  useEffect(() => () => { if (watchdogRef.current) clearTimeout(watchdogRef.current); }, []);
 
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages, loading]);
 
@@ -217,15 +237,43 @@ export default function MetaAdsPanel() {
     if ((!msg && fileUrls.length === 0) || loading || !conversation) return;
     setInput('');
     setAttachments([]);
+    setStalled(false);
     setLoading(true);
+    // Recordamos el envío para poder reintentarlo si el agente no responde.
+    lastSentRef.current = { content: msg || 'Analiza esta imagen.', file_urls: fileUrls };
+    // Watchdog: si en 75s no llegó respuesta del asistente, rescatamos al
+    // usuario en vez de dejar el "analizando" colgado para siempre.
+    if (watchdogRef.current) clearTimeout(watchdogRef.current);
+    watchdogRef.current = setTimeout(() => {
+      setLoading(false);
+      setStalled(true);
+    }, 75000);
     try {
       await base44.agents.addMessage(conversation, {
         role: 'user',
-        content: msg || 'Analiza esta imagen.',
-        ...(fileUrls.length ? { file_urls: fileUrls } : {}),
+        ...lastSentRef.current,
       });
-    } finally {
+    } catch {
+      if (watchdogRef.current) { clearTimeout(watchdogRef.current); watchdogRef.current = null; }
       setLoading(false);
+      setStalled(true);
+    }
+  };
+
+  // Reintenta el último envío que se quedó sin respuesta.
+  const retryLast = async () => {
+    const payload = lastSentRef.current;
+    if (!payload || !conversation) return;
+    setStalled(false);
+    setLoading(true);
+    if (watchdogRef.current) clearTimeout(watchdogRef.current);
+    watchdogRef.current = setTimeout(() => { setLoading(false); setStalled(true); }, 75000);
+    try {
+      await base44.agents.addMessage(conversation, { role: 'user', ...payload });
+    } catch {
+      if (watchdogRef.current) { clearTimeout(watchdogRef.current); watchdogRef.current = null; }
+      setLoading(false);
+      setStalled(true);
     }
   };
 
@@ -359,6 +407,26 @@ export default function MetaAdsPanel() {
                   {[0,1,2].map(i => (
                     <div key={i} className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-bounce" style={{ animationDelay: `${i * 0.12}s` }} />
                   ))}
+                </div>
+              </div>
+            )}
+            {/* Rescate: si el agente no respondió a tiempo, ofrecemos reintentar
+                en vez de dejar al founder esperando sin nada. */}
+            {stalled && (
+              <div className="flex gap-3">
+                <div className="w-8 h-8 rounded-xl bg-amber-500/20 border border-amber-500/30 flex items-center justify-center flex-shrink-0">
+                  <AlertCircle className="w-4 h-4 text-amber-300" />
+                </div>
+                <div className="bg-amber-500/[0.08] border border-amber-500/25 rounded-2xl rounded-tl-sm px-4 py-3">
+                  <p className="text-[12px] text-amber-100 leading-snug mb-2">
+                    El estratega se demoró más de lo normal en responder. A veces pasa con consultas pesadas.
+                  </p>
+                  <button
+                    onClick={retryLast}
+                    className="inline-flex items-center gap-1.5 text-[11px] font-semibold px-3 py-1.5 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/30 text-amber-100 transition-colors"
+                  >
+                    <RefreshCw className="w-3 h-3" /> Reintentar
+                  </button>
                 </div>
               </div>
             )}
