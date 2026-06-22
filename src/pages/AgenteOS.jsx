@@ -47,6 +47,8 @@ Cuando el founder pida "muéstrame los pedidos para confirmar pago" / "por pagar
 Cuando el founder quiera GESTIONAR pedidos de punta a punta ("pipeline", "gestionar pedidos", "flujo de pedidos", "cómo voy con los despachos", "confirmar pagos", "generar etiquetas en lote"), la pantalla muestra una TARJETA FLUJO DE PEDIDOS con el flujo secuencial completo de e-commerce (por confirmar pago → en producción → generar etiqueta → despachar → despachado), cada pedido con badge B2C/B2B y stepper de avance. En las etapas "por confirmar pago" y "generar etiqueta" el founder puede SELECCIONAR varios pedidos y confirmar pagos o generar etiquetas EN LOTE de una sola vez. Resume en 1-2 frases qué etapa tiene más pendientes y recuérdale que puede seleccionar varios para procesarlos juntos.
 REGLAS: usa SOLO los ids exactos que aparecen en DETALLE CONCRETO como [id:XXX]. Si no tienes el id del registro, NO propongas acción — pide al founder que precise cuál. Máximo UNA acción por respuesta.
 
+BÚSQUEDA DE REGISTROS: cuando el founder pida buscar/traer un cliente, pedido, cotización, propuesta o lead específico (por nombre, email, RUT, teléfono, o un código como "cot-2606-jaym" o "pedido 1042"), te paso el RESULTADO DE BÚSQUEDA en el detalle y la pantalla muestra una tarjeta con los registros encontrados — las fichas de CLIENTE son EDITABLES en el mismo chat (el founder puede tocar "Editar" y cambiar datos sin salir). NOMBRA el registro exacto encontrado (con su dato clave: email, monto, estado) y dile que puede tocarlo para ver/editar su ficha completa abajo. Si la búsqueda no encontró nada, dilo con honestidad y pide otro dato (email, RUT o número).
+
 CONTACTO DE LEADS: cada lead B2B activo en el DETALLE incluye su email y teléfono reales. Cuando te pregunten por el contacto de un lead (ej: "¿dónde veo el contacto de Hilti?"), DALO directamente con su email/teléfono del detalle — NUNCA digas "no lo tengo a la vista" si el lead aparece en el detalle. Si un lead específico realmente trae "sin email"/"sin teléfono", dilo así y aclara que puede completarlo en el embudo. Además recuérdale que en la tarjeta de leads de abajo puede TOCAR cada lead para ver su contacto y ficha completa, cliente por cliente. Para buscar un lead, búscalo por nombre de empresa o contacto aunque el founder te dé un código o ID parcial.
 
 REGLA DE ORO — NUNCA INVENTES DATOS: responde EXCLUSIVAMENTE con las cifras y registros que aparecen en "DATOS EN VIVO" y "DETALLE CONCRETO". Si te preguntan por algo que NO está en esos datos (un pedido, cliente o número que no ves), di con honestidad "no lo tengo a la vista ahora" o pide que precise — JAMÁS inventes montos, nombres, estados ni cantidades. Si los DATOS EN VIVO dicen 0 o vacío, repórtalo tal cual (ej: "hoy no hay ventas registradas aún"), no rellenes con suposiciones.
@@ -173,6 +175,23 @@ export default function AgenteOS() {
     setThinking(true);
 
     const cards = detectCards(content);
+
+    // ── Búsqueda universal de un registro puntual ──────────────────────────
+    // Si el founder pide buscar/traer un cliente/pedido/cotización específico
+    // (por nombre, email, RUT, teléfono o código como "cot-2606-jaym"),
+    // consultamos agentOSBuscar para encontrar el registro EXACTO sin depender
+    // de las 12 listas top — y lo embebemos como tarjeta editable en el chat.
+    const esBusqueda = /\b(busca|buscar|encuentra|tr[aá]e(?:me)?|mu[eé]strame a|cliente|pedido|cotizaci|propuesta|lead|cot-|ped-|rut|correo|email|tel[eé]fono|qui[eé]n es|ficha de|datos de|perfil de)\b/i.test(content)
+      || /\b(cot|ped|prop)[-\s]?\d/i.test(content);
+    let searchRes = null;
+    if (esBusqueda) {
+      const sr = await base44.functions.invoke('agentOSBuscar', { query: content }).catch(() => null);
+      if (sr?.data?.ok && sr.data.total > 0) {
+        searchRes = sr.data;
+        cards.unshift({ type: 'search' });
+      }
+    }
+
     const history = [...messages, userMsg]
       .slice(-8)
       .map((m) => `${m.role === 'user' ? 'Founder' : 'Peyu'}: ${m.content}`)
@@ -182,6 +201,9 @@ export default function AgenteOS() {
     const brain = await base44.functions.invoke('peyuBrainOps', { query: content }).catch(() => null);
     const m = brain?.data?.metrics;
     const liveLists = brain?.data?.lists || {};
+    // Adjuntamos los resultados de la búsqueda universal para que la tarjeta
+    // SearchResultsCard los reciba vía lists.search.
+    if (searchRes) liveLists.search = searchRes;
     if (m) setMetrics(m);
     if (brain?.data?.lists) setLists(liveLists);
 
@@ -189,6 +211,10 @@ export default function AgenteOS() {
     // Así el agente puede nombrar las consultas/pedidos en su respuesta y NO
     // promete cosas que no tiene (causa raíz del bug reportado).
     const detalle = [];
+    // Resultado de la búsqueda puntual: lo primero, para que el agente nombre el
+    // registro EXACTO encontrado (cliente/pedido/cotización) sin inventar.
+    if (searchRes?.resumen && searchRes.total > 0)
+      detalle.push(`RESULTADO DE BÚSQUEDA para "${searchRes.query}" (${searchRes.total} encontrados — la tarjeta de abajo muestra los registros, los de cliente son EDITABLES en el chat):\n${searchRes.resumen}`);
     if (liveLists.consultas_pendientes?.length)
       detalle.push(`Consultas sin responder:\n${liveLists.consultas_pendientes.map(c => `• [id:${c.id}] ${c.nombre || 'Sin nombre'} (${c.canal || 'web'})${c.email ? ` ${c.email}` : ''}: "${(c.mensaje || '').slice(0, 80)}"`).join('\n')}`);
     if (liveLists.pedidos_pendientes?.length)

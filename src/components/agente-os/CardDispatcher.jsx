@@ -10,12 +10,16 @@ import ProposalsCard from './cards/ProposalsCard';
 import ShipmentsCard from './cards/ShipmentsCard';
 import PipelineCard from './cards/PipelineCard';
 import BulkLabelsCard from './cards/BulkLabelsCard';
+import SearchResultsCard from './cards/SearchResultsCard';
 
 // Renderiza la tarjeta rica correcta según el tipo detectado, hidratada con
 // los datos reales del CRM + las listas/métricas en vivo de peyuBrainOps.
 // onDone refresca métricas tras ejecutar una acción.
 export default function CardDispatcher({ card, crm, metrics, lists = {}, onAsk, onDone }) {
   switch (card.type) {
+    case 'search':
+      // Resultados de la búsqueda universal (agentOSBuscar), inyectados en lists.search.
+      return <SearchResultsCard resultados={lists.search} onChanged={onDone} />;
     case 'summary':
       return <DailySummaryCard metrics={metrics} onAsk={onAsk} />;
     case 'sales':

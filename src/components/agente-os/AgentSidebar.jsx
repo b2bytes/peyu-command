@@ -1,4 +1,5 @@
-import { MessageSquare, Package, FileText, Users, PanelLeftClose, PanelLeft, LayoutGrid } from 'lucide-react';
+import { MessageSquare, Package, FileText, Users, PanelLeftClose, PanelLeft, LayoutGrid,
+  Megaphone, Truck, Boxes, GitBranch, Sparkles } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import AgentThreadsList from './AgentThreadsList';
 
@@ -9,6 +10,17 @@ const QUICK = [
   { id: 'pedidos', label: 'Pedidos', icon: Package, ask: 'Muéstrame los pedidos pendientes' },
   { id: 'cotizaciones', label: 'Cotizaciones', icon: FileText, ask: 'Cotizaciones B2B recientes' },
   { id: 'clientes', label: 'Clientes', icon: Users, ask: 'Muéstrame los clientes nuevos' },
+];
+
+// Accesos directos a los módulos admin más usados — el founder coordina toda la
+// plataforma desde la página Agente sin perderse buscando rutas.
+const ADMIN_LINKS = [
+  { to: '/admin/social-studio', label: 'Social Studio', icon: Sparkles },
+  { to: '/admin/marketing-hub', label: 'Marketing', icon: Megaphone },
+  { to: '/admin/pipeline', label: 'Pipeline B2B', icon: GitBranch },
+  { to: '/admin/procesar-pedidos', label: 'Procesar pedidos', icon: Truck },
+  { to: '/admin/catalogo', label: 'Catálogo', icon: Boxes },
+  { to: '/admin/clientes', label: 'Clientes (CRM)', icon: Users },
 ];
 
 export default function AgentSidebar({ open, onToggle, onAsk, onNewThread, userEmail, activeThreadId, threadsKey, onSelectThread }) {
@@ -60,6 +72,22 @@ export default function AgentSidebar({ open, onToggle, onAsk, onNewThread, userE
           </button>
         ))}
       </nav>
+
+      {/* Accesos directos a admin — coordinar toda la plataforma desde acá */}
+      <div className="px-3 mt-3 space-y-1">
+        {open && <p className="text-[10px] font-bold text-ld-fg-subtle uppercase tracking-wider px-1 mb-1">Ir a admin</p>}
+        {ADMIN_LINKS.map((l) => (
+          <Link
+            key={l.to}
+            to={l.to}
+            className={`w-full flex items-center gap-3 rounded-xl text-sm text-ld-fg-soft hover:bg-ld-bg-elevated hover:text-ld-fg transition-colors ${open ? 'px-3 py-2' : 'p-2.5 justify-center'}`}
+            title={l.label}
+          >
+            <l.icon className="w-4.5 h-4.5 flex-shrink-0 text-ld-fg-muted" />
+            {open && l.label}
+          </Link>
+        ))}
+      </div>
 
       {/* Hilos guardados de este admin */}
       <div className="flex-1 overflow-hidden mt-3">

@@ -1,4 +1,6 @@
-import { MessageSquare, Package, FileText, Users, X } from 'lucide-react';
+import { MessageSquare, Package, FileText, Users, X,
+  Sparkles, Megaphone, GitBranch, Truck, Boxes } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import AgentThreadsList from './AgentThreadsList';
 
 // Drawer móvil del Agent OS: overlay a pantalla completa con los mismos
@@ -9,6 +11,15 @@ const QUICK = [
   { id: 'pedidos', label: 'Pedidos pendientes', icon: Package, ask: 'Muéstrame los pedidos pendientes' },
   { id: 'cotizaciones', label: 'Cotizaciones B2B', icon: FileText, ask: 'Cotizaciones B2B recientes' },
   { id: 'clientes', label: 'Clientes nuevos', icon: Users, ask: 'Muéstrame los clientes nuevos' },
+];
+
+const ADMIN_LINKS = [
+  { to: '/admin/social-studio', label: 'Social Studio', icon: Sparkles },
+  { to: '/admin/marketing-hub', label: 'Marketing', icon: Megaphone },
+  { to: '/admin/pipeline', label: 'Pipeline B2B', icon: GitBranch },
+  { to: '/admin/procesar-pedidos', label: 'Procesar pedidos', icon: Truck },
+  { to: '/admin/catalogo', label: 'Catálogo', icon: Boxes },
+  { to: '/admin/clientes', label: 'Clientes (CRM)', icon: Users },
 ];
 
 export default function AgentMobileDrawer({ open, onClose, onAsk, onNewThread, userEmail, activeThreadId, threadsKey, onSelectThread }) {
@@ -56,6 +67,20 @@ export default function AgentMobileDrawer({ open, onClose, onAsk, onNewThread, u
               <q.icon className="w-5 h-5 flex-shrink-0 text-ld-fg-muted" />
               {q.label}
             </button>
+          ))}
+
+          {/* Accesos directos a admin */}
+          <p className="text-[10px] font-bold text-ld-fg-subtle uppercase tracking-wider px-3 mt-4 mb-1">Ir a admin</p>
+          {ADMIN_LINKS.map((l) => (
+            <Link
+              key={l.to}
+              to={l.to}
+              onClick={onClose}
+              className="w-full flex items-center gap-3 rounded-xl text-sm text-ld-fg-soft hover:bg-ld-bg-elevated hover:text-ld-fg transition-colors px-3 py-2.5"
+            >
+              <l.icon className="w-5 h-5 flex-shrink-0 text-ld-fg-muted" />
+              {l.label}
+            </Link>
           ))}
 
           {/* Hilos guardados de este admin */}
