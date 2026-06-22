@@ -9,10 +9,12 @@ import {
   Send, Loader2, User, Facebook, TrendingUp, AlertCircle, RefreshCw,
   CheckCircle2, BarChart2, Target, Zap, Eye, MousePointerClick,
   DollarSign, Activity, Instagram, ShieldCheck, XCircle, ScanSearch, Webhook,
-  ImagePlus, X, Brain, Search, Lightbulb, ShoppingBag,
+  ImagePlus, X, Brain, Search, Lightbulb, ShoppingBag, Volume2, Pause, Play,
 } from 'lucide-react';
 import AgentLayout from './AgentLayout';
 import MetaAgentMarkdown from './MetaAgentMarkdown';
+import SaveKnowledgeButton from '@/components/agente-os/SaveKnowledgeButton';
+import useAgentVoice from '@/hooks/useAgentVoice';
 
 const AGENT_NAME = 'meta_ads_strategist';
 
@@ -85,8 +87,10 @@ function ToolCallBadge({ toolCall }) {
   );
 }
 
-function ChatMessage({ msg }) {
+function ChatMessage({ msg, msgId, voice }) {
   const isUser = msg.role === 'user';
+  const speakingThis = voice?.speakingId === msgId;
+  const loadingThis = voice?.loadingId === msgId;
   return (
     <div className={`flex gap-3 ${isUser ? 'flex-row-reverse' : ''}`}>
       <div className={`w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5 ${
@@ -123,9 +127,28 @@ function ChatMessage({ msg }) {
             )}
           </div>
         )}
-        <p className={`text-[10px] text-white/20 mt-1 px-1 ${isUser ? 'text-right' : ''}`}>
-          {isUser ? 'Tú' : '📘 Estratega de Meta Ads · PEYU'}
-        </p>
+        <div className={`flex items-center gap-1.5 mt-1 px-1 ${isUser ? 'justify-end' : ''}`}>
+          <p className="text-[10px] text-white/20">
+            {isUser ? 'Tú' : '📘 Estratega de Meta Ads · PEYU'}
+          </p>
+          {/* Voz de Joaquín + Guardar en base de conocimiento (solo respuestas del agente) */}
+          {!isUser && msg.content && (
+            <div className="flex items-center gap-0.5">
+              {voice && (
+                <button
+                  onClick={() => voice.speak(msgId, msg.content)}
+                  className={`p-1 rounded-full transition-colors ${speakingThis ? 'bg-emerald-500/15 text-emerald-300' : 'text-white/40 hover:text-blue-300 hover:bg-blue-500/10'}`}
+                  title={speakingThis ? (voice.paused ? 'Reanudar' : 'Pausar') : 'Escuchar con la voz de Joaquín'}
+                >
+                  {loadingThis ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    : speakingThis ? (voice.paused ? <Play className="w-3.5 h-3.5" /> : <Pause className="w-3.5 h-3.5" />)
+                    : <Volume2 className="w-3.5 h-3.5" />}
+                </button>
+              )}
+              <SaveKnowledgeButton text={msg.content} source="meta_ads" dark />
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
@@ -144,6 +167,7 @@ export default function MetaAdsPanel() {
   const bottomRef = useRef(null);
   const watchdogRef = useRef(null);
   const lastSentRef = useRef(null); // último mensaje enviado, para reintentar
+  const voice = useAgentVoice();    // voz de Joaquín (ElevenLabs)
 
   // Estado de rendimiento (columna derecha)
   const [perf, setPerf] = useState(null);
@@ -169,6 +193,7 @@ export default function MetaAdsPanel() {
 
   const initConversation = useCallback(async () => {
     setIniting(true);
+    voice.stop();
     setMessages([]);
     try {
       const conv = await base44.agents.createConversation({
@@ -396,7 +421,7 @@ export default function MetaAdsPanel() {
           </div>
         ) : (
           <>
-            {messages.map((msg, i) => <ChatMessage key={i} msg={msg} />)}
+            {messages.map((msg, i) => <ChatMessage key={i} msg={msg} msgId={i} voice={voice} />)}
             {loading && (
               <div className="flex gap-3">
                 <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center flex-shrink-0">
