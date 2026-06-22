@@ -51,6 +51,71 @@ Deno.serve(async (req) => {
     const base = `https://graph.facebook.com/${GRAPH_VERSION}`;
     const t = encodeURIComponent(token);
 
+    // ── Diagnóstico PROFUNDO de permisos del token (¿quién es y qué puede?) ──
+    // Responde la duda real: el token lee la cuenta pero NO puede escribir.
+    // Revela: identidad del token, permisos del token, businesses, y las
+    // tareas (tasks) que el System User tiene asignadas sobre el ad account.
+    if (action === 'diagnostico_permisos') {
+      const out = { ok: true, account_id: accountId };
+
+      // 1) ¿A nombre de quién es el token? (System User / usuario)
+      const meRes = await fetch(`${base}/me?fields=id,name&access_token=${t}`);
+      const me = await meRes.json();
+      if (me.error) return Response.json({ ok: false, ...diagnoseMetaError(me.error) });
+      out.token_identity = { id: me.id, name: me.name };
+
+      // 2) Permisos (scopes) del token — debe incluir ads_management para escribir
+      const permRes = await fetch(`${base}/me/permissions?access_token=${t}`);
+      const perm = await permRes.json();
+      const granted = (perm.data || []).filter(p => p.status === 'granted').map(p => p.permission);
+      out.token_scopes = granted;
+      out.tiene_ads_management = granted.includes('ads_management');
+      out.tiene_ads_read = granted.includes('ads_read');
+
+      const suId = me.id;
+
+      // 3a) ¿De qué Business es dueño este ad account? y ¿a qué businesses
+      //     pertenece el token? Si difieren, es un ad account COMPARTIDO entre
+      //     businesses y la escritura del System User requiere asignación extra.
+      const acctBizRes = await fetch(`${base}/${accountId}?fields=name,business{id,name},owner{id,name}&access_token=${t}`);
+      const acctBiz = await acctBizRes.json();
+      out.ad_account_business = acctBiz.business || acctBiz.owner || null;
+
+      const myBizRes = await fetch(`${base}/me/businesses?fields=id,name&access_token=${t}`);
+      const myBiz = await myBizRes.json();
+      out.token_businesses = (myBiz.data || []).map(b => ({ id: b.id, name: b.name }));
+
+      const bizId = out.ad_account_business?.id;
+
+      // 3b) Tareas del token sobre ESTE ad account (lo que de verdad bloquea la
+      //     escritura). assigned_users requiere el business id del dueño.
+      if (bizId) {
+        const auRes = await fetch(`${base}/${accountId}/assigned_users?business=${bizId}&fields=id,name,tasks&access_token=${t}`);
+        const au = await auRes.json();
+        if (au.error) {
+          out.assigned_users_error = au.error.message;
+        } else {
+          const mine = (au.data || []).find(u => String(u.id) === String(suId));
+          out.assigned_users = (au.data || []).map(u => ({ id: u.id, name: u.name, tasks: u.tasks || [] }));
+          out.mis_tasks = mine?.tasks || [];
+          // Para modificar campañas se requiere la task MANAGE sobre el ad account.
+          out.puede_administrar_campanas = (mine?.tasks || []).includes('MANAGE');
+        }
+      } else {
+        out.assigned_users_error = 'No se pudo determinar el Business dueño del ad account.';
+      }
+
+      // 4) Veredicto claro y accionable
+      if (!out.tiene_ads_management) {
+        out.veredicto = 'El TOKEN no tiene el permiso ads_management. Regenera el token del System User incluyendo ads_management.';
+      } else if (out.puede_administrar_campanas === false) {
+        out.veredicto = `El token (System User "${me.name}", id ${me.id}) NO tiene la tarea "Administrar campañas" (MANAGE) sobre el ad account ${accountId}. Sus tareas actuales son: [${(out.mis_tasks || []).join(', ') || 'ninguna'}]. Ve a Meta Business Settings → Cuentas publicitarias → ${accountId} → Personas/Usuarios del sistema → asigna a "${me.name}" el control total / "Administrar campañas".`;
+      } else {
+        out.veredicto = 'El token tiene ads_management y la tarea MANAGE sobre el ad account. La escritura debería funcionar.';
+      }
+      return Response.json(out);
+    }
+
     // ── Diagnóstico de integración (pixel + página + cuenta) ────────────────
     if (action === 'diagnostico') {
       const out = { ok: true, account_id: accountId };
