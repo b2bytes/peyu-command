@@ -49,11 +49,14 @@ export default function CatalogoNuevo() {
     cargar();
   }, [retry]);
 
-  // Pre-filtro por ?cat=
+  // Pre-filtro por ?cat= y ?q= (este último alimenta la búsqueda de Google
+  // sitelinks searchbox, que apunta a /CatalogoNuevo?q={search_term_string}).
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const preCat = params.get('cat');
     if (preCat) setCat(preCat);
+    const preQ = params.get('q');
+    if (preQ) setQ(preQ);
   }, [location.search]);
 
   // Reset filtros marca/modelo al cambiar de categoría; modelo al cambiar marca.

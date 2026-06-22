@@ -1,40 +1,21 @@
-# PEYU Chile · Robots.txt · SEO Sitemap + Crawl Directives
-# ═══════════════════════════════════════════════════════════════════
-
-# ─ ALLOW ALL: Google, Bing, Yandex, AI crawlers
+# PEYU Chile · robots.txt
+# Permite a todos los buscadores indexar el sitio público.
 User-agent: *
 Allow: /
-Disallow: /admin/
-Disallow: /brand/
-Disallow: /design-lab/
-Disallow: /v2/
-Disallow: /test-index
-Disallow: /shop-legacy
 
-# ─ Google-specific directives
-User-agent: Googlebot
+# Bloquea el panel interno (no es contenido público indexable).
+Disallow: /admin
+Disallow: /admin/
+
+# AI crawlers — permitidos explícitamente (mejor visibilidad en respuestas IA).
+User-agent: GPTBot
 Allow: /
-Disallow: /admin/
 
-# ─ Bing/Yandex
-User-agent: Bingbot
+User-agent: ClaudeBot
 Allow: /
-Disallow: /admin/
 
-User-agent: Yandexbot
+User-agent: Google-Extended
 Allow: /
-Disallow: /admin/
 
-# ─ Crawl delay (no seas agresivo con pequeños servidores)
-User-agent: *
-Crawl-delay: 1
-Request-rate: 1/1s
-
-# ─ Sitemap principal (Google, Bing, Yandex lo usan)
+# Sitemap canónico (servido dinámicamente en tiempo real).
 Sitemap: https://peyuchile.cl/sitemap.xml
-Sitemap: https://peyuchile.cl/sitemap-products.xml
-Sitemap: https://peyuchile.cl/sitemap-pages.xml
-
-# ─ No indexar staging/preview (de base44)
-Disallow: /preview/
-Disallow: /_vercel/

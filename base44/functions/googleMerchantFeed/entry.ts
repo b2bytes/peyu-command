@@ -108,9 +108,14 @@ const pickBestImage = (p) => {
 function buildItem(p) {
   const id = p.sku || p.id;
   const title = p.nombre;
-  const description = cleanText(p.descripcion) ||
-    `${p.nombre} · Hecho en Chile con ${p.material}. Personalización láser disponible.`;
-  const link = `${SITE_URL}/producto/${p.id}`;
+  // Descripción: usa la del producto si tiene cuerpo (GMC rechaza <40 chars o
+  // demasiado genéricas). Si no, arma una rica con material + categoría + valor.
+  const descProducto = cleanText(p.descripcion);
+  const description = (descProducto && descProducto.length >= 40)
+    ? descProducto
+    : `${p.nombre}. Producto sostenible hecho en Chile con ${p.material}. Ideal para regalos corporativos y uso diario. Personalización con grabado láser UV disponible. Categoría: ${p.categoria}.`;
+  // URL canónica REAL del producto (NO /producto/{id}, que redirige y GMC rechaza).
+  const link = `${SITE_URL}/ProductoNuevo?id=${p.id}`;
   // Imagen principal: prefiere CDN Base44 con extensión válida JPEG/PNG/GIF
   const image = pickBestImage(p);
   // Imagen promo: solo si difiere de la principal Y es formato válido GMC

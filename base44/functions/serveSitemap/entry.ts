@@ -10,14 +10,12 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
 const SITE_URL = 'https://peyuchile.cl';
 
+// Solo URLs canónicas REALES (sin rutas que redirigen, que Google ignora).
 const STATIC_ROUTES = [
   { loc: '/',                  priority: '1.0',  changefreq: 'daily' },
-  { loc: '/lanzamiento',       priority: '0.95', changefreq: 'weekly' },
-  { loc: '/shop',              priority: '0.9',  changefreq: 'daily' },
+  { loc: '/CatalogoNuevo',     priority: '0.9',  changefreq: 'daily' },
+  { loc: '/EmpresasNuevo',     priority: '0.9',  changefreq: 'weekly' },
   { loc: '/catalogo-visual',   priority: '0.85', changefreq: 'weekly' },
-  { loc: '/b2b/catalogo',      priority: '0.9',  changefreq: 'weekly' },
-  { loc: '/b2b/contacto',      priority: '0.9',  changefreq: 'monthly' },
-  { loc: '/b2b/self-service',  priority: '0.8',  changefreq: 'monthly' },
   { loc: '/personalizar',      priority: '0.8',  changefreq: 'monthly' },
   { loc: '/nosotros',          priority: '0.7',  changefreq: 'monthly' },
   { loc: '/blog',              priority: '0.8',  changefreq: 'weekly' },
@@ -107,7 +105,7 @@ Deno.serve(async (req) => {
       const productos = await base44.asServiceRole.entities.Producto.list('-updated_date', 1000);
       const activos = (productos || []).filter(p => p.activo !== false && p.canal !== 'B2B Exclusivo');
       const entries = activos.map(p => urlEntry({
-        loc: `${SITE_URL}/producto/${p.id}`,
+        loc: `${SITE_URL}/ProductoNuevo?id=${p.id}`,
         lastmod: (p.updated_date || p.created_date || today).split('T')[0],
         changefreq: 'weekly',
         priority: '0.8',
@@ -147,7 +145,7 @@ Deno.serve(async (req) => {
         priority: r.priority,
       })),
       ...activos.map(p => urlEntry({
-        loc: `${SITE_URL}/producto/${p.id}`,
+        loc: `${SITE_URL}/ProductoNuevo?id=${p.id}`,
         lastmod: (p.updated_date || p.created_date || today).split('T')[0],
         changefreq: 'weekly',
         priority: '0.8',

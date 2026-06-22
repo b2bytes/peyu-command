@@ -101,7 +101,7 @@ export default function PublicFooter() {
         </div>
 
         <FooterColumn title="Tienda" links={[
-          ['Todos los productos', '/shop'],
+          ['Todos los productos', '/CatalogoNuevo'],
           ['Catálogo visual', '/catalogo-visual'],
           ['Personalizar producto', '/personalizar'],
           ['Gift Cards', '/regalar-giftcard'],
@@ -109,7 +109,7 @@ export default function PublicFooter() {
         ]} />
 
         <FooterColumn title="Empresa" links={[
-          ['Catálogo B2B', '/b2b/catalogo'],
+          ['Catálogo B2B', '/EmpresasNuevo'],
           ['Solicitar cotización', '/b2b/contacto'],
           ['Quiénes somos', '/nosotros'],
           ['Blog', '/blog'],
