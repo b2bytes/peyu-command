@@ -31,7 +31,22 @@ export function detectCards(text) {
   } else if (has(['pedido', 'pendiente', 'producción', 'produccion'])) {
     cards.push({ type: 'orders' });
   }
-  if (has(['stock', 'inventario', 'agotad', 'reponer', 'producto', 'catálogo', 'catalogo', 'sku', 'precio'])) {
+  // Gestión del catálogo: editar productos, subir/cambiar imágenes, agregar.
+  // Tiene prioridad sobre "stock bajo": si el founder quiere ADMINISTRAR el
+  // catálogo (no solo ver stock), mostramos el gestor completo.
+  const quiereGestionCatalogo = has([
+    'editar catálogo', 'editar catalogo', 'gestionar catálogo', 'gestionar catalogo',
+    'administrar catálogo', 'administrar catalogo', 'gestor de catálogo', 'gestor de catalogo',
+    'editar producto', 'editar productos', 'gestionar producto', 'gestionar productos',
+    'subir imagen', 'subir imágenes', 'subir imagenes', 'cambiar imagen', 'cambiar imágenes', 'cambiar imagenes',
+    'cambiar foto', 'cambiar fotos', 'agregar producto', 'crear producto', 'nuevo producto', 'añadir producto',
+    'editar carcasa', 'editar carcasas', 'gestionar carcasas', 'fotos del catálogo', 'fotos del catalogo',
+    'imágenes del producto', 'imagenes del producto', 'imágenes de los productos', 'imagenes de los productos',
+    'traer el catálogo', 'traer el catalogo', 'todo el catálogo', 'todo el catalogo',
+  ]);
+  if (quiereGestionCatalogo) {
+    cards.push({ type: 'catalog', categoria: has(['carcasa']) ? 'Carcasas B2C' : undefined });
+  } else if (has(['stock', 'inventario', 'agotad', 'reponer', 'producto', 'catálogo', 'catalogo', 'sku', 'precio'])) {
     cards.push({ type: 'stock' });
   }
   if (has(['cotizaci', 'propuesta', 'corporativ'])) {

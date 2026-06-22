@@ -27,6 +27,7 @@ export default function WelcomeScreen({ metrics, onAsk }) {
           <p className="text-sm text-ld-fg-soft mt-1 leading-relaxed">
             Soy Peyu, tu Agent OS. Acá tienes el pulso del negocio en vivo. Pregúntame lo que necesites:
             ventas, pedidos, stock, cotizaciones o clientes — te respondo aquí mismo con los datos reales.
+            ¿Quieres editar el catálogo, subir fotos o agregar un producto? Dime <span className="text-ld-action font-medium">“edita el catálogo”</span> y lo gestionas aquí.
           </p>
         </div>
         <DailySummaryCard metrics={metrics} onAsk={onAsk} />
