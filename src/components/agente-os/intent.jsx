@@ -47,7 +47,13 @@ export function detectCards(text) {
   // Stock / inventario: abrimos el GESTOR COMPLETO (buscador, filtros, edición
   // de stock e imágenes por producto) con el filtro de stock pre-aplicado, en
   // vez de la card de solo lectura. Así el founder actualiza todo en el chat.
-  const quiereStock = has(['stock', 'inventario', 'agotad', 'reponer', 'producto', 'catálogo', 'catalogo', 'sku', 'precio']);
+  // Keywords inequívocas de gestión de catálogo: evitamos disparar con palabras
+  // genéricas como "producto"/"precio" que aparecen en frases sobre pedidos.
+  const quiereStock = has([
+    'stock', 'inventario', 'agotad', 'reponer', 'sin stock',
+    'catálogo', 'catalogo', 'sku', 'actualizar producto', 'actualizar precio',
+    'cambiar precio', 'cambiar stock', 'ver productos', 'mis productos',
+  ]);
   if (quiereGestionCatalogo || quiereStock) {
     cards.push({
       type: 'catalog',

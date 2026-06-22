@@ -3,6 +3,10 @@ import { base44 } from '@/api/base44Client';
 import { Loader2, Check, Trash2, Power } from 'lucide-react';
 import ProductImageUploader from './ProductImageUploader';
 
+// Categorías válidas del schema Producto (evita guardar valores fuera del enum
+// que dejarían el producto invisible en los filtros por categoría).
+const CATEGORIAS = ['Escritorio', 'Hogar', 'Entretenimiento', 'Corporativo', 'Carcasas B2C'];
+
 // Panel de edición de un producto del catálogo, embebido en el chat del Agente.
 // Permite editar campos clave, cambiar imagen principal, administrar galería e
 // imágenes por color, activar/desactivar y eliminar. Todo vía catalogManager.
@@ -48,28 +52,27 @@ export default function ProductEditPanel({ producto, onSaved, onClose }) {
     }
   };
 
+  // Las acciones de imagen persisten al instante y refrescan SOLO el estado
+  // local del panel (no recargan los 300 productos de la grilla, que colapsaría
+  // el panel abierto). El cambio se ve igual al reabrir gracias a la persistencia.
   const cambiarImagen = async (url) => {
     setImagenUrl(url);
     await call('setImage', { id: producto.id, imagen_url: url });
-    onSaved?.();
   };
 
   const quitarImagen = async () => {
     setImagenUrl('');
     await call('removeImage', { id: producto.id });
-    onSaved?.();
   };
 
   const agregarGaleria = async (url) => {
     const res = await call('addGallery', { id: producto.id, imagen_url: url });
     setGaleria(res?.data?.galeria_urls || [...galeria, url]);
-    onSaved?.();
   };
 
   const quitarGaleria = async (url) => {
     const res = await call('removeGallery', { id: producto.id, imagen_url: url });
     setGaleria(res?.data?.galeria_urls || galeria.filter((u) => u !== url));
-    onSaved?.();
   };
 
   const eliminar = async () => {
@@ -110,7 +113,13 @@ export default function ProductEditPanel({ producto, onSaved, onClose }) {
         <Field label="Precio B2C (CLP)"><input type="number" className={inputCls} value={form.precio_b2c} onChange={(e) => set('precio_b2c', e.target.value)} /></Field>
         <Field label="Stock (u)"><input type="number" className={inputCls} value={form.stock_actual} onChange={(e) => set('stock_actual', e.target.value)} /></Field>
       </div>
-      <Field label="Categoría"><input className={inputCls} value={form.categoria} onChange={(e) => set('categoria', e.target.value)} /></Field>
+      <Field label="Categoría">
+        <select className={inputCls} value={form.categoria} onChange={(e) => set('categoria', e.target.value)}>
+          {/* Conserva el valor actual aunque no esté en el enum, para no perderlo */}
+          {!CATEGORIAS.includes(form.categoria) && form.categoria && <option value={form.categoria}>{form.categoria}</option>}
+          {CATEGORIAS.map((c) => <option key={c} value={c}>{c}</option>)}
+        </select>
+      </Field>
       <Field label="Descripción">
         <textarea rows={2} className={inputCls} value={form.descripcion} onChange={(e) => set('descripcion', e.target.value)} />
       </Field>
