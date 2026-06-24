@@ -15,34 +15,13 @@ import { Download, Bot, ShieldCheck, FileText, Wrench } from 'lucide-react';
 // para que pueda invocarlas (igual que el agente Meta Ads de la app). Sin esta
 // autorización aparece el error "tool is not available".
 const FUNCIONES_AUTORIZAR = [
+  { grupo: 'Meta Ads (UNA sola función)', fns: [
+    { name: 'metaAdsAgentBridge', desc: 'PUENTE al agente Meta Ads de Social Studio, que tiene TODO el poder sobre Meta. Le pasas { instruccion } en lenguaje natural (ej: "crea 3 conjuntos de anuncios para la campaña de Carcasas") y él ejecuta con todas sus herramientas y devuelve la respuesta. Autoriza SOLO esta función para Meta — reemplaza a las ~20 funciones meta* individuales.' },
+  ]},
   { grupo: 'Escritura / operaciones', fns: [
     { name: 'agentOSAction', desc: 'Función ÚNICA de escritura (ver firma abajo): pedidos, leads, propuestas, stock, etiquetas, emails.' },
     { name: 'agentOSBuscar', desc: 'Buscar registros por nombre, email, RUT o N° y obtener su id real.' },
     { name: 'peyuBrainOps', desc: 'Métricas y listas operativas del negocio (ventas, pedidos, pipeline).' },
-  ]},
-  { grupo: 'Meta Ads · lectura', fns: [
-    { name: 'metaAdsManage', desc: 'Listar campañas, pausar/activar, diagnóstico, eventos del pixel. action="list_campaigns" para ver activas.' },
-    { name: 'metaAdsPerformance', desc: 'Rendimiento real por campaña: spend, CTR, ROAS, CPA, conversiones.' },
-    { name: 'metaAccountIntelligence', desc: 'Informe ejecutivo de la cuenta con veredictos por campaña.' },
-    { name: 'metaAdsReadAds', desc: 'Lee el contenido (copy, imágenes, CTA) de los anuncios.' },
-    { name: 'metaAdsDeepDive', desc: 'Análisis profundo por ad set / anuncio / breakdown.' },
-    { name: 'metaAdsLibraryImages', desc: 'Trae las imágenes de la cuenta o de una campaña.' },
-    { name: 'metaSetupAudit', desc: 'Auditoría del setup: cuenta, pixel, audiencias, página, Instagram.' },
-    { name: 'metaConversionTracking', desc: 'Rastreo de Purchase y Lead vs. pedidos reales.' },
-    { name: 'metaAgentMemory', desc: 'Memoria persistente del agente (recall / remember).' },
-  ]},
-  { grupo: 'Meta Ads · ejecución', fns: [
-    { name: 'metaAdsCreateCampaign', desc: 'Crea campaña completa de 1 anuncio (pausada).' },
-    { name: 'metaAdsCreateMultiAd', desc: 'Crea 1 campaña con varios anuncios (pausada).' },
-    { name: 'metaAdsCreateCarousel', desc: 'Crea un anuncio de carrusel (pausado).' },
-    { name: 'metaAdsCreateWhatsAppAd', desc: 'Crea campaña Click-to-WhatsApp (pausada).' },
-    { name: 'metaAdsUpdateAdCreative', desc: 'Edita texto/titular/CTA/link de un anuncio existente.' },
-    { name: 'metaAdsCreateAdset', desc: 'Crea un ad set en una campaña existente.' },
-    { name: 'metaAdsEditAdset', desc: 'Edita presupuesto, audiencia o targeting de un ad set.' },
-    { name: 'metaAdsBulkRule', desc: 'Acciones masivas por regla (dry_run primero).' },
-    { name: 'metaAudiences', desc: 'Crear/listar públicos (compradores, pixel).' },
-    { name: 'metaAgentCatalogLinks', desc: 'Catálogo real con URLs de producto para CTAs.' },
-    { name: 'metaAgentMarketIntel', desc: 'Inteligencia de mercado en vivo (competencia, keywords).' },
   ]},
 ];
 
