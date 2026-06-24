@@ -322,17 +322,55 @@ export default function PipelineB2B() {
     toast({ title: `✅ OP creada para ${cot.empresa}` });
   };
 
+  // Busca el producto REAL del catálogo que matchea el interés del lead, para
+  // pasar su tabla B2B oficial (precio_b2b_tramos). Sin esto, createCorporateProposal
+  // rechaza con 422 "precio_a_consultar" porque no hay tarifa oficial.
+  const matchProductoCatalogo = async (lead) => {
+    const productos = await base44.entities.Producto.filter({ activo: true }, '-updated_date', 300);
+    const conTramos = productos.filter(p => {
+      const t = p.precio_b2b_tramos;
+      return t && typeof t === 'object' &&
+        ['unitario','t10_49','t50_99','t100_249','t250_499','t500_999','t1000_1999','t2000_mas']
+          .some(k => Number(t[k]) > 0);
+    });
+    if (!conTramos.length) return null;
+
+    const interes = (lead.producto_interes || '').toLowerCase();
+    // 1) Match exacto por SKU si el interés contiene un SKU del catálogo
+    const porSku = conTramos.find(p => p.sku && interes.includes(p.sku.toLowerCase()));
+    if (porSku) return porSku;
+    // 2) Match por palabras del nombre
+    const palabras = interes.split(/[\s—|·-]+/).filter(w => w.length > 2);
+    const scored = conTramos.map(p => {
+      const nombre = (p.nombre || '').toLowerCase();
+      const score = palabras.reduce((s, w) => s + (nombre.includes(w) ? 1 : 0), 0);
+      return { p, score };
+    }).sort((a, b) => b.score - a.score);
+    return scored[0]?.score > 0 ? scored[0].p : conTramos[0];
+  };
+
   const handleAutoCotizar = async (lead) => {
     if (generatingId) return;
     setGeneratingId(lead.id);
     try {
+      const producto = await matchProductoCatalogo(lead);
+      if (!producto) {
+        throw new Error('Ningún producto del catálogo tiene tarifa B2B oficial cargada. Carga los precios B2B primero.');
+      }
       const resp = await base44.functions.invoke('createCorporateProposal', {
         leadId: lead.id,
-        items: [{ sku: lead.producto_interes || 'PEYU-GEN', nombre: lead.producto_interes || 'Producto Peyu', qty: lead.cantidad_estimada || 50, precio_base: 5000, personalizacion: !!(lead.personalizacion || lead.logo_recibido) }],
+        items: [{
+          sku: producto.sku,
+          nombre: producto.nombre,
+          qty: lead.cantidad_estimada || 50,
+          precio_b2b_tramos: producto.precio_b2b_tramos,
+          precio_b2c: producto.precio_b2c,
+          personalizacion: !!(lead.personalizacion || lead.logo_recibido),
+        }],
         notes: lead.notas || '',
       });
       const data = resp?.data || resp;
-      if (data?.error) throw new Error(data.error);
+      if (data?.error) throw new Error(data.message || data.error);
       toast({ title: '✨ Propuesta generada', description: `${data.numero} · ${lead.empresa} · $${(data.total || 0).toLocaleString('es-CL')} CLP · ${data.lead_time_dias}d` });
       await loadData();
       if (data?.proposal_url) window.open(data.proposal_url, '_blank', 'noopener');

@@ -131,11 +131,17 @@ Reglas:
 /**
  * Encuentra el producto del catálogo que mejor matchea con la descripción del cliente.
  */
+function tieneTramosOficiales(p) {
+  const t = p.precio_b2b_tramos;
+  return t && typeof t === 'object' &&
+    ['unitario','t10_49','t50_99','t100_249','t250_499','t500_999','t1000_1999','t2000_mas']
+      .some(k => Number(t[k]) > 0);
+}
+
 async function pickBestProduct(base44, productInterest, qty) {
-  const all = await base44.asServiceRole.entities.Producto.filter({
-    activo: true,
-    canal: 'B2B + B2C',
-  });
+  const todos = await base44.asServiceRole.entities.Producto.filter({ activo: true });
+  // Solo productos con tarifa B2B oficial — sin esto createCorporateProposal devuelve 422.
+  const all = todos.filter(tieneTramosOficiales);
   if (!all.length) return null;
 
   // Match por palabras clave en nombre
@@ -243,12 +249,13 @@ Deno.serve(async (req) => {
           continue;
         }
 
-        // Construir items para la propuesta
+        // Construir items con la tabla B2B oficial (precio_b2b_tramos).
         const items = [{
           nombre: producto.nombre,
           sku: producto.sku,
           qty,
-          precio_base: producto.precio_base_b2b || producto.precio_b2c || 5000,
+          precio_b2b_tramos: producto.precio_b2b_tramos,
+          precio_b2c: producto.precio_b2c,
           personalizacion: !!extracted.personalization_needs,
         }];
 
