@@ -12,6 +12,7 @@ import {
   ImagePlus, X, Brain, Search, Lightbulb, ShoppingBag, Volume2, Pause, Play,
 } from 'lucide-react';
 import AgentLayout from './AgentLayout';
+import MetaAdsHistory from './MetaAdsHistory';
 import MetaAgentMarkdown from './MetaAgentMarkdown';
 import SaveKnowledgeButton from '@/components/agente-os/SaveKnowledgeButton';
 import useAgentVoice from '@/hooks/useAgentVoice';
@@ -145,6 +146,7 @@ export default function MetaAdsPanel() {
   const [initing, setIniting] = useState(true);
   const [attachments, setAttachments] = useState([]); // [{name, url}]
   const [uploading, setUploading] = useState(false);
+  const [historyKey, setHistoryKey] = useState(0); // refresca el historial de hilos
   const fileInputRef = useRef(null);
   const bottomRef = useRef(null);
   const voice = useAgentVoice();    // voz de Joaquín (ElevenLabs)
@@ -193,6 +195,23 @@ export default function MetaAdsPanel() {
     }
   }, []);
 
+  // Reabrir una conversación pasada: carga su historial completo de mensajes.
+  const openThread = useCallback(async (thread) => {
+    if (!thread?.id || initing) return;
+    setIniting(true);
+    voice.stop();
+    setMessages([]);
+    try {
+      const conv = await base44.agents.getConversation(thread.id);
+      setConversation(conv);
+      setMessages(conv.messages || []);
+    } catch {
+      setMessages([{ role: 'assistant', content: 'No pude abrir esa conversación. Intenta de nuevo.', tool_calls: [] }]);
+    } finally {
+      setIniting(false);
+    }
+  }, [initing]);
+
   useEffect(() => { initConversation(); loadPerf(); }, [initConversation, loadPerf]);
 
   useEffect(() => {
@@ -206,6 +225,7 @@ export default function MetaAdsPanel() {
       const last = msgs[msgs.length - 1];
       if (last?.role === 'assistant' && last.content?.trim()) {
         setLoading(false);
+        setHistoryKey((k) => k + 1); // refresca la lista de hilos guardados
       }
     });
     return unsub;
@@ -271,6 +291,12 @@ export default function MetaAdsPanel() {
           </button>
         );
       })}
+      <MetaAdsHistory
+        agentName={AGENT_NAME}
+        activeId={conversation?.id}
+        refreshKey={historyKey}
+        onSelect={openThread}
+      />
     </div>
   );
 
