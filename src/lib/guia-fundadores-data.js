@@ -8,6 +8,21 @@
 
 export const GUIAS = [
   {
+    id: 'gf-superagent-meta',
+    emoji: '⚡',
+    titulo: 'Dar facultades al Superagente de Base44 (WhatsApp)',
+    intro: 'El Superagente de WhatsApp (Joaconilot) responde "tool is not available" cuando le pides campañas de Meta o acciones del negocio. Eso pasa porque NO tiene registradas las funciones de la app como herramientas. Aquí está la lista exacta para agregárselas en su panel de Base44 y dejarlo con poder total sobre peyuchile.cl.',
+    pasos: [
+      { titulo: 'Por qué falla ("tool is not available")', detalle: 'El Superagente de WhatsApp es el agente NATIVO de la plataforma Base44 — distinto del panel "Centro de Control · Meta Ads" dentro de la app. Sus herramientas se configuran en el panel del Superagente en Base44 (no en el código de la web). Mientras una función no esté en su lista de herramientas permitidas, dirá "tool is not available", aunque a veces parezca funcionar.' },
+      { titulo: 'Dónde configurarlo', detalle: 'Entra al panel de Base44 → Superagente (Joaconilot) → su configuración de herramientas / funciones. Ahí agregas cada función backend de la app que quieras que pueda invocar. Pégale los nombres EXACTOS de las listas de abajo. Una vez guardadas, dejarán de fallar de forma permanente.' },
+      { titulo: 'META ADS — leer y diagnosticar', detalle: 'metaAdsManage (listar/pausar/activar campañas, presupuesto, diagnóstico) · metaAdsPerformance (rendimiento real: spend, CTR, ROAS, CPA) · metaAccountIntelligence (informe ejecutivo de la cuenta) · metaAdsDeepDive (análisis por adset/ad) · metaAdsReadAds (leer el contenido de un anuncio) · metaAdsLibraryImages (traer las fotos de la cuenta) · metaSetupAudit (auditar pixel/página/IG) · metaConversionTracking (Purchase y Lead).' },
+      { titulo: 'META ADS — crear y editar', detalle: 'metaAdsCreateCampaign (campaña de 1 anuncio) · metaAdsCreateMultiAd (varios anuncios) · metaAdsCreateCarousel (carrusel) · metaAdsCreateWhatsAppAd (Click-to-WhatsApp) · metaAdsUpdateAdCreative (editar texto/CTA/link de un anuncio existente) · metaAdsCreateAdset · metaAdsCreateAd · metaAdsEditAdset · metaAdsBulkRule (reglas masivas) · metaAudiences (públicos) · metaConversionsAPI (eventos server-side).' },
+      { titulo: 'META ADS — apoyo del agente', detalle: 'metaAgentMemory (memoria persistente del agente) · metaAgentCatalogLinks (catálogo con URLs reales para CTA) · metaAgentMarketIntel (inteligencia de mercado en vivo) · agentGenerateMedia (generar creativo imagen/video).' },
+      { titulo: 'NEGOCIO — operar pedidos, leads y stock', detalle: 'peyuBrainOps (métricas y listas en vivo del negocio) · agentOSBuscar (buscar cualquier registro) · agentOSAction (ejecutar acciones: marcar pagado, cambiar estado, generar etiqueta, etc.) · catalogManager (gestionar catálogo) · bluexCreateShipment / generarEtiquetaB2CBlueExpress (etiquetas) · sendGmailEmail (enviar correos). Agrégalas si quieres que el Superagente también opere ventas y logística por WhatsApp, no solo Meta.' },
+      { titulo: 'Comprueba que quedó', detalle: 'Tras guardar las herramientas en el panel, vuelve a WhatsApp y pregúntale "¿qué campañas de Meta tenemos activas?". Debe responder con el listado real (usando metaAdsManage), sin el mensaje de "tool is not available". Si una falla, revisa que el nombre esté escrito idéntico a esta guía.' },
+    ],
+  },
+  {
     id: 'gf-agente-intro',
     emoji: '🤖',
     titulo: 'Entender el Agent OS (la página del agente)',
