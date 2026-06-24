@@ -9,7 +9,42 @@
 // ni permite escribir nada por sí misma.
 // ============================================================================
 import { jsPDF } from 'jspdf';
-import { Download, Bot, ShieldCheck, FileText } from 'lucide-react';
+import { Download, Bot, ShieldCheck, FileText, Wrench } from 'lucide-react';
+
+// Funciones backend que hay que AUTORIZAR al Superagente en su panel de Base44
+// para que pueda invocarlas (igual que el agente Meta Ads de la app). Sin esta
+// autorización aparece el error "tool is not available".
+const FUNCIONES_AUTORIZAR = [
+  { grupo: 'Escritura / operaciones', fns: [
+    { name: 'agentOSAction', desc: 'Función ÚNICA de escritura (ver firma abajo): pedidos, leads, propuestas, stock, etiquetas, emails.' },
+    { name: 'agentOSBuscar', desc: 'Buscar registros por nombre, email, RUT o N° y obtener su id real.' },
+    { name: 'peyuBrainOps', desc: 'Métricas y listas operativas del negocio (ventas, pedidos, pipeline).' },
+  ]},
+  { grupo: 'Meta Ads · lectura', fns: [
+    { name: 'metaAdsManage', desc: 'Listar campañas, pausar/activar, diagnóstico, eventos del pixel. action="list_campaigns" para ver activas.' },
+    { name: 'metaAdsPerformance', desc: 'Rendimiento real por campaña: spend, CTR, ROAS, CPA, conversiones.' },
+    { name: 'metaAccountIntelligence', desc: 'Informe ejecutivo de la cuenta con veredictos por campaña.' },
+    { name: 'metaAdsReadAds', desc: 'Lee el contenido (copy, imágenes, CTA) de los anuncios.' },
+    { name: 'metaAdsDeepDive', desc: 'Análisis profundo por ad set / anuncio / breakdown.' },
+    { name: 'metaAdsLibraryImages', desc: 'Trae las imágenes de la cuenta o de una campaña.' },
+    { name: 'metaSetupAudit', desc: 'Auditoría del setup: cuenta, pixel, audiencias, página, Instagram.' },
+    { name: 'metaConversionTracking', desc: 'Rastreo de Purchase y Lead vs. pedidos reales.' },
+    { name: 'metaAgentMemory', desc: 'Memoria persistente del agente (recall / remember).' },
+  ]},
+  { grupo: 'Meta Ads · ejecución', fns: [
+    { name: 'metaAdsCreateCampaign', desc: 'Crea campaña completa de 1 anuncio (pausada).' },
+    { name: 'metaAdsCreateMultiAd', desc: 'Crea 1 campaña con varios anuncios (pausada).' },
+    { name: 'metaAdsCreateCarousel', desc: 'Crea un anuncio de carrusel (pausado).' },
+    { name: 'metaAdsCreateWhatsAppAd', desc: 'Crea campaña Click-to-WhatsApp (pausada).' },
+    { name: 'metaAdsUpdateAdCreative', desc: 'Edita texto/titular/CTA/link de un anuncio existente.' },
+    { name: 'metaAdsCreateAdset', desc: 'Crea un ad set en una campaña existente.' },
+    { name: 'metaAdsEditAdset', desc: 'Edita presupuesto, audiencia o targeting de un ad set.' },
+    { name: 'metaAdsBulkRule', desc: 'Acciones masivas por regla (dry_run primero).' },
+    { name: 'metaAudiences', desc: 'Crear/listar públicos (compradores, pixel).' },
+    { name: 'metaAgentCatalogLinks', desc: 'Catálogo real con URLs de producto para CTAs.' },
+    { name: 'metaAgentMarketIntel', desc: 'Inteligencia de mercado en vivo (competencia, keywords).' },
+  ]},
+];
 
 // Fuente de verdad de la firma. Editar aquí actualiza pantalla Y PDF.
 const ACCIONES = [
@@ -75,7 +110,21 @@ function buildPdf() {
   NOTAS.forEach((n) => line('• ' + n, 10, 'normal', [40, 50, 48], 4));
   y += 8;
 
-  line('Acciones válidas', 13, 'bold', [15, 139, 108], 8);
+  line('Funciones backend a AUTORIZAR en el panel del Superagente', 13, 'bold', [15, 139, 108], 6);
+  line('Habilita estas funciones en la configuración del Superagente (Base44). Sin esto aparece "tool is not available".', 9.5, 'normal', [80, 90, 88], 8);
+  FUNCIONES_AUTORIZAR.forEach((g) => {
+    if (y > doc.internal.pageSize.getHeight() - M - 40) { doc.addPage(); y = M; }
+    line(g.grupo, 11, 'bold', [217, 107, 77], 4);
+    g.fns.forEach((f) => {
+      if (y > doc.internal.pageSize.getHeight() - M - 30) { doc.addPage(); y = M; }
+      line(`• ${f.name}`, 10, 'bold', [20, 30, 28], 1);
+      line(f.desc, 9, 'normal', [90, 100, 98], 4);
+    });
+    y += 4;
+  });
+  y += 8;
+
+  line('Firma de la escritura · agentOSAction', 13, 'bold', [15, 139, 108], 8);
   ACCIONES.forEach((a) => {
     if (y > doc.internal.pageSize.getHeight() - M - 40) { doc.addPage(); y = M; }
     line(`${a.action}  ${a.payload}`, 11, 'bold', [20, 30, 28], 2);
@@ -123,8 +172,32 @@ export default function FirmaAgente() {
             </ul>
           </div>
 
+          <div className="mt-6 rounded-xl bg-amber-50 border border-amber-200 p-4">
+            <p className="text-sm font-semibold text-amber-800 flex items-center gap-2 mb-2">
+              <Wrench className="w-4 h-4" /> Funciones a autorizar en el panel del Superagente
+            </p>
+            <p className="text-[12.5px] text-slate-600 mb-3 leading-snug">
+              Habilita estas funciones backend en la configuración del Superagente (Base44). Sin autorizarlas aparece "tool is not available".
+            </p>
+            <div className="space-y-3">
+              {FUNCIONES_AUTORIZAR.map((g) => (
+                <div key={g.grupo}>
+                  <p className="text-[12px] font-bold text-orange-700 uppercase tracking-wide mb-1">{g.grupo}</p>
+                  <ul className="space-y-1">
+                    {g.fns.map((f) => (
+                      <li key={f.name} className="text-[12.5px] text-slate-700 leading-snug">
+                        <span className="font-mono font-semibold text-slate-900">{f.name}</span>
+                        <span className="text-slate-500"> — {f.desc}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
+          </div>
+
           <p className="mt-6 mb-3 text-sm font-bold text-slate-900 flex items-center gap-2">
-            <FileText className="w-4 h-4 text-emerald-600" /> Acciones válidas ({ACCIONES.length})
+            <FileText className="w-4 h-4 text-emerald-600" /> Acciones de escritura · agentOSAction ({ACCIONES.length})
           </p>
           <div className="space-y-2.5">
             {ACCIONES.map((a) => (
