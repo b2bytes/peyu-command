@@ -204,8 +204,10 @@ export default function MetaAdsPanel() {
       const msgs = data.messages || [];
       setMessages(msgs);
       // Si el último mensaje es del asistente y ya trae contenido, la respuesta
-      // llegó → apaga el "analizando" y desarma el watchdog. Esto evita que el
-      // indicador se quede colgado ("piensa y no responde").
+      // llegó → apaga el "analizando" Y el aviso de "se demoró". Esto es clave:
+      // aunque el watchdog haya marcado "stalled", si la respuesta llega después
+      // igual la mostramos y quitamos el banner de reintentar (antes quedaba
+      // tapando la respuesta real que sí había llegado).
       const last = msgs[msgs.length - 1];
       if (last?.role === 'assistant' && last.content?.trim()) {
         setLoading(false);
@@ -249,16 +251,15 @@ export default function MetaAdsPanel() {
     setLoading(true);
     // Recordamos el envío para poder reintentarlo si el agente no responde.
     lastSentRef.current = { content: msg || 'Analiza esta imagen.', file_urls: fileUrls };
-    // Watchdog: si en 200s no llegó respuesta del asistente, rescatamos al
-    // usuario en vez de dejar el "analizando" colgado para siempre. Se calibró a
-    // 200s porque el deep search de competencia/keywords (gemini_3_1_pro con
-    // internet) puede tardar ~165s; un watchdog más corto marcaba "se demoró"
-    // mientras el agente seguía investigando correctamente.
+    // Watchdog: si en 280s no llegó respuesta del asistente, ofrecemos reintentar.
+    // OJO: dejamos el spinner ENCENDIDO (no apagamos loading) — el agente con
+    // opus + 20 herramientas + deep search con internet puede tardar bastante,
+    // y si la respuesta llega tarde el subscribe la muestra igual. Solo
+    // sumamos el banner de reintentar como opción, sin matar la espera.
     if (watchdogRef.current) clearTimeout(watchdogRef.current);
     watchdogRef.current = setTimeout(() => {
-      setLoading(false);
       setStalled(true);
-    }, 200000);
+    }, 280000);
     try {
       await base44.agents.addMessage(conversation, {
         role: 'user',
@@ -278,7 +279,7 @@ export default function MetaAdsPanel() {
     setStalled(false);
     setLoading(true);
     if (watchdogRef.current) clearTimeout(watchdogRef.current);
-    watchdogRef.current = setTimeout(() => { setLoading(false); setStalled(true); }, 200000);
+    watchdogRef.current = setTimeout(() => { setStalled(true); }, 280000);
     try {
       await base44.agents.addMessage(conversation, { role: 'user', ...payload });
     } catch {
@@ -430,7 +431,7 @@ export default function MetaAdsPanel() {
                 </div>
                 <div className="bg-amber-500/[0.08] border border-amber-500/25 rounded-2xl rounded-tl-sm px-4 py-3">
                   <p className="text-[12px] text-amber-100 leading-snug mb-2">
-                    El estratega se demoró más de lo normal en responder. A veces pasa con consultas pesadas.
+                    El estratega está tardando más de lo normal (consulta pesada o investigación en vivo). Sigue trabajando — espera unos segundos más o reintenta.
                   </p>
                   <button
                     onClick={retryLast}
