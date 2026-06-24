@@ -2,8 +2,27 @@ import { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Building2, Star, Send, FileText, MessageCircle, Eye, RefreshCw, TrendingUp, Clock, Plus, Trash2, Zap, Copy, Check, ExternalLink, Download, FileUp } from 'lucide-react';
+import { Building2, Star, Send, FileText, MessageCircle, Eye, RefreshCw, TrendingUp, Clock, Plus, Trash2, Zap, Copy, Check, ExternalLink, Download, FileUp, Loader2 } from 'lucide-react';
 import BluexShipmentPanel from '@/components/bluex/BluexShipmentPanel';
+
+// Genera el PDF de la propuesta bajo demanda y lo abre/descarga.
+// Convierte el base64 a Blob URL: los navegadores móviles BLOQUEAN abrir
+// data:application/pdf directo, por eso fallaba la descarga en celular.
+async function descargarPropuestaPDF(proposalId, numero) {
+  const res = await base44.functions.invoke('generateProposalPDF', { proposalId });
+  const data = res?.data || res;
+  if (!data?.pdf_base64) throw new Error(data?.error || 'No se pudo generar el PDF');
+  const bytes = Uint8Array.from(atob(data.pdf_base64), (c) => c.charCodeAt(0));
+  const blob = new Blob([bytes], { type: 'application/pdf' });
+  const blobUrl = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = blobUrl;
+  a.download = data.filename || `PEYU-Propuesta-${numero || proposalId}.pdf`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(blobUrl), 4000);
+}
 
 const LEAD_STATUS = ['Nuevo', 'Contactado', 'En revisión', 'Propuesta enviada', 'Aceptado', 'Perdido'];
 const LEAD_COLORS = {
@@ -29,28 +48,64 @@ function ScorePill({ score }) {
   return <span className={`${bg} text-white text-xs font-bold px-2 py-0.5 rounded-full`}>{s}pts</span>;
 }
 
-const DEFAULT_ITEM = { nombre: '', qty: 50, precio_base: 9990, personalizacion: true };
+// Filtra productos con tabla B2B oficial cargada (8 tramos).
+function tieneTramos(p) {
+  const t = p.precio_b2b_tramos;
+  return t && typeof t === 'object' &&
+    ['unitario','t10_49','t50_99','t100_249','t250_499','t500_999','t1000_1999','t2000_mas']
+      .some(k => Number(t[k]) > 0);
+}
 
 function GenerarPropuestaModal({ lead, onClose, onDone }) {
+  const [catalogo, setCatalogo] = useState([]);
+  const [catLoading, setCatLoading] = useState(true);
+  // Cada item referencia un SKU real del catálogo (sku) + cantidad + personalización.
   const [items, setItems] = useState([
-    { nombre: lead.product_interest || 'Kit Escritorio Pro', qty: lead.qty_estimate || 50, precio_base: 19990, personalizacion: lead.personalization_needs !== false },
+    { sku: '', qty: lead.qty_estimate || 50, personalizacion: lead.personalization_needs !== false },
   ]);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
   const [copied, setCopied] = useState(false);
 
-  const addItem = () => setItems(prev => [...prev, { ...DEFAULT_ITEM }]);
+  // Carga el catálogo con tarifa B2B oficial y preselecciona el producto que
+  // mejor matchea el interés del lead.
+  useEffect(() => {
+    (async () => {
+      setCatLoading(true);
+      const prods = await base44.entities.Producto.filter({ activo: true }, '-updated_date', 300);
+      const conTramos = prods.filter(tieneTramos);
+      setCatalogo(conTramos);
+      const interes = (lead.product_interest || '').toLowerCase();
+      const match = conTramos.find(p => p.sku && interes.includes(p.sku.toLowerCase()))
+        || conTramos.find(p => interes && (p.nombre || '').toLowerCase().split(' ').some(w => w.length > 3 && interes.includes(w)))
+        || conTramos[0];
+      if (match) setItems([{ sku: match.sku, qty: lead.qty_estimate || 50, personalizacion: lead.personalization_needs !== false }]);
+      setCatLoading(false);
+    })();
+  }, [lead]);
+
+  const addItem = () => setItems(prev => [...prev, { sku: catalogo[0]?.sku || '', qty: 50, personalizacion: true }]);
   const removeItem = (i) => setItems(prev => prev.filter((_, idx) => idx !== i));
   const updateItem = (i, key, val) => setItems(prev => prev.map((item, idx) => idx === i ? { ...item, [key]: val } : item));
 
   const generar = async () => {
     setLoading(true);
     try {
-      const res = await base44.functions.invoke('createCorporateProposal', {
-        leadId: lead.id,
-        items: items.map(it => ({ ...it, qty: Number(it.qty), precio_base: Number(it.precio_base) })),
+      const payloadItems = items.map(it => {
+        const prod = catalogo.find(p => p.sku === it.sku);
+        return {
+          sku: prod.sku,
+          nombre: prod.nombre,
+          qty: Number(it.qty),
+          precio_b2b_tramos: prod.precio_b2b_tramos,
+          precio_b2c: prod.precio_b2c,
+          personalizacion: it.personalizacion,
+        };
       });
-      setResult(res.data || res);
+      const res = await base44.functions.invoke('createCorporateProposal', { leadId: lead.id, items: payloadItems });
+      const data = res?.data || res;
+      if (data?.error) throw new Error(data.message || data.error);
+      setResult(data);
       onDone();
     } catch (err) {
       alert('Error generando propuesta: ' + (err.message || 'Intenta de nuevo'));
@@ -128,29 +183,30 @@ function GenerarPropuestaModal({ lead, onClose, onDone }) {
                     <Plus className="w-3 h-3" /> Agregar
                   </Button>
                 </div>
-                {items.map((item, i) => (
+                {catLoading ? (
+                  <div className="text-sm text-muted-foreground flex items-center gap-2 py-3"><Loader2 className="w-4 h-4 animate-spin" /> Cargando catálogo…</div>
+                ) : catalogo.length === 0 ? (
+                  <div className="text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-lg p-3">Ningún producto tiene tarifa B2B oficial cargada. Carga los precios B2B primero.</div>
+                ) : items.map((item, i) => (
                   <div key={i} className="bg-muted rounded-xl p-3 space-y-2">
                     <div className="flex gap-2">
-                      <Input
-                        placeholder="Nombre producto"
-                        value={item.nombre}
-                        onChange={e => updateItem(i, 'nombre', e.target.value)}
-                        className="flex-1 text-sm h-8"
-                      />
+                      <select
+                        value={item.sku}
+                        onChange={e => updateItem(i, 'sku', e.target.value)}
+                        className="flex-1 text-sm h-8 border border-input rounded-md px-2 bg-background"
+                      >
+                        {catalogo.map(p => <option key={p.sku} value={p.sku}>{p.nombre} ({p.sku})</option>)}
+                      </select>
                       {items.length > 1 && (
                         <button onClick={() => removeItem(i)} className="text-red-400 hover:text-red-600">
                           <Trash2 className="w-4 h-4" />
                         </button>
                       )}
                     </div>
-                    <div className="grid grid-cols-3 gap-2">
+                    <div className="grid grid-cols-2 gap-2">
                       <div>
                         <div className="text-xs text-muted-foreground mb-1">Cantidad</div>
                         <Input type="number" min="1" value={item.qty} onChange={e => updateItem(i, 'qty', e.target.value)} className="h-7 text-xs" />
-                      </div>
-                      <div>
-                        <div className="text-xs text-muted-foreground mb-1">Precio base (CLP)</div>
-                        <Input type="number" min="1000" step="500" value={item.precio_base} onChange={e => updateItem(i, 'precio_base', e.target.value)} className="h-7 text-xs" />
                       </div>
                       <div className="flex items-end pb-0.5">
                         <label className="flex items-center gap-1.5 text-xs cursor-pointer">
@@ -164,7 +220,7 @@ function GenerarPropuestaModal({ lead, onClose, onDone }) {
               </div>
               <Button
                 onClick={generar}
-                disabled={loading || items.some(i => !i.nombre)}
+                disabled={loading || catLoading || catalogo.length === 0 || items.some(i => !i.sku)}
                 className="w-full gap-2 font-semibold"
                 style={{ backgroundColor: '#006D5B' }}
                 size="lg"
@@ -189,6 +245,18 @@ export default function AdminPropuestas() {
   const [generatingMockup, setGeneratingMockup] = useState(null);
   const [propuestaModal, setPropuestaModal] = useState(null);
   const [search, setSearch] = useState('');
+  const [pdfLoading, setPdfLoading] = useState(null);
+
+  const handleDescargarPDF = async (prop) => {
+    setPdfLoading(prop.id);
+    try {
+      await descargarPropuestaPDF(prop.id, prop.numero);
+    } catch (err) {
+      alert('No se pudo generar el PDF: ' + (err.message || 'Intenta de nuevo'));
+    } finally {
+      setPdfLoading(null);
+    }
+  };
 
   const cargar = async () => {
     setLoading(true);
@@ -529,13 +597,9 @@ export default function AdminPropuestas() {
                           <ExternalLink className="w-3 h-3" /> Ver
                         </Button>
                       </a>
-                      {prop.pdf_url && (
-                        <a href={prop.pdf_url} target="_blank" rel="noopener noreferrer" className="flex-shrink-0">
-                          <Button size="sm" variant="outline" className="gap-1 text-xs h-9">
-                            <FileText className="w-3 h-3" /> PDF
-                          </Button>
-                        </a>
-                      )}
+                      <Button size="sm" variant="outline" className="gap-1 text-xs h-9 flex-shrink-0" onClick={() => handleDescargarPDF(prop)} disabled={pdfLoading === prop.id}>
+                        {pdfLoading === prop.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <Download className="w-3 h-3" />} PDF
+                      </Button>
                     </div>
                     <select
                       value={prop.status}
@@ -555,13 +619,9 @@ export default function AdminPropuestas() {
                           <ExternalLink className="w-3 h-3" /> Ver propuesta
                         </Button>
                       </a>
-                      {prop.pdf_url && (
-                        <a href={prop.pdf_url} target="_blank" rel="noopener noreferrer">
-                          <Button size="sm" variant="outline" className="gap-1.5 text-xs h-9 w-full">
-                            <FileText className="w-3 h-3" /> PDF
-                          </Button>
-                        </a>
-                      )}
+                      <Button size="sm" variant="outline" className="gap-1.5 text-xs h-9 w-full" onClick={() => handleDescargarPDF(prop)} disabled={pdfLoading === prop.id}>
+                        {pdfLoading === prop.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <Download className="w-3 h-3" />} Descargar PDF
+                      </Button>
                     </div>
                   </div>
                   </div>

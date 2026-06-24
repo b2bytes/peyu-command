@@ -21,32 +21,71 @@ function toBase64Url(str) {
   return btoa(unescape(encodeURIComponent(str)))
     .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 }
-async function sendViaGmail(accessToken, { to, cc, replyTo, subject, html, fromName = 'PEYU Chile' }) {
-  const boundary = `peyu_prop_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+// Parte base64 del PDF en líneas de 76 chars (estándar MIME base64).
+function chunkBase64(b64) {
+  return b64.replace(/.{76}/g, '$&\r\n');
+}
+
+async function sendViaGmail(accessToken, { to, cc, replyTo, subject, html, fromName = 'PEYU Chile', attachment = null }) {
+  const altBoundary = `peyu_alt_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+  const mixBoundary = `peyu_mix_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
   const plain = html.replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
-  const message = [
+
+  // Cuerpo alternativo texto+HTML (común a ambos casos).
+  const altParts = [
+    `--${altBoundary}`,
+    'Content-Type: text/plain; charset="UTF-8"',
+    'Content-Transfer-Encoding: 7bit',
+    '',
+    plain,
+    '',
+    `--${altBoundary}`,
+    'Content-Type: text/html; charset="UTF-8"',
+    'Content-Transfer-Encoding: 7bit',
+    '',
+    html,
+    '',
+    `--${altBoundary}--`,
+  ];
+
+  const headers = [
     `From: ${encodeHeader(fromName)} <ti@peyuchile.cl>`,
     `To: ${to}`,
     cc ? `Cc: ${cc}` : null,
     replyTo ? `Reply-To: ${replyTo}` : null,
     `Subject: ${encodeHeader(subject)}`,
     'MIME-Version: 1.0',
-    `Content-Type: multipart/alternative; boundary="${boundary}"`,
-    '',
-    `--${boundary}`,
-    'Content-Type: text/plain; charset="UTF-8"',
-    'Content-Transfer-Encoding: 7bit',
-    '',
-    plain,
-    '',
-    `--${boundary}`,
-    'Content-Type: text/html; charset="UTF-8"',
-    'Content-Transfer-Encoding: 7bit',
-    '',
-    html,
-    '',
-    `--${boundary}--`,
-  ].filter((l) => l !== null).join('\r\n');
+  ].filter((l) => l !== null);
+
+  let message;
+  if (attachment?.base64) {
+    // multipart/mixed → [multipart/alternative] + [PDF adjunto]
+    message = [
+      ...headers,
+      `Content-Type: multipart/mixed; boundary="${mixBoundary}"`,
+      '',
+      `--${mixBoundary}`,
+      `Content-Type: multipart/alternative; boundary="${altBoundary}"`,
+      '',
+      ...altParts,
+      '',
+      `--${mixBoundary}`,
+      'Content-Type: application/pdf',
+      'Content-Transfer-Encoding: base64',
+      `Content-Disposition: attachment; filename="${attachment.filename}"`,
+      '',
+      chunkBase64(attachment.base64),
+      '',
+      `--${mixBoundary}--`,
+    ].join('\r\n');
+  } else {
+    message = [
+      ...headers,
+      `Content-Type: multipart/alternative; boundary="${altBoundary}"`,
+      '',
+      ...altParts,
+    ].join('\r\n');
+  }
 
   const res = await fetch('https://gmail.googleapis.com/gmail/v1/users/me/messages/send', {
     method: 'POST',
@@ -289,10 +328,21 @@ Deno.serve(async (req) => {
 
     const subject = `Propuesta PEYU N° ${prop.numero || proposalId.slice(-6)} · ${prop.empresa}`;
 
+    // Genera el PDF de la propuesta para adjuntarlo. Si falla, el correo sale
+    // igual con sus links (no bloqueamos el envío por el adjunto).
+    let attachment = null;
+    try {
+      const pdfRes = await base44.asServiceRole.functions.invoke('generateProposalPDF', { proposalId });
+      const pdfData = pdfRes?.data || pdfRes;
+      if (pdfData?.pdf_base64) {
+        attachment = { base64: pdfData.pdf_base64, filename: pdfData.filename || `PEYU-Propuesta-${prop.numero || proposalId}.pdf` };
+      }
+    } catch (_) { /* sin adjunto, seguimos con el email */ }
+
     // Token OAuth de Gmail (conector compartido autorizado por el builder).
     const { accessToken } = await base44.asServiceRole.connectors.getConnection('gmail');
 
-    // 1) Email al CLIENTE desde ti@peyuchile.cl, con copia (CC) a ventas@
+    // 1) Email al CLIENTE desde ti@peyuchile.cl, con PDF adjunto y copia (CC) a ventas@
     await sendViaGmail(accessToken, {
       to: prop.email,
       cc: 'ventas@peyuchile.cl',
@@ -300,6 +350,7 @@ Deno.serve(async (req) => {
       subject,
       html,
       fromName: 'Carlos · PEYU Chile',
+      attachment,
     });
 
     await base44.asServiceRole.entities.CorporateProposal.update(proposalId, {
