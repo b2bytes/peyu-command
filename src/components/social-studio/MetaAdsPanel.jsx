@@ -145,11 +145,8 @@ export default function MetaAdsPanel() {
   const [initing, setIniting] = useState(true);
   const [attachments, setAttachments] = useState([]); // [{name, url}]
   const [uploading, setUploading] = useState(false);
-  const [stalled, setStalled] = useState(false); // el agente no respondió a tiempo
   const fileInputRef = useRef(null);
   const bottomRef = useRef(null);
-  const watchdogRef = useRef(null);
-  const lastSentRef = useRef(null); // último mensaje enviado, para reintentar
   const voice = useAgentVoice();    // voz de Joaquín (ElevenLabs)
 
   // Estado de rendimiento (columna derecha)
@@ -203,23 +200,16 @@ export default function MetaAdsPanel() {
     const unsub = base44.agents.subscribeToConversation(conversation.id, (data) => {
       const msgs = data.messages || [];
       setMessages(msgs);
-      // Si el último mensaje es del asistente y ya trae contenido, la respuesta
-      // llegó → apaga el "analizando" Y el aviso de "se demoró". Esto es clave:
-      // aunque el watchdog haya marcado "stalled", si la respuesta llega después
-      // igual la mostramos y quitamos el banner de reintentar (antes quedaba
-      // tapando la respuesta real que sí había llegado).
+      // Cuando el asistente entrega contenido, apagamos el "analizando".
+      // Sin watchdog: el agente puede tomarse el tiempo que necesite con sus
+      // 20+ herramientas e investigación en vivo, sin que nada lo interrumpa.
       const last = msgs[msgs.length - 1];
       if (last?.role === 'assistant' && last.content?.trim()) {
         setLoading(false);
-        setStalled(false);
-        if (watchdogRef.current) { clearTimeout(watchdogRef.current); watchdogRef.current = null; }
       }
     });
     return unsub;
   }, [conversation?.id]);
-
-  // Limpia el watchdog al desmontar.
-  useEffect(() => () => { if (watchdogRef.current) clearTimeout(watchdogRef.current); }, []);
 
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages, loading]);
 
@@ -247,45 +237,17 @@ export default function MetaAdsPanel() {
     if ((!msg && fileUrls.length === 0) || loading || !conversation) return;
     setInput('');
     setAttachments([]);
-    setStalled(false);
     setLoading(true);
-    // Recordamos el envío para poder reintentarlo si el agente no responde.
-    lastSentRef.current = { content: msg || 'Analiza esta imagen.', file_urls: fileUrls };
-    // Watchdog: si en 280s no llegó respuesta del asistente, ofrecemos reintentar.
-    // OJO: dejamos el spinner ENCENDIDO (no apagamos loading) — el agente con
-    // opus + 20 herramientas + deep search con internet puede tardar bastante,
-    // y si la respuesta llega tarde el subscribe la muestra igual. Solo
-    // sumamos el banner de reintentar como opción, sin matar la espera.
-    if (watchdogRef.current) clearTimeout(watchdogRef.current);
-    watchdogRef.current = setTimeout(() => {
-      setStalled(true);
-    }, 280000);
+    // Sin watchdog: el agente trabaja con total libertad. El spinner
+    // "analizando" queda hasta que el subscribe reciba la respuesta real.
     try {
       await base44.agents.addMessage(conversation, {
         role: 'user',
-        ...lastSentRef.current,
+        content: msg || 'Analiza esta imagen.',
+        file_urls: fileUrls,
       });
     } catch {
-      if (watchdogRef.current) { clearTimeout(watchdogRef.current); watchdogRef.current = null; }
       setLoading(false);
-      setStalled(true);
-    }
-  };
-
-  // Reintenta el último envío que se quedó sin respuesta.
-  const retryLast = async () => {
-    const payload = lastSentRef.current;
-    if (!payload || !conversation) return;
-    setStalled(false);
-    setLoading(true);
-    if (watchdogRef.current) clearTimeout(watchdogRef.current);
-    watchdogRef.current = setTimeout(() => { setStalled(true); }, 280000);
-    try {
-      await base44.agents.addMessage(conversation, { role: 'user', ...payload });
-    } catch {
-      if (watchdogRef.current) { clearTimeout(watchdogRef.current); watchdogRef.current = null; }
-      setLoading(false);
-      setStalled(true);
     }
   };
 
@@ -419,26 +381,6 @@ export default function MetaAdsPanel() {
                   {[0,1,2].map(i => (
                     <div key={i} className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-bounce" style={{ animationDelay: `${i * 0.12}s` }} />
                   ))}
-                </div>
-              </div>
-            )}
-            {/* Rescate: si el agente no respondió a tiempo, ofrecemos reintentar
-                en vez de dejar al founder esperando sin nada. */}
-            {stalled && (
-              <div className="flex gap-3">
-                <div className="w-8 h-8 rounded-xl bg-amber-500/20 border border-amber-500/30 flex items-center justify-center flex-shrink-0">
-                  <AlertCircle className="w-4 h-4 text-amber-300" />
-                </div>
-                <div className="bg-amber-500/[0.08] border border-amber-500/25 rounded-2xl rounded-tl-sm px-4 py-3">
-                  <p className="text-[12px] text-amber-100 leading-snug mb-2">
-                    El estratega está tardando más de lo normal (consulta pesada o investigación en vivo). Sigue trabajando — espera unos segundos más o reintenta.
-                  </p>
-                  <button
-                    onClick={retryLast}
-                    className="inline-flex items-center gap-1.5 text-[11px] font-semibold px-3 py-1.5 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/30 text-amber-100 transition-colors"
-                  >
-                    <RefreshCw className="w-3 h-3" /> Reintentar
-                  </button>
                 </div>
               </div>
             )}
