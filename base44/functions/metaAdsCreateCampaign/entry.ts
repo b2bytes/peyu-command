@@ -5,9 +5,9 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 // Crea, en cadena: Campaña → Ad Set → Ad Creative (con imagen) → Ad.
 // Todo nace en estado PAUSED para que el founder revise antes de activar.
 //
-// Soporta dos presets listos para PEYU:
-//   preset='b2c_ventas' → objetivo OUTCOME_SALES, Advantage+ audience, CBO.
-//   preset='b2b_leads'  → objetivo OUTCOME_LEADS, públicos amplios.
+// Soporta dos presets listos para PEYU (ambos optimizan a CONVERSIONES reales):
+//   preset='b2c_ventas' → OUTCOME_SALES, optimiza a Purchase, Advantage+, CBO.
+//   preset='b2b_leads'  → OUTCOME_LEADS, optimiza a Lead, públicos amplios.
 //
 // Payload:
 // {
@@ -59,24 +59,32 @@ async function graphPost(path, params, token) {
   return data;
 }
 
-// Nota: la optimización a conversiones (OFFSITE_CONVERSIONS / LEAD_GENERATION)
-// exige un promoted_object con el pixel + evento, que no configuramos vía API.
-// Por eso ambos presets optimizan a tráfico de calidad a la landing (LINK_CLICKS),
-// que es 100% creable por API y manda tráfico real al sitio. Una vez conectado el
-// pixel en Ads Manager, se puede cambiar la optimización a Compras/Leads en 1 click.
+// Pixel de PEYU (activo, disparando Purchase + Lead). Necesario en el
+// promoted_object del ad set para optimizar a conversiones reales.
+const PEYU_PIXEL_ID = '769018551017679';
+
+// Ambos presets optimizan a CONVERSIONES reales (no tráfico):
+//   - objective: OUTCOME_SALES (Ventas) / OUTCOME_LEADS (Leads)
+//   - optimization_goal: OFFSITE_CONVERSIONS
+//   - billing_event: IMPRESSIONS
+//   - promoted_object: { pixel_id, custom_event_type } → le dice a Meta qué
+//     evento de conversión optimizar (Purchase / Lead). Sin esto Meta rechaza
+//     OFFSITE_CONVERSIONS, y con TRAFFIC/LINK_CLICKS la campaña no busca ventas.
 const PRESETS = {
   b2c_ventas: {
-    objective: 'OUTCOME_TRAFFIC',
-    optimization_goal: 'LINK_CLICKS',
+    objective: 'OUTCOME_SALES',
+    optimization_goal: 'OFFSITE_CONVERSIONS',
     billing_event: 'IMPRESSIONS',
+    custom_event_type: 'PURCHASE',
     default_cta: 'SHOP_NOW',
     advantage_audience: true,
     name: 'PEYU | B2C - Ventas Ecom',
   },
   b2b_leads: {
-    objective: 'OUTCOME_TRAFFIC',
-    optimization_goal: 'LINK_CLICKS',
+    objective: 'OUTCOME_LEADS',
+    optimization_goal: 'OFFSITE_CONVERSIONS',
     billing_event: 'IMPRESSIONS',
+    custom_event_type: 'LEAD',
     default_cta: 'LEARN_MORE',
     advantage_audience: false,
     name: 'PEYU | B2B - Leads Regalos Corporativos',
@@ -154,6 +162,9 @@ Deno.serve(async (req) => {
       campaign_id: campaignId,
       billing_event: cfg.billing_event,
       optimization_goal: cfg.optimization_goal,
+      // promoted_object: pixel + evento de conversión a optimizar (Purchase / Lead).
+      // Obligatorio para OFFSITE_CONVERSIONS — sin esto Meta rechaza el ad set.
+      promoted_object: JSON.stringify({ pixel_id: PEYU_PIXEL_ID, custom_event_type: cfg.custom_event_type }),
       destination_type: 'WEBSITE',   // tráfico a la landing del sitio
       targeting: JSON.stringify(targeting),
       status: 'PAUSED',
