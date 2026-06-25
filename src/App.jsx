@@ -153,6 +153,7 @@ const CanalAgencia = lazyWithRetry(() => import('./pages/CanalAgencia'), { name:
 const CrearCampanas = lazyWithRetry(() => import('./pages/CrearCampanas'), { name: 'CrearCampanas' });
 const SecuenciasAutomaticas = lazyWithRetry(() => import('./pages/SecuenciasAutomaticas'), { name: 'SecuenciasAutomaticas' });
 const FlujoCorreos = lazyWithRetry(() => import('./pages/FlujoCorreos'), { name: 'FlujoCorreos' });
+const ResumenSemanal = lazyWithRetry(() => import('./pages/ResumenSemanal'), { name: 'ResumenSemanal' });
 
 const AdminLoader = () => (
   <div className="fixed inset-0 flex items-center justify-center bg-background">
@@ -273,6 +274,7 @@ const AuthenticatedApp = () => {
           <Route path="crear-campanas" element={<CrearCampanas />} />
           <Route path="secuencias" element={<SecuenciasAutomaticas />} />
           <Route path="flujo-correos" element={<FlujoCorreos />} />
+          <Route path="resumen-semanal" element={<ResumenSemanal />} />
         </Route>
         <Route path="*" element={<PageNotFound />} />
       </Routes>

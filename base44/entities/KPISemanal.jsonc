@@ -1,0 +1,52 @@
+{
+  "name": "KPISemanal",
+  "type": "object",
+  "description": "Snapshot semanal de KPIs de ventas de PEYU. Un registro por semana, con el total vendido por canal (B2C web vs B2B corporativo). Alimenta el gr\u00e1fico comparativo del Resumen Semanal.",
+  "properties": {
+    "semana": {
+      "type": "string",
+      "title": "Semana (ej. 2026-W26 o 23 jun)",
+      "description": "Etiqueta legible de la semana, usada como eje X del gr\u00e1fico."
+    },
+    "fecha_inicio": {
+      "type": "string",
+      "format": "date",
+      "title": "Fecha de inicio de la semana"
+    },
+    "ventas_web_clp": {
+      "type": "number",
+      "title": "Ventas web B2C (CLP)",
+      "default": 0
+    },
+    "pedidos_b2b_total_clp": {
+      "type": "number",
+      "title": "Pedidos B2B total (CLP)",
+      "default": 0
+    }
+  },
+  "required": [
+    "semana"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

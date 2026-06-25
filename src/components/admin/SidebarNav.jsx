@@ -72,6 +72,7 @@ export const NAV_GROUPS = [
       { path: '/admin/flujo-caja',    label: 'Flujo de Caja',      icon: Wallet },
       { path: '/admin/centro-costos', label: 'Costos IA',          icon: Brain },
       { path: '/admin/reportes',      label: 'Reportes',           icon: PieChart },
+      { path: '/admin/resumen-semanal', label: 'Resumen Semanal',  icon: BarChart3 },
     ],
   },
   {
