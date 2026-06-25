@@ -77,6 +77,30 @@ async function uploadImageByUrl(accountId, url, token) {
   return { hash: first?.hash };
 }
 
+async function graphGet(path, token) {
+  const res = await fetch(`https://graph.facebook.com/${GRAPH_VERSION}/${path}${path.includes('?') ? '&' : '?'}access_token=${encodeURIComponent(token)}`);
+  return res.json();
+}
+
+// Sube un video por URL al ad account y devuelve su video_id (para anuncios de video).
+async function uploadVideoByUrl(accountId, url, token, title) {
+  const data = await graphPost(`${accountId}/advideos`, { file_url: url, ...(title ? { title, name: title } : {}) }, token);
+  if (data.error) return { error: data.error };
+  return { video_id: data.id };
+}
+
+// Espera a que un video procese y devuelve la miniatura auto-generada por Meta.
+async function waitVideoReadyThumb(videoId, token) {
+  for (let i = 0; i < 6; i++) {
+    const data = await graphGet(`${videoId}?fields=status,picture`, token);
+    const status = data?.status?.video_status;
+    if (status === 'ready' && data.picture) return { thumbnail_url: data.picture };
+    if (status === 'error') return { error: 'El video falló al procesarse en Meta.' };
+    await new Promise((r) => setTimeout(r, 3000));
+  }
+  return {};
+}
+
 // Pixel de PEYU (activo, disparando Purchase + Lead). Necesario en el
 // promoted_object del ad set para optimizar a conversiones reales.
 const PEYU_PIXEL_ID = '769018551017679';
@@ -153,8 +177,8 @@ Deno.serve(async (req) => {
       if (!a.primary_text || !a.headline || !a.link) {
         return Response.json({ ok: false, error: `El anuncio #${i + 1} necesita primary_text, headline y link.` });
       }
-      if (!a.image_url && !a.image_hash && !a.video_id) {
-        return Response.json({ ok: false, error: `El anuncio #${i + 1} necesita una imagen (image_url/image_hash) o un video_id.` });
+      if (!a.image_url && !a.image_hash && !a.video_id && !a.video_url) {
+        return Response.json({ ok: false, error: `El anuncio #${i + 1} necesita una imagen (image_url/image_hash) o un video (video_id/video_url).` });
       }
     }
 
@@ -215,6 +239,13 @@ Deno.serve(async (req) => {
       const a = ads[i];
       const adName = a.name || `${campaignName} · Ad ${i + 1}`;
 
+      // Si viene un video por URL, lo subimos primero para obtener su video_id.
+      if (!a.video_id && a.video_url) {
+        const uv = await uploadVideoByUrl(accountId, a.video_url, token, a.name);
+        if (uv.error) { errors.push({ index: i + 1, name: adName, step: 'video_upload', ...diagnoseMetaError(uv.error) }); continue; }
+        a.video_id = uv.video_id;
+      }
+
       // Si la imagen viene por URL (no hash ni video), la subimos para obtener
       // image_hash: Meta rechaza picture con URLs externas al crear creativos.
       if (!a.image_hash && !a.video_id && a.image_url) {
@@ -226,6 +257,22 @@ Deno.serve(async (req) => {
       let storySpec;
       if (a.video_id) {
         const cta = a.cta || cfg.default_cta;
+        // Video: Meta EXIGE miniatura. thumbnail_hash, thumbnail_url→hash, o la
+        // miniatura auto-generada por Meta tras procesar el video.
+        let thumbHash = a.thumbnail_hash || null;
+        let thumbUrl = null;
+        if (!thumbHash && a.thumbnail_url) {
+          const ut = await uploadImageByUrl(accountId, a.thumbnail_url, token);
+          if (ut.hash) thumbHash = ut.hash; else thumbUrl = a.thumbnail_url;
+        }
+        if (!thumbHash && !thumbUrl) {
+          const ready = await waitVideoReadyThumb(a.video_id, token);
+          if (ready.thumbnail_url) thumbUrl = ready.thumbnail_url;
+        }
+        if (!thumbHash && !thumbUrl) {
+          errors.push({ index: i + 1, name: adName, step: 'video_thumbnail', error: 'El anuncio de video necesita una miniatura. Pasa thumbnail_hash (foto del producto) o thumbnail_url.' });
+          continue;
+        }
         storySpec = {
           page_id: pageId,
           video_data: {
@@ -234,7 +281,7 @@ Deno.serve(async (req) => {
             title: a.headline,
             link_description: a.description || '',
             call_to_action: { type: cta, value: { link: a.link } },
-            ...(a.image_url ? { image_url: a.image_url } : {}),
+            ...(thumbHash ? { image_hash: thumbHash } : { image_url: thumbUrl }),
           },
         };
       } else {

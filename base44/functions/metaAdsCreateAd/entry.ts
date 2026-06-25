@@ -18,8 +18,15 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 //     image_url?: string,              // imagen por URL pública
 //     image_hash?: string,             // o por hash (de un anuncio leído con metaAdsReadAds)
 //     video_id?: string,               // o un video existente
+//     thumbnail_url?: string,          // VIDEO: miniatura por URL pública (Meta la exige)
+//     thumbnail_hash?: string,         // VIDEO: o miniatura por image_hash (ej. foto de la carcasa)
 //   }
 // El anuncio se crea PAUSADO.
+//
+// IMPORTANTE para VIDEO: Meta EXIGE una miniatura en video_data. Pasa
+// thumbnail_hash (reutiliza el image_hash de una foto del producto traída con
+// metaAdsLibraryImages) o thumbnail_url. Si no la pasas, intentamos usar la
+// miniatura que Meta auto-genera del video una vez procesado.
 // ============================================================================
 
 const GRAPH_VERSION = 'v21.0';
@@ -57,6 +64,25 @@ async function uploadImageByUrl(accountId, url, token) {
   if (data.error) return { error: data.error };
   const first = Object.values(data.images || {})[0];
   return { hash: first?.hash };
+}
+
+async function graphGet(path, token) {
+  const res = await fetch(`https://graph.facebook.com/${GRAPH_VERSION}/${path}${path.includes('?') ? '&' : '?'}access_token=${encodeURIComponent(token)}`);
+  return res.json();
+}
+
+// Espera a que un video subido termine de procesarse en Meta y devuelve la
+// miniatura (picture) que Meta auto-genera. Un video recién subido no tiene
+// thumbnail hasta que su status pasa a 'ready'. Sondeamos unos segundos.
+async function waitVideoReadyThumb(videoId, token) {
+  for (let i = 0; i < 6; i++) {
+    const data = await graphGet(`${videoId}?fields=status,picture`, token);
+    const status = data?.status?.video_status;
+    if (status === 'ready' && data.picture) return { thumbnail_url: data.picture };
+    if (status === 'error') return { error: 'El video falló al procesarse en Meta.' };
+    await new Promise((r) => setTimeout(r, 3000));
+  }
+  return {}; // sigue procesando; devolvemos vacío y dejamos que Meta resuelva
 }
 
 Deno.serve(async (req) => {
@@ -104,6 +130,24 @@ Deno.serve(async (req) => {
     // Creativo según fuente (imagen url/hash o video).
     let storySpec;
     if (body.video_id) {
+      // Meta EXIGE una miniatura en video_data (image_hash o image_url). Resolvemos
+      // la fuente: thumbnail_hash directo, thumbnail_url subida a hash, o la
+      // miniatura auto-generada por Meta cuando el video termina de procesar.
+      let thumbHash = body.thumbnail_hash || null;
+      let thumbUrl = null;
+      if (!thumbHash && body.thumbnail_url) {
+        const up = await uploadImageByUrl(accountId, body.thumbnail_url, token);
+        if (up.hash) thumbHash = up.hash;
+        else thumbUrl = body.thumbnail_url;
+      }
+      if (!thumbHash && !thumbUrl) {
+        const ready = await waitVideoReadyThumb(body.video_id, token);
+        if (ready.error) return Response.json({ ok: false, step: 'video', error: ready.error });
+        if (ready.thumbnail_url) thumbUrl = ready.thumbnail_url;
+      }
+      if (!thumbHash && !thumbUrl) {
+        return Response.json({ ok: false, step: 'video_thumbnail', error: 'El anuncio de video necesita una miniatura. Pasa thumbnail_hash (ej. la foto del producto) o thumbnail_url, o reintenta en unos segundos mientras Meta procesa el video.' });
+      }
       storySpec = {
         page_id: pageId,
         video_data: {
@@ -112,7 +156,7 @@ Deno.serve(async (req) => {
           title: body.headline,
           link_description: body.description || '',
           call_to_action: { type: cta, value: { link: body.link } },
-          ...(body.image_url ? { image_url: body.image_url } : {}),
+          ...(thumbHash ? { image_hash: thumbHash } : { image_url: thumbUrl }),
         },
       };
     } else {
