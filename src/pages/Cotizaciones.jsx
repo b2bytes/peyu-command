@@ -169,6 +169,7 @@ export default function Cotizaciones() {
                     <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground">N° / Empresa</th>
                     <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground hidden md:table-cell">SKU / Personal.</th>
                     <th className="text-center px-4 py-3 text-xs font-semibold text-muted-foreground hidden lg:table-cell">Fecha</th>
+                    <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground hidden md:table-cell">Vendedor</th>
                     <th className="text-right px-4 py-3 text-xs font-semibold text-muted-foreground">Total</th>
                     <th className="text-center px-4 py-3 text-xs font-semibold text-muted-foreground">Estado</th>
                     <th className="text-center px-4 py-3 text-xs font-semibold text-muted-foreground">Acciones</th>
@@ -192,6 +193,9 @@ export default function Cotizaciones() {
                         <td className="px-4 py-3 text-center text-xs text-muted-foreground hidden lg:table-cell">
                           <p>{fmtDate(c.fecha_envio)}</p>
                           {c.fecha_vencimiento && <p className="text-red-400">vence {fmtDate(c.fecha_vencimiento)}</p>}
+                        </td>
+                        <td className="px-4 py-3 hidden md:table-cell">
+                          <p className="text-sm">{c.responsable || '—'}</p>
                         </td>
                         <td className="px-4 py-3 text-right">
                           <p className="font-poppins font-bold" style={{ color: '#0F8B6C' }}>{fmtCLP(c.total)}</p>

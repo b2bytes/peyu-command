@@ -23,6 +23,11 @@
       "type": "string",
       "title": "Email"
     },
+    "responsable": {
+      "type": "string",
+      "title": "Vendedor responsable",
+      "description": "Nombre del vendedor que cre\u00f3 la cotizaci\u00f3n."
+    },
     "sku": {
       "type": "string",
       "title": "Producto / SKU"
