@@ -40,6 +40,35 @@ function diagnoseMetaError(err) {
 // Extrae el contenido reutilizable desde el object_story_spec / asset_feed_spec
 // del creativo, contemplando los formatos típicos (link_data, video_data, y los
 // nuevos asset_feed_spec de las campañas Advantage+).
+// Lee las tarjetas de un carrusel (child_attachments en link_data, o el
+// asset_feed_spec de los carruseles Advantage+). Devuelve [] si no es carrusel.
+function parseCarouselCards(link, afs) {
+  const children = Array.isArray(link.child_attachments) ? link.child_attachments : [];
+  if (children.length) {
+    return children.map((c) => ({
+      image_hash: c.image_hash || null,
+      image_url: c.picture || c.image_url || '',
+      headline: c.name || '',
+      description: c.description || '',
+      link: c.link || (c.call_to_action?.value?.link) || '',
+      cta: c.call_to_action?.type || '',
+    }));
+  }
+  // Carrusel armado vía asset_feed_spec: varias imágenes => varias tarjetas.
+  const imgs = Array.isArray(afs.images) ? afs.images : [];
+  if (imgs.length > 1) {
+    return imgs.map((im, i) => ({
+      image_hash: im.hash || null,
+      image_url: im.url || '',
+      headline: (Array.isArray(afs.titles) && (afs.titles[i] || afs.titles[0])?.text) || '',
+      description: (Array.isArray(afs.descriptions) && (afs.descriptions[i] || afs.descriptions[0])?.text) || '',
+      link: (Array.isArray(afs.link_urls) && (afs.link_urls[i] || afs.link_urls[0])?.website_url) || '',
+      cta: (Array.isArray(afs.call_to_action_types) && afs.call_to_action_types[0]) || '',
+    }));
+  }
+  return [];
+}
+
 function parseCreative(creative) {
   if (!creative) return null;
   const oss = creative.object_story_spec || {};
@@ -47,6 +76,8 @@ function parseCreative(creative) {
   const video = oss.video_data || {};
   const cta = (link.call_to_action || video.call_to_action || {}) || {};
   const afs = creative.asset_feed_spec || {};
+  const cards = parseCarouselCards(link, afs);
+  const is_carousel = cards.length >= 2;
 
   // Texto principal: link_data.message → video.message → asset_feed_spec.bodies
   const primary_text = link.message || video.message
@@ -74,6 +105,8 @@ function parseCreative(creative) {
     image_url,
     image_hash,
     video_id,
+    is_carousel,
+    cards,                       // tarjetas del carrusel (vacío si no es carrusel)
     page_id: oss.page_id || null,
     instagram_actor_id: oss.instagram_actor_id || creative.instagram_actor_id || null,
   };
@@ -128,7 +161,7 @@ Deno.serve(async (req) => {
       ok: true,
       count: parsed.length,
       ads: parsed,
-      nota: 'content trae el copy, titular, descripción, CTA, link e imagen/video de cada anuncio — listo para duplicar con metaAdsCreateMultiAd.',
+      nota: 'content trae copy, titular, descripción, CTA, link e imagen/video de cada anuncio. Si content.is_carousel es true, content.cards[] trae cada tarjeta (image_hash, headline, description, link) — pásalas tal cual a metaAdsCreateCarousel para duplicar el carrusel. Anuncios simples se duplican con metaAdsCreateMultiAd.',
     });
   } catch (error) {
     return Response.json({ ok: false, error: error.message }, { status: 500 });

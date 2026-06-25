@@ -67,6 +67,16 @@ async function graphPost(path, params, token) {
   return res.json();
 }
 
+// Sube una imagen por URL al ad account y devuelve su image_hash. Meta rechaza
+// con frecuencia link_data.picture (URL externa) al crear creativos en lote,
+// pero acepta siempre image_hash. Por eso convertimos URL → hash antes de crear.
+async function uploadImageByUrl(accountId, url, token) {
+  const data = await graphPost(`${accountId}/adimages`, { url }, token);
+  if (data.error) return { error: data.error };
+  const first = Object.values(data.images || {})[0];
+  return { hash: first?.hash };
+}
+
 // Pixel de PEYU (activo, disparando Purchase + Lead). Necesario en el
 // promoted_object del ad set para optimizar a conversiones reales.
 const PEYU_PIXEL_ID = '769018551017679';
@@ -204,6 +214,13 @@ Deno.serve(async (req) => {
     for (let i = 0; i < ads.length; i++) {
       const a = ads[i];
       const adName = a.name || `${campaignName} · Ad ${i + 1}`;
+
+      // Si la imagen viene por URL (no hash ni video), la subimos para obtener
+      // image_hash: Meta rechaza picture con URLs externas al crear creativos.
+      if (!a.image_hash && !a.video_id && a.image_url) {
+        const up = await uploadImageByUrl(accountId, a.image_url, token);
+        if (up.hash) { a.image_hash = up.hash; delete a.image_url; }
+      }
 
       // Creativo según fuente (imagen url/hash o video)
       let storySpec;

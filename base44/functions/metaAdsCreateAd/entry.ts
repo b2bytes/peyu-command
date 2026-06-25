@@ -49,6 +49,16 @@ async function graphPost(path, params, token) {
   return res.json();
 }
 
+// Sube una imagen por URL al ad account y devuelve su image_hash. Meta rechaza
+// con frecuencia link_data.picture (URL externa) al crear creativos; el hash sí
+// es aceptado siempre. Por eso convertimos URL → hash antes de crear.
+async function uploadImageByUrl(accountId, url, token) {
+  const data = await graphPost(`${accountId}/adimages`, { url }, token);
+  if (data.error) return { error: data.error };
+  const first = Object.values(data.images || {})[0];
+  return { hash: first?.hash };
+}
+
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
@@ -83,6 +93,13 @@ Deno.serve(async (req) => {
 
     const cta = body.cta || 'SHOP_NOW';
     const adName = body.name || `Ad ${new Date().toISOString().slice(0, 10)}`;
+
+    // Si la imagen viene por URL (no hash ni video), la subimos para obtener
+    // image_hash: Meta rechaza picture con URLs externas al crear creativos.
+    if (!body.image_hash && !body.video_id && body.image_url) {
+      const up = await uploadImageByUrl(accountId, body.image_url, token);
+      if (up.hash) { body.image_hash = up.hash; body.image_url = null; }
+    }
 
     // Creativo según fuente (imagen url/hash o video).
     let storySpec;
