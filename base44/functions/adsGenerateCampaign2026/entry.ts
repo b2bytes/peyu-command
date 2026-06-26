@@ -143,11 +143,12 @@ const CAMPAIGN_SCHEMA = {
 // Instrucciones específicas por tipo de campaña
 const TYPE_INSTRUCTIONS = {
   'Search': `
-TIPO: Search (intención alta, conversión directa).
+TIPO: Search con AI MAX (estándar 2026 — reemplaza a DSA, que se retira en septiembre 2026).
+AI Max añade search term matching (keywordless por intención semántica), text customization y final URL expansion sobre tus controles. +7% conversiones a CPA/ROAS similar.
 - Construye 2-4 AD GROUPS, cada uno un ángulo táctico distinto.
-- 8-15 KEYWORDS por ad group, mezcla Exact + Phrase (evita Broad sin Smart Bidding).
-- 15 HEADLINES (max 30 chars) y 4 DESCRIPTIONS (max 90 chars) por ad group.
-- 15-25 NEGATIVE KEYWORDS para limpiar tráfico basura.
+- 8-15 KEYWORDS por ad group como SEÑAL de intención (no como única segmentación): mezcla Exact + Phrase. AI Max expandirá por intención semántica; no dependas de exact-match exhaustivo.
+- 15 HEADLINES (max 30 chars) y 4 DESCRIPTIONS (max 90 chars) por ad group — material para que AI Max personalice el texto por query.
+- 15-25 NEGATIVE KEYWORDS para acotar el keywordless y proteger marca.
 - DEJA VACÍOS asset_groups y audience_signals.`,
 
   'Shopping': `
@@ -240,11 +241,23 @@ CONTEXTO DE LA OPERACIÓN:
 
 ${TYPE_INSTRUCTIONS[campaign_type]}
 
+TÁCTICAS GOOGLE ADS 2026 (Google Marketing Live, may 2026 — aplícalas SIEMPRE):
+- KEYWORDLESS / INTENCIÓN SEMÁNTICA: piensa la campaña por intención del usuario, no solo por keywords exactas. Las keywords son señales para la IA de Google, no la única segmentación.
+- FEED-FIRST: en Shopping/PMax, asume que la calidad del feed (atributos, precio, descripciones limpias en Merchant Center) es decisiva — el Universal Cart y los AI-powered Shopping ads generan contenido directo del feed.
+- AI BRIEF: trata text_guidelines como el "AI Brief" de la campaña (guardrails de marca, tono y exclusiones en lenguaje claro). Sé explícito y específico.
+- ADS EN AI MODE: para campañas con foco conversacional/Discovery, escribe headlines y descriptions que funcionen como RESPUESTAS a preguntas reales del usuario (no slogans), porque Gemini construye creativo por query.
+- CREATIVE TESTING: genera variedad de headlines/descriptions/imágenes para alimentar el 1-Click Creative Testing (rotación automática que elige la ganadora).
+
 REQUERIMIENTOS UNIVERSALES:
-1. RACIONAL ESTRATÉGICO: 3-5 frases explicando por qué este enfoque.
+1. RACIONAL ESTRATÉGICO: 3-5 frases explicando por qué este enfoque, anclado en las tácticas 2026 de arriba.
 2. HIPÓTESIS CIENTÍFICA: falsable, medible en 7-14 días.
 3. FORECAST realista para Chile 2026: CTR esperado %, CPC esperado CLP, conversiones/semana, CAC esperado CLP, reach esperado (usuarios únicos para Demand Gen/PMax).
-4. BID STRATEGY recomendada según etapa: lanzamiento sin data → Maximize Conversions; con histórico → Target CPA o Target ROAS.
+4. BID STRATEGY recomendada según etapa y novedades 2026:
+   - Lanzamiento sin data → Maximize Conversions.
+   - Con histórico → Target CPA (B2B) o Target ROAS (B2C ecommerce).
+   - Si es Search lead gen B2B, menciona Journey-Aware Bidding (beta Target CPA) como recomendación.
+   - Para campañas estacionales (Fiestas Patrias, Navidad), menciona Demand-Led Budget Pacing para capturar días de alta demanda sin pasar el mensual.
+   - Para PMax/Shopping, asume Smart Bidding Exploration activo (explora queries/segmentos menos obvios).
 5. TEXT_GUIDELINES v23.1 (brand safety AI): incluye 5-8 term_exclusions específicos al objetivo y 5-8 messaging_restrictions tácticas para esta campaña (adicionales a los baseline PEYU).
 6. LOCATIONS: array con países/regiones (default: ["Chile"] o regiones específicas si son relevantes).
 7. LANGUAGES: ["Spanish"] por defecto.
