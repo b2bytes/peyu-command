@@ -7,6 +7,7 @@ import {
   AreaChart, Area, PieChart, Pie, Cell
 } from "recharts";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import GoogleAdsCsvImport from "@/components/analitica/GoogleAdsCsvImport";
 
 const COLORS = ['#0F8B6C', '#D96B4D', '#A7D9C9', '#4B4F54', '#f59e0b', '#3b82f6'];
 
@@ -79,6 +80,11 @@ export default function Analitica() {
       setLoading(false);
     });
   }, []);
+
+  // Recarga solo las campañas (tras importar un CSV de Google Ads).
+  const recargarCampanas = () => {
+    base44.entities.Campana.list('-created_date', 100).then(setCampanas);
+  };
 
   // ── Computed KPIs ────────────────────────────────────────────
   const totalCostos = costosFijos.reduce((s, c) => s + c.valor, 0);
@@ -446,6 +452,14 @@ export default function Analitica() {
 
         {/* ── MARKETING ── */}
         <TabsContent value="marketing" className="space-y-4 mt-4">
+          <div className="flex items-center justify-between flex-wrap gap-2">
+            <div>
+              <h3 className="font-poppins font-semibold text-sm">Rendimiento de campañas pagadas</h3>
+              <p className="text-xs text-muted-foreground">Meta Ads fluye automático · Google Ads vía importación CSV</p>
+            </div>
+            <GoogleAdsCsvImport onImported={recargarCampanas} />
+          </div>
+
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
             {[
               { label: 'Inversión Publicidad', value: fmtCLP(totalInvPub), color: '#D96B4D' },
