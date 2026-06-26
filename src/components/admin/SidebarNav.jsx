@@ -83,6 +83,7 @@ export const NAV_GROUPS = [
     items: [
       { path: '/admin/marketing-hub', label: 'Marketing Hub IA',   icon: Sparkles },
       { path: '/admin/social-studio', label: 'Social Studio',      icon: Megaphone },
+      { path: '/admin/calendario-campanas', label: 'Calendario Campañas', icon: CalendarDays },
       { path: '/admin/catalogo',      label: 'Catálogo',           icon: Package },
       { path: '/admin/admin-products',label: 'Productos IA',       icon: Wand2 },
       { path: '/admin/imagenes',      label: 'Galería Maestra',    icon: Package },
