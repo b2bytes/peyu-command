@@ -383,6 +383,7 @@ export default function MetaAdsPanel() {
       title="Centro de Control · Meta Ads"
       subtitle="Facebook · Instagram · rendimiento real + IA"
       HeaderIcon={Facebook}
+      storageKey="meta_ads"
       left={left}
       right={right}
       onReset={initConversation}

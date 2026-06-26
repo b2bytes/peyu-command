@@ -296,6 +296,7 @@ export default function AdsAgentPanel() {
       title="Estratega de Ads PEYU"
       subtitle="Google Ads · Meta · CSV listo para subir"
       HeaderIcon={Megaphone}
+      storageKey="google_ads"
       left={left}
       right={right}
       onReset={initConversation}

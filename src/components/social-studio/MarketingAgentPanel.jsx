@@ -318,6 +318,7 @@ export default function MarketingAgentPanel() {
       title="Agente Marketing PEYU"
       subtitle="Imágenes IA · Campañas · Publicación · Google Ads"
       HeaderIcon={Bot}
+      storageKey="marketing"
       left={left}
       right={right}
       onReset={initConversation}
