@@ -3,6 +3,11 @@
   "type": "object",
   "description": "C\u00f3digos de geolocalizaci\u00f3n oficiales BlueExpress (fuente: archivos BX-GEO_DATA + Localidades principales). Vincula comuna \u2194 c\u00f3digo de distrito para cotizaci\u00f3n y emisi\u00f3n de OT. Un registro por localidad/distrito.",
   "properties": {
+    "description": {
+      "type": "string",
+      "title": "Descripci\u00f3n",
+      "maxLength": 1000
+    },
     "cod_region": {
       "type": "number",
       "title": "C\u00f3digo regi\u00f3n BlueExpress"

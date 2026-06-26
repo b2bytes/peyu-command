@@ -3,6 +3,11 @@
   "type": "object",
   "description": "Direcci\u00f3n visual candidata para la nueva cara de peyuchile.cl (Commerce OS conversacional). Cada registro define una identidad completa (tokens de dise\u00f1o claro/oscuro, tipograf\u00eda, radios, densidad, sombras) que Diego puede previsualizar y activar en el Brand Lab. Solo una puede estar activa a la vez.",
   "properties": {
+    "description": {
+      "type": "string",
+      "title": "Descripci\u00f3n",
+      "maxLength": 1000
+    },
     "nombre": {
       "type": "string",
       "title": "Nombre de la direcci\u00f3n",

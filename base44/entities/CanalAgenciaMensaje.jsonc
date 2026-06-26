@@ -3,6 +3,11 @@
   "type": "object",
   "description": "Mensaje del canal de comunicaci\u00f3n interno entre PEYU (equipo) y la agencia (b2bytes). Vive dentro de la app, en una vista del admin. Permite enviar/recibir mensajes y marcar algunos como 'reporte'. El lado (peyu | agencia) se deriva del dominio del email del autor.",
   "properties": {
+    "description": {
+      "type": "string",
+      "title": "Descripci\u00f3n",
+      "maxLength": 1000
+    },
     "lado": {
       "type": "string",
       "title": "Lado que env\u00eda",

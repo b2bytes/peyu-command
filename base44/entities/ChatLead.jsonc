@@ -3,6 +3,11 @@
   "type": "object",
   "description": "Lead capturado progresivamente desde conversaciones del agente Peyu (chat p\u00fablico). Un registro por conversation_id, se va enriqueciendo turn a turn con cualquier dato que el visitante mencione (1 dato basta para crearlo). Agrupado por tipo (B2C/B2B/Sin clasificar) y enlazado a la conversaci\u00f3n completa.",
   "properties": {
+    "description": {
+      "type": "string",
+      "title": "Descripci\u00f3n",
+      "maxLength": 1000
+    },
     "conversation_id": {
       "type": "string",
       "title": "ID conversaci\u00f3n Base44 (clave \u00fanica)"

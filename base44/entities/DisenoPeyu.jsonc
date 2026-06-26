@@ -3,6 +3,11 @@
   "type": "object",
   "description": "Dise\u00f1os predefinidos PEYU para grabado l\u00e1ser. Galer\u00eda que el cliente puede elegir en el personalizador en vez de subir su propio logo. La categor\u00eda es TEXTO LIBRE: los founders pueden crear todas las categor\u00edas que quieran desde el admin, sin depender de nadie.",
   "properties": {
+    "description": {
+      "type": "string",
+      "title": "Descripci\u00f3n",
+      "maxLength": 1000
+    },
     "nombre": {
       "type": "string",
       "title": "Nombre del dise\u00f1o"

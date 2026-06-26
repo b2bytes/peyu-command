@@ -3,6 +3,11 @@
   "type": "object",
   "description": "Suscriptores al newsletter PEYU. Captura email con segmentaci\u00f3n (B2C/B2B/Blog) y origen para env\u00edos contextualizados.",
   "properties": {
+    "description": {
+      "type": "string",
+      "title": "Descripci\u00f3n",
+      "maxLength": 1000
+    },
     "email": {
       "type": "string",
       "title": "Email"

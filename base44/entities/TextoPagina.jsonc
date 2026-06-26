@@ -3,6 +3,11 @@
   "type": "object",
   "description": "Texto editable de una p\u00e1gina p\u00fablica del sitio (about, FAQ, env\u00edos, etc.). Modelo clave\u2192valor: cada registro es un fragmento de copy identificado por una clave estable (ej. 'nosotros.hero.titulo'). Las p\u00e1ginas leen estos textos con fallback al copy por defecto del c\u00f3digo, as\u00ed nada se rompe si una clave no existe. Editable por founders desde el admin.",
   "properties": {
+    "description": {
+      "type": "string",
+      "title": "Descripci\u00f3n",
+      "maxLength": 1000
+    },
     "clave": {
       "type": "string",
       "title": "Clave \u00fanica (ej. nosotros.hero.titulo)",

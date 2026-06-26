@@ -3,6 +3,11 @@
   "type": "object",
   "description": "Cupones de descuento aplicables en checkout B2C. Pueden ser % o monto fijo, con m\u00ednimo de compra y fecha de expiraci\u00f3n.",
   "properties": {
+    "description": {
+      "type": "string",
+      "title": "Descripci\u00f3n",
+      "maxLength": 1000
+    },
     "codigo": {
       "type": "string",
       "title": "C\u00f3digo (ej: BIENVENIDA10)"

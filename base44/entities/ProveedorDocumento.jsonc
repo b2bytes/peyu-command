@@ -3,6 +3,11 @@
   "type": "object",
   "description": "Documentos adjuntos del proveedor: contratos, certificados, \u00f3rdenes de compra, facturas, NDAs, etc.",
   "properties": {
+    "description": {
+      "type": "string",
+      "title": "Descripci\u00f3n",
+      "maxLength": 1000
+    },
     "proveedor_id": {
       "type": "string",
       "title": "ID Proveedor"

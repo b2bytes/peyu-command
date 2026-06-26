@@ -3,6 +3,11 @@
   "type": "object",
   "description": "Memoria persistente del Estratega de Meta Ads. Cada registro es un recuerdo (decisi\u00f3n, aprendizaje, instrucci\u00f3n del founder, resultado de campa\u00f1a, preferencia) que el agente guarda y recupera entre conversaciones para tener memoria a largo plazo. Respaldo de la memoria vectorial Pinecone.",
   "properties": {
+    "description": {
+      "type": "string",
+      "title": "Descripci\u00f3n",
+      "maxLength": 1000
+    },
     "texto": {
       "type": "string",
       "title": "Recuerdo",

@@ -2,6 +2,11 @@
   "name": "OrdenCompra",
   "type": "object",
   "properties": {
+    "description": {
+      "type": "string",
+      "title": "Descripci\u00f3n",
+      "maxLength": 1000
+    },
     "numero_oc": {
       "type": "string",
       "title": "N\u00b0 OC"

@@ -3,6 +3,11 @@
   "type": "object",
   "description": "Conversaci\u00f3n guardada del Agent OS interno (chat de founders/admin). Cada hilo queda registrado por el email del admin que lo us\u00f3, con los mensajes simplificados (rol, texto, adjuntos) para poder retomarlo despu\u00e9s.",
   "properties": {
+    "description": {
+      "type": "string",
+      "title": "Descripci\u00f3n",
+      "maxLength": 1000
+    },
     "user_email": {
       "type": "string",
       "title": "Email del admin que convers\u00f3"

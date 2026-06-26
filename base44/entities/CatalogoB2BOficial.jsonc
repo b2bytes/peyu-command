@@ -3,6 +3,11 @@
   "type": "object",
   "description": "Cat\u00e1logo B2B oficial de PEYU, transcrito EXACTAMENTE del PDF de Productos Corporativos. Es la fuente de verdad B2B: nombres exactos, qu\u00e9 incluye, dimensiones, colores, tapitas y los 8 tramos de precio por unidad (todos EXCLUYEN IVA). Separado del cat\u00e1logo en vivo (entidad Producto). 19 productos en 4 categor\u00edas: Cachos, Escritorio, Paletas, Hogar.",
   "properties": {
+    "description": {
+      "type": "string",
+      "title": "Descripci\u00f3n",
+      "maxLength": 1000
+    },
     "slug": {
       "type": "string",
       "title": "Slug \u00fanico"

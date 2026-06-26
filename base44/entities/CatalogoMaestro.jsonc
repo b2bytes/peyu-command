@@ -3,6 +3,11 @@
   "type": "object",
   "description": "Fuente de verdad de SOLO LECTURA extra\u00edda del cat\u00e1logo PDF oficial de PEYU. NO es el cat\u00e1logo en vivo (eso es la entidad Producto). Sirve para conciliar/validar los productos reales contra el PDF: nombres exactos, precios por tramo (sin IVA), qu\u00e9 incluye, dimensiones, colores y tapitas. Un registro por producto oficial.",
   "properties": {
+    "description": {
+      "type": "string",
+      "title": "Descripci\u00f3n",
+      "maxLength": 1000
+    },
     "slug": {
       "type": "string",
       "title": "Slug \u00fanico (clave de conciliaci\u00f3n)",

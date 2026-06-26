@@ -3,6 +3,11 @@
   "type": "object",
   "description": "Snapshot semanal de KPIs de ventas de PEYU. Un registro por semana, con el total vendido por canal (B2C web vs B2B corporativo). Alimenta el gr\u00e1fico comparativo del Resumen Semanal.",
   "properties": {
+    "description": {
+      "type": "string",
+      "title": "Descripci\u00f3n",
+      "maxLength": 1000
+    },
     "semana": {
       "type": "string",
       "title": "Semana (ej. 2026-W26 o 23 jun)",

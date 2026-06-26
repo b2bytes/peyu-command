@@ -2,6 +2,11 @@
   "name": "Producto",
   "type": "object",
   "properties": {
+    "description": {
+      "type": "string",
+      "title": "Descripci\u00f3n",
+      "maxLength": 1000
+    },
     "sku": {
       "type": "string",
       "title": "SKU"
