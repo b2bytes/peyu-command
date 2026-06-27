@@ -19,7 +19,8 @@ export default function DisenosPeyuPicker({ selectedUrl, onSelect, light = false
   useEffect(() => {
     let alive = true;
     base44.entities.DisenoPeyu.filter({ activo: true }, 'orden', 100)
-      .then(d => { if (alive) setDisenos(d || []); })
+      // Ocultar por completo la categoría "Diseños IA" del selector.
+      .then(d => { if (alive) setDisenos((d || []).filter(x => (x.categoria || 'Otro') !== 'Diseños IA')); })
       .catch(() => { if (alive) setDisenos([]); })
       .finally(() => { if (alive) setLoading(false); });
     return () => { alive = false; };
