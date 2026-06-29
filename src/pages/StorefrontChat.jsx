@@ -160,6 +160,7 @@ export default function StorefrontChat() {
 
   return (
     <div className="h-screen flex flex-col overflow-hidden font-inter" style={{ background: '#FAFAF7', color: '#1C2421' }}>
+      <NoIndex />
       {/* ── HEADER ─────────────────────────────────────────────────────── */}
       <header className="flex-shrink-0 flex items-center justify-between px-4 lg:px-6 h-14 border-b"
         style={{ borderColor: 'rgba(15,40,30,.07)', background: 'rgba(250,250,247,.9)', backdropFilter: 'blur(12px)' }}>

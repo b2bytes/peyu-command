@@ -5,6 +5,7 @@ import {
   ChevronRight, Search, ShieldCheck, Truck, Heart, Plus, Minus,
   Check, Package, Tag, Gift, ArrowLeft, X, Clock, Flame,
 } from 'lucide-react';
+import NoIndex from '@/components/NoIndex';
 
 // ══════════════════════════════════════════════════════════════════════
 // /FunnelDesignLab v2 — 5 propuestas premium con animaciones CSS fluidas
@@ -1424,6 +1425,7 @@ export default function FunnelDesignLab() {
 
   return (
     <div className="min-h-screen font-inter" style={{ background: '#F0EAE0', color: '#1C1C1A' }}>
+      <NoIndex />
       <StyleInjector />
 
       {/* Header */}

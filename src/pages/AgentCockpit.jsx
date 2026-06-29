@@ -7,6 +7,7 @@ import { addToCartV2, cartCountV2, fmtCLP } from '@/lib/shop-v2-cart';
 import { getProductImage } from '@/utils/productImages';
 import CockpitProductCard from '@/components/cockpit-store/CockpitProductCard';
 import CopilotMessage from '@/components/cockpit-store/CopilotMessage';
+import NoIndex from '@/components/NoIndex';
 
 // ════════════════════════════════════════════════════════════════════════
 // /agent-cockpit — Agent Cockpit (RONDA 2).
@@ -101,6 +102,7 @@ export default function AgentCockpit() {
   return (
     <div className="h-screen flex flex-col overflow-hidden font-inter text-white"
       style={{ background: 'radial-gradient(130% 90% at 0% 0%, #0B2A24 0%, #020617 45%, #0A0F1E 100%)' }}>
+      <NoIndex />
 
       {/* ── HEADER ─────────────────────────────────────────────────────── */}
       <header className="flex-shrink-0 flex items-center justify-between px-4 lg:px-6 h-14 border-b"

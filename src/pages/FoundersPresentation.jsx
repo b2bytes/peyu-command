@@ -5,6 +5,7 @@ import LayoutPreviewModal from '@/components/founders/LayoutPreviewModal';
 import MobileMockupsComplete from '@/components/founders/MobileMockupsComplete';
 import { Sparkles, Filter, Heart, ArrowRight, LayoutGrid, Rows3 } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import NoIndex from '@/components/NoIndex';
 
 /**
  * Presentación a fundadores: 22 layouts del design system PEYU 2026.
@@ -63,6 +64,7 @@ export default function FoundersPresentation() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-emerald-50/30 to-amber-50/40">
+      <NoIndex />
       {/* Hero */}
       <header className="relative overflow-hidden border-b border-slate-200/70 bg-white/60 backdrop-blur-xl">
         <div className="absolute inset-0 pointer-events-none">
