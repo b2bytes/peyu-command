@@ -7,6 +7,7 @@
 // ════════════════════════════════════════════════════════════════════════
 
 import { trackAddToCart } from '@/lib/meta-pixel';
+import { trackAddToCart as gaAddToCart } from '@/lib/analytics-peyu';
 
 const STORAGE_KEY = 'carrito_v2';
 const EVENT = 'carrito_v2_updated';
@@ -39,6 +40,15 @@ export function addToCartV2(item) {
     name: item.nombre,
     value: (item.precio || 0) * (item.cantidad || 1),
     quantity: item.cantidad || 1,
+  });
+  // 📊 GA4 — add_to_cart en espejo (Google Analytics + Ads).
+  gaAddToCart({
+    id: item.sku,
+    sku: item.sku,
+    nombre: item.nombre,
+    categoria: item.categoria,
+    precio: item.precio,
+    cantidad: item.cantidad || 1,
   });
   return items;
 }

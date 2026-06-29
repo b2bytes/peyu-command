@@ -18,6 +18,7 @@ import { computeQtyDiscountBySku } from '@/lib/volume-discount';
 import { normalizarRut } from '@/lib/rut-chile';
 import { trackPurchase } from '@/lib/analytics-peyu';
 import { trackInitiateCheckout } from '@/lib/meta-pixel';
+import { trackBeginCheckout } from '@/lib/analytics-peyu';
 
 // ════════════════════════════════════════════════════════════════════════
 // /CheckoutNuevo — Checkout 1 página mobile-first del Shop v2 (Tema 6).
@@ -104,6 +105,8 @@ export default function CheckoutNuevo() {
         .filter((i) => i.sku)
         .map((i) => ({ id: String(i.sku), quantity: Number(i.cantidad) || 1, item_price: Number(i.precio) || 0 })),
     });
+    // 📊 GA4 — begin_checkout en espejo (Google Analytics + Ads).
+    trackBeginCheckout(carrito, total);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [carrito.length]);
 

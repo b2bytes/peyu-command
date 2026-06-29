@@ -12,6 +12,7 @@ import {
   Building2, Send,
 } from 'lucide-react';
 import SEOHead from '@/components/SEOHead';
+import { trackGenerateLead } from '@/lib/analytics-peyu';
 import B2BHeader from '@/components/b2b/B2BHeader';
 import B2BPriceTable from '@/components/b2b/B2BPriceTable';
 import B2BLogoMockup from '@/components/b2b/B2BLogoMockup';
@@ -100,6 +101,8 @@ export default function EmpresaProducto() {
         product_interest: `${producto?.sku} — ${producto?.nombre || ''} · ${qty}u`,
         logo_url: logoUrl || undefined,
       });
+      // 📊 GA4 — generate_lead (lead corporativo B2B).
+      trackGenerateLead({ value: neto, content_name: `${producto?.sku} · ${qty}u` });
       setSent(true);
     } catch {
       setSendError('Error al enviar. Intenta de nuevo.');

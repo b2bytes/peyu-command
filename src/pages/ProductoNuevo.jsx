@@ -26,6 +26,7 @@ import { getColorTintFilter } from '@/lib/color-tint';
 import { MOQ_PERSONALIZACION_GRATIS } from '@/lib/personalizacion-config';
 import { addToCartV2, fmtCLP } from '@/lib/shop-v2-cart';
 import { trackViewContent } from '@/lib/meta-pixel';
+import { trackViewItem } from '@/lib/analytics-peyu';
 import { saveDraftV2, loadDraftV2, clearDraftV2 } from '@/lib/shop-v2-draft';
 import {
   PERS_VACIO, tiposActivos, feeUnitarioCombinado, labelCombinada,
@@ -131,6 +132,8 @@ export default function ProductoNuevo() {
     if (!producto || vcSentRef.current === producto.sku) return;
     vcSentRef.current = producto.sku;
     trackViewContent({ id: producto.sku, name: producto.nombre, value: producto.precio_b2c || 9990 });
+    // 📊 GA4 — view_item en espejo (Google Analytics + Ads).
+    trackViewItem(producto, producto.precio_b2c || 9990);
   }, [producto]);
 
   // ¿Es carcasa? Solo en carcasas se permiten las 3 personalizaciones

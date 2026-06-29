@@ -97,6 +97,14 @@ export const trackPurchase = ({ transactionId, total, shipping, cart }) => {
   });
 };
 
+export const trackGenerateLead = ({ value, content_name } = {}) => {
+  emit('generate_lead', {
+    currency: 'CLP',
+    value: Number(value || 0),
+    lead_source: content_name,
+  });
+};
+
 export const trackViewItem = (producto, price) => {
   emit('view_item', {
     currency: 'CLP',
