@@ -1,141 +1,58 @@
 // ============================================================================
-// AdsAgentPanel · Agente de Ads PAGADOS (Google Ads + Meta) con poder real.
-// Layout agentico de 3 columnas (estilo PEYU v2): acciones · chat · contexto.
-// Genera campañas (4 variantes), exporta CSV de Google Ads, forecastea.
+// AdsAgentPanel · Centro de Control de Google Ads dentro de Social Studio.
+// Igualado al panel de Meta Ads: conversaciones GUARDADAS (historial reabrible),
+// voz de Joaquín (ElevenLabs), guardar en base de conocimiento, markdown rico
+// en cards, timeline de procesos en vivo con cards hermosas (campaña, forecast,
+// keywords), visión (adjuntar creativos), y KPIs reales del sitio (GA4 en vivo).
+// Entrenado a nivel agencia mundial Google Ads · junio 2026 (GML 2026).
 // ============================================================================
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { base44 } from '@/api/base44Client';
 import {
-  Send, Loader2, Bot, User, Megaphone, Target, ShoppingBag,
-  Sparkles, Search, CheckCircle2, Download, TrendingUp, BarChart2, Zap,
+  Send, Loader2, User, Megaphone, Target, ShoppingBag, Sparkles, Search,
+  TrendingUp, BarChart2, Zap, Brain, Lightbulb, Gauge, KeyRound, Activity,
+  RefreshCw, AlertCircle, Eye, MousePointerClick, Users, ImagePlus, X,
+  Volume2, Pause, Play,
 } from 'lucide-react';
-import ReactMarkdown from 'react-markdown';
 import AgentLayout from './AgentLayout';
+import MetaAdsHistory from './MetaAdsHistory';
+import MetaAgentMarkdown from './MetaAgentMarkdown';
+import GoogleAdsProcessTimeline from './GoogleAdsProcessTimeline';
+import SaveKnowledgeButton from '@/components/agente-os/SaveKnowledgeButton';
+import useAgentVoice from '@/hooks/useAgentVoice';
 
 const AGENT_NAME = 'ads_strategist_2026';
 
 const QUICK_PROMPTS = [
-  { icon: Megaphone, label: 'PEYU general (PMax)', prompt: 'Crea una campaña Performance Max always-on de marca PEYU para B2C, presupuesto CLP $18.000/día, dirigida a la home (https://peyuchile.cl/). Genera los visuales con IA, explícame el racional y luego ofréceme el CSV para Google Ads.' },
-  { icon: Target, label: 'Fiestas Patrias · Empresas', prompt: 'Crea una campaña Search para Fiestas Patrias dirigida a EMPRESAS que buscan regalos corporativos, presupuesto CLP $22.000/día, landing https://peyuchile.cl/fiestas-patrias/empresas. Enfócate en RRHH y compras, con logo láser gratis y entrega a tiempo para el 18. Luego ofréceme el CSV.' },
-  { icon: ShoppingBag, label: 'Carcasas B2C (Demand Gen)', prompt: 'Crea una campaña Demand Gen visual para vender carcasas recicladas de celular a B2C, presupuesto CLP $15.000/día, landing https://peyuchile.cl/CatalogoNuevo. Genera 4 visuales con IA. Luego exporta el CSV.' },
-  { icon: Search, label: 'Shopping del catálogo', prompt: 'Crea una campaña Shopping del catálogo PEYU para B2C, presupuesto CLP $16.000/día, landing https://peyuchile.cl/CatalogoNuevo, con negative keywords exhaustivas. Luego ofréceme el CSV.' },
-  { icon: TrendingUp, label: 'Plan Meta Ads (Instagram)', prompt: 'Diseña un plan completo de Meta Ads (Instagram + Facebook) para regalos corporativos B2B: objetivo, públicos (lookalike + retargeting), ángulos creativos, copies y presupuesto, listo para cargar en Meta Ads Manager.' },
-  { icon: BarChart2, label: '¿Qué campaña conviene?', prompt: 'Tengo CLP $20.000/día para vender más este mes. ¿Qué tipo de campaña Google Ads me conviene (Search, Shopping, PMax o Demand Gen) y por qué? Recomiéndame el mejor mix 2026.' },
+  { icon: Megaphone,  label: 'PEYU general (PMax)',        prompt: 'Quiero una campaña always-on de marca PEYU para B2C. Propónme la mejor estructura Performance Max 2026 con presupuesto sugerido y landing, y guíame paso a paso para crearla. Cuando esté claro, génerala y ofréceme el CSV.' },
+  { icon: Target,     label: 'Fiestas Patrias · Empresas', prompt: 'Necesito vender regalos corporativos para Fiestas Patrias a empresas (RRHH y compras). Recomiéndame el tipo de campaña ideal y armémosla juntos paso a paso, landing https://peyuchile.cl/fiestas-patrias/empresas.' },
+  { icon: ShoppingBag,label: 'Carcasas B2C (Demand Gen)',  prompt: 'Quiero vender carcasas recicladas de celular a consumidor final con una campaña visual de descubrimiento. Guíame para armar la mejor Demand Gen 2026 con creativos, landing https://peyuchile.cl/CatalogoNuevo.' },
+  { icon: Search,     label: 'AI Max for Search',          prompt: 'Explícame en 3 líneas qué es AI Max for Search (lo que reemplaza a DSA) y arma conmigo una campaña Search AI Max de alta intención para lead gen B2B. Vamos paso a paso.' },
+  { icon: BarChart2,  label: '¿Qué campaña conviene?',     prompt: 'Tengo CLP $20.000/día para vender más este mes. ¿Qué tipo de campaña Google Ads me conviene (Search AI Max, Shopping, PMax o Demand Gen) y por qué? Recomiéndame el mejor mix 2026.' },
+  { icon: KeyRound,   label: 'Keywords de alta intención', prompt: 'Tráeme oportunidades reales de keywords de alta intención para PEYU (B2C eco y B2B regalo corporativo) y dime cómo usarlas en mis campañas Search/Shopping.' },
+  { icon: Activity,   label: 'GA4 en vivo del sitio',      prompt: 'Trae las métricas en vivo de Google Analytics 4 de mi sitio y dime qué páginas/productos están convirtiendo más para decidir hacia dónde mandar el tráfico pagado.' },
+  { icon: Gauge,      label: 'Auditar mi cuenta',          prompt: 'Hazme una auditoría de agencia de mi setup Google Ads, empezando por lo más crítico (medición: Enhanced Conversions, GA4, atribución data-driven). Explícame el primer hallazgo y avanzamos uno por uno.' },
+  { icon: TrendingUp, label: 'Medición moderna 2026',      prompt: '¿Cómo debería medir conversiones en 2026 (Enhanced Conversions, server-side, Consent Mode v2, GA4, atribución data-driven o Meridian/MMM)? Dame el setup recomendado para PEYU.' },
+  { icon: Lightbulb,  label: 'Novedades GML 2026',         prompt: 'Resúmeme las novedades de Google Marketing Live 2026 que más me convienen (Ads in AI Mode, AI Brief, Business Agent for Leads, AI Max Shopping, Demand-Led Budget Pacing, Journey-Aware Bidding) y cuál aprovecho primero.' },
+  { icon: Brain,      label: '¿Qué recuerdas de mí?',      prompt: 'Recupera de tu memoria lo que ya sabes de mis objetivos de ROAS/presupuesto, decisiones y aprendizajes de campañas pasadas. Hazme un resumen.' },
 ];
 
 const CAMPAIGN_TYPES = [
-  { label: 'Search (AI Max)', desc: 'Intención alta · conversión directa', icon: Search },
-  { label: 'Shopping', desc: 'Catálogo con feed', icon: ShoppingBag },
+  { label: 'Search AI Max', desc: 'Reemplaza DSA · intención semántica', icon: Search },
+  { label: 'Shopping (Merchant API)', desc: 'Catálogo feed-first 2026', icon: ShoppingBag },
   { label: 'Performance Max', desc: 'IA optimiza todo el inventario', icon: Zap },
-  { label: 'Demand Gen', desc: 'Descubrimiento visual', icon: Sparkles },
+  { label: 'Demand Gen', desc: 'Descubrimiento visual · YouTube', icon: Sparkles },
 ];
 
-// ── Render de una campaña generada + descarga de CSV ────────────────────────
-function CampaignResult({ draft }) {
-  const [exporting, setExporting] = useState(false);
-  const [csvUrl, setCsvUrl] = useState(draft?.exported_csv_url || null);
-
-  const exportar = async () => {
-    if (!draft?.id) return;
-    setExporting(true);
-    try {
-      const res = await base44.functions.invoke('adsExportEditor', { draft_id: draft.id });
-      if (res?.data?.file_url) setCsvUrl(res.data.file_url);
-    } finally { setExporting(false); }
-  };
-
-  const adGroups = draft.ad_groups?.length || 0;
-  const assetGroups = draft.asset_groups?.length || 0;
-  const keywords = draft.keywords?.length || 0;
-
-  return (
-    <div className="mt-2 rounded-xl overflow-hidden border border-cyan-500/20 bg-cyan-500/[0.06]">
-      <div className="px-3 py-2 flex items-center gap-2 border-b border-white/5">
-        <Sparkles className="w-3.5 h-3.5 text-cyan-300" />
-        <span className="text-xs font-bold text-cyan-200 truncate">{draft.campaign_name}</span>
-        <span className="ml-auto text-[9px] font-bold px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-200">{draft.campaign_type}</span>
-      </div>
-      <div className="p-3 space-y-2">
-        <div className="grid grid-cols-3 gap-1.5">
-          {[
-            { l: 'CTR', v: draft.expected_ctr_pct ? `${draft.expected_ctr_pct}%` : '—' },
-            { l: 'CAC', v: draft.expected_cac_clp ? '$' + Math.round(draft.expected_cac_clp).toLocaleString('es-CL') : '—' },
-            { l: 'Conv/sem', v: draft.expected_conversions_week || '—' },
-          ].map(({ l, v }) => (
-            <div key={l} className="rounded-lg bg-white/5 p-1.5 text-center">
-              <p className="text-[8px] text-white/40 uppercase">{l}</p>
-              <p className="text-xs font-bold text-white">{v}</p>
-            </div>
-          ))}
-        </div>
-        <div className="flex flex-wrap gap-1 text-[9px]">
-          {adGroups > 0 && <Chip>{adGroups} ad groups</Chip>}
-          {assetGroups > 0 && <Chip>{assetGroups} asset groups</Chip>}
-          {keywords > 0 && <Chip>{keywords} keywords</Chip>}
-          {draft.bid_strategy && <Chip>{draft.bid_strategy}</Chip>}
-        </div>
-        {csvUrl ? (
-          <a href={csvUrl} download className="w-full h-9 rounded-lg bg-emerald-500/90 hover:bg-emerald-500 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition">
-            <CheckCircle2 className="w-3.5 h-3.5" /> Descargar CSV para Google Ads
-          </a>
-        ) : (
-          <button onClick={exportar} disabled={exporting} className="w-full h-9 rounded-lg bg-cyan-500/90 hover:bg-cyan-500 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition disabled:opacity-50">
-            {exporting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Download className="w-3.5 h-3.5" />}
-            {exporting ? 'Exportando…' : 'Exportar a Google Ads Editor (CSV)'}
-          </button>
-        )}
-      </div>
-    </div>
-  );
+function fmtNum(n) {
+  if (n == null) return '—';
+  return new Intl.NumberFormat('es-CL', { maximumFractionDigits: 0 }).format(n);
 }
 
-function Chip({ children }) {
-  return <span className="px-1.5 py-0.5 rounded-full bg-white/8 text-white/60 font-semibold">{children}</span>;
-}
-
-function ToolCallBadge({ toolCall }) {
-  const name = toolCall?.name || '';
-  const status = toolCall?.status || 'pending';
-  const isRunning = status === 'running' || status === 'in_progress' || status === 'pending';
-  const isDone = status === 'completed' || status === 'success';
-  const label = {
-    adsGenerateCampaign2026: '🎯 Generando campaña completa…',
-    adsExportEditor: '📄 Exportando CSV para Google Ads…',
-    adsForecastPerformance: '📈 Proyectando performance…',
-    adsAnalyzePerformance: '🔬 Analizando rendimiento…',
-  }[name] || `⚙️ ${name}…`;
-  const doneLabel = {
-    adsGenerateCampaign2026: '✅ Campaña generada',
-    adsExportEditor: '✅ CSV listo',
-    adsForecastPerformance: '✅ Forecast listo',
-    adsAnalyzePerformance: '✅ Análisis listo',
-  }[name] || '✅ Listo';
-  return (
-    <div className={`inline-flex items-center gap-1.5 text-[10px] font-semibold px-2.5 py-1 rounded-full mt-1 ${
-      isDone ? 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/25'
-             : 'bg-cyan-500/15 text-cyan-300 border border-cyan-500/25'
-    }`}>
-      {isRunning && <Loader2 className="w-3 h-3 animate-spin" />}
-      {isDone && <CheckCircle2 className="w-3 h-3" />}
-      {isDone ? doneLabel : label}
-    </div>
-  );
-}
-
-function ChatMessage({ msg }) {
+function ChatMessage({ msg, msgId, voice }) {
   const isUser = msg.role === 'user';
-  const drafts = [];
-  if (msg.tool_calls?.length) {
-    for (const tc of msg.tool_calls) {
-      if (tc.name === 'adsGenerateCampaign2026' && tc.results) {
-        try {
-          const parsed = typeof tc.results === 'string' ? JSON.parse(tc.results) : tc.results;
-          if (parsed?.draft) drafts.push(parsed.draft);
-        } catch { /* ignore */ }
-      }
-    }
-  }
-
+  const speakingThis = voice?.speakingId === msgId;
+  const loadingThis = voice?.loadingId === msgId;
   return (
     <div className={`flex gap-3 ${isUser ? 'flex-row-reverse' : ''}`}>
       <div className={`w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5 ${
@@ -145,8 +62,16 @@ function ChatMessage({ msg }) {
       </div>
       <div className={`max-w-[88%] ${isUser ? 'flex flex-col items-end' : ''}`}>
         {!isUser && msg.tool_calls?.length > 0 && (
-          <div className="flex flex-wrap gap-1 mb-1.5">
-            {msg.tool_calls.map((tc, i) => <ToolCallBadge key={i} toolCall={tc} />)}
+          <GoogleAdsProcessTimeline toolCalls={msg.tool_calls} />
+        )}
+        {/* Imágenes adjuntas por el founder — el agente las VE (computer vision) */}
+        {isUser && msg.file_urls?.length > 0 && (
+          <div className="flex flex-wrap gap-2 mb-1.5 justify-end">
+            {msg.file_urls.map((url, i) => (
+              <a key={i} href={url} target="_blank" rel="noopener noreferrer">
+                <img src={url} alt="Adjunto" className="max-h-44 rounded-xl border border-cyan-500/30 object-cover" />
+              </a>
+            ))}
           </div>
         )}
         {msg.content && (
@@ -158,27 +83,31 @@ function ChatMessage({ msg }) {
             {isUser ? (
               <p className="leading-relaxed">{msg.content}</p>
             ) : (
-              <ReactMarkdown
-                className="prose prose-sm prose-invert max-w-none [&>*:first-child]:mt-0 [&>*:last-child]:mb-0"
-                components={{
-                  p: ({ children }) => <p className="my-1.5 leading-relaxed">{children}</p>,
-                  ul: ({ children }) => <ul className="my-2 ml-4 list-disc space-y-1">{children}</ul>,
-                  ol: ({ children }) => <ol className="my-2 ml-4 list-decimal space-y-1">{children}</ol>,
-                  li: ({ children }) => <li className="text-white/85">{children}</li>,
-                  strong: ({ children }) => <strong className="text-cyan-300 font-bold">{children}</strong>,
-                  h3: ({ children }) => <h3 className="text-sm font-semibold text-cyan-300 mt-3 mb-1">{children}</h3>,
-                  code: ({ children }) => <code className="px-1.5 py-0.5 rounded bg-white/10 text-xs font-mono text-cyan-200">{children}</code>,
-                }}
-              >
-                {msg.content}
-              </ReactMarkdown>
+              <MetaAgentMarkdown content={msg.content} />
             )}
           </div>
         )}
-        {drafts.map((d, i) => <CampaignResult key={i} draft={d} />)}
-        <p className={`text-[10px] text-white/20 mt-1 px-1 ${isUser ? 'text-right' : ''}`}>
-          {isUser ? 'Tú' : '🎯 Estratega de Ads · PEYU'}
-        </p>
+        <div className={`flex items-center gap-1.5 mt-1 px-1 ${isUser ? 'justify-end' : ''}`}>
+          <p className="text-[10px] text-white/20">
+            {isUser ? 'Tú' : '🎯 Estratega de Google Ads · PEYU'}
+          </p>
+          {!isUser && msg.content && (
+            <div className="flex items-center gap-0.5">
+              {voice && (
+                <button
+                  onClick={() => voice.speak(msgId, msg.content)}
+                  className={`p-1 rounded-full transition-colors ${speakingThis ? 'bg-emerald-500/15 text-emerald-300' : 'text-white/40 hover:text-cyan-300 hover:bg-cyan-500/10'}`}
+                  title={speakingThis ? (voice.paused ? 'Reanudar' : 'Pausar') : 'Escuchar con la voz de Joaquín'}
+                >
+                  {loadingThis ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    : speakingThis ? (voice.paused ? <Play className="w-3.5 h-3.5" /> : <Pause className="w-3.5 h-3.5" />)
+                    : <Volume2 className="w-3.5 h-3.5" />}
+                </button>
+              )}
+              <SaveKnowledgeButton text={msg.content} source="google_ads" dark />
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
@@ -190,20 +119,42 @@ export default function AdsAgentPanel() {
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [initing, setIniting] = useState(true);
+  const [attachments, setAttachments] = useState([]); // [{name, url}]
+  const [uploading, setUploading] = useState(false);
+  const [historyKey, setHistoryKey] = useState(0);
+  const fileInputRef = useRef(null);
   const bottomRef = useRef(null);
+  const voice = useAgentVoice();
+
+  // KPIs reales del sitio (columna derecha) — GA4 en vivo.
+  const [ga, setGa] = useState(null);
+  const [gaLoading, setGaLoading] = useState(true);
+
+  const loadGa = useCallback(async () => {
+    setGaLoading(true);
+    try {
+      const res = await base44.functions.invoke('gaFetchRealtime', {});
+      setGa(res.data);
+    } catch (e) {
+      setGa({ error: e.message });
+    } finally {
+      setGaLoading(false);
+    }
+  }, []);
 
   const initConversation = useCallback(async () => {
     setIniting(true);
+    voice.stop();
     setMessages([]);
     try {
       const conv = await base44.agents.createConversation({
         agent_name: AGENT_NAME,
-        metadata: { name: `Ads Session ${new Date().toLocaleDateString('es-CL')}` },
+        metadata: { name: `Google Ads ${new Date().toLocaleDateString('es-CL')}` },
       });
       setConversation(conv);
       setMessages([{
         role: 'assistant',
-        content: `¡Hola! 🎯 Soy tu **Estratega de Ads pagados** — Google Ads + Meta Ads.\n\nCreo campañas profesionales completas en todas sus variantes y te las dejo listas para Google Ads: genero copy, keywords, assets y forecast, y te entrego el **CSV para subir a Google Ads Editor** en 1 click.\n\nElige una campaña rápida de la izquierda o dime el objetivo. ¿Partimos?`,
+        content: `¡Hola! 🎯 Soy tu **Superagente de Google Ads** — nivel agencia mundial, junio 2026.\n\nConstruimos cada campaña **juntos, paso a paso** (Search AI Max, Shopping con Merchant API, Performance Max, Demand Gen). Ahora con **memoria** (recuerdo tus decisiones entre conversaciones), **visión** (súbeme un creativo y lo analizo), **GA4 en vivo** y dominio total de **Google Marketing Live 2026**.\n\nGenero la campaña, te muestro el forecast y te dejo el **CSV listo para Google Ads Editor**. Elige una acción rápida o dime tu objetivo. ¿Partimos?`,
         tool_calls: [],
       }]);
     } catch {
@@ -213,34 +164,78 @@ export default function AdsAgentPanel() {
     }
   }, []);
 
-  useEffect(() => { initConversation(); }, [initConversation]);
+  // Reabrir una conversación pasada con su historial completo.
+  const openThread = useCallback(async (thread) => {
+    if (!thread?.id || initing) return;
+    setIniting(true);
+    voice.stop();
+    setMessages([]);
+    try {
+      const conv = await base44.agents.getConversation(thread.id);
+      setConversation(conv);
+      setMessages(conv.messages || []);
+    } catch {
+      setMessages([{ role: 'assistant', content: 'No pude abrir esa conversación. Intenta de nuevo.', tool_calls: [] }]);
+    } finally {
+      setIniting(false);
+    }
+  }, [initing]);
+
+  useEffect(() => { initConversation(); loadGa(); }, [initConversation, loadGa]);
 
   useEffect(() => {
     if (!conversation?.id) return;
     const unsub = base44.agents.subscribeToConversation(conversation.id, (data) => {
-      setMessages(data.messages || []);
+      const msgs = data.messages || [];
+      setMessages(msgs);
+      const last = msgs[msgs.length - 1];
+      if (last?.role === 'assistant' && last.content?.trim()) {
+        setLoading(false);
+        setHistoryKey((k) => k + 1);
+      }
     });
     return unsub;
   }, [conversation?.id]);
 
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages, loading]);
 
+  const handleAttach = async (files) => {
+    const imgs = Array.from(files).filter((f) => f.type.startsWith('image/'));
+    if (!imgs.length) return;
+    setUploading(true);
+    try {
+      const subidos = await Promise.all(imgs.map(async (file) => {
+        const { file_url } = await base44.integrations.Core.UploadFile({ file });
+        return { name: file.name, url: file_url };
+      }));
+      setAttachments((prev) => [...prev, ...subidos]);
+    } finally {
+      setUploading(false);
+    }
+  };
+
   const sendMessage = async (text) => {
     const msg = (text || input).trim();
-    if (!msg || loading || !conversation) return;
+    const fileUrls = attachments.map((a) => a.url);
+    if ((!msg && fileUrls.length === 0) || loading || !conversation) return;
     setInput('');
+    setAttachments([]);
     setLoading(true);
     try {
-      await base44.agents.addMessage(conversation, { role: 'user', content: msg });
-    } finally {
+      await base44.agents.addMessage(conversation, {
+        role: 'user',
+        content: msg || 'Analiza esta imagen.',
+        file_urls: fileUrls,
+      });
+    } catch {
       setLoading(false);
     }
   };
 
-  // ── Columna izquierda · acciones rápidas ──────────────────────────────────
+  // ── Columna izquierda · acciones + historial guardado ─────────────────────
   const left = (
     <div className="p-3 space-y-1">
-      <p className="text-[9px] text-white/30 uppercase tracking-wider mb-1.5 px-1">Campañas rápidas</p>
+      <p className="text-[9px] text-white/30 uppercase tracking-wider mb-1.5 px-1">Acciones rápidas</p>
       {QUICK_PROMPTS.map((qp) => {
         const Icon = qp.icon;
         return (
@@ -255,12 +250,59 @@ export default function AdsAgentPanel() {
           </button>
         );
       })}
+      <MetaAdsHistory
+        agentName={AGENT_NAME}
+        activeId={conversation?.id}
+        refreshKey={historyKey}
+        onSelect={openThread}
+      />
     </div>
   );
 
-  // ── Columna derecha · contexto (tipos de campaña) ─────────────────────────
+  // ── Columna derecha · GA4 en vivo + tipos de campaña 2026 ─────────────────
   const right = (
     <div className="p-3 space-y-3">
+      <div className="flex items-center justify-between px-1">
+        <p className="text-[9px] text-white/30 uppercase tracking-wider">Sitio en vivo · GA4</p>
+        <button onClick={loadGa} disabled={gaLoading} className="text-white/30 hover:text-white transition-colors">
+          <RefreshCw className={`w-3 h-3 ${gaLoading ? 'animate-spin' : ''}`} />
+        </button>
+      </div>
+
+      {gaLoading ? (
+        <div className="flex items-center justify-center py-6 gap-2 text-white/30">
+          <Loader2 className="w-4 h-4 animate-spin" /> <span className="text-xs">Cargando…</span>
+        </div>
+      ) : ga?.error ? (
+        <div className="rounded-xl bg-amber-500/[0.08] border border-amber-500/25 p-3">
+          <p className="text-[11px] font-bold text-amber-200 flex items-center gap-1.5 mb-1">
+            <AlertCircle className="w-3.5 h-3.5" /> GA4 no disponible
+          </p>
+          <p className="text-[10px] text-white/60 leading-snug">{ga.error}</p>
+        </div>
+      ) : (
+        <>
+          <div className="grid grid-cols-2 gap-2">
+            <KpiBox label="Activos ahora" value={fmtNum(ga?.activeUsers ?? ga?.active_users)} icon={Users} accent="text-emerald-300" />
+            <KpiBox label="Vistas 30 min" value={fmtNum(ga?.screenPageViews ?? ga?.pageviews)} icon={Eye} accent="text-cyan-300" />
+          </div>
+          {Array.isArray(ga?.topPages || ga?.top_pages) && (ga.topPages || ga.top_pages).length > 0 && (
+            <div>
+              <p className="text-[9px] text-white/30 uppercase tracking-wider mb-1.5 px-1">Páginas activas</p>
+              <div className="space-y-1">
+                {(ga.topPages || ga.top_pages).slice(0, 6).map((p, i) => (
+                  <div key={i} className="flex items-center gap-2 rounded-lg bg-white/[0.03] border border-white/[0.06] px-2.5 py-1.5">
+                    <MousePointerClick className="w-3 h-3 text-cyan-400 flex-shrink-0" />
+                    <span className="text-[11px] text-white/75 flex-1 truncate">{p.page || p.path || p.pagePath}</span>
+                    <span className="text-[10px] text-white/45 font-semibold flex-shrink-0">{fmtNum(p.views ?? p.activeUsers ?? p.count)}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </>
+      )}
+
       <div>
         <p className="text-[9px] text-white/30 uppercase tracking-wider mb-2 px-1">Tipos de campaña 2026</p>
         <div className="space-y-1.5">
@@ -278,23 +320,14 @@ export default function AdsAgentPanel() {
           })}
         </div>
       </div>
-      <div className="rounded-xl bg-cyan-500/[0.06] border border-cyan-500/15 p-3">
-        <p className="text-[10px] font-bold text-cyan-200 mb-1.5 flex items-center gap-1.5"><Download className="w-3 h-3" /> Cómo subir el CSV</p>
-        <ol className="text-[9px] text-white/55 space-y-1 ml-3 list-decimal leading-snug">
-          <li>Descarga el CSV de la campaña</li>
-          <li>Abre Google Ads Editor</li>
-          <li>File → Import → from file</li>
-          <li>Revisa y publica</li>
-        </ol>
-      </div>
     </div>
   );
 
   return (
     <AgentLayout
       accent="cyan"
-      title="Estratega de Ads PEYU"
-      subtitle="Google Ads · Meta · CSV listo para subir"
+      title="Centro de Control · Google Ads"
+      subtitle="Search AI Max · Shopping · PMax · Demand Gen · GML 2026"
       HeaderIcon={Megaphone}
       storageKey="google_ads"
       left={left}
@@ -302,16 +335,15 @@ export default function AdsAgentPanel() {
       onReset={initConversation}
       resetting={initing}
     >
-      {/* Stream */}
       <div className="flex-1 overflow-y-auto peyu-scrollbar-light min-h-0 p-4 space-y-4">
         {initing ? (
           <div className="flex items-center justify-center h-full gap-2 text-white/30">
             <Loader2 className="w-4 h-4 animate-spin" />
-            <span className="text-sm">Iniciando estratega de ads…</span>
+            <span className="text-sm">Iniciando estratega de Google Ads…</span>
           </div>
         ) : (
           <>
-            {messages.map((msg, i) => <ChatMessage key={i} msg={msg} />)}
+            {messages.map((msg, i) => <ChatMessage key={i} msg={msg} msgId={i} voice={voice} />)}
             {loading && (
               <div className="flex gap-3">
                 <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center flex-shrink-0">
@@ -330,26 +362,75 @@ export default function AdsAgentPanel() {
         <div ref={bottomRef} />
       </div>
 
-      {/* Input */}
       <div className="flex-shrink-0 px-3 py-3 border-t border-white/10 bg-black/20">
-        <div className="flex gap-2 items-center max-w-3xl mx-auto">
-          <input
-            value={input}
-            onChange={e => setInput(e.target.value)}
-            onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } }}
-            placeholder="Crea campañas Google/Meta, exporta CSV, forecastea…"
-            disabled={initing}
-            className="flex-1 bg-white/[0.06] border border-white/15 text-white placeholder:text-white/25 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-cyan-500/50 transition-all disabled:opacity-40"
-          />
-          <button
-            onClick={() => sendMessage()}
-            disabled={loading || !input.trim() || initing}
-            className="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center flex-shrink-0 transition-all shadow-lg shadow-cyan-500/20"
-          >
-            {loading ? <Loader2 className="w-4 h-4 text-white animate-spin" /> : <Send className="w-4 h-4 text-white" />}
-          </button>
+        <div className="max-w-3xl mx-auto space-y-2">
+          {(attachments.length > 0 || uploading) && (
+            <div className="flex flex-wrap gap-2">
+              {attachments.map((a, i) => (
+                <div key={i} className="relative group">
+                  <img src={a.url} alt={a.name} className="w-14 h-14 rounded-lg object-cover border border-white/15" />
+                  <button
+                    onClick={() => setAttachments((prev) => prev.filter((_, idx) => idx !== i))}
+                    className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-black/80 border border-white/20 flex items-center justify-center text-white/70 hover:text-white"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </div>
+              ))}
+              {uploading && (
+                <div className="w-14 h-14 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center">
+                  <Loader2 className="w-4 h-4 text-white/40 animate-spin" />
+                </div>
+              )}
+            </div>
+          )}
+          <div className="flex gap-2 items-center">
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              multiple
+              className="hidden"
+              onChange={(e) => { handleAttach(e.target.files); e.target.value = ''; }}
+            />
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              disabled={initing || uploading}
+              title="Adjuntar creativo para que el agente lo analice"
+              className="w-10 h-10 rounded-xl bg-white/[0.06] border border-white/15 hover:bg-white/[0.12] disabled:opacity-30 flex items-center justify-center flex-shrink-0 transition-all"
+            >
+              <ImagePlus className="w-4 h-4 text-white/70" />
+            </button>
+            <input
+              value={input}
+              onChange={e => setInput(e.target.value)}
+              onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } }}
+              placeholder="Construyamos una campaña, sube un creativo, pide keywords o GA4 en vivo…"
+              disabled={initing}
+              className="flex-1 bg-white/[0.06] border border-white/15 text-white placeholder:text-white/25 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-cyan-500/50 transition-all disabled:opacity-40"
+            />
+            <button
+              onClick={() => sendMessage()}
+              disabled={loading || (!input.trim() && attachments.length === 0) || initing}
+              className="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center flex-shrink-0 transition-all shadow-lg shadow-cyan-500/20"
+            >
+              {loading ? <Loader2 className="w-4 h-4 text-white animate-spin" /> : <Send className="w-4 h-4 text-white" />}
+            </button>
+          </div>
         </div>
       </div>
     </AgentLayout>
+  );
+}
+
+function KpiBox({ label, value, icon: Icon, accent }) {
+  return (
+    <div className="rounded-xl bg-white/[0.04] border border-white/[0.07] p-2.5">
+      <div className="flex items-center gap-1.5 mb-1">
+        <Icon className={`w-3 h-3 ${accent}`} />
+        <span className="text-[9px] text-white/40 uppercase tracking-wide">{label}</span>
+      </div>
+      <p className={`text-sm font-black leading-none ${accent}`}>{value}</p>
+    </div>
   );
 }
