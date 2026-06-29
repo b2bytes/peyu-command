@@ -201,7 +201,20 @@ REGLAS:
       performance_score: ai.performance_score ?? draft.performance_score,
     });
 
-    return Response.json({ success: true, forecast });
+    // Campos PLANOS (escenario esperado) para que la card del agente los muestre directo.
+    const cac = ai.cac_clp?.expected;
+    const flat = {
+      verdict: ai.verdict,
+      headline: ai.headline,
+      performance_score: ai.performance_score,
+      impressions_week: ai.impressions_weekly?.expected,
+      ctr_pct: ai.ctr_pct?.expected,
+      conversions_week: ai.conversions_weekly?.expected,
+      cac_clp: cac,
+      roas: ai.roas?.expected,
+    };
+
+    return Response.json({ success: true, forecast, ...flat });
   } catch (error) {
     console.error('[adsForecastPerformance]', error);
     return Response.json({ error: error.message }, { status: 500 });

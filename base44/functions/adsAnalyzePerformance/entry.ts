@@ -5,7 +5,57 @@
 // Detecta winners/losers con razonamiento estadístico (significancia, elevación).
 // Payload: { draft_id, actual_metrics: { impressions, clicks, conversions, cost_clp, revenue_clp, days_running } }
 // ============================================================================
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
+
+// Trae métricas reales del tráfico de pago de Google desde GA4 (últimos 7d),
+// para que el agente pueda "analizar en vivo" sin que le pasen números a mano.
+async function fetchPaidMetricsFromGA4(base44) {
+  try {
+    const { accessToken } = await base44.asServiceRole.connectors.getConnection('google_analytics');
+    if (!accessToken) return null;
+    let propertyId = Deno.env.get('GA4_PROPERTY_ID');
+    if (!propertyId) {
+      const sres = await fetch('https://analyticsadmin.googleapis.com/v1beta/accountSummaries', {
+        headers: { 'Authorization': `Bearer ${accessToken}` },
+      });
+      if (sres.ok) {
+        const sdata = await sres.json();
+        for (const acc of (sdata.accountSummaries || [])) {
+          const prop = (acc.propertySummaries || [])[0];
+          if (prop?.property) { propertyId = String(prop.property).replace('properties/', ''); break; }
+        }
+      }
+    }
+    if (!propertyId) return null;
+    propertyId = String(propertyId).replace('properties/', '');
+    const res = await fetch(`https://analyticsdata.googleapis.com/v1beta/properties/${propertyId}:runReport`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        dateRanges: [{ startDate: '7daysAgo', endDate: 'today' }],
+        dimensions: [{ name: 'sessionDefaultChannelGroup' }],
+        metrics: [
+          { name: 'sessions' }, { name: 'totalUsers' }, { name: 'keyEvents' },
+          { name: 'conversions' }, { name: 'totalRevenue' },
+        ],
+      }),
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+    // Sumamos los canales pagados de Google (Paid Search, Paid Shopping, Paid Video, Display).
+    let sessions = 0, conversions = 0, revenue = 0;
+    for (const r of (data.rows || [])) {
+      const ch = (r.dimensionValues?.[0]?.value || '').toLowerCase();
+      if (/paid|display|shopping|video|cross-network/.test(ch)) {
+        sessions += Number(r.metricValues?.[0]?.value || 0);
+        conversions += Number(r.metricValues?.[3]?.value || 0) || Number(r.metricValues?.[2]?.value || 0);
+        revenue += Number(r.metricValues?.[4]?.value || 0);
+      }
+    }
+    if (sessions === 0) return null;
+    return { source: 'ga4_paid_7d', sessions, conversions, revenue };
+  } catch { return null; }
+}
 
 Deno.serve(async (req) => {
   try {
@@ -14,15 +64,41 @@ Deno.serve(async (req) => {
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
     const { draft_id, actual_metrics } = await req.json();
-    if (!draft_id || !actual_metrics) {
-      return Response.json({ error: 'draft_id & actual_metrics required' }, { status: 400 });
+    if (!draft_id) {
+      return Response.json({ error: 'draft_id required' }, { status: 400 });
     }
 
     const drafts = await base44.asServiceRole.entities.AdCampaignDraft.filter({ id: draft_id });
     const draft = drafts[0];
     if (!draft) return Response.json({ error: 'Draft not found' }, { status: 404 });
 
-    const { impressions = 0, clicks = 0, conversions = 0, cost_clp = 0, revenue_clp = 0, days_running = 1 } = actual_metrics;
+    // Si no nos pasan métricas a mano, intentamos traerlas reales desde GA4 (tráfico pagado).
+    let metrics = actual_metrics;
+    let metricsSource = 'manual';
+    if (!metrics) {
+      const ga = await fetchPaidMetricsFromGA4(base44);
+      if (ga) {
+        // GA4 da sesiones/conversiones/revenue del pago, no impresiones/clics/costo.
+        // Estimamos clics ≈ sesiones y dejamos costo desconocido (el agente lo aclara).
+        metrics = {
+          impressions: 0,
+          clicks: ga.sessions,
+          conversions: ga.conversions,
+          cost_clp: 0,
+          revenue_clp: ga.revenue,
+          days_running: 7,
+        };
+        metricsSource = ga.source;
+      } else {
+        return Response.json({
+          error: 'No hay métricas para analizar. Conecta Google Analytics (para leer el tráfico pagado real) o pásame los números de la campaña (impresiones, clics, conversiones, costo).',
+          need_metrics: true,
+        }, { status: 400 });
+      }
+    }
+    const actual_metrics_resolved = metrics;
+
+    const { impressions = 0, clicks = 0, conversions = 0, cost_clp = 0, revenue_clp = 0, days_running = 1 } = actual_metrics_resolved;
     const actualCtr = impressions > 0 ? (clicks / impressions) * 100 : 0;
     const actualCpc = clicks > 0 ? cost_clp / clicks : 0;
     const actualCpa = conversions > 0 ? cost_clp / conversions : 0;
@@ -95,6 +171,7 @@ Responde JSON estricto.`;
     return Response.json({
       success: true,
       analysis,
+      metrics_source: metricsSource,
       observed: {
         ctr_pct: Number(actualCtr.toFixed(2)),
         cpc_clp: Math.round(actualCpc),

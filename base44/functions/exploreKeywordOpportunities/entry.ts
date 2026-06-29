@@ -27,12 +27,20 @@ Deno.serve(async (req) => {
 
     let body = {};
     try { body = await req.json(); } catch {}
-    const seeds = Array.isArray(body.seeds) ? body.seeds.map(s => String(s).trim()).filter(Boolean) : [];
+    let seeds = Array.isArray(body.seeds) ? body.seeds.map(s => String(s).trim()).filter(Boolean) : [];
     const variantsPerSeed = Math.min(Math.max(parseInt(body.variants_per_seed || 8, 10), 3), 15);
     const days = Math.min(Math.max(parseInt(body.days || 90, 10), 28), 180);
 
+    // Si el agente llama sin semillas, usamos las semillas núcleo de PEYU (B2C eco + B2B regalo corporativo)
+    // para que la función SIEMPRE devuelva oportunidades reales sin requerir input.
     if (seeds.length === 0) {
-      return Response.json({ error: 'Debes enviar al menos una semilla en `seeds`.' }, { status: 400 });
+      seeds = [
+        'regalos corporativos sustentables',
+        'regalos corporativos personalizados',
+        'productos reciclados oficina',
+        'carcasas recicladas celular',
+        'regalos ecologicos empresas',
+      ];
     }
     if (seeds.length > 20) {
       return Response.json({ error: 'Máximo 20 semillas por llamada.' }, { status: 400 });
@@ -199,13 +207,38 @@ Devuelve JSON con esta estructura exacta:
       error: results.filter(r => r.status === 'error').length,
     };
 
+    // ── 5. Enriquecer para las cards del agente (termino/intencion/volumen) ──
+    // Intención heurística: términos con "comprar/precio/cotización/empresa" = transaccional;
+    // con "qué es/cómo/beneficios" = informacional; el resto = comercial.
+    const intencionDe = (kw) => {
+      const t = kw.toLowerCase();
+      if (/(comprar|precio|cotiza|venta|empresa|corporativ|por mayor|al por mayor|tienda)/.test(t)) return 'transaccional';
+      if (/(qué es|que es|cómo|como|para qué|beneficios|ideas|tipos de)/.test(t)) return 'informacional';
+      return 'comercial';
+    };
+    // Ordenamos: oportunidades reales primero (no rankeamos = espacio para pauta), luego por impresiones.
+    const rank = { opportunity: 0, page2: 1, deep: 2, top10: 3, top3: 4, error: 5 };
+    const enriquecidas = results
+      .filter(r => r.status !== 'error')
+      .sort((a, b) => (rank[a.status] - rank[b.status]) || (b.impressions - a.impressions))
+      .map(r => ({
+        termino: r.keyword,
+        intencion: intencionDe(r.keyword),
+        volumen: r.impressions || null,
+        posicion: r.position,
+        estado: r.status,
+      }));
+
     return Response.json({
       ok: true,
       window_days: days,
       seeds,
       variants_per_seed: variantsPerSeed,
       summary,
-      keywords: results,
+      // Forma para las cards del agente
+      keywords: enriquecidas,
+      // Forma cruda (detalle GSC completo)
+      keywords_raw: results,
     });
   } catch (error) {
     console.error('exploreKeywordOpportunities error:', error);
