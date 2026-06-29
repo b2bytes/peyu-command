@@ -11,6 +11,7 @@ import {
   Sparkles, Package, TrendingDown, Plus, Minus, ArrowRight,
   Building2, Send,
 } from 'lucide-react';
+import SEOHead from '@/components/SEOHead';
 import B2BHeader from '@/components/b2b/B2BHeader';
 import B2BPriceTable from '@/components/b2b/B2BPriceTable';
 import B2BLogoMockup from '@/components/b2b/B2BLogoMockup';
@@ -130,6 +131,13 @@ export default function EmpresaProducto() {
 
   return (
     <div className={`min-h-screen font-inter ${showForm ? 'pb-[11rem]' : 'pb-[5.5rem]'} lg:pb-8 transition-[padding]`} style={{ background: '#F8F3ED', color: '#2C1810', maxWidth: '100vw', overflowX: 'hidden' }}>
+      <SEOHead
+        title={`${producto.nombre} · Regalo Corporativo Reciclado | PEYU`}
+        description={`${producto.nombre} para empresas en plástico 100% reciclado. Personalización láser con tu logo, precios por volumen y factura empresa. Cotización en 24h.`}
+        url={`https://peyuchile.cl/EmpresaProducto?id=${producto.id}`}
+        image={getProductImage(producto)}
+        type="product"
+      />
       <B2BHeader backTo="/EmpresasNuevo" />
 
       <div className="max-w-6xl mx-auto px-3 sm:px-6 py-3 sm:py-6" style={{ maxWidth: '100%', overflowX: 'hidden' }}>

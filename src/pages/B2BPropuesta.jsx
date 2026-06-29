@@ -12,6 +12,7 @@ import {
   Leaf, Building2, Zap, AlertCircle, ChevronDown, ChevronUp,
 } from 'lucide-react';
 import { fmtCLP } from '@/lib/shop-v2-cart';
+import NoIndex from '@/components/NoIndex';
 import LineaProductoPropuesta from '@/components/b2b/LineaProductoPropuesta';
 
 const IVA = 0.19;
@@ -199,6 +200,8 @@ export default function B2BPropuesta() {
 
   return (
     <div className="min-h-screen font-inter pb-28 sm:pb-12" style={{ background: '#F8F3ED', color: '#2C1810' }}>
+      {/* Propuesta privada enviada por email → fuera del índice de Google */}
+      <NoIndex />
 
       {/* ── HERO HEADER ── */}
       <div className="relative overflow-hidden">
