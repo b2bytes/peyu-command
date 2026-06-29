@@ -68,7 +68,7 @@ export default function SEOHead({ title, description, image, url, type = 'websit
       if (!ld) { ld = document.createElement('script'); ld.id = id; ld.type = 'application/ld+json'; document.head.appendChild(ld); }
       ld.textContent = JSON.stringify(schema);
     }
-  }, [finalTitle, finalDescription, finalImage, finalUrl, type]);
+  }, [finalTitle, finalDescription, finalImage, finalUrl, type, keywords]);
 
   return null;
 }
