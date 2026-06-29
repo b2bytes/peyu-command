@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { CheckCircle2, Loader2, Sprout, MessageCircle, AlertCircle } from 'lucide-react';
+import NoIndex from '@/components/NoIndex';
 
 // Página pública de aprobación de propuesta. El botón "Aprobar propuesta" del
 // PDF apunta aquí (?cot=<id>). Al cargar, dispara aprobarPropuestaChat, que
@@ -29,6 +30,7 @@ export default function AprobarPropuesta() {
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4 py-16 ld-canvas">
+      <NoIndex />
       <div className="w-full max-w-lg ld-card p-8 sm:p-10 text-center">
         {status === 'loading' && (
           <>

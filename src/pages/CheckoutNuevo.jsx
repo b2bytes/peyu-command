@@ -2,6 +2,7 @@ import { useState, useMemo, useEffect, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { ArrowLeft, Lock, ShieldCheck, Recycle, AlertCircle, Gift } from 'lucide-react';
+import NoIndex from '@/components/NoIndex';
 import MobileNavBarV2 from '@/components/shopv2/MobileNavBarV2';
 import CheckoutStepperV2 from '@/components/shopv2/CheckoutStepperV2';
 import CheckoutSummaryCardV2 from '@/components/shopv2/CheckoutSummaryCardV2';
@@ -439,6 +440,7 @@ export default function CheckoutNuevo() {
 
     return (
       <div className="min-h-screen font-inter" style={{ background: '#F8F3ED', color: '#2C1810' }}>
+        <NoIndex />
         <div className="max-w-md mx-auto text-center py-24 px-4">
           {ultimaCompra ? (
             <>
@@ -548,6 +550,7 @@ export default function CheckoutNuevo() {
 
   return (
     <div className="min-h-screen lg:h-screen lg:min-h-0 lg:flex lg:flex-col lg:overflow-hidden font-inter pb-36 lg:pb-0" style={{ background: '#F8F3ED', color: '#2C1810' }}>
+      <NoIndex />
 
       {/* ── TOP NAV cockpit: viaje completo + CTA siempre visible ─────────── */}
       <header className="sticky top-0 z-50 backdrop-blur-xl"

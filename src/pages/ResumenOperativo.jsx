@@ -1,4 +1,5 @@
 import { CheckCircle2, AlertTriangle, Calendar, Bug, Sparkles, Rocket, ListChecks, TrendingUp } from 'lucide-react';
+import NoIndex from '@/components/NoIndex';
 import { changelogKPIs, PENDIENTES, ESTADO_SISTEMA } from '@/lib/changelog-peyu';
 import ChangelogTimeline from '@/components/resumen/ChangelogTimeline';
 import AccesosRapidos from '@/components/resumen/AccesosRapidos';
@@ -23,6 +24,7 @@ export default function ResumenOperativo() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-3 sm:p-6">
+      <NoIndex />
       <div className="max-w-6xl mx-auto space-y-4 sm:space-y-6">
 
         {/* Header */}

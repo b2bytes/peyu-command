@@ -10,6 +10,7 @@
 // ============================================================================
 import { jsPDF } from 'jspdf';
 import { Download, Bot, ShieldCheck, FileText, Wrench } from 'lucide-react';
+import NoIndex from '@/components/NoIndex';
 
 // Funciones backend que hay que AUTORIZAR al Superagente en su panel de Base44
 // para que pueda invocarlas (igual que el agente Meta Ads de la app). Sin esta
@@ -119,6 +120,7 @@ function buildPdf() {
 export default function FirmaAgente() {
   return (
     <div className="min-h-screen bg-slate-50 py-10 px-4">
+      <NoIndex />
       <div className="max-w-3xl mx-auto">
         <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 sm:p-8">
           <div className="flex items-center gap-3 mb-2">

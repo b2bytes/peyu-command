@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { ShoppingBag, Trash2, ArrowRight, Recycle, ArrowLeft, ShieldCheck } from 'lucide-react';
+import NoIndex from '@/components/NoIndex';
 import MobileNavBarV2 from '@/components/shopv2/MobileNavBarV2';
 import CheckoutStepperV2 from '@/components/shopv2/CheckoutStepperV2';
 import StepNavV2 from '@/components/shopv2/StepNavV2';
@@ -73,6 +74,7 @@ export default function CarritoNuevo() {
   if (items.length === 0) {
     return (
       <div className="min-h-screen font-inter" style={{ background: '#F8F3ED', color: '#2C1810' }}>
+        <NoIndex />
         <div className="max-w-md mx-auto text-center py-24 px-4">
           <div className="w-20 h-20 rounded-3xl flex items-center justify-center mx-auto mb-5" style={{ background: 'white', border: '1.5px solid #D4C4B0' }}>
             <ShoppingBag className="w-8 h-8" style={{ color: '#A08070' }} />
@@ -91,6 +93,7 @@ export default function CarritoNuevo() {
 
   return (
     <div className="min-h-screen font-inter pb-32 lg:pb-0" style={{ background: '#F8F3ED', color: '#2C1810' }}>
+      <NoIndex />
       <div className="max-w-4xl mx-auto px-3 sm:px-4 lg:px-6 py-3 sm:py-5">
         <CheckoutStepperV2 current="carrito" />
         {/* Link solo desktop — mobile usa el navbar inferior */}

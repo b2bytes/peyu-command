@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { ExternalLink, CheckCircle2, ShoppingCart, Building2, Sparkles, Package, Globe, BookOpen, HelpCircle, Truck } from 'lucide-react';
+import NoIndex from '@/components/NoIndex';
 
 /**
  * IndiceTest — Índice de todas las rutas públicas para QA / test manual.
@@ -132,6 +133,7 @@ export default function IndiceTest() {
 
   return (
     <div className="min-h-screen bg-gray-50 font-inter">
+      <NoIndex />
       {/* Header */}
       <div className="bg-gradient-to-br from-slate-800 to-slate-900 text-white px-6 py-8">
         <div className="max-w-5xl mx-auto">

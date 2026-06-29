@@ -7,6 +7,7 @@ import { addToCartV2, cartCountV2, fmtCLP } from '@/lib/shop-v2-cart';
 import ChatBubbleSF from '@/components/storefront/ChatBubbleSF';
 import QuickRepliesSF from '@/components/storefront/QuickRepliesSF';
 import CanvasProductCard from '@/components/storefront/CanvasProductCard';
+import NoIndex from '@/components/NoIndex';
 
 // ════════════════════════════════════════════════════════════════════════
 // /storefront-chat — Conversational Storefront (RONDA 4).
