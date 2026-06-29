@@ -10,6 +10,7 @@ import { useState, useEffect } from 'react';
 import {
   Bot, Megaphone, CheckSquare, Wand2, Image as ImageIcon, Instagram,
   Linkedin, Layers, Calendar, Link2, Sparkles, Send, Clock, Facebook,
+  PanelLeftClose, PanelLeftOpen, PanelRightClose, PanelRightOpen,
 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import BulkGeneratorPanel from '@/components/social-studio/BulkGeneratorPanel';
@@ -51,6 +52,9 @@ export default function SocialStudio() {
   const [refreshKey, setRefreshKey] = useState(0);
   const [stats, setStats] = useState({ pendientes: 0, aprobados: 0, publicados_hoy: 0, total: 0 });
   const [redes, setRedes] = useState({ ig: null, li: null });
+  // Columnas laterales colapsables: maximiza el espacio del chat del agente
+  const [leftOpen, setLeftOpen] = useState(true);
+  const [rightOpen, setRightOpen] = useState(true);
 
   // El studio es dark-first: fuerza modo noche mientras está abierto.
   useEffect(() => {
@@ -121,56 +125,99 @@ export default function SocialStudio() {
 
       <div className="relative flex-1 flex min-h-0 p-2 lg:p-3 gap-2.5">
 
-        {/* ── COLUMNA IZQUIERDA · todas las funciones ─────────────────────── */}
-        <aside className="hidden md:flex flex-col w-56 lg:w-60 flex-shrink-0 rounded-2xl bg-black/30 border border-white/10 overflow-hidden">
-          <div className="flex-shrink-0 flex items-center gap-2.5 px-4 py-3 border-b border-white/10">
-            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-violet-500 to-pink-600 flex items-center justify-center shadow-lg shadow-violet-500/30">
-              <Sparkles className="w-4 h-4 text-white" />
-            </div>
-            <div>
-              <p className="text-sm font-bold text-white leading-none">Social Studio</p>
-              <p className="text-[10px] text-white/40 mt-0.5">Centro de comandos</p>
-            </div>
-          </div>
-
-          <nav className="flex-1 overflow-y-auto peyu-scrollbar-light p-2.5 space-y-3">
-            {GROUPS.map(group => (
-              <div key={group.id}>
-                <p className="text-[9px] text-white/30 uppercase tracking-wider mb-1.5 px-1.5">{group.label}</p>
-                <div className="space-y-1">
-                  {SECTIONS.filter(s => s.group === group.id).map(s => {
-                    const Icon = s.icon;
-                    const isActive = section === s.id;
-                    return (
-                      <button
-                        key={s.id}
-                        onClick={() => setSection(s.id)}
-                        className={`relative w-full flex items-center gap-2.5 p-2 rounded-xl text-left transition-all group ${
-                          isActive ? 'bg-white/[0.07] border border-white/15' : 'border border-transparent hover:bg-white/[0.04]'
-                        }`}
-                      >
-                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 transition-all ${
-                          isActive ? `bg-gradient-to-br ${s.accent} shadow-md` : 'bg-white/[0.06] group-hover:bg-white/10'
-                        }`}>
-                          <Icon className={`w-4 h-4 ${isActive ? 'text-white' : 'text-white/50 group-hover:text-white/80'}`} />
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <p className={`text-xs font-semibold leading-tight ${isActive ? 'text-white' : 'text-white/70 group-hover:text-white'}`}>{s.label}</p>
-                          <p className="text-[9px] text-white/35 leading-tight truncate">{s.desc}</p>
-                        </div>
-                        {s.id === 'queue' && stats.pendientes > 0 && (
-                          <span className="flex-shrink-0 px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-amber-500/30 text-amber-200">
-                            {stats.pendientes}
-                          </span>
-                        )}
-                      </button>
-                    );
-                  })}
-                </div>
+        {/* ── COLUMNA IZQUIERDA · todas las funciones (colapsable) ────────── */}
+        {leftOpen ? (
+          <aside className="hidden md:flex flex-col w-56 lg:w-60 flex-shrink-0 rounded-2xl bg-black/30 border border-white/10 overflow-hidden">
+            <div className="flex-shrink-0 flex items-center gap-2.5 px-4 py-3 border-b border-white/10">
+              <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-violet-500 to-pink-600 flex items-center justify-center shadow-lg shadow-violet-500/30">
+                <Sparkles className="w-4 h-4 text-white" />
               </div>
-            ))}
-          </nav>
-        </aside>
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-bold text-white leading-none">Social Studio</p>
+                <p className="text-[10px] text-white/40 mt-0.5">Centro de comandos</p>
+              </div>
+              <button
+                onClick={() => setLeftOpen(false)}
+                title="Colapsar panel"
+                className="flex-shrink-0 w-7 h-7 rounded-lg flex items-center justify-center text-white/40 hover:text-white hover:bg-white/10 transition-all"
+              >
+                <PanelLeftClose className="w-4 h-4" />
+              </button>
+            </div>
+
+            <nav className="flex-1 overflow-y-auto peyu-scrollbar-light p-2.5 space-y-3">
+              {GROUPS.map(group => (
+                <div key={group.id}>
+                  <p className="text-[9px] text-white/30 uppercase tracking-wider mb-1.5 px-1.5">{group.label}</p>
+                  <div className="space-y-1">
+                    {SECTIONS.filter(s => s.group === group.id).map(s => {
+                      const Icon = s.icon;
+                      const isActive = section === s.id;
+                      return (
+                        <button
+                          key={s.id}
+                          onClick={() => setSection(s.id)}
+                          className={`relative w-full flex items-center gap-2.5 p-2 rounded-xl text-left transition-all group ${
+                            isActive ? 'bg-white/[0.07] border border-white/15' : 'border border-transparent hover:bg-white/[0.04]'
+                          }`}
+                        >
+                          <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 transition-all ${
+                            isActive ? `bg-gradient-to-br ${s.accent} shadow-md` : 'bg-white/[0.06] group-hover:bg-white/10'
+                          }`}>
+                            <Icon className={`w-4 h-4 ${isActive ? 'text-white' : 'text-white/50 group-hover:text-white/80'}`} />
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <p className={`text-xs font-semibold leading-tight ${isActive ? 'text-white' : 'text-white/70 group-hover:text-white'}`}>{s.label}</p>
+                            <p className="text-[9px] text-white/35 leading-tight truncate">{s.desc}</p>
+                          </div>
+                          {s.id === 'queue' && stats.pendientes > 0 && (
+                            <span className="flex-shrink-0 px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-amber-500/30 text-amber-200">
+                              {stats.pendientes}
+                            </span>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+            </nav>
+          </aside>
+        ) : (
+          // Rail colapsado: solo íconos — no se pierde ninguna función
+          <aside className="hidden md:flex flex-col w-14 flex-shrink-0 rounded-2xl bg-black/30 border border-white/10 overflow-hidden">
+            <button
+              onClick={() => setLeftOpen(true)}
+              title="Expandir panel"
+              className="flex-shrink-0 h-12 flex items-center justify-center border-b border-white/10 text-white/40 hover:text-white hover:bg-white/10 transition-all"
+            >
+              <PanelLeftOpen className="w-4 h-4" />
+            </button>
+            <nav className="flex-1 overflow-y-auto peyu-scrollbar-light p-2 space-y-1">
+              {SECTIONS.map(s => {
+                const Icon = s.icon;
+                const isActive = section === s.id;
+                return (
+                  <button
+                    key={s.id}
+                    onClick={() => setSection(s.id)}
+                    title={`${s.label} · ${s.desc}`}
+                    className={`relative w-full h-10 rounded-lg flex items-center justify-center transition-all ${
+                      isActive ? `bg-gradient-to-br ${s.accent} shadow-md` : 'hover:bg-white/[0.06]'
+                    }`}
+                  >
+                    <Icon className={`w-4 h-4 ${isActive ? 'text-white' : 'text-white/50'}`} />
+                    {s.id === 'queue' && stats.pendientes > 0 && (
+                      <span className="absolute -top-0.5 -right-0.5 w-4 h-4 rounded-full text-[8px] font-bold bg-amber-500 text-white flex items-center justify-center">
+                        {stats.pendientes}
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </nav>
+          </aside>
+        )}
 
         {/* ── COLUMNA CENTRAL · workspace donde TODO sucede ────────────────── */}
         <main className="flex-1 min-w-0 flex flex-col min-h-0">
@@ -217,9 +264,28 @@ export default function SocialStudio() {
           )}
         </main>
 
-        {/* ── COLUMNA DERECHA · contexto vivo (KPIs + redes) ───────────────── */}
-        <aside className="hidden xl:flex flex-col w-64 flex-shrink-0 rounded-2xl bg-black/30 border border-white/10 overflow-y-auto peyu-scrollbar-light">
+        {/* ── COLUMNA DERECHA · contexto vivo (KPIs + redes) — colapsable ──── */}
+        {!rightOpen && (
+          <button
+            onClick={() => setRightOpen(true)}
+            title="Mostrar contexto"
+            className="hidden xl:flex absolute top-5 right-5 z-10 w-9 h-9 rounded-xl bg-black/40 border border-white/10 items-center justify-center text-white/50 hover:text-white hover:bg-white/10 transition-all"
+          >
+            <PanelRightOpen className="w-4 h-4" />
+          </button>
+        )}
+        <aside className={`${rightOpen ? 'hidden xl:flex' : 'hidden'} flex-col w-64 flex-shrink-0 rounded-2xl bg-black/30 border border-white/10 overflow-y-auto peyu-scrollbar-light`}>
           <div className="p-4 space-y-4">
+            <div className="flex items-center justify-between">
+              <p className="text-[9px] text-white/30 uppercase tracking-wider px-0.5">Contexto vivo</p>
+              <button
+                onClick={() => setRightOpen(false)}
+                title="Colapsar panel"
+                className="w-7 h-7 -mr-1.5 -mt-1.5 rounded-lg flex items-center justify-center text-white/40 hover:text-white hover:bg-white/10 transition-all"
+              >
+                <PanelRightClose className="w-4 h-4" />
+              </button>
+            </div>
             {/* KPIs de contenido */}
             <div>
               <p className="text-[9px] text-white/30 uppercase tracking-wider mb-2 px-0.5">Estado del contenido</p>
