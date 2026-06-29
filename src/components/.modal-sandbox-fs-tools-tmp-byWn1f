@@ -34,6 +34,8 @@ export default function SEOHead({ title, description, image, url, type = 'websit
     // Basic SEO
     setMeta('description', 'name', finalDescription);
     setMeta('robots', 'name', 'index, follow, max-image-preview:large, max-snippet:-1');
+    // Keywords por página (si la página las pasa); refuerza el foco temático.
+    if (keywords) setMeta('keywords', 'name', keywords);
 
     // Canonical
     let canonical = document.querySelector('link[rel="canonical"]');

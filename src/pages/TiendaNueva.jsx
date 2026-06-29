@@ -68,8 +68,9 @@ export default function TiendaNueva() {
   return (
     <div className="min-h-screen font-inter pb-16 lg:pb-0" style={{ background: '#F8F3ED', color: '#2C1810' }}>
       <SEOHead
-        title="Tienda PEYU — Regalos Corporativos 100% Sostenibles"
-        description="Compra regalos corporativos hechos con plástico 100% reciclado. Personalización láser UV gratis desde 10 unidades. Envío BlueExpress a todo Chile."
+        title="PEYU — Regalos Reciclados y Carcasas iPhone Sustentables | Chile"
+        description="Productos hechos con plástico 100% reciclado en Chile: regalos corporativos, carcasas de iPhone, escritorio y hogar. Personalización láser UV gratis desde 10 unidades. Envío BlueExpress a todo Chile."
+        keywords="regalos corporativos reciclados, regalos reciclados, carcasas iphone recicladas, productos plástico reciclado, regalos sustentables Chile, merchandising sustentable, peyu"
         url="https://peyuchile.cl/"
         type="website"
       />
