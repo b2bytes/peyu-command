@@ -33,19 +33,27 @@ export default function SEOHead({ title, description, image, url, type = 'websit
 
     // Basic SEO
     setMeta('description', 'name', finalDescription);
-    setMeta('robots', 'name', 'index, follow');
+    setMeta('robots', 'name', 'index, follow, max-image-preview:large, max-snippet:-1');
 
     // Canonical
     let canonical = document.querySelector('link[rel="canonical"]');
     if (!canonical) { canonical = document.createElement('link'); canonical.rel = 'canonical'; document.head.appendChild(canonical); }
     canonical.href = finalUrl;
 
-    // Open Graph
+    // hreflang es-CL (alineado con la canonical de la página actual)
+    let hreflang = document.querySelector('link[rel="alternate"][hreflang="es-CL"]');
+    if (!hreflang) { hreflang = document.createElement('link'); hreflang.rel = 'alternate'; hreflang.setAttribute('hreflang', 'es-CL'); document.head.appendChild(hreflang); }
+    hreflang.href = finalUrl;
+
+    // Open Graph — incluye site_name + locale para que Google muestre "PEYU Chile"
+    // como nombre del sitio (no el título genérico de la plantilla).
     setMeta('og:title', 'property', finalTitle);
     setMeta('og:description', 'property', finalDescription);
     setMeta('og:url', 'property', finalUrl);
     setMeta('og:image', 'property', finalImage);
     setMeta('og:type', 'property', type);
+    setMeta('og:site_name', 'property', 'PEYU Chile');
+    setMeta('og:locale', 'property', 'es_CL');
 
     // Twitter
     setMeta('twitter:title', 'name', finalTitle);

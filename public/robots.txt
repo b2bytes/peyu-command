@@ -1,21 +1,52 @@
+# ============================================================================
 # PEYU Chile · robots.txt
-# Permite a todos los buscadores indexar el sitio público.
+# Le dice a Google (y demás crawlers) QUÉ indexar y QUÉ ignorar.
+# Objetivo: que en los resultados solo aparezcan las páginas públicas buenas
+# (tienda, catálogo, producto, nosotros, blog) y NUNCA el panel admin, las
+# rutas internas, ni las URLs legacy de WordPress que dan "Error de conexión".
+# ============================================================================
+
 User-agent: *
 Allow: /
 
-# Bloquea el panel interno (no es contenido público indexable).
+# ── Panel interno / administración (nunca debe aparecer en Google) ──
 Disallow: /admin
 Disallow: /admin/
 
-# AI crawlers — permitidos explícitamente (mejor visibilidad en respuestas IA).
-User-agent: GPTBot
-Allow: /
+# ── Páginas internas/transaccionales sin valor SEO ──
+Disallow: /CheckoutNuevo
+Disallow: /CarritoNuevo
+Disallow: /carrito
+Disallow: /cart
+Disallow: /gracias
+Disallow: /seguimiento
+Disallow: /mi-cuenta
+Disallow: /b2b/mi-cuenta
+Disallow: /canjear
+Disallow: /aprobar-propuesta
+Disallow: /firma-agente
+Disallow: /resumen-operativo
+Disallow: /storefront-chat
+Disallow: /agent-cockpit
+Disallow: /design-lab
+Disallow: /test-index
+Disallow: /founders-presentation
 
-User-agent: ClaudeBot
-Allow: /
+# ── URLs legacy de WordPress (dan "Error de conexión" / "Categoria-producto") ──
+# Bloquearlas evita que Google siga mostrándolas como resultados rotos.
+Disallow: /categoria-producto
+Disallow: /categoria-producto/
+Disallow: /product-category
+Disallow: /wp-admin
+Disallow: /wp-content
+Disallow: /wp-includes
+Disallow: /?s=
+Disallow: /*?add-to-cart=
+Disallow: /*?orderby=
 
-User-agent: Google-Extended
-Allow: /
+# ── No indexar parámetros internos de filtro/orden (evita duplicados) ──
+Disallow: /*?retry=
+Disallow: /*&retry=
 
-# Sitemap canónico (servido dinámicamente en tiempo real).
-Sitemap: https://peyuchile.cl/sitemap.xml
+# Sitemap dinámico (productos + páginas + blog, siempre fresco)
+Sitemap: https://peyuchile.cl/functions/serveSitemap

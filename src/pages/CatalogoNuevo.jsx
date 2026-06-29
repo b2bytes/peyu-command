@@ -127,8 +127,8 @@ export default function CatalogoNuevo() {
   return (
     <div className="font-inter max-w-[100vw] overflow-x-hidden" style={{ background: '#F8F3ED', color: '#2C1810' }}>
       <SEOHead
-        title="Catálogo Completo — PEYU Chile"
-        description="Explora nuestro catálogo completo de regalos corporativos sustentables. Carcasas iPhone, organizadores, maceteros y más en plástico 100% reciclado."
+        title="Catálogo de Productos Sustentables · Reciclados | PEYU Chile"
+        description="Explora el catálogo completo de PEYU: carcasas iPhone recicladas, organizadores de escritorio, maceteros y regalos corporativos en plástico 100% reciclado. Hecho en Chile, envío a todo el país."
         url="https://peyuchile.cl/CatalogoNuevo"
         type="website"
       />
