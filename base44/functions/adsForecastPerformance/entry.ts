@@ -12,7 +12,49 @@
 //
 // Cacheado en la entidad → solo re-corre si el usuario lo pide explícitamente.
 // ============================================================================
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
+
+// ── Modelo determinista base ────────────────────────────────────────────────
+// Calcula el "piso" de KPIs a partir de la estructura real del draft (budget,
+// tipo, CPC del nicho, completitud creativa) y del AOV B2C REAL del catálogo.
+// La IA luego ajusta DENTRO de bandas alrededor de este piso, así dos mejoras
+// estructurales reales mueven el número y el veredicto no queda clavado.
+function modeloBase(draft, aovB2C) {
+  const budget = draft.daily_budget_clp || 15000;
+  const type = (draft.campaign_type || '').toLowerCase();
+  // CPC y conv-rate típicos del nicho PEYU Chile por tipo de campaña.
+  const cpc = type.includes('search') ? 650 : type.includes('shopping') ? 480 : type.includes('demand') ? 350 : 520;
+  const ctrBase = type.includes('search') ? 4.5 : type.includes('demand') ? 1.1 : 1.4; // %
+  let convRate = type.includes('search') ? 2.4 : type.includes('shopping') ? 1.8 : type.includes('demand') ? 0.8 : 1.3; // %
+
+  // Bonus de completitud: estructura más rica = mejor aprendizaje de la IA de Google.
+  const assetGroups = (draft.asset_groups || []).length;
+  const signals = (draft.audience_signals || []).length;
+  const headlines = (draft.asset_groups?.[0]?.headlines || draft.responsive_search_ads?.[0]?.headlines || []).length;
+  let completeness = 0;
+  if (assetGroups >= 3) completeness += 0.15; else if (assetGroups >= 2) completeness += 0.08;
+  if (signals >= 3) completeness += 0.12; else if (signals >= 1) completeness += 0.05;
+  if (headlines >= 7) completeness += 0.10; else if (headlines >= 5) completeness += 0.05;
+  if ((draft.negative_keywords || []).length >= 5) completeness += 0.05;
+  convRate *= (1 + completeness); // mejoras estructurales suben la conversión esperada
+
+  const clicksWeek = (budget / cpc) * 7;
+  const impressionsWeek = (clicksWeek / (ctrBase / 100));
+  const conversionsWeek = clicksWeek * (convRate / 100);
+  const cac = conversionsWeek > 0 ? (budget * 7) / conversionsWeek : budget * 7;
+  const roas = aovB2C > 0 ? aovB2C / cac : 0;
+
+  return {
+    cpc: Math.round(cpc),
+    ctr_pct: Number(ctrBase.toFixed(2)),
+    impressions_week: Math.round(impressionsWeek),
+    conversions_week: Number(conversionsWeek.toFixed(1)),
+    cac_clp: Math.round(cac),
+    roas: Number(roas.toFixed(2)),
+    completeness_bonus_pct: Math.round(completeness * 100),
+    aov_b2c: aovB2C,
+  };
+}
 
 const FORECAST_SCHEMA = {
   type: 'object',
@@ -131,6 +173,17 @@ Deno.serve(async (req) => {
     const draft = await base44.asServiceRole.entities.AdCampaignDraft.get(draft_id);
     if (!draft) return Response.json({ error: 'Draft no encontrado' }, { status: 404 });
 
+    // AOV B2C REAL: promedio de precio_b2c de productos activos del catálogo.
+    // (Antes estaba hardcodeado en $15.000, que es el presupuesto — no el ticket.)
+    let aovB2C = 15000;
+    try {
+      const prods = await base44.asServiceRole.entities.Producto.filter({ activo: true }, '-updated_date', 300);
+      const precios = (prods || []).map(p => p.precio_b2c).filter(v => v > 0);
+      if (precios.length) aovB2C = Math.round(precios.reduce((a, b) => a + b, 0) / precios.length);
+    } catch { /* fallback al default */ }
+
+    const base = modeloBase(draft, aovB2C);
+
     // Carga campañas históricas relevantes como contexto (con análisis previo o score conocido)
     const allDrafts = await base44.asServiceRole.entities.AdCampaignDraft.list('-created_date', 50);
     const historicalContext = allDrafts
@@ -158,29 +211,39 @@ HISTORIAL DE CAMPAÑAS PEYU (referencia comparativa):
 ${historicalContext.length > 0 ? JSON.stringify(historicalContext, null, 2) : 'Sin historial previo (primera campaña).'}
 
 CONTEXTO DE NEGOCIO:
-- PEYU vende regalos corporativos sostenibles 100% plástico reciclado en Chile.
-- Mercado: B2B (empresas) y B2C (regalos individuales).
-- AOV B2C ~$15.000 CLP, AOV B2B ~$250.000 CLP.
-- CPC promedio en Chile para nicho: $400-900 CLP.
+- PEYU vende productos sostenibles 100% plástico reciclado en Chile (B2C regalos/hogar y B2B empresas).
+- AOV B2C REAL (promedio del catálogo activo): $${aovB2C.toLocaleString('es-CL')} CLP. USA ESTE valor, no asumas otro.
+- CPC promedio en Chile para el nicho: $400-900 CLP según tipo.
 - CTR healthy Search: 3-6%. CTR healthy PMax/Demand Gen: 0.8-2%.
-- Conversion rate Search: 1.5-4%. Demand Gen: 0.5-1.5%.
+- Conversion rate Search: 1.5-4%. PMax: 1-2%. Demand Gen: 0.5-1.5%.
+
+═══ ANCLA DETERMINISTA (modelo base calculado sobre la estructura REAL del draft) ═══
+Estos números salen de un modelo matemático sobre el budget, tipo de campaña, CPC del nicho,
+AOV real y la completitud de la estructura (asset groups, señales, headlines, negativas).
+Tu predicción 'expected' debe quedar DENTRO de ±15% de cada ancla — NO te desvíes sin justificar:
+${JSON.stringify(base, null, 2)}
+El "completeness_bonus_pct" indica cuánto mejoró la estructura: si subió respecto a un forecast previo,
+el score y la conversión DEBEN reflejar esa mejora (no dejes el ROAS clavado).
 
 TU MISIÓN:
 1. Analiza fortalezas y debilidades del draft (keywords, copy, audience, budget, bid strategy).
 2. Compara con históricos similares (mismo tipo/objetivo/audiencia) si existen.
-3. Predice rangos pesimista/esperado/optimista para 5 KPIs semanales.
+3. Predice rangos pesimista/esperado/optimista para 5 KPIs semanales, anclados al modelo base de arriba.
 4. Asigna performance_score 0-100 esperado y verdict accionable.
 5. Lista 3-6 sugerencias de optimización ANTES de publicar.
 6. Detecta riesgos críticos (max 5 flags).
-7. Sé RIGUROSO: no infles métricas. Si el draft es débil, dilo claramente.
+7. Sé RIGUROSO pero JUSTO: con AOV B2C bajo, un ROAS directo <1x en PMax frío es ESPERABLE al inicio —
+   NO lo trates como fracaso fatal. PMax aprende y mejora el ROAS con volumen. Evalúa el POTENCIAL,
+   no solo el ROAS day-1. Una campaña bien estructurada con CAC razonable merece 'review' o 'ship_it',
+   aunque el ROAS arranque bajo: el founder la usará como test controlado de 10-14 días.
 
-REGLAS:
-- Si el historial está vacío, basa predicciones en benchmarks del nicho (PEYU regalos corporativos Chile).
-- Para verdict='ship_it': performance_score esperado >=70 + sin risk_flags críticos.
-- Para verdict='review': 50-69 o tiene risk_flags medios.
-- Para verdict='pivot': 30-49 (recomienda cambios estructurales).
-- Para verdict='kill': <30 (campaña fundamentalmente débil).
-- headline: 1 frase contundente que resuma TODO (ej: "PMax sólida con creative weak → editar headlines y lanzar").`;
+REGLAS DE VERDICT (con AOV bajo el ROAS inicial bajo NO descalifica por sí solo):
+- 'ship_it': estructura completa (≥2 asset groups, ≥2 señales, ≥7 headlines), CAC razonable, score >=68.
+- 'review': estructura buena con 1-2 mejoras pendientes (feed, video, Customer Match), score 52-67.
+- 'pivot': estructura incompleta o ángulo equivocado que requiere rearmar, score 30-51.
+- 'kill': fundamentalmente inviable (<30).
+- Si en este forecast la estructura es MÁS completa que el modelo base sugería antes, sube el score.
+- headline: 1 frase contundente y accionable (ej: "PMax sólida, CAC sano → lanzar como test 14 días").`;
 
     const ai = await base44.integrations.Core.InvokeLLM({
       prompt,
