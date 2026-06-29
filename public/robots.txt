@@ -48,5 +48,6 @@ Disallow: /*?orderby=
 Disallow: /*?retry=
 Disallow: /*&retry=
 
-# Sitemap dinámico (productos + páginas + blog, siempre fresco)
-Sitemap: https://peyuchile.cl/functions/serveSitemap
+# Sitemap index (estático, siempre obtenible por Google) → apunta a los
+# sub-sitemaps dinámicos con páginas, productos y blog siempre frescos.
+Sitemap: https://peyuchile.cl/sitemap.xml
