@@ -1,4 +1,5 @@
 import { useLocation, Link } from 'react-router-dom';
+import { useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { Home, ShoppingCart, MessageCircle } from 'lucide-react';
@@ -7,6 +8,32 @@ export default function PageNotFound() {
     const location = useLocation();
     const pageName = location.pathname.substring(1);
     const isAdminPath = location.pathname.startsWith('/admin');
+
+    // ── SEO: marca esta página como NO indexable ──────────────────────────
+    // Google nunca debe mostrar un 404 como resultado válido. Inyectamos
+    // <meta name="robots" content="noindex, nofollow"> y un <title> claro.
+    // Al desmontar, lo revertimos a index para no afectar páginas reales.
+    useEffect(() => {
+        const prevTitle = document.title;
+        document.title = 'Página no encontrada (404) | PEYU Chile';
+        let robots = document.querySelector('meta[name="robots"]');
+        const created = !robots;
+        if (!robots) {
+            robots = document.createElement('meta');
+            robots.setAttribute('name', 'robots');
+            document.head.appendChild(robots);
+        }
+        const prevRobots = robots.getAttribute('content');
+        robots.setAttribute('content', 'noindex, nofollow');
+        return () => {
+            document.title = prevTitle;
+            if (created) {
+                robots.remove();
+            } else if (prevRobots != null) {
+                robots.setAttribute('content', prevRobots);
+            }
+        };
+    }, []);
 
     const { data: authData, isFetched } = useQuery({
         queryKey: ['user'],
