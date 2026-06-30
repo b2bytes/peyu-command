@@ -245,9 +245,12 @@ REGLAS DE VERDICT (con AOV bajo el ROAS inicial bajo NO descalifica por sí solo
 - Si en este forecast la estructura es MÁS completa que el modelo base sugería antes, sube el score.
 - headline: 1 frase contundente y accionable (ej: "PMax sólida, CAC sano → lanzar como test 14 días").`;
 
+    // gpt_5_mini: rápido para no colgar al agente en vivo. El forecast ya es
+    // determinista (ancla matemática sobre estructura real + AOV), así que el
+    // modelo solo ajusta dentro de bandas — no necesita un modelo pesado.
     const ai = await base44.integrations.Core.InvokeLLM({
       prompt,
-      model: 'gpt_5_4',
+      model: 'gpt_5_mini',
       response_json_schema: FORECAST_SCHEMA,
     });
 

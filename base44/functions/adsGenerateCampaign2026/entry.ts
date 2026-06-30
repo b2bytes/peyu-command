@@ -278,10 +278,13 @@ REGLAS DE IMAGE_PROMPTS (solo si aplica PMax/Demand Gen):
 
 Responde SOLO el JSON estructurado, sin markdown.`;
 
+    // gemini_3_flash: el modelo más rápido para JSON estructurado grande.
+    // gpt_5_5/gpt_5_mini tardaban 55-67s y hacían que el agente se quedara
+    // "trabajando" para siempre (la herramienta superaba el timeout en vivo).
     const result = await base44.asServiceRole.integrations.Core.InvokeLLM({
       prompt,
       response_json_schema: CAMPAIGN_SCHEMA,
-      model: 'gpt_5_5',
+      model: 'gemini_3_flash',
     });
 
     if (!result.campaign_name) {
@@ -392,10 +395,23 @@ Responde SOLO el JSON estructurado, sin markdown.`;
       generated_by_agent: 'ads_commander_2026',
     });
 
+    // Respuesta COMPACTA al agente (no el draft entero de ~13KB, que saturaba
+    // el tool result y hacía que el chat pareciera colgado). La card de la UI
+    // lee el draft completo desde la entidad persistida por draft_id.
     return Response.json({
       success: true,
       draft_id: draft.id,
-      draft,
+      campaign_name: draft.campaign_name,
+      campaign_type: draft.campaign_type,
+      audience: draft.audience_segment,
+      daily_budget_clp: draft.daily_budget_clp,
+      bid_strategy: draft.bid_strategy,
+      asset_groups_count: (draft.asset_groups || []).length,
+      ad_groups_count: (draft.ad_groups || []).length,
+      keywords_count: (draft.keywords || []).length,
+      negatives_count: (draft.negative_keywords || []).length,
+      strategic_rationale: draft.strategic_rationale,
+      scientific_hypothesis: draft.scientific_hypothesis,
       visuals_generated: generate_visuals
         ? finalAssetGroups.reduce((sum, ag) => sum + (ag.image_urls?.length || 0), 0)
         : 0,
