@@ -180,6 +180,15 @@ Deno.serve(async (req) => {
     if (!STATUS_CONFIG[nuevoEstado]) return Response.json({ ok: true, skip: `estado_${nuevoEstado}_no_email` });
     if (!pedido?.cliente_email) return Response.json({ ok: true, skip: 'no_email' });
 
+    // ── ANTI-DUPLICADO DE ENTREGA ────────────────────────────────────────────
+    // Cuando BlueExpress confirma la entrega, entregaSecuenciaPostVenta ya marca
+    // el pedido como "Entregado" Y envía el correo de entrega + reseña (con cupón).
+    // Ese cambio de estado dispara ESTA función, que enviaría un SEGUNDO correo
+    // de entrega. Si el flag email_entrega_enviado ya está puesto, lo saltamos.
+    if (nuevoEstado === 'Entregado' && pedido?.email_entrega_enviado) {
+      return Response.json({ ok: true, skip: 'entrega_ya_notificada_por_secuencia' });
+    }
+
     const html = buildHtmlEmail(pedido, nuevoEstado);
     const cfg = STATUS_CONFIG[nuevoEstado];
 

@@ -82,25 +82,44 @@ export const PWA_UTILS = {
     return false;
   },
 
-  // Add to home screen banner
+  // ¿Mostrar el banner de instalación ahora?
+  // Reglas (no invasivo):
+  //  - NUNCA si ya está instalado (standalone) → el que instaló no lo ve más.
+  //  - Si el usuario lo cerró/instaló a mano → no volver por 7 días.
+  //  - Si solo se auto-ocultó (no decidió) → reaparece tras un cooldown corto
+  //    (cada ~4 minutos) para insistir suave sin molestar.
   showInstallBanner() {
     if (this.isStandalone()) return false;
-    
-    try {
-      const lastDismissed = localStorage.getItem('pwa-banner-dismissed');
-      const daysSinceDismissed = lastDismissed 
-        ? (Date.now() - parseInt(lastDismissed)) / (1000 * 60 * 60 * 24)
-        : Infinity;
 
-      // Show if never dismissed or 7+ days passed
-      return daysSinceDismissed > 7;
+    try {
+      // Dismiss manual / instalado → silencio largo (7 días)
+      const lastDismissed = localStorage.getItem('pwa-banner-dismissed');
+      if (lastDismissed) {
+        const days = (Date.now() - parseInt(lastDismissed)) / (1000 * 60 * 60 * 24);
+        if (days <= 7) return false;
+      }
+
+      // Auto-ocultado (sin decisión) → reaparece cada ~4 min
+      const lastAutoHidden = localStorage.getItem('pwa-banner-autohidden');
+      if (lastAutoHidden) {
+        const mins = (Date.now() - parseInt(lastAutoHidden)) / (1000 * 60);
+        if (mins < 4) return false;
+      }
+
+      return true;
     } catch (e) {
       return true; // Show if localStorage fails
     }
   },
 
+  // Cierre/instalación manual: silencio largo.
   dismissInstallBanner() {
     localStorage.setItem('pwa-banner-dismissed', Date.now().toString());
+  },
+
+  // Auto-ocultado por timeout (el usuario no decidió): silencio corto.
+  autoHideInstallBanner() {
+    localStorage.setItem('pwa-banner-autohidden', Date.now().toString());
   },
 
   // Get install instructions for platform

@@ -62,6 +62,18 @@ export default function PWAInstallBanner() {
     }
   }, []);
 
+  // Auto-ocultar tras 12s visible: si el usuario no decide, lo escondemos
+  // registrando el cooldown corto. Reaparecerá solo cada ~4 min (ver pwa-utils),
+  // y nunca más cuando ya esté instalado. Así deja de ser invasivo.
+  useEffect(() => {
+    if (!showBanner) return;
+    const t = setTimeout(() => {
+      PWA_UTILS.autoHideInstallBanner();
+      setShowBanner(false);
+    }, 12000);
+    return () => clearTimeout(t);
+  }, [showBanner]);
+
   if (!showBanner) return null;
   if (PURCHASE_ROUTES.some((r) => pathname.startsWith(r))) return null;
 

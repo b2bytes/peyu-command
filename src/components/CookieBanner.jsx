@@ -28,6 +28,23 @@ export default function CookieBanner() {
     } catch { /* noop */ }
   }, []);
 
+  // Auto-descarte a los 5s: si el usuario no decide, lo cerramos registrando
+  // "solo necesarias" (soft-consent, cumple ley chilena) y NO lo volvemos a
+  // mostrar. Así el aviso aparece, se lee y desaparece sin molestar.
+  useEffect(() => {
+    if (!open) return;
+    const t = setTimeout(() => {
+      try {
+        if (!localStorage.getItem(CONSENT_KEY)) {
+          localStorage.setItem(CONSENT_KEY, JSON.stringify({ analytics: false, marketing: false, auto: true, at: Date.now() }));
+          window.dispatchEvent(new CustomEvent(CONSENT_EVENT, { detail: { analytics: false, marketing: false } }));
+        }
+      } catch { /* noop */ }
+      setOpen(false);
+    }, 5000);
+    return () => clearTimeout(t);
+  }, [open]);
+
   const persist = (decision) => {
     try {
       localStorage.setItem(CONSENT_KEY, JSON.stringify({ ...decision, at: Date.now() }));
@@ -46,22 +63,22 @@ export default function CookieBanner() {
     >
       {/* Mobile: barra ultra compacta de 1 línea · Desktop: card completa */}
       <div className="bg-slate-900/95 backdrop-blur-xl border border-white/20 rounded-none lg:rounded-2xl shadow-2xl px-3 py-1.5 lg:p-5 text-white">
-        {/* MOBILE COMPACT — solo botones + link mini */}
+        {/* MOBILE COMPACT — texto legible + botones claros */}
         <div className="flex items-center gap-2 lg:hidden">
-          <Cookie className="w-4 h-4 text-teal-300 flex-shrink-0" />
-          <p className="text-[11px] text-white/75 leading-tight flex-1 min-w-0">
-            Usamos cookies.{' '}
-            <Link to="/cookies" className="text-teal-300 underline">Más info</Link>
+          <Cookie className="w-5 h-5 text-teal-300 flex-shrink-0" />
+          <p className="text-[13px] text-white/90 leading-snug flex-1 min-w-0">
+            Usamos cookies 🍪{' '}
+            <Link to="/cookies" className="text-teal-300 underline font-semibold">Más info</Link>
           </p>
           <button
             onClick={() => persist({ analytics: false, marketing: false })}
-            className="h-6 px-2 rounded-md bg-white/10 hover:bg-white/20 border border-white/15 text-[9px] font-semibold whitespace-nowrap"
+            className="h-8 px-2.5 rounded-lg bg-white/10 hover:bg-white/20 border border-white/20 text-[11px] font-semibold whitespace-nowrap"
           >
-            Solo necesarias
+            Necesarias
           </button>
           <button
             onClick={() => persist({ analytics: true, marketing: true })}
-            className="h-6 px-2.5 rounded-md bg-gradient-to-r from-teal-500 to-cyan-500 text-[9px] font-bold shadow-md whitespace-nowrap"
+            className="h-8 px-3.5 rounded-lg bg-gradient-to-r from-teal-500 to-cyan-500 text-[12px] font-bold shadow-md whitespace-nowrap"
           >
             Aceptar
           </button>

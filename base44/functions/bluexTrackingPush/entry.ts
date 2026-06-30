@@ -146,6 +146,33 @@ Deno.serve(async (req) => {
     };
     await sr.entities.Envio.update(envio.id, update);
 
+    // ── SINCRONIZACIÓN CON EL PIPELINE DEL PEDIDO ────────────────────────────
+    // El envío es la fuente de verdad del tránsito. Reflejamos su avance en el
+    // PedidoWeb.estado para que el pipeline del pedido NO quede congelado en
+    // "Despachado". Mapeo conservador: cualquier movimiento del courier
+    // (retirado / en tránsito / en reparto) ⇒ el pedido está "Despachado".
+    // La ENTREGA la maneja exclusivamente entregaSecuenciaPostVenta (abajo),
+    // para no duplicar el correo de entrega.
+    const PEDIDO_ESTADO_MAP = {
+      'Retirado por Courier': 'Despachado',
+      'En Tránsito': 'Despachado',
+      'En Reparto': 'Despachado',
+    };
+    const nuevoEstadoPedido = PEDIDO_ESTADO_MAP[nuevoEstado];
+    if (nuevoEstadoPedido && envio.pedido_id && nuevoEstado !== estadoAnterior) {
+      try {
+        const pedido = await sr.entities.PedidoWeb.get(envio.pedido_id).catch(() => null);
+        // Solo avanzamos hacia adelante: nunca retrocedemos un pedido ya
+        // Entregado/Cancelado/etc. ni re-escribimos un estado igual.
+        const avanzables = ['Nuevo', 'Confirmado', 'En Producción', 'Listo para Despacho'];
+        if (pedido && avanzables.includes(pedido.estado)) {
+          await sr.entities.PedidoWeb.update(envio.pedido_id, { estado: nuevoEstadoPedido });
+        }
+      } catch (e) {
+        console.error('[bluexTrackingPush] sync pedido estado falló:', e.message);
+      }
+    }
+
     // ── Notificación inmediata al cliente (idempotente por tipo)
     let notified = false;
     if (nuevoEstado && nuevoEstado !== estadoAnterior && envio.cliente_email) {
