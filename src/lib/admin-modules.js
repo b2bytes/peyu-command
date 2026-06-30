@@ -42,6 +42,7 @@ export const ADMIN_MODULES = [
   { ruta: '/admin/analitica', nombre: 'Analítica', grupo: 'Control', emoji: '📈', kw: 'metricas ga4 embudo trafico' },
   { ruta: '/admin/reportes', nombre: 'Reportes', grupo: 'Control', emoji: '📑', kw: 'semana resumen exportar' },
   { ruta: '/admin/tarifas-envio', nombre: 'Tarifas Envío', grupo: 'Control', emoji: '🗺️', kw: 'bluex comunas tarifario cobertura' },
+  { ruta: '/admin/correos', nombre: 'Correos al cliente', grupo: 'Control', emoji: '📧', kw: 'emails correos plantillas diseño confirmacion comprobante tracking giftcard carrito' },
 
   // ── Ayuda ──
   { ruta: '/admin/guia-fundadores', nombre: 'Guía Fundadores', grupo: 'Ayuda', emoji: '📖', kw: 'como hacer pasos tutorial aprender' },
