@@ -17,16 +17,27 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 
 // Mapea evento Bluex → estado interno del Envio.
 // Prioriza el código conocido; si no, clasifica por palabras de la descripción.
+// CRÍTICO: usa el `eventCode` específico (DL, GE, PU…), NO el `eventType`
+// genérico (EX = "Pinchazo de excepción") que Bluex pone en casi todos.
 function mapEstado(code, desc) {
   const c = String(code || '').toUpperCase();
   const d = String(desc || '').toUpperCase();
-  if (c === 'DL' || d.includes('ENTREGADO') && !d.includes('NO ENTREGADO')) return 'Entregado';
-  if (d.includes('NO ENTREGADO') || d.includes('INTENTO') || d.includes('AUSENTE') || d.includes('CERRADO')) return 'No Entregado';
+  // Código específico primero
+  if (['DL', 'DE', 'EN'].includes(c)) return 'Entregado';
+  if (['GE', 'FI', 'PR'].includes(c)) return 'Etiqueta Generada';
+  if (['PU', 'RC'].includes(c)) return 'Retirado por Courier';
+  if (['NE', 'AU'].includes(c)) return 'No Entregado';
+  if (['DV'].includes(c)) return 'Devuelto';
+  if (['ADA'].includes(c)) return 'Excepción';
+  // Fallback por descripción
+  if (d.includes('ENTREGAD') && !d.includes('NO ENTREGAD')) return 'Entregado';
+  if (d.includes('NO ENTREGAD') || d.includes('INTENTO') || d.includes('AUSENTE') || d.includes('CERRADO')) return 'No Entregado';
   if (d.includes('REPARTO')) return 'En Reparto';
   if (d.includes('DEVOL') || d.includes('RETORNO')) return 'Devuelto';
   if (d.includes('RETIR') || d.includes('PICKUP') || d.includes('RECOLECT')) return 'Retirado por Courier';
+  if (d.includes('GUIA') || d.includes('DIGITAC') || d.includes('IMPRES') || d.includes('EMITID')) return 'Etiqueta Generada';
   if (d.includes('TRANSITO') || d.includes('RUTA') || d.includes('ARRIBO') || d.includes('SALIDA') || d.includes('HUB')) return 'En Tránsito';
-  if (d.includes('RECHAZ') || d.includes('SINIESTR') || d.includes('EXTRAV') || d.includes('EQUIVOCADA')) return 'Excepción';
+  if (d.includes('RECHAZ') || d.includes('SINIESTR') || d.includes('EXTRAV') || d.includes('EQUIVOCAD')) return 'Excepción';
   return null; // evento informativo: se registra sin cambiar estado
 }
 

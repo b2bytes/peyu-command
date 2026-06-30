@@ -17,15 +17,67 @@ function normalizeBluexBase(raw) {
   return h;
 }
 
-// Mapping eventType corporativo → estados internos
+// Mapping eventType corporativo → estados internos.
+// Códigos REALES verificados de la API corporativa Bluex (no los abreviados
+// genéricos): GE/FI = guía emitida, PU = retirado, DL/DE = entregado, etc.
 const ESTADO_MAP = {
+  // Emisión / digitación de guía
+  FI: 'Etiqueta Generada',   // GUIA EN DIGITACION
+  GE: 'Etiqueta Generada',   // GUIA ENVIADA
   PR: 'Etiqueta Generada',   // PRINTED
+  // Retiro por courier
+  PU: 'Retirado por Courier',// PICKED UP / RETIRADO
+  RC: 'Retirado por Courier',// RECOLECTADO
+  // En tránsito
   IN: 'En Tránsito',         // IN TRANSIT
+  AR: 'En Tránsito',         // ARRIBO
+  SA: 'En Tránsito',         // SALIDA
+  HB: 'En Tránsito',         // HUB
+  // En reparto
   ON: 'En Reparto',          // OUT FOR DELIVERY
-  DE: 'Entregado',           // DELIVERED
+  RP: 'En Reparto',          // EN REPARTO
+  // Entregado
+  DL: 'Entregado',           // DELIVERED
+  DE: 'Entregado',           // DELIVERED (alias)
+  EN: 'Entregado',           // ENTREGADO
+  // No entregado / intento fallido
   NE: 'No Entregado',        // NOT DELIVERED
+  AU: 'No Entregado',        // AUSENTE
+  // Devuelto
+  DV: 'Devuelto',            // DEVUELTO
+  // Excepción real
   EX: 'Excepción',           // EXCEPTION
+  ADA: 'Excepción',          // DIRECCION EQUIVOCADA
 };
+
+// Clasifica por la DESCRIPCIÓN del evento cuando el código no está mapeado.
+// Misma heurística que bluexTrackingPush (que sí clasificaba bien por texto),
+// para que ningún evento real quede como "Excepción" o texto crudo por error.
+function estadoPorDescripcion(desc) {
+  const d = String(desc || '').toUpperCase();
+  if (!d) return null;
+  if (d.includes('ENTREGAD') && !d.includes('NO ENTREGAD')) return 'Entregado';
+  if (d.includes('NO ENTREGAD') || d.includes('INTENTO') || d.includes('AUSENTE') || d.includes('CERRADO')) return 'No Entregado';
+  if (d.includes('REPARTO')) return 'En Reparto';
+  if (d.includes('DEVOL') || d.includes('RETORNO')) return 'Devuelto';
+  if (d.includes('RETIR') || d.includes('PICKUP') || d.includes('RECOLECT')) return 'Retirado por Courier';
+  if (d.includes('GUIA') || d.includes('DIGITAC') || d.includes('IMPRES') || d.includes('EMITID')) return 'Etiqueta Generada';
+  if (d.includes('TRANSITO') || d.includes('RUTA') || d.includes('ARRIBO') || d.includes('SALIDA') || d.includes('HUB')) return 'En Tránsito';
+  if (d.includes('RECHAZ') || d.includes('SINIESTR') || d.includes('EXTRAV') || d.includes('EQUIVOCAD')) return 'Excepción';
+  return null; // evento informativo: no cambia el estado
+}
+
+// Resuelve el estado interno de un evento.
+// CRÍTICO: en la API corporativa Bluex el `eventCode` (GE, FI, PU, DL…) es el
+// evento ESPECÍFICO real; el `eventType` (EX, PU…) es solo una CATEGORÍA que
+// agrupa casi todo bajo "Pinchazo de excepción/evento". Por eso el eventCode
+// y la descripción mandan; el eventType es el último recurso.
+function resolverEstado(eventType, code, desc) {
+  return ESTADO_MAP[String(code || '').toUpperCase()]
+      || estadoPorDescripcion(desc)
+      || ESTADO_MAP[String(eventType || '').toUpperCase()]
+      || null;
+}
 
 Deno.serve(async (req) => {
   try {
@@ -123,17 +175,30 @@ Deno.serve(async (req) => {
     const pkg = root?.packages?.[0] || root || {};
     const rawEvents = pkg.trackings || pkg.events || pkg.tracking || [];
 
-    const eventos = rawEvents.map((t) => ({
-      at: t.eventDate || t.date || t.fecha || t.timestamp || new Date().toISOString(),
-      code: String(t.eventCode || t.eventType || t.code || ''),
-      estado: ESTADO_MAP[t.eventType] || t.eventTypeDesc || t.status || 'En Tránsito',
-      descripcion: t.eventCodeDesc || t.eventTypeDesc || t.description || t.descripcion || '',
-      ubicacion: t.location || t.ubicacion || t.branch || '',
-      es_excepcion: ['EX', 'NE'].includes(t.eventType) || /no entregado|rechazado|siniestro|extrav/i.test(t.eventCodeDesc || t.description || ''),
-    })).sort((a, b) => new Date(b.at) - new Date(a.at));
+    const eventos = rawEvents.map((t) => {
+      const desc = t.eventCodeDesc || t.eventTypeDesc || t.description || t.descripcion || '';
+      const estado = resolverEstado(t.eventType, t.eventCode || t.code, desc);
+      return {
+        at: t.eventDate || t.date || t.fecha || t.timestamp || new Date().toISOString(),
+        code: String(t.eventCode || t.eventType || t.code || ''),
+        // Si el evento es informativo (sin estado mapeado), conserva el último
+        // estado conocido en vez de inventar "Excepción"/"En Tránsito".
+        estado: estado || 'En Tránsito',
+        descripcion: desc,
+        ubicacion: t.location || t.ubicacion || t.branch || '',
+        es_excepcion: estado === 'Excepción' || estado === 'No Entregado'
+          || /no entregad|rechazad|siniestr|extrav|equivocad/i.test(desc),
+      };
+    }).sort((a, b) => new Date(b.at) - new Date(a.at));
 
+    // El estado del envío = el del evento MÁS RECIENTE que tenga un estado real
+    // mapeado (no un evento informativo). Así una entrega real (DL) manda aunque
+    // después llegue un evento informativo sin estado.
+    const eventoConEstado = eventos.find((e) =>
+      resolverEstado(null, e.code, e.descripcion) !== null
+    );
     const ultimoEvento = eventos[0];
-    const nuevoEstado = ultimoEvento?.estado || envio.estado;
+    const nuevoEstado = eventoConEstado?.estado || envio.estado;
     const tieneExcepcion = eventos.some((e) => e.es_excepcion);
     const intentos = eventos.filter((e) => /reparto|intento|no entregado/i.test(e.descripcion)).length;
 
@@ -162,10 +227,25 @@ Deno.serve(async (req) => {
     };
 
     if (nuevoEstado === 'Entregado' && !envio.fecha_entrega_real) {
-      updates.fecha_entrega_real = ultimoEvento.at;
+      updates.fecha_entrega_real = eventoConEstado?.at || ultimoEvento.at;
     }
 
     await sr.entities.Envio.update(envio.id, updates);
+
+    // ── ENTREGA → dispara la secuencia post-venta (marca el PedidoWeb como
+    // "Entregado" + email de reseña). Idempotente: solo cuando recién cambió a
+    // Entregado. Así el pipeline avanza solo, llame quien llame esta función
+    // (poller, botón manual del admin o webhook). No bloqueante.
+    if (nuevoEstado === 'Entregado' && envio.estado !== 'Entregado' && envio.pedido_id) {
+      try {
+        await base44.functions.invoke('entregaSecuenciaPostVenta', {
+          internal: true,
+          pedido_id: envio.pedido_id,
+        });
+      } catch (e) {
+        console.error('[bluexTrackShipment] secuencia post-venta falló:', e.message);
+      }
+    }
 
     return Response.json({
       ok: true,
