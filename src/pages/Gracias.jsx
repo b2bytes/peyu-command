@@ -6,6 +6,7 @@ import { trackPurchase } from '@/lib/analytics-peyu';
 import { clearCartV2 } from '@/lib/shop-v2-cart';
 import NewsletterCTA from '@/components/newsletter/NewsletterCTA';
 import TransferenciaInstrucciones from '@/components/gracias/TransferenciaInstrucciones';
+import InstalarAppPedido from '@/components/gracias/InstalarAppPedido';
 
 /**
  * Página post-checkout Liquid Dual.
@@ -141,6 +142,9 @@ export default function Gracias() {
               <TransferenciaInstrucciones numero={numero} total={total} />
             </div>
           )}
+
+          {/* Instalar app (solo móvil, momento de máxima intención) */}
+          <InstalarAppPedido numero={numero} />
 
           {/* Próximos pasos */}
           <div className="mt-6 bg-white rounded-3xl p-6 sm:p-8" style={{ border: '1.5px solid #E8DDD0' }}>
