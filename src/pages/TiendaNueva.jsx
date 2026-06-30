@@ -9,7 +9,6 @@ import ResumeJourneyBannerV2 from '@/components/shopv2/ResumeJourneyBannerV2';
 import TrustSocialBarV2 from '@/components/shopv2/TrustSocialBarV2';
 import ImpactStoryV2 from '@/components/shopv2/ImpactStoryV2';
 import ProductCardV2 from '@/components/shopv2/ProductCardV2';
-import PersonalizarFabV2 from '@/components/shopv2/PersonalizarFabV2';
 import { CATEGORIAS_V2 } from '@/lib/shop-v2-config';
 import { getProductImage } from '@/utils/productImages';
 
@@ -138,9 +137,6 @@ export default function TiendaNueva() {
       </footer>
 
 {/* MobileNavBarV2 viene del PublicPageLayout */}
-
-      {/* Botón Personalizar permanente: aparece al hacer scroll */}
-      <PersonalizarFabV2 />
     </div>
   );
 }
