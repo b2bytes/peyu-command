@@ -149,7 +149,7 @@ export default function AdsAgentPanel() {
     try {
       const conv = await base44.agents.createConversation({
         agent_name: AGENT_NAME,
-        metadata: { name: `Google Ads ${new Date().toLocaleDateString('es-CL')}` },
+        metadata: { name: `Google Ads · ${new Date().toLocaleString('es-CL', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}` },
       });
       setConversation(conv);
       setMessages([{
