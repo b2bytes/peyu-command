@@ -3,18 +3,62 @@
 //                   Google Ads Editor (subida masiva 1-click).
 // ----------------------------------------------------------------------------
 // Payload: { draft_id }
-// Retorna: { file_url, csv_text, rows }
-// Sube el CSV a filestorage público y devuelve la URL.
+// Retorna: { file_url, csv_text, rows_count }
+//
+// FORMATO CORRECTO (confirmado contra la doc oficial de Google Ads Editor):
+//   • Cada fila describe UNA sola entidad (campaña / ad group / keyword / ad).
+//   • Los headers deben ser los NOMBRES OFICIALES en inglés. En particular:
+//       - NO existe la columna "Status" a secas. Google exige columnas de
+//         estado SEPARADAS por entidad: "Campaign Status", "Ad Group Status".
+//         (Este era el bug del "falta una columna" — Editor no reconocía
+//          "Status" y abortaba la importación.)
+//       - El tipo de keyword/negativa va en UNA sola columna "Type"
+//         (no "Criterion Type" + "Match type" por separado).
+//       - Responsive Search Ad usa "Headline 1..15" + "Description 1..4".
+//   • Performance Max / Demand Gen NO se importan vía este CSV de Editor
+//     (los asset groups con imágenes requieren la subida nativa de Editor).
+//     Para esos tipos generamos un CSV de Search-equivalente con el copy de
+//     texto, y avisamos al usuario que los visuales se cargan en Editor.
+// Ref: https://support.google.com/google-ads/editor/answer/57747
 // ============================================================================
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 
-// CSV export siguiendo las columnas estándar de Google Ads Editor.
-// Ref: https://support.google.com/google-ads/editor/answer/52370
 const ESCAPE = (v) => {
   if (v === null || v === undefined) return '';
   const s = String(v).replace(/"/g, '""');
   return /[",\n]/.test(s) ? `"${s}"` : s;
 };
+
+// Mapea el tipo de campaña interno al valor oficial que Editor reconoce.
+function googleCampaignType(t) {
+  const x = (t || '').toLowerCase();
+  if (x.includes('shopping')) return 'Shopping';
+  if (x.includes('video') || x.includes('demand')) return 'Video';
+  // PMax no tiene valor de "Campaign type" importable por CSV plano →
+  // lo tratamos como Search para que el copy de texto se importe igual.
+  return 'Search';
+}
+
+function googleMatchType(m) {
+  const x = (m || 'Phrase').toLowerCase();
+  if (x.includes('exact')) return 'Exact';
+  if (x.includes('broad')) return 'Broad';
+  return 'Phrase';
+}
+
+// Normaliza la estrategia de puja al valor LIMPIO que Editor reconoce.
+// El draft a veces trae texto explicativo entre paréntesis ("Maximize
+// Conversions (Smart Bidding con Exploration…)") que Editor rechaza.
+function googleBidStrategy(b) {
+  const x = (b || '').toLowerCase();
+  if (x.includes('target cpa') || x.includes('tcpa')) return 'Target CPA';
+  if (x.includes('target roas') || x.includes('troas')) return 'Target ROAS';
+  if (x.includes('maximize conversion value') || x.includes('conversion value')) return 'Maximize Conversion Value';
+  if (x.includes('maximize click')) return 'Maximize Clicks';
+  if (x.includes('manual cpc')) return 'Manual CPC';
+  // Por defecto (y para cualquier variante de "maximize conversions").
+  return 'Maximize Conversions';
+}
 
 Deno.serve(async (req) => {
   try {
@@ -25,8 +69,7 @@ Deno.serve(async (req) => {
     const { draft_id } = await req.json();
     if (!draft_id) return Response.json({ error: 'draft_id required' }, { status: 400 });
 
-    const drafts = await base44.asServiceRole.entities.AdCampaignDraft.filter({ id: draft_id });
-    const draft = drafts[0];
+    const draft = await base44.asServiceRole.entities.AdCampaignDraft.get(draft_id);
     if (!draft) return Response.json({ error: 'Draft not found' }, { status: 404 });
 
     const cname = draft.campaign_name;
@@ -36,142 +79,140 @@ Deno.serve(async (req) => {
                        utm.utm_campaign && `utm_campaign=${utm.utm_campaign}`]
                       .filter(Boolean).join('&');
 
-    const rows = [];
-    const header = [
-      'Campaign', 'Campaign type', 'Status', 'Budget', 'Bid strategy type',
-      'Target CPA', 'Networks', 'Languages', 'Location', 'Ad group', 'Ad group status',
-      'Keyword', 'Criterion Type', 'Match type', 'Headline 1', 'Headline 2', 'Headline 3',
-      'Headline 4', 'Headline 5', 'Headline 6', 'Headline 7', 'Headline 8', 'Headline 9',
-      'Headline 10', 'Headline 11', 'Headline 12', 'Headline 13', 'Headline 14', 'Headline 15',
-      'Description 1', 'Description 2', 'Description 3', 'Description 4',
-      'Path 1', 'Path 2', 'Final URL', 'Final URL suffix', 'Ad type',
-      'Sitelink text', 'Sitelink description 1', 'Sitelink description 2', 'Sitelink final URL',
-      'Callout text', 'Snippet header', 'Snippet values'
-    ];
-    rows.push(header);
-
     const daily = draft.daily_budget_clp || 0;
-    const locs = (draft.locations || ['Chile']).join(';');
     const langs = (draft.languages || ['Spanish']).join(';');
+    const networks = googleCampaignType(draft.campaign_type) === 'Search'
+      ? 'Google Search' : '';
 
-    // Row 1: Campaign itself
-    rows.push([cname, draft.campaign_type || 'Search', 'Paused', daily,
-      draft.bid_strategy || 'Maximize Conversions', draft.target_cpa_clp || '',
-      'Google search', langs, locs, '', '', '', '', '',
-      '', '', '', '', '', '', '', '', '', '', '', '', '', '', '',
-      '', '', '', '', '', '', '', '', '', '', '', '', '', '', ''
-    ]);
+    // ── Header oficial. Nombres EXACTOS reconocidos por Google Ads Editor.
+    //    Cada entidad usa su propia columna de estado (Campaign/Ad Group),
+    //    y "Type" unifica match type + negativas. ─────────────────────────
+    const header = [
+      'Campaign',
+      'Campaign Type',
+      'Campaign Status',
+      'Campaign Daily Budget',
+      'Bid Strategy Type',
+      'Target CPA',
+      'Networks',
+      'Languages',
+      'Ad Group',
+      'Ad Group Status',
+      'Max CPC',
+      'Keyword',
+      'Type',
+      'Headline 1', 'Headline 2', 'Headline 3', 'Headline 4', 'Headline 5',
+      'Headline 6', 'Headline 7', 'Headline 8', 'Headline 9', 'Headline 10',
+      'Headline 11', 'Headline 12', 'Headline 13', 'Headline 14', 'Headline 15',
+      'Description 1', 'Description 2', 'Description 3', 'Description 4',
+      'Path 1', 'Path 2',
+      'Final URL',
+      'Final URL Suffix',
+    ];
+    const COLS = header.length;
 
-    // Ad groups + keywords + ads
+    // Crea una fila vacía y rellena por nombre de columna (robusto a cambios).
+    const idx = Object.fromEntries(header.map((h, i) => [h, i]));
+    const blank = () => Array(COLS).fill('');
+    const rows = [header];
+
+    // ── Fila 1: la CAMPAÑA ─────────────────────────────────────────────────
+    {
+      const r = blank();
+      r[idx['Campaign']] = cname;
+      r[idx['Campaign Type']] = googleCampaignType(draft.campaign_type);
+      r[idx['Campaign Status']] = 'Paused';
+      r[idx['Campaign Daily Budget']] = daily;
+      const bidType = googleBidStrategy(draft.bid_strategy);
+      r[idx['Bid Strategy Type']] = bidType;
+      // Target CPA solo aplica con estrategia Target CPA.
+      if (draft.target_cpa_clp && bidType === 'Target CPA') r[idx['Target CPA']] = draft.target_cpa_clp;
+      r[idx['Networks']] = networks;
+      r[idx['Languages']] = langs;
+      rows.push(r);
+    }
+
+    // ── Ad groups: la fuente de verdad es draft.ad_groups; sus RSAs y
+    //    keywords se enganchan por nombre del ad group. ─────────────────────
+    const rsaByGroup = {};
     for (const rsa of (draft.responsive_search_ads || [])) {
-      const ag = rsa.ad_group;
-      const headlines = rsa.headlines || [];
-      const descriptions = rsa.descriptions || [];
-      const hArr = Array.from({ length: 15 }, (_, i) => headlines[i] || '');
-      const dArr = Array.from({ length: 4 }, (_, i) => descriptions[i] || '');
+      (rsaByGroup[rsa.ad_group] = rsaByGroup[rsa.ad_group] || []).push(rsa);
+    }
+    const kwMeta = draft.keywords || [];
 
-      // Ad group row
-      rows.push([cname, '', 'Paused', '', '', '', '', '', '', ag, 'Enabled',
-        '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '',
-        '', '', '', '', '', '', '', '', '', '', '', '', '', '', '']);
+    // Para PMax/Demand Gen no hay ad_groups con keywords: usamos asset_groups
+    // como "ad groups" para volcar el copy de texto (headlines/descriptions).
+    const groups = (draft.ad_groups && draft.ad_groups.length)
+      ? draft.ad_groups
+      : (draft.asset_groups || []).map(ag => ({
+          name: ag.name,
+          keywords: [],
+          _assetHeadlines: ag.headlines || [],
+          _assetDescriptions: ag.descriptions || [],
+        }));
 
-      // Keywords for this ad group
-      const kwsForGroup = (draft.ad_groups || []).find(a => a.name === ag)?.keywords || [];
-      const draftKwMeta = draft.keywords || [];
-      for (const kwText of kwsForGroup) {
-        const meta = draftKwMeta.find(k => k.text === kwText);
-        rows.push([cname, '', 'Paused', '', '', '', '', '', '', ag, '',
-          kwText, 'Keyword', meta?.match_type || 'Phrase',
-          '', '', '', '', '', '', '', '', '', '', '', '', '', '', '',
-          '', '', '', '', '', '', '', '', '', '', '', '', '', '', '']);
+    for (const g of groups) {
+      const agName = g.name;
+
+      // Fila del ad group
+      {
+        const r = blank();
+        r[idx['Campaign']] = cname;
+        r[idx['Ad Group']] = agName;
+        r[idx['Ad Group Status']] = 'Enabled';
+        rows.push(r);
       }
 
-      // Responsive Search Ad row
-      rows.push([cname, '', 'Paused', '', '', '', '', '', '', ag, '',
-        '', '', '',
-        ...hArr,
-        ...dArr,
-        rsa.path1 || '', rsa.path2 || '', rsa.final_url || '', utmSuffix,
-        'Responsive search ad', '', '', '', '', '', '', '']);
+      // Keywords del ad group
+      for (const kwText of (g.keywords || [])) {
+        const meta = kwMeta.find(k => k.text === kwText);
+        const r = blank();
+        r[idx['Campaign']] = cname;
+        r[idx['Ad Group']] = agName;
+        r[idx['Keyword']] = kwText;
+        r[idx['Type']] = googleMatchType(meta?.match_type);
+        rows.push(r);
+      }
+
+      // Responsive Search Ads del grupo
+      const rsas = rsaByGroup[agName] || [];
+      // Si no hay RSA explícito pero el asset group trae copy, fabricamos uno.
+      if (!rsas.length && (g._assetHeadlines?.length || g._assetDescriptions?.length)) {
+        rsas.push({
+          headlines: g._assetHeadlines,
+          descriptions: g._assetDescriptions,
+          final_url: draft.landing_url || draft.final_url,
+        });
+      }
+      for (const rsa of rsas) {
+        const r = blank();
+        r[idx['Campaign']] = cname;
+        r[idx['Ad Group']] = agName;
+        const hs = rsa.headlines || [];
+        const ds = rsa.descriptions || [];
+        for (let i = 0; i < 15; i++) if (hs[i]) r[idx[`Headline ${i + 1}`]] = hs[i];
+        for (let i = 0; i < 4; i++) if (ds[i]) r[idx[`Description ${i + 1}`]] = ds[i];
+        if (rsa.path1) r[idx['Path 1']] = rsa.path1;
+        if (rsa.path2) r[idx['Path 2']] = rsa.path2;
+        r[idx['Final URL']] = rsa.final_url || draft.landing_url || draft.final_url || '';
+        if (utmSuffix) r[idx['Final URL Suffix']] = utmSuffix;
+        rows.push(r);
+      }
     }
 
-    // Negative keywords (campaign-level)
+    // ── Negative keywords a nivel campaña ──────────────────────────────────
     for (const nk of (draft.negative_keywords || [])) {
-      rows.push([cname, '', 'Paused', '', '', '', '', '', '', '', '',
-        nk, 'Negative keyword', 'Broad',
-        '', '', '', '', '', '', '', '', '', '', '', '', '', '', '',
-        '', '', '', '', '', '', '', '', '', '', '', '', '', '', '']);
-    }
-
-    // Asset Groups (Performance Max + Demand Gen)
-    // Google Ads Editor importa asset groups con su set de assets en filas separadas.
-    for (const ag of (draft.asset_groups || [])) {
-      const agName = ag.name;
-      // Fila del asset group
-      rows.push([cname, '', 'Paused', '', '', '', '', '', '', agName, 'Enabled',
-        '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '',
-        '', '', '', '', '', '', '', '', '', '', '', '', '', '', '']);
-
-      // Headlines como assets de texto
-      for (const h of (ag.headlines || [])) {
-        rows.push([cname, '', 'Paused', '', '', '', '', '', '', agName, '',
-          '', '', '', h, '', '', '', '', '', '', '', '', '', '', '', '', '', '',
-          '', '', '', '', '', '', '', 'Headline asset', '', '', '', '', '', '', '']);
-      }
-      // Long headlines
-      for (const lh of (ag.long_headlines || [])) {
-        rows.push([cname, '', 'Paused', '', '', '', '', '', '', agName, '',
-          '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '',
-          lh, '', '', '', '', '', '', 'Long headline asset', '', '', '', '', '', '', '']);
-      }
-      // Descriptions
-      for (const d of (ag.descriptions || [])) {
-        rows.push([cname, '', 'Paused', '', '', '', '', '', '', agName, '',
-          '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '',
-          d, '', '', '', '', '', '', 'Description asset', '', '', '', '', '', '', '']);
-      }
-      // Image URLs (Google Ads Editor importa por URL externa)
-      for (const img of (ag.image_urls || [])) {
-        rows.push([cname, '', 'Paused', '', '', '', '', '', '', agName, '',
-          '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '',
-          '', '', '', '', '', img, utmSuffix, 'Image asset', '', '', '', '', '', '', '']);
-      }
-      // Business name + CTA como callout-like
-      if (ag.business_name) {
-        rows.push([cname, '', 'Paused', '', '', '', '', '', '', agName, '',
-          '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '',
-          '', '', '', '', '', '', '', 'Business name', '', '', '', '', ag.business_name, '', '']);
-      }
-    }
-
-    // Sitelinks
-    for (const sl of (draft.sitelinks || [])) {
-      rows.push([cname, '', 'Paused', '', '', '', '', '', '', '', '',
-        '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '',
-        '', '', '', '', '', '', '', 'Sitelink',
-        sl.text || '', sl.description1 || '', sl.description2 || '', sl.url || '', '', '', '']);
-    }
-
-    // Callouts
-    for (const co of (draft.callouts || [])) {
-      rows.push([cname, '', 'Paused', '', '', '', '', '', '', '', '',
-        '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '',
-        '', '', '', '', '', '', '', 'Callout',
-        '', '', '', '', co, '', '']);
-    }
-
-    // Structured snippets
-    for (const sn of (draft.structured_snippets || [])) {
-      rows.push([cname, '', 'Paused', '', '', '', '', '', '', '', '',
-        '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '',
-        '', '', '', '', '', '', '', 'Structured snippet',
-        '', '', '', '', '', sn.header || '', (sn.values || []).join(';')]);
+      const r = blank();
+      r[idx['Campaign']] = cname;
+      r[idx['Keyword']] = nk;
+      r[idx['Type']] = 'Campaign negative';
+      rows.push(r);
     }
 
     const csvText = rows.map(r => r.map(ESCAPE).join(',')).join('\n');
 
-    // Subir CSV como archivo
-    const blob = new Blob([csvText], { type: 'text/csv;charset=utf-8' });
+    // BOM UTF-8 para que Editor/Excel lean bien los acentos (á, ñ, …).
+    const blob = new Blob(['\uFEFF' + csvText], { type: 'text/csv;charset=utf-8' });
     const file = new File([blob], `${draft.codename || 'campaign'}_ads_editor.csv`, { type: 'text/csv' });
     const upload = await base44.asServiceRole.integrations.Core.UploadFile({ file });
 
@@ -180,12 +221,17 @@ Deno.serve(async (req) => {
       exported_csv_url: upload.file_url,
     });
 
+    const isPmax = /performance|demand/i.test(draft.campaign_type || '');
+    const instructions = isPmax
+      ? 'Abre Google Ads Editor → File → Import → From file → selecciona este CSV. Importa la estructura y el copy de texto. ⚠️ Performance Max / Demand Gen: las imágenes y videos del asset group se suben directo en Editor (no viajan por CSV). Las campañas quedan en Paused.'
+      : 'Abre Google Ads Editor → File → Import → From file → selecciona este CSV. La campaña, ad groups, keywords y anuncios se importan completos. Quedan en Paused — revísalos y publícalos cuando estés listo.';
+
     return Response.json({
       success: true,
       file_url: upload.file_url,
       rows_count: rows.length,
       filename: file.name,
-      instructions: 'Abre Google Ads Editor → File → Import → From file → selecciona este CSV. Las campañas quedan en Paused (lo defines antes de publicar).',
+      instructions,
     });
   } catch (err) {
     return Response.json({ error: err.message, stack: err.stack }, { status: 500 });
