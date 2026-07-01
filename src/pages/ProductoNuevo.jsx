@@ -180,30 +180,52 @@ export default function ProductoNuevo() {
     applyAutoPlacement(producto, pers, setPlacements);
   }, [producto, pers.logoUrl, pers.disenoPeyuUrl, pers.texto]);
 
-  // Galería: imagen por color elegido (1ª) + ángulos extra de galeria_urls.
+  // Galería: para carcasas, TODAS las fotos reales de color como thumbnails
+  // (imagenes_por_color). Al elegir un color, galIdx salta al índice de esa
+  // foto → la imagen principal cambia de forma explícita e inequívoca.
+  // Para el resto: imagen del color elegido (1ª) + ángulos extra de galeria_urls.
   const galleryImages = useMemo(() => {
     if (!producto) return [];
-    const main = (esCarcasa && color) ? getProductImageForColor(producto, color) : getProductImage(producto);
-    // Carcasas: la imagen por color es la ÚNICA fuente de verdad.
-    if (esCarcasa) return [main];
+    if (esCarcasa) {
+      const mapa = producto.imagenes_por_color;
+      if (mapa && typeof mapa === 'object' && colores.length > 0) {
+        const base = getProductImage(producto);
+        const imgs = colores
+          .map((c) => {
+            const url = getProductImageForColor(producto, c);
+            return url && url !== base ? url : null;
+          })
+          .filter(Boolean);
+        const unique = [...new Set(imgs)];
+        if (unique.length > 0) return unique;
+      }
+      return [getProductImage(producto)];
+    }
+    const main = color ? getProductImageForColor(producto, color) : getProductImage(producto);
     let extra = Array.isArray(producto.galeria_urls)
       ? producto.galeria_urls.filter((u) => typeof u === 'string' && u.startsWith('http') && u !== main)
       : [];
-
-    // Filtro especial: cacho unitario no muestra imagen amarilla
     if (producto.sku === 'ENT-CACH-1') {
       extra = extra.filter((u) => !u.toLowerCase().includes('amarillo') && !u.includes('1-2.jpg'));
     }
-
     return [main, ...extra].slice(0, 6);
-  }, [producto, color, esCarcasa]);
+  }, [producto, color, esCarcasa, colores]);
 
   // Al cambiar de color, saltamos a la imagen correcta en la galería.
-  // Prioridad: imagenes_por_color (foto real) > match por nombre > índice 0.
+  // Carcasas: galIdx = índice de la foto del color elegido (galería tiene todas).
+  // Resto: imagenes_por_color (foto real) > match por nombre > índice 0.
   useEffect(() => {
-    if (!color || esCarcasa) { setGalIdx(0); return; }
-    // Si imagenes_por_color tiene foto real para este color, va al índice 0
-    // (la galería arranca con la imagen principal, que displayImg ya resolvió).
+    if (esCarcasa) {
+      if (color && galleryImages.length > 1) {
+        const colorPhoto = getProductImageForColor(producto, color);
+        const idx = galleryImages.indexOf(colorPhoto);
+        setGalIdx(idx >= 0 ? idx : 0);
+      } else {
+        setGalIdx(0);
+      }
+      return;
+    }
+    if (!color) { setGalIdx(0); return; }
     const colorPhoto = getProductImageForColor(producto, color);
     if (colorPhoto && colorPhoto !== getProductImage(producto)) {
       setGalIdx(0);
@@ -211,8 +233,7 @@ export default function ProductoNuevo() {
     }
     const match = findColorImageMatch(galleryImages, color);
     setGalIdx(match ? match.index : 0);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [colorId, esCarcasa]);
+  }, [colorId, esCarcasa, galleryImages, color, producto]);
 
   // La imagen principal SIEMPRE es la del color elegido.
   // Prioridad: 1) imagenes_por_color (foto real del color) → 2) match por nombre en galería → 3) base + tinte.
