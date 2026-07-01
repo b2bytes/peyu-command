@@ -46,6 +46,41 @@ function pickEscalonado(producto, qty) {
   return null;
 }
 
+// ── Email helpers (Gmail API, RFC 2822 con adjunto PDF) ──
+function encodeHeader(str) {
+  if (!str) return '';
+  // eslint-disable-next-line no-control-regex
+  if (/^[\x20-\x7E]*$/.test(str)) return str;
+  return `=?UTF-8?B?${btoa(unescape(encodeURIComponent(str)))}?=`;
+}
+function buildMimeWithPdf({ from, to, subject, html, pdfB64, filename }) {
+  const boundary = `peyu-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+  const headers = [
+    `From: ${from}`,
+    `To: ${to}`,
+    `Subject: ${encodeHeader(subject)}`,
+    'MIME-Version: 1.0',
+    `Content-Type: multipart/mixed; boundary="${boundary}"`,
+  ].join('\r\n');
+  const body = [
+    `--${boundary}`,
+    'Content-Type: text/html; charset="UTF-8"',
+    'Content-Transfer-Encoding: 7bit',
+    '',
+    html,
+    '',
+    `--${boundary}`,
+    `Content-Type: application/pdf; name="${filename}"`,
+    'Content-Transfer-Encoding: base64',
+    `Content-Disposition: attachment; filename="${filename}"`,
+    '',
+    pdfB64.replace(/(.{76})/g, '$1\r\n'),
+    '',
+    `--${boundary}--`,
+  ].join('\r\n');
+  return `${headers}\r\n\r\n${body}`;
+}
+
 function genCotNumero() {
   const d = new Date();
   const y = d.getFullYear().toString().slice(-2);
@@ -416,23 +451,23 @@ Deno.serve(async (req) => {
     }
     const base64 = btoa(pdfBin);
 
-    // 📧 Enviar la cotización al correo del cliente (si dejó email) vía Resend,
-    // con el PDF adjunto. Best-effort: si falla el email NO rompemos la descarga.
-    let emailEnviado = false;
-    const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');
-    if (email && /\S+@\S+\.\S+/.test(email) && RESEND_API_KEY) {
-      try {
-        const r = await fetch('https://api.resend.com/emails', {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${RESEND_API_KEY}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            from: 'PEYU Chile <ventas@peyuchile.cl>',
-            to: [email],
-            subject: `Tu cotización PEYU ${numero} · ${producto.nombre} x${cantidad}u`,
-            html: `
+    // 📎 Subir el PDF a storage → link público compartible por WhatsApp.
+    // Sin esto el agente solo tenía base64 y NO podía pasarle el PDF al cliente.
+    let pdfUrl = '';
+    try {
+      const file = new File([pdfU8], `Cotizacion-Peyu-${numero}.pdf`, { type: 'application/pdf' });
+      const up = await base44.asServiceRole.integrations.Core.UploadFile({ file });
+      pdfUrl = up?.file_url || '';
+      if (pdfUrl) {
+        await base44.asServiceRole.entities.Cotizacion.update(cot.id, {
+          notas: `${cot.notas || ''} · PDF: ${pdfUrl}`,
+        }).catch(() => {});
+      }
+    } catch (e) {
+      console.error('Error subiendo PDF a storage:', e?.message || e);
+    }
+
+    const emailHtml = `
               <div style="font-family:Arial,sans-serif;max-width:560px;margin:0 auto;color:#1a1a1a">
                 <div style="background:#0F8B6C;padding:24px;border-radius:12px 12px 0 0">
                   <h1 style="color:#fff;margin:0;font-size:22px">PEYU 🐢</h1>
@@ -440,7 +475,7 @@ Deno.serve(async (req) => {
                 </div>
                 <div style="border:1px solid #e5e7eb;border-top:0;padding:24px;border-radius:0 0 12px 12px">
                   <p>Hola${contacto ? ` ${contacto}` : ''} 👋</p>
-                  <p>Te adjuntamos tu cotización <strong>${numero}</strong> generada desde el chat:</p>
+                  <p>Te adjuntamos tu propuesta técnica y económica <strong>${numero}</strong>:</p>
                   <table style="width:100%;border-collapse:collapse;margin:16px 0;font-size:14px">
                     <tr><td style="padding:6px 0;color:#666">Producto</td><td style="padding:6px 0;text-align:right;font-weight:600">${producto.nombre}</td></tr>
                     <tr><td style="padding:6px 0;color:#666">Cantidad</td><td style="padding:6px 0;text-align:right;font-weight:600">${cantidad} u.</td></tr>
@@ -452,7 +487,50 @@ Deno.serve(async (req) => {
                   <p style="font-size:13px;color:#666">Validez: 15 días · Lead time estimado: ${leadTime} días hábiles. Para aprobar, responde este correo a corporativos@peyuchile.cl indicando el número.</p>
                   <a href="https://wa.me/56979471933?text=${encodeURIComponent(`Hola PEYU, apruebo la propuesta ${numero}. Quiero avanzar.`)}" style="display:inline-block;background:#0F8B6C;color:#fff;text-decoration:none;padding:12px 22px;border-radius:999px;font-weight:700;font-size:14px;margin-top:8px">Aprobar propuesta por WhatsApp →</a>
                 </div>
-              </div>`,
+              </div>`;
+
+    // 📧 Enviar al correo del cliente. PRIMERO Gmail API (conector activo,
+    // ti@peyuchile.cl — Resend estaba fallando por dominio no verificado).
+    // Fallback: Resend. Best-effort: si falla NO rompemos la respuesta.
+    let emailEnviado = false;
+    if (email && /\S+@\S+\.\S+/.test(email)) {
+      try {
+        const { accessToken } = await base44.asServiceRole.connectors.getConnection('gmail');
+        const mime = buildMimeWithPdf({
+          from: `${encodeHeader('PEYU Chile')} <ti@peyuchile.cl>`,
+          to: email,
+          subject: `Tu propuesta PEYU ${numero} · ${producto.nombre} x${cantidad}u`,
+          html: emailHtml,
+          pdfB64: base64,
+          filename: `Cotizacion-Peyu-${numero}.pdf`,
+        });
+        const raw = btoa(unescape(encodeURIComponent(mime))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+        const gr = await fetch('https://gmail.googleapis.com/gmail/v1/users/me/messages/send', {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ raw }),
+        });
+        emailEnviado = gr.ok;
+        if (!gr.ok) console.error('Gmail cotización error:', (await gr.text()).slice(0, 400));
+      } catch (e) {
+        console.error('Error enviando cotización vía Gmail:', e?.message || e);
+      }
+    }
+
+    const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');
+    if (!emailEnviado && email && /\S+@\S+\.\S+/.test(email) && RESEND_API_KEY) {
+      try {
+        const r = await fetch('https://api.resend.com/emails', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${RESEND_API_KEY}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            from: 'PEYU Chile <ventas@peyuchile.cl>',
+            to: [email],
+            subject: `Tu propuesta PEYU ${numero} · ${producto.nombre} x${cantidad}u`,
+            html: emailHtml,
             attachments: [{ filename: `Cotizacion-Peyu-${numero}.pdf`, content: base64 }],
           }),
         });
@@ -470,12 +548,13 @@ Deno.serve(async (req) => {
       numero,
       total,
       pdf_base64: base64,
+      pdf_url: pdfUrl,
       filename: `Cotizacion-Peyu-${numero}.pdf`,
       email_enviado: emailEnviado,
       admin_url_pipeline: '/admin/pipeline',
       admin_url_cotizaciones: '/admin/cotizaciones',
-      mensaje_cliente: `¡Listo ${contacto || ''}! 📄✅ Te envié la cotización ${numero} al email ${email || ''}. Total: $${(total || 0).toLocaleString('es-CL')} CLP. El equipo PEYU te contacta hoy. 🐢`,
-      mensaje_founder: `📋 Lead: /admin/pipeline · 📄 Cotización ${numero}: /admin/cotizaciones · 📧 Email ${emailEnviado ? 'enviado ✅' : 'pendiente (verifica dominio en Resend) ⚠️'}`,
+      mensaje_cliente: `¡Listo${contacto ? ` ${contacto}` : ''}! 📄 Tu propuesta ${numero} está lista. Total: $${(total || 0).toLocaleString('es-CL')} CLP (IVA incl.).${pdfUrl ? `\nDescarga el PDF aquí:\n${pdfUrl}` : ''}${emailEnviado ? `\nTambién te la envié a ${email} ✅` : (email ? `\n(No pude enviarla al correo — el PDF del link de arriba es el oficial)` : '')}\nEl equipo PEYU te contacta hoy. 🐢`,
+      mensaje_founder: `📋 Lead: /admin/pipeline · 📄 Cotización ${numero}: /admin/cotizaciones · 📧 Email ${emailEnviado ? 'enviado ✅' : 'NO enviado ⚠️'}${pdfUrl ? ' · PDF hospedado ✅' : ''}`,
     });
   } catch (error) {
     console.error('generateChatQuotePDF error:', error);
