@@ -2,8 +2,8 @@ import VendedorProductCard from './VendedorProductCard';
 
 // ════════════════════════════════════════════════════════════════════════
 // VendedorProductGrid — Cuando el agente recomienda varios productos, los
-// muestra en un carrusel horizontal scrolleable (1 card) o grilla (2+).
-// En desktop el panel es ancho → grilla de 2 columnas; en mobile, scroll.
+// muestra en un carrusel horizontal con snap (mobile) o grilla de 2 (desktop).
+// El snap hace que cada card se centre al deslizar → sensación de app nativa.
 // ════════════════════════════════════════════════════════════════════════
 export default function VendedorProductGrid({ productos = [] }) {
   const items = productos.filter(Boolean);
@@ -14,9 +14,9 @@ export default function VendedorProductGrid({ productos = [] }) {
   }
 
   return (
-    <div className="-mx-1 flex gap-2.5 overflow-x-auto pb-1 px-1 peyu-scrollbar lg:grid lg:grid-cols-2 lg:overflow-visible lg:mx-0 lg:px-0">
+    <div className="-mx-1 flex gap-3 overflow-x-auto pb-2 px-1 snap-x snap-mandatory scrollbar-hide lg:grid lg:grid-cols-2 lg:overflow-visible lg:mx-0 lg:px-0 lg:snap-none">
       {items.map((p) => (
-        <div key={p.id || p.sku} className="flex-shrink-0 w-[260px] lg:w-auto">
+        <div key={p.id || p.sku} className="flex-shrink-0 w-[270px] lg:w-auto snap-start">
           <VendedorProductCard producto={p} />
         </div>
       ))}

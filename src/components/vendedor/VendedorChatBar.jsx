@@ -227,9 +227,15 @@ export default function VendedorChatBar() {
               <VendedorMensaje key={i} msg={m} productosBySku={productosBySku} isLast={i === msgs.length - 1} />
             ))}
             {sending && (
-              <div className="flex items-center gap-2 px-3 py-2">
-                <Loader2 className="w-3.5 h-3.5 animate-spin" style={{ color: '#0F8B6C' }} />
-                <span className="text-[11px] font-semibold" style={{ color: '#7A6050' }}>Peyu está escribiendo…</span>
+              <div className="flex items-end gap-2">
+                <span className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden" style={{ background: 'rgba(15,139,108,.12)' }}>
+                  <img src="https://media.base44.com/images/public/69d99b9d61f699701129c103/b67ed29f9_image.png" alt="Peyu" className="w-4 h-4 object-contain" draggable={false} />
+                </span>
+                <div className="flex items-center gap-1.5 rounded-2xl rounded-tl-md px-3.5 py-3 shadow-sm" style={{ background: 'white', border: '1px solid #E7D8C6' }}>
+                  <span className="w-1.5 h-1.5 rounded-full animate-bounce" style={{ background: '#0F8B6C', animationDelay: '0ms' }} />
+                  <span className="w-1.5 h-1.5 rounded-full animate-bounce" style={{ background: '#0F8B6C', animationDelay: '150ms' }} />
+                  <span className="w-1.5 h-1.5 rounded-full animate-bounce" style={{ background: '#0F8B6C', animationDelay: '300ms' }} />
+                </div>
               </div>
             )}
           </div>
@@ -267,33 +273,14 @@ export default function VendedorChatBar() {
         </div>
       )}
 
-      {/* MOBILE: botón flotante — solo visible cuando el chat está cerrado */}
+      {/* BARRA DE CHAT — visible en mobile y desktop cuando el panel está cerrado.
+          Píldora flotante centrada abajo (como en la imagen). Al hacer foco /
+          escribir, se abre el panel a pantalla completa en mobile. En mobile se
+          apoya justo sobre la barra de navegación inferior (bottom-[4.5rem]). */}
       {!open && (
-        <button
-          onClick={handleOpen}
-          className="lg:hidden fixed right-4 bottom-20 z-[95] w-[60px] h-[60px] rounded-2xl flex items-center justify-center shadow-xl transition-all active:scale-90 hover:-translate-y-1 overflow-hidden p-1"
-          style={{ background: 'linear-gradient(135deg,#0F8B6C,#0B6E55)', boxShadow: '0 8px 32px rgba(15,139,108,.35)' }}
-          title="Hablar con Peyu">
-          <img
-            src="https://media.base44.com/images/public/69d99b9d61f699701129c103/b67ed29f9_image.png"
-            alt="PEYU"
-            className="w-[42px] h-[42px] object-contain"
-            style={{ filter: 'brightness(0) invert(1)' }}
-            draggable={false}
-          />
-          {unread > 0 && (
-            <span className="absolute -top-1.5 -right-1.5 min-w-[20px] h-5 px-1 rounded-full text-white text-[10px] font-bold flex items-center justify-center"
-              style={{ background: '#D96B4D', border: '2px solid white' }}>
-              {unread}
-            </span>
-          )}
-        </button>
-      )}
-
-      {/* DESKTOP: barra de chat SIEMPRE visible y centrada abajo. Al escribir o
-          hacer foco se abre el panel completo. (Feedback fundadores) */}
-      {!open && (
-        <div className="hidden lg:flex fixed bottom-4 left-1/2 -translate-x-1/2 z-[95] w-[calc(100%-2rem)] max-w-xl items-center gap-2 rounded-full pl-3 pr-1.5 py-1.5 shadow-2xl"
+        <div
+          className="fixed z-[95] flex items-center gap-2 rounded-full pl-3 pr-1.5 py-1.5 shadow-2xl
+                     bottom-[4.5rem] left-3 right-3 lg:bottom-4 lg:left-1/2 lg:right-auto lg:-translate-x-1/2 lg:w-[calc(100%-2rem)] lg:max-w-xl"
           style={{ background: 'rgba(255,255,255,.97)', backdropFilter: 'blur(20px)', border: '1.5px solid #D4C4B0', boxShadow: '0 10px 40px rgba(15,139,108,.18)' }}>
           <span className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden" style={{ background: 'rgba(15,139,108,.12)' }}>
             <img src="https://media.base44.com/images/public/69d99b9d61f699701129c103/b67ed29f9_image.png" alt="PEYU" className="w-5 h-5 object-contain" draggable={false} />

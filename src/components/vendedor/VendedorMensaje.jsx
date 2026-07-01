@@ -27,13 +27,19 @@ export default function VendedorMensaje({ msg, productosBySku, isLast = false })
   if (!texto && !productos.length && !navs.length && !muestraCarrito && !quotes.length) return null;
 
   return (
-    <div className={`flex ${isUser ? 'justify-end' : 'justify-start'}`}>
-      <div className={`${isUser ? 'max-w-[85%] items-end' : 'max-w-[92%] lg:max-w-[88%] items-start'} space-y-2 flex flex-col w-full`}>
+    <div className={`flex gap-2 ${isUser ? 'justify-end' : 'justify-start'}`}>
+      {/* Avatar de Peyu en mensajes del asistente */}
+      {!isUser && (
+        <span className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden mt-0.5" style={{ background: 'rgba(15,139,108,.12)' }}>
+          <img src="https://media.base44.com/images/public/69d99b9d61f699701129c103/b67ed29f9_image.png" alt="Peyu" className="w-4 h-4 object-contain" draggable={false} />
+        </span>
+      )}
+      <div className={`${isUser ? 'max-w-[85%] items-end' : 'max-w-[calc(92%-2.25rem)] lg:max-w-[calc(88%-2.25rem)] items-start'} space-y-2 flex flex-col w-full`}>
         {texto && (
           <div
-            className={`rounded-2xl px-3.5 py-2.5 ${isUser ? 'rounded-br-md' : 'rounded-bl-md shadow-sm'}`}
+            className={`px-3.5 py-2.5 ${isUser ? 'rounded-2xl rounded-br-md' : 'rounded-2xl rounded-tl-md shadow-sm'}`}
             style={isUser
-              ? { background: 'linear-gradient(135deg,#0F8B6C,#0B6E55)' }
+              ? { background: 'linear-gradient(135deg,#0F8B6C,#0B6E55)', boxShadow: '0 4px 14px rgba(15,139,108,.22)' }
               : { background: 'white', border: '1px solid #E7D8C6' }}
           >
             <VendedorMarkdown isUser={isUser}>{texto}</VendedorMarkdown>
