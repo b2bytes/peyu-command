@@ -97,6 +97,11 @@ function LeadCard({ lead, onEdit, onDelete, onAutoCotizar, generating }) {
           <span className={`text-[11px] px-2 py-0.5 rounded-full font-semibold border ${estadoBadge[lead.estado]}`}>
             {lead.estado}
           </span>
+          {lead.es_rapida && (
+            <span className="text-[11px] px-2 py-0.5 rounded-full font-semibold border bg-teal-50 text-teal-800 border-teal-300 flex items-center gap-1">
+              <Zap className="w-3 h-3" />Rápida
+            </span>
+          )}
           {cal && (
             <span className={`text-[11px] px-2 py-0.5 rounded-full font-semibold border flex items-center gap-1 ${cal.cls}`}>
               <CalIcon className="w-3 h-3" />{lead.calidad_lead}
@@ -266,6 +271,7 @@ export default function PipelineB2B() {
     notas: l.notes,
     logo_recibido: !!l.logo_url,
     personalizacion: l.personalization_needs,
+    es_rapida: Array.isArray(l.tags) && l.tags.includes('Propuesta rápida'),
     created_date: l.created_date,
     updated_date: l.updated_date,
     lead_score: l.lead_score,
@@ -554,7 +560,7 @@ export default function PipelineB2B() {
                           return (
                             <div key={l.id} onClick={() => { setActiveTab('leads'); openEdit(l); }}
                               className={`bg-white rounded-xl border shadow-sm p-3 cursor-pointer hover:shadow-md transition-all ${slaV ? 'border-red-300' : 'border-gray-200'}`}>
-                              <p className="font-bold text-gray-900 text-xs leading-tight truncate">{l.empresa}</p>
+                              <p className="font-bold text-gray-900 text-xs leading-tight truncate">{l.es_rapida && '⚡ '}{l.empresa}</p>
                               <p className="text-[11px] text-gray-500 truncate mt-0.5">{l.contacto}</p>
                               <div className="flex items-center justify-between mt-2 gap-1">
                                 {cal && (

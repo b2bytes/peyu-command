@@ -28,6 +28,7 @@ export default function PublicNavBar() {
       icon: Building2,
       submenu: [
         { label: 'Catálogo B2B', path: '/EmpresasNuevo' },
+        { label: '⚡ Propuesta rápida en 24h', path: '/empresas/propuesta-rapida' },
       ]
     },
     { label: 'Blog', path: '/blog', icon: BookOpen },

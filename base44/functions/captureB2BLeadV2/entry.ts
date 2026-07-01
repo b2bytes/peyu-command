@@ -33,6 +33,12 @@ Deno.serve(async (req) => {
     const qty = body.qty_estimate ? Number(body.qty_estimate) : undefined;
     const product_interest = (body.product_interest || '').toString().slice(0, 200) || 'Cotización /v2';
     const logo_url = (body.logo_url || '').toString() || undefined;
+    // ⚡ Propuesta rápida (formulario express /empresas/propuesta-rapida):
+    // etiqueta el lead para diferenciarlo en el pipeline B2B.
+    const esRapida = (body.origen || '').toString() === 'propuesta_rapida';
+    const delivery_date = (body.delivery_date || '').toString().slice(0, 40) || undefined;
+    const delivery_place = (body.delivery_place || '').toString().slice(0, 300);
+    const extra_notes = (body.extra_notes || '').toString().slice(0, 500);
 
     if (!contact_name || !company_name || !email) {
       return Response.json({ error: 'Faltan datos mínimos (nombre, empresa, email).' }, { status: 400 });
@@ -40,16 +46,20 @@ Deno.serve(async (req) => {
 
     const lead_score = scoreLead({ company_name, qty_estimate: qty, logo_url });
     const nowIso = new Date().toISOString();
-    const notes = `Lead capturado desde el chat /v2 (Peyu Commerce OS). ` +
-      `Empresa: ${company_name}. Cantidad estimada: ${qty || 'N/D'}. ` +
-      `Conversación: ${conversationId || 'N/D'}.`;
+    const notes = esRapida
+      ? `⚡ PROPUESTA RÁPIDA (formulario express web). Empresa: ${company_name}. ` +
+        `Cantidad EXACTA: ${qty || 'N/D'}u. Lugar de entrega: ${delivery_place || 'N/D'}.` +
+        `${extra_notes ? ` Mensaje: ${extra_notes}` : ''}`
+      : `Lead capturado desde el chat /v2 (Peyu Commerce OS). ` +
+        `Empresa: ${company_name}. Cantidad estimada: ${qty || 'N/D'}. ` +
+        `Conversación: ${conversationId || 'N/D'}.`;
 
     const histEntry = {
       at: nowIso,
       type: 'created',
       actor: contact_name || email,
       channel: 'web',
-      detail: 'Captura B2B inteligente desde chat /v2',
+      detail: esRapida ? 'Solicitud de PROPUESTA RÁPIDA desde /empresas/propuesta-rapida' : 'Captura B2B inteligente desde chat /v2',
       meta: { conversation_id: conversationId, session_id: sessionId, lead_score },
     };
 
@@ -73,6 +83,8 @@ Deno.serve(async (req) => {
         qty_estimate: qty ?? existingLead.qty_estimate,
         product_interest: product_interest || existingLead.product_interest,
         logo_url: logo_url ?? existingLead.logo_url,
+        delivery_date: delivery_date ?? existingLead.delivery_date,
+        ...(esRapida ? { tags: [...new Set([...(existingLead.tags || []), 'Propuesta rápida'])] } : {}),
         lead_score,
         notes,
         historial: [...prevHist, { ...histEntry, type: 'note', detail: 'Actualizado desde chat /v2' }],
@@ -80,18 +92,20 @@ Deno.serve(async (req) => {
       leadId = updated?.id || existingLead.id;
     } else {
       const created = await base44.asServiceRole.entities.B2BLead.create({
-        source: 'Otro',
+        source: esRapida ? 'Formulario Web' : 'Otro',
         contact_name,
         company_name,
         email,
         phone,
         qty_estimate: qty,
         product_interest,
+        delivery_date,
         personalization_needs: true,
         logo_url,
         lead_score,
         status: 'Nuevo',
-        urgency: 'Normal',
+        urgency: esRapida ? 'Alta' : 'Normal',
+        tags: esRapida ? ['Propuesta rápida'] : [],
         notes,
         historial: [histEntry],
       });
