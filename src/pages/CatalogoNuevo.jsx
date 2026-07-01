@@ -34,7 +34,7 @@ export default function CatalogoNuevo() {
       setLoading(true);
       setError(null);
       try {
-        const data = await base44.entities.Producto.filter({ activo: true }, '-updated_date', 150);
+        const data = await base44.entities.Producto.filter({ activo: true }, '-updated_date', 300);
         const b2c = (data || []).filter(
           (p) => p.canal !== 'B2B Exclusivo' && p.categoria !== 'Gift Card' && p.precio_b2c
         );
