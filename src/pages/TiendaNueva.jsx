@@ -20,6 +20,19 @@ import { getProductImage } from '@/utils/productImages';
 export default function TiendaNueva() {
   const [productos, setProductos] = useState([]);
   const [loading, setLoading] = useState(true);
+  // Imágenes compuestas del carrusel (fondo de diseño + producto recortado),
+  // aprobadas desde /admin/hero-carrusel. Mapa sku -> url. No tocan el catálogo.
+  const [heroBySku, setHeroBySku] = useState({});
+
+  useEffect(() => {
+    base44.entities.HeroCarruselSlide.list('-updated_date', 50)
+      .then((rows) => {
+        const map = {};
+        (rows || []).forEach((r) => { if (r.sku && r.imagen_carrusel_url) map[r.sku] = r.imagen_carrusel_url; });
+        setHeroBySku(map);
+      })
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     let retries = 0;
@@ -60,9 +73,12 @@ export default function TiendaNueva() {
       { cat: 'Hogar', kicker: 'Hogar sustentable', title: 'Piezas únicas para tu casa', to: '/CatalogoNuevo?cat=Hogar' },
     ].map((d) => {
       const p = pick(d.cat);
-      return p ? { ...d, img: p.imagen_url } : null;
+      if (!p) return null;
+      // Si hay una composición aprobada para este producto, se usa en el
+      // carrusel; si no, se cae a la foto original del catálogo.
+      return { ...d, img: heroBySku[p.sku] || p.imagen_url };
     }).filter(Boolean);
-  }, [productos]);
+  }, [productos, heroBySku]);
 
   return (
     <div className="min-h-screen font-inter pb-16 lg:pb-0" style={{ background: '#F8F3ED', color: '#2C1810' }}>

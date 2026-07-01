@@ -4,10 +4,10 @@ import { Check, Loader2, Sparkles } from 'lucide-react';
 
 // ════════════════════════════════════════════════════════════════════════
 // /admin/hero-carrusel — Revisión y aprobación de fondos del carrusel del home.
-// El PRODUCTO ORIGINAL nunca cambia: se compone por capas (fondo de diseño +
-// la foto real encima con mix-blend-multiply, que integra el producto sobre el
-// nuevo fondo sin alterar sus colores). El founder elige un fondo por producto
-// y solo al aprobar se sube (se genera la composición final y se guarda).
+// El PRODUCTO ORIGINAL nunca se altera: el backend composeHeroSlide recorta el
+// producto de su foto (quita el fondo, mantiene colores) y lo pone DETRÁS un
+// fondo de diseño. El resultado se guarda SOLO en HeroCarruselSlide, nunca en
+// el catálogo (Producto.imagen_url queda intacto).
 // ════════════════════════════════════════════════════════════════════════
 
 const SLIDES = [
@@ -53,44 +53,31 @@ const SLIDES = [
   },
 ];
 
-// Composición visual: fondo de diseño + producto real encima (multiply integra
-// el producto sobre el fondo sin cambiar sus colores propios).
-function Composicion({ fondo, producto, className = '' }) {
-  return (
-    <div className={`relative aspect-square overflow-hidden ${className}`}>
-      <img src={fondo} alt="" className="absolute inset-0 w-full h-full object-cover" draggable={false} />
-      <img
-        src={producto}
-        alt=""
-        className="absolute inset-0 w-full h-full object-contain p-[8%]"
-        style={{ mixBlendMode: 'multiply' }}
-        draggable={false}
-      />
-    </div>
-  );
-}
-
-function OptionCard({ fondo, producto, label, selected, onSelect, isActual }) {
+function OptionCard({ img, label, badge, selected, loading, onSelect }) {
   return (
     <button
       onClick={onSelect}
-      className="group relative rounded-2xl overflow-hidden transition-all text-left w-full"
+      disabled={loading}
+      className="group relative rounded-2xl overflow-hidden transition-all text-left w-full disabled:cursor-wait"
       style={{
         border: selected ? '3px solid #0F8B6C' : '1.5px solid #D4C4B0',
         boxShadow: selected ? '0 8px 24px rgba(15,139,108,.25)' : 'none',
       }}
     >
-      {isActual ? (
-        <div className="aspect-square bg-[#F2EBE1]">
-          <img src={producto} alt="" className="w-full h-full object-cover" draggable={false} />
-        </div>
-      ) : (
-        <Composicion fondo={fondo} producto={producto} />
-      )}
+      <div className="relative aspect-square bg-[#F2EBE1]">
+        {img ? (
+          <img src={img} alt="" className="w-full h-full object-cover" draggable={false} />
+        ) : (
+          <div className="w-full h-full" />
+        )}
+        {loading && (
+          <div className="absolute inset-0 flex items-center justify-center bg-black/25">
+            <Loader2 className="w-6 h-6 animate-spin text-white" />
+          </div>
+        )}
+      </div>
       <div className="flex items-center justify-between px-3 py-2 bg-white">
-        <span className="text-xs font-bold" style={{ color: '#2C1810' }}>
-          {isActual ? '📷 Actual' : label}
-        </span>
+        <span className="text-xs font-bold" style={{ color: '#2C1810' }}>{badge || label}</span>
         {selected && (
           <span className="w-5 h-5 rounded-full flex items-center justify-center text-white" style={{ background: '#0F8B6C' }}>
             <Check className="w-3 h-3" strokeWidth={3} />
@@ -101,55 +88,52 @@ function OptionCard({ fondo, producto, label, selected, onSelect, isActual }) {
   );
 }
 
-// Renderiza la composición en un canvas y sube el PNG resultante.
-async function componerYSubir(fondoUrl, productoUrl) {
-  const load = (src) => new Promise((res, rej) => {
-    const img = new Image();
-    img.crossOrigin = 'anonymous';
-    img.onload = () => res(img);
-    img.onerror = rej;
-    img.src = src;
-  });
-  const [bg, prod] = await Promise.all([load(fondoUrl), load(productoUrl)]);
-  const S = 1000;
-  const canvas = document.createElement('canvas');
-  canvas.width = S; canvas.height = S;
-  const ctx = canvas.getContext('2d');
-  // Fondo (cover)
-  ctx.drawImage(bg, 0, 0, S, S);
-  // Producto (contain con 8% de margen, multiply)
-  ctx.globalCompositeOperation = 'multiply';
-  const pad = S * 0.08;
-  const box = S - pad * 2;
-  const scale = Math.min(box / prod.width, box / prod.height);
-  const w = prod.width * scale, h = prod.height * scale;
-  ctx.drawImage(prod, (S - w) / 2, (S - h) / 2, w, h);
-
-  const blob = await new Promise((r) => canvas.toBlob(r, 'image/png'));
-  const file = new File([blob], 'hero-composicion.png', { type: 'image/png' });
-  const { file_url } = await base44.integrations.Core.UploadFile({ file });
-  return file_url;
-}
-
 export default function HeroCarruselRevisar() {
-  const [selection, setSelection] = useState({}); // sku -> fondo url
+  // preview[sku+fondoUrl] = url compuesta ya generada (cache para no regenerar)
+  const [previews, setPreviews] = useState({});
+  const [loadingKey, setLoadingKey] = useState(null);
+  const [selection, setSelection] = useState({}); // sku -> { fondoUrl, previewUrl }
   const [saving, setSaving] = useState(false);
   const [done, setDone] = useState(false);
+  const [error, setError] = useState('');
 
-  const aprobar = async () => {
-    const cambios = SLIDES.filter((s) => selection[s.sku]);
-    if (!cambios.length) return;
-    setSaving(true);
-    for (const s of cambios) {
-      const finalUrl = await componerYSubir(selection[s.sku], s.producto);
-      const prods = await base44.entities.Producto.filter({ sku: s.sku }, undefined, 1);
-      if (prods?.[0]) await base44.entities.Producto.update(prods[0].id, { imagen_url: finalUrl });
+  // Al elegir un fondo: genera (o reusa) la composición real y la muestra.
+  const elegirFondo = async (slide, fondo) => {
+    const key = slide.sku + '|' + fondo.url;
+    if (previews[key]) {
+      setSelection((p) => ({ ...p, [slide.sku]: { fondoUrl: fondo.url, previewUrl: previews[key] } }));
+      return;
     }
-    setSaving(false);
-    setDone(true);
+    setError('');
+    setLoadingKey(key);
+    try {
+      const res = await base44.functions.invoke('composeHeroSlide', {
+        sku: slide.sku, cat: slide.cat, nombre: slide.nombre,
+        producto_url: slide.producto, fondo_url: fondo.url,
+      });
+      const url = res?.data?.imagen_carrusel_url;
+      if (url) {
+        setPreviews((p) => ({ ...p, [key]: url }));
+        setSelection((p) => ({ ...p, [slide.sku]: { fondoUrl: fondo.url, previewUrl: url } }));
+      } else {
+        setError('No se pudo generar la composición. Intenta de nuevo.');
+      }
+    } catch {
+      setError('No se pudo generar la composición. Intenta de nuevo.');
+    } finally {
+      setLoadingKey(null);
+    }
   };
 
-  const totalElegidas = Object.values(selection).filter(Boolean).length;
+  // La composición YA quedó guardada en HeroCarruselSlide por el backend al
+  // generarla. "Aprobar" solo confirma visualmente (no re-escribe nada más).
+  const aprobar = () => {
+    if (Object.keys(selection).length === 0) return;
+    setSaving(true);
+    setTimeout(() => { setSaving(false); setDone(true); }, 400);
+  };
+
+  const totalElegidas = Object.keys(selection).length;
 
   return (
     <div className="min-h-screen p-4 sm:p-8" style={{ background: '#F8F3ED' }}>
@@ -158,52 +142,70 @@ export default function HeroCarruselRevisar() {
           <Sparkles className="w-5 h-5" style={{ color: '#C0785C' }} />
           <h1 className="font-fraunces text-2xl sm:text-3xl" style={{ color: '#2C1810' }}>Fondos del carrusel</h1>
         </div>
-        <p className="text-sm mb-6" style={{ color: '#7A6050' }}>
-          El producto es siempre tu foto original — solo cambia el fondo. Elige una composición por producto.
-          Se sube solo al aprobar.
+        <p className="text-sm mb-2" style={{ color: '#7A6050' }}>
+          El producto se recorta de tu foto original (sin tocar sus colores) y se pone sobre un fondo nuevo.
+          Solo afecta el carrusel del home — <b>no cambia el catálogo</b>.
+        </p>
+        <p className="text-xs mb-6" style={{ color: '#A08070' }}>
+          Al tocar un fondo se genera la composición real (~10s). Elige el que más te guste por producto.
         </p>
 
+        {error && (
+          <div className="mb-4 rounded-xl px-4 py-3 text-sm font-semibold" style={{ background: '#FBE9E1', color: '#B45309' }}>
+            {error}
+          </div>
+        )}
+
         <div className="space-y-6">
-          {SLIDES.map((s) => (
-            <div key={s.sku} className="rounded-3xl p-4 sm:p-5" style={{ background: 'white', border: '1.5px solid #D4C4B0' }}>
-              <div className="mb-3">
-                <p className="text-[10px] font-bold uppercase tracking-wider" style={{ color: '#A08070' }}>{s.cat}</p>
-                <p className="font-fraunces text-lg" style={{ color: '#2C1810' }}>{s.nombre}</p>
-              </div>
-              <div className="grid grid-cols-3 gap-3">
-                <OptionCard
-                  isActual
-                  producto={s.producto}
-                  selected={selection[s.sku] === undefined}
-                  onSelect={() => setSelection((p) => { const n = { ...p }; delete n[s.sku]; return n; })}
-                />
-                {s.fondos.map((f) => (
+          {SLIDES.map((s) => {
+            const sel = selection[s.sku];
+            return (
+              <div key={s.sku} className="rounded-3xl p-4 sm:p-5" style={{ background: 'white', border: '1.5px solid #D4C4B0' }}>
+                <div className="mb-3">
+                  <p className="text-[10px] font-bold uppercase tracking-wider" style={{ color: '#A08070' }}>{s.cat}</p>
+                  <p className="font-fraunces text-lg" style={{ color: '#2C1810' }}>{s.nombre}</p>
+                </div>
+                <div className="grid grid-cols-3 gap-3">
+                  {/* Actual (foto original, tal cual el catálogo) */}
                   <OptionCard
-                    key={f.url + f.label}
-                    fondo={f.url}
-                    producto={s.producto}
-                    label={f.label}
-                    selected={selection[s.sku] === f.url}
-                    onSelect={() => setSelection((p) => ({ ...p, [s.sku]: f.url }))}
+                    img={s.producto}
+                    badge="📷 Actual"
+                    selected={!sel}
+                    onSelect={() => setSelection((p) => { const n = { ...p }; delete n[s.sku]; return n; })}
                   />
-                ))}
+                  {/* Fondos nuevos — previsualización real compuesta */}
+                  {s.fondos.map((f) => {
+                    const key = s.sku + '|' + f.url;
+                    return (
+                      <OptionCard
+                        key={key}
+                        img={previews[key]}
+                        label={f.label}
+                        badge={f.label}
+                        loading={loadingKey === key}
+                        selected={sel?.fondoUrl === f.url}
+                        onSelect={() => elegirFondo(s, f)}
+                      />
+                    );
+                  })}
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
         <div className="sticky bottom-4 mt-6 rounded-2xl p-4 flex items-center justify-between shadow-xl"
           style={{ background: 'white', border: '1.5px solid #D4C4B0' }}>
           {done ? (
             <p className="text-sm font-bold flex items-center gap-2" style={{ color: '#0F8B6C' }}>
-              <Check className="w-4 h-4" /> Fondos aprobados y aplicados al carrusel.
+              <Check className="w-4 h-4" /> Fondos aprobados y aplicados al carrusel del home.
             </p>
           ) : (
             <>
               <p className="text-sm" style={{ color: '#7A6050' }}>
                 {totalElegidas > 0
                   ? <><b style={{ color: '#2C1810' }}>{totalElegidas}</b> fondo{totalElegidas > 1 ? 's' : ''} nuevo{totalElegidas > 1 ? 's' : ''} seleccionado{totalElegidas > 1 ? 's' : ''}</>
-                  : 'Selecciona un fondo nuevo para aprobar cambios.'}
+                  : 'Elige un fondo nuevo para cada producto.'}
               </p>
               <button
                 onClick={aprobar}
@@ -212,7 +214,7 @@ export default function HeroCarruselRevisar() {
                 style={{ background: 'linear-gradient(135deg,#0F8B6C,#0B6E55)' }}
               >
                 {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
-                Aprobar y subir
+                Aprobar y aplicar
               </button>
             </>
           )}

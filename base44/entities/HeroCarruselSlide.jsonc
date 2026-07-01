@@ -1,0 +1,49 @@
+{
+  "name": "HeroCarruselSlide",
+  "type": "object",
+  "description": "Config del carrusel del home (TiendaNueva). Cada registro es un slide: guarda la imagen final compuesta (fondo de dise\u00f1o + producto recortado) SIN tocar la foto del cat\u00e1logo (Producto.imagen_url). Clave estable por sku.",
+  "properties": {
+    "sku": {
+      "type": "string",
+      "title": "SKU del producto"
+    },
+    "cat": {
+      "type": "string",
+      "title": "Categor\u00eda del slide"
+    },
+    "nombre": {
+      "type": "string",
+      "title": "Nombre visible"
+    },
+    "imagen_carrusel_url": {
+      "type": "string",
+      "title": "URL imagen final compuesta (solo carrusel)"
+    },
+    "orden": {
+      "type": "number",
+      "title": "Orden",
+      "default": 0
+    }
+  },
+  "required": [
+    "sku"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {},
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
