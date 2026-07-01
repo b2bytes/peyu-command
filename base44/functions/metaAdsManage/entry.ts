@@ -242,6 +242,51 @@ Deno.serve(async (req) => {
       return Response.json({ ok: true, count: campaigns.length, campaigns });
     }
 
+    // ── Listar TODOS los ad sets de la cuenta o de una campaña ──────────────
+    // A diferencia de metaAdsDeepDive(scope:'adsets') que usa Insights (solo ad
+    // sets con gasto > $0), esta acción lista los OBJETOS ad set directamente,
+    // incluyendo los que están vacíos o sin entregar. Es lo que el agente usa
+    // para encontrar ad sets por nombre sin pedirle IDs al founder.
+    if (action === 'list_adsets') {
+      const parent = body.campaign_id || accountId;
+      const fields = 'id,name,status,effective_status,daily_budget,lifetime_budget,campaign_id,optimization_goal,billing_event,configured_status';
+      const res = await fetch(`${base}/${parent}/adsets?fields=${fields}&limit=300&access_token=${t}`);
+      const data = await res.json();
+      if (data.error) return Response.json({ ok: false, ...diagnoseMetaError(data.error) });
+      const adsets = (data.data || []).map(a => ({
+        id: a.id,
+        name: a.name,
+        status: a.status,
+        effective_status: a.effective_status,
+        daily_budget_clp: a.daily_budget ? Number(a.daily_budget) : null,
+        lifetime_budget_clp: a.lifetime_budget ? Number(a.lifetime_budget) : null,
+        campaign_id: a.campaign_id || null,
+        optimization_goal: a.optimization_goal || null,
+        billing_event: a.billing_event || null,
+      }));
+      return Response.json({ ok: true, count: adsets.length, adsets, campaign_id: body.campaign_id || null });
+    }
+
+    // ── Listar TODOS los anuncios de la cuenta, una campaña o un ad set ─────
+    // Lista los objetos ad directamente (incluye anuncios sin gasto / en revisión).
+    if (action === 'list_ads') {
+      const parent = body.campaign_id || body.adset_id || accountId;
+      const fields = 'id,name,status,effective_status,adset_id,campaign_id,creative_id,configured_status';
+      const res = await fetch(`${base}/${parent}/ads?fields=${fields}&limit=300&access_token=${t}`);
+      const data = await res.json();
+      if (data.error) return Response.json({ ok: false, ...diagnoseMetaError(data.error) });
+      const ads = (data.data || []).map(a => ({
+        id: a.id,
+        name: a.name,
+        status: a.status,
+        effective_status: a.effective_status,
+        adset_id: a.adset_id || null,
+        campaign_id: a.campaign_id || null,
+        creative_id: a.creative_id || null,
+      }));
+      return Response.json({ ok: true, count: ads.length, ads, scope: body.campaign_id ? 'campaign' : (body.adset_id ? 'adset' : 'account') });
+    }
+
     // Las demás acciones operan sobre un objeto concreto
     const entityType = body.entity_type;   // campaign | adset | ad
     const id = body.id;
