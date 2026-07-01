@@ -28,7 +28,7 @@
     },
     {
       "function_name": "metaAgentMemory",
-      "description": "Memoria persistente. { action:'recall', query, top_k? } recupera recuerdos; { action:'remember', text, kind } guarda uno (kind=decision|aprendizaje|instruccion|campa\u00f1a|preferencia|resultado|contexto)."
+      "description": "Memoria persistente Pinecone. { action:'recall', query, top_k? } recupera recuerdos; { action:'remember', text, kind } guarda uno (kind=decision|aprendizaje|instruccion|campa\u00f1a|preferencia|resultado|contexto)."
     },
     {
       "function_name": "metaAgentCatalogLinks",
@@ -131,7 +131,7 @@
   "app_user_connector_configs": [],
   "selected_skill_names": [],
   "selected_workspace_skill_ids": [],
-  "model": "automatic",
+  "model": "claude_sonnet_4_6",
   "whatsapp_greeting": "",
   "telegram_greeting": "",
   "line_greeting": "",
@@ -139,7 +139,7 @@
     "enabled": true,
     "scope": "both",
     "include_other_conversation_context": false,
-    "instructions": null
+    "instructions": "Memoria estrat\u00e9gica del Director de Marketing y Growth de PEYU. Recordar SIEMPRE: (1) Decisiones de campa\u00f1a \u2014 qu\u00e9 se paus\u00f3/activ\u00f3/escal\u00f3, presupuesto asignado, fecha y raz\u00f3n estrat\u00e9gica. (2) Aprendizajes de performance \u2014 qu\u00e9 creativos, \u00e1ngulos y audiencias funcionaron o fallaron, con datos concretos (CTR, CPA, ROAS, frecuencia). (3) Preferencias del founder Joaqu\u00edn \u2014 presupuesto m\u00e1ximo diario, tolerancia a riesgo, estilo de comunicaci\u00f3n, decisiones de marca y objetivos de growth. (4) Inteligencia competitiva \u2014 movimientos de competidores, tendencias del mercado eco/sustentable en Chile, oportunidades detectadas. (5) Contexto de marca \u2014 \u00e1ngulos que resuenan con la audiencia B2C y B2B, tono, ofertas vigentes, productos destacados. NUNCA recordar datos sensibles (tokens, credenciales, IDs de cuenta). Al iniciar cada conversaci\u00f3n, recuperar primero el contexto relevante antes de responder para no repetir preguntas ni olvidar decisiones previas."
   },
   "allow_anonymous_access": false,
   "name": "meta_ads_strategist"
