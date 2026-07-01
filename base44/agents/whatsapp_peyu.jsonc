@@ -51,18 +51,16 @@
   "app_user_connector_configs": [],
   "selected_skill_names": [],
   "selected_workspace_skill_ids": [],
-  "model": "automatic",
+  "model": "claude_sonnet_4_6",
   "whatsapp_greeting": "\u00a1Hola! \ud83d\udc22 Soy Peyu, el asistente de PEYU Chile. Productos sustentables hechos con pl\u00e1stico 100% reciclado. Puedo mostrarte productos con fotos, cotizar para tu empresa y hasta dejarte el link de pago listo aqu\u00ed mismo. \u00bfBuscas algo para ti o para tu empresa? \ud83c\udf31",
-  "telegram_greeting": null,
-  "line_greeting": null,
+  "telegram_greeting": "",
+  "line_greeting": "",
   "memory_config": {
     "enabled": true,
     "scope": "both",
     "include_other_conversation_context": false,
-    "instructions": null
+    "instructions": "Memoria del asistente de ventas WhatsApp de PEYU. Recordar SIEMPRE: (1) Clientes recurrentes \u2014 nombre, n\u00famero, productos comprados anteriormente, preferencias de color/material. (2) Historial de conversaciones \u2014 qu\u00e9 productos le interesaron, objeciones que plante\u00f3, si compr\u00f3 o abandon\u00f3. (3) Leads B2B pendientes \u2014 empresa, contacto, cantidad estimada, producto de inter\u00e9s, fecha requerida, estado del follow-up. (4) Preguntas frecuentes y objeciones comunes \u2014 qu\u00e9 respuestas funcionan mejor para cerrar ventas o manejar dudas de env\u00edo/pago/personalizaci\u00f3n. (5) Contexto de pedidos \u2014 n\u00fameros de pedido generados desde WhatsApp, estado de pago, si el cliente ya pag\u00f3 o tiene link pendiente. NUNCA recordar datos sensibles (tarjetas, credenciales). Al iniciar cada conversaci\u00f3n con un cliente que ya escribi\u00f3 antes, recuperar su contexto para no pedirle datos repetidos y ofrecerle una experiencia personalizada."
   },
-  "voice_config": {
-    "voice_id": null
-  },
+  "allow_anonymous_access": true,
   "name": "whatsapp_peyu"
 }
