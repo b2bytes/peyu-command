@@ -103,6 +103,8 @@ Deno.serve(async (req) => {
       telefono,
       fecha_requerida,
       personalizacion = 'Láser UV',
+      mockup_url,
+      logo_url,
       source = 'chat',
     } = body || {};
 
@@ -116,6 +118,26 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Producto no encontrado' }, { status: 404 });
     }
     const producto = productos[0];
+
+    // 🖼️ Descargar imágenes para embeber en el PDF: mockup del grabado
+    // (imagen/frase/logo que eligió el cliente) + foto del producto. Best-effort.
+    async function fetchImg(url) {
+      if (!/^https?:\/\//i.test(url || '')) return null;
+      try {
+        const r = await fetch(url);
+        if (!r.ok) return null;
+        const buf = new Uint8Array(await r.arrayBuffer());
+        let bin = '';
+        for (let i = 0; i < buf.length; i += 0x8000) bin += String.fromCharCode.apply(null, buf.subarray(i, i + 0x8000));
+        const ct = (r.headers.get('content-type') || '').toLowerCase();
+        const fmt = ct.includes('png') || (url || '').toLowerCase().includes('.png') ? 'PNG' : 'JPEG';
+        return { data: `data:image/${fmt.toLowerCase()};base64,${btoa(bin)}`, fmt };
+      } catch { return null; }
+    }
+    const [mockupImg, productImg] = await Promise.all([
+      fetchImg(mockup_url),
+      fetchImg(producto.imagen_url),
+    ]);
 
     // 2. Calcular precios por TRAMO de volumen (precio_b2b_tramos).
     const cantidad = Math.max(1, parseInt(qty, 10) || 1);
@@ -219,9 +241,11 @@ Deno.serve(async (req) => {
       estado: 'Borrador',
       fecha_envio: fechaEnvioStr,
       fecha_vencimiento: fechaVenceStr,
+      mockup_url: mockup_url || '',
       notas: [
         `Cotización generada desde el chat Peyu 🐢`,
         telefono ? `Teléfono: ${telefono}` : null,
+        logo_url ? `Logo/arte del cliente: ${logo_url}` : null,
         fecha_requerida ? `Fecha requerida: ${fecha_requerida}` : null,
         conversation_id ? `Conversación: ${conversation_id}` : null,
       ].filter(Boolean).join(' · '),
@@ -385,6 +409,34 @@ Deno.serve(async (req) => {
       y += 6;
     }
 
+    // ═══ VISTA PREVIA DEL GRABADO (mockup con la imagen/frase/logo del cliente) ═══
+    if (mockupImg || productImg) {
+      const imgBoxH = 64;
+      if (y + imgBoxH + 12 > ph - 40) { doc.addPage(); y = 20; }
+      y += 3;
+      T(mockupImg ? 'ASÍ SE VERÁ TU GRABADO' : 'PRODUCTO COTIZADO', PMX, y, { size: 7, font: 'bold', color: STONE2, spacing: 1 });
+      y += 4;
+      const dual = mockupImg && productImg;
+      const boxW = dual ? (CW - 6) / 2 : CW * 0.55;
+      const drawImgBox = (img, x, label) => {
+        doc.setFillColor(...SAND); doc.roundedRect(x, y, boxW, imgBoxH, 3, 3, 'F');
+        try { doc.addImage(img.data, img.fmt, x + 2, y + 2, boxW - 4, imgBoxH - 10); } catch { /* imagen inválida */ }
+        T(label, x + boxW / 2, y + imgBoxH - 3.5, { size: 6.5, color: STONE, align: 'center' });
+      };
+      if (dual) {
+        drawImgBox(mockupImg, PMX, 'Mockup referencial · láser UV simulado');
+        drawImgBox(productImg, PMX + boxW + 6, 'Producto original');
+      } else {
+        drawImgBox(mockupImg || productImg, PMX, mockupImg ? 'Mockup referencial · láser UV simulado' : 'Foto referencial del producto');
+      }
+      if (mockupImg) {
+        T('El equipo revisa tu archivo antes de producir para que el grabado quede perfecto.', PMX, y + imgBoxH + 4.5, { size: 7, color: STONE });
+        y += imgBoxH + 10;
+      } else {
+        y += imgBoxH + 8;
+      }
+    }
+
     // ═══ CONDICIONES COMERCIALES (datos reales Joaquín) ═══
     y += 3;
     const conds = [
@@ -482,6 +534,7 @@ Deno.serve(async (req) => {
                     <tr><td style="padding:6px 0;color:#666">Precio unitario</td><td style="padding:6px 0;text-align:right;font-weight:600">$${precioUnit.toLocaleString('es-CL')}</td></tr>
                     <tr><td style="padding:6px 0;color:#666;border-top:2px solid #0F8B6C">Total (IVA incl.)</td><td style="padding:6px 0;text-align:right;font-weight:800;color:#0F8B6C;border-top:2px solid #0F8B6C">$${total.toLocaleString('es-CL')}</td></tr>
                   </table>
+                  ${mockup_url ? `<div style="text-align:center;margin:16px 0"><img src="${mockup_url}" alt="Mockup de tu grabado" style="max-width:100%;border-radius:12px"/><p style="font-size:12px;color:#888;margin:6px 0 0">Así se verá tu grabado láser (mockup referencial)</p></div>` : ''}
                   ${cantidad >= 10 ? '<p style="color:#0F8B6C;font-weight:600;font-size:13px">✓ Personalización láser UV incluida GRATIS desde 10 unidades.</p>' : ''}
                   <p style="font-size:13px;color:#666">Cada producto nace de tapitas que rescatamos del mar y de la calle 🌱 No regalas un objeto, regalas un gesto.</p>
                   <p style="font-size:13px;color:#666">Validez: 15 días · Lead time estimado: ${leadTime} días hábiles. Para aprobar, responde este correo a corporativos@peyuchile.cl indicando el número.</p>
@@ -553,7 +606,8 @@ Deno.serve(async (req) => {
       email_enviado: emailEnviado,
       admin_url_pipeline: '/admin/pipeline',
       admin_url_cotizaciones: '/admin/cotizaciones',
-      mensaje_cliente: `¡Listo${contacto ? ` ${contacto}` : ''}! 📄 Tu propuesta ${numero} está lista. Total: $${(total || 0).toLocaleString('es-CL')} CLP (IVA incl.).${pdfUrl ? `\nDescarga el PDF aquí:\n${pdfUrl}` : ''}${emailEnviado ? `\nTambién te la envié a ${email} ✅` : (email ? `\n(No pude enviarla al correo — el PDF del link de arriba es el oficial)` : '')}\nEl equipo PEYU te contacta hoy. 🐢`,
+      mockup_url: mockup_url || null,
+      mensaje_cliente: `¡Listo${contacto ? `, *${contacto}*` : ''}! 🐢 Tu propuesta *${numero}* quedó lista:\n\n📦 *${producto.nombre}* × ${cantidad}u\n💰 Unitario $${(precioUnit || 0).toLocaleString('es-CL')} · *Total $${(total || 0).toLocaleString('es-CL')} CLP* (IVA incl.)${requierePersonal ? `\n🎨 Grabado láser: ${personalizacion}${cantidad >= 10 ? ' — *GRATIS* desde 10u ✅' : ` — fee $${feePersonal.toLocaleString('es-CL')}`}${mockup_url ? ' (mockup incluido en el PDF)' : ''}` : ''}\n🚚 Lead time: ${leadTime} días hábiles · Validez: 15 días${emailEnviado ? `\n📧 Copia enviada a ${email} ✅` : (email ? `\n📧 No pude enviarla al correo — el PDF de abajo es el oficial y el equipo te la reenviará` : '')}\n\n📄 Tu propuesta completa en PDF:\n${pdfUrl || '(PDF disponible vía el equipo PEYU)'}\n\n¿Avanzamos? Puedo resolver cualquier duda o ajustar cantidades aquí mismo 💚`,
       mensaje_founder: `📋 Lead: /admin/pipeline · 📄 Cotización ${numero}: /admin/cotizaciones · 📧 Email ${emailEnviado ? 'enviado ✅' : 'NO enviado ⚠️'}${pdfUrl ? ' · PDF hospedado ✅' : ''}`,
     });
   } catch (error) {
