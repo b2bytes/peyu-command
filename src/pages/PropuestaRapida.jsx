@@ -91,36 +91,37 @@ export default function PropuestaRapida() {
         </div>
       </header>
 
-      {/* ── BODY DESKTOP: 1 pantalla sin scroll de página ── */}
-      <div className="hidden lg:flex flex-1 min-h-0 w-full max-w-6xl 2xl:max-w-7xl mx-auto px-8 py-5 gap-12 items-stretch">
+      {/* ── BODY DESKTOP: 1 pantalla, ancho completo. El form scrollea solo
+          internamente si la pantalla es baja — la página nunca scrollea. ── */}
+      <div className="hidden lg:flex flex-1 min-h-0 w-full max-w-[1600px] mx-auto px-10 xl:px-16 py-6 gap-12 xl:gap-20 items-stretch">
 
         {/* Izquierda: hero + pasos + confianza (fijo, sin scroll) */}
-        <div className="flex flex-col justify-between w-[46%] flex-shrink-0 min-h-0">
-          <div className="space-y-5 min-h-0 overflow-hidden">
+        <div className="flex flex-col justify-between w-[48%] flex-shrink-0 min-h-0">
+          <div className="space-y-5 xl:space-y-6 min-h-0 overflow-hidden">
             <div>
               <span className="inline-block text-xs font-bold px-3 py-1 rounded-lg mb-3" style={{ background: C.action, color: 'white' }}>
                 ⚡ La vía rápida para empresas
               </span>
-              <h1 className="font-fraunces text-4xl xl:text-5xl leading-[1.05] font-bold mb-3">
+              <h1 className="font-fraunces text-4xl xl:text-5xl 2xl:text-6xl leading-[1.05] font-bold mb-3">
                 Tu propuesta corporativa
                 <br /><span style={{ color: C.action }}>lista en 24 horas</span>
               </h1>
-              <p className="text-sm xl:text-base leading-relaxed font-semibold max-w-md" style={{ color: C.fgSoft }}>
+              <p className="text-sm xl:text-base leading-relaxed font-semibold max-w-lg" style={{ color: C.fgSoft }}>
                 Sin navegar catálogos: dinos qué necesitas y nuestro equipo B2B arma tu
                 propuesta formal con precios netos, mockup de tu logo y plazos reales.
               </p>
             </div>
 
             {/* Pasos compactos */}
-            <div className="space-y-2">
+            <div className="space-y-2 xl:space-y-2.5">
               {PASOS.map((p) => (
-                <div key={p.n} className="flex items-start gap-3 rounded-2xl px-3.5 py-2.5" style={{ background: 'white', border: `1.5px solid ${C.border}` }}>
+                <div key={p.n} className="flex items-start gap-3 rounded-2xl px-4 py-3" style={{ background: 'white', border: `1.5px solid ${C.border}` }}>
                   <span className="w-7 h-7 rounded-full flex items-center justify-center font-bold text-xs text-white flex-shrink-0" style={{ background: C.actionGrad }}>
                     {p.n}
                   </span>
                   <div className="min-w-0">
-                    <p className="text-sm font-bold leading-tight">{p.t}</p>
-                    <p className="text-xs mt-0.5" style={{ color: C.fgSoft }}>{p.s}</p>
+                    <p className="text-sm xl:text-base font-bold leading-tight">{p.t}</p>
+                    <p className="text-xs xl:text-sm mt-0.5" style={{ color: C.fgSoft }}>{p.s}</p>
                   </div>
                 </div>
               ))}
@@ -129,7 +130,7 @@ export default function PropuestaRapida() {
             {/* Trust chips */}
             <div className="flex flex-wrap gap-1.5">
               {TRUST.map(({ icon: Icon, t }) => (
-                <span key={t} className="flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1.5 rounded-full" style={{ background: 'white', border: `1px solid ${C.border}`, color: C.fgSoft }}>
+                <span key={t} className="flex items-center gap-1.5 text-[11px] xl:text-xs font-bold px-2.5 py-1.5 rounded-full" style={{ background: 'white', border: `1px solid ${C.border}`, color: C.fgSoft }}>
                   <Icon className="w-3 h-3" style={{ color: C.action }} /> {t}
                 </span>
               ))}
@@ -149,14 +150,17 @@ export default function PropuestaRapida() {
           </div>
         </div>
 
-        {/* Derecha: formulario con scroll PROPIO si hace falta (la página no scrollea) */}
-        <div className="flex-1 min-w-0 min-h-0 overflow-y-auto peyu-scrollbar pr-1">
-          <PropuestaRapidaForm />
+        {/* Derecha: formulario a todo el ancho restante, con scroll PROPIO solo
+            si la pantalla es baja (la página no scrollea) */}
+        <div className="flex-1 min-w-0 min-h-0 overflow-y-auto peyu-scrollbar pr-1 flex items-start justify-center">
+          <div className="w-full max-w-2xl">
+            <PropuestaRapidaForm />
+          </div>
         </div>
       </div>
 
       {/* ── BODY MOBILE: flujo vertical con scroll normal ── */}
-      <div className="lg:hidden max-w-2xl mx-auto px-4 pt-5">
+      <div className="lg:hidden w-full max-w-2xl mx-auto px-4 pt-5 min-w-0 overflow-x-hidden">
         <div className="mb-5">
           <span className="inline-block text-[10px] font-bold px-2.5 py-1 rounded-lg mb-2.5" style={{ background: C.action, color: 'white' }}>
             ⚡ La vía rápida para empresas

@@ -100,7 +100,7 @@ export default function PropuestaRapidaForm() {
   }
 
   return (
-    <div className="rounded-3xl p-4 sm:p-5 space-y-3.5" style={{ background: 'white', border: `1.5px solid ${C.border}`, boxShadow: '0 16px 50px rgba(44,24,16,.10)' }}>
+    <div className="rounded-3xl p-4 sm:p-5 lg:p-6 space-y-3.5 w-full max-w-full min-w-0 overflow-hidden" style={{ background: 'white', border: `1.5px solid ${C.border}`, boxShadow: '0 16px 50px rgba(44,24,16,.10)' }}>
       <div className="flex items-center gap-2.5">
         <span className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: C.actionGrad }}>
           <Zap className="w-4 h-4 text-white" />
@@ -154,30 +154,35 @@ export default function PropuestaRapidaForm() {
         </div>
       </div>
 
-      {/* Datos de contacto + entrega */}
-      <div className="space-y-2">
-        <input value={form.empresa} onChange={set('empresa')} placeholder="Empresa *"
-          className="w-full h-11 px-4 rounded-xl text-sm focus:outline-none focus:ring-2 ring-[#0F8B6C40]" style={inputStyle} />
-        <div className="grid grid-cols-2 gap-2">
+      {/* Datos de contacto + entrega — 2 columnas en pantallas anchas para
+          compactar la altura (menos scroll en escritorio) */}
+      <div className="space-y-2 w-full max-w-full min-w-0">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 min-w-0">
+          <input value={form.empresa} onChange={set('empresa')} placeholder="Empresa *"
+            className="w-full h-11 px-4 rounded-xl text-sm focus:outline-none focus:ring-2 ring-[#0F8B6C40] min-w-0" style={inputStyle} />
           <input value={form.nombre} onChange={set('nombre')} placeholder="Tu nombre *"
-            className="h-11 px-4 rounded-xl text-sm focus:outline-none focus:ring-2 ring-[#0F8B6C40] min-w-0" style={inputStyle} />
-          <input value={form.telefono} onChange={set('telefono')} placeholder="Teléfono" type="tel"
-            className="h-11 px-4 rounded-xl text-sm focus:outline-none focus:ring-2 ring-[#0F8B6C40] min-w-0" style={inputStyle} />
+            className="w-full h-11 px-4 rounded-xl text-sm focus:outline-none focus:ring-2 ring-[#0F8B6C40] min-w-0" style={inputStyle} />
         </div>
-        <input value={form.email} onChange={set('email')} placeholder="Email corporativo *" type="email"
-          className="w-full h-11 px-4 rounded-xl text-sm focus:outline-none focus:ring-2 ring-[#0F8B6C40]" style={inputStyle} />
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 min-w-0">
+          <input value={form.email} onChange={set('email')} placeholder="Email corporativo *" type="email"
+            className="w-full h-11 px-4 rounded-xl text-sm focus:outline-none focus:ring-2 ring-[#0F8B6C40] min-w-0" style={inputStyle} />
+          <input value={form.telefono} onChange={set('telefono')} placeholder="Teléfono" type="tel"
+            className="w-full h-11 px-4 rounded-xl text-sm focus:outline-none focus:ring-2 ring-[#0F8B6C40] min-w-0" style={inputStyle} />
+        </div>
 
         {/* Lugar de entrega (obligatorio) */}
-        <div className="relative">
+        <div className="relative w-full min-w-0">
           <MapPin className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none" style={{ color: C.fgMuted }} />
           <input value={form.lugar} onChange={set('lugar')} placeholder="Lugar de entrega: comuna y dirección *"
-            className="w-full h-11 pl-10 pr-4 rounded-xl text-sm focus:outline-none focus:ring-2 ring-[#0F8B6C40]" style={inputStyle} />
+            className="w-full h-11 pl-10 pr-4 rounded-xl text-sm focus:outline-none focus:ring-2 ring-[#0F8B6C40] min-w-0" style={inputStyle} />
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 w-full min-w-0">
           <label className="text-xs font-bold flex-shrink-0" style={{ color: C.fgSoft }}>¿Para cuándo?</label>
+          {/* w-full + min-w-0: el date-picker nativo de iOS tiene ancho intrínseco
+              y desbordaba el card en móvil */}
           <input value={form.fecha} onChange={set('fecha')} type="date"
-            className="flex-1 h-10 px-3 rounded-xl text-sm focus:outline-none min-w-0" style={inputStyle} />
+            className="flex-1 w-full h-10 px-3 rounded-xl text-sm focus:outline-none min-w-0 appearance-none" style={{ ...inputStyle, maxWidth: '100%' }} />
         </div>
 
         {/* Logo opcional */}
@@ -207,7 +212,7 @@ export default function PropuestaRapidaForm() {
           onChange={(e) => handleLogo(e.target.files?.[0])} />
 
         <textarea value={form.mensaje} onChange={set('mensaje')} placeholder="Cuéntanos más (opcional): productos, colores, evento…" rows={2}
-          className="w-full px-4 py-2.5 rounded-xl text-sm focus:outline-none focus:ring-2 ring-[#0F8B6C40] resize-none" style={inputStyle} />
+          className="w-full max-w-full min-w-0 px-4 py-2.5 rounded-xl text-sm focus:outline-none focus:ring-2 ring-[#0F8B6C40] resize-none" style={inputStyle} />
       </div>
 
       {error && <p className="text-xs font-bold px-3 py-2 rounded-xl" style={{ background: '#D96B4D15', color: C.terra }}>{error}</p>}
