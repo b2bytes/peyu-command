@@ -4,15 +4,15 @@
   "tool_configs": [
     {
       "function_name": "metaAdsDailyBriefing",
-      "description": "An\u00e1lisis PROACTIVO diario de toda la cuenta. Trae todas las campa\u00f1as con performance (7d/14d/30d/yesterday), flaggea problemas (CPA alto, CTR bajo, fatiga creativa, gasto sin conversiones, presupuesto sin usar, campa\u00f1as pausadas con budget) y oportunidades (campa\u00f1as ganadoras para escalar). Devuelve un briefing estructurado con issues priorizadas por severidad + acciones recomendadas. { date_preset?, target_roas?, target_cpa_clp? }. \u00daSALO al iniciar conversaci\u00f3n o cuando el founder pida un resumen \u2014 es tu herramienta de 'ayuda constante'."
+      "description": "An\u00e1lisis proactivo diario de toda la cuenta: flaggea problemas (CPA alto, fatiga, gasto sin conversiones) y oportunidades (campa\u00f1as para escalar) antes de que el founder pregunte."
     },
     {
       "function_name": "metaAdsBudgetOptimizer",
-      "description": "Reasignaci\u00f3n INTELIGENTE de presupuesto entre campa\u00f1as. Analiza ROAS/CPA de cada campa\u00f1a activa y propone un plan: subir ganadoras (+30% del budget liberado), bajar/pausar perdedoras, con CLP exactos e impacto estimado (conversiones extra/semana). { target_roas?, date_preset?, apply? }. apply=false (default) = solo plan para mostrar al founder; apply=true = ejecuta (REQUIERE confirmaci\u00f3n expl\u00edcita del founder). \u00dasalo para 'c\u00f3mo repartir el presupuesto', 'qu\u00e9 escalo', 'qu\u00e9 pauso', 'optimiza el budget'."
+      "description": "Reasignaci\u00f3n inteligente de presupuesto: analiza ROAS/CPA por campa\u00f1a y propone un plan con CLP exactos de d\u00f3nde subir y d\u00f3nde bajar/pausar."
     },
     {
       "function_name": "metaAdsFatigueMonitor",
-      "description": "Detecci\u00f3n PROACTIVA de fatiga creativa. Compara CTR de primeros 3 d\u00edas vs \u00faltimos 3 d\u00edas + frecuencia por ad set. Flaggea ad sets fatigados con severidad (critical/high/medium) y sugiere renovaci\u00f3n v\u00eda metaAdsCreativeDoctor. { date_preset?, frequency_threshold? }. \u00dasalo cuando el founder diga 'fatiga', 'CTR cayendo', 'renovar creativos', o proactivamente cada 7-10 d\u00edas."
+      "description": "Detecci\u00f3n proactiva de fatiga creativa: compara CTR de primeros vs \u00faltimos 3 d\u00edas + frecuencia por ad set, flaggea ad sets fatigados con severidad."
     },
     {
       "function_name": "metaAdsCreateAdvantagePlus",
@@ -152,6 +152,9 @@
     "scope": "both",
     "include_other_conversation_context": false,
     "instructions": "Memoria estrat\u00e9gica del Director de Marketing y Growth de PEYU. Recordar SIEMPRE: (1) Decisiones de campa\u00f1a \u2014 qu\u00e9 se paus\u00f3/activ\u00f3/escal\u00f3, presupuesto asignado, fecha y raz\u00f3n estrat\u00e9gica. (2) Aprendizajes de performance \u2014 qu\u00e9 creativos, \u00e1ngulos y audiencias funcionaron o fallaron, con datos concretos (CTR, CPA, ROAS, frecuencia). (3) Preferencias del founder Joaqu\u00edn \u2014 presupuesto m\u00e1ximo diario, tolerancia a riesgo, estilo de comunicaci\u00f3n, decisiones de marca y objetivos de growth. (4) Inteligencia competitiva \u2014 movimientos de competidores, tendencias del mercado eco/sustentable en Chile, oportunidades detectadas. (5) Contexto de marca \u2014 \u00e1ngulos que resuenan con la audiencia B2C y B2B, tono, ofertas vigentes, productos destacados. NUNCA recordar datos sensibles (tokens, credenciales, IDs de cuenta). Al iniciar cada conversaci\u00f3n, recuperar primero el contexto relevante antes de responder para no repetir preguntas ni olvidar decisiones previas."
+  },
+  "voice_config": {
+    "voice_id": null
   },
   "allow_anonymous_access": false,
   "name": "meta_ads_strategist"
