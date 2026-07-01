@@ -14,6 +14,12 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 //   - 'create_dpa'         : crea una campaña Advantage+ Catalog (DPA) que
 //                            recorre TODO el catálogo (o un product_set) y
 //                            arma anuncios dinámicos. PAUSED.
+//   - 'delete_product'     : { catalog_id, product_id } elimina un producto.
+//   - 'delete_all_products': { catalog_id } elimina TODOS los productos del catálogo.
+//   - 'add_feed'           : { catalog_id, feed_url, name } conecta un feed RSS
+//                            (scheduled fetch) al catálogo para auto-sincronizar.
+//   - 'list_feeds'         : { catalog_id } lista los feeds configurados.
+//   - 'delete_catalog'     : { catalog_id } elimina el catálogo completo.
 //
 // Payload create_dpa:
 // {
@@ -49,16 +55,22 @@ function diagnoseMetaError(err) {
 }
 
 async function graphPost(path, params, token) {
-  const res = await fetch(`https://graph.facebook.com/${GRAPH_VERSION}/${path}`, {
+  const t = encodeURIComponent(token);
+  const res = await fetch(`https://graph.facebook.com/${GRAPH_VERSION}/${path}?access_token=${t}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ ...params, access_token: token }),
+    body: JSON.stringify(params),
   });
   return res.json();
 }
 
 async function graphGet(path, token) {
   const res = await fetch(`https://graph.facebook.com/${GRAPH_VERSION}/${path}${path.includes('?') ? '&' : '?'}access_token=${encodeURIComponent(token)}`);
+  return res.json();
+}
+
+async function graphDelete(path, token) {
+  const res = await fetch(`https://graph.facebook.com/${GRAPH_VERSION}/${path}?access_token=${encodeURIComponent(token)}`, { method: 'DELETE' });
   return res.json();
 }
 
@@ -195,7 +207,100 @@ Deno.serve(async (req) => {
       });
     }
 
-    return Response.json({ ok: false, error: "action debe ser 'list_catalogs', 'catalog_products' o 'create_dpa'." });
+    // ── ELIMINAR UN PRODUCTO ──────────────────────────────────────────────
+    if (action === 'delete_product') {
+      if (!body.catalog_id || !body.product_id) return Response.json({ ok: false, error: 'Falta catalog_id y product_id.' });
+      const data = await graphDelete(`${body.product_id}`, token);
+      if (data.error) return Response.json({ ok: false, ...diagnoseMetaError(data.error) });
+      return Response.json({ ok: true, action, message: `Producto ${body.product_id} eliminado del catálogo.` });
+    }
+
+    // ── ELIMINAR TODOS LOS PRODUCTOS ──────────────────────────────────────
+    if (action === 'delete_all_products') {
+      if (!body.catalog_id) return Response.json({ ok: false, error: 'Falta catalog_id.' });
+      let deleted = 0;
+      let batchErrors = 0;
+      let hasMore = true;
+      let iterations = 0;
+      while (hasMore && iterations < 25) {
+        iterations++;
+        const data = await graphGet(`${body.catalog_id}/products?fields=id&limit=50`, token);
+        if (data.error) return Response.json({ ok: false, ...diagnoseMetaError(data.error) });
+        const ids = (data.data || []).map((p) => p.id);
+        if (!ids.length) { hasMore = false; break; }
+        // Eliminar uno por uno (Graph API no soporta batch delete de productos).
+        for (const pid of ids) {
+          const delRes = await graphDelete(`${pid}`, token);
+          if (delRes.error) { batchErrors++; } else { deleted++; }
+        }
+        hasMore = !!data.paging?.next;
+      }
+      return Response.json({ ok: true, action, deleted, batch_errors: batchErrors, message: `Eliminados ${deleted} productos del catálogo ${body.catalog_id}.` });
+    }
+
+    // ── ACTUALIZAR URL DE UN FEED ──────────────────────────────────────────
+    if (action === 'update_feed') {
+      if (!body.feed_id || !body.feed_url) return Response.json({ ok: false, error: 'Falta feed_id y feed_url.' });
+      const update = await graphPost(`${body.feed_id}`, { url: body.feed_url, name: body.name || 'Feed PEYU (Base44)' }, token);
+      if (update.error) return Response.json({ ok: false, ...diagnoseMetaError(update.error) });
+      // Forzar un upload inmediato del nuevo feed.
+      const upload = await graphPost(`${body.feed_id}/uploads`, { url: body.feed_url }, token);
+      return Response.json({
+        ok: true,
+        action,
+        feed_id: body.feed_id,
+        upload_id: upload?.id || null,
+        upload_error: upload?.error ? diagnoseMetaError(upload.error) : null,
+        message: `Feed actualizado a ${body.feed_url}. ${upload?.id ? 'Upload iniciado.' : 'Upload pendiente (se sincronizará en el próximo schedule).'}`,
+      });
+    }
+
+    // ── LISTAR FEEDS DEL CATÁLOGO ─────────────────────────────────────────
+    if (action === 'list_feeds') {
+      if (!body.catalog_id) return Response.json({ ok: false, error: 'Falta catalog_id.' });
+      const data = await graphGet(`${body.catalog_id}/product_feeds?fields=id,name,schedule,url&limit=25`, token);
+      if (data.error) return Response.json({ ok: false, ...diagnoseMetaError(data.error) });
+      const feeds = (data.data || []).map((f) => ({ feed_id: f.id, name: f.name, url: f.url, schedule: f.schedule }));
+      return Response.json({ ok: true, action, feeds });
+    }
+
+    // ── CONECTAR FEED RSS (scheduled fetch) ───────────────────────────────
+    if (action === 'add_feed') {
+      if (!body.catalog_id || !body.feed_url) return Response.json({ ok: false, error: 'Falta catalog_id y feed_url.' });
+      const feedName = body.name || 'Feed PEYU (Base44)';
+      const feed = await graphPost(`${body.catalog_id}/product_feeds`, {
+        name: feedName,
+        schedule: JSON.stringify({
+          interval: 'HOURLY',
+          hour: 0,
+          minute: 0,
+          timezone: 'America/Santiago',
+        }),
+      }, token);
+      if (feed.error) return Response.json({ ok: false, ...diagnoseMetaError(feed.error) });
+      // Subir el archivo de feed vía URL (upload).
+      const upload = await graphPost(`${feed.id}/uploads`, {
+        url: body.feed_url,
+      }, token);
+      if (upload.error) return Response.json({ ok: false, step: 'upload', feed_id: feed.id, ...diagnoseMetaError(upload.error) });
+      return Response.json({
+        ok: true,
+        action,
+        feed_id: feed.id,
+        upload_id: upload.id,
+        message: `Feed conectado al catálogo. Meta sincronizará los productos desde ${body.feed_url} cada hora.`,
+      });
+    }
+
+    // ── ELIMINAR CATÁLOGO COMPLETO ────────────────────────────────────────
+    if (action === 'delete_catalog') {
+      if (!body.catalog_id) return Response.json({ ok: false, error: 'Falta catalog_id.' });
+      const data = await graphDelete(`${body.catalog_id}`, token);
+      if (data.error) return Response.json({ ok: false, ...diagnoseMetaError(data.error) });
+      return Response.json({ ok: true, action, message: `Catálogo ${body.catalog_id} eliminado.` });
+    }
+
+    return Response.json({ ok: false, error: "action debe ser 'list_catalogs', 'catalog_products', 'create_dpa', 'delete_product', 'delete_all_products', 'list_feeds', 'add_feed' o 'delete_catalog'." });
   } catch (error) {
     return Response.json({ ok: false, error: error.message }, { status: 500 });
   }
