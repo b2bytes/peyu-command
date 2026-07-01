@@ -28,7 +28,10 @@ Deno.serve(async (req) => {
       cliente_email,
       comuna,
       direccion,
-      personalizacion, // texto opcional de grabado
+      personalizacion,   // texto opcional de grabado
+      logo_url,          // URL de la imagen/logo que envió el cliente por WhatsApp
+      mockup_url,        // URL del mockup generado (whatsappGenerarMockup)
+      posicion_grabado,  // arriba | centro | abajo
     } = body;
 
     // Validaciones mínimas para que el agente pida los datos que faltan.
@@ -65,8 +68,37 @@ Deno.serve(async (req) => {
     }).catch(() => []);
     if (tarifas?.[0]?.tarifa_base > 0) costoEnvio = Math.round(tarifas[0].tarifa_base);
 
-    const subtotal = Math.round(producto.precio_b2c * qty);
-    const total = subtotal + costoEnvio;
+    // Precio unitario con beneficio por volumen — MISMA regla que la web:
+    // ≥10u → precio mayorista B2B (tramos + IVA, si es menor) · 3+u → −15% ·
+    // 2u → −10% · 1u → precio B2C normal.
+    const TRAMOS = [
+      { min: 2000, key: 't2000_mas' }, { min: 1000, key: 't1000_1999' },
+      { min: 500, key: 't500_999' }, { min: 250, key: 't250_499' },
+      { min: 100, key: 't100_249' }, { min: 50, key: 't50_99' }, { min: 10, key: 't10_49' },
+    ];
+    let precioUnit = producto.precio_b2c;
+    let beneficio = '';
+    if (qty >= 10 && producto.precio_b2b_tramos && typeof producto.precio_b2b_tramos === 'object') {
+      const idx = TRAMOS.findIndex(t => qty >= t.min);
+      for (let i = idx; i < TRAMOS.length; i++) {
+        const neto = Number(producto.precio_b2b_tramos[TRAMOS[i].key]);
+        if (Number.isFinite(neto) && neto > 0) {
+          const conIva = Math.round(neto * 1.19);
+          if (conIva < producto.precio_b2c) { precioUnit = conIva; beneficio = `precio mayorista ${qty}u`; }
+          break;
+        }
+      }
+    }
+    if (!beneficio && qty >= 3) { precioUnit = Math.round(producto.precio_b2c * 0.85); beneficio = `-15% por ${qty}u`; }
+    else if (!beneficio && qty === 2) { precioUnit = Math.round(producto.precio_b2c * 0.90); beneficio = '-10% por 2u'; }
+    const ahorroVolumen = Math.max(0, (producto.precio_b2c - precioUnit) * qty);
+
+    // Fee grabado láser: $2.000/u bajo el mínimo gratis (10u por defecto).
+    const tienePers = !!(personalizacion || logo_url);
+    const feePersonalizacion = tienePers && qty < (producto.personalizacion_gratis_desde || 10) ? 2000 * qty : 0;
+
+    const subtotal = Math.round(precioUnit * qty);
+    const total = subtotal + feePersonalizacion + costoEnvio;
 
     const numeroPedido = `WA-${Date.now().toString().slice(-8)}`;
     const descItems = `${qty}x ${producto.nombre} (${producto.sku})${personalizacion ? ` · Grabado: ${personalizacion}` : ''}`;
@@ -85,17 +117,26 @@ Deno.serve(async (req) => {
         sku: producto.sku,
         nombre: producto.nombre,
         personalizacion: personalizacion || '',
-        precio_unitario: producto.precio_b2c,
+        tipo_personalizacion: logo_url ? 'archivo' : (personalizacion ? 'frase' : ''),
+        fee_personalizacion: feePersonalizacion,
+        logo_url: logo_url || '',
+        mockup_url: mockup_url || '',
+        posicion_grabado: posicion_grabado || '',
+        precio_unitario: precioUnit,
         cantidad: qty,
       }],
       cantidad: qty,
       subtotal,
+      fee_personalizacion: feePersonalizacion,
+      logo_url: logo_url || '',
+      mockup_url: mockup_url || '',
+      logo_recibido: !!logo_url,
       costo_envio: costoEnvio,
       total,
       medio_pago: 'MercadoPago',
       estado: 'Nuevo',
       payment_status: 'pending_mp',
-      requiere_personalizacion: !!personalizacion,
+      requiere_personalizacion: tienePers,
       texto_personalizacion: personalizacion || '',
       ciudad: comuna,
       direccion_envio: `${direccion}, ${comuna}`,
@@ -166,7 +207,9 @@ Deno.serve(async (req) => {
       subtotal,
       costo_envio: costoEnvio,
       link_pago: linkPago,
-      resumen: `${descItems} · Subtotal $${subtotal.toLocaleString('es-CL')} + Envío $${costoEnvio.toLocaleString('es-CL')} (${comuna}) = Total $${total.toLocaleString('es-CL')} CLP (IVA incl.)`,
+      fee_personalizacion: feePersonalizacion,
+      ahorro_volumen: ahorroVolumen > 0 ? ahorroVolumen : undefined,
+      resumen: `${descItems}${beneficio ? ` · 💚 ${beneficio} (ahorras $${ahorroVolumen.toLocaleString('es-CL')})` : ''} · Subtotal $${subtotal.toLocaleString('es-CL')}${feePersonalizacion > 0 ? ` + Grabado $${feePersonalizacion.toLocaleString('es-CL')}` : ''} + Envío $${costoEnvio.toLocaleString('es-CL')} (${comuna}) = Total $${total.toLocaleString('es-CL')} CLP (IVA incl.)`,
       seguimiento: `https://peyuchile.cl/seguimiento`,
     });
   } catch (error) {

@@ -33,16 +33,58 @@ Deno.serve(async (req) => {
       return Response.json({ error: `Faltan datos: ${faltan.join(', ')}.` }, { status: 400 });
     }
 
-    // Validar y traer todos los productos
+    // ── Pre-pass: productos + unidades TOTALES por SKU ──────────────────────
+    // Los colores NO dividen los beneficios: 4 azules + 2 negros + 4 rojos del
+    // mismo SKU = 10u → grabado GRATIS y precio por volumen.
+    const productosCache = {};
+    const qtyPorSku = {};
+    for (const item of items) {
+      const qty = Math.max(1, Math.round(Number(item.cantidad) || 1));
+      if (!(item.sku in productosCache)) {
+        const productos = await base44.asServiceRole.entities.Producto.filter({ sku: item.sku });
+        productosCache[item.sku] = productos?.[0] || null;
+      }
+      qtyPorSku[item.sku] = (qtyPorSku[item.sku] || 0) + qty;
+    }
+
+    // Precio unitario con beneficio por volumen — MISMA regla que la web:
+    // ≥10u mismo SKU → precio mayorista B2B (tramos oficiales + IVA, si es
+    // menor que el B2C) · 3+u → −15% · 2u → −10% · 1u → precio B2C normal.
+    const TRAMOS = [
+      { min: 2000, key: 't2000_mas' }, { min: 1000, key: 't1000_1999' },
+      { min: 500, key: 't500_999' }, { min: 250, key: 't250_499' },
+      { min: 100, key: 't100_249' }, { min: 50, key: 't50_99' }, { min: 10, key: 't10_49' },
+    ];
+    const precioConVolumen = (prod, unidadesSku) => {
+      const b2c = prod.precio_b2c;
+      const tramos = prod.precio_b2b_tramos;
+      if (unidadesSku >= 10 && tramos && typeof tramos === 'object') {
+        const idx = TRAMOS.findIndex(t => unidadesSku >= t.min);
+        for (let i = idx; i < TRAMOS.length; i++) {
+          const neto = Number(tramos[TRAMOS[i].key]);
+          if (Number.isFinite(neto) && neto > 0) {
+            const conIva = Math.round(neto * 1.19);
+            if (conIva < b2c) return { precio: conIva, beneficio: `precio mayorista ${unidadesSku}u` };
+            break;
+          }
+        }
+      }
+      if (unidadesSku >= 3) return { precio: Math.round(b2c * 0.85), beneficio: `-15% por ${unidadesSku}u` };
+      if (unidadesSku === 2) return { precio: Math.round(b2c * 0.90), beneficio: '-10% por 2u' };
+      return { precio: b2c, beneficio: '' };
+    };
+
+    // Validar items y armar el detalle
     const itemsDetalle = [];
     let subtotal = 0;
+    let ahorroVolumen = 0;
     let feePersonalizacion = 0;
     const errores = [];
+    const beneficios = [];
 
     for (const item of items) {
       const qty = Math.max(1, Math.round(Number(item.cantidad) || 1));
-      const productos = await base44.asServiceRole.entities.Producto.filter({ sku: item.sku });
-      const prod = productos?.[0];
+      const prod = productosCache[item.sku];
       if (!prod || prod.activo === false) {
         errores.push(`SKU "${item.sku}" no encontrado o inactivo.`);
         continue;
@@ -63,13 +105,18 @@ Deno.serve(async (req) => {
         continue;
       }
 
-      const precioUnit = prod.precio_b2c;
-      const lineaSubtotal = precioUnit * qty;
-      subtotal += lineaSubtotal;
+      const unidadesSku = qtyPorSku[item.sku];
+      const { precio: precioUnit, beneficio } = precioConVolumen(prod, unidadesSku);
+      const etiqueta = beneficio ? `${prod.nombre}: ${beneficio}` : '';
+      if (etiqueta && !beneficios.includes(etiqueta)) beneficios.push(etiqueta);
+      ahorroVolumen += Math.max(0, (prod.precio_b2c - precioUnit) * qty);
+      subtotal += precioUnit * qty;
 
-      // Fee personalización láser: gratis desde 10u del mismo ítem
+      // Fee personalización láser: gratis desde 10u del MISMO SKU sumando
+      // TODOS los colores/líneas de ese SKU en el carrito.
+      const tienePers = !!(item.personalizacion || item.logo_url);
       let feeLinea = 0;
-      if (item.personalizacion && qty < (prod.personalizacion_gratis_desde || 10)) {
+      if (tienePers && unidadesSku < (prod.personalizacion_gratis_desde || 10)) {
         feeLinea = 2000 * qty; // $2.000/u por debajo del MOQ
         feePersonalizacion += feeLinea;
       }
@@ -79,8 +126,11 @@ Deno.serve(async (req) => {
         nombre: prod.nombre,
         color: item.color || '',
         personalizacion: item.personalizacion || '',
-        tipo_personalizacion: item.personalizacion ? 'frase' : '',
+        tipo_personalizacion: item.logo_url ? 'archivo' : (item.personalizacion ? 'frase' : ''),
         fee_personalizacion: feeLinea,
+        logo_url: item.logo_url || '',
+        mockup_url: item.mockup_url || '',
+        posicion_grabado: item.posicion_grabado || '',
         precio_unitario: precioUnit,
         cantidad: qty,
       });
@@ -122,8 +172,11 @@ Deno.serve(async (req) => {
       medio_pago: 'MercadoPago',
       estado: 'Nuevo',
       payment_status: 'pending_mp',
-      requiere_personalizacion: itemsDetalle.some(i => !!i.personalizacion),
+      requiere_personalizacion: itemsDetalle.some(i => !!i.personalizacion || !!i.logo_url),
       texto_personalizacion: itemsDetalle.map(i => i.personalizacion).filter(Boolean).join('; '),
+      logo_url: itemsDetalle.find(i => i.logo_url)?.logo_url || '',
+      mockup_url: itemsDetalle.find(i => i.mockup_url)?.mockup_url || '',
+      logo_recibido: itemsDetalle.some(i => !!i.logo_url),
       ciudad: comuna,
       direccion_envio: `${direccion}, ${comuna}`,
       courier: 'BlueExpress',
@@ -188,7 +241,9 @@ Deno.serve(async (req) => {
       total,
       link_pago: mpData.init_point,
       errores: errores.length ? errores : undefined,
-      resumen: `${descItems}\nSubtotal: $${subtotal.toLocaleString('es-CL')}${feePersonalizacion > 0 ? `\nGrabado láser: $${feePersonalizacion.toLocaleString('es-CL')}` : ''}\nEnvío (${comuna}): $${costoEnvio.toLocaleString('es-CL')}\n*Total: $${total.toLocaleString('es-CL')} CLP (IVA incl.)*`,
+      ahorro_volumen: ahorroVolumen > 0 ? ahorroVolumen : undefined,
+      beneficios: beneficios.length ? beneficios : undefined,
+      resumen: `${descItems}\nSubtotal: $${subtotal.toLocaleString('es-CL')}${ahorroVolumen > 0 ? `\n💚 Precio por volumen aplicado — ahorras $${ahorroVolumen.toLocaleString('es-CL')} (${beneficios.join(' · ')})` : ''}${feePersonalizacion > 0 ? `\nGrabado láser: $${feePersonalizacion.toLocaleString('es-CL')}` : ''}\nEnvío (${comuna}): $${costoEnvio.toLocaleString('es-CL')}\n*Total: $${total.toLocaleString('es-CL')} CLP (IVA incl.)*`,
       seguimiento: 'https://peyuchile.cl/seguimiento',
     });
   } catch (error) {
