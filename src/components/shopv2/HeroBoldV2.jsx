@@ -155,8 +155,9 @@ export default function HeroBoldV2({ heroImg, onPersonaliza, slides }) {
                 onSlideClick={(s) => navigate(s.to || '/CatalogoNuevo')}
               />
 
-              {/* Badge inferior — glass morphism */}
-              <div className="hidden sm:flex items-center gap-3 absolute bottom-5 left-5 backdrop-blur-xl rounded-2xl px-4 py-3 shadow-lg z-10"
+              {/* Badge — glass morphism. Movido a top-left para no chocar con el
+                  nombre del producto que trae grabado la foto en la parte inferior. */}
+              <div className="hidden sm:flex items-center gap-3 absolute top-5 left-5 backdrop-blur-xl rounded-2xl px-4 py-3 shadow-lg z-10"
                 style={{ background: 'rgba(255,255,255,.92)', border: '1px solid rgba(232,221,208,.7)' }}>
                 <div className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0"
                   style={{ background: 'rgba(15,139,108,.10)' }}>
