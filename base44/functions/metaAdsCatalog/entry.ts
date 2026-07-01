@@ -98,13 +98,34 @@ Deno.serve(async (req) => {
       if (!businessId) return Response.json({ ok: false, error: 'La cuenta no está asociada a un Business Manager, no se pueden listar catálogos.' });
       const data = await graphGet(`${businessId}/owned_product_catalogs?fields=id,name,product_count&limit=25`, token);
       if (data.error) return Response.json({ ok: false, ...diagnoseMetaError(data.error) });
-      const catalogs = (data.data || []).map((c) => ({ catalog_id: c.id, name: c.name, product_count: c.product_count }));
+      // Filtrar: solo mostrar catálogos que tengan un feed conectado a Base44
+      // (schedule.url contenga "base44" o "peyuchile.cl/functions"). Los
+      // catálogos legacy sin feed de Base44 se ocultan automáticamente.
+      const allCatalogs = data.data || [];
+      const visible = [];
+      let hiddenCount = 0;
+      for (const c of allCatalogs) {
+        const feedData = await graphGet(`${c.id}/product_feeds?fields=id,name,schedule,url&limit=5`, token);
+        const feeds = feedData.data || [];
+        const hasBase44Feed = feeds.some((f) => {
+          const feedUrl = f.url || (f.schedule && f.schedule.url) || '';
+          return feedUrl.includes('base44') || feedUrl.includes('peyuchile.cl/functions');
+        });
+        if (hasBase44Feed) {
+          visible.push({ catalog_id: c.id, name: c.name, product_count: c.product_count });
+        } else {
+          hiddenCount++;
+        }
+      }
       return Response.json({
         ok: true,
         action,
         business_id: businessId,
-        catalogs,
-        message: catalogs.length ? `Encontré ${catalogs.length} catálogo(s).` : 'No hay catálogos de productos en el Business. Crea uno en Commerce Manager y conéctalo al feed de WooCommerce para usar anuncios dinámicos.',
+        catalogs: visible,
+        legacy_catalogs_hidden: hiddenCount,
+        message: visible.length
+          ? `Catálogo activo: ${visible[0].name} (${visible[0].product_count} productos).${hiddenCount ? ` ${hiddenCount} catálogo(s) legacy oculto(s).` : ''}`
+          : 'No hay catálogos conectados a Base44. Crea uno en Commerce Manager y conéctalo al feed.',
       });
     }
 
@@ -300,7 +321,50 @@ Deno.serve(async (req) => {
       return Response.json({ ok: true, action, message: `Catálogo ${body.catalog_id} eliminado.` });
     }
 
-    return Response.json({ ok: false, error: "action debe ser 'list_catalogs', 'catalog_products', 'create_dpa', 'delete_product', 'delete_all_products', 'list_feeds', 'add_feed' o 'delete_catalog'." });
+    // ── VERIFICAR ESTADO DE UN UPLOAD ─────────────────────────────────────
+    if (action === 'check_upload') {
+      if (!body.upload_id) return Response.json({ ok: false, error: 'Falta upload_id.' });
+      const data = await graphGet(`${body.upload_id}?fields=start_time,end_time,error_count,warning_count,error_report,file_name,url`, token);
+      if (data.error) return Response.json({ ok: false, ...diagnoseMetaError(data.error) });
+      return Response.json({ ok: true, action, upload: data });
+    }
+
+    // ── FORZAR UPLOAD DEL FEED + ESPERAR RESULTADO ────────────────────────
+    // Sube el feed inmediatamente y pollifica el upload hasta que termine
+    // (max ~40s). Devuelve errores detallados si los hay.
+    if (action === 'force_feed_upload') {
+      if (!body.feed_id || !body.feed_url) return Response.json({ ok: false, error: 'Falta feed_id y feed_url.' });
+      // override=true → borra productos que NO están en el feed (sync 1:1).
+      const uploadParams = { url: body.feed_url };
+      if (body.override) uploadParams.override = 'true';
+      const upload = await graphPost(`${body.feed_id}/uploads`, uploadParams, token);
+      if (upload.error) return Response.json({ ok: false, step: 'upload', ...diagnoseMetaError(upload.error) });
+      const uploadId = upload.id;
+      // Pollificar el upload hasta que termine (max 8 intentos × 5s = 40s).
+      let status = null;
+      for (let i = 0; i < 8; i++) {
+        await new Promise((r) => setTimeout(r, 5000));
+        const s = await graphGet(`${uploadId}?fields=start_time,end_time,error_count,warning_count,error_report`, token);
+        if (s.error) { status = s; break; }
+        status = s;
+        // Si tiene end_time, el upload ya terminó.
+        if (s.end_time) break;
+      }
+      return Response.json({
+        ok: true,
+        action,
+        upload_id: uploadId,
+        upload_status: status,
+        errors: status?.error_count || 0,
+        warnings: status?.warning_count || 0,
+        error_report: status?.error_report || null,
+        message: status?.end_time
+          ? `Upload terminado. ${status.error_count || 0} errores, ${status.warning_count || 0} warnings.`
+          : 'Upload aún procesando. Revisa check_upload en 1-2 min.',
+      });
+    }
+
+    return Response.json({ ok: false, error: "action debe ser 'list_catalogs', 'catalog_products', 'create_dpa', 'delete_product', 'delete_all_products', 'list_feeds', 'add_feed', 'check_upload', 'force_feed_upload' o 'delete_catalog'." });
   } catch (error) {
     return Response.json({ ok: false, error: error.message }, { status: 500 });
   }
