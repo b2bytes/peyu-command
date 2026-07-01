@@ -56,7 +56,7 @@ export default function PropuestaRapida() {
   }, []);
 
   return (
-    <div className="min-h-screen lg:h-screen lg:min-h-0 lg:flex lg:flex-col lg:overflow-hidden font-inter max-w-[100vw] overflow-x-hidden pb-[6.5rem] lg:pb-0" style={{ background: C.bg, color: C.fg }}>
+    <div className="min-h-screen font-inter max-w-[100vw] overflow-x-hidden pb-[6.5rem] lg:pb-10" style={{ background: C.bg, color: C.fg }}>
       <SEOHead
         title="Propuesta Rápida B2B en 24h — Regalos Corporativos Reciclados | PEYU"
         description="Solicita tu propuesta corporativa en 60 segundos y recíbela en 24h hábiles: regalos sustentables hechos en Chile con plástico 100% reciclado, logo láser gratis desde 10u, precios por volumen y factura."
@@ -66,7 +66,7 @@ export default function PropuestaRapida() {
       />
 
       {/* ── TOP NAV sticky (mismo patrón cockpit B2B) ── */}
-      <header className="sticky top-0 z-50 backdrop-blur-xl flex-shrink-0"
+      <header className="sticky top-0 z-50 backdrop-blur-xl"
         style={{ background: 'rgba(248,243,237,.97)', borderBottom: `1px solid ${C.border}`, boxShadow: '0 1px 10px rgba(44,24,16,.07)' }}>
         <div className="max-w-6xl mx-auto px-4 lg:px-8 py-2.5 flex items-center gap-3">
           <Link to="/EmpresasNuevo"
@@ -91,13 +91,14 @@ export default function PropuestaRapida() {
         </div>
       </header>
 
-      {/* ── BODY DESKTOP: 1 pantalla, ancho completo. El form scrollea solo
-          internamente si la pantalla es baja — la página nunca scrollea. ── */}
-      <div className="hidden lg:flex flex-1 min-h-0 w-full max-w-[1600px] mx-auto px-10 xl:px-16 py-6 gap-12 xl:gap-20 items-stretch">
+      {/* ── BODY DESKTOP: ancho completo, flujo natural (en pantallas normales
+          cabe sin scroll; si la pantalla es baja, la página scrollea sin
+          cortar nada). ── */}
+      <div className="hidden lg:flex w-full max-w-[1600px] mx-auto px-10 xl:px-16 py-8 gap-12 xl:gap-20 items-start">
 
-        {/* Izquierda: hero + pasos + confianza (fijo, sin scroll) */}
-        <div className="flex flex-col justify-between w-[48%] flex-shrink-0 min-h-0">
-          <div className="space-y-5 xl:space-y-6 min-h-0 overflow-hidden">
+        {/* Izquierda: hero + pasos + confianza */}
+        <div className="w-[48%] flex-shrink-0 lg:sticky lg:top-20">
+          <div className="space-y-6">
             <div>
               <span className="inline-block text-xs font-bold px-3 py-1 rounded-lg mb-3" style={{ background: C.action, color: 'white' }}>
                 ⚡ La vía rápida para empresas
@@ -135,24 +136,23 @@ export default function PropuestaRapida() {
                 </span>
               ))}
             </div>
-          </div>
 
-          {/* Clientes anclados abajo */}
-          <div className="pt-4 flex-shrink-0">
-            <p className="text-[9px] font-bold uppercase tracking-widest mb-2" style={{ color: C.fgMuted }}>Confían en PEYU</p>
-            <div className="flex flex-wrap gap-1.5">
-              {CLIENTES.map((c) => (
-                <span key={c} className="flex items-center gap-1 text-[10px] font-semibold px-2.5 py-1 rounded-full" style={{ background: 'white', border: `1px solid ${C.border}`, color: C.fgSoft }}>
-                  <Check className="w-2.5 h-2.5" style={{ color: C.action }} /> {c}
-                </span>
-              ))}
+            {/* Clientes */}
+            <div className="pt-1">
+              <p className="text-[9px] font-bold uppercase tracking-widest mb-2" style={{ color: C.fgMuted }}>Confían en PEYU</p>
+              <div className="flex flex-wrap gap-1.5">
+                {CLIENTES.map((c) => (
+                  <span key={c} className="flex items-center gap-1 text-[10px] font-semibold px-2.5 py-1 rounded-full" style={{ background: 'white', border: `1px solid ${C.border}`, color: C.fgSoft }}>
+                    <Check className="w-2.5 h-2.5" style={{ color: C.action }} /> {c}
+                  </span>
+                ))}
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Derecha: formulario a todo el ancho restante, con scroll PROPIO solo
-            si la pantalla es baja (la página no scrollea) */}
-        <div className="flex-1 min-w-0 min-h-0 overflow-y-auto peyu-scrollbar pr-1 flex items-start justify-center">
+        {/* Derecha: formulario a todo el ancho restante */}
+        <div className="flex-1 min-w-0 flex justify-center">
           <div className="w-full max-w-2xl">
             <PropuestaRapidaForm />
           </div>
