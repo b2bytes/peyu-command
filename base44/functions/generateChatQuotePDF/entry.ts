@@ -68,6 +68,7 @@ Deno.serve(async (req) => {
       telefono,
       fecha_requerida,
       personalizacion = 'Láser UV',
+      source = 'chat',
     } = body || {};
 
     if (!sku || !qty) {
@@ -104,6 +105,64 @@ Deno.serve(async (req) => {
     const vence = new Date(hoy.getTime() + 15 * 24 * 60 * 60 * 1000);
     const fechaEnvioStr = hoy.toISOString().slice(0, 10);
     const fechaVenceStr = vence.toISOString().slice(0, 10);
+
+    // 2.5 · Si viene del WhatsApp (source='whatsapp'), crear/actualizar B2BLead
+    //      para que el founder vea el lead en /admin/pipeline.
+    let leadId = null;
+    if (source === 'whatsapp' && empresa && contacto) {
+      const nowIso = hoy.toISOString();
+      const leadScore = Math.min(100, 50 + (empresa ? 20 : 0) + (cantidad >= 10 ? 20 : 0) + (requierePersonal ? 10 : 0));
+      try {
+        const existing = await base44.asServiceRole.entities.B2BLead.filter({ email: email || empresa }, '-created_date', 3);
+        if (existing && existing.length > 0) {
+          const prev = existing[0];
+          const prevHist = Array.isArray(prev.historial) ? prev.historial : [];
+          const updated = await base44.asServiceRole.entities.B2BLead.update(prev.id, {
+            contact_name: contacto,
+            company_name: empresa,
+            phone: telefono || prev.phone,
+            product_interest: sku,
+            qty_estimate: cantidad,
+            delivery_date: fecha_requerida || prev.delivery_date,
+            personalization_needs: requierePersonal,
+            status: 'Propuesta enviada',
+            urgency: cantidad >= 100 ? 'Alta' : 'Normal',
+            notes: `Lead B2B desde WhatsApp. ${cantidad}u de ${sku}. ${fecha_requerida ? `Fecha req: ${fecha_requerida}.` : ''}`,
+            historial: [...prevHist, {
+              at: nowIso, type: 'proposal_sent', actor: 'agente_whatsapp',
+              channel: 'whatsapp', detail: `Cotización ${''} enviada al email ${email || 'N/D'}`,
+            }],
+          });
+          leadId = updated?.id || prev.id;
+        } else {
+          const created = await base44.asServiceRole.entities.B2BLead.create({
+            source: 'WhatsApp',
+            contact_name: contacto,
+            company_name: empresa,
+            email: email || '',
+            phone: telefono || '',
+            product_interest: sku,
+            qty_estimate: cantidad,
+            delivery_date: fecha_requerida || '',
+            personalization_needs: requierePersonal,
+            lead_score: leadScore,
+            status: 'Propuesta enviada',
+            urgency: cantidad >= 100 ? 'Alta' : 'Normal',
+            notes: `Lead B2B desde WhatsApp. ${cantidad}u de ${sku}. ${fecha_requerida ? `Fecha req: ${fecha_requerida}.` : ''}`,
+            historial: [{
+              at: nowIso, type: 'created', actor: 'agente_whatsapp',
+              channel: 'whatsapp', detail: `Lead capturado desde WhatsApp: ${empresa} quiere ${cantidad}u de ${sku}`,
+            }, {
+              at: nowIso, type: 'proposal_sent', actor: 'agente_whatsapp',
+              channel: 'whatsapp', detail: `Cotización enviada al email ${email || 'N/D'}`,
+            }],
+          });
+          leadId = created?.id;
+        }
+      } catch (e) {
+        console.error('Error creando B2BLead desde WhatsApp:', e?.message || e);
+      }
+    }
 
     // 3. Crear registro Cotización (estado Borrador, viene del chat)
     const numero = genCotNumero();
@@ -407,11 +466,16 @@ Deno.serve(async (req) => {
     return Response.json({
       ok: true,
       cotizacion_id: cot.id,
+      lead_id: leadId,
       numero,
       total,
       pdf_base64: base64,
       filename: `Cotizacion-Peyu-${numero}.pdf`,
       email_enviado: emailEnviado,
+      admin_url_pipeline: '/admin/pipeline',
+      admin_url_cotizaciones: '/admin/cotizaciones',
+      mensaje_cliente: `¡Listo ${contacto || ''}! 📄✅ Te envié la cotización ${numero} al email ${email || ''}. Total: $${(total || 0).toLocaleString('es-CL')} CLP. El equipo PEYU te contacta hoy. 🐢`,
+      mensaje_founder: `📋 Lead: /admin/pipeline · 📄 Cotización ${numero}: /admin/cotizaciones · 📧 Email ${emailEnviado ? 'enviado ✅' : 'pendiente (verifica dominio en Resend) ⚠️'}`,
     });
   } catch (error) {
     console.error('generateChatQuotePDF error:', error);
