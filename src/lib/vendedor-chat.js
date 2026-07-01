@@ -9,6 +9,8 @@ import { getCartV2 } from '@/lib/shop-v2-cart';
 const CONV_KEY = 'vendedor_peyu_conv_id';
 const CART_DONE_KEY = 'vendedor_peyu_cart_done';
 const LEAD_DONE_KEY = 'vendedor_peyu_lead_done';
+// Historial de hilos anteriores: lista ordenada [{ id, title, preview, at }]
+const HISTORY_KEY = 'vendedor_peyu_history';
 
 export async function ensureConversation() {
   let id = localStorage.getItem(CONV_KEY);
@@ -22,10 +24,54 @@ export async function ensureConversation() {
   return id;
 }
 
+// Devuelve el conversation_id activo (o null). NO crea uno nuevo.
+export function getActiveConversationId() {
+  return localStorage.getItem(CONV_KEY);
+}
+
 export function resetConversation() {
   localStorage.removeItem(CONV_KEY);
   localStorage.removeItem(CART_DONE_KEY);
   localStorage.removeItem(LEAD_DONE_KEY);
+}
+
+// ── Historial de conversaciones ─────────────────────────────────────────
+// El chat abre SIEMPRE en blanco al recargar (no auto-restaura el hilo), pero
+// guarda cada conversación con contenido en una lista para poder retomarla.
+
+export function getConversationHistory() {
+  try {
+    const list = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]');
+    return Array.isArray(list) ? list.sort((a, b) => (b.at || 0) - (a.at || 0)) : [];
+  } catch { return []; }
+}
+
+// Registra/actualiza un hilo en el historial con el último mensaje como preview.
+export function upsertHistory(convId, messages = []) {
+  if (!convId) return;
+  const userMsgs = messages.filter((m) => m.role === 'user' && m.content?.trim());
+  if (!userMsgs.length) return; // no guardamos hilos vacíos
+  const title = userMsgs[0].content.slice(0, 42);
+  const last = messages[messages.length - 1];
+  const preview = (last?.content || '').replace(/\[\[[^\]]*\]\]/g, '').trim().slice(0, 70);
+  try {
+    const list = getConversationHistory().filter((h) => h.id !== convId);
+    list.unshift({ id: convId, title, preview, at: Date.now(), count: messages.length });
+    localStorage.setItem(HISTORY_KEY, JSON.stringify(list.slice(0, 20)));
+  } catch { /* noop */ }
+}
+
+// Activa un hilo anterior (para retomarlo). Limpia flags de idempotencia del
+// hilo previo para que sus tags se re-evalúen limpiamente.
+export function activateConversation(convId) {
+  localStorage.setItem(CONV_KEY, convId);
+  localStorage.removeItem(CART_DONE_KEY);
+  localStorage.removeItem(LEAD_DONE_KEY);
+}
+
+// Inicia un hilo NUEVO desde cero (deja el actual guardado en historial).
+export function startNewConversation() {
+  resetConversation();
 }
 
 // Adjunta contexto invisible (página + carrito) para que el agente venda mejor.

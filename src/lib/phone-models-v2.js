@@ -15,6 +15,14 @@ const MODELOS = [
   { key: 'iPhone 11', marca: 'iPhone', test: /iphone\s?11/i },
   // ── Samsung ──
   { key: 'Samsung Galaxy', marca: 'Samsung', test: /samsung|galaxy/i },
+  // ── Xiaomi / Redmi / POCO ──
+  { key: 'Xiaomi Redmi', marca: 'Xiaomi', test: /redmi/i },
+  { key: 'Xiaomi POCO', marca: 'Xiaomi', test: /\bpoco\b/i },
+  { key: 'Xiaomi', marca: 'Xiaomi', test: /xiaomi|\bmi\s?\d/i },
+  // ── Motorola ──
+  { key: 'Motorola', marca: 'Motorola', test: /motorola|moto\s?[ge]/i },
+  // ── LG ──
+  { key: 'LG', marca: 'LG', test: /\blg\b/i },
   // ── Huawei (específico antes que genérico) ──
   { key: 'Huawei P40 Pro', marca: 'Huawei', test: /p40\s?pro/i },
   { key: 'Huawei P40 Lite', marca: 'Huawei', test: /p40\s?lite/i },
@@ -28,7 +36,7 @@ const MODELOS = [
 ];
 
 // Orden canónico de marcas para la UI.
-const MARCAS_ORDEN = ['iPhone', 'Samsung', 'Huawei', 'AirPods'];
+const MARCAS_ORDEN = ['iPhone', 'Samsung', 'Xiaomi', 'Huawei', 'Motorola', 'LG', 'AirPods'];
 
 // Devuelve el modelo de un producto carcasa, o null si no aplica.
 export function modeloDe(producto) {

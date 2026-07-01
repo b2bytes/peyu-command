@@ -92,16 +92,31 @@ export default function TiendaNueva() {
             <Sparkles className="w-4 sm:w-5 h-4 sm:h-5" style={{ color: '#C0785C' }} />
             <h2 className="font-fraunces text-lg sm:text-3xl">Explora</h2>
           </div>
-          <div className="flex sm:grid sm:grid-cols-3 lg:grid-cols-5 gap-1.5 sm:gap-3 overflow-x-auto scrollbar-hide -mx-4 px-4 sm:mx-0 sm:px-0 pb-2">
+          <div className="flex sm:grid sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-3 overflow-x-auto scrollbar-hide -mx-4 px-4 sm:mx-0 sm:px-0 pb-2">
             {CATEGORIAS_V2.map((c) => (
               <Link
                 key={c.cat}
                 to={`/CatalogoNuevo?cat=${encodeURIComponent(c.cat)}`}
-                className="group flex-shrink-0 w-24 sm:w-auto rounded-2xl sm:rounded-3xl p-3 sm:p-6 text-center hover:shadow-lg hover:-translate-y-0.5 transition-all active:scale-95"
+                className="group flex-shrink-0 w-32 sm:w-auto rounded-2xl sm:rounded-3xl overflow-hidden hover:shadow-xl hover:-translate-y-1 transition-all active:scale-95"
                 style={{ border: '1.5px solid #D4C4B0', background: 'white' }}
               >
-                <div className="text-3xl sm:text-4xl mb-2 sm:mb-3 group-hover:scale-110 transition-transform inline-block">{c.emoji}</div>
-                <p className="font-bold text-[11px] sm:text-sm leading-tight" style={{ color: '#2C1810' }}>{c.label}</p>
+                {/* Foto real del producto */}
+                <div className="relative aspect-square overflow-hidden" style={{ background: '#F2EBE1' }}>
+                  <img
+                    src={c.img}
+                    alt={c.label}
+                    loading="lazy"
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                    draggable={false}
+                  />
+                  <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(44,24,16,.45) 0%, transparent 55%)' }} />
+                  <span className="absolute top-2 left-2 w-7 h-7 rounded-full flex items-center justify-center text-sm shadow-sm" style={{ background: 'rgba(255,255,255,.92)' }}>{c.emoji}</span>
+                </div>
+                {/* Etiqueta */}
+                <div className="px-2.5 py-2 sm:py-2.5 text-center">
+                  <p className="font-bold text-[11px] sm:text-sm leading-tight" style={{ color: '#2C1810' }}>{c.label}</p>
+                  <p className="text-[9px] sm:text-[11px] leading-tight mt-0.5 truncate" style={{ color: '#A08070' }}>{c.desc}</p>
+                </div>
               </Link>
             ))}
           </div>

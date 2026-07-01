@@ -1,15 +1,18 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { base44 } from '@/api/base44Client';
-import { Send, X, Loader2, Sparkles, ShoppingBag, Minus } from 'lucide-react';
+import { Send, X, Loader2, Sparkles, ShoppingBag, Minus, History } from 'lucide-react';
 import {
   ensureConversation, sendChatMessage, fetchMessages, resetConversation,
   extractSkus, extractCartActions, cartActionDone, markCartActionDone,
   extractLeadActions, leadActionDone, markLeadActionDone, saveLeadData,
+  upsertHistory, activateConversation, startNewConversation,
 } from '@/lib/vendedor-chat';
+import VendedorHistorial from './VendedorHistorial';
 import { addToCartV2, cartCountV2, subscribeCartV2 } from '@/lib/shop-v2-cart';
 import { getProductImage } from '@/utils/productImages';
 import VendedorMensaje from './VendedorMensaje';
 import VendedorCartCard from './VendedorCartCard';
+import { PEYU_AVATAR } from '@/lib/shop-v2-config';
 
 const QUICK_CHIPS = [
   '🎁 Busco un regalo',
@@ -27,6 +30,7 @@ export default function VendedorChatBar() {
   const [showCart, setShowCart] = useState(false);
   const [cartCount, setCartCount] = useState(() => cartCountV2());
   const [unread, setUnread] = useState(0);
+  const [showHistorial, setShowHistorial] = useState(false);
   const scrollRef = useRef(null);
   const pollRef = useRef(null);
   const inputRef = useRef(null);
@@ -34,17 +38,43 @@ export default function VendedorChatBar() {
 
   useEffect(() => subscribeCartV2(() => setCartCount(cartCountV2())), []);
 
+  // Al montar: guardamos el hilo activo (si tenía contenido) en el historial y
+  // abrimos SIEMPRE en blanco. El usuario retoma un hilo desde el panel de
+  // historial o empieza uno nuevo. Así el chat no arrastra la conversación
+  // anterior al recargar, pero nada se pierde.
   useEffect(() => {
     const convId = localStorage.getItem('vendedor_peyu_conv_id');
-    if (!convId) return;
-    fetchMessages(convId).then((m) => {
-      if (m.length) {
-        setMsgs(m);
-        lastAsstCountRef.current = m.filter((x) => x.role === 'assistant').length;
-      }
-    }).catch(() => {});
+    if (convId) {
+      fetchMessages(convId).then((m) => {
+        if (m.length) upsertHistory(convId, m);
+      }).catch(() => {});
+    }
+    resetConversation(); // arranca en blanco
     return () => clearInterval(pollRef.current);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Retomar un hilo anterior del historial.
+  const retomarConversacion = useCallback((convId) => {
+    activateConversation(convId);
+    setShowHistorial(false);
+    setMsgs([]);
+    fetchMessages(convId).then((m) => {
+      setMsgs(m);
+      lastAsstCountRef.current = m.filter((x) => x.role === 'assistant').length;
+      setTimeout(() => scrollRef.current?.scrollTo({ top: 999999 }), 100);
+    }).catch(() => {});
+  }, []);
+
+  // Iniciar un hilo nuevo: guarda el actual en historial y limpia.
+  const nuevaConversacion = useCallback(() => {
+    const convId = localStorage.getItem('vendedor_peyu_conv_id');
+    if (convId && msgs.length) upsertHistory(convId, msgs);
+    startNewConversation();
+    setMsgs([]);
+    setShowHistorial(false);
+    lastAsstCountRef.current = 0;
+  }, [msgs]);
 
   const resolverProductos = useCallback(async (mensajes) => {
     const skus = new Set();
@@ -138,6 +168,7 @@ export default function VendedorChatBar() {
           if (asst > baseCount && last?.role === 'assistant' && last.content) {
             clearInterval(pollRef.current);
             setSending(false);
+            upsertHistory(convId, m); // persiste el hilo en el historial
           }
         }
         if (ticks > 30) { clearInterval(pollRef.current); setSending(false); }
@@ -171,7 +202,7 @@ export default function VendedorChatBar() {
             style={{ borderBottom: '1px solid #E7D8C6', background: 'white' }}>
             <div className="flex items-center gap-2.5">
               <span className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0" style={{ background: '#EAF3EF', border: '1.5px solid rgba(15,139,108,.2)' }}>
-                <img src="https://media.base44.com/images/public/69d99b9d61f699701129c103/b67ed29f9_image.png" alt="Peyu" className="w-full h-full object-cover scale-125" draggable={false} />
+                <img src={PEYU_AVATAR} alt="Peyu" className="w-full h-full object-cover" draggable={false} />
               </span>
               <div>
                 <p className="text-sm font-bold" style={{ color: '#2C1810' }}>Peyu · Vendedor</p>
@@ -181,6 +212,13 @@ export default function VendedorChatBar() {
               </div>
             </div>
             <div className="flex items-center gap-1.5">
+              <button
+                onClick={() => setShowHistorial((v) => !v)}
+                className="h-8 w-8 rounded-xl flex items-center justify-center transition-colors hover:bg-[#F0E8DE]"
+                style={{ border: '1px solid #E7D8C6', background: showHistorial ? '#F0E8DE' : 'transparent' }}
+                title="Historial de conversaciones">
+                <History className="w-4 h-4" style={{ color: '#7A6050' }} />
+              </button>
               <button
                 onClick={() => setShowCart((v) => !v)}
                 className="relative h-8 px-2.5 rounded-xl flex items-center gap-1.5 transition-colors hover:bg-[#F0E8DE]"
@@ -203,9 +241,14 @@ export default function VendedorChatBar() {
 
           {/* Mensajes — ocupa el espacio disponible */}
           <div ref={scrollRef} className="flex-1 overflow-y-auto peyu-scrollbar px-3.5 lg:px-4 py-3 lg:py-4 space-y-3">
-            {msgs.length === 0 && (
+            {showHistorial && (
+              <VendedorHistorial onRetomar={retomarConversacion} onNuevo={nuevaConversacion} />
+            )}
+            {!showHistorial && msgs.length === 0 && (
               <div className="text-center pt-8 lg:pt-12 px-4">
-                <p className="text-4xl mb-3">🐢</p>
+                <span className="w-20 h-20 rounded-full overflow-hidden inline-block mb-3 shadow-md" style={{ background: '#EAF3EF', border: '2px solid rgba(15,139,108,.25)' }}>
+                  <img src={PEYU_AVATAR} alt="Peyu" className="w-full h-full object-cover" draggable={false} />
+                </span>
                 <p className="text-base font-bold" style={{ color: '#2C1810' }}>¡Hola! Soy Peyu, tu vendedor</p>
                 <p className="text-sm mt-1.5 mb-5 max-w-xs mx-auto" style={{ color: '#7A6050' }}>
                   Dime qué buscas y te muestro productos reales, los agrego a tu carro y pagas sin salir del chat 💚
@@ -223,13 +266,13 @@ export default function VendedorChatBar() {
                 </div>
               </div>
             )}
-            {msgs.map((m, i) => (
+            {!showHistorial && msgs.map((m, i) => (
               <VendedorMensaje key={i} msg={m} productosBySku={productosBySku} isLast={i === msgs.length - 1} />
             ))}
-            {sending && (
+            {!showHistorial && sending && (
               <div className="flex items-end gap-2">
                 <span className="w-7 h-7 rounded-full overflow-hidden flex-shrink-0" style={{ background: '#EAF3EF', border: '1px solid rgba(15,139,108,.2)' }}>
-                  <img src="https://media.base44.com/images/public/69d99b9d61f699701129c103/b67ed29f9_image.png" alt="Peyu" className="w-full h-full object-cover scale-125" draggable={false} />
+                  <img src={PEYU_AVATAR} alt="Peyu" className="w-full h-full object-cover" draggable={false} />
                 </span>
                 <div className="flex items-center gap-1.5 rounded-2xl rounded-tl-md px-3.5 py-3 shadow-sm" style={{ background: 'white', border: '1px solid #E7D8C6' }}>
                   <span className="w-1.5 h-1.5 rounded-full animate-bounce" style={{ background: '#0F8B6C', animationDelay: '0ms' }} />
@@ -283,7 +326,7 @@ export default function VendedorChatBar() {
                      bottom-[4.5rem] left-3 right-3 lg:bottom-4 lg:left-1/2 lg:right-auto lg:-translate-x-1/2 lg:w-[calc(100%-2rem)] lg:max-w-xl"
           style={{ background: 'rgba(255,255,255,.97)', backdropFilter: 'blur(20px)', border: '1.5px solid #D4C4B0', boxShadow: '0 10px 40px rgba(15,139,108,.18)' }}>
           <span className="w-9 h-9 rounded-full overflow-hidden flex-shrink-0" style={{ background: '#EAF3EF', border: '1.5px solid rgba(15,139,108,.2)' }}>
-            <img src="https://media.base44.com/images/public/69d99b9d61f699701129c103/b67ed29f9_image.png" alt="Peyu" className="w-full h-full object-cover scale-125" draggable={false} />
+            <img src={PEYU_AVATAR} alt="Peyu" className="w-full h-full object-cover" draggable={false} />
           </span>
           <input
             value={input}
