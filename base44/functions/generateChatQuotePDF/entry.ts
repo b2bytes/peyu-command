@@ -519,28 +519,43 @@ Deno.serve(async (req) => {
       console.error('Error subiendo PDF a storage:', e?.message || e);
     }
 
+    // 💌 Email HTML "estable" (tablas + estilos inline, compatible Gmail/Outlook
+    // móvil) con viaje de marca, mockup del cliente y doble CTA de aprobación.
+    const waAprobarUrl = `https://wa.me/56979471933?text=${encodeURIComponent(`Hola PEYU, apruebo la propuesta ${numero}. Quiero avanzar 🐢`)}`;
+    const tapitasEmail = Math.round(cantidad * 18);
     const emailHtml = `
-              <div style="font-family:Arial,sans-serif;max-width:560px;margin:0 auto;color:#1a1a1a">
-                <div style="background:#0F8B6C;padding:24px;border-radius:12px 12px 0 0">
-                  <h1 style="color:#fff;margin:0;font-size:22px">PEYU 🐢</h1>
-                  <p style="color:#d7f0e8;margin:4px 0 0;font-size:13px">Productos con propósito · 100% plástico reciclado</p>
-                </div>
-                <div style="border:1px solid #e5e7eb;border-top:0;padding:24px;border-radius:0 0 12px 12px">
-                  <p>Hola${contacto ? ` ${contacto}` : ''} 👋</p>
-                  <p>Te adjuntamos tu propuesta técnica y económica <strong>${numero}</strong>:</p>
-                  <table style="width:100%;border-collapse:collapse;margin:16px 0;font-size:14px">
-                    <tr><td style="padding:6px 0;color:#666">Producto</td><td style="padding:6px 0;text-align:right;font-weight:600">${producto.nombre}</td></tr>
-                    <tr><td style="padding:6px 0;color:#666">Cantidad</td><td style="padding:6px 0;text-align:right;font-weight:600">${cantidad} u.</td></tr>
-                    <tr><td style="padding:6px 0;color:#666">Precio unitario</td><td style="padding:6px 0;text-align:right;font-weight:600">$${precioUnit.toLocaleString('es-CL')}</td></tr>
-                    <tr><td style="padding:6px 0;color:#666;border-top:2px solid #0F8B6C">Total (IVA incl.)</td><td style="padding:6px 0;text-align:right;font-weight:800;color:#0F8B6C;border-top:2px solid #0F8B6C">$${total.toLocaleString('es-CL')}</td></tr>
-                  </table>
-                  ${mockup_url ? `<div style="text-align:center;margin:16px 0"><img src="${mockup_url}" alt="Mockup de tu grabado" style="max-width:100%;border-radius:12px"/><p style="font-size:12px;color:#888;margin:6px 0 0">Así se verá tu grabado láser (mockup referencial)</p></div>` : ''}
-                  ${cantidad >= 10 ? '<p style="color:#0F8B6C;font-weight:600;font-size:13px">✓ Personalización láser UV incluida GRATIS desde 10 unidades.</p>' : ''}
-                  <p style="font-size:13px;color:#666">Cada producto nace de tapitas que rescatamos del mar y de la calle 🌱 No regalas un objeto, regalas un gesto.</p>
-                  <p style="font-size:13px;color:#666">Validez: 15 días · Lead time estimado: ${leadTime} días hábiles. Para aprobar, responde este correo a corporativos@peyuchile.cl indicando el número.</p>
-                  <a href="https://wa.me/56979471933?text=${encodeURIComponent(`Hola PEYU, apruebo la propuesta ${numero}. Quiero avanzar.`)}" style="display:inline-block;background:#0F8B6C;color:#fff;text-decoration:none;padding:12px 22px;border-radius:999px;font-weight:700;font-size:14px;margin-top:8px">Aprobar propuesta por WhatsApp →</a>
-                </div>
-              </div>`;
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#F4EFE8;padding:24px 0">
+        <tr><td align="center">
+          <table role="presentation" width="560" cellpadding="0" cellspacing="0" style="max-width:560px;width:100%;font-family:Arial,Helvetica,sans-serif;color:#1a1a1a">
+            <tr><td style="background:#0B4634;padding:28px 28px 22px;border-radius:16px 16px 0 0">
+              <p style="color:#fff;margin:0;font-size:24px;font-weight:800">PEYU 🐢</p>
+              <p style="color:#AADCCD;margin:6px 0 0;font-size:13px">Plástico que renace · 100% reciclado · Hecho en Chile</p>
+              <p style="color:#fff;margin:18px 0 0;font-size:19px;font-weight:700">Tu propuesta ${numero} está lista${contacto ? `, ${contacto}` : ''} ✨</p>
+            </td></tr>
+            <tr><td style="background:#ffffff;padding:26px 28px;border:1px solid #E5DED2;border-top:0">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="font-size:14px;background:#FAF6EE;border-radius:12px;padding:4px">
+                <tr><td style="padding:10px 14px;color:#646E68">Producto</td><td style="padding:10px 14px;text-align:right;font-weight:700">${producto.nombre}</td></tr>
+                <tr><td style="padding:10px 14px;color:#646E68">Cantidad</td><td style="padding:10px 14px;text-align:right;font-weight:700">${cantidad} unidades</td></tr>
+                <tr><td style="padding:10px 14px;color:#646E68">Precio unitario</td><td style="padding:10px 14px;text-align:right;font-weight:700">$${precioUnit.toLocaleString('es-CL')}</td></tr>
+                <tr><td style="padding:12px 14px;color:#0B4634;font-weight:800;border-top:2px solid #0F8B6C">Total (IVA incl.)</td><td style="padding:12px 14px;text-align:right;font-weight:800;font-size:18px;color:#0F8B6C;border-top:2px solid #0F8B6C">$${total.toLocaleString('es-CL')}</td></tr>
+              </table>
+              ${mockup_url ? `<div style="text-align:center;margin:20px 0 6px"><img src="${mockup_url}" alt="Así se verá tu grabado" width="360" style="max-width:100%;border-radius:14px;border:1px solid #E5DED2"/><p style="font-size:12px;color:#8C9691;margin:8px 0 0">🎨 Así se verá tu grabado láser (mockup referencial — lo afinamos antes de producir)</p></div>` : ''}
+              ${cantidad >= 10 && requierePersonal ? '<p style="background:#EBF8F4;border-radius:10px;padding:10px 14px;color:#0B6E55;font-weight:700;font-size:13px;margin:16px 0 0">✓ Grabado láser UV de tu logo INCLUIDO GRATIS (desde 10 unidades)</p>' : ''}
+              <p style="font-size:13px;color:#646E68;line-height:1.6;margin:18px 0 0">Cada unidad rescata tapitas del mar y de la calle — esta orden recupera <strong>~${tapitasEmail.toLocaleString('es-CL')} tapitas</strong> 🌱 No regalas un objeto, regalas un gesto.</p>
+              <div style="text-align:center;margin:24px 0 6px">
+                <a href="${aprobarLink}" style="display:inline-block;background:#0F8B6C;color:#fff;text-decoration:none;padding:14px 30px;border-radius:999px;font-weight:800;font-size:15px">Aprobar propuesta →</a>
+                <br/>
+                <a href="${waAprobarUrl}" style="display:inline-block;margin-top:12px;color:#0B6E55;text-decoration:none;padding:11px 24px;border-radius:999px;font-weight:700;font-size:13px;border:2px solid #0F8B6C">💬 Aprobar o consultar por WhatsApp</a>
+              </div>
+              <p style="font-size:12px;color:#8C9691;text-align:center;margin:14px 0 0">Validez 15 días · Lead time ${leadTime} días hábiles · PDF con el detalle completo adjunto</p>
+            </td></tr>
+            <tr><td style="background:#121C18;padding:18px 28px;border-radius:0 0 16px 16px">
+              <p style="color:#fff;font-size:12px;font-weight:700;margin:0">PEYUCHILE SpA · peyuchile.cl</p>
+              <p style="color:#AADCCD;font-size:11px;margin:4px 0 0">corporativos@peyuchile.cl · +56 9 7947 1933 · Pedro de Valdivia 6603, Macul</p>
+            </td></tr>
+          </table>
+        </td></tr>
+      </table>`;
 
     // 📧 Enviar al correo del cliente. PRIMERO Gmail API (conector activo,
     // ti@peyuchile.cl — Resend estaba fallando por dominio no verificado).

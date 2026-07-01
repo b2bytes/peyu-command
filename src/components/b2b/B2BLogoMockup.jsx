@@ -133,17 +133,21 @@ export default function B2BLogoMockup({ producto, initialLogoUrl = null, onLogoC
         ) : (
           <div className="space-y-2.5">
             {/* Logo preview strip */}
-            <div className="flex items-center gap-3 rounded-2xl px-3 py-2.5" style={{ background: 'white', border: '1.5px solid #D4C4B0' }}>
+            <div className="flex items-center gap-3 rounded-2xl px-3 py-2.5 w-full max-w-full min-w-0 overflow-hidden" style={{ background: 'white', border: '1.5px solid #D4C4B0' }}>
               <div className="w-10 h-10 rounded-xl overflow-hidden flex-shrink-0 flex items-center justify-center" style={{ background: '#F2ECE2' }}>
                 <img src={logoUrl} alt="Logo" className="w-full h-full object-contain" />
               </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-bold truncate" style={{ color: '#2C1810' }}>{logoFile?.name || 'Logo subido'}</p>
+              <div className="flex-1 min-w-0 overflow-hidden">
+                {/* Nombres de archivo larguísimos (UUIDs de iOS) descuadraban la
+                    página en mobile: los acortamos por JS además del truncate. */}
+                <p className="text-sm font-bold truncate" style={{ color: '#2C1810', maxWidth: '100%' }}>
+                  {(() => { const n = logoFile?.name || 'Logo subido'; return n.length > 26 ? `${n.slice(0, 18)}…${n.slice(-6)}` : n; })()}
+                </p>
                 <p className="text-[11px]" style={{ color: '#0F8B6C' }}>✓ Vista previa instantánea activa</p>
               </div>
               <button
                 onClick={() => { setLogoUrl(null); setLogoFile(null); setMockupUrl(null); inputRef.current?.click(); }}
-                className="text-xs font-semibold px-2.5 py-1.5 rounded-lg transition-colors"
+                className="flex-shrink-0 text-xs font-semibold px-2.5 py-1.5 rounded-lg transition-colors"
                 style={{ color: '#7A6050', background: '#F2ECE2', border: '1px solid #D4C4B0' }}>
                 Cambiar
               </button>
