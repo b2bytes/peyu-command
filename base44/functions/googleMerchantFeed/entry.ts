@@ -63,16 +63,16 @@ const cleanImageUrl = (url) => {
 };
 
 // GMC SOLO acepta JPEG/PNG/GIF en image_link. Rechaza WebP, AVIF, SVG, BMP,
-// HEIC y URLs sin extensión clara (ej: endpoints API que sirven binarios).
-// También rechazamos el endpoint legacy base44.app/api/apps/... que sirve
-// archivos sin Content-Type estable.
+// HEIC y URLs sin extensión clara (ej: endpoints API que sirven binarios sin
+// extensión, que de todas formas no calzan con VALID_IMG_EXT más abajo).
+// NOTA: las URLs base44.app/api/apps/.../files/mp/public/... con extensión
+// .jpg/.png válida SÍ son archivos estáticos servidos correctamente — no se
+// bloquean por host, solo se valida la extensión real del archivo.
 const VALID_IMG_EXT = /\.(jpe?g|png|gif)$/i;
-const BLOCKED_HOSTS = /(base44\.app\/api\/apps\/)/i;
 
 const isGmcValidImage = (url) => {
   if (!url || typeof url !== 'string') return false;
   const u = url.split('?')[0];
-  if (BLOCKED_HOSTS.test(u)) return false;
   if (!VALID_IMG_EXT.test(u)) return false;
   return true;
 };
