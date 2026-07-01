@@ -93,9 +93,9 @@ export default function VendedorCartCard({ showCheckout = true, compact = false 
 
             {/* Payment trust */}
             <div className="flex items-center justify-center gap-3 text-[9px] font-semibold mb-1.5" style={{ color: '#A08070' }}>
-              <span className="flex items-center gap-1"><Truck className="w-3 h-3" /> Bluex</span>
-              <span>WebPay</span>
-              <span>MercadoPago</span>
+              <span className="flex items-center gap-1"><Truck className="w-3 h-3" /> BlueExpress</span>
+              <span>Mercado Pago</span>
+              <span>Transferencia −5%</span>
             </div>
           </>
         )}

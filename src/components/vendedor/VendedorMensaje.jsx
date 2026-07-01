@@ -28,10 +28,10 @@ export default function VendedorMensaje({ msg, productosBySku, isLast = false })
 
   return (
     <div className={`flex gap-2 ${isUser ? 'justify-end' : 'justify-start'}`}>
-      {/* Avatar de Peyu en mensajes del asistente */}
+      {/* Avatar de Peyu en mensajes del asistente — tortuga oficial llenando el círculo */}
       {!isUser && (
-        <span className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden mt-0.5" style={{ background: 'rgba(15,139,108,.12)' }}>
-          <img src="https://media.base44.com/images/public/69d99b9d61f699701129c103/b67ed29f9_image.png" alt="Peyu" className="w-4 h-4 object-contain" draggable={false} />
+        <span className="w-7 h-7 rounded-full overflow-hidden flex-shrink-0 mt-0.5" style={{ background: '#EAF3EF', border: '1px solid rgba(15,139,108,.2)' }}>
+          <img src="https://media.base44.com/images/public/69d99b9d61f699701129c103/b67ed29f9_image.png" alt="Peyu" className="w-full h-full object-cover scale-125" draggable={false} />
         </span>
       )}
       <div className={`${isUser ? 'max-w-[85%] items-end' : 'max-w-[calc(92%-2.25rem)] lg:max-w-[calc(88%-2.25rem)] items-start'} space-y-2 flex flex-col w-full`}>

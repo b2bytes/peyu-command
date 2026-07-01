@@ -170,8 +170,8 @@ export default function VendedorChatBar() {
           <div className="flex items-center justify-between px-4 py-3 flex-shrink-0 pt-safe"
             style={{ borderBottom: '1px solid #E7D8C6', background: 'white' }}>
             <div className="flex items-center gap-2.5">
-              <span className="w-10 h-10 rounded-full flex items-center justify-center overflow-hidden" style={{ background: 'rgba(15,139,108,.12)' }}>
-                <img src="https://media.base44.com/images/public/69d99b9d61f699701129c103/b67ed29f9_image.png" alt="PEYU" className="w-6 h-6 object-contain" draggable={false} />
+              <span className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0" style={{ background: '#EAF3EF', border: '1.5px solid rgba(15,139,108,.2)' }}>
+                <img src="https://media.base44.com/images/public/69d99b9d61f699701129c103/b67ed29f9_image.png" alt="Peyu" className="w-full h-full object-cover scale-125" draggable={false} />
               </span>
               <div>
                 <p className="text-sm font-bold" style={{ color: '#2C1810' }}>Peyu · Vendedor</p>
@@ -228,8 +228,8 @@ export default function VendedorChatBar() {
             ))}
             {sending && (
               <div className="flex items-end gap-2">
-                <span className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden" style={{ background: 'rgba(15,139,108,.12)' }}>
-                  <img src="https://media.base44.com/images/public/69d99b9d61f699701129c103/b67ed29f9_image.png" alt="Peyu" className="w-4 h-4 object-contain" draggable={false} />
+                <span className="w-7 h-7 rounded-full overflow-hidden flex-shrink-0" style={{ background: '#EAF3EF', border: '1px solid rgba(15,139,108,.2)' }}>
+                  <img src="https://media.base44.com/images/public/69d99b9d61f699701129c103/b67ed29f9_image.png" alt="Peyu" className="w-full h-full object-cover scale-125" draggable={false} />
                 </span>
                 <div className="flex items-center gap-1.5 rounded-2xl rounded-tl-md px-3.5 py-3 shadow-sm" style={{ background: 'white', border: '1px solid #E7D8C6' }}>
                   <span className="w-1.5 h-1.5 rounded-full animate-bounce" style={{ background: '#0F8B6C', animationDelay: '0ms' }} />
@@ -282,8 +282,8 @@ export default function VendedorChatBar() {
           className="fixed z-[95] flex items-center gap-2 rounded-full pl-3 pr-1.5 py-1.5 shadow-2xl
                      bottom-[4.5rem] left-3 right-3 lg:bottom-4 lg:left-1/2 lg:right-auto lg:-translate-x-1/2 lg:w-[calc(100%-2rem)] lg:max-w-xl"
           style={{ background: 'rgba(255,255,255,.97)', backdropFilter: 'blur(20px)', border: '1.5px solid #D4C4B0', boxShadow: '0 10px 40px rgba(15,139,108,.18)' }}>
-          <span className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden" style={{ background: 'rgba(15,139,108,.12)' }}>
-            <img src="https://media.base44.com/images/public/69d99b9d61f699701129c103/b67ed29f9_image.png" alt="PEYU" className="w-5 h-5 object-contain" draggable={false} />
+          <span className="w-9 h-9 rounded-full overflow-hidden flex-shrink-0" style={{ background: '#EAF3EF', border: '1.5px solid rgba(15,139,108,.2)' }}>
+            <img src="https://media.base44.com/images/public/69d99b9d61f699701129c103/b67ed29f9_image.png" alt="Peyu" className="w-full h-full object-cover scale-125" draggable={false} />
           </span>
           <input
             value={input}
