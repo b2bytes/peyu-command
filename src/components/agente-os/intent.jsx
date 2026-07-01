@@ -31,6 +31,18 @@ export function detectCards(text) {
   } else if (has(['pedido', 'pendiente', 'producción', 'produccion'])) {
     cards.push({ type: 'orders' });
   }
+  // Gestor de DISEÑOS PEYU del personalizador (galería de grabado láser):
+  // subir diseños, cambiar la imagen de uno (ej. la ranita), activar/ocultar.
+  // Se evalúa ANTES que catálogo para que "subir un diseño" o "cambiar la
+  // imagen de la rana" no dispare el gestor de productos.
+  const quiereDisenos = has([
+    'diseño', 'diseños', 'diseno', 'disenos', 'galería del personalizador', 'galeria del personalizador',
+    'personalizador', 'ranita', 'rana', 'grabados peyu', 'diseños peyu', 'disenos peyu',
+  ]);
+  if (quiereDisenos) {
+    cards.push({ type: 'disenos' });
+  }
+
   // Gestión del catálogo: editar productos, subir/cambiar imágenes, agregar.
   // Tiene prioridad sobre "stock bajo": si el founder quiere ADMINISTRAR el
   // catálogo (no solo ver stock), mostramos el gestor completo.

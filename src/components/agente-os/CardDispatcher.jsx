@@ -12,6 +12,7 @@ import PipelineCard from './cards/PipelineCard';
 import BulkLabelsCard from './cards/BulkLabelsCard';
 import SearchResultsCard from './cards/SearchResultsCard';
 import CatalogManagerCard from './cards/CatalogManagerCard';
+import DisenosManagerCard from './cards/DisenosManagerCard';
 
 // Renderiza la tarjeta rica correcta según el tipo detectado, hidratada con
 // los datos reales del CRM + las listas/métricas en vivo de peyuBrainOps.
@@ -38,6 +39,10 @@ export default function CardDispatcher({ card, crm, metrics, lists = {}, onAsk, 
       // Gestor de catálogo completo: buscador, filtros por categoría/stock,
       // editar, subir/cambiar/quitar imágenes y agregar productos desde el chat.
       return <CatalogManagerCard categoriaInicial={card.categoria} stockInicial={card.stock} />;
+    case 'disenos':
+      // Gestor de Diseños PEYU del personalizador: subir, cambiar imagen,
+      // activar/ocultar, eliminar y regenerar grabados — todo en el chat.
+      return <DisenosManagerCard />;
     case 'quotes':
       return <QuotesCard cotizaciones={crm.cotizaciones} />;
     case 'proposals':
