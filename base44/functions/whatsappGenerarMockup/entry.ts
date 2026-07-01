@@ -42,25 +42,39 @@ Deno.serve(async (req) => {
           const ct = res.headers.get('content-type') || 'image/jpeg';
           const ext = ct.includes('png') ? 'png' : ct.includes('webp') ? 'webp' : 'jpg';
           const file = new File([buf], `cliente-arte.${ext}`, { type: ct });
-          const up = await base44.integrations.Core.UploadFile({ file });
+          const up = await base44.asServiceRole.integrations.Core.UploadFile({ file });
           if (up?.file_url) logoUrl = up.file_url;
         }
       } catch (_) { /* seguimos con la URL original */ }
     }
 
-    const r = await base44.asServiceRole.functions.invoke('generateMockup', {
-      productName: producto.nombre,
-      productCategory: producto.categoria,
-      productImageUrl,
-      logoUrl,
-      text: texto || '',
-      color: color || '',
-      sku,
-    });
-    const d = r?.data ?? r;
-    if (!d?.mockup_url) {
-      return Response.json({ error: d?.error || 'No se pudo generar el mockup. Intenta de nuevo o escala al equipo.' }, { status: 500 });
+    // Generación directa (mismo estilo de prompt que el motor generateMockup;
+    // el invoke entre funciones falla con 403 para callers anónimos de WhatsApp).
+    const c = String(color || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    const esOscuro = /(negr|azul|marin|oscur|caf|marron|violeta|morado)/.test(c);
+    const laserTone = ` 🔦 CRITICAL LASER RULE — ALWAYS GREYSCALE: The engraving MUST be a single monochrome GREY tone. NEVER reproduce the customer's art in color — convert it to ONE grey tone. Real UV laser engraving on recycled plastic is always monochrome. NO color fills, NO gradients.` +
+      (esOscuro
+        ? ` The product color is DARK ("${color}"), so the engraving must be a LIGHT smoky-grey / off-white tone (#e8e8e8) clearly visible against the dark surface.`
+        : ` The product surface is light/neutral, so the engraving must be a DARK charcoal-grey tone (#2a2a2a) clearly visible against it.`);
+
+    const base = `⚠️ ABSOLUTE CRITICAL RULE: The FIRST reference image IS the exact product the customer chose from our e-commerce. You MUST use it as the base. DO NOT change the product shape, color, material, angle, lighting, background, or framing. Product: "${producto.nombre}" (${producto.categoria || ''}) — Peyu Chile, made from 100% recycled plastic. `;
+    const prompt = logoUrl
+      ? base + `⚠️ SECOND CRITICAL RULE: The SECOND reference image IS the customer's EXACT art/photo. Reproduce it LITERALLY — same shapes, letters, proportions. DO NOT redesign or substitute. Treat it as a stencil to be burned. TASK: Add a UV laser engraving that is a faithful 1:1 reproduction of the SECOND reference image onto the primary flat visible surface of the product. It MUST look PHYSICALLY ENGRAVED into the recycled plastic: monochrome single tone, micro depth, subtle darkening, follows curvature and marbled texture. NO floating stickers, NO flat overlay, NO glow. Keep it proportional (~30-40% of the visible flat surface), centered.` + laserTone + ` Final output: photorealistic, identical background/framing/angle/lighting to the first reference.`
+      : base + `⚠️ The customer's text is "${texto}". Engrave it LITERALLY, character-by-character. TASK: UV laser engraving of "${texto}" onto the product surface. Clean sans-serif, micro depth, subtle darkening inside strokes, follows curvature, blends with the marbled recycled plastic. NO stickers, NO glow. Centered on the engraving zone.` + laserTone + ` Final output: photorealistic, identical to the first reference image with the engraving added physically.`;
+
+    const refs = [productImageUrl];
+    if (logoUrl) refs.push(logoUrl);
+    let gen = null;
+    for (let i = 0; i < 2 && !gen?.url; i++) {
+      gen = await base44.asServiceRole.integrations.Core.GenerateImage({ prompt, existing_image_urls: refs }).catch((e) => {
+        console.error(`GenerateImage intento ${i + 1} falló:`, e?.message || e);
+        return null;
+      });
     }
+    if (!gen?.url) {
+      return Response.json({ error: 'No se pudo generar el mockup. Intenta de nuevo o escala al equipo.' }, { status: 500 });
+    }
+    const d = { mockup_url: gen.url };
 
     // Adjuntar el arte al pedido si ya existe (fuente de verdad para producción).
     if (numero_pedido) {
