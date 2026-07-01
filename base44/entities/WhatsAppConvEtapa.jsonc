@@ -1,0 +1,117 @@
+{
+  "name": "WhatsAppConvEtapa",
+  "type": "object",
+  "description": "Etapa del pipeline de cada conversaci\u00f3n WhatsApp del agente whatsapp_peyu. Un registro por conversation_id, actualizado autom\u00e1ticamente por whatsappPipelineSync seg\u00fan el avance REAL de la conversaci\u00f3n (exploraci\u00f3n, captura de datos, cotizaci\u00f3n B2B, link de pago B2C, conversi\u00f3n, postventa, escalado a humano).",
+  "properties": {
+    "conversation_id": {
+      "type": "string",
+      "title": "ID conversaci\u00f3n Base44 (clave \u00fanica)"
+    },
+    "etapa": {
+      "type": "string",
+      "title": "Etapa del pipeline",
+      "enum": [
+        "nuevo",
+        "explorando",
+        "datos",
+        "cotizado",
+        "pago",
+        "convertido",
+        "postventa",
+        "escalado"
+      ],
+      "default": "nuevo"
+    },
+    "tipo": {
+      "type": "string",
+      "title": "Tipo de cliente",
+      "enum": [
+        "B2C",
+        "B2B",
+        "Sin clasificar"
+      ],
+      "default": "Sin clasificar"
+    },
+    "cliente_nombre": {
+      "type": "string",
+      "title": "Nombre / identificador del cliente"
+    },
+    "telefono": {
+      "type": "string",
+      "title": "Tel\u00e9fono WhatsApp"
+    },
+    "resumen": {
+      "type": "string",
+      "title": "Preview del \u00faltimo mensaje del cliente"
+    },
+    "mensajes_count": {
+      "type": "number",
+      "title": "N\u00b0 mensajes",
+      "default": 0
+    },
+    "numero_pedido": {
+      "type": "string",
+      "title": "N\u00b0 pedido generado (si hay checkout)"
+    },
+    "numero_cotizacion": {
+      "type": "string",
+      "title": "N\u00b0 cotizaci\u00f3n B2B generada"
+    },
+    "monto_clp": {
+      "type": "number",
+      "title": "Monto estimado (CLP)"
+    },
+    "ultimo_mensaje_at": {
+      "type": "string",
+      "format": "date-time",
+      "title": "\u00daltimo mensaje"
+    },
+    "clasificado_at": {
+      "type": "string",
+      "format": "date-time",
+      "title": "\u00daltima clasificaci\u00f3n autom\u00e1tica"
+    },
+    "historial_etapas": {
+      "type": "array",
+      "title": "Historial de cambios de etapa",
+      "items": {
+        "type": "object",
+        "properties": {
+          "etapa": {
+            "type": "string"
+          },
+          "at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "default": []
+    }
+  },
+  "required": [
+    "conversation_id"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

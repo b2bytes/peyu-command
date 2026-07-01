@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
-import { MessageCircle, RefreshCw, Loader2, ArrowLeft, QrCode } from 'lucide-react';
+import { MessageCircle, RefreshCw, Loader2, ArrowLeft, QrCode, Inbox, KanbanSquare } from 'lucide-react';
 import WhatsAppConvList from '@/components/whatsapp/WhatsAppConvList';
+import WhatsAppPipeline from '@/components/whatsapp/WhatsAppPipeline';
 import WhatsAppThread from '@/components/whatsapp/WhatsAppThread';
 import WhatsAppQRModal from '@/components/whatsapp/WhatsAppQRModal';
 
@@ -18,6 +19,9 @@ export default function WhatsAppInbox() {
   const [showQR, setShowQR] = useState(false);
   const [connectUrl, setConnectUrl] = useState('');
   const [connectError, setConnectError] = useState('');
+  const [view, setView] = useState('inbox'); // 'inbox' | 'pipeline'
+  const [etapas, setEtapas] = useState([]);
+  const [syncing, setSyncing] = useState(false);
 
   // El link de conexión puede ser sync o async según la versión del SDK, y el
   // nombre del método varía en casing. Probamos las variantes y guardamos el
@@ -49,7 +53,17 @@ export default function WhatsAppInbox() {
   const load = async () => {
     const convs = await base44.agents.listConversations({ agent_name: 'whatsapp_peyu' }).catch(() => []);
     setConversations(convs || []);
+    const et = await base44.entities.WhatsAppConvEtapa.list('-updated_date', 300).catch(() => []);
+    setEtapas(et || []);
     setLoading(false);
+  };
+
+  // Fuerza la clasificación del pipeline (además del CRON cada 10 min)
+  const syncPipeline = async () => {
+    setSyncing(true);
+    await base44.functions.invoke('whatsappPipelineSync', {}).catch(() => null);
+    await load();
+    setSyncing(false);
   };
 
   useEffect(() => {
@@ -91,6 +105,21 @@ export default function WhatsAppInbox() {
             {active ? 'Agente Peyu activo en esta conversación' : `Agente Peyu en línea 24/7 · ${conversations.length} conversaciones`}
           </p>
         </div>
+        {/* Toggle Bandeja | Pipeline */}
+        <div className="hidden sm:flex items-center gap-0.5 p-0.5 rounded-full bg-white/15 flex-shrink-0">
+          <button
+            onClick={() => setView('inbox')}
+            className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-[11px] font-bold transition-all ${view === 'inbox' ? 'bg-white text-[#075E54] shadow-sm' : 'text-white/80 hover:text-white'}`}
+          >
+            <Inbox className="w-3.5 h-3.5" /> Bandeja
+          </button>
+          <button
+            onClick={() => setView('pipeline')}
+            className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-[11px] font-bold transition-all ${view === 'pipeline' ? 'bg-white text-[#075E54] shadow-sm' : 'text-white/80 hover:text-white'}`}
+          >
+            <KanbanSquare className="w-3.5 h-3.5" /> Pipeline
+          </button>
+        </div>
         <button
           onClick={() => setShowQR(true)}
           className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full text-xs font-bold text-[#075E54] bg-white hover:bg-white/90 transition-colors shadow-sm flex-shrink-0"
@@ -104,8 +133,37 @@ export default function WhatsAppInbox() {
         </button>
       </header>
 
+      {/* Toggle mobile Bandeja | Pipeline */}
+      <div className="sm:hidden flex-shrink-0 flex items-center gap-1 px-3 py-2 border-b border-ld-border bg-ld-bg">
+        <button
+          onClick={() => setView('inbox')}
+          className={`flex-1 inline-flex items-center justify-center gap-1 px-3 py-1.5 rounded-full text-[11px] font-bold transition-all ${view === 'inbox' ? 'bg-[#128C7E] text-white' : 'text-ld-fg-muted'}`}
+        >
+          <Inbox className="w-3.5 h-3.5" /> Bandeja
+        </button>
+        <button
+          onClick={() => setView('pipeline')}
+          className={`flex-1 inline-flex items-center justify-center gap-1 px-3 py-1.5 rounded-full text-[11px] font-bold transition-all ${view === 'pipeline' ? 'bg-[#128C7E] text-white' : 'text-ld-fg-muted'}`}
+        >
+          <KanbanSquare className="w-3.5 h-3.5" /> Pipeline
+        </button>
+      </div>
+
+      {/* Vista Pipeline: kanban inteligente de conversaciones */}
+      {view === 'pipeline' && (
+        <WhatsAppPipeline
+          etapas={etapas}
+          syncing={syncing}
+          onSync={syncPipeline}
+          onOpen={(item) => {
+            const conv = conversations.find((c) => c.id === item.conversation_id);
+            if (conv) { openConversation(conv); setView('inbox'); }
+          }}
+        />
+      )}
+
       {/* Layout: lista + hilo (en móvil se alternan) */}
-      <div className="flex-1 flex min-h-0">
+      <div className={`flex-1 min-h-0 ${view === 'pipeline' ? 'hidden' : 'flex'}`}>
         <aside className={`w-full md:w-[340px] md:flex-shrink-0 md:border-r border-ld-border bg-ld-bg ${active ? 'hidden md:flex' : 'flex'} flex-col min-h-0`}>
           {loading ? (
             <div className="flex items-center justify-center gap-2 py-12 text-ld-fg-muted text-sm">
