@@ -318,25 +318,59 @@ export default function VendedorChatBar() {
         </div>
       )}
 
-      {/* BURBUJA DE CHAT — flotante abajo a la IZQUIERDA para no tapar el
-          contenido ni los CTAs de compra. Compacta e intuitiva: avatar de Peyu
-          + punto "en línea" + badge de no leídos. Al tocarla abre el panel. */}
+      {/* MOBILE / TABLET (<lg) — BURBUJA flotante abajo a la DERECHA (patrón
+          universal de chat, máxima conversión): avatar de Peyu + punto "en
+          línea" + badge de no leídos. Al tocarla abre el panel completo. */}
       {!open && (
         <button
           onClick={handleOpen}
-          className="fixed z-[95] bottom-[4.75rem] left-3 lg:bottom-5 lg:left-5 w-14 h-14 rounded-full shadow-2xl flex items-center justify-center transition-transform active:scale-90 hover:scale-105"
+          className="lg:hidden fixed z-[95] bottom-[4.75rem] right-3 w-14 h-14 rounded-full shadow-2xl flex items-center justify-center transition-transform active:scale-90"
           style={{ background: 'rgba(255,255,255,.97)', border: '2px solid #0F8B6C', boxShadow: '0 10px 34px rgba(15,139,108,.35)' }}
           title="Chatea con Peyu — compra aquí mismo 🐢"
           aria-label="Abrir chat con Peyu">
           <span className="w-11 h-11 rounded-full overflow-hidden pointer-events-none" style={{ background: '#EAF3EF' }}>
             <img src={PEYU_AVATAR} alt="Peyu" className="w-full h-full object-cover" draggable={false} />
           </span>
-          <span className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 rounded-full border-2 border-white animate-pulse" style={{ background: '#0F8B6C' }} />
+          <span className="absolute -top-0.5 -left-0.5 w-3.5 h-3.5 rounded-full border-2 border-white animate-pulse" style={{ background: '#0F8B6C' }} />
           {unread > 0 && (
-            <span className="absolute -top-1.5 -left-1.5 min-w-[20px] h-5 px-1 rounded-full text-white text-[10px] font-bold flex items-center justify-center"
+            <span className="absolute -top-1.5 -right-1.5 min-w-[20px] h-5 px-1 rounded-full text-white text-[10px] font-bold flex items-center justify-center"
               style={{ background: '#D96B4D' }}>{unread}</span>
           )}
         </button>
+      )}
+
+      {/* DESKTOP (lg+) — barra de chat tipo input, centrada abajo (como antes):
+          invita a escribir directo = más conversación, más conversión. */}
+      {!open && (
+        <div
+          className="hidden lg:flex fixed z-[95] items-center gap-2 rounded-full pl-3 pr-1.5 py-1.5 shadow-2xl
+                     bottom-4 left-1/2 -translate-x-1/2 w-[calc(100%-2rem)] max-w-xl"
+          style={{ background: 'rgba(255,255,255,.97)', backdropFilter: 'blur(20px)', border: '1.5px solid #D4C4B0', boxShadow: '0 10px 40px rgba(15,139,108,.18)' }}>
+          <span className="w-9 h-9 rounded-full overflow-hidden flex-shrink-0" style={{ background: '#EAF3EF', border: '1.5px solid rgba(15,139,108,.2)' }}>
+            <img src={PEYU_AVATAR} alt="Peyu" className="w-full h-full object-cover" draggable={false} />
+          </span>
+          <input
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onFocus={handleOpen}
+            onKeyDown={(e) => { if (e.key === 'Enter') handleSend(); }}
+            enterKeyHint="send"
+            placeholder="Pregúntale a Peyu… compra aquí mismo 🐢"
+            className="flex-1 min-w-0 bg-transparent outline-none text-sm py-1.5"
+            style={{ color: '#2C1810' }}
+          />
+          {unread > 0 && (
+            <span className="min-w-[20px] h-5 px-1 rounded-full text-white text-[10px] font-bold flex items-center justify-center flex-shrink-0"
+              style={{ background: '#D96B4D' }}>{unread}</span>
+          )}
+          <button
+            onClick={() => (input.trim() ? handleSend() : handleOpen())}
+            className="w-9 h-9 rounded-full flex items-center justify-center text-white transition-all active:scale-90 flex-shrink-0"
+            style={{ background: 'linear-gradient(135deg,#0F8B6C,#0B6E55)' }}
+            title="Hablar con Peyu">
+            <Send className="w-4 h-4" />
+          </button>
+        </div>
       )}
     </>
   );

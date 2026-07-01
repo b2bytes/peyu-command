@@ -60,6 +60,7 @@ import CarritoNuevo from './pages/CarritoNuevo';
 import CheckoutNuevo from './pages/CheckoutNuevo';
 import CotizacionRapida from './pages/CotizacionRapida';
 import EmpresasNuevo from './pages/EmpresasNuevo';
+import PropuestaRapida from './pages/PropuestaRapida';
 import EmpresaProducto from './pages/EmpresaProducto';
 import B2BPropuestaPublica from './pages/B2BPropuesta';
 import FunnelDesignLab from './pages/FunnelDesignLab';
@@ -355,6 +356,8 @@ function App() {
               <Route path="/test-index" element={<IndiceTest />} />
               {/* EmpresasNuevo = cockpit B2B con header wizard propio (sin doble navegación) */}
               <Route path="/EmpresasNuevo" element={<EmpresasNuevo />} />
+              {/* Propuesta rápida B2B = landing express con formulario (header propio) */}
+              <Route path="/empresas/propuesta-rapida" element={<PropuestaRapida />} />
               <Route path="/resumen-operativo" element={<ResumenOperativo />} />
               <Route path="/aprobar-propuesta" element={<AprobarPropuesta />} />
               <Route path="/firma-agente" element={<FirmaAgente />} />

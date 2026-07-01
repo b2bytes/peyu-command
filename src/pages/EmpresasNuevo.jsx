@@ -284,6 +284,19 @@ export default function EmpresasNuevo() {
             Elige un producto, explora precios por volumen, carga tu logo y solicita tu cotización en un solo paso.
           </p>
 
+          {/* Segunda opción: propuesta rápida sin navegar el catálogo */}
+          <Link to="/empresas/propuesta-rapida"
+            className="block rounded-2xl p-4 transition-all hover:scale-[1.01] active:scale-[0.99]"
+            style={{ background: C.actionGrad, boxShadow: C.actionShadow }}>
+            <p className="text-white font-bold text-sm flex items-center gap-1.5">
+              ⚡ ¿Sin tiempo? Propuesta rápida
+              <ArrowRight className="w-4 h-4 ml-auto" />
+            </p>
+            <p className="text-white/85 text-[11px] font-semibold mt-1 leading-snug">
+              Cuéntanos qué necesitas en 60 segundos y recibe tu propuesta formal en 24h.
+            </p>
+          </Link>
+
           {TrustGrid('grid-cols-2')}
         </aside>
 
@@ -325,6 +338,13 @@ export default function EmpresasNuevo() {
             <p className="text-[11px] leading-relaxed" style={{ color: C.fgSoft }}>
               Elige productos · cotiza al instante · propuesta en 24h
             </p>
+            {/* Segunda opción mobile: propuesta rápida sin navegar el catálogo */}
+            <Link to="/empresas/propuesta-rapida"
+              className="mt-2 flex items-center gap-2 rounded-xl px-3 py-2.5 active:scale-[0.99] transition-all"
+              style={{ background: C.actionGrad, boxShadow: C.actionShadow }}>
+              <span className="text-white font-bold text-xs">⚡ ¿Sin tiempo? Propuesta rápida en 60 seg</span>
+              <ChevronRight className="w-4 h-4 text-white ml-auto flex-shrink-0" />
+            </Link>
           </div>
 
           {/* Buscador + chips de categoría */}

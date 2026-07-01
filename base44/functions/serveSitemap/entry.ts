@@ -15,6 +15,7 @@ const STATIC_ROUTES = [
   { loc: '/',                  priority: '1.0',  changefreq: 'daily' },
   { loc: '/CatalogoNuevo',     priority: '0.9',  changefreq: 'daily' },
   { loc: '/EmpresasNuevo',     priority: '0.9',  changefreq: 'weekly' },
+  { loc: '/empresas/propuesta-rapida', priority: '0.9', changefreq: 'weekly' },
   { loc: '/catalogo-visual',   priority: '0.85', changefreq: 'weekly' },
   { loc: '/personalizar',      priority: '0.8',  changefreq: 'monthly' },
   { loc: '/nosotros',          priority: '0.7',  changefreq: 'monthly' },
