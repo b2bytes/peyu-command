@@ -348,6 +348,43 @@ Deno.serve(async (req) => {
         return Response.json({ ok: true, message: r.data.message, url: r.data.url });
       }
 
+      case 'crearDiseno': {
+        // Crea un diseño PEYU para el personalizador (grabado láser) desde el
+        // chat. El founder adjunta la imagen y el agente propone esta acción.
+        if (!payload.nombre || !payload.imagen_url?.startsWith('http')) throw new Error('Falta nombre o imagen_url válida');
+        const nuevo = await svc.DisenoPeyu.create({
+          nombre: payload.nombre,
+          imagen_url: payload.imagen_url,
+          categoria: payload.categoria || 'Otro',
+          activo: true,
+          es_ejemplo: false,
+          orden: typeof payload.orden === 'number' ? payload.orden : 0,
+        });
+        // Regenerar versión grabado láser en segundo plano.
+        base44.asServiceRole.functions.invoke('engraveDisenosPeyu', {}).catch(() => null);
+        return Response.json({ ok: true, message: `Diseño "${payload.nombre}" creado y visible en el personalizador. La versión grabado se genera en segundos.`, id: nuevo.id });
+      }
+
+      case 'updateDiseno': {
+        // Edita un diseño PEYU existente: cambiar imagen (adjunta), nombre,
+        // categoría, activar/desactivar u orden. Si cambia la imagen, se limpia
+        // y regenera la versión grabado.
+        if (!payload.id) throw new Error('Falta id del diseño');
+        const campos = {};
+        if (typeof payload.nombre === 'string' && payload.nombre.trim()) campos.nombre = payload.nombre.trim();
+        if (typeof payload.categoria === 'string' && payload.categoria.trim()) campos.categoria = payload.categoria.trim();
+        if (typeof payload.activo === 'boolean') campos.activo = payload.activo;
+        if (typeof payload.orden === 'number') campos.orden = payload.orden;
+        if (typeof payload.imagen_url === 'string' && payload.imagen_url.startsWith('http')) {
+          campos.imagen_url = payload.imagen_url;
+          campos.imagen_grabado_url = ''; // se regenera con la imagen nueva
+        }
+        if (!Object.keys(campos).length) throw new Error('Nada que actualizar (acepta: nombre, categoria, activo, orden, imagen_url)');
+        await svc.DisenoPeyu.update(payload.id, campos);
+        if (campos.imagen_url) base44.asServiceRole.functions.invoke('engraveDisenosPeyu', {}).catch(() => null);
+        return Response.json({ ok: true, message: `Diseño actualizado: ${Object.keys(campos).filter((k) => k !== 'imagen_grabado_url').join(', ')}${campos.imagen_url ? ' (grabado regenerándose)' : ''}` });
+      }
+
       case 'sincronizarTracking': {
         const r = await base44.asServiceRole.functions.invoke('bluexSyncAllShipments', {});
         return Response.json({ ok: true, message: 'Tracking BlueExpress sincronizado', detail: r || null });

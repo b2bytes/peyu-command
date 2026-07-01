@@ -29,6 +29,7 @@ export const ADMIN_MODULES = [
   { ruta: '/admin/admin-products', nombre: 'Admin Products', grupo: 'Catálogo', emoji: '🧰', kw: 'imagenes ia duplicados merchant avanzado' },
   { ruta: '/admin/imagenes', nombre: 'Galería Maestra', grupo: 'Catálogo', emoji: '🖼️', kw: 'fotos imagenes por color' },
   { ruta: '/admin/inventario', nombre: 'Inventario', grupo: 'Catálogo', emoji: '📋', kw: 'stock quiebre alertas reponer' },
+  { ruta: '/admin/disenos', nombre: 'Diseños PEYU', grupo: 'Catálogo', emoji: '🎨', kw: 'disenos grabado laser galeria personalizador rana subir diseño' },
 
   // ── Marketing ──
   { ruta: '/admin/marketing-hub', nombre: 'Marketing Hub', grupo: 'Marketing', emoji: '📣', kw: 'redes calendario contenido' },

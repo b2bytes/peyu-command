@@ -44,6 +44,8 @@ ACCIONES EJECUTABLES — cuando el founder te PIDE HACER algo (no solo preguntar
 - sincronizarTracking {} (refresca tracking de todos los envíos Bluex)
 - generarImagenProducto {sku, efecto?, formato?: "cuadrado"|"historia"|"horizontal", red_social?} (crea una imagen publicitaria IA a partir de las FOTOS REALES del producto del catálogo, aplicando el efecto/estilo que pida el founder; queda como Borrador en Social Studio)
 - generarVideoProducto {sku, efecto?, formato?: "historia"|"horizontal", duracion?: 4|6|8} (crea un video IA del producto basado en su foto real; tarda ~1 min y queda como Borrador en Social Studio)
+- crearDiseno {nombre, imagen_url, categoria?} (agrega un DISEÑO PEYU a la galería del personalizador de grabado láser; si el founder ADJUNTÓ una imagen y pide subirla como diseño, usa la URL exacta del adjunto)
+- updateDiseno {id, nombre?, imagen_url?, categoria?, activo?, orden?} (edita/reemplaza un diseño existente de la galería del personalizador; para CAMBIAR la imagen de un diseño usa la URL exacta del adjunto del founder y el [id:XXX] del diseño en el DETALLE; la versión grabado se regenera sola. También pueden gestionarlos en /admin/disenos)
 Para imagen/video usa el [sku:XXX] exacto del CATÁLOGO en el detalle. Tienes capacidad total sobre la data del negocio: pedidos, leads, propuestas, stock, clientes, consultas, envíos y catálogo completo.
 Cuando el founder pida "muéstrame los pedidos para confirmar pago" / "por pagar", la pantalla muestra una tarjeta SOLO con los pedidos POR CONFIRMAR PAGO (los que en el detalle dicen pago: POR CONFIRMAR), cada uno con su botón "Marcar pagado". Cuando pida "muéstrame los pedidos para crear etiqueta" / "para despachar", la tarjeta muestra SOLO los pedidos ya PAGADOS y sin OT, con botón "Generar etiqueta". En ambos casos NOMBRA los pedidos concretos del detalle (cliente + N° + monto) y di cuántos son; no inventes ninguno.
 Cuando el founder quiera GESTIONAR pedidos de punta a punta ("pipeline", "gestionar pedidos", "flujo de pedidos", "cómo voy con los despachos", "confirmar pagos", "generar etiquetas en lote"), la pantalla muestra una TARJETA FLUJO DE PEDIDOS con el flujo secuencial completo de e-commerce (por confirmar pago → en producción → generar etiqueta → despachar → despachado), cada pedido con badge B2C/B2B y stepper de avance. En las etapas "por confirmar pago" y "generar etiqueta" el founder puede SELECCIONAR varios pedidos y confirmar pagos o generar etiquetas EN LOTE de una sola vez. Resume en 1-2 frases qué etapa tiene más pendientes y recuérdale que puede seleccionar varios para procesarlos juntos.
@@ -66,13 +68,13 @@ const ACTIONS_VALIDAS = new Set([
   'marcarConsultaRespondida', 'responderConsulta', 'updateLeadEstado',
   'updatePropuestaEstado', 'enviarPropuesta', 'reenviarPropuesta', 'ajustarStock',
   'updateProducto', 'enviarEmail', 'sincronizarTracking', 'eliminarLead',
-  'generarImagenProducto', 'generarVideoProducto',
+  'generarImagenProducto', 'generarVideoProducto', 'crearDiseno', 'updateDiseno',
 ]);
 
 export default function AgenteOS() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [crm, setCrm] = useState({ pedidos: [], productos: [], clientes: [], cotizaciones: [], leads: [], consultas: [] });
+  const [crm, setCrm] = useState({ pedidos: [], productos: [], clientes: [], cotizaciones: [], leads: [], consultas: [], disenos: [] });
   const [metrics, setMetrics] = useState({});
   const [lists, setLists] = useState({});
   const [messages, setMessages] = useState([]);
@@ -147,18 +149,20 @@ export default function AgenteOS() {
 
   const loadData = async (isRefresh = false) => {
     isRefresh ? setRefreshing(true) : setLoading(true);
-    const [pedidos, productos, clientes, cotizaciones, leads, consultas, brain] = await Promise.all([
+    const [pedidos, productos, clientes, cotizaciones, leads, consultas, disenos, brain] = await Promise.all([
       base44.entities.PedidoWeb.list('-created_date', 60).catch(() => []),
       base44.entities.Producto.filter({ activo: true }, '-updated_date', 200).catch(() => []),
       base44.entities.Cliente.list('-created_date', 40).catch(() => []),
       base44.entities.CorporateProposal.list('-created_date', 40).catch(() => []),
       base44.entities.B2BLead.list('-created_date', 60).catch(() => []),
       base44.entities.Consulta.list('-created_date', 300).catch(() => []),
+      base44.entities.DisenoPeyu.list('orden', 100).catch(() => []),
       base44.functions.invoke('peyuBrainOps', { query: 'resumen del día' }).catch(() => null),
     ]);
     setCrm({
       pedidos: pedidos || [], productos: productos || [], clientes: clientes || [],
       cotizaciones: cotizaciones || [], leads: leads || [], consultas: consultas || [],
+      disenos: disenos || [],
     });
     if (brain?.data?.metrics) setMetrics(brain.data.metrics);
     if (brain?.data?.lists) setLists(brain.data.lists);
@@ -236,6 +240,9 @@ export default function AgenteOS() {
     // generación de imagen/video con el sku/id exacto sin pedir precisiones.
     if (crm.productos?.length)
       detalle.push(`CATÁLOGO (productos activos, para acciones de producto y generación de contenido):\n${crm.productos.slice(0, 50).map(p => `• [id:${p.id}] [sku:${p.sku}] ${p.nombre} · stock ${p.stock_actual ?? '–'}u · $${(p.precio_b2c || 0).toLocaleString('es-CL')}`).join('\n')}`);
+    // Diseños PEYU del personalizador: permite crearDiseno/updateDiseno con id exacto.
+    if (crm.disenos?.length)
+      detalle.push(`DISEÑOS PEYU del personalizador de grabado láser (para crearDiseno / updateDiseno):\n${crm.disenos.slice(0, 60).map(d => `• [id:${d.id}] ${d.nombre} · ${d.categoria || 'Otro'} · ${d.activo ? 'activo' : 'oculto'}`).join('\n')}`);
     if (liveLists.envios_list?.length)
       detalle.push(`Envíos BlueExpress activos (para generarEtiqueta usa el [pedido:XXX] del envío):\n${liveLists.envios_list.map(e => `• [id:${e.id}]${e.pedido_id ? ` [pedido:${e.pedido_id}]` : ''} OT ${e.tracking_number || 'sin emitir'} · ${e.cliente_nombre || ''} · ${e.estado}${e.tiene_etiqueta ? ' · etiqueta lista' : ''}${e.tiene_excepcion ? ' ⚠ excepción' : ''}${e.comuna_destino ? ` · ${e.comuna_destino}` : ''}`).join('\n')}`);
 

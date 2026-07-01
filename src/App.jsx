@@ -157,6 +157,7 @@ const ResumenSemanal = lazyWithRetry(() => import('./pages/ResumenSemanal'), { n
 const CampaignCalendar = lazyWithRetry(() => import('./pages/CampaignCalendar'), { name: 'CampaignCalendar' });
 const CorreosCatalogo = lazyWithRetry(() => import('./pages/CorreosCatalogo'), { name: 'CorreosCatalogo' });
 const HeroCarruselRevisar = lazyWithRetry(() => import('./pages/HeroCarruselRevisar'), { name: 'HeroCarruselRevisar' });
+const DisenosPeyu = lazyWithRetry(() => import('./pages/DisenosPeyu'), { name: 'DisenosPeyu' });
 
 const AdminLoader = () => (
   <div className="fixed inset-0 flex items-center justify-center bg-background">
@@ -281,6 +282,7 @@ const AuthenticatedApp = () => {
           <Route path="calendario-campanas" element={<CampaignCalendar />} />
           <Route path="correos" element={<CorreosCatalogo />} />
           <Route path="hero-carrusel" element={<HeroCarruselRevisar />} />
+          <Route path="disenos" element={<DisenosPeyu />} />
         </Route>
         <Route path="*" element={<PageNotFound />} />
       </Routes>
