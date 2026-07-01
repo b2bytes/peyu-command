@@ -12,7 +12,7 @@ import { addToCartV2, cartCountV2, subscribeCartV2 } from '@/lib/shop-v2-cart';
 import { getProductImage } from '@/utils/productImages';
 import VendedorMensaje from './VendedorMensaje';
 import VendedorCartCard from './VendedorCartCard';
-import { PEYU_AVATAR } from '@/lib/shop-v2-config';
+import { PEYU_AVATAR, PEYU_ICON } from '@/lib/shop-v2-config';
 
 const QUICK_CHIPS = [
   '🎁 Busco un regalo',
@@ -171,8 +171,10 @@ export default function VendedorChatBar() {
             upsertHistory(convId, m); // persiste el hilo en el historial
           }
         }
-        if (ticks > 30) { clearInterval(pollRef.current); setSending(false); }
-      }, 1700);
+        // Polling más rápido (900ms) → la respuesta aparece casi al instante
+        // cuando el agente termina, sin castigar al backend. Timeout ~55s.
+        if (ticks > 60) { clearInterval(pollRef.current); setSending(false); }
+      }, 900);
     } catch {
       setSending(false);
     }
@@ -194,24 +196,24 @@ export default function VendedorChatBar() {
     <>
       {/* Panel de conversación — full-screen en mobile, panel lateral grande en desktop */}
       {open && (
-        <div className="fixed inset-0 lg:inset-auto z-[110] flex flex-col lg:right-5 lg:bottom-5 lg:left-auto lg:w-[440px] xl:w-[480px] lg:rounded-3xl lg:overflow-hidden lg:shadow-2xl lg:h-[calc(100vh-2.5rem)] lg:max-h-[760px]"
+        <div className="fixed inset-2 sm:inset-3 rounded-3xl overflow-hidden lg:inset-auto z-[110] flex flex-col lg:right-5 lg:bottom-5 lg:left-auto lg:w-[440px] xl:w-[480px] lg:rounded-3xl lg:overflow-hidden lg:shadow-2xl lg:h-[calc(100vh-2.5rem)] lg:max-h-[760px]"
           style={{ background: 'rgba(248,243,237,.98)', backdropFilter: 'blur(20px)', border: '1.5px solid #D4C4B0', boxShadow: '0 24px 70px rgba(44,24,16,.28)' }}>
 
           {/* Header */}
-          <div className="flex items-center justify-between px-4 py-3 flex-shrink-0 pt-safe"
+          <div className="flex items-center justify-between px-3.5 sm:px-4 py-2.5 sm:py-3 flex-shrink-0 pt-safe gap-2"
             style={{ borderBottom: '1px solid #E7D8C6', background: 'white' }}>
-            <div className="flex items-center gap-2.5">
-              <span className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0" style={{ background: '#EAF3EF', border: '1.5px solid rgba(15,139,108,.2)' }}>
-                <img src={PEYU_AVATAR} alt="Peyu" className="w-full h-full object-cover" draggable={false} />
+            <div className="flex items-center gap-2.5 min-w-0">
+              <span className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0" style={{ background: '#EAF3EF', border: '1.5px solid rgba(15,139,108,.2)' }}>
+                <img src={PEYU_ICON} alt="PEYU" className="w-6 h-6 object-contain" draggable={false} />
               </span>
-              <div>
-                <p className="text-sm font-bold" style={{ color: '#2C1810' }}>Peyu · Vendedor</p>
+              <div className="min-w-0">
+                <p className="text-sm font-bold truncate" style={{ color: '#2C1810' }}>Peyu · Vendedor</p>
                 <p className="text-[10px] font-semibold flex items-center gap-1" style={{ color: '#0F8B6C' }}>
-                  <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: '#0F8B6C' }} /> En línea — compra aquí mismo
+                  <span className="w-1.5 h-1.5 rounded-full animate-pulse flex-shrink-0" style={{ background: '#0F8B6C' }} /> <span className="truncate">En línea — compra aquí mismo</span>
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-1 flex-shrink-0">
               <button
                 onClick={() => setShowHistorial((v) => !v)}
                 className="h-8 w-8 rounded-xl flex items-center justify-center transition-colors hover:bg-[#F0E8DE]"
@@ -291,7 +293,7 @@ export default function VendedorChatBar() {
           )}
 
           {/* Input — pegado abajo con safe area. En mobile full-screen el panel cubre todo. */}
-          <div className="flex-shrink-0 px-3 py-2.5 pb-safe" style={{ borderTop: '1px solid #E7D8C6', background: 'white' }}>
+          <div className="flex-shrink-0 px-3.5 sm:px-4 py-3 pb-safe" style={{ borderTop: '1px solid #E7D8C6', background: 'white' }}>
             <div className="flex items-center gap-2 rounded-full pl-4 pr-1.5 py-1.5"
               style={{ background: '#F8F3ED', border: '1.5px solid #D4C4B0' }}>
               <input

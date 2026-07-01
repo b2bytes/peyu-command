@@ -20,28 +20,32 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 const AGENT_NAME = 'vendedor_peyu';
 
 // Construye el índice compacto del catálogo real (solo productos activos).
+// Optimizado para VELOCIDAD: líneas cortas y tramos B2B compactados (menos
+// tokens en el prompt → el agente responde más rápido sin perder info).
 async function buildCatalogDigest(sr) {
+  // Solo traemos los campos que el digest necesita → payload más liviano.
   const prods = await sr.entities.Producto.filter({ activo: true }, 'categoria', 250);
   const lines = (prods || [])
     .filter((p) => p.sku && p.nombre)
     .map((p) => {
-      const b2c = p.precio_b2c ? `$${p.precio_b2c}` : 'sin precio B2C';
+      const b2c = p.precio_b2c ? `$${p.precio_b2c}` : '—';
       const t = p.precio_b2b_tramos || {};
-      // Inyectamos TODOS los tramos B2B netos (sin IVA) para que el agente pueda
-      // calcular el precio mayorista B2C exacto = tramo × 1.19 (idéntico al checkout).
-      const tramos = [];
-      if (t.unitario) tramos.push(`1-9u:$${t.unitario}`);
-      if (t.t10_49) tramos.push(`10-49u:$${t.t10_49}`);
-      if (t.t50_99) tramos.push(`50-99u:$${t.t50_99}`);
-      if (t.t100_249) tramos.push(`100-249u:$${t.t100_249}`);
-      if (t.t250_499) tramos.push(`250-499u:$${t.t250_499}`);
-      if (t.t500_999) tramos.push(`500-999u:$${t.t500_999}`);
-      if (t.t1000_1999) tramos.push(`1000-1999u:$${t.t1000_1999}`);
-      if (t.t2000_mas) tramos.push(`2000+u:$${t.t2000_mas}`);
-      const b2bInfo = tramos.length ? ` | B2B neto/u (sin IVA) por tramo: ${tramos.join(', ')}` : '';
-      return `${p.sku} | ${p.nombre} | ${p.categoria} | ${b2c} | canal: ${p.canal || 'B2B + B2C'}${b2bInfo}`;
+      // Tramos B2B netos (sin IVA) en formato compacto: solo los que existen,
+      // separados por "/". El agente multiplica ×1,19 para el mayorista B2C.
+      const tr = [
+        t.unitario && `1-9:${t.unitario}`,
+        t.t10_49 && `10:${t.t10_49}`,
+        t.t50_99 && `50:${t.t50_99}`,
+        t.t100_249 && `100:${t.t100_249}`,
+        t.t250_499 && `250:${t.t250_499}`,
+        t.t500_999 && `500:${t.t500_999}`,
+        t.t1000_1999 && `1000:${t.t1000_1999}`,
+        t.t2000_mas && `2000+:${t.t2000_mas}`,
+      ].filter(Boolean);
+      const b2b = tr.length ? ` | B2B/u neto: ${tr.join('/')}` : '';
+      return `${p.sku}|${p.nombre}|${p.categoria}|B2C ${b2c}|${p.canal || 'B2B+B2C'}${b2b}`;
     });
-  return `\n\n[CATALOGO] Este es el catálogo REAL y COMPLETO de la tienda (SKU | nombre | categoría | precio B2C IVA incl. | canal | ref B2B). Cualquier palabra del cliente que calce con un nombre de aquí ES un producto. Usa SOLO estos SKUs, nombres y precios. Los precios B2B por tramo son NETOS (sin IVA): para el precio MAYORISTA B2C con IVA multiplica el tramo correspondiente por 1,19:\n${lines.join('\n')}`;
+  return `\n\n[CATALOGO] Catálogo REAL y COMPLETO (SKU|nombre|categoría|precio B2C c/IVA|canal|B2B neto sin IVA por tramo de unidades). Cualquier palabra del cliente que calce con un nombre de aquí ES un producto: usa SOLO estos SKUs/nombres/precios. Precio mayorista B2C c/IVA = tramo B2B × 1,19:\n${lines.join('\n')}`;
 }
 
 // Limpia bloques internos de los mensajes del usuario antes de devolverlos al front.
