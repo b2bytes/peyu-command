@@ -4,19 +4,20 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 // metaAdsReadAds · LEE el CONTENIDO COMPLETO de anuncios existentes en Meta.
 // ----------------------------------------------------------------------------
 // Resuelve la limitación que frustraba al founder: el agente podía ver los IDs
-// y nombres de los anuncios (metaAdsDeepDive) pero NO su "código fuente" (la
-// imagen/video, el texto principal, el titular, la descripción, el CTA y el
-// link de destino). Con esto el agente puede LEER esos anuncios y luego
-// DUPLICARLOS en una campaña nueva con otro objetivo (vía metaAdsCreateMultiAd).
+// y nombres de los anuncios pero NO su "código fuente" (imagen/video, texto,
+// titular, CTA, link). Con esto el agente LEE los anuncios y los DUPLICA.
+//
+// MEJORAS v2:
+//   - action:'resolve' + resolve_id → auto-detecta si el ID es campaign/adset/ad
+//     y devuelve su contenido. El agente NUNCA se queda atrapado con un ID ambiguo.
+//   - effective_status filter al listar → incluye ads PAUSED, IN_REVIEW, etc.
+//   - updated_adcreatives edge → detecta CAMBIOS SIN PUBLICAR (drafts) y los lee.
 //
 // Payload:
-//   { campaign_id: '123' }   → todos los anuncios de la campaña con su creativo
-//   { adset_id: '456' }      → todos los anuncios de un ad set
-//   { ad_id: '789' }         → un anuncio puntual
-//
-// Devuelve por cada anuncio: id, name, status, y un objeto `content` con
-// { primary_text, headline, description, cta, link, image_url, video_id,
-//   image_hash, page_id, instagram_actor_id } listo para re-crear el anuncio.
+//   { campaign_id }         → todos los anuncios de la campaña
+//   { adset_id }            → todos los anuncios de un ad set
+//   { ad_id }               → un anuncio puntual ( + draft si tiene cambios sin publicar)
+//   { action:'resolve', resolve_id } → auto-detecta el tipo de objeto y lo lee
 // ============================================================================
 
 const GRAPH_VERSION = 'v21.0';
@@ -37,11 +38,6 @@ function diagnoseMetaError(err) {
   return { reason: 'otro', error: msg, detail: msg };
 }
 
-// Extrae el contenido reutilizable desde el object_story_spec / asset_feed_spec
-// del creativo, contemplando los formatos típicos (link_data, video_data, y los
-// nuevos asset_feed_spec de las campañas Advantage+).
-// Lee las tarjetas de un carrusel (child_attachments en link_data, o el
-// asset_feed_spec de los carruseles Advantage+). Devuelve [] si no es carrusel.
 function parseCarouselCards(link, afs) {
   const children = Array.isArray(link.child_attachments) ? link.child_attachments : [];
   if (children.length) {
@@ -54,7 +50,6 @@ function parseCarouselCards(link, afs) {
       cta: c.call_to_action?.type || '',
     }));
   }
-  // Carrusel armado vía asset_feed_spec: varias imágenes => varias tarjetas.
   const imgs = Array.isArray(afs.images) ? afs.images : [];
   if (imgs.length > 1) {
     return imgs.map((im, i) => ({
@@ -79,34 +74,23 @@ function parseCreative(creative) {
   const cards = parseCarouselCards(link, afs);
   const is_carousel = cards.length >= 2;
 
-  // Texto principal: link_data.message → video.message → asset_feed_spec.bodies
   const primary_text = link.message || video.message
     || (Array.isArray(afs.bodies) && afs.bodies[0]?.text) || creative.body || '';
-  // Titular: link_data.name → asset_feed_spec.titles
   const headline = link.name
     || (Array.isArray(afs.titles) && afs.titles[0]?.text) || creative.title || '';
-  // Descripción
   const description = link.description
     || (Array.isArray(afs.descriptions) && afs.descriptions[0]?.text) || '';
-  // Link de destino
   const linkUrl = link.link || cta?.value?.link
     || (Array.isArray(afs.link_urls) && afs.link_urls[0]?.website_url) || creative.link_url || '';
-  // Imagen / video
   const image_url = link.picture || video.image_url || creative.image_url || creative.thumbnail_url || '';
   const image_hash = link.image_hash || (Array.isArray(afs.images) && afs.images[0]?.hash) || creative.image_hash || null;
   const video_id = video.video_id || (Array.isArray(afs.videos) && afs.videos[0]?.video_id) || null;
 
   return {
-    primary_text,
-    headline,
-    description,
+    primary_text, headline, description,
     cta: cta?.type || (Array.isArray(afs.call_to_action_types) && afs.call_to_action_types[0]) || '',
-    link: linkUrl,
-    image_url,
-    image_hash,
-    video_id,
-    is_carousel,
-    cards,                       // tarjetas del carrusel (vacío si no es carrusel)
+    link: linkUrl, image_url, image_hash, video_id,
+    is_carousel, cards,
     page_id: oss.page_id || null,
     instagram_actor_id: oss.instagram_actor_id || creative.instagram_actor_id || null,
   };
@@ -127,25 +111,134 @@ Deno.serve(async (req) => {
     const base = `https://graph.facebook.com/${GRAPH_VERSION}`;
     const t = encodeURIComponent(token);
 
-    // Campos del creativo que contienen el contenido reutilizable del anuncio.
     const creativeFields = 'id,name,object_story_spec,asset_feed_spec,image_url,thumbnail_url,body,title,link_url,image_hash,instagram_actor_id';
     const adFields = `id,name,status,effective_status,adset_id,creative{${creativeFields}}`;
 
+    // ── RESOLVE: auto-detecta el tipo de objeto (campaign | adset | ad) ──────
+    // El agente a veces confunde IDs. Esta acción prueba el ID como campaña,
+    // ad set y anuncio, y devuelve el tipo correcto + su contenido completo.
+    if (body.action === 'resolve' || body.resolve_id) {
+      const objId = body.resolve_id || body.ad_id;
+      if (!objId) return Response.json({ ok: false, error: 'Falta resolve_id.' });
+
+      // 1) ¿Es una campaña?
+      const campRes = await fetch(`${base}/${objId}?fields=id,name,status,effective_status,objective,daily_budget,lifetime_budget&access_token=${t}`);
+      const camp = await campRes.json();
+      if (!camp.error && camp.objective !== undefined) {
+        const adsetsRes = await fetch(`${base}/${objId}/adsets?fields=id,name,status,effective_status,daily_budget&limit=100&access_token=${t}`);
+        const adsets = await adsetsRes.json();
+        const adsRes = await fetch(`${base}/${objId}/ads?fields=${adFields}&limit=100&access_token=${t}`);
+        const adsData = await adsRes.json();
+        const parsedAds = (adsData.data || []).map(a => ({
+          ad_id: a.id, ad_name: a.name, status: a.status, effective_status: a.effective_status,
+          adset_id: a.adset_id, creative_id: a.creative?.id, content: parseCreative(a.creative),
+        }));
+        return Response.json({
+          ok: true, resolved: true, type: 'campaign', id: objId,
+          name: camp.name, status: camp.status, effective_status: camp.effective_status,
+          objective: camp.objective,
+          daily_budget_clp: camp.daily_budget ? Number(camp.daily_budget) : null,
+          lifetime_budget_clp: camp.lifetime_budget ? Number(camp.lifetime_budget) : null,
+          adsets: (adsets.data || []).map(a => ({ id: a.id, name: a.name, status: a.status, effective_status: a.effective_status, daily_budget_clp: a.daily_budget ? Number(a.daily_budget) : null })),
+          ads: parsedAds, ad_count: parsedAds.length,
+        });
+      }
+
+      // 2) ¿Es un ad set?
+      const adsetRes = await fetch(`${base}/${objId}?fields=id,name,status,effective_status,daily_budget,campaign_id&access_token=${t}`);
+      const adset = await adsetRes.json();
+      if (!adset.error && (adset.campaign_id !== undefined || adset.daily_budget !== undefined)) {
+        const adsRes = await fetch(`${base}/${objId}/ads?fields=${adFields}&limit=100&access_token=${t}`);
+        const adsData = await adsRes.json();
+        const parsedAds = (adsData.data || []).map(a => ({
+          ad_id: a.id, ad_name: a.name, status: a.status, effective_status: a.effective_status,
+          adset_id: a.adset_id, creative_id: a.creative?.id, content: parseCreative(a.creative),
+        }));
+        return Response.json({
+          ok: true, resolved: true, type: 'adset', id: objId,
+          name: adset.name, status: adset.status, effective_status: adset.effective_status,
+          campaign_id: adset.campaign_id || null,
+          daily_budget_clp: adset.daily_budget ? Number(adset.daily_budget) : null,
+          ads: parsedAds, ad_count: parsedAds.length,
+        });
+      }
+
+      // 3) ¿Es un anuncio? (con detección de cambios sin publicar)
+      const adRes = await fetch(`${base}/${objId}?fields=${adFields}&access_token=${t}`);
+      const adData = await adRes.json();
+      if (!adData.error && (adData.creative !== undefined || adData.adset_id !== undefined)) {
+        let draftContent = null;
+        const draftRes = await fetch(`${base}/${objId}/updated_adcreatives?fields=${creativeFields}&access_token=${t}`);
+        const draft = await draftRes.json();
+        if (!draft.error && draft.data && draft.data.length > 0) {
+          draftContent = parseCreative(draft.data[0]);
+        }
+        return Response.json({
+          ok: true, resolved: true, type: 'ad', id: objId,
+          ad_name: adData.name, status: adData.status, effective_status: adData.effective_status,
+          adset_id: adData.adset_id, creative_id: adData.creative?.id,
+          content: parseCreative(adData.creative),
+          has_unpublished_changes: !!draftContent,
+          draft_content: draftContent,
+          nota: draftContent ? '⚠️ CAMBIOS SIN PUBLICAR: draft_content = borrador, content = publicado.' : null,
+        });
+      }
+
+      // 4) No se pudo resolver
+      return Response.json({
+        ok: false, resolved: false,
+        error: `No se pudo resolver el ID ${objId} como campaña, ad set ni anuncio. Posibles causas: ID incorrecto, objeto eliminado, o el System User no tiene permiso sobre el objeto.`,
+        hint: 'Usa metaAdsManage(list_campaigns) o metaAdsManage(list_adsets) para encontrar el ID correcto.',
+      });
+    }
+
     let ads = [];
 
+    // ── Leer un anuncio individual (con detección de drafts) ────────────────
     if (body.ad_id) {
       const res = await fetch(`${base}/${body.ad_id}?fields=${adFields}&access_token=${t}`);
       const data = await res.json();
-      if (data.error) return Response.json({ ok: false, ...diagnoseMetaError(data.error) });
-      ads = [data];
-    } else {
-      const parent = body.adset_id || body.campaign_id;
-      if (!parent) return Response.json({ ok: false, error: 'Indica campaign_id, adset_id o ad_id.' });
-      const res = await fetch(`${base}/${parent}/ads?fields=${adFields}&limit=100&access_token=${t}`);
-      const data = await res.json();
-      if (data.error) return Response.json({ ok: false, ...diagnoseMetaError(data.error) });
-      ads = data.data || [];
+      if (data.error) {
+        return Response.json({
+          ok: false, ...diagnoseMetaError(data.error),
+          hint: `Si ${body.ad_id} no es un ad_id, usa action:'resolve' con resolve_id:'${body.ad_id}' para auto-detectar el tipo de objeto.`,
+        });
+      }
+      // Verificar si tiene cambios sin publicar (updated_adcreatives)
+      let draftContent = null;
+      const draftRes = await fetch(`${base}/${body.ad_id}/updated_adcreatives?fields=${creativeFields}&access_token=${t}`);
+      const draft = await draftRes.json();
+      if (!draft.error && draft.data && draft.data.length > 0) {
+        draftContent = parseCreative(draft.data[0]);
+      }
+      const parsed = [{
+        ad_id: data.id,
+        ad_name: data.name,
+        status: data.status,
+        effective_status: data.effective_status,
+        adset_id: data.adset_id || null,
+        creative_id: data.creative?.id || null,
+        content: parseCreative(data.creative),
+        has_unpublished_changes: !!draftContent,
+        draft_content: draftContent,
+      }];
+      return Response.json({
+        ok: true, count: parsed.length, ads: parsed,
+        nota: draftContent
+          ? '⚠️ CAMBIOS SIN PUBLICAR: draft_content = borrador, content = publicado. Usa draft_content para ver los cambios pendientes.'
+          : 'content trae copy, titular, descripción, CTA, link e imagen/video. Sin cambios sin publicar.',
+      });
     }
+
+    // ── Listar anuncios de una campaña o ad set ─────────────────────────────
+    // effective_status filter incluye TODOS los estados (no solo ACTIVE por defecto)
+    const parent = body.adset_id || body.campaign_id;
+    if (!parent) return Response.json({ ok: false, error: 'Indica campaign_id, adset_id, ad_id o action:"resolve" con resolve_id.' });
+    const statusFilter = encodeURIComponent(JSON.stringify(['ACTIVE', 'PAUSED', 'CAMPAIGN_PAUSED', 'ADSET_PAUSED', 'IN_REVIEW', 'DISAPPROVED', 'ARCHIVED', 'DELETED']));
+    const res = await fetch(`${base}/${parent}/ads?fields=${adFields}&limit=100&effective_status=${statusFilter}&access_token=${t}`);
+    const data = await res.json();
+    if (data.error) return Response.json({ ok: false, ...diagnoseMetaError(data.error) });
+    ads = data.data || [];
 
     const parsed = ads.map((a) => ({
       ad_id: a.id,
