@@ -35,6 +35,21 @@
       "allowed_operations": [
         "read"
       ]
+    },
+    {
+      "entity_name": "Consulta",
+      "allowed_operations": [
+        "create",
+        "read"
+      ]
+    },
+    {
+      "entity_name": "ChatLead",
+      "allowed_operations": [
+        "create",
+        "read",
+        "update"
+      ]
     }
   ],
   "whatsapp_greeting": "\u00a1Hola! Soy Peyu \ud83d\udc22 de PEYU Chile.\n\nRegalos 100% pl\u00e1stico reciclado, grabado l\u00e1ser, garant\u00eda 10 a\u00f1os.\n\n\u00bfEs regalo personal o para tu empresa? \ud83c\udf31"

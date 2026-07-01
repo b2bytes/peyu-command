@@ -10,7 +10,7 @@ import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import AdminAccessDenied from '@/components/AdminAccessDenied';
 import { isTeamMember } from '@/lib/team-whitelist';
-import PWAInstallBanner from '@/components/PWAInstallBanner';
+
 import CookieBanner from '@/components/CookieBanner';
 import PublicPageLayout from '@/components/PublicPageLayout';
 
@@ -399,7 +399,6 @@ function App() {
               <Route path="*" element={<PageNotFound />} />
             </Routes>
             <Toaster />
-            <PWAInstallBanner />
             <CookieBanner />
           </Router>
         </QueryClientProvider>

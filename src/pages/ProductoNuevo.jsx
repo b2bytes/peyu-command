@@ -201,14 +201,27 @@ export default function ProductoNuevo() {
       }
       return [getProductImage(producto)];
     }
-    const main = color ? getProductImageForColor(producto, color) : getProductImage(producto);
+    // No-carcasas: TODAS las fotos reales de color (imagenes_por_color) como
+    // thumbnails + ángulos extra de galeria_urls. Al elegir un color, galIdx
+    // salta a la foto de ese color — la imagen principal cambia de forma
+    // explícita e inequívoca (mismo patrón robusto que carcasas).
+    const base = getProductImage(producto);
+    const coloresConFoto = colores
+      .map((c) => {
+        const url = getProductImageForColor(producto, c);
+        return url && url !== base ? url : null;
+      })
+      .filter(Boolean);
+    const uniqueColorFotos = [...new Set(coloresConFoto)];
     let extra = Array.isArray(producto.galeria_urls)
-      ? producto.galeria_urls.filter((u) => typeof u === 'string' && u.startsWith('http') && u !== main)
+      ? producto.galeria_urls.filter((u) => typeof u === 'string' && u.startsWith('http') && !uniqueColorFotos.includes(u) && u !== base)
       : [];
     if (producto.sku === 'ENT-CACH-1') {
       extra = extra.filter((u) => !u.toLowerCase().includes('amarillo') && !u.includes('1-2.jpg'));
     }
-    return [main, ...extra].slice(0, 6);
+    const gallery = [...uniqueColorFotos, ...extra].slice(0, 6);
+    if (gallery.length > 0) return gallery;
+    return [base];
   }, [producto, color, esCarcasa, colores]);
 
   // Al cambiar de color, saltamos a la imagen correcta en la galería.
@@ -226,11 +239,14 @@ export default function ProductoNuevo() {
       return;
     }
     if (!color) { setGalIdx(0); return; }
+    // No-carcasas: buscar la foto del color elegido en la galería por índice.
     const colorPhoto = getProductImageForColor(producto, color);
     if (colorPhoto && colorPhoto !== getProductImage(producto)) {
-      setGalIdx(0);
+      const idx = galleryImages.indexOf(colorPhoto);
+      setGalIdx(idx >= 0 ? idx : 0);
       return;
     }
+    // Sin foto real para este color → tinte CSS, galería queda en 0.
     const match = findColorImageMatch(galleryImages, color);
     setGalIdx(match ? match.index : 0);
   }, [colorId, esCarcasa, galleryImages, color, producto]);
@@ -317,8 +333,10 @@ export default function ProductoNuevo() {
     return out;
   }, [pers]);
 
-  // Listo para agregar: sin personalización, o con personalización aprobada.
-  const persOk = persCompleta(pers) && (!hayAlgunoActivado(pers) || pers.aprobada);
+  // Listo para agregar: sin personalización, o con personalización completa.
+  // El mockup se auto-aprueba — el cliente ve su diseño en vivo y puede comprar
+  // sin tener que tocar "Aprobar" explícitamente (era el bloqueo #2 del backlog).
+  const persOk = persCompleta(pers);
   const muestraMockup = capas.length > 0;
 
   // ═══ Pre-carga de imágenes de color ════════════════════════════════════
@@ -492,9 +510,7 @@ export default function ProductoNuevo() {
 
   const ctaLabel = added
     ? '✓ ¡Agregado!'
-    : hayAlgunoActivado(pers) && !pers.aprobada
-      ? 'Aprueba tu personalización'
-      : `Agregar al carrito · ${fmtCLP(total)}`;
+    : `Agregar al carrito · ${fmtCLP(total)}`;
 
   const persResumen = resumenPersonalizacion(pers);
 
@@ -852,17 +868,11 @@ export default function ProductoNuevo() {
                  <><Check className="w-5 h-5" /> ¡Agregado!</>
                ) : agotado ? (
                  <>Agotado</>
-               ) : hayAlgunoActivado(pers) && !pers.aprobada ? (
-                 <><Sparkles className="w-5 h-5" /> Aprueba tu personalización</>
                ) : (
                  <><ShoppingBag className="w-5 h-5" /> {ctaLabel}</>
                )}
              </button>
-             {!persOk && hayAlgunoActivado(pers) && (
-               <p className="text-center text-xs mt-2 font-semibold" style={{ color: C.fgMuted }}>
-                 Revisa el mockup y aprueba tu diseño para continuar
-               </p>
-             )}
+
              {persOk && (
                <Link to="/CatalogoNuevo" className="block text-center text-xs font-semibold mt-2 hover:underline" style={{ color: C.fgMuted }}>
                  ← Seguir comprando
@@ -877,7 +887,7 @@ export default function ProductoNuevo() {
       <MobileNavBarV2
         backTo="/CatalogoNuevo"
         backLabel="Tienda"
-        ctaLabel={added ? '✓ ¡Agregado!' : agotado ? 'Agotado' : hayAlgunoActivado(pers) && !pers.aprobada ? 'Aprueba tu diseño' : 'Agregar al carrito'}
+        ctaLabel={added ? '✓ ¡Agregado!' : agotado ? 'Agotado' : 'Agregar al carrito'}
         onCta={handleAdd}
         ctaDisabled={added || !persOk || agotado}
         total={added ? null : total}
