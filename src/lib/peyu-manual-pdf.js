@@ -10,7 +10,7 @@ import {
   PALETA_PRINCIPAL, PALETA_SECUNDARIA, TIPOGRAFIA, FORMAS,
   APLICACIONES, VIAJE, USOS,
 } from '@/lib/peyu-brand-manual';
-import { buildLogoVariant, ISOTIPO_CROP } from '@/lib/logo-variants';
+import { buildLogoVariant } from '@/lib/logo-variants';
 
 const FOREST = [11, 70, 52], TEAL = [15, 139, 108], MINT = [167, 217, 201],
   CREAM = [248, 243, 237], ARENA = [231, 216, 198], TERRA = [217, 107, 77],
@@ -41,7 +41,7 @@ export async function generarManualPeyuPDF() {
     vTinta = await buildLogoVariant('#2C1810');
     vCrema = await buildLogoVariant('#F8F3ED');
     vVerde = await buildLogoVariant('#0F8B6C');
-    vIso = await buildLogoVariant('#F8F3ED', ISOTIPO_CROP);
+    vIso = await buildLogoVariant('#F8F3ED', 'isotipo');
   } catch { /* sin variantes: la lámina se omite parcialmente */ }
 
   const T = (txt, x, y, { size = 10, font = 'normal', color = CREAM, align = 'left', spacing = 0, maxW = 0 } = {}) => {
