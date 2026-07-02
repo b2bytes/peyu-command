@@ -12,7 +12,7 @@ import { addToCartV2, cartCountV2, subscribeCartV2 } from '@/lib/shop-v2-cart';
 import { getProductImage } from '@/utils/productImages';
 import VendedorMensaje from './VendedorMensaje';
 import VendedorCartCard from './VendedorCartCard';
-import { PEYU_AVATAR, PEYU_ICON } from '@/lib/shop-v2-config';
+import PeyuChatAvatar from '@/components/PeyuChatAvatar';
 
 const QUICK_CHIPS = [
   '🎁 Busco un regalo',
@@ -203,9 +203,7 @@ export default function VendedorChatBar() {
           <div className="flex items-center justify-between px-3.5 sm:px-4 py-2.5 sm:py-3 flex-shrink-0 pt-safe gap-2"
             style={{ borderBottom: '1px solid #E7D8C6', background: 'white' }}>
             <div className="flex items-center gap-2.5 min-w-0">
-              <span className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0" style={{ background: '#EAF3EF', border: '1.5px solid rgba(15,139,108,.2)' }}>
-                <img src={PEYU_ICON} alt="PEYU" className="w-6 h-6 object-contain" draggable={false} />
-              </span>
+              <PeyuChatAvatar size={36} />
               <div className="min-w-0">
                 <p className="text-sm font-bold truncate" style={{ color: '#2C1810' }}>Peyu · Vendedor</p>
                 <p className="text-[10px] font-semibold flex items-center gap-1" style={{ color: '#0F8B6C' }}>
@@ -248,9 +246,7 @@ export default function VendedorChatBar() {
             )}
             {!showHistorial && msgs.length === 0 && (
               <div className="text-center pt-8 lg:pt-12 px-4">
-                <span className="w-20 h-20 rounded-full overflow-hidden inline-block mb-3 shadow-md" style={{ background: '#EAF3EF', border: '2px solid rgba(15,139,108,.25)' }}>
-                  <img src={PEYU_AVATAR} alt="Peyu" className="w-full h-full object-cover" draggable={false} />
-                </span>
+                <PeyuChatAvatar size={80} className="inline-flex mb-3 shadow-md" />
                 <p className="text-base font-bold" style={{ color: '#2C1810' }}>¡Hola! Soy Peyu, tu vendedor</p>
                 <p className="text-sm mt-1.5 mb-5 max-w-xs mx-auto" style={{ color: '#7A6050' }}>
                   Dime qué buscas y te muestro productos reales, los agrego a tu carro y pagas sin salir del chat 💚
@@ -273,9 +269,7 @@ export default function VendedorChatBar() {
             ))}
             {!showHistorial && sending && (
               <div className="flex items-end gap-2">
-                <span className="w-7 h-7 rounded-full overflow-hidden flex-shrink-0" style={{ background: '#EAF3EF', border: '1px solid rgba(15,139,108,.2)' }}>
-                  <img src={PEYU_AVATAR} alt="Peyu" className="w-full h-full object-cover" draggable={false} />
-                </span>
+                <PeyuChatAvatar size={28} />
                 <div className="flex items-center gap-1.5 rounded-2xl rounded-tl-md px-3.5 py-3 shadow-sm" style={{ background: 'white', border: '1px solid #E7D8C6' }}>
                   <span className="w-1.5 h-1.5 rounded-full animate-bounce" style={{ background: '#0F8B6C', animationDelay: '0ms' }} />
                   <span className="w-1.5 h-1.5 rounded-full animate-bounce" style={{ background: '#0F8B6C', animationDelay: '150ms' }} />
@@ -324,18 +318,22 @@ export default function VendedorChatBar() {
       {!open && (
         <button
           onClick={handleOpen}
-          className="lg:hidden fixed z-[95] bottom-[4.75rem] right-3 w-14 h-14 rounded-full shadow-2xl flex items-center justify-center transition-transform active:scale-90"
-          style={{ background: 'rgba(255,255,255,.97)', border: '2px solid #0F8B6C', boxShadow: '0 10px 34px rgba(15,139,108,.35)' }}
+          className="lg:hidden fixed z-[95] bottom-[4.75rem] right-3 flex flex-col items-end gap-1.5 transition-transform active:scale-90"
           title="Chatea con Peyu — compra aquí mismo 🐢"
           aria-label="Abrir chat con Peyu">
-          <span className="w-11 h-11 rounded-full overflow-hidden pointer-events-none" style={{ background: '#EAF3EF' }}>
-            <img src={PEYU_AVATAR} alt="Peyu" className="w-full h-full object-cover" draggable={false} />
+          {/* Pill "Peyu te ayuda 🐢" — manual de marca, lámina Widget de chat */}
+          <span className="whitespace-nowrap rounded-full px-3 py-1.5 text-[11px] font-bold shadow-lg pointer-events-none"
+            style={{ background: '#F8F3ED', color: '#2C1810' }}>
+            <span style={{ color: '#0F8B6C' }}>Peyu</span> te ayuda 🐢
           </span>
-          <span className="absolute -top-0.5 -left-0.5 w-3.5 h-3.5 rounded-full border-2 border-white animate-pulse" style={{ background: '#0F8B6C' }} />
-          {unread > 0 && (
-            <span className="absolute -top-1.5 -right-1.5 min-w-[20px] h-5 px-1 rounded-full text-white text-[10px] font-bold flex items-center justify-center"
-              style={{ background: '#D96B4D' }}>{unread}</span>
-          )}
+          <span className="relative">
+            <PeyuChatAvatar size={56} className="shadow-2xl" />
+            <span className="absolute -top-0.5 -left-0.5 w-3.5 h-3.5 rounded-full border-2 border-white animate-pulse" style={{ background: '#0F8B6C' }} />
+            {unread > 0 && (
+              <span className="absolute -top-1.5 -right-1.5 min-w-[20px] h-5 px-1 rounded-full text-white text-[10px] font-bold flex items-center justify-center"
+                style={{ background: '#D96B4D' }}>{unread}</span>
+            )}
+          </span>
         </button>
       )}
 
@@ -346,9 +344,7 @@ export default function VendedorChatBar() {
           className="hidden lg:flex fixed z-[95] items-center gap-2 rounded-full pl-3 pr-1.5 py-1.5 shadow-2xl
                      bottom-4 left-1/2 -translate-x-1/2 w-[calc(100%-2rem)] max-w-xl"
           style={{ background: 'rgba(255,255,255,.97)', backdropFilter: 'blur(20px)', border: '1.5px solid #D4C4B0', boxShadow: '0 10px 40px rgba(15,139,108,.18)' }}>
-          <span className="w-9 h-9 rounded-full overflow-hidden flex-shrink-0" style={{ background: '#EAF3EF', border: '1.5px solid rgba(15,139,108,.2)' }}>
-            <img src={PEYU_AVATAR} alt="Peyu" className="w-full h-full object-cover" draggable={false} />
-          </span>
+          <PeyuChatAvatar size={36} />
           <input
             value={input}
             onChange={(e) => setInput(e.target.value)}
