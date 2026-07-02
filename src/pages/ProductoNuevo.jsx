@@ -349,19 +349,35 @@ export default function ProductoNuevo() {
     return Object.values(mapa).filter((u) => typeof u === 'string' && u.startsWith('http'));
   }, [producto]);
 
-  // La foto real del producto es la base del mockup. La "base limpia" generada
-  // por IA solo se usa como fallback si la foto real no está disponible.
-  // Este efecto ya no cambia la base del mockup — solo genera la limpia en
-  // segundo plano por si acaso. El mockup siempre usa la foto real (colorImg).
+  // 🎯 BASE INTELIGENTE DEL MOCKUP (no-carcasas): el grabado del cliente debe
+  // componerse sobre una imagen del producto SIN el logo PEYU ya grabado —
+  // antes se estampaba encima del grabado existente (reclamo de clientes).
+  // Prioridad: imagen_base_limpia_url (lienzo limpio del producto) → limpia
+  // generada al vuelo → foto real del color. Se genera PROACTIVAMENTE al abrir
+  // la ficha para que esté lista antes de que el cliente suba su logo.
   const cleanRequestedRef = useRef(false);
   useEffect(() => {
-    if (!producto || esCarcasa || !muestraMockup) return;
+    if (!producto || esCarcasa) return;
     if (producto.imagen_base_limpia_url || cleanBaseUrl || cleanRequestedRef.current) return;
     cleanRequestedRef.current = true;
     base44.functions.invoke('generateCleanBaseImage', { productoId: producto.id })
       .then((res) => { if (res?.data?.clean_url) setCleanBaseUrl(res.data.clean_url); })
       .catch(() => {});
-  }, [producto, esCarcasa, muestraMockup, cleanBaseUrl]);
+  }, [producto, esCarcasa, cleanBaseUrl]);
+
+  // Base efectiva del mockup: al personalizar un producto NO-carcasa usamos el
+  // lienzo limpio (sin logo PEYU) y lo re-tintamos al color elegido con filtro
+  // CSS — el mockup nace automáticamente sobre la imagen del color escogido.
+  const baseLimpia = !esCarcasa ? (producto?.imagen_base_limpia_url || cleanBaseUrl || null) : null;
+  const mockupBase = (muestraMockup && baseLimpia) ? baseLimpia : colorImg;
+  const mockupFilter = useMemo(() => {
+    if (!producto || esCarcasa) return colorFilter;
+    if (muestraMockup && baseLimpia && color && baseLimpia !== colorImg) {
+      // La base limpia proviene de la foto principal → re-tintar al color elegido.
+      return getColorTintFilter(producto, color, false);
+    }
+    return colorFilter;
+  }, [producto, color, esCarcasa, colorFilter, muestraMockup, baseLimpia, colorImg]);
 
   // Mobile: cuando el cliente carga su logo o elige un diseño PEYU, la página
   // sube SOLA al mockup (que vive arriba, en el lugar de la foto principal)
@@ -421,8 +437,8 @@ export default function ProductoNuevo() {
       return;
     }
 
-    // Captura el snapshot del canvas en vivo (foto base + grabado) como mockupUrl.
-    let mockupUrl = muestraMockup ? colorImg : null;
+    // Captura el snapshot del canvas en vivo (base limpia + grabado) como mockupUrl.
+    let mockupUrl = muestraMockup ? mockupBase : null;
     if (muestraMockup) {
       const isDesktop = typeof window !== 'undefined' && window.innerWidth >= 1024;
       const primario = isDesktop ? mockupRefDesktop : mockupRefMobile;
@@ -656,11 +672,11 @@ export default function ProductoNuevo() {
                   <>
                     <MockupLivePreviewV2
                       ref={mockupRefDesktop}
-                      productImageUrl={colorImg}
-                      fallbackUrl={getProductImage(producto)}
+                      productImageUrl={mockupBase}
+                      fallbackUrl={colorImg || getProductImage(producto)}
                       capas={capas}
                       onPlacementChange={setPlacements}
-                      baseFilter={colorFilter}
+                      baseFilter={mockupFilter}
                       esCarcasa={esCarcasa}
                       customArea={engraggingArea}
                     />
@@ -710,11 +726,11 @@ export default function ProductoNuevo() {
                   </div>
                   <MockupLivePreviewV2
                     ref={mockupRefMobile}
-                    productImageUrl={colorImg}
-                    fallbackUrl={getProductImage(producto)}
+                    productImageUrl={mockupBase}
+                    fallbackUrl={colorImg || getProductImage(producto)}
                     capas={capas}
                     onPlacementChange={setPlacements}
-                    baseFilter={colorFilter}
+                    baseFilter={mockupFilter}
                     esCarcasa={esCarcasa}
                     customArea={engraggingArea}
                   />

@@ -50,6 +50,15 @@ const SIZE_BASE_LIBRE   = { frase: 42, peyu: 38, archivo: 38 };
 // Estrategia mejorada: si hay un logo de cliente (tipo='archivo'), posiciónalo
 // en el centro de la zona PEYU existente (arriba). Las otras capas se distribuyen
 // debajo o en slots secundarios.
+// El tamaño inicial NUNCA debe superar el área técnica: en productos con área
+// pequeña (llaveros, coasters) la capa nacía más grande que el área, el clamp
+// se degeneraba y el cliente NO PODÍA mover ni centrar su logo (bug reportado).
+function fitSize(base, A) {
+  const aw = A.right - A.left;
+  const ah = A.bottom - A.top;
+  return Math.max(10, Math.min(base, aw * 0.85, ah * 0.85));
+}
+
 function autoLayout(capas, area, esCarcasa = true) {
   const A = area || AREA_CARCASA;
   const cx = (A.left + A.right) / 2;
@@ -59,7 +68,7 @@ function autoLayout(capas, area, esCarcasa = true) {
   if (n === 0) return {};
   // Para 1 sola capa, centrar exactamente en el centroide del área.
   if (n === 1) {
-    const baseSize = SIZE_BASE[capas[0].tipo] || 38;
+    const baseSize = fitSize(SIZE_BASE[capas[0].tipo] || 38, A);
     return { [capas[0].id]: { size: baseSize, x: cx, y: cy } };
   }
   
@@ -68,10 +77,11 @@ function autoLayout(capas, area, esCarcasa = true) {
   const otherCapas = capas.filter(c => c.tipo !== 'archivo');
   const out = {};
   
-  // Si hay logo cliente, lo centramos en zona PEYU (arriba-centro del área)
+  // Logo del cliente: en CARCASAS va en la zona del logo PEYU (arriba-centro);
+  // en el resto de productos va CENTRADO en el área de grabado.
   if (clientLogos.length > 0) {
-    const logoSize = SIZE_BASE['archivo'] || 38;
-    const logoCy = A.top + (A.bottom - A.top) * 0.22; // 22% abajo del top = donde está el logo PEYU en fotos
+    const logoSize = fitSize(SIZE_BASE['archivo'] || 38, A);
+    const logoCy = esCarcasa ? A.top + (A.bottom - A.top) * 0.22 : cy;
     out[clientLogos[0].id] = { size: logoSize, x: cx, y: logoCy };
   }
   
@@ -82,8 +92,8 @@ function autoLayout(capas, area, esCarcasa = true) {
     const usableBottom = A.bottom - 4;
     const slotH = (usableBottom - usableTop) / remainingCapas.length;
     remainingCapas.forEach((c, i) => {
-      const baseSize = SIZE_BASE[c.tipo] || 26;
-      const size = Math.max(14, Math.min(baseSize, slotH * 0.9));
+      const baseSize = fitSize(SIZE_BASE[c.tipo] || 26, A);
+      const size = Math.max(12, Math.min(baseSize, slotH * 0.9));
       const y = usableTop + slotH * (i + 0.5);
       out[c.id] = { size, x: cx, y };
     });
@@ -95,10 +105,15 @@ function autoLayout(capas, area, esCarcasa = true) {
 function clampToArea(x, y, sizePct, tipo, area) {
   const A = area || AREA_CARCASA;
   const aw = A.right - A.left;
+  const ah = A.bottom - A.top;
   // La frase ahora puede envolver en varias líneas → reservamos un poco más de
   // alto para que su bloque no se salga del área de grabado por arriba/abajo.
-  const halfW = tipo === 'frase' ? Math.min(sizePct * 0.9, aw / 2) : sizePct / 2;
-  const halfH = tipo === 'frase' ? Math.max(sizePct * 0.28, 8) : sizePct / 2;
+  let halfW = tipo === 'frase' ? Math.min(sizePct * 0.9, aw / 2) : sizePct / 2;
+  let halfH = tipo === 'frase' ? Math.max(sizePct * 0.28, 8) : sizePct / 2;
+  // Guard anti-bloqueo: si la capa excede el área, el rango min/max se invertía
+  // y la capa quedaba CLAVADA (no se podía centrar). Acotamos al área siempre.
+  halfW = Math.min(halfW, aw / 2);
+  halfH = Math.min(halfH, ah / 2);
   return {
     x: Math.max(A.left + halfW, Math.min(A.right - halfW, x)),
     y: Math.max(A.top + halfH, Math.min(A.bottom - halfH, y)),
@@ -434,8 +449,11 @@ const MockupLivePreviewV2 = forwardRef(function MockupLivePreviewV2({ productIma
                   <Icon className="w-3.5 h-3.5 flex-shrink-0" style={{ color: isActive ? '#0F8B6C' : '#A08070' }} />
                   <span className="text-[11px] font-bold w-12 flex-shrink-0" style={{ color: '#2C1810' }}>{NOMBRE[c.tipo]}</span>
                   <input
-                    type="range" min="12"
-                    max={c.tipo === 'frase' ? (esCarcasa ? 40 : 55) : (esCarcasa ? 34 : 52)}
+                    type="range" min="10"
+                    max={Math.round(Math.min(
+                      c.tipo === 'frase' ? (esCarcasa ? 40 : 55) : (esCarcasa ? 34 : 52),
+                      Math.max(16, (area.right - area.left) * 0.95)
+                    ))}
                     value={pl.size}
                     onChange={(e) => { setActiveId(c.id); setSize(c.id, Number(e.target.value)); }}
                     className="flex-1 min-w-0 h-1.5 accent-[#0F8B6C]"
