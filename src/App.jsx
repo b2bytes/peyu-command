@@ -69,6 +69,7 @@ import ResumenOperativo from './pages/ResumenOperativo';
 import AprobarPropuesta from './pages/AprobarPropuesta';
 import FirmaAgente from './pages/FirmaAgente';
 import FiestasPatrias from './pages/FiestasPatrias';
+import ManualPeyu from './pages/ManualPeyu';
 import FiestasCanasta from './pages/FiestasCanasta';
 import FiestasEmpresas from './pages/FiestasEmpresas';
 
@@ -348,6 +349,8 @@ function App() {
               <Route path="/lanzamiento" element={<Lanzamiento />} />
               <Route path="/propuesta-valor-peyu" element={<PropuestaValorPeyu />} />
               <Route path="/brand" element={<BrandLab />} />
+              {/* Manual de Marca de Peyu, la mascota (diseño propio + PDF) */}
+              <Route path="/manual-peyu" element={<ManualPeyu />} />
               <Route path="/v2" element={<PeyuV2 />} />
               <Route path="/founders-presentation" element={<FoundersPresentation />} />
               <Route path="/storefront-chat" element={<StorefrontChat />} />
