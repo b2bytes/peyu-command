@@ -1,12 +1,19 @@
 // Slide del Manual de Marca de Peyu — replica el lenguaje del manual de
 // referencia: lienzo horizontal, fondo verde profundo, anillos decorativos,
-// label de sección y logo anclado arriba a la derecha.
+// label de sección y logo anclado arriba a la derecha. Entrada con motion
+// suave (manual "vivo", trend 2026-2027).
+import { motion } from 'framer-motion';
 import { LOGO_OFICIAL } from '@/lib/peyu-brand-manual';
 
-export default function ManualSlide({ label, children, dark = true, num, center = false }) {
+export default function ManualSlide({ label, children, dark = true, num, center = false, id }) {
   return (
-    <section
-      className="relative w-full rounded-[2rem] overflow-hidden shadow-2xl"
+    <motion.section
+      id={id}
+      initial={{ opacity: 0, y: 28 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: '-60px' }}
+      transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+      className="relative w-full rounded-[2rem] overflow-hidden shadow-2xl scroll-mt-32"
       style={{
         background: dark
           ? 'linear-gradient(160deg, #0B4634 0%, #083428 55%, #062A20 100%)'
@@ -48,6 +55,6 @@ export default function ManualSlide({ label, children, dark = true, num, center 
         </span>
         {num && <span className="text-xs font-bold" style={{ color: dark ? '#A7D9C9' : '#A08070' }}>{String(num).padStart(2, '0')}</span>}
       </div>
-    </section>
+    </motion.section>
   );
 }

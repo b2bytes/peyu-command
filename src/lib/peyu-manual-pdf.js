@@ -10,6 +10,7 @@ import {
   PALETA_PRINCIPAL, PALETA_SECUNDARIA, TIPOGRAFIA, FORMAS,
   APLICACIONES, VIAJE, USOS,
 } from '@/lib/peyu-brand-manual';
+import { buildLogoVariant, ISOTIPO_CROP } from '@/lib/logo-variants';
 
 const FOREST = [11, 70, 52], TEAL = [15, 139, 108], MINT = [167, 217, 201],
   CREAM = [248, 243, 237], ARENA = [231, 216, 198], TERRA = [217, 107, 77],
@@ -33,6 +34,15 @@ async function toDataURL(url) {
 export async function generarManualPeyuPDF() {
   const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
   const logo = await toDataURL(LOGO_OFICIAL);
+
+  // Variantes exactas del logo (canvas, fondo transparente) para la lámina del kit
+  let vTinta = null, vCrema = null, vVerde = null, vIso = null;
+  try {
+    vTinta = await buildLogoVariant('#2C1810');
+    vCrema = await buildLogoVariant('#F8F3ED');
+    vVerde = await buildLogoVariant('#0F8B6C');
+    vIso = await buildLogoVariant('#F8F3ED', ISOTIPO_CROP);
+  } catch { /* sin variantes: la lámina se omite parcialmente */ }
 
   const T = (txt, x, y, { size = 10, font = 'normal', color = CREAM, align = 'left', spacing = 0, maxW = 0 } = {}) => {
     doc.setFont('helvetica', font); doc.setFontSize(size);
@@ -128,7 +138,33 @@ export async function generarManualPeyuPDF() {
   });
   footer(4);
 
-  // ═══ 5 · PALETA PRINCIPAL ═══
+  // ═══ 5 · SISTEMA DE LOGOS · KIT ═══
+  doc.addPage(); bg(true); header('SISTEMA DE LOGOS - KIT DESCARGABLE');
+  T('Variantes oficiales generadas desde el trazo original - PNG con fondo transparente.', MX, 42, { size: 9.5, color: CREAM });
+  const kit = [
+    { img: vTinta, card: CREAM, nombre: 'Principal - Tinta', uso: 'Fondos claros / grabado laser', txt: INK },
+    { img: vCrema, card: [18, 84, 64], nombre: 'Negativo - Crema', uso: 'Fondos oscuros / hero / modo noche', txt: CREAM },
+    { img: vVerde, card: CREAM, nombre: 'Verde PEYU', uso: 'Papeleria / firmas / web', txt: INK },
+    { img: vIso, card: [18, 84, 64], nombre: 'Isotipo - Widget de chat', uso: 'Avatar chat / favicon / sticker', txt: CREAM },
+  ];
+  const kcw = (W - MX * 2 - 10) / 2, kch = 56;
+  kit.forEach((k, i) => {
+    const kx = MX + (i % 2) * (kcw + 10);
+    const ky = 50 + Math.floor(i / 2) * (kch + 12);
+    doc.setFillColor(...k.card); doc.roundedRect(kx, ky, kcw, kch, 5, 5, 'F');
+    if (k.img) {
+      try {
+        const iso = i === 3;
+        const iw = iso ? 30 : 88, ih = iso ? 30 : 21;
+        doc.addImage(k.img, 'PNG', kx + (kcw - iw) / 2, ky + (kch - 14 - ih) / 2, iw, ih);
+      } catch { /* noop */ }
+    }
+    T(k.nombre, kx + 6, ky + kch - 8, { size: 9, font: 'bold', color: k.txt });
+    T(k.uso, kx + 6, ky + kch - 3.5, { size: 6.8, color: i % 2 === 0 ? [122, 96, 80] : MINT });
+  });
+  footer(5);
+
+  // ═══ 6 · PALETA PRINCIPAL ═══
   doc.addPage(); bg(true); header('PALETA DE COLORES MASCOTA');
   T('Color', MX, 44, { size: 9, font: 'bold', color: MINT });
   T('Uso', MX + 78, 44, { size: 9, font: 'bold', color: MINT });
@@ -146,9 +182,9 @@ export async function generarManualPeyuPDF() {
     T(c.rgb, MX + 214, y, { size: 9, color: CREAM });
     y += 13;
   });
-  footer(5);
+  footer(6);
 
-  // ═══ 6 · PALETA SECUNDARIA + TIPOGRAFÍA ═══
+  // ═══ 7 · PALETA SECUNDARIA + TIPOGRAFÍA ═══
   doc.addPage(); bg(true); header('PALETA SECUNDARIA / TIPOGRAFIA');
   y = 46;
   PALETA_SECUNDARIA.forEach((c) => {
@@ -171,9 +207,9 @@ export async function generarManualPeyuPDF() {
     T(f, MX + 8, y, { size: 8.5, color: CREAM, maxW: W - MX * 2 - 10 });
     y += 8.5;
   });
-  footer(6);
+  footer(7);
 
-  // ═══ 7 · APLICACIONES ═══
+  // ═══ 8 · APLICACIONES ═══
   doc.addPage(); bg(true); header('APLICACIONES EN LA WEB PEYU');
   y = 44;
   APLICACIONES.forEach((a) => {
@@ -184,9 +220,9 @@ export async function generarManualPeyuPDF() {
     T(a.detalle, MX + 6, y + 8, { size: 8, color: CREAM, maxW: W - MX * 2 - 50 });
     y += 26;
   });
-  footer(7);
+  footer(8);
 
-  // ═══ 8 · EL VIAJE DE PEYU ═══
+  // ═══ 9 · EL VIAJE DE PEYU ═══
   doc.addPage(); bg(true); header('EL VIAJE DE PEYU');
   T('Peyu acompana el recorrido completo del cliente: de visitante a embajador.', MX, 42, { size: 10, color: CREAM });
   const colW = (W - MX * 2 - 16) / 5;
@@ -199,9 +235,9 @@ export async function generarManualPeyuPDF() {
     T(v.detalle, x + 4, 92, { size: 7.5, color: CREAM, maxW: colW - 8 });
     if (i < 4) T('>', x + colW + 1, 100, { size: 12, font: 'bold', color: TERRA });
   });
-  footer(8);
+  footer(9);
 
-  // ═══ 9 · USOS ═══
+  // ═══ 10 · USOS ═══
   doc.addPage(); bg(true); header('USOS CORRECTOS E INCORRECTOS');
   const half = (W - MX * 2 - 10) / 2;
   doc.setFillColor(18, 84, 64); doc.roundedRect(MX, 40, half, 120, 4, 4, 'F');
@@ -211,9 +247,9 @@ export async function generarManualPeyuPDF() {
   let ys = 64, yn = 64;
   USOS.si.forEach((u) => { T('+', MX + 8, ys, { size: 10, font: 'bold', color: MINT }); T(u, MX + 15, ys, { size: 8.5, color: CREAM, maxW: half - 22 }); ys += 13; });
   USOS.no.forEach((u) => { T('x', MX + half + 18, yn, { size: 10, font: 'bold', color: [240, 160, 140] }); T(u, MX + half + 25, yn, { size: 8.5, color: CREAM, maxW: half - 32 }); yn += 13; });
-  footer(9);
+  footer(10);
 
-  // ═══ 10 · VERSIÓN MINIMALISTA ═══
+  // ═══ 11 · VERSIÓN MINIMALISTA ═══
   doc.addPage(); bg(true); header('MASCOTA VERSION MINIMALISTA');
   T('El logo oficial de Peyu es vectorial: puede utilizarse para la produccion de', MX, 50, { size: 10, font: 'bold', color: CREAM });
   T('pines, stickers, grabado laser e impresion en distintos formatos.', MX, 56, { size: 10, font: 'bold', color: CREAM });
@@ -222,9 +258,9 @@ export async function generarManualPeyuPDF() {
     doc.setFillColor(...CREAM); doc.roundedRect(W / 2 - 70, 80, 140, 60, 8, 8, 'F');
     try { doc.addImage(logo, 'PNG', W / 2 - 60, 94, 120, 32); } catch { /* noop */ }
   }
-  footer(10);
+  footer(11);
 
-  // ═══ 11 · GRACIAS ═══
+  // ═══ 12 · GRACIAS ═══
   doc.addPage(); bg(true);
   T('GRACIAS!!', W / 2, 84, { size: 32, font: 'bold', color: WHITE, align: 'center' });
   if (logo) {
@@ -232,7 +268,7 @@ export async function generarManualPeyuPDF() {
     try { doc.addImage(logo, 'PNG', W / 2 - 45, 105, 90, 20); } catch { /* noop */ }
   }
   T('peyuchile.cl - Hasta que el plastico deje de ser basura', W / 2, 146, { size: 10, color: MINT, align: 'center' });
-  footer(11);
+  footer(12);
 
   doc.save('Manual-Marca-Peyu-Mascota.pdf');
 }

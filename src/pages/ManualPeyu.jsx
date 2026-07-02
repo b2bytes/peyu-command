@@ -11,6 +11,7 @@ import { ArrowLeft, Download, Loader2, Check, X } from 'lucide-react';
 import SEOHead from '@/components/SEOHead';
 import NoIndex from '@/components/NoIndex';
 import ManualSlide from '@/components/brand/manual/ManualSlide';
+import LogoVariantsSlide from '@/components/brand/manual/LogoVariantsSlide';
 import { generarManualPeyuPDF } from '@/lib/peyu-manual-pdf';
 import {
   LOGO_OFICIAL, RELATO, POR_QUE_TORTUGA, POR_QUE_NOMBRE, CONCEPTO,
@@ -18,8 +19,28 @@ import {
   APLICACIONES, VIAJE, USOS,
 } from '@/lib/peyu-brand-manual';
 
+const INDICE = [
+  { id: 'relato', label: 'Relato' },
+  { id: 'porque', label: '¿Por qué?' },
+  { id: 'concepto', label: 'Concepto' },
+  { id: 'logos', label: 'Logos' },
+  { id: 'colores', label: 'Colores' },
+  { id: 'tipografia', label: 'Tipografía' },
+  { id: 'aplicaciones', label: 'Aplicaciones' },
+  { id: 'viaje', label: 'Viaje' },
+  { id: 'usos', label: 'Usos' },
+  { id: 'minimalista', label: 'Minimalista' },
+];
+
 export default function ManualPeyu() {
   const [generating, setGenerating] = useState(false);
+  const [copiedHex, setCopiedHex] = useState(null);
+
+  const copyHex = (hex) => {
+    navigator.clipboard?.writeText(hex);
+    setCopiedHex(hex);
+    setTimeout(() => setCopiedHex(null), 1400);
+  };
 
   const descargarPDF = async () => {
     setGenerating(true);
@@ -53,6 +74,22 @@ export default function ManualPeyu() {
         </div>
       </header>
 
+      {/* Índice sticky — navegación de "manual vivo" (trend 2026-2027) */}
+      <nav className="sticky top-[57px] z-40 backdrop-blur-lg" style={{ background: 'rgba(6,42,32,.85)', borderBottom: '1px solid rgba(255,255,255,.06)' }}>
+        <div className="max-w-6xl mx-auto px-3 sm:px-8 py-2 flex gap-1.5 overflow-x-auto scrollbar-hide">
+          {INDICE.map((s) => (
+            <button
+              key={s.id}
+              onClick={() => document.getElementById(s.id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+              className="flex-shrink-0 px-3.5 h-8 rounded-full text-[11px] font-bold transition-colors hover:bg-white/15 peyu-tap-sm"
+              style={{ color: '#A7D9C9', border: '1px solid rgba(167,217,201,.25)' }}
+            >
+              {s.label}
+            </button>
+          ))}
+        </div>
+      </nav>
+
       <div className="max-w-6xl mx-auto px-3 sm:px-8 pt-6 space-y-6 sm:space-y-8">
 
         {/* ═══ 01 · PORTADA ═══ */}
@@ -68,7 +105,7 @@ export default function ManualPeyu() {
         </ManualSlide>
 
         {/* ═══ 02 · RELATO ═══ */}
-        <ManualSlide label="Relato Mascota" num={2}>
+        <ManualSlide label="Relato Mascota" num={2} id="relato">
           <h2 className="font-jakarta font-extrabold text-base sm:text-xl text-white mb-5">{RELATO.titulo}</h2>
           <ul className="space-y-4 max-w-4xl">
             {RELATO.parrafos.map((p, i) => (
@@ -81,7 +118,7 @@ export default function ManualPeyu() {
         </ManualSlide>
 
         {/* ═══ 03 · POR QUÉ ═══ */}
-        <ManualSlide label="Relato Mascota" num={3}>
+        <ManualSlide label="Relato Mascota" num={3} id="porque">
           <h2 className="font-jakarta font-extrabold text-base sm:text-xl text-white mb-5">🐢✨ ¿POR QUÉ UNA TORTUGA?</h2>
           <div className="grid sm:grid-cols-2 gap-3 mb-8">
             {POR_QUE_TORTUGA.map((it) => (
@@ -103,7 +140,7 @@ export default function ManualPeyu() {
         </ManualSlide>
 
         {/* ═══ 04 · CONCEPTO ═══ */}
-        <ManualSlide label="Concepto Mascota" num={4}>
+        <ManualSlide label="Concepto Mascota" num={4} id="concepto">
           <p className="text-sm sm:text-base mb-1" style={{ color: '#EDE7DD' }}><strong className="text-white">Nombre:</strong> {CONCEPTO.nombre}</p>
           <p className="text-sm sm:text-base mb-5" style={{ color: '#EDE7DD' }}><strong className="text-white">Especie:</strong> {CONCEPTO.especie}</p>
           <p className="text-sm sm:text-base leading-relaxed max-w-3xl mb-6" style={{ color: '#EDE7DD' }}>{CONCEPTO.descripcion}</p>
@@ -118,8 +155,11 @@ export default function ManualPeyu() {
           </ul>
         </ManualSlide>
 
-        {/* ═══ 05 · PALETA PRINCIPAL ═══ */}
-        <ManualSlide label="Paleta de Colores Mascota" num={5}>
+        {/* ═══ 05 · SISTEMA DE LOGOS · KIT DESCARGABLE ═══ */}
+        <LogoVariantsSlide num={5} />
+
+        {/* ═══ 06 · PALETA PRINCIPAL ═══ */}
+        <ManualSlide label="Paleta de Colores Mascota" num={6} id="colores">
           <div className="overflow-x-auto">
             <table className="w-full min-w-[560px] text-left">
               <thead>
@@ -138,7 +178,15 @@ export default function ManualPeyu() {
                       </span>
                     </td>
                     <td className="py-3 pr-3 text-[11px] sm:text-sm" style={{ color: '#EDE7DD' }}>{c.uso}</td>
-                    <td className="py-3 pr-3 text-xs sm:text-sm font-mono font-bold text-white">{c.hex}</td>
+                    <td className="py-3 pr-3">
+                      <button
+                        onClick={() => copyHex(c.hex)}
+                        title="Copiar HEX"
+                        className="text-xs sm:text-sm font-mono font-bold text-white px-2 py-1 -mx-2 rounded-lg transition-colors hover:bg-white/10 peyu-tap-sm"
+                      >
+                        {copiedHex === c.hex ? '✓ copiado' : c.hex}
+                      </button>
+                    </td>
                     <td className="py-3 text-[11px] sm:text-sm" style={{ color: '#EDE7DD' }}>{c.rgb}</td>
                   </tr>
                 ))}
@@ -148,7 +196,7 @@ export default function ManualPeyu() {
         </ManualSlide>
 
         {/* ═══ 06 · SECUNDARIOS + TIPOGRAFÍA + FORMAS ═══ */}
-        <ManualSlide label="Paleta Secundaria · Tipografía · Formas" num={6}>
+        <ManualSlide label="Paleta Secundaria · Tipografía · Formas" num={7} id="tipografia">
           <div className="grid sm:grid-cols-3 gap-3 mb-7">
             {PALETA_SECUNDARIA.map((c) => (
               <div key={c.hex} className="rounded-2xl p-4 flex items-center gap-3" style={{ background: 'rgba(255,255,255,.06)', border: '1px solid rgba(255,255,255,.1)' }}>
@@ -187,7 +235,7 @@ export default function ManualPeyu() {
         </ManualSlide>
 
         {/* ═══ 07 · APLICACIONES ═══ */}
-        <ManualSlide label="Aplicaciones en la Web PEYU" num={7}>
+        <ManualSlide label="Aplicaciones en la Web PEYU" num={8} id="aplicaciones">
           <div className="space-y-3">
             {APLICACIONES.map((a) => (
               <div key={a.donde} className="rounded-2xl px-4 sm:px-5 py-3.5 flex flex-wrap sm:flex-nowrap items-start gap-2 sm:gap-4" style={{ background: 'rgba(255,255,255,.06)', border: '1px solid rgba(255,255,255,.1)' }}>
@@ -202,7 +250,7 @@ export default function ManualPeyu() {
         </ManualSlide>
 
         {/* ═══ 08 · EL VIAJE DE PEYU ═══ */}
-        <ManualSlide label="El Viaje de Peyu" num={8}>
+        <ManualSlide label="El Viaje de Peyu" num={9} id="viaje">
           <p className="text-sm sm:text-base mb-6 max-w-3xl" style={{ color: '#EDE7DD' }}>
             Peyu acompaña el recorrido completo del cliente: de visitante a embajador de la marca.
           </p>
@@ -220,7 +268,7 @@ export default function ManualPeyu() {
         </ManualSlide>
 
         {/* ═══ 09 · USOS ═══ */}
-        <ManualSlide label="Usos Correctos e Incorrectos" num={9}>
+        <ManualSlide label="Usos Correctos e Incorrectos" num={10} id="usos">
           <div className="grid sm:grid-cols-2 gap-4">
             <div className="rounded-2xl p-5" style={{ background: 'rgba(15,139,108,.15)', border: '1px solid rgba(167,217,201,.3)' }}>
               <p className="font-jakarta font-extrabold text-lg mb-4" style={{ color: '#A7D9C9' }}>SÍ</p>
@@ -246,7 +294,7 @@ export default function ManualPeyu() {
         </ManualSlide>
 
         {/* ═══ 10 · VERSIÓN MINIMALISTA ═══ */}
-        <ManualSlide label="Mascota · Versión Minimalista" num={10}>
+        <ManualSlide label="Mascota · Versión Minimalista" num={11} id="minimalista">
           <div className="grid sm:grid-cols-2 gap-6 items-center">
             <div>
               <p className="font-bold text-sm sm:text-base text-white mb-3 leading-relaxed">
@@ -263,7 +311,7 @@ export default function ManualPeyu() {
         </ManualSlide>
 
         {/* ═══ 11 · GRACIAS ═══ */}
-        <ManualSlide num={11} center>
+        <ManualSlide num={12} center>
           <div className="py-12 sm:py-20 flex flex-col items-center">
             <h2 className="font-jakarta font-extrabold text-4xl sm:text-6xl text-white mb-8">GRACIAS!!</h2>
             <div className="rounded-3xl px-10 py-7" style={{ background: '#F8F3ED' }}>
