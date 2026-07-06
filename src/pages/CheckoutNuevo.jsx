@@ -11,6 +11,7 @@ import ShippingAddressForm, { validarShippingForm } from '@/components/cart/Ship
 import BillingSection, { validarBilling } from '@/components/cart/BillingSection';
 import ShippingSelector from '@/components/cart/ShippingSelector';
 import PaymentMethodSelector from '@/components/cart/PaymentMethodSelector';
+import GiftCardRedeemBox from '@/components/cart/GiftCardRedeemBox';
 import { getCartV2, clearCartV2, fmtCLP } from '@/lib/shop-v2-cart';
 import { readShopCheckout, mergeShopCheckout, clearShopCheckout } from '@/lib/shop-v2-checkout-store';
 import { calcularCargoPersonalizacionCarrito, calcularCargoPersonalizacion, getTipoPersonalizacion, MOQ_PERSONALIZACION_GRATIS } from '@/lib/personalizacion-config';
@@ -63,6 +64,10 @@ export default function CheckoutNuevo() {
   const [billingErrors, setBillingErrors] = useState({});
   const [medioPago, setMedioPago] = useState(saved.medio_pago || 'MercadoPago');
   const [envioBluex, setEnvioBluex] = useState(null);
+  const [giftcard, setGiftcard] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('peyu_giftcard_active') || 'null'); }
+    catch { return null; }
+  });
   const [creando, setCreando] = useState(false);
   const [errorPago, setErrorPago] = useState(null);
   // Guard SÍNCRONO contra doble pedido: `creando` (estado) tarda un tick en
@@ -79,6 +84,9 @@ export default function CheckoutNuevo() {
   const { lineas: descLineas, ahorroTotal } = computeQtyDiscountBySku({ carrito, productosBySku });
   const envio = envioBluex ? envioBluex.costo : 0;
   const total = Math.max(0, subtotal + cargoPersonalizacion - ahorroTotal + envio);
+  // Descuento por Gift Card canjeada en el checkout.
+  const descuentoGift = giftcard ? Math.min(giftcard.saldo_clp, total) : 0;
+  const totalFinal = Math.max(0, total - descuentoGift);
 
   // Precio unitario efectivo por SKU (mayorista si aplica) para persistir en el
   // pedido el precio realmente cobrado, no el B2C tachado.
@@ -99,14 +107,14 @@ export default function CheckoutNuevo() {
     if (icSentRef.current || carrito.length === 0) return;
     icSentRef.current = true;
     trackInitiateCheckout({
-      value: total,
+      value: totalFinal,
       num_items: carrito.reduce((s, i) => s + (Number(i.cantidad) || 1), 0),
       contents: carrito
         .filter((i) => i.sku)
         .map((i) => ({ id: String(i.sku), quantity: Number(i.cantidad) || 1, item_price: Number(i.precio) || 0 })),
     });
     // 📊 GA4 — begin_checkout en espejo (Google Analytics + Ads).
-    trackBeginCheckout(carrito, total);
+    trackBeginCheckout(carrito, totalFinal);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [carrito.length]);
 
@@ -296,9 +304,9 @@ export default function CheckoutNuevo() {
         const tipos = Array.from(new Set(carrito.filter(i => i.personalizacion).map(i => getTipoPersonalizacion(i)).filter(Boolean)));
         return tipos.length === 1 ? tipos[0] : (tipos.length > 1 ? 'mixto' : '');
       })(),
-      descuento: Number(ahorroTotal) || 0,
-      total: Number(total) || 0,
-      medio_pago: medioPago,
+      descuento: Number(ahorroTotal) + Number(descuentoGift) || 0,
+      total: Number(totalFinal) || 0,
+      medio_pago: totalFinal === 0 ? 'GiftCard' : medioPago,
       estado: 'Nuevo',
       direccion_envio: direccionCompleta,
       requiere_personalizacion: carrito.some(i => i.personalizacion),
@@ -359,8 +367,41 @@ export default function CheckoutNuevo() {
       localStorage.setItem('peyu_v2_last_order', JSON.stringify({ numero, at: Date.now() }));
     } catch {}
 
+    // Gift Card canjeada: descontar saldo del backend SIEMPRE (incluso si también
+    // paga con MP/transferencia el resto). Esto evita uso doble del mismo saldo.
+    if (giftcard && descuentoGift > 0) {
+      try {
+        await base44.functions.invoke('canjearGiftCard', {
+          action: 'redeem',
+          codigo: giftcard.codigo,
+          monto: descuentoGift,
+          pedido_id: pedido.id,
+        });
+        localStorage.removeItem('peyu_giftcard_active');
+      } catch (e) {
+        console.warn('No se pudo canjear Gift Card:', e?.message);
+      }
+    }
+
+    // Total cubierto 100% por Gift Card → no necesita pasar por Mercado Pago.
+    if (totalFinal === 0) {
+      // Marca el pedido como confirmado/pagado automáticamente.
+      try {
+        await base44.entities.PedidoWeb.update(pedido.id, {
+          estado: 'Confirmado',
+          payment_status: 'paid',
+        });
+      } catch (e) { /* best-effort, el pedido ya existe */ }
+      clearCartV2();
+      trackPurchase({ transactionId: numero, total: 0, shipping: envio, cart: carrito });
+      setCreando(false);
+      enviandoRef.current = false;
+      navigate(`/gracias?numero=${encodeURIComponent(numero)}&email=${encodeURIComponent(cliente.email)}&total=0&pago=GiftCard`);
+      return;
+    }
+
     // MercadoPago: crear preferencia y redirigir
-    if (medioPago === 'MercadoPago' && total > 0) {
+    if (medioPago === 'MercadoPago' && totalFinal > 0) {
       try {
         const mp = await base44.functions.invoke('mpCreatePreference', { pedido_id: pedido.id });
         const initUrl = mp?.data?.init_point || mp?.data?.sandbox_init_point;
@@ -369,7 +410,7 @@ export default function CheckoutNuevo() {
           // vuelve atrás, conserva su carrito y datos para reintentar. El pedido
           // queda pendiente y se reconcilia/expira solo. Solo registramos la marca
           // de "intento de compra" para el mensaje post-pago.
-          trackPurchase({ transactionId: numero, total, shipping: envio, cart: carrito });
+          trackPurchase({ transactionId: numero, total: totalFinal, shipping: envio, cart: carrito });
           window.location.href = initUrl;
           return;
         }
@@ -391,9 +432,9 @@ export default function CheckoutNuevo() {
     // confirmado (queda "por confirmar transferencia"). Si el cliente vuelve
     // atrás conserva todo para reintentar. El carrito se vacía recién al
     // confirmar el pago en la página Gracias, igual que con Mercado Pago.
-    trackPurchase({ transactionId: numero, total, shipping: envio, cart: carrito });
+    trackPurchase({ transactionId: numero, total: totalFinal, shipping: envio, cart: carrito });
     setCreando(false);
-    navigate(`/gracias?numero=${encodeURIComponent(numero)}&email=${encodeURIComponent(cliente.email)}&total=${total}&pago=${encodeURIComponent(medioPago)}`);
+    navigate(`/gracias?numero=${encodeURIComponent(numero)}&email=${encodeURIComponent(cliente.email)}&total=${totalFinal}&pago=${encodeURIComponent(medioPago)}`);
   };
 
   const itemsEnvio = useMemo(
@@ -486,7 +527,9 @@ export default function CheckoutNuevo() {
   // header wizard propio con el viaje completo + CTA siempre visible, resumen
   // "Tu pedido" vivo a la izquierda y el formulario al centro con scroll propio.
   // Mobile conserva el flujo vertical completo con barra de pago sticky.
-  const ctaPagar = medioPago === 'Transferencia' ? `Confirmar · ${fmtCLP(total)}` : `Pagar ${fmtCLP(total)}`;
+  const ctaPagar = totalFinal === 0
+    ? 'Confirmar pedido'
+    : medioPago === 'Transferencia' ? `Confirmar · ${fmtCLP(totalFinal)}` : `Pagar ${fmtCLP(totalFinal)}`;
 
   const formSections = (
     <>
@@ -528,6 +571,18 @@ export default function CheckoutNuevo() {
         </CollapsibleSectionV2>
       </div>
 
+      {/* 2.5 · Gift Card (canje opcional antes de pagar) */}
+      <CollapsibleSectionV2
+        step={null}
+        title="Gift Card"
+        subtitle="¿Tienes una tarjeta de regalo?"
+        {...sectionProps('giftcard')}
+        complete={!!giftcard}
+        summary={giftcard ? `Código ${giftcard.codigo} aplicado · saldo $${giftcard.saldo_clp.toLocaleString('es-CL')}` : null}
+      >
+        <GiftCardRedeemBox onChange={setGiftcard} />
+      </CollapsibleSectionV2>
+
       {/* 3 · Pago */}
       <CollapsibleSectionV2
         step={3}
@@ -537,7 +592,7 @@ export default function CheckoutNuevo() {
         complete={!!medioPago}
         summary={medioPago ? (medioPago === 'Transferencia' ? 'Transferencia bancaria' : 'Mercado Pago') : null}
       >
-        <PaymentMethodSelector value={medioPago} onChange={setMedioPago} totalCubiertoConGC={false} />
+        <PaymentMethodSelector value={medioPago} onChange={setMedioPago} totalCubiertoConGC={totalFinal === 0} />
       </CollapsibleSectionV2>
 
       {/* 4 · Facturación */}
@@ -621,7 +676,8 @@ export default function CheckoutNuevo() {
             <CheckoutSummaryCardV2
               carrito={carrito} subtotal={subtotal} cargoPersonalizacion={cargoPersonalizacion}
               ahorroTotal={ahorroTotal} descLineas={descLineas}
-              envioBluex={envioBluex} envio={envio} total={total}
+              envioBluex={envioBluex} envio={envio} total={totalFinal}
+              descuentoGift={descuentoGift} giftcardCodigo={giftcard?.codigo || ''}
               errorPago={errorPago} medioPago={medioPago}
             />
 
@@ -662,7 +718,8 @@ export default function CheckoutNuevo() {
                 <CheckoutSummaryCardV2
                   carrito={carrito} subtotal={subtotal} cargoPersonalizacion={cargoPersonalizacion}
                   ahorroTotal={ahorroTotal} descLineas={descLineas}
-                  envioBluex={envioBluex} envio={envio} total={total}
+                  envioBluex={envioBluex} envio={envio} total={totalFinal}
+                  descuentoGift={descuentoGift} giftcardCodigo={giftcard?.codigo || ''}
                   errorPago={errorPago} medioPago={medioPago}
                 />
               </div>
@@ -709,7 +766,7 @@ export default function CheckoutNuevo() {
         ctaLabel={medioPago === 'Transferencia' ? 'Confirmar pedido' : 'Pagar ahora'}
         onCta={crearPedido}
         ctaLoading={creando}
-        total={total}
+        total={totalFinal}
       />
     </div>
   );

@@ -10,7 +10,7 @@ import { AlertCircle, ShieldCheck } from 'lucide-react';
 // ════════════════════════════════════════════════════════════════════════
 export default function CheckoutSummaryCardV2({
   carrito, subtotal, cargoPersonalizacion, ahorroTotal, descLineas,
-  envioBluex, envio, total, errorPago, medioPago,
+  envioBluex, envio, total, descuentoGift = 0, giftcardCodigo = '', errorPago, medioPago,
 }) {
   return (
     <div className="bg-white rounded-2xl p-4" style={{ border: '1px solid #E3D6C4', boxShadow: '0 2px 16px rgba(44,24,16,.06)' }}>
@@ -64,6 +64,12 @@ export default function CheckoutSummaryCardV2({
             ? (envio === 0 ? <span className="font-bold" style={{ color: '#8BAD8A' }}>GRATIS</span> : <span className="font-semibold">{fmtCLP(envio)}</span>)
             : <span className="text-xs" style={{ color: '#A08070' }}>Elige tu comuna</span>}
         </div>
+        {descuentoGift > 0 && (
+          <div className="rounded-xl p-2.5 flex justify-between" style={{ background: 'rgba(192,120,92,.08)', border: '1px solid rgba(192,120,92,.25)' }}>
+            <span className="font-bold text-xs" style={{ color: '#C0785C' }}>🎁 Gift Card{giftcardCodigo ? ` ${giftcardCodigo}` : ''}</span>
+            <span className="font-bold text-xs" style={{ color: '#C0785C' }}>−{fmtCLP(descuentoGift)}</span>
+          </div>
+        )}
         <div className="flex justify-between pt-2" style={{ borderTop: '1px solid #D4C4B0' }}>
           <span className="font-bold" style={{ color: '#2C1810' }}>Total</span>
           <span className="font-poppins font-bold text-xl" style={{ color: '#C0785C' }}>{fmtCLP(total)}</span>
