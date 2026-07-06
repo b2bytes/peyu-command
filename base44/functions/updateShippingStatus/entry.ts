@@ -12,7 +12,7 @@ Deno.serve(async (req) => {
     const user = await base44.auth.me();
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const { pedido_id, nuevo_estado, tracking, courier } = await req.json();
+    const { pedido_id, nuevo_estado, tracking, courier, force_confirm_payment } = await req.json();
     if (!pedido_id || !nuevo_estado) {
       return Response.json({ error: 'pedido_id y nuevo_estado son requeridos' }, { status: 400 });
     }
@@ -20,14 +20,18 @@ Deno.serve(async (req) => {
     const pedido = await base44.asServiceRole.entities.PedidoWeb.get(pedido_id);
     if (!pedido) return Response.json({ error: 'Pedido no encontrado' }, { status: 404 });
 
-    // ── GUARD DE PAGO ──────────────────────────────────────────────────────
-    // Previene que un pedido MercadoPago avance a producción/despacho sin que
-    // el webhook de MP haya confirmado el pago. Caso Verónica: el pedido fue
-    // avanzado manualmente sin pago → el cliente recibió el paquete gratis.
+    // ═══ GUARD DE PAGO · Best Practices ═════════════════════════════════════
+    // Previene avanzar un pedido a producción/despacho sin pago confirmado.
     //
-    // Excepción: Transferencia bancaria — el admin SÍ puede avanzar a
-    // "Confirmado" (eso ES la confirmación manual del depósito). Al hacerlo,
-    // marcamos payment_status = 'paid' automáticamente.
+    // Reglas por medio de pago:
+    //   · MercadoPago → SOLO el webhook puede confirmar. El admin NO puede
+    //     forzarlo. Escape hatch: force_confirm_payment=true (el admin ya
+    //     verificó el pago en el portal MP). Marca paid + audita en historial.
+    //   · Transferencia / Efectivo → el admin al mover a "Confirmado" ESTÁ
+    //     confirmando el depósito manualmente → marca paid automáticamente.
+    //   · WebPay / Débito / Crédito → el cobro ocurre al checkout (no hay
+    //     webhook). Al mover a "Confirmado" se asume pagado → marca paid.
+    //   · GiftCard → siempre pagado, no necesita guard.
     const ESTADOS_POST_PAGO = new Set([
       'Confirmado', 'En Producción', 'Listo para Despacho', 'Despachado', 'Entregado',
     ]);
@@ -36,30 +40,52 @@ Deno.serve(async (req) => {
     if (tracking) updates.tracking = tracking;
     if (courier) updates.courier = courier;
 
-    if (ESTADOS_POST_PAGO.has(nuevo_estado) && pedido.payment_status !== 'paid') {
-      const medio = String(pedido.medio_pago || '').trim();
+    const medio = String(pedido.medio_pago || '').trim();
+    const yaPagado = pedido.payment_status === 'paid';
 
-      if (medio === 'MercadoPago') {
-        // MP solo se confirma vía webhook — el admin no puede forzarlo.
+    if (ESTADOS_POST_PAGO.has(nuevo_estado) && !yaPagado) {
+      const esMP = medio === 'MercadoPago';
+
+      // MP: bloquear salvo force_confirm_payment (escape hatch para webhook caído)
+      if (esMP && !force_confirm_payment) {
         return Response.json({
-          error: `No se puede avanzar: el pago de MercadoPago no fue confirmado (payment_status: ${pedido.payment_status || 'vacío'}). El cliente debe completar el pago en MercadoPago.`,
+          error: 'No se puede avanzar: el pago de MercadoPago no fue confirmado por el webhook. Verifica en el portal de MP. Si ya pagó, usa "Confirmar pago manualmente".',
           blocked: true,
-          payment_status: pedido.payment_status,
+          payment_status: pedido.payment_status || 'vacío',
+          can_force: true,
         }, { status: 403 });
       }
 
-      // Transferencia: el admin al mover a "Confirmado" está confirmando el depósito.
-      // Marcamos payment_status = 'paid' automáticamente.
-      if (medio === 'Transferencia' && nuevo_estado === 'Confirmado') {
+      // Para TODOS los medios no-MP (y MP con force), mover a "Confirmado"
+      // = confirmar el pago → marcar payment_status = 'paid'.
+      if (nuevo_estado === 'Confirmado') {
         updates.payment_status = 'paid';
+      }
+
+      // Escape hatch MP: auditar la confirmación manual en el historial.
+      if (esMP && force_confirm_payment) {
+        updates.historial = [
+          ...(pedido.historial || []),
+          {
+            at: new Date().toISOString(),
+            type: 'paid',
+            actor: user.email || 'admin',
+            channel: 'manual',
+            detail: 'Pago MP confirmado manualmente por admin (webhook no llegó)',
+            meta: { force_confirm_payment: true, mp_payment_id: pedido.mp_payment_id || null },
+          },
+        ];
       }
     }
 
     await base44.asServiceRole.entities.PedidoWeb.update(pedido_id, updates);
 
     // ── Auto-generar etiqueta BlueExpress al pasar a "Listo para Despacho" ──
+    // Usamos el estado FUSIONADO (pedido original + updates aplicados) para
+    // que transferencias/webpay recién confirmadas también disparen la etiqueta.
+    const pedidoActualizado = { ...pedido, ...updates };
     let bluexResult = null;
-    if (nuevo_estado === 'Listo para Despacho' && pedido.payment_status === 'paid' && !pedido.tracking) {
+    if (nuevo_estado === 'Listo para Despacho' && pedidoActualizado.payment_status === 'paid' && !pedido.tracking) {
       try {
         const blRes = await base44.asServiceRole.functions.invoke('bluexCreateShipment', {
           pedido_id,

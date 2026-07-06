@@ -223,7 +223,7 @@ export default function PedidoDetailDrawer({ pedido, onClose, onUpdate }) {
 
   const ps = getPagoStatus(pedido);
 
-  const handleSave = async () => {
+  const handleSave = async (opts = {}) => {
     setSaving(true);
     try {
       const res = await base44.functions.invoke('updateShippingStatus', {
@@ -231,6 +231,7 @@ export default function PedidoDetailDrawer({ pedido, onClose, onUpdate }) {
         nuevo_estado: estado,
         tracking: tracking || undefined,
         courier: courier || undefined,
+        force_confirm_payment: opts.force || false,
       });
       if (res.data?.ok) {
         const d = res.data;
@@ -245,14 +246,35 @@ export default function PedidoDetailDrawer({ pedido, onClose, onUpdate }) {
         onClose();
       } else if (res.data?.blocked) {
         // Guard de pago: el backend bloqueó el avance por falta de pago confirmado.
-        toast.error(`⛔ ${res.data.error}`, { duration: 6000 });
+        // Si can_force=true, ofrecemos el escape hatch en el toast.
+        if (res.data.can_force) {
+          toast(`⛔ ${res.data.error}`, {
+            duration: 8000,
+            action: {
+              label: 'Confirmar pago',
+              onClick: () => handleSave({ force: true }),
+            },
+          });
+        } else {
+          toast.error(`⛔ ${res.data.error}`, { duration: 6000 });
+        }
       } else {
         toast.error(res.data?.error || 'Error al actualizar');
       }
     } catch (e) {
       const detail = e?.response?.data;
       if (detail?.blocked) {
-        toast.error(`⛔ ${detail.error}`, { duration: 6000 });
+        if (detail.can_force) {
+          toast(`⛔ ${detail.error}`, {
+            duration: 8000,
+            action: {
+              label: 'Confirmar pago',
+              onClick: () => handleSave({ force: true }),
+            },
+          });
+        } else {
+          toast.error(`⛔ ${detail.error}`, { duration: 6000 });
+        }
       } else {
         toast.error('Error: ' + e.message);
       }
@@ -374,7 +396,7 @@ export default function PedidoDetailDrawer({ pedido, onClose, onUpdate }) {
                 </div>
               )}
 
-              {/* Aviso proactivo: pedido MP sin pago confirmado + intento de avanzar */}
+              {/* Aviso proactivo: pedido sin pago confirmado + intento de avanzar */}
               {(() => {
                 const ESTADOS_BLOQUEADOS = ['Confirmado', 'En Producción', 'Listo para Despacho', 'Despachado', 'Entregado'];
                 const esMP = (pedido.medio_pago || '').trim() === 'MercadoPago';
@@ -384,7 +406,19 @@ export default function PedidoDetailDrawer({ pedido, onClose, onUpdate }) {
                   return (
                     <div className="flex items-start gap-2 text-[11px] text-red-800 bg-red-50 border border-red-200 rounded-lg px-3 py-2 mb-1">
                       <AlertCircle className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-red-600" />
-                      <span>No se puede avanzar: el pago de MercadoPago no fue confirmado. El cliente debe completar el pago primero.</span>
+                      <div>
+                        <p>MercadoPago sin pago confirmado (payment_status: <strong>{pedido.payment_status || 'vacío'}</strong>).</p>
+                        <p className="mt-0.5">Si ya verificaste el pago en el portal MP, puedes forzar la confirmación con el botón ↓</p>
+                      </div>
+                    </div>
+                  );
+                }
+                // No-MP sin pago: el admin al confirmar marcará paid automáticamente (informativo, no bloqueo).
+                if (!esMP && sinPago && intentaAvanzar && estado === 'Confirmado') {
+                  return (
+                    <div className="flex items-start gap-2 text-[11px] text-blue-800 bg-blue-50 border border-blue-200 rounded-lg px-3 py-2 mb-1">
+                      <CheckCircle2 className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-blue-600" />
+                      <span>Al confirmar, se marcará el pago como verificado automáticamente.</span>
                     </div>
                   );
                 }
@@ -412,6 +446,27 @@ export default function PedidoDetailDrawer({ pedido, onClose, onUpdate }) {
                     : 'Se enviará email automático al cliente'}
                 </p>
               )}
+
+              {/* Escape hatch: confirmar pago MP manualmente (webhook no llegó) */}
+              {(() => {
+                const esMP = (pedido.medio_pago || '').trim() === 'MercadoPago';
+                const sinPago = pedido.payment_status !== 'paid';
+                const ESTADOS_BLOQUEADOS = ['Confirmado', 'En Producción', 'Listo para Despacho', 'Despachado', 'Entregado'];
+                const intentaAvanzar = ESTADOS_BLOQUEADOS.includes(estado) && estado !== pedido.estado;
+                if (esMP && sinPago && intentaAvanzar) {
+                  return (
+                    <button
+                      onClick={() => handleSave({ force: true })}
+                      disabled={saving}
+                      className="w-full flex items-center justify-center gap-1.5 text-xs font-bold py-2.5 bg-amber-50 border border-amber-300 text-amber-800 rounded-xl hover:bg-amber-100 transition disabled:opacity-50"
+                    >
+                      <CheckCircle2 className="w-3.5 h-3.5" />
+                      {saving ? 'Confirmando...' : 'Ya verifiqué en portal MP · Confirmar pago'}
+                    </button>
+                  );
+                }
+                return null;
+              })()}
             </div>
           </section>
 
