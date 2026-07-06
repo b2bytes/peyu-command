@@ -88,35 +88,49 @@ export default function ProductoNuevo() {
     setProducto(null);
     setError(null);
 
-    // Carga resiliente: hasta 3 intentos. En cada intento prueba filter({id})
-    // y, si viene vacío (a veces pasa de forma transitoria), verifica contra
-    // list(). Solo declara "no encontrado" si las consultas respondieron BIEN
-    // y el producto realmente no está. El loading se apaga ÚNICAMENTE al final.
+    // Carga resiliente: 1 intento con fallback a list(). Si la API responde
+    // pero el producto no está → "no encontrado" inmediato (sin reintentar).
+    // Solo muestra "Error de conexión" en errores de red reales, con 1 reintento.
     const cargar = async () => {
-      let consultaOkSinProducto = false;
-      for (let intento = 0; intento < 3; intento++) {
+      try {
+        const rows = await base44.entities.Producto.filter({ id }, '-updated_date', 1);
+        let encontrado = rows?.[0] || null;
+        if (!encontrado) {
+          const all = await base44.entities.Producto.list('-updated_date', 300);
+          encontrado = all?.find((r) => r.id === id) || null;
+        }
+        if (cancelled) return;
+        if (encontrado) {
+          setProducto(encontrado);
+          setError(null);
+        } else {
+          setProducto(null);
+          setError(null); // "Producto no encontrado" — la API respondió bien
+        }
+      } catch {
+        // Error de red real → 1 reintento tras 800ms
         try {
+          await new Promise((r) => setTimeout(r, 800));
+          if (cancelled) return;
           const rows = await base44.entities.Producto.filter({ id }, '-updated_date', 1);
           let encontrado = rows?.[0] || null;
           if (!encontrado) {
             const all = await base44.entities.Producto.list('-updated_date', 300);
             encontrado = all?.find((r) => r.id === id) || null;
-            if (!encontrado && all?.length) consultaOkSinProducto = true;
           }
+          if (cancelled) return;
           if (encontrado) {
-            if (!cancelled) { setProducto(encontrado); setError(null); setLoading(false); }
-            return;
+            setProducto(encontrado);
+            setError(null);
+          } else {
+            setProducto(null);
+            setError(null);
           }
-        } catch { /* reintenta */ }
-        if (cancelled) return;
-        await new Promise((r) => setTimeout(r, 600 * (intento + 1)));
-      }
-      if (cancelled) return;
-      if (consultaOkSinProducto) {
-        setProducto(null);
-        setError(null); // "Producto no encontrado" real
-      } else {
-        setError('Error de conexión. Por favor recarga la página.');
+        } catch {
+          if (cancelled) return;
+          setError('Error de conexión. Por favor recarga la página.');
+          setProducto(null);
+        }
       }
       setLoading(false);
     };

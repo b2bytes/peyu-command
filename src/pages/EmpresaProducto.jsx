@@ -20,6 +20,7 @@ import ColorSwatchesV2 from '@/components/shopv2/ColorSwatchesV2';
 import { getColoresProducto } from '@/lib/color-parser';
 import { getColorTintFilter } from '@/lib/color-tint';
 import { getProductImage, getProductImageForColor } from '@/utils/productImages';
+import { findColorImageMatch } from '@/lib/color-image-matcher';
 import { getB2BPriceForQty, getUnitBasePrice } from '@/lib/catalog-pricing';
 import { fmtCLP } from '@/lib/shop-v2-cart';
 
@@ -68,7 +69,33 @@ export default function EmpresaProducto() {
     [producto],
   );
   const color = useMemo(() => colores.find((c) => c.id === colorId), [colores, colorId]);
-  const colorFilter = useMemo(() => getColorTintFilter(producto, color), [producto, color]);
+
+  // Imagen que se muestra: al elegir un color, busca la foto real de ese color
+  // (imagenes_por_color → match por nombre en galería → tinte CSS como último recurso).
+  const displayImg = useMemo(() => {
+    if (!producto) return null;
+    const base = getProductImage(producto);
+    if (!color) return images[activeImg] || base;
+    // ① Foto real del color (imagenes_por_color)
+    const colorPhoto = getProductImageForColor(producto, color);
+    if (colorPhoto && colorPhoto !== base) return colorPhoto;
+    // ② Match por nombre de color en la galería
+    const match = findColorImageMatch(images, color);
+    if (match) return images[match.index];
+    // ③ Sin foto real → imagen activa de la galería
+    return images[activeImg] || base;
+  }, [producto, color, images, activeImg]);
+
+  // Tinte CSS solo si NO encontramos foto real del color.
+  const colorFilter = useMemo(() => {
+    if (!producto || !color) return '';
+    const base = getProductImage(producto);
+    const colorPhoto = getProductImageForColor(producto, color);
+    if (colorPhoto !== base) return ''; // hay foto real, no se tinta
+    const match = findColorImageMatch(images, color);
+    if (match) return ''; // hay match en galería, no se tinta
+    return getColorTintFilter(producto, color);
+  }, [producto, color, images]);
 
   const b2b = useMemo(() => getB2BPriceForQty(producto, qty), [producto, qty]);
   const unitPrice = b2b?.precio ?? getUnitBasePrice(producto);
@@ -162,7 +189,7 @@ export default function EmpresaProducto() {
             {/* Imagen principal */}
             <div className="relative aspect-square rounded-3xl overflow-hidden" style={{ background: 'linear-gradient(145deg,#F7F2EC,#EDE3D6)', border: '1.5px solid #D4C4B0' }}>
               <img
-                src={color && !colorFilter ? getProductImageForColor(producto, color) : (images[activeImg] || getProductImage(producto))}
+                src={displayImg}
                 alt={producto.nombre}
                 className="w-full h-full"
                 style={{ objectFit: 'contain', objectPosition: 'center', padding: '12px', filter: colorFilter || undefined, transition: 'filter .25s ease' }}
