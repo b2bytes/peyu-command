@@ -20,9 +20,41 @@ Deno.serve(async (req) => {
     const pedido = await base44.asServiceRole.entities.PedidoWeb.get(pedido_id);
     if (!pedido) return Response.json({ error: 'Pedido no encontrado' }, { status: 404 });
 
+    // ── GUARD DE PAGO ──────────────────────────────────────────────────────
+    // Previene que un pedido MercadoPago avance a producción/despacho sin que
+    // el webhook de MP haya confirmado el pago. Caso Verónica: el pedido fue
+    // avanzado manualmente sin pago → el cliente recibió el paquete gratis.
+    //
+    // Excepción: Transferencia bancaria — el admin SÍ puede avanzar a
+    // "Confirmado" (eso ES la confirmación manual del depósito). Al hacerlo,
+    // marcamos payment_status = 'paid' automáticamente.
+    const ESTADOS_POST_PAGO = new Set([
+      'Confirmado', 'En Producción', 'Listo para Despacho', 'Despachado', 'Entregado',
+    ]);
+
     const updates = { estado: nuevo_estado };
     if (tracking) updates.tracking = tracking;
     if (courier) updates.courier = courier;
+
+    if (ESTADOS_POST_PAGO.has(nuevo_estado) && pedido.payment_status !== 'paid') {
+      const medio = String(pedido.medio_pago || '').trim();
+
+      if (medio === 'MercadoPago') {
+        // MP solo se confirma vía webhook — el admin no puede forzarlo.
+        return Response.json({
+          error: `No se puede avanzar: el pago de MercadoPago no fue confirmado (payment_status: ${pedido.payment_status || 'vacío'}). El cliente debe completar el pago en MercadoPago.`,
+          blocked: true,
+          payment_status: pedido.payment_status,
+        }, { status: 403 });
+      }
+
+      // Transferencia: el admin al mover a "Confirmado" está confirmando el depósito.
+      // Marcamos payment_status = 'paid' automáticamente.
+      if (medio === 'Transferencia' && nuevo_estado === 'Confirmado') {
+        updates.payment_status = 'paid';
+      }
+    }
+
     await base44.asServiceRole.entities.PedidoWeb.update(pedido_id, updates);
 
     // ── Auto-generar etiqueta BlueExpress al pasar a "Listo para Despacho" ──

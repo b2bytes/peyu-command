@@ -243,11 +243,19 @@ export default function PedidoDetailDrawer({ pedido, onClose, onUpdate }) {
         }
         onUpdate?.();
         onClose();
+      } else if (res.data?.blocked) {
+        // Guard de pago: el backend bloqueó el avance por falta de pago confirmado.
+        toast.error(`⛔ ${res.data.error}`, { duration: 6000 });
       } else {
         toast.error(res.data?.error || 'Error al actualizar');
       }
     } catch (e) {
-      toast.error('Error: ' + e.message);
+      const detail = e?.response?.data;
+      if (detail?.blocked) {
+        toast.error(`⛔ ${detail.error}`, { duration: 6000 });
+      } else {
+        toast.error('Error: ' + e.message);
+      }
     } finally {
       setSaving(false);
     }
