@@ -13,6 +13,8 @@ import BulkLabelsCard from './cards/BulkLabelsCard';
 import SearchResultsCard from './cards/SearchResultsCard';
 import CatalogManagerCard from './cards/CatalogManagerCard';
 import DisenosManagerCard from './cards/DisenosManagerCard';
+import CuponesManagerCard from './cards/CuponesManagerCard';
+import GiftCardsManagerCard from './cards/GiftCardsManagerCard';
 
 // Renderiza la tarjeta rica correcta según el tipo detectado, hidratada con
 // los datos reales del CRM + las listas/métricas en vivo de peyuBrainOps.
@@ -61,6 +63,10 @@ export default function CardDispatcher({ card, crm, metrics, lists = {}, onAsk, 
       return card.modo === 'nuevos'
         ? <ClientsCard clientes={lists.clientes_nuevos || crm.clientes} titulo="Clientes nuevos (últimos registrados)" mostrarFecha onChanged={onDone} />
         : <ClientsCard clientes={lists.clientes_top || crm.clientes} titulo="Clientes top (mejores compradores)" onChanged={onDone} />;
+    case 'cupones':
+      return <CuponesManagerCard />;
+    case 'giftcards':
+      return <GiftCardsManagerCard />;
     default:
       return null;
   }

@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import {
-  User, Package, LogOut, Mail, Phone, ShoppingBag, Loader2, ListOrdered, Lock,
+  User, Package, LogOut, Mail, Phone, ShoppingBag, Loader2, ListOrdered, Lock, Gift,
 } from 'lucide-react';
 import PublicSEO from '@/components/PublicSEO';
 import PublicHero from '@/components/public/PublicHero';
@@ -18,6 +18,7 @@ import PedidoCard from '@/components/cuenta/PedidoCard';
 export default function MiCuenta() {
   const [user, setUser] = useState(null);
   const [pedidos, setPedidos] = useState([]);
+  const [giftcards, setGiftcards] = useState([]);
   const [loading, setLoading] = useState(true);
   const [loadingPedidos, setLoadingPedidos] = useState(false);
 
@@ -35,7 +36,12 @@ export default function MiCuenta() {
             .filter({ cliente_email: me.email.toLowerCase() }, '-created_date', 100)
             .catch(() => []);
           if (!cancelled) setPedidos(propios || []);
-        }
+          // Gift cards donde el cliente es destinatario.
+          const gcs = await base44.entities.GiftCard
+            .filter({ destinatario_email: me.email.toLowerCase() }, '-created_date', 50)
+            .catch(() => []);
+          if (!cancelled) setGiftcards(gcs || []);
+          }
       } catch {
         if (!cancelled) setUser(null);
       } finally {

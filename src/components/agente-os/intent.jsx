@@ -73,6 +73,12 @@ export function detectCards(text) {
       stock: has(['agotad', 'sin stock', 'cero']) ? 'agotado' : has(['stock bajo', 'bajo stock', 'poco stock', 'reponer']) ? 'bajo' : undefined,
     });
   }
+  if (has(['cupón', 'cupon', 'cupones', 'descuento', 'código de descuento', 'codigo de descuento', 'promoción', 'promocion'])) {
+    cards.push({ type: 'cupones' });
+  }
+  if (has(['gift card', 'giftcard', 'gift cards', 'tarjeta de regalo', 'tarjetas de regalo', 'regalar gift', 'saldo gift', 'canjear gift'])) {
+    cards.push({ type: 'giftcards' });
+  }
   if (has(['cotizaci', 'propuesta', 'corporativ'])) {
     cards.push({ type: 'proposals' });
   }

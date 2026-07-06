@@ -410,6 +410,82 @@ Deno.serve(async (req) => {
         return Response.json({ ok: true, message: `Diseño actualizado: ${Object.keys(campos).filter((k) => k !== 'imagen_grabado_url').join(', ')}${campos.imagen_url ? ' (grabado regenerándose)' : ''}` });
       }
 
+      case 'toggleCupon': {
+        // Crear, activar/desactivar o eliminar un cupón de descuento.
+        // accion: 'crear' | 'toggle' | 'eliminar'
+        const { accion, id, activo, data } = payload;
+        if (accion === 'crear') {
+          if (!data?.codigo?.trim()) throw new Error('Falta código del cupón');
+          if (!data?.valor && data?.tipo !== 'envio_gratis') throw new Error('Falta valor del descuento');
+          const existente = await svc.Cupon.filter({ codigo: data.codigo.trim().toUpperCase() });
+          if (existente?.length) throw new Error(`Ya existe un cupón con código ${data.codigo}`);
+          const nuevo = await svc.Cupon.create({
+            codigo: data.codigo.trim().toUpperCase(),
+            tipo: data.tipo || 'porcentaje',
+            valor: Number(data.valor) || 0,
+            minimo_compra_clp: Number(data.minimo) || 0,
+            max_descuento_clp: data.max_descuento ? Number(data.max_descuento) : undefined,
+            usos_max: Number(data.usos_max) || 0,
+            fecha_expiracion: data.fecha_expiracion || undefined,
+            descripcion: data.descripcion || undefined,
+            activo: true,
+            usos_actuales: 0,
+          });
+          return Response.json({ ok: true, message: `Cupón "${nuevo.codigo}" creado y activo en checkout 🏷️` });
+        }
+        if (accion === 'toggle') {
+          if (!id) throw new Error('Falta id del cupón');
+          await svc.Cupon.update(id, { activo: !!activo });
+          return Response.json({ ok: true, message: `Cupón ${activo ? 'activado ✓' : 'pausado ⏸️'}` });
+        }
+        if (accion === 'eliminar') {
+          if (!id) throw new Error('Falta id del cupón');
+          await svc.Cupon.delete(id);
+          return Response.json({ ok: true, message: 'Cupón eliminado 🗑️' });
+        }
+        throw new Error('Acción de cupón no válida');
+      }
+
+      case 'crearGiftCard': {
+        // Crea una gift card manual desde el chat del agente y envía email.
+        if (!payload.destinatario_email?.trim()) throw new Error('Falta email del destinatario');
+        if (!payload.monto_clp || payload.monto_clp < 1000) throw new Error('Monto mínimo $1.000 CLP');
+        const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+        let code = '';
+        for (let i = 0; i < 4; i++) code += chars[Math.floor(Math.random() * chars.length)];
+        let code2 = '';
+        for (let i = 0; i < 4; i++) code2 += chars[Math.floor(Math.random() * chars.length)];
+        const codigo = `PEYU-${code}-${code2}`;
+        const fechaExp = new Date();
+        fechaExp.setFullYear(fechaExp.getFullYear() + 1);
+        const gc = await svc.GiftCard.create({
+          codigo,
+          monto_clp: Number(payload.monto_clp),
+          saldo_clp: Number(payload.monto_clp),
+          estado: 'Activa',
+          comprador_nombre: payload.comprador_nombre || undefined,
+          comprador_email: payload.comprador_email || undefined,
+          destinatario_nombre: payload.destinatario_nombre || undefined,
+          destinatario_email: payload.destinatario_email.trim().toLowerCase(),
+          mensaje: payload.mensaje || undefined,
+          fecha_emision: new Date().toISOString().slice(0, 10),
+          fecha_expiracion: fechaExp.toISOString().slice(0, 10),
+          email_enviado: false,
+        });
+        // Enviar email al destinatario en segundo plano.
+        base44.asServiceRole.functions.invoke('enviarGiftCard', { giftcard_id: gc.id }).catch(() => null);
+        return Response.json({ ok: true, message: `Gift Card ${codigo} creada por $${Number(payload.monto_clp).toLocaleString('es-CL')} → ${payload.destinatario_email}. Email enviado 🎁` });
+      }
+
+      case 'anularGiftCard': {
+        if (!payload.id) throw new Error('Falta id de la gift card');
+        const [gc] = await svc.GiftCard.filter({ id: payload.id });
+        if (!gc) throw new Error('Gift Card no encontrada');
+        if (gc.estado === 'Anulada') throw new Error('Ya está anulada');
+        await svc.GiftCard.update(payload.id, { estado: 'Anulada', saldo_clp: 0 });
+        return Response.json({ ok: true, message: `Gift Card ${gc.codigo} anulada. Saldo: $0.` });
+      }
+
       case 'sincronizarTracking': {
         const r = await base44.asServiceRole.functions.invoke('bluexSyncAllShipments', {});
         return Response.json({ ok: true, message: 'Tracking BlueExpress sincronizado', detail: r || null });
