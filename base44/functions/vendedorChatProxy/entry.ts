@@ -29,23 +29,9 @@ async function buildCatalogDigest(sr) {
     .filter((p) => p.sku && p.nombre)
     .map((p) => {
       const b2c = p.precio_b2c ? `$${p.precio_b2c}` : '—';
-      const t = p.precio_b2b_tramos || {};
-      // Tramos B2B netos (sin IVA) en formato compacto: solo los que existen,
-      // separados por "/". El agente multiplica ×1,19 para el mayorista B2C.
-      const tr = [
-        t.unitario && `1-9:${t.unitario}`,
-        t.t10_49 && `10:${t.t10_49}`,
-        t.t50_99 && `50:${t.t50_99}`,
-        t.t100_249 && `100:${t.t100_249}`,
-        t.t250_499 && `250:${t.t250_499}`,
-        t.t500_999 && `500:${t.t500_999}`,
-        t.t1000_1999 && `1000:${t.t1000_1999}`,
-        t.t2000_mas && `2000+:${t.t2000_mas}`,
-      ].filter(Boolean);
-      const b2b = tr.length ? ` | B2B/u neto: ${tr.join('/')}` : '';
-      return `${p.sku}|${p.nombre}|${p.categoria}|B2C ${b2c}|${p.canal || 'B2B+B2C'}${b2b}`;
+      return `${p.sku}|${p.nombre}|${p.categoria}|B2C ${b2c}|${p.canal || 'B2B+B2C'}`;
     });
-  return `\n\n[CATALOGO] Catálogo REAL y COMPLETO (SKU|nombre|categoría|precio B2C c/IVA|canal|B2B neto sin IVA por tramo de unidades). Cualquier palabra del cliente que calce con un nombre de aquí ES un producto: usa SOLO estos SKUs/nombres/precios. Precio mayorista B2C c/IVA = tramo B2B × 1,19:\n${lines.join('\n')}`;
+  return `\n\n[CATALOGO] Índice REAL y COMPLETO (SKU|nombre|categoría|precio B2C c/IVA|canal). Cualquier palabra del cliente que calce con un nombre de aquí ES un producto: usa SOLO estos SKUs/nombres/precios. Para tramos B2B, stock, colores o detalles usa la herramienta vendedorBuscarProductos (1 llamada, datos reales):\n${lines.join('\n')}`;
 }
 
 // Limpia bloques internos de los mensajes del usuario antes de devolverlos al front.
@@ -97,12 +83,18 @@ Deno.serve(async (req) => {
       if (!conversation_id || !content) {
         return Response.json({ error: 'conversation_id and content required' }, { status: 400 });
       }
-      const conv = await sr.agents.getConversation(conversation_id);
+      // Paraleliza: traer la conversación y construir el digest (solo si el
+      // front indica primer mensaje) al mismo tiempo → menos latencia por turno.
+      const esFirst = body.first === true;
+      const [conv, digest] = await Promise.all([
+        sr.agents.getConversation(conversation_id),
+        esFirst ? buildCatalogDigest(sr).catch(() => '') : Promise.resolve(''),
+      ]);
       let text = String(content).slice(0, 3000);
-      // Primer mensaje del hilo → adjunta el catálogo real completo (una vez).
       const yaHayUser = (conv.messages || []).some((m) => m.role === 'user');
       if (!yaHayUser) {
-        try { text += await buildCatalogDigest(sr); } catch { /* sin digest: el agente usa la herramienta */ }
+        if (digest) text += digest;
+        else { try { text += await buildCatalogDigest(sr); } catch { /* sin digest: usa la herramienta */ } }
       }
       await sr.agents.addMessage(conv, { role: 'user', content: text });
       return Response.json({ ok: true });

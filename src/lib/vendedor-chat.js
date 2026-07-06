@@ -81,11 +81,12 @@ function buildContext() {
   return `\n\n[CONTEXTO] page=${window.location.pathname}; cart_items=${cart.length}; cart_total=${total}`;
 }
 
-export async function sendChatMessage(conversationId, text) {
+export async function sendChatMessage(conversationId, text, isFirst = false) {
   await base44.functions.invoke('vendedorChatProxy', {
     action: 'send',
     conversation_id: conversationId,
     content: text + buildContext(),
+    first: isFirst,
   });
 }
 

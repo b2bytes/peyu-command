@@ -152,9 +152,10 @@ export default function VendedorChatBar() {
     setSending(true);
     setMsgs((prev) => [...prev, { role: 'user', content: text }]);
     try {
+      const esFirst = !msgs.some((m) => m.role === 'user');
       const convId = await ensureConversation();
       const baseCount = msgs.filter((m) => m.role === 'assistant').length;
-      await sendChatMessage(convId, text);
+      await sendChatMessage(convId, text, esFirst);
 
       clearInterval(pollRef.current);
       let ticks = 0;
@@ -171,10 +172,10 @@ export default function VendedorChatBar() {
             upsertHistory(convId, m); // persiste el hilo en el historial
           }
         }
-        // Polling más rápido (900ms) → la respuesta aparece casi al instante
-        // cuando el agente termina, sin castigar al backend. Timeout ~55s.
-        if (ticks > 60) { clearInterval(pollRef.current); setSending(false); }
-      }, 900);
+        // Polling rápido (600ms) → la respuesta aparece casi al instante
+        // cuando el agente termina. Timeout ~54s.
+        if (ticks > 90) { clearInterval(pollRef.current); setSending(false); }
+      }, 600);
     } catch {
       setSending(false);
     }
