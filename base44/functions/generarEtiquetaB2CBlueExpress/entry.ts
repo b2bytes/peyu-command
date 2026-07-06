@@ -30,13 +30,18 @@ Deno.serve(async (req) => {
 
     const sr = base44.asServiceRole;
 
-    // Verificar que esté pagado: payment_status 'paid' O estado post-pago
-    // (transferencias confirmadas manualmente quedan con estado Confirmado+
-    // sin payment_status='paid' — son pago válido).
-    const ESTADOS_PAGADOS = ['Confirmado', 'En Producción', 'Listo para Despacho', 'Despachado', 'Entregado'];
-    const pagado = pedido.payment_status === 'paid' || ESTADOS_PAGADOS.includes(pedido.estado);
-    if (!pagado) {
-      return Response.json({ ok: false, reason: 'Pedido aún no está pagado', current_status: pedido.payment_status });
+    // ═══ GUARD DE PAGO · Endurecido ═══════════════════════════════════════
+    // Requiere payment_status='paid' estrictamente. updateShippingStatus ya
+    // marca 'paid' para TODOS los medios (MP vía webhook/force, transferencias/
+    // webpay al confirmar). Si el pedido llegó a "Listo para Despacho" sin
+    // payment_status='paid', fue por un camino no autorizado → bloquear.
+    if (pedido.payment_status !== 'paid') {
+      return Response.json({
+        ok: false,
+        reason: 'Pedido sin pago confirmado — no se puede emitir etiqueta',
+        current_status: pedido.payment_status || 'vacío',
+        medio_pago: pedido.medio_pago || '',
+      }, { status: 403 });
     }
 
     // Verificar que no tenga ya tracking asignado (evitar duplicados)

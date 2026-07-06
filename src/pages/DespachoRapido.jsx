@@ -362,13 +362,20 @@ export default function DespachoRapido() {
       } else if (d.fallback_mode === 'manual' || d.modo === 'manual_required') {
         toast.info('API Bluex no disponible → modo manual');
         setShowManual(true);
+      } else if (d.blocked) {
+        toast.error(`⛔ ${d.error || 'Pago no confirmado'}`, { duration: 6000 });
       } else {
         toast.error(d.error || 'Error generando etiqueta');
+        if (!d.blocked) setShowManual(true);
+      }
+    } catch (e) {
+      const detail = e?.response?.data;
+      if (detail?.blocked) {
+        toast.error(`⛔ ${detail.error || 'Pago no confirmado'}`, { duration: 6000 });
+      } else {
+        toast.info('Cambiando a modo manual...');
         setShowManual(true);
       }
-    } catch (_) {
-      toast.info('Cambiando a modo manual...');
-      setShowManual(true);
     } finally {
       setGenerando(false);
     }

@@ -111,6 +111,22 @@ Deno.serve(async (req) => {
     const id = proposal_id || pedido_id;
     if (!id) return Response.json({ error: 'Falta proposal_id o pedido_id' }, { status: 400 });
 
+    // ═══ GUARD DE PAGO (pedidos B2C) ═══════════════════════════════════════
+    // No emitir etiqueta Bluex si el pedido no está pagado. Cierra la brecha
+    // del botón "Registrar OT manualmente" que bypassea updateShippingStatus.
+    // Solo aplica a pedidos (no a propuestas B2B que manejan anticipo aparte).
+    if (pedido_id) {
+      const pedido = await base44.asServiceRole.entities.PedidoWeb.get(pedido_id);
+      if (pedido && pedido.payment_status !== 'paid') {
+        return Response.json({
+          error: 'No se puede emitir etiqueta: el pago del pedido no está confirmado.',
+          blocked: true,
+          payment_status: pedido.payment_status || 'vacío',
+          medio_pago: pedido.medio_pago || '',
+        }, { status: 403 });
+      }
+    }
+
     const clientAccount = Deno.env.get('BLUEX_CLIENT_ACCOUNT');
     const userName = Deno.env.get('BLUEX_USER_CODE');
     const apiKey = Deno.env.get('BLUEX_API_KEY');

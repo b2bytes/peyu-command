@@ -203,8 +203,8 @@ function BluexPanel({ pedido, onDone }) {
       </button>
       <button
         onClick={() => setShowManual(true)}
-        disabled={loading}
-        className="w-full flex items-center justify-center gap-1.5 text-xs font-semibold py-2.5 bg-slate-50 border border-slate-200 text-slate-600 rounded-xl hover:bg-slate-100 transition"
+        disabled={loading || !isPaid}
+        className="w-full flex items-center justify-center gap-1.5 text-xs font-semibold py-2.5 bg-slate-50 border border-slate-200 text-slate-600 rounded-xl hover:bg-slate-100 transition disabled:opacity-50 disabled:cursor-not-allowed"
       >
         <ClipboardPaste className="w-3.5 h-3.5" /> Registrar OT manualmente
       </button>

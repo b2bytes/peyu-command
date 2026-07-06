@@ -70,8 +70,31 @@ Deno.serve(async (req) => {
     switch (action) {
       case 'updatePedidoEstado': {
         if (!payload.id || !payload.estado) throw new Error('Falta id o estado');
-        await svc.PedidoWeb.update(payload.id, { estado: payload.estado });
-        return Response.json({ ok: true, message: `Pedido actualizado a ${payload.estado}` });
+        // ═══ GUARD DE PAGO · Centralizado ══════════════════════════════════
+        // Enruta por updateShippingStatus que tiene el guard de pago completo
+        // (MP sin webhook = bloqueado; transferencias/webpay = auto-paid al
+        // confirmar). Antes se actualizaba directo y bypasseaba el guard.
+        const res = await base44.asServiceRole.functions.invoke('updateShippingStatus', {
+          pedido_id: payload.id,
+          nuevo_estado: payload.estado,
+          force_confirm_payment: !!payload.force,
+        });
+        const d = res?.data ?? res;
+        if (d?.blocked) {
+          return Response.json({
+            ok: false,
+            error: d.error,
+            blocked: true,
+            can_force: d.can_force || false,
+            payment_status: d.payment_status,
+          }, { status: 403 });
+        }
+        if (!d?.ok) throw new Error(d?.error || 'Error al actualizar estado');
+        return Response.json({
+          ok: true,
+          message: `Pedido actualizado a ${payload.estado}${d.bluex?.tracking ? ` · etiqueta ${d.bluex.tracking}` : ''}${d.email_enviado ? ' · email enviado' : ''}`,
+          bluex: d.bluex || null,
+        });
       }
 
       case 'marcarConsultaRespondida': {
@@ -207,11 +230,13 @@ Deno.serve(async (req) => {
         if (!payload.id) throw new Error('Falta id de pedido');
         const [pedido] = await svc.PedidoWeb.filter({ id: payload.id });
         if (!pedido) throw new Error('Pedido no encontrado');
-        // Pago confirmado: payment_status 'paid' O estado post-pago (transferencias
-        // confirmadas / WebPay quedan con estado Confirmado+ sin payment_status paid).
-        const ESTADOS_PAGADOS = ['Confirmado', 'En Producción', 'Listo para Despacho', 'Despachado', 'Entregado'];
-        const pagadoOk = pedido.payment_status === 'paid' || ESTADOS_PAGADOS.includes(pedido.estado);
-        if (!pagadoOk) throw new Error('El pedido no está pagado. Márcalo como pagado primero.');
+        // ═══ GUARD DE PAGO · Estricto ═══════════════════════════════════════
+        // Requiere payment_status='paid' estrictamente. generateCleanBaseImage
+        // y bluexCreateShipment también lo validan, pero bloqueamos acá primero
+        // para dar un error claro antes de intentar la emisión.
+        if (pedido.payment_status !== 'paid') {
+          throw new Error(`El pedido no está pagado (payment_status: ${pedido.payment_status || 'vacío'}). Márcalo como pagado primero.`);
+        }
         if (pedido.tracking) {
           return Response.json({ ok: true, message: `Ya tiene tracking: ${pedido.tracking}`, tracking: pedido.tracking });
         }
@@ -242,11 +267,11 @@ Deno.serve(async (req) => {
           pedidos = listos.filter((p) => !p.tracking);
         }
 
-        // Filtrar a los elegibles: pagados y sin tracking ya emitido.
-        const elegibles = pedidos.filter((p) => {
-          const pagadoOk = p.payment_status === 'paid' || ESTADOS_PAGADOS.includes(p.estado);
-          return pagadoOk && !p.tracking;
-        });
+        // Filtrar a los elegibles: estrictamente pagados (payment_status='paid')
+        // y sin tracking ya emitido. Endurecido: antes aceptaba cualquier estado
+        // post-pago, lo que permitía emitir etiquetas de pedidos no pagados que
+        // llegaron a "Listo para Despacho" por caminos no autorizados.
+        const elegibles = pedidos.filter((p) => p.payment_status === 'paid' && !p.tracking);
 
         if (!elegibles.length) {
           return Response.json({ ok: true, message: 'No hay pedidos pagados sin etiqueta para generar.', generadas: 0, resultados: [] });
