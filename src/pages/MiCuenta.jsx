@@ -41,7 +41,7 @@ export default function MiCuenta() {
             .filter({ destinatario_email: me.email.toLowerCase() }, '-created_date', 50)
             .catch(() => []);
           if (!cancelled) setGiftcards(gcs || []);
-          }
+        }
       } catch {
         if (!cancelled) setUser(null);
       } finally {
@@ -138,6 +138,38 @@ export default function MiCuenta() {
             </div>
           </div>
         </div>
+
+        {/* GIFT CARDS */}
+        {giftcards.length > 0 && (
+          <div>
+            <div className="flex items-center gap-2 mb-3 px-1">
+              <Gift className="w-5 h-5" style={{ color: 'var(--ld-highlight)' }} />
+              <h3 className="ld-display text-xl text-ld-fg">Mis Gift Cards</h3>
+            </div>
+            <div className="space-y-2.5">
+              {giftcards.map((gc) => (
+                <div key={gc.id} className="ld-card p-4 flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: 'var(--ld-highlight-soft)' }}>
+                      <Gift className="w-5 h-5" style={{ color: 'var(--ld-highlight)' }} />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="font-mono font-bold text-sm text-ld-fg truncate">{gc.codigo}</p>
+                      <p className="text-xs text-ld-fg-muted">
+                        {gc.estado === 'Activa' ? 'Disponible' : gc.estado === 'Canjeada' ? 'Canjeada' : gc.estado}
+                        {gc.fecha_expiracion && ` · vence ${gc.fecha_expiracion}`}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="text-right flex-shrink-0">
+                    <p className="text-xs text-ld-fg-muted">Saldo</p>
+                    <p className="font-bold text-ld-fg">${(gc.saldo_clp || 0).toLocaleString('es-CL')}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* HISTORIAL DE COMPRAS */}
         <div>
