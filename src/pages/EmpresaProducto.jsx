@@ -9,7 +9,7 @@ import { base44 } from '@/api/base44Client';
 import {
   ArrowLeft, Recycle, ShieldCheck, Truck, Check, Loader2,
   Sparkles, Package, TrendingDown, Plus, Minus, ArrowRight,
-  Building2, Send,
+  Building2, Send, ShoppingCart,
 } from 'lucide-react';
 import SEOHead from '@/components/SEOHead';
 import { trackGenerateLead } from '@/lib/analytics-peyu';
@@ -83,6 +83,10 @@ export default function EmpresaProducto() {
     : (producto?.incluye ? [producto.incluye] : []);
 
   const goToCotizar = () => setShowForm(true);
+
+  // Compra rápida B2B: lleva directo a la ficha B2C para configurar y pagar.
+  // Joaquín: "muchas veces solo quieren comprar rápido" — sin pasar por cotización.
+  const goToComprar = () => navigate(`/ProductoNuevo?id=${producto.id}`);
 
   const submitLead = async () => {
     if (!form.company.trim() || !form.name.trim() || !form.email.trim()) {
@@ -365,13 +369,23 @@ export default function EmpresaProducto() {
               </div>
             ) : (
               <div className="hidden lg:flex flex-col gap-2">
-                <button
-                  onClick={goToCotizar}
-                  className="flex-1 h-14 rounded-2xl text-white font-bold text-base flex items-center justify-center gap-2 transition-all hover:scale-[1.01] active:scale-[0.98]"
-                  style={{ background: 'linear-gradient(135deg,#0F8B6C,#0B6E55)', boxShadow: '0 8px 28px rgba(15,139,108,.28)' }}
-                >
-                  Solicitar cotización <ArrowRight className="w-5 h-5" />
-                </button>
+                <div className="flex gap-2">
+                  <button
+                    onClick={goToComprar}
+                    className="flex-1 h-14 rounded-2xl font-bold text-base flex items-center justify-center gap-2 transition-all hover:scale-[1.01] active:scale-[0.98]"
+                    style={{ background: 'white', border: '1.5px solid #D4C4B0', color: '#C0785C' }}
+                    title="Compra rápida — directo al carrito"
+                  >
+                    <ShoppingCart className="w-5 h-5" /> Comprar
+                  </button>
+                  <button
+                    onClick={goToCotizar}
+                    className="flex-1 h-14 rounded-2xl text-white font-bold text-base flex items-center justify-center gap-2 transition-all hover:scale-[1.01] active:scale-[0.98]"
+                    style={{ background: 'linear-gradient(135deg,#0F8B6C,#0B6E55)', boxShadow: '0 8px 28px rgba(15,139,108,.28)' }}
+                  >
+                    Solicitar cotización <ArrowRight className="w-5 h-5" />
+                  </button>
+                </div>
                 <p className="text-[11px] text-center px-1" style={{ color: '#A08070' }}>
                   {fmtCLP(neto)} neto + IVA · Sin compromiso · Presupuesto formal en 24h
                 </p>
@@ -436,6 +450,14 @@ export default function EmpresaProducto() {
               style={{ background: 'white', border: '1.5px solid #D4C4B0', color: '#7A6050' }}
             >
               <ArrowLeft className="w-4 h-4" /> Atrás
+            </button>
+            <button
+              onClick={goToComprar}
+              className="flex-shrink-0 h-12 px-3.5 rounded-2xl flex items-center justify-center font-bold text-xs transition-all active:scale-[0.97]"
+              style={{ background: 'white', border: '1.5px solid #D4C4B0', color: '#C0785C' }}
+              title="Compra rápida — directo al carrito"
+            >
+              <ShoppingCart className="w-4 h-4" />
             </button>
             <div className="flex-1 min-w-0 flex flex-col justify-center">
               <button
