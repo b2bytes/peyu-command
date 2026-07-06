@@ -374,6 +374,23 @@ export default function PedidoDetailDrawer({ pedido, onClose, onUpdate }) {
                 </div>
               )}
 
+              {/* Aviso proactivo: pedido MP sin pago confirmado + intento de avanzar */}
+              {(() => {
+                const ESTADOS_BLOQUEADOS = ['Confirmado', 'En Producción', 'Listo para Despacho', 'Despachado', 'Entregado'];
+                const esMP = (pedido.medio_pago || '').trim() === 'MercadoPago';
+                const sinPago = pedido.payment_status !== 'paid';
+                const intentaAvanzar = ESTADOS_BLOQUEADOS.includes(estado) && estado !== pedido.estado;
+                if (esMP && sinPago && intentaAvanzar) {
+                  return (
+                    <div className="flex items-start gap-2 text-[11px] text-red-800 bg-red-50 border border-red-200 rounded-lg px-3 py-2 mb-1">
+                      <AlertCircle className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-red-600" />
+                      <span>No se puede avanzar: el pago de MercadoPago no fue confirmado. El cliente debe completar el pago primero.</span>
+                    </div>
+                  );
+                }
+                return null;
+              })()}
+
               <Button
                 onClick={handleSave}
                 disabled={saving || !estadoChanged}
