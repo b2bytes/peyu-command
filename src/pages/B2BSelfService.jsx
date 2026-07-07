@@ -99,6 +99,10 @@ export default function B2BSelfService() {
   const [error, setError] = useState('');
   const [descargando, setDescargando] = useState(false);
 
+  // Logo pre-cargado desde la ficha del producto (anchor). Evita pedir al
+  // cliente que suba su logo una segunda vez — viaja con el anchor.
+  const [preloadedLogoUrl, setPreloadedLogoUrl] = useState(null);
+
   // Regenerar mockup (posición del logo)
   const [regenerando, setRegenerando] = useState(false);
   const [mockupActual, setMockupActual] = useState(null);
@@ -137,6 +141,10 @@ export default function B2BSelfService() {
               setCart([{ producto, cantidad: Math.max(10, anchor?.cantidad || 10) }]);
               setAnchorProducto(producto); // mostrarlo en el hero del paso Empresa
               if (anchor?.personalizar === false) setPersonalizar(false);
+              if (anchor?.logoUrl) {
+                setPreloadedLogoUrl(anchor.logoUrl);
+                setPersonalizar(true);
+              }
               setStep(1); // saltar directo a "Empresa" — su producto ya está elegido
             }
             sessionStorage.removeItem('peyu_b2b_anchor');
@@ -287,7 +295,7 @@ export default function B2BSelfService() {
     setGenerando(true);
     setError('');
     try {
-      let logoUrl = '';
+      let logoUrl = preloadedLogoUrl || '';
       if (archivo) {
         const { file_url } = await base44.integrations.Core.UploadFile({ file: archivo });
         logoUrl = file_url;
@@ -700,35 +708,47 @@ export default function B2BSelfService() {
               </div>
 
               {personalizar && (
-                <div
-                  onClick={() => document.getElementById('ss-logo').click()}
-                  className={`border-2 border-dashed rounded-3xl p-7 sm:p-8 text-center cursor-pointer transition-all backdrop-blur-sm ${
-                    archivo
-                      ? 'border-teal-400/60 bg-teal-500/10'
-                      : 'border-white/20 bg-white/[0.03] hover:border-amber-400/60 hover:bg-amber-500/5'
-                  }`}
-                >
-                  <div className={`w-14 h-14 rounded-2xl mx-auto mb-3 flex items-center justify-center ${
-                    archivo ? 'bg-teal-500/25 border border-teal-400/40' : 'bg-white/5 border border-white/15'
-                  }`}>
-                    <Upload className={`w-6 h-6 ${archivo ? 'text-teal-300' : 'text-white/50'}`} />
+                preloadedLogoUrl ? (
+                  <div className="border-2 border-teal-400/60 bg-teal-500/10 rounded-3xl p-7 sm:p-8 text-center backdrop-blur-sm">
+                    <div className="w-14 h-14 rounded-2xl mx-auto mb-3 flex items-center justify-center bg-teal-500/25 border border-teal-400/40 overflow-hidden">
+                      <img src={preloadedLogoUrl} alt="Logo" className="w-full h-full object-contain" />
+                    </div>
+                    <p className="text-sm font-bold text-teal-300">✓ Tu logo ya está cargado</p>
+                    <p className="text-xs text-white/50 mt-1">Lo subiste en la ficha del producto</p>
+                    <button type="button" onClick={() => setPreloadedLogoUrl(null)}
+                      className="text-[11px] text-white/55 underline mt-2 hover:text-white">Cambiar logo</button>
                   </div>
-                  {archivo ? (
-                    <>
-                      <p className="text-sm font-bold text-teal-300">✓ {archivo.name}</p>
-                      <button type="button" onClick={e => { e.stopPropagation(); setArchivo(null); }}
-                        className="text-[11px] text-white/55 underline mt-2 hover:text-white">Cambiar archivo</button>
-                    </>
-                  ) : (
-                    <>
-                      <p className="text-sm text-white font-semibold">Sube tu logo</p>
-                      <p className="text-xs text-white/50 mt-1.5">PNG, JPG, SVG · Máx 5MB</p>
-                      <p className="text-[10px] text-white/35 mt-2 italic">Si no subes nada, grabaremos el nombre de tu empresa</p>
-                    </>
-                  )}
-                  <input id="ss-logo" type="file" className="hidden" accept=".png,.jpg,.jpeg,.svg,.webp"
-                    onChange={e => setArchivo(e.target.files?.[0] || null)} />
-                </div>
+                ) : (
+                  <div
+                    onClick={() => document.getElementById('ss-logo').click()}
+                    className={`border-2 border-dashed rounded-3xl p-7 sm:p-8 text-center cursor-pointer transition-all backdrop-blur-sm ${
+                      archivo
+                        ? 'border-teal-400/60 bg-teal-500/10'
+                        : 'border-white/20 bg-white/[0.03] hover:border-amber-400/60 hover:bg-amber-500/5'
+                    }`}
+                  >
+                    <div className={`w-14 h-14 rounded-2xl mx-auto mb-3 flex items-center justify-center ${
+                      archivo ? 'bg-teal-500/25 border border-teal-400/40' : 'bg-white/5 border border-white/15'
+                    }`}>
+                      <Upload className={`w-6 h-6 ${archivo ? 'text-teal-300' : 'text-white/50'}`} />
+                    </div>
+                    {archivo ? (
+                      <>
+                        <p className="text-sm font-bold text-teal-300">✓ {archivo.name}</p>
+                        <button type="button" onClick={e => { e.stopPropagation(); setArchivo(null); }}
+                          className="text-[11px] text-white/55 underline mt-2 hover:text-white">Cambiar archivo</button>
+                      </>
+                    ) : (
+                      <>
+                        <p className="text-sm text-white font-semibold">Sube tu logo</p>
+                        <p className="text-xs text-white/50 mt-1.5">PNG, JPG, SVG · Máx 5MB</p>
+                        <p className="text-[10px] text-white/35 mt-2 italic">Si no subes nada, grabaremos el nombre de tu empresa</p>
+                      </>
+                    )}
+                    <input id="ss-logo" type="file" className="hidden" accept=".png,.jpg,.jpeg,.svg,.webp"
+                      onChange={e => setArchivo(e.target.files?.[0] || null)} />
+                  </div>
+                )
               )}
 
               {/* Item K · Bloque explicativo del grabado láser — SIEMPRE visible

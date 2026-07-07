@@ -21,12 +21,19 @@ export default function B2BCatalogCard({ producto }) {
     navigate(`/EmpresaProducto?id=${producto.id}&qty=50`);
   };
 
-  // Botón compra rápida: lleva al checkout B2C con el producto cargado.
-  // Joaquín: "muchas veces solo quieren comprar rápido" — sin pasar por cotización.
+  // Botón compra B2B: ancla el producto al embudo self-service y salta al
+  // paso de datos de empresa. NUNCA deriva al carrito B2C.
   const comprar = (e) => {
     e.preventDefault();
     e.stopPropagation();
-    navigate(`/ProductoNuevo?id=${producto.id}`);
+    try {
+      sessionStorage.setItem('peyu_b2b_anchor', JSON.stringify({
+        sku: producto.sku,
+        cantidad: 50,
+        personalizar: true,
+      }));
+    } catch { /* ignore */ }
+    navigate(`/b2b/self-service?sku=${encodeURIComponent(producto.sku)}`);
   };
 
   return (

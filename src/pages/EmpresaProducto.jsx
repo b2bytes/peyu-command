@@ -121,6 +121,7 @@ export default function EmpresaProducto() {
         sku: producto.sku,
         cantidad: qty,
         personalizar: true,
+        logoUrl: logoUrl || undefined,
       }));
     } catch { /* ignore */ }
     navigate(`/b2b/self-service?sku=${encodeURIComponent(producto.sku)}`);
