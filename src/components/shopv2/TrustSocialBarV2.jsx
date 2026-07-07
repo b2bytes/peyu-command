@@ -45,21 +45,23 @@ export default function TrustSocialBarV2() {
       <div className="max-w-screen-xl mx-auto">
         <div className="rounded-2xl overflow-hidden" style={{ background: 'white', border: '1.5px solid #E8DDD0', boxShadow: '0 2px 16px rgba(44,24,16,.05)' }}>
 
-          {/* Badges row */}
-          <div className="flex items-stretch gap-0 overflow-x-auto scrollbar-hide sm:grid sm:grid-cols-5 divide-x"
-            style={{ borderBottom: '1px solid #F2EBE0', divideColor: '#F2EBE0' }}>
+          {/* Badges — 2 columnas en móvil, 5 en desktop */}
+          <div className="grid grid-cols-2 sm:grid-cols-5"
+            style={{ borderBottom: '1px solid #F2EBE0' }}>
             {badges.map((b, i) => (
               <div key={i}
-                className="flex items-center gap-2.5 flex-shrink-0 px-4 py-3 sm:py-4 group hover:bg-[#FDFAF6] transition-colors"
-                style={{ borderRight: i < badges.length - 1 ? '1px solid #F2EBE0' : 'none' }}>
-                {/* Icon pill */}
-                <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 transition-transform duration-200 group-hover:scale-105"
+                className="flex items-center gap-2.5 px-3 py-3 sm:px-4 sm:py-4 group hover:bg-[#FDFAF6] transition-colors"
+                style={{
+                  borderRight: (i + 1) % 2 !== 0 ? '1px solid #F2EBE0' : 'none',
+                  borderBottom: i < badges.length - 2 ? '1px solid #F2EBE0' : 'none',
+                }}>
+                <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl flex items-center justify-center flex-shrink-0 transition-transform duration-200 group-hover:scale-105"
                   style={{ background: b.bg }}>
-                  <b.icon className="w-4 h-4" style={{ color: b.color }} strokeWidth={1.75} />
+                  <b.icon className="w-3.5 h-3.5 sm:w-4 sm:h-4" style={{ color: b.color }} strokeWidth={1.75} />
                 </div>
                 <div className="leading-tight min-w-0">
-                  <p className="text-xs font-bold whitespace-nowrap" style={{ color: '#2C1810' }}>{b.t}</p>
-                  <p className="text-[10px] whitespace-nowrap hidden sm:block mt-0.5" style={{ color: '#A08070' }}>{b.sub}</p>
+                  <p className="text-[11px] sm:text-xs font-bold" style={{ color: '#2C1810' }}>{b.t}</p>
+                  <p className="text-[9px] sm:text-[10px] hidden sm:block mt-0.5" style={{ color: '#A08070' }}>{b.sub}</p>
                 </div>
               </div>
             ))}
