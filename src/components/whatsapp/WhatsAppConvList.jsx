@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { MessageCircle, Search } from 'lucide-react';
+import { MessageCircle, Search, Bot, User } from 'lucide-react';
 
 const timeAgo = (d) => {
   if (!d) return '';
@@ -11,17 +11,22 @@ const timeAgo = (d) => {
   return new Date(d).toLocaleDateString('es-CL', { day: 'numeric', month: 'short' });
 };
 
-// Avatar con inicial y color determinístico por conversación (estilo WhatsApp)
 const AVATAR_COLORS = ['#128C7E', '#34B7F1', '#FF8C42', '#9C27B0', '#E91E63', '#5C6BC0'];
 const avatarColor = (id = '') => AVATAR_COLORS[(id.charCodeAt(id.length - 1) || 0) % AVATAR_COLORS.length];
 
+// ════════════════════════════════════════════════════════════════════════
+// WhatsAppConvList — Lista de conversaciones WhatsApp con búsqueda.
+// Muestra avatar, nombre, último mensaje, indicador de takeover humano
+// y badge si la conversación está escalada.
+// ════════════════════════════════════════════════════════════════════════
 export default function WhatsAppConvList({ conversations, activeId, onSelect }) {
   const [search, setSearch] = useState('');
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
-    if (!q) return conversations;
-    return conversations.filter((c) => {
+    const sorted = [...conversations].sort((a, b) => new Date(b.updated_date || 0) - new Date(a.updated_date || 0));
+    if (!q) return sorted;
+    return sorted.filter((c) => {
       const nombre = (c.metadata?.name || '').toLowerCase();
       const last = (c.messages?.[c.messages.length - 1]?.content || '').toLowerCase();
       return nombre.includes(q) || last.includes(q);
@@ -49,7 +54,7 @@ export default function WhatsAppConvList({ conversations, activeId, onSelect }) 
             <MessageCircle className="w-6 h-6 text-[#25D366] opacity-60" />
           </div>
           <p className="font-semibold text-ld-fg-soft">{search ? 'Sin resultados' : 'Aún no hay conversaciones'}</p>
-          {!search && <p className="text-xs mt-1">Escanea el QR o comparte el link para empezar.</p>}
+          {!search && <p className="text-xs mt-1">Conecta tu WhatsApp y los chats aparecerán aquí.</p>}
         </div>
       ) : (
         <div className="flex-1 overflow-y-auto peyu-scrollbar">
@@ -57,6 +62,8 @@ export default function WhatsAppConvList({ conversations, activeId, onSelect }) 
             const last = c.messages?.[c.messages.length - 1];
             const nombre = c.metadata?.name || `Cliente ${c.id?.slice(-5)}`;
             const isActive = activeId === c.id;
+            const humanMode = c.metadata?.human_takeover === true;
+            const escalated = c.metadata?.escalated === true;
             return (
               <button
                 key={c.id}
@@ -73,11 +80,20 @@ export default function WhatsAppConvList({ conversations, activeId, onSelect }) 
                 </span>
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center justify-between gap-2">
-                    <span className="text-sm font-semibold text-ld-fg truncate">{nombre}</span>
+                    <span className="text-sm font-semibold text-ld-fg truncate flex items-center gap-1.5">
+                      {nombre}
+                      {humanMode && <User className="w-3 h-3 text-ld-action flex-shrink-0" />}
+                      {escalated && <span className="w-1.5 h-1.5 rounded-full bg-red-500 flex-shrink-0" />}
+                    </span>
                     <span className="text-[10px] text-ld-fg-subtle flex-shrink-0">{timeAgo(c.updated_date)}</span>
                   </div>
-                  <p className="text-xs text-ld-fg-muted truncate mt-0.5">
-                    {last ? `${last.role === 'assistant' ? '🐢 ' : ''}${(last.content || '').slice(0, 70)}` : 'Sin mensajes'}
+                  <p className="text-xs text-ld-fg-muted truncate mt-0.5 flex items-center gap-1">
+                    {last ? (
+                      <>
+                        {!last.content?.startsWith('[Mensaje del equipo') && last.role === 'assistant' && <Bot className="w-3 h-3 flex-shrink-0 text-[#25D366]" />}
+                        {(last.content || '').replace('[Mensaje del equipo PEYU] ', '').replace('👤 [Equipo PEYU] ', '').slice(0, 60)}
+                      </>
+                    ) : 'Sin mensajes'}
                   </p>
                 </div>
               </button>
