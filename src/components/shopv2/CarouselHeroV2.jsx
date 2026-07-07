@@ -67,24 +67,26 @@ export default function CarouselHeroV2({ slides = [], onSlideClick }) {
             }}
           />
           {/* Gradiente cálido inferior para legibilidad del caption (reforzado) */}
-          <div className="absolute inset-x-0 bottom-0 h-1/2 pointer-events-none"
-            style={{ background: 'linear-gradient(to top, rgba(44,24,16,.82) 0%, rgba(44,24,16,.45) 45%, transparent 100%)' }} />
+          <div className="absolute inset-x-0 bottom-0 h-2/3 pointer-events-none"
+            style={{ background: 'linear-gradient(to top, rgba(20,12,6,.92) 0%, rgba(20,12,6,.6) 40%, transparent 100%)' }} />
 
-          {/* Caption editorial */}
+          {/* Caption editorial — contenedor glass que destaca sobre la foto */}
           {(s.kicker || s.title) && (
-            <div className="absolute bottom-0 inset-x-0 p-4 sm:p-5 pr-20 pointer-events-none">
-              {s.kicker && (
-                <p className="text-[9px] sm:text-[10px] font-bold uppercase tracking-[0.14em] mb-0.5"
-                  style={{ color: '#F0C9B4', textShadow: '0 1px 6px rgba(44,24,16,.8)' }}>
-                  {s.kicker}
-                </p>
-              )}
-              {s.title && (
-                <p className="font-fraunces text-base sm:text-xl leading-tight text-white"
-                  style={{ textShadow: '0 2px 10px rgba(44,24,16,.85)' }}>
-                  {s.title}
-                </p>
-              )}
+            <div className="absolute bottom-0 inset-x-0 p-3.5 sm:p-5 pb-5 sm:pb-7 pointer-events-none">
+              <div className="inline-block max-w-[88%] rounded-2xl px-3.5 py-2.5 sm:px-4 sm:py-3"
+                style={{ background: 'rgba(20,12,6,.55)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', border: '1px solid rgba(255,255,255,.12)' }}>
+                {s.kicker && (
+                  <p className="text-[9px] sm:text-[10px] font-bold uppercase tracking-[0.14em] mb-0.5"
+                    style={{ color: '#F0C9B4' }}>
+                    {s.kicker}
+                  </p>
+                )}
+                {s.title && (
+                  <p className="font-fraunces text-sm sm:text-xl leading-tight text-white">
+                    {s.title}
+                  </p>
+                )}
+              </div>
             </div>
           )}
         </div>
@@ -112,18 +114,19 @@ export default function CarouselHeroV2({ slides = [], onSlideClick }) {
         </>
       )}
 
-      {/* Dots — esquina inferior derecha, sin tapar el caption */}
+      {/* Dots — barra inferior centrada, separada del caption, con backdrop */}
       {slides.length > 1 && (
-        <div className="absolute bottom-4 right-4 z-10 flex gap-1.5 items-center">
+        <div className="absolute top-3 right-3 z-10 flex gap-1.5 items-center rounded-full px-2.5 py-1.5"
+          style={{ background: 'rgba(20,12,6,.45)', backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)' }}>
           {slides.map((_, idx) => (
             <button
               key={idx}
               onClick={() => go(idx)}
               className="rounded-full transition-all duration-300"
               style={{
-                width: idx === current ? '18px' : '6px',
-                height: '6px',
-                background: idx === current ? '#fff' : 'rgba(255,255,255,.45)',
+                width: idx === current ? '20px' : '7px',
+                height: '7px',
+                background: idx === current ? '#C0785C' : 'rgba(255,255,255,.5)',
               }}
               aria-label={`Ir a slide ${idx + 1}`}
             />
