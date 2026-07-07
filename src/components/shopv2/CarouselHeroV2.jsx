@@ -114,19 +114,19 @@ export default function CarouselHeroV2({ slides = [], onSlideClick }) {
         </>
       )}
 
-      {/* Dots — barra inferior centrada, separada del caption, con backdrop */}
+      {/* Dots — abajo centro, grandes y táctiles, con backdrop glass */}
       {slides.length > 1 && (
-        <div className="absolute top-3 right-3 z-10 flex gap-1.5 items-center rounded-full px-2.5 py-1.5"
-          style={{ background: 'rgba(20,12,6,.45)', backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)' }}>
+        <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-10 flex gap-2 items-center rounded-full px-3.5 py-2"
+          style={{ background: 'rgba(20,12,6,.5)', backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)', border: '1px solid rgba(255,255,255,.1)' }}>
           {slides.map((_, idx) => (
             <button
               key={idx}
               onClick={() => go(idx)}
               className="rounded-full transition-all duration-300"
               style={{
-                width: idx === current ? '20px' : '7px',
-                height: '7px',
-                background: idx === current ? '#C0785C' : 'rgba(255,255,255,.5)',
+                width: idx === current ? '28px' : '10px',
+                height: '10px',
+                background: idx === current ? '#C0785C' : 'rgba(255,255,255,.55)',
               }}
               aria-label={`Ir a slide ${idx + 1}`}
             />
