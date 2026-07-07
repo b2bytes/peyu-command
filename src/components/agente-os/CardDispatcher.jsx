@@ -12,6 +12,7 @@ import PipelineCard from './cards/PipelineCard';
 import BulkLabelsCard from './cards/BulkLabelsCard';
 import SearchResultsCard from './cards/SearchResultsCard';
 import CatalogManagerCard from './cards/CatalogManagerCard';
+import ColorImageAssignerCard from './cards/ColorImageAssignerCard';
 import DisenosManagerCard from './cards/DisenosManagerCard';
 import CuponesManagerCard from './cards/CuponesManagerCard';
 import GiftCardsManagerCard from './cards/GiftCardsManagerCard';
@@ -41,6 +42,9 @@ export default function CardDispatcher({ card, crm, metrics, lists = {}, onAsk, 
       // Gestor de catálogo completo: buscador, filtros por categoría/stock,
       // editar, subir/cambiar/quitar imágenes y agregar productos desde el chat.
       return <CatalogManagerCard categoriaInicial={card.categoria} stockInicial={card.stock} />;
+    case 'color_images':
+      // Asignación MANUAL de imagen por color (reemplaza el matching por IA).
+      return <ColorImageAssignerCard />;
     case 'disenos':
       // Gestor de Diseños PEYU del personalizador: subir, cambiar imagen,
       // activar/ocultar, eliminar y regenerar grabados — todo en el chat.

@@ -73,6 +73,20 @@ export function detectCards(text) {
       stock: has(['agotad', 'sin stock', 'cero']) ? 'agotado' : has(['stock bajo', 'bajo stock', 'poco stock', 'reponer']) ? 'bajo' : undefined,
     });
   }
+  // Asignación MANUAL de imagen por color (reemplaza el matching por IA):
+  // el founder quiere controlar qué foto va con cada color del producto.
+  if (has([
+    'imagen por color', 'imágenes por color', 'imagenes por color',
+    'asignar color', 'asignar imagen', 'asignar foto', 'asignar fotos',
+    'foto por color', 'fotos por color', 'color imagen', 'color foto',
+    'imagen del color', 'imágenes del color', 'imagenes del color',
+    'matching de color', 'matching de imagen', 'matching color',
+    'color no calza', 'color no coincide', 'imagen equivocada',
+    'color equivocado', 'foto equivocada', 'imagen incorrecta',
+    'mapear color', 'mapear imagen', 'mapear colores',
+  ])) {
+    cards.push({ type: 'color_images' });
+  }
   if (has(['cupón', 'cupon', 'cupones', 'descuento', 'código de descuento', 'codigo de descuento', 'promoción', 'promocion'])) {
     cards.push({ type: 'cupones' });
   }

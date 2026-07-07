@@ -122,6 +122,16 @@ Deno.serve(async (req) => {
         return Response.json({ ok: true, message: `Imagen del color ${payload.color} actualizada ✓` });
       }
 
+      case 'removeColorImage': {
+        if (!payload.id || !payload.color) throw new Error('Falta id o color');
+        const [p] = await Producto.filter({ id: payload.id });
+        if (!p) throw new Error('Producto no encontrado');
+        const mapa = (p.imagenes_por_color && typeof p.imagenes_por_color === 'object') ? { ...p.imagenes_por_color } : {};
+        delete mapa[payload.color];
+        await Producto.update(payload.id, { imagenes_por_color: mapa });
+        return Response.json({ ok: true, message: `Imagen del color ${payload.color} quitada ✓`, imagenes_por_color: mapa });
+      }
+
       case 'toggleActivo': {
         if (!payload.id) throw new Error('Falta id de producto');
         await Producto.update(payload.id, { activo: !!payload.activo });
