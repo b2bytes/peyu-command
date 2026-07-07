@@ -22,6 +22,7 @@ import IntencionCompraV2 from '@/components/shopv2/IntencionCompraV2';
 import { getProductImage, getProductImageForColor } from '@/utils/productImages';
 import { getColoresProducto } from '@/lib/color-parser';
 import { findColorImageMatch } from '@/lib/color-image-matcher';
+import { resolveColorImageAll, getAllImageUrls } from '@/lib/color-image-resolver-all';
 import { getColorTintFilter } from '@/lib/color-tint';
 import { MOQ_PERSONALIZACION_GRATIS } from '@/lib/personalizacion-config';
 import { addToCartV2, fmtCLP } from '@/lib/shop-v2-cart';
@@ -215,14 +216,14 @@ export default function ProductoNuevo() {
       }
       return [getProductImage(producto)];
     }
-    // No-carcasas: TODAS las fotos reales de color (imagenes_por_color) como
-    // thumbnails + ángulos extra de galeria_urls. Al elegir un color, galIdx
-    // salta a la foto de ese color — la imagen principal cambia de forma
-    // explícita e inequívoca (mismo patrón robusto que carcasas).
+    // No-carcasas: busca la imagen correcta de cada color en TODAS las URLs
+    // (galeria_urls + imagenes_por_color) por nombre del color en el filename.
+    // imagenes_por_color puede estar mal etiquetado, así que priorizamos el match
+    // por nombre (ej: "...-verde.jpg" → color Verde).
     const base = getProductImage(producto);
     const coloresConFoto = colores
       .map((c) => {
-        const url = getProductImageForColor(producto, c);
+        const url = resolveColorImageAll(producto, c);
         return url && url !== base ? url : null;
       })
       .filter(Boolean);
@@ -253,8 +254,11 @@ export default function ProductoNuevo() {
       return;
     }
     if (!color) { setGalIdx(0); return; }
-    // No-carcasas: buscar la foto del color elegido en la galería por índice.
-    const colorPhoto = getProductImageForColor(producto, color);
+    // No-carcasas: buscar la foto del color elegido en TODAS las URLs por nombre,
+    // luego encontrarla en la galería por índice. Esto corrige imagenes_por_color
+    // mal etiquetado (ej: "Azul" → archivo "verdeface1copy.jpg" → busca en galeria_urls
+    // el archivo "...-azul.jpg" que sí es el correcto).
+    const colorPhoto = resolveColorImageAll(producto, color);
     if (colorPhoto && colorPhoto !== getProductImage(producto)) {
       const idx = galleryImages.indexOf(colorPhoto);
       setGalIdx(idx >= 0 ? idx : 0);
@@ -271,7 +275,7 @@ export default function ProductoNuevo() {
     if (!producto) return null;
     if (esCarcasa && color) return getProductImageForColor(producto, color);
     if (color) {
-      const colorPhoto = getProductImageForColor(producto, color);
+      const colorPhoto = resolveColorImageAll(producto, color);
       const base = getProductImage(producto);
       if (colorPhoto !== base) return colorPhoto;
       const match = findColorImageMatch(galleryImages, color);
@@ -285,9 +289,11 @@ export default function ProductoNuevo() {
   // mockup se re-pintan al tono oficial vía filtro CSS — cambio inmediato.
   const colorFilter = useMemo(() => {
     if (!producto || !color || esCarcasa) return '';
-    const fotoReal = !!findColorImageMatch(galleryImages, color);
+    // Busca en TODAS las URLs del producto (no solo en la galería truncada a 6).
+    const allUrls = getAllImageUrls(producto);
+    const fotoReal = !!findColorImageMatch(allUrls, color, { minScore: 60 });
     return getColorTintFilter(producto, color, fotoReal);
-  }, [producto, color, esCarcasa, galleryImages]);
+  }, [producto, color, esCarcasa]);
 
   const precioUnit = producto?.precio_b2c || 9990;
   const moq = producto?.personalizacion_gratis_desde || producto?.moq_personalizacion || MOQ_PERSONALIZACION_GRATIS;
@@ -326,9 +332,10 @@ export default function ProductoNuevo() {
       const colorPhoto = getProductImageForColor(producto, color);
       if (colorPhoto && colorPhoto !== base) return colorPhoto;
     }
-    // ② NO-CARCASA con color: imagenes_por_color primero, galería después.
+    // ② NO-CARCASA con color: busca por nombre en TODAS las URLs (corrige
+    //    imagenes_por_color mal etiquetado), fallback a galería por match.
     if (!esCarcasa && color) {
-      const colorPhoto = getProductImageForColor(producto, color);
+      const colorPhoto = resolveColorImageAll(producto, color);
       if (colorPhoto !== base) return colorPhoto;
       const match = findColorImageMatch(galleryImages, color);
       if (match) return galleryImages[match.index];
