@@ -111,9 +111,20 @@ export default function EmpresaProducto() {
 
   const goToCotizar = () => setShowForm(true);
 
-  // Compra rápida B2B: lleva directo a la ficha B2C para configurar y pagar.
-  // Joaquín: "muchas veces solo quieren comprar rápido" — sin pasar por cotización.
-  const goToComprar = () => navigate(`/ProductoNuevo?id=${producto.id}`);
+  // Compra B2B: ancla el producto (con qty + color + logo) al embudo
+  // self-service B2B y envía directo al paso de datos de empresa. El flujo
+  // B2B genera una propuesta formal con PDF → aceptación → factura.
+  // NUNCA deriva al carrito B2C.
+  const goToComprar = () => {
+    try {
+      sessionStorage.setItem('peyu_b2b_anchor', JSON.stringify({
+        sku: producto.sku,
+        cantidad: qty,
+        personalizar: true,
+      }));
+    } catch { /* ignore */ }
+    navigate(`/b2b/self-service?sku=${encodeURIComponent(producto.sku)}`);
+  };
 
   const submitLead = async () => {
     if (!form.company.trim() || !form.name.trim() || !form.email.trim()) {
@@ -401,7 +412,7 @@ export default function EmpresaProducto() {
                     onClick={goToComprar}
                     className="flex-1 h-14 rounded-2xl font-bold text-base flex items-center justify-center gap-2 transition-all hover:scale-[1.01] active:scale-[0.98]"
                     style={{ background: 'white', border: '1.5px solid #D4C4B0', color: '#C0785C' }}
-                    title="Compra rápida — directo al carrito"
+                    title="Generar propuesta de compra B2B"
                   >
                     <ShoppingCart className="w-5 h-5" /> Comprar
                   </button>
@@ -414,7 +425,7 @@ export default function EmpresaProducto() {
                   </button>
                 </div>
                 <p className="text-[11px] text-center px-1" style={{ color: '#A08070' }}>
-                  {fmtCLP(neto)} neto + IVA · Sin compromiso · Presupuesto formal en 24h
+                  {fmtCLP(neto)} neto + IVA · Propuesta formal con PDF en 60 seg
                 </p>
               </div>
             )}
@@ -482,7 +493,7 @@ export default function EmpresaProducto() {
               onClick={goToComprar}
               className="flex-shrink-0 h-12 px-3.5 rounded-2xl flex items-center justify-center font-bold text-xs transition-all active:scale-[0.97]"
               style={{ background: 'white', border: '1.5px solid #D4C4B0', color: '#C0785C' }}
-              title="Compra rápida — directo al carrito"
+              title="Generar propuesta de compra B2B"
             >
               <ShoppingCart className="w-4 h-4" />
             </button>
