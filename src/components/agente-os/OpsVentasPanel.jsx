@@ -31,8 +31,32 @@ export default function OpsVentasPanel({ onRefreshAll }) {
 
   const load = async () => {
     setLoading(true);
-    const data = await base44.entities.CorporateProposal.list('-created_date', 80).catch(() => []);
-    setPropuestas(data || []);
+    // Cargamos AMBAS fuentes de cotización B2B:
+    //  • CorporateProposal — generadas desde el self-service B2B y el admin
+    //  • Cotizacion — generadas desde el chat público y WhatsApp
+    // Las unificamos en una sola lista para que el founder vea TODO en un solo lugar.
+    const [corp, cots] = await Promise.all([
+      base44.entities.CorporateProposal.list('-created_date', 80).catch(() => []),
+      base44.entities.Cotizacion.list('-created_date', 60).catch(() => []),
+    ]);
+    // Normalizamos: CorporateProposal usa `status`, Cotizacion usa `estado`.
+    // Mapeamos Cotizacion al mismo shape para que la UI no distinga.
+    const corpNorm = (corp || []).map((p) => ({ ...p, _tipo: 'propuesta', status: p.status || 'Borrador' }));
+    const cotsNorm = (cots || []).map((c) => ({
+      ...c,
+      _tipo: 'cotizacion',
+      status: c.estado || 'Borrador',
+      // Cotizacion no tiene items_json ni los campos de CorporateProposal,
+      // pero tiene numero, empresa, contacto, email, total → suficientes para mostrar.
+      items_json: c.sku ? JSON.stringify([{ sku: c.sku, nombre: c.sku, qty: c.cantidad, precio: c.precio_unitario }]) : null,
+    }));
+    // Ordenamos por fecha de creación descendente (ambos tienen created_date).
+    const merged = [...corpNorm, ...cotsNorm].sort((a, b) => {
+      const da = new Date(a.created_date || 0).getTime();
+      const db = new Date(b.created_date || 0).getTime();
+      return db - da;
+    });
+    setPropuestas(merged);
     setLoading(false);
   };
   useEffect(() => { load(); }, []);
@@ -52,7 +76,10 @@ export default function OpsVentasPanel({ onRefreshAll }) {
   const cambiarEstado = async (prop, status) => {
     setBusyId(prop.id);
     setPropuestas((prev) => prev.map((p) => p.id === prop.id ? { ...p, status } : p));
-    await base44.functions.invoke('agentOSAction', { action: 'updatePropuestaEstado', payload: { id: prop.id, status } }).catch(() => load());
+    // Si es cotización del chat (Cotizacion), usamos el action que actualiza esa entidad.
+    // CorporateProposal usa `status`, Cotizacion usa `estado`.
+    const action = prop._tipo === 'cotizacion' ? 'updateCotizacionEstado' : 'updatePropuestaEstado';
+    await base44.functions.invoke('agentOSAction', { action, payload: { id: prop.id, status } }).catch(() => load());
     setBusyId(null);
     onRefreshAll?.();
   };
@@ -110,8 +137,11 @@ export default function OpsVentasPanel({ onRefreshAll }) {
               <div className="flex flex-wrap items-center gap-2">
                 <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: ESTADO_DOT[p.status] || '#94A3B8' }} />
                 <div className="min-w-0 flex-1">
-                  <p className="text-xs font-bold text-ld-fg truncate">
+                  <p className="text-xs font-bold text-ld-fg truncate flex items-center gap-1.5">
                     {p.numero ? `${p.numero} · ` : ''}{p.empresa}
+                    {p._tipo === 'cotizacion' && (
+                      <span className="px-1.5 py-0.5 rounded-full bg-ld-action-soft text-ld-action text-[8px] font-bold uppercase tracking-wide">Chat</span>
+                    )}
                   </p>
                   <p className="text-[10px] text-ld-fg-muted truncate">
                     {p.contacto}{p.total ? ` · ${fmt(p.total)}` : ''}{p.fecha_vencimiento ? ` · vence ${p.fecha_vencimiento}` : ''}
@@ -137,11 +167,15 @@ export default function OpsVentasPanel({ onRefreshAll }) {
                   >
                     <Eye className="w-3.5 h-3.5 text-ld-fg-muted" />
                   </button>
-                  {p.pdf_url && (
+                  {p.pdf_url ? (
                     <a href={p.pdf_url} target="_blank" rel="noreferrer" className="p-1.5 rounded-lg hover:bg-ld-action-soft" title="Abrir PDF en pestaña">
                       <FileText className="w-3.5 h-3.5 text-ld-fg-muted" />
                     </a>
-                  )}
+                  ) : p._tipo === 'cotizacion' && p.mockup_url ? (
+                    <a href={p.mockup_url} target="_blank" rel="noreferrer" className="p-1.5 rounded-lg hover:bg-ld-action-soft" title="Ver mockup">
+                      <FileText className="w-3.5 h-3.5 text-ld-fg-muted" />
+                    </a>
+                  ) : null}
                   {p.email && (
                     <a
                       href={`/admin/cliente-360?email=${encodeURIComponent(p.email)}`}
@@ -151,7 +185,7 @@ export default function OpsVentasPanel({ onRefreshAll }) {
                       <User className="w-3.5 h-3.5 text-ld-fg-muted" />
                     </a>
                   )}
-                  {p.email && (
+                  {p.email && p._tipo !== 'cotizacion' && (
                     <button onClick={() => reenviar(p)} disabled={busyId === p.id} className="p-1.5 rounded-lg hover:bg-ld-action-soft" title={`Reenviar a ${p.email}`}>
                       {busyId === p.id ? <Loader2 className="w-3.5 h-3.5 animate-spin text-ld-fg-muted" /> : <Send className="w-3.5 h-3.5" style={{ color: 'var(--ld-action)' }} />}
                     </button>

@@ -105,8 +105,16 @@ function CartInject({ spec }) {
         (p) => String(p.sku || '').trim().toLowerCase() === cleanSku.toLowerCase()
       );
       if (!producto || !alive) return;
+      // 🛒 Cada [[CART]] del agente = nueva intención de compra → reemplazamos
+      // el carrito anterior en vez de acumular. Así el usuario puede pedir otro
+      // producto y empezar limpio sin arrastrar items de una compra previa.
       const key = `peyu_chat_cart_added_${sku}_${qty}`;
       if (!sessionStorage.getItem(key)) {
+        // Limpiar carrito previo + flag anti-duplicados de sesiones anteriores.
+        localStorage.removeItem('carrito');
+        Object.keys(sessionStorage).forEach((k) => {
+          if (k.startsWith('peyu_chat_cart_added_')) sessionStorage.removeItem(k);
+        });
         addToCart(producto, qty);
         sessionStorage.setItem(key, '1');
       }

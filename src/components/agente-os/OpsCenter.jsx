@@ -34,6 +34,7 @@ const TABS = [
 export default function OpsCenter({ onRefreshAll }) {
   const [section, setSection] = useState('pedidos');
   const [pedidos, setPedidos] = useState([]);
+  const [cotizaciones, setCotizaciones] = useState([]);
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState('por_pagar');
   const [search, setSearch] = useState('');
@@ -45,8 +46,13 @@ export default function OpsCenter({ onRefreshAll }) {
 
   const load = async () => {
     setLoading(true);
-    const data = await base44.entities.PedidoWeb.list('-created_date', 120).catch(() => []);
+    const [data, cots] = await Promise.all([
+      base44.entities.PedidoWeb.list('-created_date', 120).catch(() => []),
+      // Cargamos cotizaciones B2B para mostrar el conteo en el badge de la sección.
+      base44.entities.Cotizacion.list('-created_date', 60).catch(() => []),
+    ]);
     setPedidos(data || []);
+    setCotizaciones(cots || []);
     setLoading(false);
   };
   useEffect(() => { load(); }, []);
@@ -68,7 +74,12 @@ export default function OpsCenter({ onRefreshAll }) {
   const counts = useMemo(() => ({
     por_pagar: pedidos.filter((p) => !getPagoStatus(p).pagado && !['Cancelado', 'Reembolsado'].includes(p.estado)).length,
     por_despachar: pedidos.filter((p) => getPagoStatus(p).pagado && !['Despachado', 'Entregado', 'Cancelado', 'Reembolsado'].includes(p.estado)).length,
-  }), [pedidos]);
+    despachados: pedidos.filter((p) => ['Despachado', 'Entregado'].includes(p.estado)).length,
+    todos: pedidos.length,
+    // Cotizaciones B2B abiertas (Borrador + Enviada) —来源 del chat y del self-service.
+    cotiz_abiertas: cotizaciones.filter((c) => ['Borrador', 'Enviada'].includes(c.estado)).length,
+    cotiz_total: cotizaciones.length,
+  }), [pedidos, cotizaciones]);
 
   const handleAction = async (action, payload) => {
     // Etiqueta Bluex: abre el asistente inteligente con checklist guiado
@@ -112,15 +123,27 @@ export default function OpsCenter({ onRefreshAll }) {
 
         {/* Selector de sección — un solo lugar para gestionar todo */}
         <div className="flex gap-1.5 overflow-x-auto scrollbar-hide">
-          {SECTIONS.map((s) => (
-            <button
-              key={s.id}
-              onClick={() => setSection(s.id)}
-              className={`flex-shrink-0 px-3.5 py-2 rounded-xl text-xs font-bold border transition-colors ${section === s.id ? 'ld-btn-primary !border-transparent' : 'ld-btn-ghost text-ld-fg-soft'}`}
-            >
-              {s.label}
-            </button>
-          ))}
+          {SECTIONS.map((s) => {
+            const badge = s.id === 'pedidos'
+              ? counts.por_pagar + counts.por_despachar
+              : s.id === 'ventas'
+                ? counts.cotiz_abiertas
+                : 0;
+            return (
+              <button
+                key={s.id}
+                onClick={() => setSection(s.id)}
+                className={`flex-shrink-0 px-3.5 py-2 rounded-xl text-xs font-bold border transition-colors flex items-center gap-1.5 ${section === s.id ? 'ld-btn-primary !border-transparent' : 'ld-btn-ghost text-ld-fg-soft'}`}
+              >
+                {s.label}
+                {badge > 0 && (
+                  <span className={`px-1.5 py-0.5 rounded-full text-[9px] font-bold ${section === s.id ? 'bg-white/25' : 'bg-ld-action-soft text-ld-action'}`}>
+                    {badge}
+                  </span>
+                )}
+              </button>
+            );
+          })}
         </div>
 
         {section === 'leads' && <OpsLeadsPanel onRefreshAll={onRefreshAll} />}
@@ -141,17 +164,26 @@ export default function OpsCenter({ onRefreshAll }) {
 
         {/* Tabs + buscador + refresh */}
         <div className="flex flex-wrap items-center gap-2">
-          {TABS.map((t) => (
-            <button
-              key={t.id}
-              onClick={() => setTab(t.id)}
-              className={`px-3 py-1.5 rounded-full text-xs font-bold border transition-colors ${tab === t.id ? 'ld-btn-primary !border-transparent' : 'ld-btn-ghost text-ld-fg-soft'}`}
-            >
-              {t.label}
-              {t.id === 'por_pagar' && counts.por_pagar > 0 && <span className="ml-1.5 px-1.5 rounded-full bg-amber-400 text-amber-950 text-[10px]">{counts.por_pagar}</span>}
-              {t.id === 'por_despachar' && counts.por_despachar > 0 && <span className="ml-1.5 px-1.5 rounded-full bg-blue-400 text-blue-950 text-[10px]">{counts.por_despachar}</span>}
-            </button>
-          ))}
+          {TABS.map((t) => {
+            const count = t.id === 'por_pagar' ? counts.por_pagar
+              : t.id === 'por_despachar' ? counts.por_despachar
+              : t.id === 'despachados' ? counts.despachados
+              : counts.todos;
+            return (
+              <button
+                key={t.id}
+                onClick={() => setTab(t.id)}
+                className={`px-3 py-1.5 rounded-full text-xs font-bold border transition-colors flex items-center gap-1.5 ${tab === t.id ? 'ld-btn-primary !border-transparent' : 'ld-btn-ghost text-ld-fg-soft'}`}
+              >
+                {t.label}
+                {count > 0 && (
+                  <span className={`px-1.5 rounded-full text-[9px] ${tab === t.id ? 'bg-white/25' : 'bg-ld-bg-elevated text-ld-fg-muted'}`}>
+                    {count}
+                  </span>
+                )}
+              </button>
+            );
+          })}
           <div className="flex-1 min-w-[160px] relative">
             <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-ld-fg-muted" />
             <input
@@ -172,7 +204,30 @@ export default function OpsCenter({ onRefreshAll }) {
             <Loader2 className="w-4 h-4 animate-spin" /> Cargando pedidos…
           </div>
         ) : filtrados.length === 0 ? (
-          <p className="text-center py-10 text-sm text-ld-fg-muted">Sin pedidos en esta vista 🐢</p>
+          <div className="text-center py-10 space-y-1.5">
+            <p className="text-3xl mb-1">{tab === 'por_pagar' ? '💳' : tab === 'por_despachar' ? '📦' : tab === 'despachados' ? '✅' : '🍃'}</p>
+            <p className="text-sm font-bold text-ld-fg">
+              {tab === 'por_pagar' ? 'Sin pedidos por pagar'
+               : tab === 'por_despachar' ? 'Sin pedidos por despachar'
+               : tab === 'despachados' ? 'Sin pedidos despachados'
+               : 'Sin pedidos'}
+            </p>
+            <p className="text-xs text-ld-fg-muted max-w-xs mx-auto leading-relaxed">
+              {tab === 'por_pagar'
+                ? 'Los pedidos B2C con pago pendiente aparecen aquí. Las cotizaciones B2B están en "Ventas & Propuestas".'
+                : tab === 'por_despachar'
+                ? 'Los pedidos pagados esperando etiqueta o despacho aparecen aquí.'
+                : 'Los pedidos despachados o entregados aparecen aquí.'}
+            </p>
+            {tab === 'por_pagar' && counts.cotiz_abiertas > 0 && (
+              <button
+                onClick={() => setSection('ventas')}
+                className="mt-2 text-xs font-bold text-ld-action hover:underline"
+              >
+                Ver {counts.cotiz_abiertas} cotización{counts.cotiz_abiertas !== 1 ? 'es' : ''} B2B abierta{counts.cotiz_abiertas !== 1 ? 's' : ''} →
+              </button>
+            )}
+          </div>
         ) : (
           <div className="space-y-2">
             {filtrados.map((p) => (

@@ -108,6 +108,15 @@ export default function ShopLanding() {
         localStorage.removeItem('peyu_chat_last_qty');
         localStorage.removeItem('peyu_chat_last_product');
         localStorage.removeItem('peyu_chat_turn_count');
+        // 🛒 Limpiar carrito del chat en sesión nueva — el usuario debe poder
+        // empezar una compra limpia sin arrastrar items de la sesión anterior.
+        localStorage.removeItem('carrito');
+        // Limpiar también el flag anti-duplicados de CartInject para que el
+        // primer [[CART]] de la nueva sesión funcione normalmente.
+        Object.keys(sessionStorage).forEach((k) => {
+          if (k.startsWith('peyu_chat_cart_added_')) sessionStorage.removeItem(k);
+        });
+        window.dispatchEvent(new CustomEvent('peyu:cart-cleared'));
         // El email capturado SÍ se conserva entre sesiones (es dato persistente
         // del visitante), pero el resto de la memoria efímera se limpia para que
         // la conversación nueva no arrastre sesgos de la sesión anterior.

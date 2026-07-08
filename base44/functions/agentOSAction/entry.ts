@@ -191,6 +191,14 @@ Deno.serve(async (req) => {
         return Response.json({ ok: true, message: `Propuesta actualizada a ${payload.status}` });
       }
 
+      case 'updateCotizacionEstado': {
+        // Actualiza el estado de una Cotizacion (generada desde el chat público
+        // o WhatsApp). Cotizacion usa `estado` en vez de `status`.
+        if (!payload.id || !payload.status) throw new Error('Falta id o status');
+        await svc.Cotizacion.update(payload.id, { estado: payload.status });
+        return Response.json({ ok: true, message: `Cotización actualizada a ${payload.status}` });
+      }
+
       case 'enviarPropuesta':
       case 'reenviarPropuesta': {
         if (!payload.proposalId) throw new Error('Falta proposalId');
