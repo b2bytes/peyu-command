@@ -127,6 +127,39 @@ Deno.serve(async (req) => {
       }
     }
 
+    const sr = base44.asServiceRole;
+
+    // ═══ GUARD ANTI-DUPLICADO (idempotencia) ════════════════════════════════
+    // Múltiples caminos pueden disparar bluexCreateShipment simultáneamente
+    // para el mismo pedido/propuesta: la automation de entity update, el
+    // updateShippingStatus (cambio a "Listo para Despacho"), y el wizard
+    // manual del Agent OS. Antes de llamar a la API de BlueExpress (que cobra
+    // por cada OT), verificamos si ya existe un Envio con tracking para este
+    // pedido/propuesta. Si existe, lo devolvemos sin emitir uno nuevo.
+    {
+      const filtroEnvio = pedido_id
+        ? { pedido_id }
+        : proposal_id
+          ? { propuesta_id: proposal_id } // propuesta B2B
+          : null;
+      if (filtroEnvio) {
+        const existentes = await sr.entities.Envio.filter(filtroEnvio, '-created_date', 1).catch(() => []);
+        const envioPrevio = existentes?.[0];
+        if (envioPrevio?.tracking_number) {
+          console.log(`[bluexCreateShipment] OT ya existe para ${id}: ${envioPrevio.tracking_number} — devolviendo existente (anti-duplicado)`);
+          return Response.json({
+            ok: true,
+            skip: true,
+            reason: 'Ya existe una OT para este pedido/propuesta',
+            envio_id: envioPrevio.id,
+            tracking: envioPrevio.tracking_number,
+            label_contenido: envioPrevio.label_base64 || null,
+            tracking_url: envioPrevio.tracking_url || `https://www.bluex.cl/seguimiento?n=${envioPrevio.tracking_number}`,
+          });
+        }
+      }
+    }
+
     const clientAccount = Deno.env.get('BLUEX_CLIENT_ACCOUNT');
     const userName = Deno.env.get('BLUEX_USER_CODE');
     const apiKey = Deno.env.get('BLUEX_API_KEY');
@@ -139,7 +172,6 @@ Deno.serve(async (req) => {
     }
 
     // ── Resolver distrito destino REAL (tarifario oficial → BX-Geo) ──────────
-    const sr = base44.asServiceRole;
     const distrito = await resolverDistrito(sr, comuna_destino);
     const tipoDestino = clasificarTipoDestino(comuna_destino);
     const districtCode = distrito?.code || 'PUD'; // fallback conservador

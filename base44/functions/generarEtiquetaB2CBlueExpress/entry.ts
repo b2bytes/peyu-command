@@ -102,6 +102,22 @@ Deno.serve(async (req) => {
     const labelContent = blueexRes.label_contenido;
     const labelUrl = labelContent ? `data:application/pdf;base64,${labelContent}` : (blueexRes.tracking_url || null);
 
+    // Si bluexCreateShipment devolvió skip (OT ya existía por anti-duplicado),
+    // no reenviar email ni re-escribir historial — solo devolver la existente.
+    if (blueexRes.skip) {
+      console.log(`[generarEtiquetaB2C] OT ${tracking} ya existía para ${pedido.numero_pedido} — skip anti-duplicado`);
+      return Response.json({
+        ok: true,
+        skip: true,
+        pedido_id,
+        numero_pedido: pedido.numero_pedido,
+        tracking_number: tracking,
+        label_url: labelUrl,
+        envio_id: blueexRes.envio_id,
+        message: 'Etiqueta ya existía — sin duplicado',
+      });
+    }
+
     // Actualizar PedidoWeb con tracking
     const historial = Array.isArray(pedido.historial) ? [...pedido.historial] : [];
     historial.push({
