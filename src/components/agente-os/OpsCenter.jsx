@@ -7,6 +7,8 @@ import EtiquetaWizardModal from './EtiquetaWizardModal';
 import EtiquetaViewerModal from './EtiquetaViewerModal';
 import OpsLeadsPanel from './OpsLeadsPanel';
 import OpsVentasPanel from './OpsVentasPanel';
+import { lazy, Suspense } from 'react';
+const PedidoDetailDrawer = lazy(() => import('@/components/pedidos/PedidoDetailDrawer'));
 
 // Secciones del centro operativo — TODO se gestiona aquí, sin saltar de página.
 const SECTIONS = [
@@ -39,6 +41,7 @@ export default function OpsCenter({ onRefreshAll }) {
   const [feedback, setFeedback] = useState(null); // { ok, message, label_url }
   const [wizardPedido, setWizardPedido] = useState(null); // asistente de etiqueta Bluex
   const [viewerLabel, setViewerLabel] = useState(null);   // { url, titulo } — visor de etiqueta in-place
+  const [detailPedido, setDetailPedido] = useState(null); // pedido seleccionado para drawer completo
 
   const load = async () => {
     setLoading(true);
@@ -173,7 +176,7 @@ export default function OpsCenter({ onRefreshAll }) {
         ) : (
           <div className="space-y-2">
             {filtrados.map((p) => (
-              <OpsPedidoRow key={p.id} pedido={p} busy={busyId === p.id} onAction={handleAction} onOpenLabel={openLabel} />
+              <OpsPedidoRow key={p.id} pedido={p} busy={busyId === p.id} onAction={handleAction} onOpenLabel={openLabel} onOpenDetail={setDetailPedido} />
             ))}
           </div>
         )}
@@ -198,6 +201,17 @@ export default function OpsCenter({ onRefreshAll }) {
           titulo={viewerLabel.titulo}
           onClose={() => setViewerLabel(null)}
         />
+      )}
+
+      {/* Drawer de pedido completo: items, mockups, archivos, Bluex, cliente, pago */}
+      {detailPedido && (
+        <Suspense fallback={<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"><Loader2 className="w-6 h-6 animate-spin text-white" /></div>}>
+          <PedidoDetailDrawer
+            pedido={detailPedido}
+            onClose={() => setDetailPedido(null)}
+            onUpdate={() => { load(); onRefreshAll?.(); }}
+          />
+        </Suspense>
       )}
     </div>
   );

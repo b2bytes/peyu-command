@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { base44 } from '@/api/base44Client';
-import { Loader2, RefreshCw, Search, Send, FileText, CheckCircle2, AlertTriangle } from 'lucide-react';
+import { Loader2, RefreshCw, Search, Send, FileText, CheckCircle2, AlertTriangle, Eye, User, ExternalLink } from 'lucide-react';
+import PropuestaViewerModal from './PropuestaViewerModal';
 
 // ════════════════════════════════════════════════════════════════════════
 // OpsVentasPanel — Gestión de ventas B2B (propuestas corporativas) dentro
@@ -26,6 +27,7 @@ export default function OpsVentasPanel({ onRefreshAll }) {
   const [filtro, setFiltro] = useState('abiertas'); // abiertas | todas
   const [busyId, setBusyId] = useState(null);
   const [feedback, setFeedback] = useState(null);
+  const [verPropuesta, setVerPropuesta] = useState(null); // { id, titulo }
 
   const load = async () => {
     setLoading(true);
@@ -128,9 +130,25 @@ export default function OpsVentasPanel({ onRefreshAll }) {
 
                 {/* Acciones */}
                 <div className="flex gap-0.5">
+                  <button
+                    onClick={() => setVerPropuesta({ id: p.id, titulo: `${p.empresa || ''}${p.numero ? ` · ${p.numero}` : ''}` })}
+                    className="p-1.5 rounded-lg hover:bg-ld-action-soft"
+                    title="Ver propuesta (PDF)"
+                  >
+                    <Eye className="w-3.5 h-3.5 text-ld-fg-muted" />
+                  </button>
                   {p.pdf_url && (
-                    <a href={p.pdf_url} target="_blank" rel="noreferrer" className="p-1.5 rounded-lg hover:bg-ld-action-soft" title="Abrir PDF">
+                    <a href={p.pdf_url} target="_blank" rel="noreferrer" className="p-1.5 rounded-lg hover:bg-ld-action-soft" title="Abrir PDF en pestaña">
                       <FileText className="w-3.5 h-3.5 text-ld-fg-muted" />
+                    </a>
+                  )}
+                  {p.email && (
+                    <a
+                      href={`/admin/cliente-360?email=${encodeURIComponent(p.email)}`}
+                      className="p-1.5 rounded-lg hover:bg-ld-action-soft"
+                      title="Ver perfil del cliente"
+                    >
+                      <User className="w-3.5 h-3.5 text-ld-fg-muted" />
                     </a>
                   )}
                   {p.email && (
@@ -143,6 +161,14 @@ export default function OpsVentasPanel({ onRefreshAll }) {
             </div>
           ))}
         </div>
+      )}
+
+      {verPropuesta && (
+        <PropuestaViewerModal
+          proposalId={verPropuesta.id}
+          titulo={verPropuesta.titulo}
+          onClose={() => setVerPropuesta(null)}
+        />
       )}
     </div>
   );

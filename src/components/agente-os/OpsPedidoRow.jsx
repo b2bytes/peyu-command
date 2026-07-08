@@ -1,5 +1,5 @@
 import { getPagoStatus } from '@/lib/pago-status';
-import { Loader2, BadgeCheck, Tag, Printer, Clock, CheckCircle2 } from 'lucide-react';
+import { Loader2, BadgeCheck, Tag, Printer, Clock, CheckCircle2, Eye } from 'lucide-react';
 import { fmtRelativo, fmtFechaHora } from '@/lib/fecha-relativa';
 
 const ESTADOS = ['Nuevo', 'Confirmado', 'En Producción', 'Listo para Despacho', 'Despachado', 'Entregado', 'Cancelado', 'Reembolsado'];
@@ -16,13 +16,13 @@ const fmt = (n) => '$' + (n || 0).toLocaleString('es-CL');
  * OpsPedidoRow — Fila de pedido en el Centro de Operaciones del Agent OS.
  * Acciones 1-clic: marcar pagado · generar etiqueta Bluex · cambiar estado.
  */
-export default function OpsPedidoRow({ pedido, busy, onAction, onOpenLabel }) {
+export default function OpsPedidoRow({ pedido, busy, onAction, onOpenLabel, onOpenDetail }) {
   const pago = getPagoStatus(pedido);
   const esRetiro = pedido.courier === 'Retiro en Tienda';
   const puedeEtiqueta = pago.pagado && !pedido.tracking && !esRetiro;
 
   return (
-    <div className="ld-card rounded-xl p-3 sm:p-3.5">
+    <div className="ld-card rounded-xl p-3 sm:p-3.5 cursor-pointer hover:border-ld-border-strong transition-colors" onClick={() => onOpenDetail?.(pedido)}>
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2 flex-wrap">
@@ -82,12 +82,19 @@ export default function OpsPedidoRow({ pedido, busy, onAction, onOpenLabel }) {
 
           {pedido.tracking && (
             <button
-              onClick={() => onOpenLabel(pedido)}
+              onClick={(e) => { e.stopPropagation(); onOpenLabel(pedido); }}
               className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg ld-btn-ghost text-xs font-bold"
             >
               <Printer className="w-3 h-3" /> Etiqueta/Track
             </button>
           )}
+          <button
+            onClick={(e) => { e.stopPropagation(); onOpenDetail?.(pedido); }}
+            className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg ld-btn-ghost text-xs font-bold"
+            title="Ver pedido completo"
+          >
+            <Eye className="w-3 h-3" /> Detalle
+          </button>
         </div>
       </div>
     </div>
