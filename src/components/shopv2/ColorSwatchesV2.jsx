@@ -1,18 +1,19 @@
 import { Check } from 'lucide-react';
-import { getProductImageForColor } from '@/utils/productImages';
-import { isProductoCarcasa } from '@/lib/product-engraving-areas';
+import { getProductImage, getProductImageForColor } from '@/utils/productImages';
 
 // Selector de color del Shop v2.
-// · CARCASAS: swatch con la FOTO real del color (imagenes_por_color es confiable ahí).
-// · RESTO DE PRODUCTOS: SIEMPRE círculo de color sólido — nunca fotos. El mapa
-//   imagenes_por_color estaba mal poblado en no-carcasas y mostraba fotos de
-//   otro color (bug reportado por el cliente: "elegí rojo y aparece negro").
+// · Si el producto tiene imagenes_por_color (asignadas manualmente por el founder
+//   desde el admin), los swatches muestran la FOTO real del color.
+// · Si no hay fotos asignadas, muestra círculo de color sólido.
 // · Si el producto tiene stock_por_color, los colores agotados se deshabilitan.
 export default function ColorSwatchesV2({ colores = [], value, onSelect, error, producto }) {
   if (!colores.length) return null;
 
-  const esCarcasa = producto ? isProductoCarcasa(producto) : false;
-  const hasPhotos = esCarcasa && !!(producto?.imagenes_por_color && typeof producto.imagenes_por_color === 'object');
+  // ¿Tiene fotos por color asignadas? Aplica a carcasas Y a cualquier producto
+  // donde el founder haya asignado fotos manualmente desde el admin.
+  const mapa = producto?.imagenes_por_color;
+  const hasPhotos = !!(mapa && typeof mapa === 'object' && Object.keys(mapa).length > 0);
+  const baseImg = producto ? getProductImage(producto) : null;
 
   // Stock por color: solo aplica si el mapa existe y tiene datos.
   const stockMap = producto?.stock_por_color;
@@ -40,8 +41,9 @@ export default function ColorSwatchesV2({ colores = [], value, onSelect, error, 
       <div className={`flex flex-wrap justify-center sm:justify-start gap-3 ${error ? 'p-2 -m-2 rounded-xl ring-2 ring-[#D96B4D]/40' : ''}`}>
         {colores.map((c) => {
           const sel = value === c.id;
+          // Foto real del color: si hay mapa y la foto es distinta de la base.
           const photo = hasPhotos ? getProductImageForColor(producto, c) : null;
-          const usePhoto = hasPhotos && photo && photo !== getProductImageForColor(producto, '__none__');
+          const usePhoto = !!(photo && photo !== baseImg);
           const stock = stockDe(c);
           const agotado = stock !== null && stock <= 0;
           return (

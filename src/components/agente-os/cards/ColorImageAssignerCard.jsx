@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { base44 } from '@/api/base44Client';
 import {
   Palette, Search, ChevronDown, ChevronRight, Loader2, RefreshCw,
-  Check, X, ImagePlus, Upload, AlertCircle,
+  Check, X, ImagePlus, Upload, AlertCircle, Camera,
 } from 'lucide-react';
 import ProductImageUploader from '../catalog/ProductImageUploader';
 import { getColoresProducto } from '@/lib/color-parser';
@@ -24,8 +24,7 @@ function getAllImageUrls(producto) {
 }
 
 // Tarjeta del Agente OS para asignar MANUALMENTE qué foto corresponde a cada
-// color del producto. Reemplaza el matching por IA (que se equivoca en 1-2 de
-// cada 4 colores) por control total del founder: ve todas las imágenes
+// color del producto. Control total del founder: ve todas las imágenes
 // disponibles, hace click, listo.
 export default function ColorImageAssignerCard() {
   const [productos, setProductos] = useState([]);
@@ -162,12 +161,13 @@ export default function ColorImageAssignerCard() {
           No hay productos con colores en esta categoría.
         </p>
       ) : (
-        <div className="space-y-1.5">
+        <div className="space-y-2">
           {visibles.map((p) => {
             const colores = getColoresProducto(p);
             const imagenes = getAllImageUrls(p);
             const mapa = (p.imagenes_por_color && typeof p.imagenes_por_color === 'object') ? p.imagenes_por_color : {};
             const asignados = colores.filter((c) => mapa[c.label] || mapa[c.id]);
+            const sinAsignar = colores.length - asignados.length;
             const expandido = expandedId === p.id;
 
             return (
@@ -177,20 +177,38 @@ export default function ColorImageAssignerCard() {
                   onClick={() => { setExpandedId(expandido ? null : p.id); setPickingForColor(null); }}
                   className="w-full flex items-center gap-3 p-2.5 hover:bg-ld-bg-elevated/40 transition-colors text-left"
                 >
-                  <div className="w-10 h-10 rounded-lg bg-ld-bg-elevated overflow-hidden flex-shrink-0 border border-ld-border">
+                  <div className="w-11 h-11 rounded-lg bg-ld-bg-elevated overflow-hidden flex-shrink-0 border border-ld-border">
                     {p.imagen_url
                       ? <img src={p.imagen_url} alt="" className="w-full h-full object-cover" />
                       : <div className="w-full h-full flex items-center justify-center text-ld-fg-subtle"><Palette className="w-4 h-4" /></div>}
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="text-sm font-medium text-ld-fg truncate">{p.nombre}</div>
-                    <div className="text-[11px] text-ld-fg-muted">
-                      {p.sku} · {colores.length} colores · {asignados.length}/{colores.length} con foto
+                    <div className="text-[11px] text-ld-fg-muted flex items-center gap-1.5">
+                      <span>{p.sku}</span>
+                      <span className="text-ld-fg-subtle">·</span>
+                      <span>{colores.length} colores</span>
+                      <span className="text-ld-fg-subtle">·</span>
+                      <span className={sinAsignar > 0 ? 'text-ld-highlight font-semibold' : 'text-ld-action font-semibold'}>
+                        {asignados.length}/{colores.length} con foto
+                      </span>
                     </div>
                   </div>
-                  {asignados.length < colores.length && (
+                  {/* Barra de progreso mini */}
+                  <div className="hidden sm:flex items-center gap-2 flex-shrink-0">
+                    <div className="w-16 h-1.5 rounded-full bg-ld-bg-elevated overflow-hidden">
+                      <div
+                        className="h-full rounded-full transition-all"
+                        style={{
+                          width: `${colores.length > 0 ? (asignados.length / colores.length) * 100 : 0}%`,
+                          background: sinAsignar > 0 ? 'var(--ld-highlight)' : 'var(--ld-action)',
+                        }}
+                      />
+                    </div>
+                  </div>
+                  {sinAsignar > 0 && (
                     <span className="flex items-center gap-1 text-[10px] font-bold text-ld-highlight bg-ld-highlight-soft/40 px-2 py-0.5 rounded-full flex-shrink-0">
-                      <AlertCircle className="w-3 h-3" /> {colores.length - asignados.length} sin foto
+                      <AlertCircle className="w-3 h-3" /> {sinAsignar} sin foto
                     </span>
                   )}
                   {expandido
@@ -200,34 +218,40 @@ export default function ColorImageAssignerCard() {
 
                 {/* Panel expandido: asignación color → imagen */}
                 {expandido && (
-                  <div className="border-t border-ld-border p-3 space-y-3">
-                    {/* Grid de colores */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  <div className="border-t border-ld-border p-3 space-y-3 bg-ld-bg-elevated/20">
+                    {/* Grid de colores — compacto y denso */}
+                    <div className="grid grid-cols-2 sm:grid-cols-2 gap-2">
                       {colores.map((c) => {
                         const imgUrl = mapa[c.label] || mapa[c.id];
                         const isPicking = pickingForColor?.productoId === p.id && (pickingForColor?.color === c.label || pickingForColor?.color === c.id);
                         return (
                           <div
                             key={c.id}
-                            className={`rounded-xl border-2 p-2.5 transition-colors ${
+                            className={`rounded-xl border-2 transition-all overflow-hidden ${
                               isPicking
-                                ? 'border-ld-action bg-ld-action-soft/30'
+                                ? 'border-ld-action bg-ld-action-soft/20'
                                 : imgUrl
-                                  ? 'border-ld-border/60 bg-ld-bg-soft/30'
+                                  ? 'border-ld-border/50 bg-ld-bg-soft/40'
                                   : 'border-dashed border-ld-border bg-ld-bg-soft/20'
                             }`}
                           >
-                            <div className="flex items-center gap-2.5">
+                            {/* Fila superior: swatch + nombre + thumbnail */}
+                            <div className="flex items-center gap-2 p-2">
                               {/* Swatch del color */}
-                              <div className="w-7 h-7 rounded-full border border-ld-border flex-shrink-0" style={{ backgroundColor: c.hex || '#ccc' }} />
+                              <div
+                                className="w-6 h-6 rounded-full border border-ld-border flex-shrink-0 ring-1 ring-white/20"
+                                style={{ backgroundColor: c.hex || '#ccc' }}
+                              />
                               <div className="min-w-0 flex-1">
-                                <p className="text-sm font-semibold text-ld-fg truncate">{c.label}</p>
-                                <p className="text-[10px] text-ld-fg-muted">{imgUrl ? '✓ Foto asignada' : 'Sin foto'}</p>
+                                <p className="text-xs font-bold text-ld-fg truncate leading-tight">{c.label}</p>
+                                <p className={`text-[10px] leading-tight flex items-center gap-0.5 ${imgUrl ? 'text-ld-action' : 'text-ld-fg-subtle'}`}>
+                                  {imgUrl ? <><Check className="w-2.5 h-2.5" strokeWidth={3} /> Asignada</> : <><Camera className="w-2.5 h-2.5" /> Sin foto</>}
+                                </p>
                               </div>
                               {/* Imagen asignada actual */}
                               {imgUrl ? (
                                 <div className="relative flex-shrink-0">
-                                  <img src={imgUrl} alt={c.label} className="w-12 h-12 rounded-lg object-cover border border-ld-border" />
+                                  <img src={imgUrl} alt={c.label} className="w-11 h-11 rounded-lg object-cover border border-ld-border" />
                                   {isPicking && (
                                     <span className="absolute -top-1 -left-1 w-4 h-4 rounded-full bg-ld-action flex items-center justify-center">
                                       <Check className="w-2.5 h-2.5 text-white" strokeWidth={3} />
@@ -235,28 +259,28 @@ export default function ColorImageAssignerCard() {
                                   )}
                                 </div>
                               ) : (
-                                <div className="w-12 h-12 rounded-lg border border-dashed border-ld-border bg-ld-bg-soft/40 flex items-center justify-center flex-shrink-0">
+                                <div className="w-11 h-11 rounded-lg border border-dashed border-ld-border bg-ld-bg-soft/40 flex items-center justify-center flex-shrink-0">
                                   <ImagePlus className="w-4 h-4 text-ld-fg-subtle" />
                                 </div>
                               )}
                             </div>
-                            {/* Acciones del color */}
-                            <div className="flex items-center gap-1.5 mt-2">
+                            {/* Acciones del color — fila compacta */}
+                            <div className="flex items-center gap-1 px-2 pb-2">
                               <button
                                 onClick={() => setPickingForColor(isPicking ? null : { productoId: p.id, color: c.label })}
                                 disabled={saving}
                                 className={`flex-1 inline-flex items-center justify-center gap-1 px-2 py-1.5 rounded-lg text-[11px] font-bold transition-colors disabled:opacity-50 ${
-                                  isPicking ? 'ld-btn-primary' : 'ld-btn-ghost text-ld-fg-soft'
+                                  isPicking ? 'ld-btn-primary' : imgUrl ? 'ld-btn-ghost text-ld-fg-soft' : 'bg-ld-action-soft text-ld-action hover:bg-ld-action/20'
                                 }`}
                               >
-                                {isPicking ? <Check className="w-3 h-3" /> : <ImagePlus className="w-3 h-3" />}
-                                {isPicking ? 'Listo · elige foto abajo' : imgUrl ? 'Cambiar' : 'Asignar'}
+                                {isPicking ? <Check className="w-3 h-3" /> : imgUrl ? <Camera className="w-3 h-3" /> : <ImagePlus className="w-3 h-3" />}
+                                {isPicking ? 'Elige abajo' : imgUrl ? 'Cambiar' : 'Asignar'}
                               </button>
                               {imgUrl && (
                                 <button
                                   onClick={() => quitar(p.id, c.label)}
                                   disabled={saving}
-                                  className="inline-flex items-center justify-center px-2 py-1.5 rounded-lg text-[11px] font-semibold text-red-400 hover:bg-red-500/10 disabled:opacity-50"
+                                  className="inline-flex items-center justify-center w-8 py-1.5 rounded-lg text-[11px] font-semibold text-red-400 hover:bg-red-500/10 disabled:opacity-50"
                                   title="Quitar asignación"
                                 >
                                   <X className="w-3 h-3" />
@@ -287,7 +311,7 @@ export default function ColorImageAssignerCard() {
                             No hay imágenes subidas para este producto. Sube una abajo.
                           </p>
                         ) : (
-                          <div className="grid grid-cols-4 sm:grid-cols-5 gap-2">
+                          <div className="grid grid-cols-4 sm:grid-cols-6 gap-2">
                             {imagenes.map((url) => {
                               const enUso = colores.some((c) => (mapa[c.label] || mapa[c.id]) === url);
                               return (
@@ -331,8 +355,7 @@ export default function ColorImageAssignerCard() {
 
       {/* Nota educativa */}
       <p className="text-[11px] text-ld-fg-muted mt-3 leading-relaxed">
-        💡 Esta herramienta reemplaza el matching automático por IA. Asigna la foto correcta a cada color con un click —
-        el cliente verá la imagen exacta al elegir el color en la tienda.
+        💡 Asigna la foto correcta a cada color con un click — el cliente verá la imagen exacta al elegir el color en la tienda B2C y B2B.
       </p>
     </div>
   );

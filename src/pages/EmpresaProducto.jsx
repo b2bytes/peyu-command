@@ -55,10 +55,16 @@ export default function EmpresaProducto() {
   const images = useMemo(() => {
     if (!producto) return [];
     const main = getProductImage(producto);
-    const extra = Array.isArray(producto.galeria_urls)
-      ? producto.galeria_urls.filter(u => u?.startsWith('http') && u !== main)
+    // Fotos por color asignadas manualmente por el founder (imagenes_por_color).
+    // Se incluyen como thumbnails de galería para que el cliente vea cada color.
+    const mapa = producto.imagenes_por_color;
+    const colorFotos = (mapa && typeof mapa === 'object')
+      ? Object.values(mapa).filter((u) => typeof u === 'string' && u.startsWith('http') && u !== main)
       : [];
-    return [main, ...extra].slice(0, 5);
+    const extra = Array.isArray(producto.galeria_urls)
+      ? producto.galeria_urls.filter(u => u?.startsWith('http') && u !== main && !colorFotos.includes(u))
+      : [];
+    return [main, ...colorFotos, ...extra].slice(0, 8);
   }, [producto]);
 
   // Colores oficiales (Azul/Negro/Rojo/Verde · norma catálogo B2B PDF).
