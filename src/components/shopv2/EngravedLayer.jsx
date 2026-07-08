@@ -50,7 +50,7 @@ function maskStyle(dataUrl) {
   };
 }
 
-export default function EngravedLayer({ eng, tipo, texto, sizePct, tint, productImg }) {
+export default function EngravedLayer({ eng, tipo, texto, sizePct, tint, productImg, placement }) {
    // ── FRASE ────────────────────────────────────────────────────────────
    // El texto se AUTO-ADAPTA al espacio de grabado: se envuelve en varias líneas
    // y reduce su tamaño de letra cuanto más largo es, para caber siempre dentro
@@ -122,16 +122,35 @@ export default function EngravedLayer({ eng, tipo, texto, sizePct, tint, product
   // Pasada de TEXTURA: la foto del producto recortada por la máscara del diseño.
   // Mezclada en soft-light → el grabado "absorbe" los granos/reflejos reales del
   // material y queda perfectamente integrado a la superficie (no un parche plano).
+  //
+  // ALINEACIÓN DINÁMICA: si recibimos `placement` (x, y, size del logo en el
+  // lienzo), calculamos el background-size y background-position para que la
+  // textura muestre EXACTAMENTE la parte del producto que está detrás del logo.
+  // Así el grano/reflejo siempre coincide con la superficie real, sin importar
+  // dónde el cliente arrastró el logo.
+  let texBgSize = '320% 320%';
+  let texBgPos = 'center';
+  if (placement && sizePct > 0) {
+    const s = Math.max(10, Math.min(80, sizePct));
+    // background-size: el producto completo escalado al inverso del ancho del wrapper.
+    const bgSizeVal = Math.round(10000 / s);
+    // background-position: alinea la zona del producto que coincide con el logo.
+    const leftPct = placement.x - s / 2;
+    const topPct = placement.y - s / 2;
+    const denom = Math.max(1, 100 - s);
+    texBgSize = `${bgSizeVal}% ${bgSizeVal}%`;
+    texBgPos = `${Math.max(0, Math.min(100, (leftPct / denom) * 100))}% ${Math.max(0, Math.min(100, (topPct / denom) * 100))}%`;
+  }
   const TextureLayer = useTexture && (
     <div
       className="absolute inset-0"
       style={{
         ...maskStyle(eng.dataUrl),
         backgroundImage: `url("${productImg}")`,
-        backgroundSize: '320% 320%', // zoom: muestrea textura, no la silueta entera
-        backgroundPosition: 'center',
+        backgroundSize: texBgSize,
+        backgroundPosition: texBgPos,
         mixBlendMode: 'soft-light',
-        opacity: 0.55,
+        opacity: 0.6,
         filter: tint === 'light' ? 'brightness(1.15) contrast(1.1)' : 'brightness(0.9) contrast(1.15)',
       }}
     />

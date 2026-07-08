@@ -709,6 +709,7 @@ export default function ProductoNuevo() {
                     images={galleryImages}
                     active={galIdx}
                     onSelect={setGalIdx}
+                    mainImage={displayImg}
                     badge={esCompostable ? 'Compostable' : '100% Reciclado'}
                     imgFilter={colorFilter}
                     fallback={getProductImage(producto)}
@@ -763,6 +764,7 @@ export default function ProductoNuevo() {
                     images={galleryImages}
                     active={galIdx}
                     onSelect={setGalIdx}
+                    mainImage={displayImg}
                     badge={esCompostable ? 'Compostable' : '100% Reciclado'}
                     imgFilter={colorFilter}
                     fallback={getProductImage(producto)}

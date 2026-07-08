@@ -90,7 +90,22 @@ export default function LogoMockupPreview({
       {/* Overlay de grabado láser — aplica logo a TODOS los productos */}
       {logoUrl && (
         <>
-          {/* Área de grabado inteligente — reemplaza marca PEYU con logo cliente */}
+          {/* Iluminación de estudio: highlight especular + viñeta de sombra.
+              Da volumen real a la superficie para que el grabado se asiente
+              con profundidad (no flote plano como un sticker). */}
+          <div style={{
+            position: 'absolute', inset: 0, pointerEvents: 'none',
+            background: 'radial-gradient(70% 55% at 32% 28%, rgba(255,255,255,0.13) 0%, transparent 60%)',
+            mixBlendMode: 'screen',
+          }} />
+          <div style={{
+            position: 'absolute', inset: 0, pointerEvents: 'none',
+            background: 'radial-gradient(120% 95% at 50% 44%, transparent 52%, rgba(0,0,0,0.12) 100%)',
+            mixBlendMode: 'multiply',
+          }} />
+
+          {/* Área de grabado inteligente — reemplaza marca PEYU con logo cliente.
+              Motor multi-pasada: tinta + textura del material + bisel del láser. */}
           <div
             style={{
               position: 'absolute',
@@ -104,20 +119,42 @@ export default function LogoMockupPreview({
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              // Blend según tono del producto (darken=claro · screen=oscuro)
-              mixBlendMode: blendMode,
             }}
           >
-            {/* Logo grabado con filtro inteligente — siempre visible, sin loader */}
+            {/* Pasada 1 · TINTA: el logo con blend inteligente (multiply/screen)
+                y bisel del láser (drop-shadow para profundidad 3D). */}
             <img
               src={logoUrl}
               alt="Logo grabado"
               style={{
-                width: '95%',
-                height: '95%',
+                width: '92%',
+                height: '92%',
                 objectFit: 'contain',
-                filter: logoFilter,
-                opacity: 1,
+                filter: `${logoFilter} ${tone === 'dark'
+                  ? 'drop-shadow(0 0.8px 0.5px rgba(255,255,255,0.35)) drop-shadow(0 -0.6px 0.5px rgba(0,0,0,0.2))'
+                  : 'drop-shadow(0 0.8px 0.5px rgba(0,0,0,0.35)) drop-shadow(0 -0.6px 0.5px rgba(255,255,255,0.2))'
+                }`,
+                opacity: zone.opacity ?? 0.9,
+                mixBlendMode: blendMode,
+              }}
+            />
+            {/* Pasada 2 · TEXTURA: la propia foto del producto recortada con la
+                misma silueta del logo y mezclada en soft-light. Esto "deja ver"
+                los granos/reflejos del material dentro del grabado → integración
+                perfecta con la superficie (no un parche plano). */}
+            <div
+              style={{
+                position: 'absolute', inset: 0,
+                WebkitMaskImage: `url("${logoUrl}")`, maskImage: `url("${logoUrl}")`,
+                WebkitMaskRepeat: 'no-repeat', maskRepeat: 'no-repeat',
+                WebkitMaskPosition: 'center', maskPosition: 'center',
+                WebkitMaskSize: '92% 92%', maskSize: '92% 92%',
+                backgroundImage: `url("${productImg}")`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                mixBlendMode: 'soft-light',
+                opacity: 0.55,
+                filter: tone === 'dark' ? 'brightness(1.15) contrast(1.1)' : 'brightness(0.9) contrast(1.15)',
               }}
             />
           </div>

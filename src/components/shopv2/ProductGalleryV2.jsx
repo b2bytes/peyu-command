@@ -7,13 +7,17 @@ import { Recycle, ZoomIn, Check } from 'lucide-react';
 // Recibe `images` (urls), `active` (índice), `onSelect` y `badge`.
 // ════════════════════════════════════════════════════════════════════════
 export default function ProductGalleryV2({
-  images = [], active = 0, onSelect, badge, fallback, imgFilter = '',
+  images = [], active = 0, onSelect, badge, fallback, imgFilter = '', mainImage,
 }) {
   const [zoom, setZoom] = useState(false);
   const [pos, setPos] = useState({ x: 50, y: 50 });
   const ref = useRef(null);
 
-  const main = images[active] || images[0] || fallback;
+  // mainImage tiene prioridad: es la imagen resuelta del color elegido por el
+  // padre (displayImg). Si no se pasa, cae al índice activo de la galería.
+  // Esto hace que el cambio de color sea INMEDIATO y fluido — el padre ya
+  // resolvió la URL correcta, no dependemos de sincronizar índices frágiles.
+  const main = mainImage || images[active] || images[0] || fallback;
 
   // ── Transición de carga: cuando cambia la imagen principal (color/ángulo),
   //     mostramos un shimmer hasta que la nueva imagen cargue. Así el cliente
@@ -25,6 +29,15 @@ export default function ProductGalleryV2({
     setImgLoaded(false);
     setImgKey((k) => k + 1);
   }, [main]);
+
+  // ── Auto-sync del thumbnail activo: cuando mainImage cambia (el cliente
+  //     eligió otro color), buscamos esa URL en los thumbnails y marcamos el
+  //     activo para feedback visual. Si no se encuentra, no hacemos nada.
+  useEffect(() => {
+    if (!mainImage || images.length < 2) return;
+    const idx = images.indexOf(mainImage);
+    if (idx >= 0 && idx !== active) onSelect?.(idx);
+  }, [mainImage]); // eslint-disable-line
 
   const handleMove = (e) => {
     const r = ref.current?.getBoundingClientRect();

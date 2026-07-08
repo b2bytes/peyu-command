@@ -390,6 +390,7 @@ const MockupLivePreviewV2 = forwardRef(function MockupLivePreviewV2({ productIma
                 sizePct={pl.size}
                 tint={tint}
                 productImg={imgSrc}
+                placement={pl}
               />
             </div>
           );
