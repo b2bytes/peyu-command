@@ -161,25 +161,25 @@ Deno.serve(async (req) => {
     doc.setFillColor(...MINT);
     doc.rect(0, heroH + 2, pw, 1, 'F');
 
-    // Logo PEYU completo (tortuga + PEYU tinta) — chip arena 28x28 con sombra
-    const lgS = 28, lgX = MX, lgY = 10;
-    shadowRect(lgX + 0.5, lgY + 0.5, lgS, lgS, 4);
+    // Logo PEYU completo (tortuga + PEYU tinta) — chip arena vertical (logo vertical)
+    const lgW = 24, lgH = 32, lgX = MX, lgY = 8;
+    shadowRect(lgX + 0.5, lgY + 0.5, lgW, lgH, 4);
 
     if (peyuLogo) {
      try {
        doc.setFillColor(...SAND);
-       doc.roundedRect(lgX, lgY, lgS, lgS, 4, 4, 'F');
-       doc.addImage(`data:image/${peyuLogo.fmt.toLowerCase()};base64,${peyuLogo.b64}`, peyuLogo.fmt, lgX + 2, lgY + 2, lgS - 4, lgS - 4);
+       doc.roundedRect(lgX, lgY, lgW, lgH, 4, 4, 'F');
+       doc.addImage(`data:image/${peyuLogo.fmt.toLowerCase()};base64,${peyuLogo.b64}`, peyuLogo.fmt, lgX + 2, lgY + 2, lgW - 4, lgH - 4);
      } catch {
-       T('PEYU', lgX, lgY + 18, { size: 24, font: 'bold', color: WHITE });
+       T('PEYU', lgX, lgY + 20, { size: 22, font: 'bold', color: WHITE });
      }
     } else {
-     T('PEYU', lgX, lgY + 18, { size: 24, font: 'bold', color: WHITE });
+     T('PEYU', lgX, lgY + 20, { size: 22, font: 'bold', color: WHITE });
     }
 
     // Tagline al lado del logo (el logo oficial ya incluye "PEYU")
-    T('Plastico que renace - 100% reciclado', lgX + lgS + 5, lgY + 14, { size: 8, font: 'normal', color: CREAM });
-    T('Hecho en Chile', lgX + lgS + 5, lgY + 20, { size: 7, font: 'bold', color: CREAM });
+    T('Plastico que renace - 100% reciclado', lgX + lgW + 5, lgY + 12, { size: 8, font: 'normal', color: CREAM });
+    T('Hecho en Chile', lgX + lgW + 5, lgY + 18, { size: 7, font: 'bold', color: CREAM });
 
     // Bloque N° propuesta (derecha, alineado al margen)
     T('PROPUESTA N°', RX, lgY + 6, { size: 7, font: 'bold', color: CREAM, align: 'right', spacing: 1 });

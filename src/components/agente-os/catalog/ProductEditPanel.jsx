@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Loader2, Check, Trash2, Power } from 'lucide-react';
 import ProductImageUploader from './ProductImageUploader';
+import ColorImageEditor from './ColorImageEditor';
 
 // Categorías válidas del schema Producto (evita guardar valores fuera del enum
 // que dejarían el producto invisible en los filtros por categoría).
@@ -141,6 +142,9 @@ export default function ProductEditPanel({ producto, onSaved, onClose }) {
           <ProductImageUploader onUploaded={agregarGaleria} label="Agregar" size="sm" />
         </div>
       </Field>
+
+      {/* Colores e imágenes — asignación MANUAL, sin IA */}
+      <ColorImageEditor producto={producto} onSaved={onSaved} />
 
       {/* Acciones */}
       <div className="flex items-center justify-between gap-2 pt-1">

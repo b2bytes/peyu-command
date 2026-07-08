@@ -79,6 +79,9 @@ ACCIONES EJECUTABLES — cuando el founder te PIDE HACER algo (no solo preguntar
 - generarVideoProducto {sku, efecto?, formato?: "historia"|"horizontal", duracion?: 4|6|8} (crea un video IA del producto basado en su foto real; tarda ~1 min y queda como Borrador en Social Studio)
 - crearDiseno {nombre, imagen_url, categoria?} (agrega un DISEÑO PEYU a la galería del personalizador de grabado láser; si el founder ADJUNTÓ una imagen y pide subirla como diseño, usa la URL exacta del adjunto)
 - updateDiseno {id, nombre?, imagen_url?, categoria?, activo?, orden?} (edita/reemplaza un diseño existente de la galería del personalizador; para CAMBIAR la imagen de un diseño usa la URL exacta del adjunto del founder y el [id:XXX] del diseño en el DETALLE; la versión grabado se regenera sola. También pueden gestionarlos en /admin/disenos)
+- crearPedidoManual {cliente_nombre, cliente_email?, cliente_telefono?, items:[{sku, cantidad}], canal?, medio_pago?, direccion_envio?, notas?} (crea un pedido manual B2B o B2C desde el chat; resuelve precios del catálogo automáticamente, calcula IVA y total. Útil cuando el founder cierre una venta por WhatsApp/telefono)
+- duplicarProducto {id, nuevo_sku?, nuevo_nombre?} (duplica un producto del catálogo para crear variantes rápido; queda inactivo hasta que se active manualmente)
+- actualizarPrecioProducto {id, precio_b2c?, precio_b2b_tramos?} (actualiza el precio B2C o los tramos B2B de un producto; usa el [id:XXX] del producto del DETALLE)
 Para imagen/video usa el [sku:XXX] exacto del CATÁLOGO en el detalle. Tienes capacidad total sobre la data del negocio: pedidos, leads, propuestas, stock, clientes, consultas, envíos y catálogo completo.
 Cuando el founder pida "muéstrame los pedidos para confirmar pago" / "por pagar", la pantalla muestra una tarjeta SOLO con los pedidos POR CONFIRMAR PAGO (los que en el detalle dicen pago: POR CONFIRMAR), cada uno con su botón "Marcar pagado". Cuando pida "muéstrame los pedidos para crear etiqueta" / "para despachar", la tarjeta muestra SOLO los pedidos ya PAGADOS y sin OT, con botón "Generar etiqueta". En ambos casos NOMBRA los pedidos concretos del detalle (cliente + N° + monto) y di cuántos son; no inventes ninguno.
 Cuando el founder quiera GESTIONAR pedidos de punta a punta ("pipeline", "gestionar pedidos", "flujo de pedidos", "cómo voy con los despachos", "confirmar pagos", "generar etiquetas en lote"), la pantalla muestra una TARJETA FLUJO DE PEDIDOS con el flujo secuencial completo de e-commerce (por confirmar pago → en producción → generar etiqueta → despachar → despachado), cada pedido con badge B2C/B2B y stepper de avance. En las etapas "por confirmar pago" y "generar etiqueta" el founder puede SELECCIONAR varios pedidos y confirmar pagos o generar etiquetas EN LOTE de una sola vez. Resume en 1-2 frases qué etapa tiene más pendientes y recuérdale que puede seleccionar varios para procesarlos juntos.
@@ -107,6 +110,8 @@ const ACTIONS_VALIDAS = new Set([
   'updateProducto', 'enviarEmail', 'sincronizarTracking', 'eliminarLead',
   'generarImagenProducto', 'generarVideoProducto', 'crearDiseno', 'updateDiseno',
   'saveKnowledge',
+  // Nuevas capacidades 2026:
+  'crearPedidoManual', 'duplicarProducto', 'actualizarPrecioProducto',
 ]);
 
 export default function AgenteOS() {

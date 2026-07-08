@@ -491,6 +491,88 @@ Deno.serve(async (req) => {
         return Response.json({ ok: true, message: 'Tracking BlueExpress sincronizado', detail: r || null });
       }
 
+      // ── Nuevas capacidades del Agent OS (2026) ─────────────────────────
+      case 'crearPedidoManual': {
+        // Crea un pedido manual (B2B o B2C) desde el chat. Items con sku+cant.
+        if (!payload.cliente_nombre) throw new Error('Falta nombre del cliente');
+        if (!payload.items || !Array.isArray(payload.items) || !payload.items.length) throw new Error('Falta items del pedido');
+        const num_pedido = `PED-${Date.now().toString().slice(-6)}`;
+        const items_detalle = [];
+        let subtotal = 0;
+        for (const it of payload.items) {
+          const prod = await svc.Producto.filter({ sku: it.sku }).catch(() => []);
+          const p = prod?.[0];
+          if (!p) continue;
+          const cant = Math.max(1, parseInt(it.cantidad) || 1);
+          const precio = it.precio_unitario || p.precio_b2c || 0;
+          subtotal += precio * cant;
+          items_detalle.push({ sku: p.sku, nombre: p.nombre, cantidad: cant, precio_unitario: precio });
+        }
+        if (!items_detalle.length) throw new Error('No se encontraron productos válidos');
+        const iva = Math.round(subtotal * 0.19);
+        const total = subtotal + iva;
+        const hoy = new Date().toISOString().slice(0, 10);
+        const pedido = await svc.PedidoWeb.create({
+          numero_pedido: num_pedido,
+          fecha: hoy,
+          canal: payload.canal || 'WhatsApp',
+          cliente_nombre: payload.cliente_nombre,
+          cliente_email: payload.cliente_email || '',
+          cliente_telefono: payload.cliente_telefono || '',
+          tipo_cliente: payload.tipo_cliente || 'B2B Corporativo',
+          items_detalle,
+          cantidad: items_detalle.reduce((s, i) => s + i.cantidad, 0),
+          subtotal,
+          total,
+          medio_pago: payload.medio_pago || 'Transferencia',
+          estado: payload.estado || 'Nuevo',
+          payment_status: 'pending_transfer',
+          direccion_envio: payload.direccion_envio || '',
+          ciudad: payload.ciudad || '',
+          notas: payload.notas || `Pedido creado manualmente desde Agent OS por ${user.email}`,
+          historial: [{ at: new Date().toISOString(), type: 'created', actor: user.email, channel: 'system', detail: 'Pedido creado desde Agent OS' }],
+        });
+        return Response.json({ ok: true, message: `Pedido ${num_pedido} creado para ${payload.cliente_nombre} · $${total.toLocaleString('es-CL')} (${items_detalle.length} items)`, pedido_id: pedido.id });
+      }
+
+      case 'duplicarProducto': {
+        // Duplica un producto existente (para crear variantes rápido).
+        if (!payload.id) throw new Error('Falta id del producto a duplicar');
+        const [orig] = await svc.Producto.filter({ id: payload.id });
+        if (!orig) throw new Error('Producto no encontrado');
+        const copia = await svc.Producto.create({
+          sku: payload.nuevo_sku || `${orig.sku}-COPY`,
+          nombre: payload.nuevo_nombre || `${orig.nombre} (copia)`,
+          categoria: orig.categoria,
+          material: orig.material,
+          canal: orig.canal,
+          descripcion: orig.descripcion || '',
+          precio_b2c: orig.precio_b2c || undefined,
+          precio_b2b_tramos: orig.precio_b2b_tramos || undefined,
+          stock_actual: 0,
+          activo: false,
+          colores: orig.colores || [],
+          incluye: orig.incluye || '',
+          dimensiones: orig.dimensiones || '',
+          garantia_anios: orig.garantia_anios || undefined,
+          lead_time_sin_personal: orig.lead_time_sin_personal || undefined,
+          lead_time_con_personal: orig.lead_time_con_personal || undefined,
+        });
+        return Response.json({ ok: true, message: `Producto duplicado: "${copia.nombre}" (SKU ${copia.sku}). Quedó inactivo — actívalo cuando esté listo.`, producto_id: copia.id });
+      }
+
+      case 'actualizarPrecioProducto': {
+        // Actualiza precio B2C o tramos B2B de un producto.
+        if (!payload.id) throw new Error('Falta id del producto');
+        const campos = {};
+        if (typeof payload.precio_b2c === 'number' && payload.precio_b2c > 0) campos.precio_b2c = payload.precio_b2c;
+        if (payload.precio_b2b_tramos && typeof payload.precio_b2b_tramos === 'object') campos.precio_b2b_tramos = payload.precio_b2b_tramos;
+        if (!Object.keys(campos).length) throw new Error('Especifica precio_b2c o precio_b2b_tramos');
+        await svc.Producto.update(payload.id, campos);
+        const changed = Object.keys(campos).join(', ');
+        return Response.json({ ok: true, message: `Precio actualizado: ${changed}` });
+      }
+
       // ── Memoria a largo plazo del agente ──────────────────────────────
       // Guarda un aprendizaje/decisión en MetaAgentMemory + Pinecone para
       // que el agente lo recupere en futuras conversaciones.

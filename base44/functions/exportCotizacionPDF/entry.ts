@@ -98,13 +98,13 @@ Deno.serve(async (req) => {
   doc.setFillColor(...LEAF); doc.circle(pw + 6, heroH - 4, 22, 'F');
   doc.setFillColor(...CREAM); doc.rect(0, heroH, pw, 2, 'F');
 
-  // Logo PEYU completo sobre chip arena (contraste sobre hero verde bosque)
-  const lgS = 22, lgX = PMX, lgY = 8;
+  // Logo PEYU completo sobre chip arena vertical (logo vertical: tortuga + PEYU)
+  const lgW = 22, lgH = 30, lgX = PMX, lgY = 6;
   if (peyuLogoB64) {
     try {
       doc.setFillColor(...SAND);
-      doc.roundedRect(lgX, lgY, lgS, lgS, 3, 3, 'F');
-      doc.addImage(`data:image/png;base64,${peyuLogoB64}`, 'PNG', lgX + 1.5, lgY + 1.5, lgS - 3, lgS - 3);
+      doc.roundedRect(lgX, lgY, lgW, lgH, 3, 3, 'F');
+      doc.addImage(`data:image/png;base64,${peyuLogoB64}`, 'PNG', lgX + 1.5, lgY + 1.5, lgW - 3, lgH - 3);
     } catch { T('PEYU', PMX, 20, { size: 22, font: 'bold', color: WHITE }); }
   } else {
     T('PEYU', PMX, 20, { size: 22, font: 'bold', color: WHITE });
