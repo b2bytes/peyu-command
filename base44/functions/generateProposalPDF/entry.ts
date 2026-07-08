@@ -283,47 +283,108 @@ Deno.serve(async (req) => {
 
     // ═══════════════════════════════════════════════════
     //  MOCKUP + ESG (dos columnas)
+    // Solo se muestra si existe un mockup REAL del cliente o una foto del
+    // producto. Si la propuesta fue rápida (sin personalización), no se
+    // inventa ninguna imagen.
+    // Prioridad: 1) mockup del cliente en items, 2) mockup_urls de la propuesta
+    // (solo si fue generado, no es placeholder), 3) foto del producto del item.
     // ═══════════════════════════════════════════════════
-    if (p.mockup_urls?.length > 0) {
-      T('VISTA PREVIA Y BENEFICIOS', MX, y, { size: 7, font: 'bold', color: STONE2, spacing: 1 });
-      y += 6;
+    {
+      // Determinar la mejor imagen a mostrar (o null si no hay ninguna real)
+      let imagenMockup = null; // { url, esReal } esReal=true si es mockup del cliente
+      let captionMockup = '';
 
-      const colGap = 6;
-      const mockW = (CW - colGap) * 0.46;
-      const esgW = CW - colGap - mockW;
-      const boxH = 76;
-
-      // Mockup
-      doc.setFillColor(...SAND);
-      doc.roundedRect(MX, y, mockW, boxH, 3, 3, 'F');
-      try {
-        const { b64, fmt } = await fetchImageAsBase64(p.mockup_urls[0]);
-        doc.addImage(`data:image/${fmt.toLowerCase()};base64,${b64}`, fmt, MX + 2, y + 2, mockW - 4, boxH - 10);
-      } catch {
-        T('Mockup digital adjunto', MX + mockW / 2, y + boxH / 2, { size: 8, color: STONE2, align: 'center' });
+      // 1) Mockup real del cliente: buscamos en items_detalle o en items del JSON
+      const itemConMockup = items.find((it) => it.mockup_url && /^https?:\/\//i.test(it.mockup_url));
+      if (itemConMockup) {
+        imagenMockup = { url: itemConMockup.mockup_url, esReal: true };
+        captionMockup = 'Mockup aprobado por el cliente';
       }
-      T('Mockup referencial - laser UV simulado', MX + mockW / 2, y + boxH - 3.5, { size: 6.5, color: STONE, align: 'center' });
 
-      // ESG card
-      const esgX = MX + mockW + colGap;
-      doc.setFillColor(...TEAL);
-      doc.roundedRect(esgX, y, esgW, boxH, 3, 3, 'F');
-      T('IMPACTO ESG', esgX + 6, y + 9, { size: 6.5, font: 'bold', color: CREAM, spacing: 1 });
-      T('Compra con', esgX + 6, y + 19, { size: 13, font: 'bold', color: WHITE });
-      T('proposito.', esgX + 6, y + 26, { size: 13, font: 'bold', color: WHITE });
-      const esgLines = [
-        esSoloCompostable ? 'Fibra de trigo / compostable' : '100% plastico reciclado',
-        'Hecho en Chile',
-        'Energia renovable',
-        garantiaLabel,
-        'Reduce tu huella corporativa',
-      ];
-      esgLines.forEach((l, i) => {
-        T('>', esgX + 6, y + 38 + i * 6.5, { size: 8, font: 'bold', color: CREAM });
-        T(l, esgX + 10, y + 38 + i * 6.5, { size: 8, color: WHITE });
-      });
+      // 2) mockup_urls de la propuesta — solo si es URL base44 (subida por nosotros, no generada por el sistema)
+      if (!imagenMockup && p.mockup_urls?.length > 0) {
+        const urlMockup = p.mockup_urls[0];
+        if (/^https?:\/\//i.test(urlMockup)) {
+          imagenMockup = { url: urlMockup, esReal: true };
+          captionMockup = 'Vista previa del grabado laser UV';
+        }
+      }
 
-      y += boxH + 12;
+      // 3) Si no hay mockup del cliente pero hay foto del producto del 1er item
+      if (!imagenMockup) {
+        const primerItem = items[0];
+        const fotoProducto = primerItem?.imagen_url || '';
+        if (/^https?:\/\//i.test(fotoProducto)) {
+          imagenMockup = { url: fotoProducto, esReal: false };
+          captionMockup = 'Foto referencial del producto';
+        }
+      }
+
+      // Render solo si hay imagen real
+      if (imagenMockup) {
+        T('VISTA PREVIA Y BENEFICIOS', MX, y, { size: 7, font: 'bold', color: STONE2, spacing: 1 });
+        y += 6;
+
+        const colGap = 6;
+        const mockW = (CW - colGap) * 0.46;
+        const esgW = CW - colGap - mockW;
+        const boxH = 76;
+
+        // Box de imagen
+        doc.setFillColor(...SAND);
+        doc.roundedRect(MX, y, mockW, boxH, 3, 3, 'F');
+        try {
+          const { b64, fmt } = await fetchImageAsBase64(imagenMockup.url);
+          doc.addImage(`data:image/${fmt.toLowerCase()};base64,${b64}`, fmt, MX + 2, y + 2, mockW - 4, boxH - 10);
+        } catch {
+          T('Imagen no disponible', MX + mockW / 2, y + boxH / 2, { size: 8, color: STONE2, align: 'center' });
+        }
+        T(captionMockup, MX + mockW / 2, y + boxH - 3.5, { size: 6.5, color: STONE, align: 'center' });
+
+        // ESG card
+        const esgX = MX + mockW + colGap;
+        doc.setFillColor(...TEAL);
+        doc.roundedRect(esgX, y, esgW, boxH, 3, 3, 'F');
+        T('IMPACTO ESG', esgX + 6, y + 9, { size: 6.5, font: 'bold', color: CREAM, spacing: 1 });
+        T('Compra con', esgX + 6, y + 19, { size: 13, font: 'bold', color: WHITE });
+        T('proposito.', esgX + 6, y + 26, { size: 13, font: 'bold', color: WHITE });
+        const esgLines = [
+          esSoloCompostable ? 'Fibra de trigo / compostable' : '100% plastico reciclado',
+          'Hecho en Chile',
+          'Energia renovable',
+          garantiaLabel,
+          'Reduce tu huella corporativa',
+        ];
+        esgLines.forEach((l, i) => {
+          T('>', esgX + 6, y + 38 + i * 6.5, { size: 8, font: 'bold', color: CREAM });
+          T(l, esgX + 10, y + 38 + i * 6.5, { size: 8, color: WHITE });
+        });
+
+        y += boxH + 12;
+      } else {
+        // Sin imagen: solo mostrar la card ESG en ancho completo
+        T('IMPACTO ESG', MX, y, { size: 7, font: 'bold', color: STONE2, spacing: 1 });
+        y += 6;
+        const esgH = 38;
+        doc.setFillColor(...TEAL);
+        doc.roundedRect(MX, y, CW, esgH, 3, 3, 'F');
+        T('Compra con proposito.', MX + 8, y + 13, { size: 13, font: 'bold', color: WHITE });
+        const esgLines = [
+          esSoloCompostable ? 'Fibra de trigo / compostable' : '100% plastico reciclado',
+          'Hecho en Chile',
+          'Energia renovable',
+          garantiaLabel,
+          'Reduce tu huella corporativa',
+        ];
+        const mid = Math.ceil(esgLines.length / 2);
+        esgLines.forEach((l, i) => {
+          const colX = i < mid ? MX + 8 : MX + CW / 2 + 6;
+          const rowY = y + 23 + (i % mid) * 5.5;
+          T('>', colX, rowY, { size: 8, font: 'bold', color: CREAM });
+          T(l, colX + 4, rowY, { size: 8, color: WHITE });
+        });
+        y += esgH + 10;
+      }
     }
 
     // ═══════════════════════════════════════════════════
