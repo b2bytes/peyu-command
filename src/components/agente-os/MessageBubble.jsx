@@ -3,10 +3,11 @@ import { motion } from 'framer-motion';
 import { Volume2, Pause, Play, Loader2, FileText } from 'lucide-react';
 import CardDispatcher from './CardDispatcher';
 import SaveKnowledgeButton from './SaveKnowledgeButton';
+import SaveInsightButton from './SaveInsightButton';
 
 // Burbuja de conversación. Usuario → derecha (acento). Agente → izquierda con
 // avatar 🐢 y nombre, voz de Joaquín y tarjetas ricas embebidas.
-export default function MessageBubble({ message, msgId, voice, crm, metrics, lists, onAsk, onDone }) {
+export default function MessageBubble({ message, msgId, voice, crm, metrics, lists, onAsk, onDone, prevUserMessage }) {
   const isUser = message.role === 'user';
 
   if (isUser) {
@@ -69,6 +70,13 @@ export default function MessageBubble({ message, msgId, voice, crm, metrics, lis
           )}
           {/* Guardar esta respuesta en Pinecone + base de conocimiento PEYU */}
           {message.content && <SaveKnowledgeButton text={message.content} source="agente_os" />}
+          {/* Guardar el intercambio completo como insight de mejora del sistema */}
+          {message.content && (
+            <SaveInsightButton
+              userMessage={prevUserMessage?.content || ''}
+              agentMessage={message.content}
+            />
+          )}
         </div>
         {message.content && (
           <div className="ld-card rounded-2xl rounded-tl-md px-4 py-3 text-sm leading-relaxed text-ld-fg-soft prose-sm max-w-none [&_p]:my-1 [&_strong]:text-ld-fg [&_strong]:font-semibold">

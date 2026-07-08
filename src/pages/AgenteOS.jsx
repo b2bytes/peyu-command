@@ -341,7 +341,17 @@ Stock bajo (<10u): ${m.stock_bajo} SKUs · consultas sin responder: ${m.consulta
               ) : (
                 messages.map((msg, i) => (
                   <div key={i} className="space-y-2">
-                    <MessageBubble message={msg} msgId={i} voice={voice} crm={crm} metrics={metrics} lists={lists} onAsk={sendMessage} onDone={() => loadData(true)} />
+                    <MessageBubble
+                      message={msg}
+                      msgId={i}
+                      voice={voice}
+                      crm={crm}
+                      metrics={metrics}
+                      lists={lists}
+                      onAsk={sendMessage}
+                      onDone={() => loadData(true)}
+                      prevUserMessage={i > 0 ? messages.slice(0, i).reverse().find((m) => m.role === 'user') : null}
+                    />
                     {msg.proposal && (
                       <ActionProposalCard proposal={msg.proposal} onDone={() => loadData(true)} />
                     )}
