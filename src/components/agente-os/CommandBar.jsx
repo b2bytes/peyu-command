@@ -5,11 +5,11 @@ import { ArrowUp, Loader2, Paperclip, Mic, Volume2, VolumeX, Pause, Play, X, Fil
 // dashboard, pedidos, envíos Bluex, pipeline B2B, catálogo, clientes.
 const CHIPS = [
   'Resumen del día',
-  'Ventas de hoy',
   'Gestionar pedidos',
-  'Envíos BlueExpress',
-  'Pipeline B2B',
-  'Cotizaciones B2B',
+  'Editar catálogo',
+  'Imagen por color',
+  'Diseños láser',
+  'Ventas de hoy',
   'Stock bajo',
   'Clientes',
 ];

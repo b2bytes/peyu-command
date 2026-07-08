@@ -27,8 +27,18 @@ export default function WelcomeScreen({ metrics, onAsk }) {
           <p className="text-sm text-ld-fg-soft mt-1 leading-relaxed">
             Soy Peyu, tu Agent OS. Acá tienes el pulso del negocio en vivo. Pregúntame lo que necesites:
             ventas, pedidos, stock, cotizaciones o clientes — te respondo aquí mismo con los datos reales.
-            ¿Quieres editar el catálogo, subir fotos o agregar un producto? Dime <span className="text-ld-action font-medium">“edita el catálogo”</span> y lo gestionas aquí.
           </p>
+          <div className="mt-3 space-y-1.5">
+            <p className="text-xs font-bold text-ld-fg-muted uppercase tracking-wide">Operaciones desde el chat</p>
+            <div className="flex flex-wrap gap-1.5">
+              <button onClick={() => onAsk('edita el catálogo')} className="text-[11px] px-2.5 py-1 rounded-full bg-ld-action-soft text-ld-action font-semibold hover:opacity-80 transition-opacity">📦 Editar catálogo</button>
+              <button onClick={() => onAsk('asignar imagen por color')} className="text-[11px] px-2.5 py-1 rounded-full bg-ld-action-soft text-ld-action font-semibold hover:opacity-80 transition-opacity">🎨 Imagen por color</button>
+              <button onClick={() => onAsk('gestionar diseños láser')} className="text-[11px] px-2.5 py-1 rounded-full bg-ld-action-soft text-ld-action font-semibold hover:opacity-80 transition-opacity">✨ Diseños láser</button>
+              <button onClick={() => onAsk('gestionar pedidos')} className="text-[11px] px-2.5 py-1 rounded-full bg-ld-bg-elevated text-ld-fg-soft font-semibold hover:opacity-80 transition-opacity">📋 Pedidos</button>
+              <button onClick={() => onAsk('cupones y descuentos')} className="text-[11px] px-2.5 py-1 rounded-full bg-ld-bg-elevated text-ld-fg-soft font-semibold hover:opacity-80 transition-opacity">🎟️ Cupones</button>
+              <button onClick={() => onAsk('gift cards')} className="text-[11px] px-2.5 py-1 rounded-full bg-ld-bg-elevated text-ld-fg-soft font-semibold hover:opacity-80 transition-opacity">🎁 Gift cards</button>
+            </div>
+          </div>
         </div>
         <DailySummaryCard metrics={metrics} onAsk={onAsk} />
       </div>
