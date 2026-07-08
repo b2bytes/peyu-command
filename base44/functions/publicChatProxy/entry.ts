@@ -16,7 +16,7 @@
 //   - "send"     → agrega mensaje + upsert ChatLead { conversation_id, content }
 //   - "get"      → obtiene conversación { conversation_id } → { messages }
 // ============================================================================
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 
 const AGENT_NAME = 'asistente_compras';
 
@@ -231,11 +231,10 @@ Deno.serve(async (req) => {
         return Response.json({ error: 'conversation_id and content required' }, { status: 400 });
       }
       // ⚡ SOLO esperamos lo imprescindible para que el agente empiece a pensar:
-      // entregar el mensaje del usuario a la conversación. Todo lo demás
-      // (captura de lead, ActivityLog, AILog) es analítica que el usuario NO
-      // necesita esperar — antes corría en serie y sumaba latencia inútil al chat.
-      const conv = await base44.asServiceRole.agents.getConversation(conversation_id);
-      await base44.asServiceRole.agents.addMessage(conv, { role: 'user', content });
+      // entregar el mensaje del usuario a la conversación. addMessage solo
+      // necesita el id — antes hacíamos getConversation (descargaba TODOS los
+      // mensajes previos) sumando latencia inútil antes de que el agente procesara.
+      await base44.asServiceRole.agents.addMessage({ id: conversation_id }, { role: 'user', content });
 
       // 🔄 Registro en background: lead + logs sin bloquear la respuesta.
       const cleanedForLog = stripContextBlocks(content);

@@ -17,7 +17,7 @@ async function loadTopProducts() {
   if (_productCache && (now - _productCacheAt) < CACHE_TTL_MS) return _productCache;
 
   try {
-    const list = await base44.entities.Producto.filter({ activo: true });
+    const list = await base44.entities.Producto.filter({ activo: true }, '-updated_date', 80);
     _productCache = Array.isArray(list) ? list : [];
     _productCacheAt = now;
     return _productCache;
@@ -208,14 +208,14 @@ async function brainLookup(userMessage, userEmail) {
     // empresa, historial de compras) sin contaminar con conversaciones.
     const brainPromise = base44.functions.invoke('askPeyuBrain', {
       query: userMessage,
-      top_k: 4,
+      top_k: 3,
       format: 'context',
       namespaces: userEmail
         ? ['products', 'policies_faq', 'sustainability', 'customers']
         : ['products', 'policies_faq', 'sustainability'],
     });
     const timeoutPromise = new Promise((_, reject) =>
-      setTimeout(() => reject(new Error('brain_timeout')), 1500)
+      setTimeout(() => reject(new Error('brain_timeout')), 1200)
     );
     const res = await Promise.race([brainPromise, timeoutPromise]);
     return res?.data?.context || '';
