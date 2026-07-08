@@ -15,6 +15,7 @@ export default function LogoMockupPreview({
   size = 'md',
   showBadge = true,
   className = '',
+  imgFilter = undefined,  // filtro CSS opcional (tinte de color) para coincidir con la galería
 }) {
   const [tone, setTone] = useState('light'); // 'light' | 'dark'
   const [toneReady, setToneReady] = useState(false);
@@ -75,7 +76,8 @@ export default function LogoMockupPreview({
             position: 'absolute', inset: 0,
             width: '100%', height: '100%',
             objectFit: 'cover',
-            transition: 'opacity 0.3s',
+            filter: imgFilter,
+            transition: 'opacity 0.3s, filter 0.25s ease',
             opacity: imgLoaded ? 1 : 0,
           }}
         />

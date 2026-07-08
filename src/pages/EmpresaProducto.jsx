@@ -333,8 +333,14 @@ export default function EmpresaProducto() {
             {/* Tabla de precios */}
             <B2BPriceTable producto={producto} qtyActual={qty} />
 
-            {/* Mockup con logo — el logo subido aquí viaja al cotizador */}
-            <B2BLogoMockup producto={producto} onLogoChange={setLogoUrl} />
+            {/* Mockup con logo — usa la MISMA imagen que la galería (color elegido).
+                El mockup CSS es instantáneo y definitivo, sin botón de generar. */}
+            <B2BLogoMockup
+              producto={producto}
+              onLogoChange={setLogoUrl}
+              productImgOverride={displayImg}
+              colorFilterOverride={colorFilter}
+            />
 
             {/* Qué incluye */}
             {incluye.length > 0 && (
