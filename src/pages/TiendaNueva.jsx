@@ -130,8 +130,8 @@ export default function TiendaNueva() {
                 </div>
                 {/* Etiqueta */}
                 <div className="px-2.5 py-2 sm:py-2.5 text-center">
-                  <p className="font-bold text-[11px] sm:text-sm leading-tight" style={{ color: '#2C1810' }}>{c.label}</p>
-                  <p className="text-[9px] sm:text-[11px] leading-tight mt-0.5 truncate" style={{ color: '#A08070' }}>{c.desc}</p>
+                  <p className="font-bold text-xs sm:text-sm leading-tight" style={{ color: '#2C1810' }}>{c.label}</p>
+                  <p className="text-[10px] sm:text-[11px] leading-tight mt-0.5 truncate" style={{ color: '#A08070' }}>{c.desc}</p>
                 </div>
               </Link>
             ))}

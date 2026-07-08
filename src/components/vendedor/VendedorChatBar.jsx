@@ -319,16 +319,11 @@ export default function VendedorChatBar() {
       {!open && (
         <button
           onClick={handleOpen}
-          className="lg:hidden fixed z-[95] bottom-[4.75rem] right-3 flex flex-col items-end gap-1.5 transition-transform active:scale-90"
+          className="lg:hidden fixed z-[95] bottom-[5.25rem] right-3 transition-transform active:scale-90"
           title="Chatea con Peyu — compra aquí mismo 🐢"
           aria-label="Abrir chat con Peyu">
-          {/* Pill "Peyu te ayuda 🐢" — manual de marca, lámina Widget de chat */}
-          <span className="whitespace-nowrap rounded-full px-3 py-1.5 text-[11px] font-bold shadow-lg pointer-events-none"
-            style={{ background: '#F8F3ED', color: '#2C1810' }}>
-            <span style={{ color: '#0F8B6C' }}>Peyu</span> te ayuda 🐢
-          </span>
-          <span className="relative">
-            <PeyuChatAvatar size={56} className="shadow-2xl" />
+          <span className="relative block">
+            <PeyuChatAvatar size={52} className="shadow-2xl" />
             <span className="absolute -top-0.5 -left-0.5 w-3.5 h-3.5 rounded-full border-2 border-white animate-pulse" style={{ background: '#0F8B6C' }} />
             {unread > 0 && (
               <span className="absolute -top-1.5 -right-1.5 min-w-[20px] h-5 px-1 rounded-full text-white text-[10px] font-bold flex items-center justify-center"

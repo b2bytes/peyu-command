@@ -60,8 +60,8 @@ export default function TrustSocialBarV2() {
                   <b.icon className="w-3.5 h-3.5 sm:w-4 sm:h-4" style={{ color: b.color }} strokeWidth={1.75} />
                 </div>
                 <div className="leading-tight min-w-0">
-                  <p className="text-[11px] sm:text-xs font-bold" style={{ color: '#2C1810' }}>{b.t}</p>
-                  <p className="text-[9px] sm:text-[10px] hidden sm:block mt-0.5" style={{ color: '#A08070' }}>{b.sub}</p>
+                  <p className="text-xs font-bold leading-tight" style={{ color: '#2C1810' }}>{b.t}</p>
+                  <p className="text-[10px] leading-tight mt-0.5 truncate" style={{ color: '#A08070' }}>{b.sub}</p>
                 </div>
               </div>
             ))}

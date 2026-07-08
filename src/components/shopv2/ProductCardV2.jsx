@@ -35,17 +35,17 @@ export default function ProductCardV2({ producto, index = 0 }) {
         />
 
         {/* Eco badge — pill sofisticado con icono thin */}
-        <span className="absolute top-2.5 left-2.5 inline-flex items-center gap-1 backdrop-blur-md text-[10px] font-semibold px-2.5 py-1 rounded-full"
+        <span className="absolute top-2.5 left-2.5 inline-flex items-center gap-1 backdrop-blur-md text-[11px] font-semibold px-2.5 py-1 rounded-full"
           style={{
             background: esCompostable ? 'rgba(139,173,138,.85)' : 'rgba(15,139,108,.80)',
             color: 'white',
             border: '1px solid rgba(255,255,255,.3)',
           }}>
           {esCompostable
-            ? <Leaf className="w-2.5 h-2.5" strokeWidth={2} />
-            : <Recycle className="w-2.5 h-2.5" strokeWidth={2} />
+            ? <Leaf className="w-3 h-3" strokeWidth={2} />
+            : <Recycle className="w-3 h-3" strokeWidth={2} />
           }
-          {esCompostable ? 'Eco' : '♻'}
+          {esCompostable ? 'Eco' : '100% reciclado'}
         </span>
 
         {/* CTA hover overlay — esquina superior derecha */}
@@ -56,17 +56,17 @@ export default function ProductCardV2({ producto, index = 0 }) {
       </div>
 
       {/* Info */}
-      <div className="p-3.5 sm:p-4 flex flex-col flex-1">
-        <p className="text-[9px] sm:text-[10px] font-bold uppercase tracking-widest mb-1" style={{ color: '#A08070' }}>
+      <div className="p-3 sm:p-4 flex flex-col flex-1">
+        <p className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider mb-1" style={{ color: '#A08070' }}>
           {producto.categoria?.replace(' B2C', '')}
         </p>
         <h3 className="font-jakarta font-semibold text-[13px] sm:text-sm leading-snug line-clamp-2 flex-1" style={{ color: '#2C1810' }}>
           {producto.nombre}
         </h3>
         <div className="flex items-center justify-between mt-3 pt-2.5" style={{ borderTop: '1px solid #F2EBE0' }}>
-          <p className="font-fraunces font-bold text-base" style={{ color: '#C0785C' }}>{fmtCLP(precio)}</p>
-          <span className="text-[10px] font-semibold opacity-0 group-hover:opacity-100 transition-opacity duration-200" style={{ color: '#A08070' }}>
-            Ver →
+          <p className="font-fraunces font-bold text-base sm:text-lg" style={{ color: '#C0785C' }}>{fmtCLP(precio)}</p>
+          <span className="text-[11px] sm:text-xs font-semibold sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-200 inline-flex items-center gap-0.5" style={{ color: '#C0785C' }}>
+            Ver <ArrowUpRight className="w-3 h-3" strokeWidth={2.5} />
           </span>
         </div>
       </div>

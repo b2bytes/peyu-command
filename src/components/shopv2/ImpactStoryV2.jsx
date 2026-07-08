@@ -37,11 +37,11 @@ export default function ImpactStoryV2() {
 
             <div className="grid grid-cols-2 gap-3">
               {kpis.map((k, i) => (
-                <div key={i} className="rounded-2xl p-4" style={{ background: 'rgba(255,255,255,.12)', border: '1px solid rgba(255,255,255,.18)' }}>
-                  <k.icon className="w-5 h-5 text-white mb-2.5" />
-                  <p className="font-poppins font-bold text-2xl text-white">{k.valor}</p>
-                  <p className="text-sm font-semibold text-white/90 leading-snug mt-0.5">{k.label}</p>
-                  <p className="text-[11px] text-white/60 mt-1 leading-snug">{k.sub}</p>
+                <div key={i} className="rounded-2xl p-3.5 sm:p-4" style={{ background: 'rgba(255,255,255,.12)', border: '1px solid rgba(255,255,255,.18)' }}>
+                  <k.icon className="w-4.5 h-4.5 sm:w-5 sm:h-5 text-white mb-2" />
+                  <p className="font-poppins font-bold text-xl sm:text-2xl text-white leading-none">{k.valor}</p>
+                  <p className="text-xs sm:text-sm font-semibold text-white/90 leading-snug mt-1">{k.label}</p>
+                  <p className="text-[11px] text-white/60 mt-0.5 leading-snug">{k.sub}</p>
                 </div>
               ))}
             </div>
