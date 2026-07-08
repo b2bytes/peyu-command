@@ -44,10 +44,15 @@ export default function B2BLogoMockup({
     if (!file) return;
     setError('');
     setUploading(true);
+    // ⚡ Incrustación INSTANTÁNEA: mostramos el logo en el mockup con un object
+    // URL local ANTES de que termine la subida — el cliente ve su diseño
+    // grabado sobre el producto al segundo de elegirlo.
+    const localUrl = URL.createObjectURL(file);
+    setLogoUrlState(localUrl);
+    setLogoFile(file);
     try {
       const { file_url } = await base44.integrations.Core.UploadFile({ file });
       setLogoUrl(file_url);
-      setLogoFile(file);
     } catch {
       setError('No se pudo subir el archivo. Prueba con PNG o JPG.');
     } finally {

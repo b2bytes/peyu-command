@@ -1,30 +1,27 @@
 // ════════════════════════════════════════════════════════════════════════
-// LogoMockupPreview — Motor de mockup de grabado láser para B2B.
+// LogoMockupPreview — Motor SUPREMO de mockup de grabado láser (B2B).
 // ----------------------------------------------------------------------------
-// Renderiza un grabado fotorrealista del logo del cliente sobre la foto del
-// producto, usando la MISMA técnica multi-pasada del motor B2C (EngravedLayer):
-//
-//   Pasada 1 · TINTA       → logo monocromo con blend inteligente (multiply/screen)
-//                            + bisel del láser (drop-shadow para profundidad 3D).
-//   Pasada 2 · TEXTURA     → la PROPIA foto del producto recortada con la silueta
-//                            del logo y mezclada en soft-light → el grabado absorbe
-//                            los granos/reflejos reales del material.
-//   Pasada 3 · LUZ         → highlight especular + viñeta → volumen de superficie.
-//
-// CLAVE: el tono (light/dark) se re-detecta automáticamente cada vez que cambia
-// la imagen del producto (color elegido). Así el grabado SIEMPRE coincide con
-// el color real del producto: tinta clara sobre producto oscuro, tinta oscura
-// sobre producto claro.
+// Al elegir/subir un logo, se incrusta AL INSTANTE sobre el producto:
+//   0. PLACEHOLDER inmediato → mientras el engraver procesa, el logo crudo ya
+//      aparece fundido en la superficie (grayscale + multiply, nunca caja blanca).
+//   1. ENGRAVER real → engraveLogo() elimina el fondo del logo (JPG con fondo
+//      blanco incluido) y lo convierte a tinta monocroma transparente.
+//   2. TONO AUTOMÁTICO → se detecta el color del producto (por color elegido):
+//      producto oscuro → tinta clara · producto claro → tinta oscura.
+//   3. MULTI-PASADA → tinta + bisel 3D del láser + textura del material
+//      (la propia foto recortada con la silueta del logo, en soft-light).
+//   4. LUZ DE ESTUDIO → highlight especular + viñeta para volumen real.
 // ════════════════════════════════════════════════════════════════════════
 import { useState, useEffect, useRef } from 'react';
-import { Image, Sparkles } from 'lucide-react';
-import { getEngraveZone, detectImageTone } from '@/lib/mockup-engine';
+import { Image, Sparkles, Loader2 } from 'lucide-react';
+import { getEngraveZone } from '@/lib/mockup-engine';
+import { engraveLogo, detectImageTone } from '@/lib/logo-engraver';
 
-// Bisel del láser: reflejo arriba (highlight) + sombra abajo (surco).
-function biselFx(tone) {
-  return tone === 'dark'
-    ? 'drop-shadow(0 1px 0.6px rgba(255,255,255,0.45)) drop-shadow(0 -0.8px 0.5px rgba(0,0,0,0.35))'
-    : 'drop-shadow(0 1px 0.6px rgba(0,0,0,0.5)) drop-shadow(0 -0.8px 0.5px rgba(255,255,255,0.3))';
+// Bisel del láser según la tinta: reflejo + surco de medio píxel.
+function biselFx(tint) {
+  return tint === 'light'
+    ? 'drop-shadow(0 1px 0.6px rgba(0,0,0,0.5)) drop-shadow(0 -0.8px 0.5px rgba(255,255,255,0.28))'
+    : 'drop-shadow(0 1px 0.6px rgba(255,255,255,0.45)) drop-shadow(0 -0.8px 0.5px rgba(0,0,0,0.32))';
 }
 
 export default function LogoMockupPreview({
@@ -36,46 +33,41 @@ export default function LogoMockupPreview({
   className = '',
   imgFilter = undefined,
 }) {
-  const [tone, setTone] = useState('dark');
-  const [toneReady, setToneReady] = useState(false);
+  // tint = tinta del grabado ('light' sobre producto oscuro, 'dark' sobre claro)
+  const [tint, setTint] = useState('dark');
+  const [eng, setEng] = useState(null); // { dataUrl, ok } resultado del engraver
+  const [processing, setProcessing] = useState(false);
   const [imgLoaded, setImgLoaded] = useState(false);
-  const [logoLoaded, setLogoLoaded] = useState(false);
   const prevImg = useRef(null);
 
-  // Detecta el tono del fondo del producto automáticamente cada vez que cambia
-  // la imagen (color elegido). Con timeout de seguridad: si la detección se
-  // cuelga (CORS, red), el mockup igual se muestra con el filtro por defecto.
+  // ① Detecta el tono del producto automáticamente cada vez que cambia la
+  //    imagen (color elegido) → la tinta del grabado SIEMPRE coincide.
   useEffect(() => {
     if (!productImg || productImg === prevImg.current) return;
     prevImg.current = productImg;
-    setToneReady(false);
     setImgLoaded(false);
-    let resolved = false;
-    const fallback = setTimeout(() => { if (!resolved) setToneReady(true); }, 1500);
-    detectImageTone(productImg).then((t) => {
-      resolved = true;
-      clearTimeout(fallback);
-      setTone(t);
-      setToneReady(true);
-    }).catch(() => {
-      resolved = true;
-      clearTimeout(fallback);
-      setToneReady(true);
-    });
-    return () => clearTimeout(fallback);
+    let cancelled = false;
+    detectImageTone(productImg).then((t) => { if (!cancelled) setTint(t); });
+    return () => { cancelled = true; };
   }, [productImg]);
+
+  // ② Procesa el logo con el engraver real (elimina fondo + monocromo).
+  //    Mantiene el resultado anterior visible mientras reprocesa (anti-flash).
+  useEffect(() => {
+    let cancelled = false;
+    if (!logoUrl) { setEng(null); return; }
+    setProcessing(true);
+    engraveLogo(logoUrl, tint)
+      .then(({ dataUrl, processed }) => {
+        if (!cancelled) setEng({ dataUrl, ok: processed !== false });
+      })
+      .catch(() => { if (!cancelled) setEng({ dataUrl: logoUrl, ok: false }); })
+      .finally(() => { if (!cancelled) setProcessing(false); });
+    return () => { cancelled = true; };
+  }, [logoUrl, tint]);
 
   const zone = getEngraveZone(producto);
   const isCircle = zone.shape === 'circle';
-
-  // Filtro del logo: monocromo + contraste para que el blend funcione.
-  // En fondo oscuro → logo blanco (invert); en fondo claro → logo negro.
-  const logoFilter = toneReady
-    ? (tone === 'dark'
-        ? 'grayscale(100%) invert(1) contrast(1.3) brightness(1.1)'
-        : 'grayscale(100%) contrast(1.3) brightness(0.8)')
-    : 'grayscale(100%) contrast(1.2)';
-  const blendMode = toneReady && tone === 'dark' ? 'screen' : 'multiply';
 
   // Tamaños de contenedor según prop size
   const containerStyle = {
@@ -84,6 +76,14 @@ export default function LogoMockupPreview({
     lg: { borderRadius: '16px', overflow: 'hidden', position: 'relative', width: '100%', aspectRatio: '4/3', background: '#F8F4EE' },
     xl: { borderRadius: '20px', overflow: 'hidden', position: 'relative', width: '100%', aspectRatio: '16/9', background: '#F8F4EE' },
   }[size] || {};
+
+  // ¿Qué mostramos dentro del área de grabado?
+  //  · eng listo y ok    → grabado real multi-pasada (tinta + textura + bisel)
+  //  · procesando aún    → PLACEHOLDER instantáneo: logo crudo fundido con
+  //                        grayscale+multiply y pulso sutil ("se está grabando")
+  //  · eng falló (CORS)  → logo crudo limpio con multiply (nunca caja blanca)
+  const showEngraved = !!eng && eng.ok;
+  const showPlaceholder = !!logoUrl && !eng; // primer procesado en curso
 
   return (
     <div style={containerStyle} className={className}>
@@ -109,12 +109,9 @@ export default function LogoMockupPreview({
         </div>
       )}
 
-      {/* Overlay de grabado láser — aplica logo a TODOS los productos */}
       {logoUrl && (
         <>
-          {/* Iluminación de estudio: highlight especular + viñeta de sombra.
-              Da volumen real a la superficie para que el grabado se asiente
-              con profundidad (no flote plano como un sticker). */}
+          {/* Luz de estudio: highlight especular + viñeta → volumen real */}
           <div style={{
             position: 'absolute', inset: 0, pointerEvents: 'none',
             background: 'radial-gradient(70% 55% at 32% 28%, rgba(255,255,255,0.14) 0%, transparent 60%)',
@@ -126,8 +123,7 @@ export default function LogoMockupPreview({
             mixBlendMode: 'multiply',
           }} />
 
-          {/* Área de grabado inteligente — reemplaza marca PEYU con logo cliente.
-              Motor multi-pasada: tinta + textura del material + bisel del láser. */}
+          {/* Área de grabado inteligente por categoría */}
           <div
             style={{
               position: 'absolute',
@@ -143,44 +139,60 @@ export default function LogoMockupPreview({
               justifyContent: 'center',
             }}
           >
-            {/* Pasada 1 · TINTA: el logo con blend inteligente (multiply/screen)
-                y bisel del láser (drop-shadow para profundidad 3D). */}
-            <img
-              src={logoUrl}
-              alt="Logo grabado"
-              onLoad={() => setLogoLoaded(true)}
-              style={{
-                width: '92%',
-                height: '92%',
-                objectFit: 'contain',
-                filter: `${logoFilter} ${biselFx(tone)}`,
-                opacity: zone.opacity ?? 0.9,
-                mixBlendMode: blendMode,
-                transition: 'filter 0.3s ease',
-              }}
-            />
-            {/* Pasada 2 · TEXTURA: la propia foto del producto recortada con la
-                misma silueta del logo y mezclada en soft-light. Esto "deja ver"
-                los granos/reflejos del material dentro del grabado → integración
-                perfecta con la superficie (no un parche plano).
-
-                ALINEACIÓN: background-size ampliado (320%) para muestrar TEXTURA
-                del material, no la silueta entera del producto. */}
-            <div
-              style={{
-                position: 'absolute', inset: 0,
-                WebkitMaskImage: `url("${logoUrl}")`, maskImage: `url("${logoUrl}")`,
-                WebkitMaskRepeat: 'no-repeat', maskRepeat: 'no-repeat',
-                WebkitMaskPosition: 'center', maskPosition: 'center',
-                WebkitMaskSize: '92% 92%', maskSize: '92% 92%',
-                backgroundImage: `url("${productImg}")`,
-                backgroundSize: '320% 320%',
-                backgroundPosition: 'center',
-                mixBlendMode: 'soft-light',
-                opacity: 0.6,
-                filter: tone === 'dark' ? 'brightness(1.15) contrast(1.1)' : 'brightness(0.9) contrast(1.15)',
-              }}
-            />
+            {showEngraved ? (
+              <>
+                {/* Pasada 1 · TINTA: PNG monocromo transparente del engraver
+                    (el color de la tinta ya viene resuelto según el tono del
+                    producto) + bisel del láser (profundidad 3D). */}
+                <img
+                  src={eng.dataUrl}
+                  alt="Logo grabado"
+                  style={{
+                    width: '92%',
+                    height: '92%',
+                    objectFit: 'contain',
+                    filter: biselFx(tint),
+                    opacity: zone.opacity ?? 0.92,
+                    mixBlendMode: tint === 'light' ? 'screen' : 'multiply',
+                  }}
+                />
+                {/* Pasada 2 · TEXTURA: la foto del producto recortada con la
+                    silueta transparente del engraver → el grabado absorbe los
+                    granos/reflejos reales del material. */}
+                <div
+                  style={{
+                    position: 'absolute', inset: 0,
+                    WebkitMaskImage: `url("${eng.dataUrl}")`, maskImage: `url("${eng.dataUrl}")`,
+                    WebkitMaskRepeat: 'no-repeat', maskRepeat: 'no-repeat',
+                    WebkitMaskPosition: 'center', maskPosition: 'center',
+                    WebkitMaskSize: '92% 92%', maskSize: '92% 92%',
+                    backgroundImage: `url("${productImg}")`,
+                    backgroundSize: '320% 320%',
+                    backgroundPosition: 'center',
+                    mixBlendMode: 'soft-light',
+                    opacity: 0.6,
+                    filter: tint === 'light' ? 'brightness(1.15) contrast(1.1)' : 'brightness(0.9) contrast(1.15)',
+                  }}
+                />
+              </>
+            ) : (
+              /* PLACEHOLDER instantáneo / fallback CORS: el logo crudo fundido
+                 con grayscale+multiply (el fondo claro desaparece solo) y un
+                 pulso sutil mientras el engraver termina. NUNCA caja blanca. */
+              <img
+                src={eng?.dataUrl || logoUrl}
+                alt="Logo"
+                className={showPlaceholder ? 'animate-pulse' : undefined}
+                style={{
+                  width: '92%',
+                  height: '92%',
+                  objectFit: 'contain',
+                  filter: `grayscale(1) contrast(1.2) ${biselFx(tint)}`,
+                  opacity: 0.85,
+                  mixBlendMode: 'multiply',
+                }}
+              />
+            )}
           </div>
 
           {/* Badge indicador */}
@@ -196,8 +208,10 @@ export default function LogoMockupPreview({
               fontWeight: 700,
               color: '#0F8B6C',
             }}>
-              <Sparkles style={{ width: 10, height: 10 }} />
-              Grabado láser · {zone.areaLabel}
+              {processing
+                ? <Loader2 style={{ width: 10, height: 10 }} className="animate-spin" />
+                : <Sparkles style={{ width: 10, height: 10 }} />}
+              {processing ? 'Grabando tu logo…' : `Grabado láser · ${zone.areaLabel}`}
             </div>
           )}
         </>

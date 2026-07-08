@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { Move, Sparkles, Loader2, ZoomIn, ZoomOut, Maximize } from 'lucide-react';
-import { engraveLogo } from '@/lib/logo-engraver';
+import { engraveLogo, detectImageTone } from '@/lib/logo-engraver';
 import { useMockupZoom } from '@/components/personalizacion/useMockupZoom.jsx';
 
 // ============================================================================
@@ -60,6 +60,16 @@ export default function LaserEngravePreview({
 
   // Reset del flag cuando cambia la imagen candidata.
   useEffect(() => { setImgFailed(false); }, [cleanImageUrl, productImageUrl]);
+
+  // ⚡ TONO AUTOMÁTICO: detecta el color del producto y elige la tinta correcta
+  // sola (producto oscuro → tinta clara, claro → oscura). El usuario igual
+  // puede alternarla manualmente con el botón "Tinta".
+  useEffect(() => {
+    if (!canvasImage) return;
+    let cancelled = false;
+    detectImageTone(canvasImage).then((t) => { if (!cancelled) setTint(t); });
+    return () => { cancelled = true; };
+  }, [canvasImage]); // eslint-disable-line
 
   // Reprocesa el logo cada vez que cambia el origen o la tinta.
   useEffect(() => {
@@ -180,14 +190,42 @@ export default function LaserEngravePreview({
                 left: `${posX}%`, top: `${posY}%`,
                 width: `${size}%`,
                 transform: 'translate(-50%, -50%)',
-                mixBlendMode: engravedOk ? (tint === 'light' ? 'screen' : 'multiply') : 'normal',
-                opacity: engravedOk ? 0.88 : 0.92,
-                filter: 'drop-shadow(0 1px 1px rgba(0,0,0,0.25))',
               }}
               onMouseDown={(e) => { if (!zoom.zoomedIn) { e.stopPropagation(); setDragging(true); } }}
               onTouchStart={(e) => { if (!zoom.zoomedIn) { e.stopPropagation(); setDragging(true); } }}
             >
-              <img src={engravedUrl} alt="Tu logo grabado" draggable={false} className="w-full h-auto pointer-events-none" />
+              {/* Pasada 1 · TINTA con bisel 3D del láser (reflejo + surco) */}
+              <img
+                src={engravedUrl} alt="Tu logo grabado" draggable={false}
+                className={`w-full h-auto pointer-events-none ${processing ? 'animate-pulse' : ''}`}
+                style={{
+                  mixBlendMode: engravedOk ? (tint === 'light' ? 'screen' : 'multiply') : 'normal',
+                  opacity: engravedOk ? 0.9 : 0.92,
+                  filter: tint === 'light'
+                    ? 'drop-shadow(0 1px 0.6px rgba(0,0,0,0.5)) drop-shadow(0 -0.8px 0.5px rgba(255,255,255,0.28))'
+                    : 'drop-shadow(0 1px 0.6px rgba(255,255,255,0.45)) drop-shadow(0 -0.8px 0.5px rgba(0,0,0,0.32))',
+                }}
+              />
+              {/* Pasada 2 · TEXTURA: la foto del producto recortada con la
+                  silueta del logo (soft-light) → el grabado absorbe los granos
+                  y reflejos reales del material, no queda como parche plano. */}
+              {engravedOk && canvasImage && (
+                <div
+                  className="absolute inset-0 pointer-events-none"
+                  style={{
+                    WebkitMaskImage: `url("${engravedUrl}")`, maskImage: `url("${engravedUrl}")`,
+                    WebkitMaskRepeat: 'no-repeat', maskRepeat: 'no-repeat',
+                    WebkitMaskPosition: 'center', maskPosition: 'center',
+                    WebkitMaskSize: 'contain', maskSize: 'contain',
+                    backgroundImage: `url("${canvasImage}")`,
+                    backgroundSize: '320% 320%',
+                    backgroundPosition: 'center',
+                    mixBlendMode: 'soft-light',
+                    opacity: 0.55,
+                    filter: tint === 'light' ? 'brightness(1.15) contrast(1.1)' : 'brightness(0.9) contrast(1.15)',
+                  }}
+                />
+              )}
             </div>
           )}
 
