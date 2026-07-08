@@ -10,7 +10,7 @@ import { jsPDF } from 'npm:jspdf@4.0.0';
 // ----------------------------------------------------------------------------
 
 // ─── Paleta ECO PEYU 2026 (RGB) — mejorada con más contraste ───
-const INK    = [18, 28, 24];     // #121C18 — negro eco más profundo
+const INK    = [44, 24, 16];     // #2C1810 — Tinta oficial Manual de Marca Peyu
 const FOREST = [11, 70, 52];     // #0B4634 — verde bosque más saturado
 const TEAL   = [15, 139, 108];   // #0F8B6C — verde PEYU signature
 const LEAF   = [52, 168, 128];   // #34A880 — verde hoja cálido
@@ -27,7 +27,9 @@ const MX = 16;                   // margen lateral
 
 const fmtCLP = (n) => '$' + (n || 0).toLocaleString('es-CL');
 
-const PEYU_LOGO_URL = 'https://media.base44.com/images/public/69d99b9d61f699701129c103/b1f2edc5e_logo.png';
+// Logo oficial PEYU (tortuga + PEYU tinta) — Manual de Marca Peyu.
+// Se renderiza sobre chip arena claro para contraste sobre el hero verde.
+const PEYU_LOGO_URL = 'https://media.base44.com/images/public/69d99b9d61f699701129c103/cead5fbd1_image.png';
 
 // jsPDF/Helvetica solo soporta WinAnsi. Limpia el texto preservando ñ/tildes.
 function safeTxt(s) {
@@ -159,26 +161,25 @@ Deno.serve(async (req) => {
     doc.setFillColor(...MINT);
     doc.rect(0, heroH + 2, pw, 1, 'F');
 
-    // Logo PEYU — chip arena cuadrado 20x20, con sombra suave
-    const lgS = 20, lgX = MX, lgY = 14;
-    // Sombra suave del chip
-    shadowRect(lgX + 0.5, lgY + 0.5, lgS, lgS, 3);
+    // Logo PEYU completo (tortuga + PEYU tinta) — chip arena 28x28 con sombra
+    const lgS = 28, lgX = MX, lgY = 10;
+    shadowRect(lgX + 0.5, lgY + 0.5, lgS, lgS, 4);
 
     if (peyuLogo) {
      try {
        doc.setFillColor(...SAND);
-       doc.roundedRect(lgX, lgY, lgS, lgS, 3, 3, 'F');
-       doc.addImage(`data:image/${peyuLogo.fmt.toLowerCase()};base64,${peyuLogo.b64}`, peyuLogo.fmt, lgX + 1.5, lgY + 1.5, lgS - 3, lgS - 3);
+       doc.roundedRect(lgX, lgY, lgS, lgS, 4, 4, 'F');
+       doc.addImage(`data:image/${peyuLogo.fmt.toLowerCase()};base64,${peyuLogo.b64}`, peyuLogo.fmt, lgX + 2, lgY + 2, lgS - 4, lgS - 4);
      } catch {
-       T('PEYU', lgX, lgY + 14, { size: 24, font: 'bold', color: WHITE });
+       T('PEYU', lgX, lgY + 18, { size: 24, font: 'bold', color: WHITE });
      }
     } else {
-     T('PEYU', lgX, lgY + 14, { size: 24, font: 'bold', color: WHITE });
+     T('PEYU', lgX, lgY + 18, { size: 24, font: 'bold', color: WHITE });
     }
 
-    // Marca textual al lado del logo
-    T('PEYU', lgX + lgS + 5, lgY + 9, { size: 17, font: 'bold', color: WHITE });
-    T('Plastico que renace', lgX + lgS + 5, lgY + 15, { size: 7.5, font: 'normal', color: CREAM });
+    // Tagline al lado del logo (el logo oficial ya incluye "PEYU")
+    T('Plastico que renace - 100% reciclado', lgX + lgS + 5, lgY + 14, { size: 8, font: 'normal', color: CREAM });
+    T('Hecho en Chile', lgX + lgS + 5, lgY + 20, { size: 7, font: 'bold', color: CREAM });
 
     // Bloque N° propuesta (derecha, alineado al margen)
     T('PROPUESTA N°', RX, lgY + 6, { size: 7, font: 'bold', color: CREAM, align: 'right', spacing: 1 });
@@ -584,12 +585,12 @@ Deno.serve(async (req) => {
     doc.setFillColor(...TEAL);
     doc.rect(0, footerY, pw, 1.5, 'F');
 
-    T('PEYUCHILE SpA', MX, footerY + 7.5, { size: 9.5, font: 'bold', color: WHITE });
-    T('RUT 77.069.974-6 - Giro: produccion y reciclaje', MX, footerY + 12.5, { size: 6.5, color: CREAM });
-    T('Pedro de Valdivia 6603, Macul, Santiago', MX, footerY + 16.5, { size: 6.5, color: CREAM });
-    T('peyuchile.cl', RX, footerY + 7.5, { size: 8, font: 'bold', color: [210, 228, 220], align: 'right' });
-    T('corporativos@peyuchile.cl', RX, footerY + 12.5, { size: 6.5, color: [210, 228, 220], align: 'right' });
-    T('+56 9 7947 1933', RX, footerY + 16.5, { size: 6.5, color: [210, 228, 220], align: 'right' });
+    T('PEYU Chile SpA', MX, footerY + 7, { size: 10, font: 'bold', color: WHITE });
+    T('RUT 77.069.974-6 - Giro: produccion y reciclaje', MX, footerY + 12, { size: 7, color: CREAM });
+    T('Pedro de Valdivia 6603, Macul - F. Bilbao 3775, Providencia', MX, footerY + 16.5, { size: 6.5, color: CREAM });
+    T('peyuchile.cl', RX, footerY + 7, { size: 9, font: 'bold', color: WHITE, align: 'right' });
+    T('ventas@peyuchile.cl', RX, footerY + 12, { size: 7, color: [210, 228, 220], align: 'right' });
+    T('WhatsApp +56 9 3504 0242', RX, footerY + 16.5, { size: 7, font: 'bold', color: CREAM, align: 'right' });
 
     // ═══════════════════════════════════════════════════
     //  ENCODING + RETURN

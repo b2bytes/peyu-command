@@ -252,7 +252,7 @@ Deno.serve(async (req) => {
     });
 
     // 4. Generar PDF — PROPUESTA PEYU 2026 · viaje de marca + económico.
-    const INK = [18, 28, 24], FOREST = [11, 70, 52], TEAL = [15, 139, 108], LEAF = [52, 168, 128],
+    const INK = [44, 24, 16], FOREST = [11, 70, 52], TEAL = [15, 139, 108], LEAF = [52, 168, 128],
           MINT = [235, 248, 244], SAND = [250, 246, 238], STONE = [100, 110, 104],
           STONE2 = [140, 150, 145], CREAM = [170, 220, 205], WHITE = [255, 255, 255];
     const PMX = 16;
@@ -286,21 +286,18 @@ Deno.serve(async (req) => {
       if (spacing) doc.setCharSpace(0);
     };
 
-    // Logo tortuga PEYU vectorial (caparazón + cabeza) — reemplaza el "PEYU" plano.
-    const drawTurtle = (cx, cy, r, col) => {
-      doc.setFillColor(...col);
-      doc.ellipse(cx, cy, r, r * 0.82, 'F');            // caparazón
-      doc.circle(cx + r * 0.95, cy - r * 0.15, r * 0.34, 'F'); // cabeza
-      // patitas
-      doc.ellipse(cx - r * 0.6, cy + r * 0.6, r * 0.26, r * 0.18, 'F');
-      doc.ellipse(cx + r * 0.55, cy + r * 0.62, r * 0.26, r * 0.18, 'F');
-      doc.ellipse(cx - r * 0.78, cy - r * 0.35, r * 0.22, r * 0.16, 'F');
-      // placas del caparazón (sutil)
-      doc.setFillColor(...FOREST);
-      doc.circle(cx, cy - r * 0.05, r * 0.16, 'F');
-      doc.circle(cx - r * 0.42, cy + r * 0.12, r * 0.13, 'F');
-      doc.circle(cx + r * 0.42, cy + r * 0.12, r * 0.13, 'F');
-    };
+    // ── Logo oficial PEYU (tortuga + PEYU tinta) sobre chip arena claro ──
+    const PEYU_LOGO_URL = 'https://media.base44.com/images/public/69d99b9d61f699701129c103/cead5fbd1_image.png';
+    let peyuLogoB64 = null;
+    try {
+      const lr = await fetch(PEYU_LOGO_URL);
+      if (lr.ok) {
+        const lbuf = new Uint8Array(await lr.arrayBuffer());
+        let lbin = '';
+        for (let i = 0; i < lbuf.length; i += 0x8000) lbin += String.fromCharCode.apply(null, lbuf.subarray(i, i + 0x8000));
+        peyuLogoB64 = btoa(lbin);
+      }
+    } catch { /* sin logo → fallback texto */ }
 
     // ═══ HERO ═══
     const heroH = 60;
@@ -309,8 +306,17 @@ Deno.serve(async (req) => {
     doc.setFillColor(...LEAF); doc.circle(pw + 8, heroH - 2, 20, 'F');
     doc.setFillColor(...CREAM); doc.rect(0, heroH, pw, 2, 'F');
 
-    drawTurtle(PMX + 5, 17, 6, CREAM);
-    T('PEYU', PMX + 16, 20, { size: 22, font: 'bold', color: WHITE });
+    // Logo PEYU completo sobre chip arena (contraste sobre hero verde bosque)
+    const lgS = 22, lgX = PMX, lgY = 8;
+    if (peyuLogoB64) {
+      try {
+        doc.setFillColor(...SAND);
+        doc.roundedRect(lgX, lgY, lgS, lgS, 3, 3, 'F');
+        doc.addImage(`data:image/png;base64,${peyuLogoB64}`, 'PNG', lgX + 1.5, lgY + 1.5, lgS - 3, lgS - 3);
+      } catch { T('PEYU', PMX, 20, { size: 22, font: 'bold', color: WHITE }); }
+    } else {
+      T('PEYU', PMX, 20, { size: 22, font: 'bold', color: WHITE });
+    }
     T('Plástico que renace · 100% reciclado · Hecho en Chile', PMX, 28, { size: 8, color: CREAM });
     T('PROPUESTA N°', RX, 15, { size: 7, font: 'bold', color: CREAM, align: 'right', spacing: 1 });
     T(numero, RX, 23, { size: 14, font: 'bold', color: WHITE, align: 'right' });
@@ -476,8 +482,8 @@ Deno.serve(async (req) => {
     doc.setFillColor(...TEAL); doc.roundedRect(btnX, btnY, btnW, btnH, 6.5, 6.5, 'F');
     T('APROBAR PROPUESTA  >', btnX + btnW / 2, btnY + 8.5, { size: 10, font: 'bold', color: WHITE, align: 'center' });
     doc.link(btnX, btnY, btnW, btnH, { url: aprobarLink });
-    T('Responde a corporativos@peyuchile.cl', RX, btnY + 5, { size: 7.5, color: STONE, align: 'right' });
-    T('o escríbenos al +56 9 7947 1933', RX, btnY + 10, { size: 7.5, color: STONE, align: 'right' });
+    T('Responde a ventas@peyuchile.cl', RX, btnY + 5, { size: 7.5, color: STONE, align: 'right' });
+    T('o WhatsApp +56 9 3504 0242', RX, btnY + 10, { size: 7.5, font: 'bold', color: TEAL, align: 'right' });
     y += btnH + 8;
 
     // ═══ FOOTER (todas las páginas) · datos legales reales ═══
@@ -487,12 +493,11 @@ Deno.serve(async (req) => {
       const fy = ph - 22;
       doc.setFillColor(...INK); doc.rect(0, fy, pw, 22, 'F');
       doc.setFillColor(...TEAL); doc.rect(0, fy, pw, 1.5, 'F');
-      T('PEYUCHILE SpA', PMX, fy + 7.5, { size: 9, font: 'bold', color: WHITE });
-      T('RUT 77.069.974-6 · Giro: producción y reciclaje', PMX, fy + 12.5, { size: 6.5, color: CREAM });
-      T('Pedro de Valdivia 6603, Macul, Santiago', PMX, fy + 17, { size: 6.5, color: CREAM });
-      T('peyuchile.cl', RX, fy + 7.5, { size: 8, font: 'bold', color: [210, 228, 220], align: 'right' });
-      T('corporativos@peyuchile.cl', RX, fy + 12.5, { size: 6.5, color: [210, 228, 220], align: 'right' });
-      T('+56 9 7947 1933', RX, fy + 17, { size: 6.5, color: [210, 228, 220], align: 'right' });
+      T('PEYU Chile SpA · RUT 77.069.974-6', PMX, fy + 7.5, { size: 9, font: 'bold', color: WHITE });
+      T('Pedro de Valdivia 6603, Macul · F. Bilbao 3775, Providencia', PMX, fy + 12.5, { size: 6.5, color: CREAM });
+      T('Plástico que renace · Hecho en Chile', PMX, fy + 17, { size: 6.5, color: [180, 200, 195] });
+      T('peyuchile.cl · ventas@peyuchile.cl', RX, fy + 7.5, { size: 8, font: 'bold', color: WHITE, align: 'right' });
+      T('WhatsApp +56 9 3504 0242', RX, fy + 12.5, { size: 7.5, font: 'bold', color: CREAM, align: 'right' });
     }
 
     // Devolver PDF como base64 (chunked: evita stack overflow en PDFs grandes)
@@ -521,7 +526,7 @@ Deno.serve(async (req) => {
 
     // 💌 Email HTML "estable" (tablas + estilos inline, compatible Gmail/Outlook
     // móvil) con viaje de marca, mockup del cliente y doble CTA de aprobación.
-    const waAprobarUrl = `https://wa.me/56979471933?text=${encodeURIComponent(`Hola PEYU, apruebo la propuesta ${numero}. Quiero avanzar 🐢`)}`;
+    const waAprobarUrl = `https://wa.me/56935040242?text=${encodeURIComponent(`Hola PEYU, apruebo la propuesta ${numero}. Quiero avanzar 🐢`)}`;
     const tapitasEmail = Math.round(cantidad * 18);
     const emailHtml = `
       <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#F4EFE8;padding:24px 0">
@@ -551,7 +556,7 @@ Deno.serve(async (req) => {
             </td></tr>
             <tr><td style="background:#121C18;padding:18px 28px;border-radius:0 0 16px 16px">
               <p style="color:#fff;font-size:12px;font-weight:700;margin:0">PEYUCHILE SpA · peyuchile.cl</p>
-              <p style="color:#AADCCD;font-size:11px;margin:4px 0 0">corporativos@peyuchile.cl · +56 9 7947 1933 · Pedro de Valdivia 6603, Macul</p>
+              <p style="color:#AADCCD;font-size:11px;margin:4px 0 0">ventas@peyuchile.cl · WhatsApp +56 9 3504 0242 · Pedro de Valdivia 6603, Macul</p>
             </td></tr>
           </table>
         </td></tr>

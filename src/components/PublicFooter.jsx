@@ -8,7 +8,24 @@ import PEYULogo from './PEYULogo';
  */
 export default function PublicFooter() {
   return (
-    <footer className="ld-canvas pt-12 pb-24 lg:pb-12 px-5 border-t border-ld-border">
+    <footer className="ld-canvas pt-0 pb-24 lg:pb-12 border-t border-ld-border">
+      {/* Barra de datos empresa — siempre visible en cada página */}
+      <div className="border-b border-ld-border" style={{ background: 'var(--ld-bg-elevated)' }}>
+        <div className="max-w-7xl mx-auto px-5 py-3 flex flex-wrap items-center justify-center gap-x-6 gap-y-1.5 text-xs">
+          <span className="font-bold text-ld-fg">PEYU Chile SpA</span>
+          <span className="text-ld-fg-muted">RUT 77.069.974-6</span>
+          <a href="https://wa.me/56935040242" target="_blank" rel="noreferrer" className="flex items-center gap-1 font-semibold hover:opacity-80" style={{ color: 'var(--ld-action)' }}>
+            <MessageCircle className="w-3 h-3" /> WhatsApp +56 9 3504 0242
+          </a>
+          <a href="mailto:ventas@peyuchile.cl" className="flex items-center gap-1 font-semibold hover:opacity-80" style={{ color: 'var(--ld-action)' }}>
+            <Mail className="w-3 h-3" /> ventas@peyuchile.cl
+          </a>
+          <span className="flex items-center gap-1 text-ld-fg-muted">
+            <MapPin className="w-3 h-3" /> F. Bilbao 3775, Providencia · P. Valdivia 6603, Macul
+          </span>
+        </div>
+      </div>
+
       {/* CTA superior conversión */}
       <div className="max-w-7xl mx-auto mb-12">
         <div className="ld-card relative overflow-hidden p-6 md:p-8 flex flex-col md:flex-row items-center justify-between gap-4">
@@ -150,7 +167,7 @@ export default function PublicFooter() {
 
       {/* Barra legal */}
       <div className="max-w-7xl mx-auto border-t border-ld-border pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-ld-fg-muted">
-        <p>© 2026 PEYU Chile SpA · Todos los derechos reservados</p>
+        <p>© 2026 PEYU Chile SpA · RUT 77.069.974-6 · Todos los derechos reservados</p>
         <div className="flex gap-4 flex-wrap justify-center">
           <Link to="/terminos" className="hover:text-ld-fg transition">Términos</Link>
           <Link to="/privacidad" className="hover:text-ld-fg transition">Privacidad</Link>

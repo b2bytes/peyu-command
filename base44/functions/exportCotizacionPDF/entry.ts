@@ -10,9 +10,9 @@ import { jsPDF } from 'npm:jspdf@4.0.0';
 // perfecto (WinAnsi: ñ/tildes OK, sin glifos rotos ni emojis corruptos).
 // ════════════════════════════════════════════════════════════════════════
 
-const INK = [18, 28, 24], FOREST = [11, 70, 52], TEAL = [15, 139, 108], LEAF = [52, 168, 128],
-      MINT = [235, 248, 244], SAND = [250, 246, 238], STONE = [100, 110, 104],
-      STONE2 = [140, 150, 145], CREAM = [170, 220, 205], WHITE = [255, 255, 255];
+const INK = [44, 24, 16], FOREST = [11, 70, 52], TEAL = [15, 139, 108], LEAF = [52, 168, 128],
+      MINT = [235, 248, 244], SAND = [250, 246, 238], ARENA = [231, 216, 198], TERRACOTA = [217, 107, 77],
+      STONE = [100, 110, 104], STONE2 = [140, 150, 145], CREAM = [170, 220, 205], WHITE = [255, 255, 255];
 const PMX = 16;
 const fmtCLP = (n) => '$' + (n || 0).toLocaleString('es-CL');
 
@@ -66,6 +66,19 @@ Deno.serve(async (req) => {
   const fechaVence = cot.fecha_vencimiento ? new Date(cot.fecha_vencimiento + 'T12:00:00').toLocaleDateString('es-CL') : 'A convenir';
   const requierePersonal = cot.personalizacion_tipo && cot.personalizacion_tipo !== 'Sin personalización';
 
+  // ── Logo oficial PEYU (tortuga + PEYU tinta) — Manual de Marca ──
+  const PEYU_LOGO_URL = 'https://media.base44.com/images/public/69d99b9d61f699701129c103/cead5fbd1_image.png';
+  let peyuLogoB64 = null;
+  try {
+    const lr = await fetch(PEYU_LOGO_URL);
+    if (lr.ok) {
+      const lbuf = new Uint8Array(await lr.arrayBuffer());
+      let lbin = '';
+      for (let i = 0; i < lbuf.length; i += 0x8000) lbin += String.fromCharCode.apply(null, lbuf.subarray(i, i + 0x8000));
+      peyuLogoB64 = btoa(lbin);
+    }
+  } catch { /* sin logo → fallback texto */ }
+
   const doc = new jsPDF({ unit: 'mm', format: 'a4' });
   const pw = 210, ph = 297, RX = pw - PMX, CW = pw - PMX * 2;
   let y = 0;
@@ -85,7 +98,17 @@ Deno.serve(async (req) => {
   doc.setFillColor(...LEAF); doc.circle(pw + 6, heroH - 4, 22, 'F');
   doc.setFillColor(...CREAM); doc.rect(0, heroH, pw, 2, 'F');
 
-  T('PEYU', PMX, 20, { size: 22, font: 'bold', color: WHITE });
+  // Logo PEYU completo sobre chip arena (contraste sobre hero verde bosque)
+  const lgS = 22, lgX = PMX, lgY = 8;
+  if (peyuLogoB64) {
+    try {
+      doc.setFillColor(...SAND);
+      doc.roundedRect(lgX, lgY, lgS, lgS, 3, 3, 'F');
+      doc.addImage(`data:image/png;base64,${peyuLogoB64}`, 'PNG', lgX + 1.5, lgY + 1.5, lgS - 3, lgS - 3);
+    } catch { T('PEYU', PMX, 20, { size: 22, font: 'bold', color: WHITE }); }
+  } else {
+    T('PEYU', PMX, 20, { size: 22, font: 'bold', color: WHITE });
+  }
   T('Plastico que renace - 100% reciclado - Hecho en Chile', PMX, 27, { size: 8, color: CREAM });
   T('COTIZACION N°', RX, 16, { size: 7, font: 'bold', color: CREAM, align: 'right', spacing: 1 });
   T(numero, RX, 24, { size: 14, font: 'bold', color: WHITE, align: 'right' });
@@ -220,10 +243,11 @@ Deno.serve(async (req) => {
     const fy = ph - 18;
     doc.setFillColor(...INK); doc.rect(0, fy, pw, 18, 'F');
     doc.setFillColor(...TEAL); doc.rect(0, fy, pw, 1.5, 'F');
-    T('PEYU Chile SpA', PMX, fy + 8, { size: 9, font: 'bold', color: WHITE });
-    T('Plastico que renace - Hecho en Chile', PMX, fy + 13, { size: 7, color: CREAM });
-    T('peyuchile.cl', RX, fy + 8, { size: 7.5, color: [210, 228, 220], align: 'right' });
-    T('+56 9 3504 0242 - ventas@peyuchile.cl', RX, fy + 13, { size: 7, color: [210, 228, 220], align: 'right' });
+    T('PEYU Chile SpA - RUT 77.069.974-6', PMX, fy + 7, { size: 9, font: 'bold', color: WHITE });
+    T('Pedro de Valdivia 6603, Macul - F. Bilbao 3775, Providencia', PMX, fy + 12, { size: 6.5, color: CREAM });
+    T('Plastico que renace - Hecho en Chile', PMX, fy + 16, { size: 6.5, color: [180, 200, 195] });
+    T('peyuchile.cl - ventas@peyuchile.cl', RX, fy + 8, { size: 8, font: 'bold', color: WHITE, align: 'right' });
+    T('WhatsApp +56 9 3504 0242', RX, fy + 13, { size: 7.5, font: 'bold', color: CREAM, align: 'right' });
   }
 
   const pdfBytes = doc.output('arraybuffer');

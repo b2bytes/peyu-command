@@ -491,6 +491,19 @@ Deno.serve(async (req) => {
         return Response.json({ ok: true, message: 'Tracking BlueExpress sincronizado', detail: r || null });
       }
 
+      // ── Memoria a largo plazo del agente ──────────────────────────────
+      // Guarda un aprendizaje/decisión en MetaAgentMemory + Pinecone para
+      // que el agente lo recupere en futuras conversaciones.
+      case 'saveKnowledge': {
+        if (!payload.text || !payload.text.trim()) throw new Error('Falta el texto a guardar');
+        const r = await base44.asServiceRole.functions.invoke('saveKnowledge', {
+          text: payload.text.trim().slice(0, 6000),
+          source: 'agente_os',
+          kind: payload.kind || 'aprendizaje',
+        });
+        return Response.json({ ok: true, message: `Guardado en memoria permanente: "${payload.text.trim().slice(0, 80)}${payload.text.length > 80 ? '…' : ''}" 🧠` });
+      }
+
       default:
         return Response.json({ error: `Acción no soportada: ${action}` }, { status: 400 });
     }

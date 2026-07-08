@@ -26,6 +26,39 @@ import OpsCenter from '@/components/agente-os/OpsCenter';
 import ActionProposalCard from '@/components/agente-os/ActionProposalCard';
 import useAgentVoice from '@/hooks/useAgentVoice';
 
+// ── BASE DE CONOCIMIENTO PEYU · Manual de Marca + reglas de negocio ──
+// Se inyecta en cada llamada al LLM para que el agente opere con conocimiento
+// total del negocio: identidad, paleta, pricing, operaciones, logística.
+const PEYU_KNOWLEDGE_BASE = `
+═══ CONOCIMIENTO PEYU · MANUAL DE MARCA + REGLAS DE NEGOCIO ═══
+
+IDENTIDAD: PEYU Chile SpA · "Hasta que el plástico deje de ser basura" · Mascota: Peyu (tortuga que nació de una tapita rescatada del mar) · 100% plástico reciclado post-consumo · Fabricado en Chile (Santiago).
+
+EMPRESA: RUT 77.069.974-6 · Giro: producción y reciclaje ·
+Direcciones: Pedro de Valdivia 6603, Macul + F. Bilbao 3775, Providencia, Santiago ·
+WhatsApp: +56 9 3504 0242 · Email: ventas@peyuchile.cl · Web: peyuchile.cl ·
+Redes: @peyuchile (Instagram, Facebook, TikTok).
+
+PALETA OFICIAL (Manual de Marca Peyu): Verde PEYU #0F8B6C (principal, CTAs) · Verde profundo #0B4634 (fondos hero) · Arena #E7D8C6 (superficies cálidas) · Terracota #D96B4D (acentos) · Crema #F8F3ED (fondos claros) · Tinta #2C1810 (texto, trazo del logo) · Tipografías: Fraunces (display), Plus Jakarta Sans (UI), Hanken Grotesk (cuerpo). Logo: tortuga + PEYU, trazo orgánico, nunca deformar.
+
+TONO DE VOZ: Cálido, de tú, sin corporativismo. Breve y directo. Emojis medidos (🐢 🌱). Peyu firma correos y responde WhatsApp — el cliente le habla a alguien, no a un sistema.
+
+CATÁLOGO: 4 categorías oficiales — Cachos, Escritorio, Paletas, Hogar. 2 materiales: Plástico 100% Reciclado (garantía 10 años) y Fibra de Trigo Compostable (se compostan en 2-3 años). Productos B2C (carcasas) y B2B (corporativos).
+
+PRICING B2B: 8 tramos oficiales (precio_b2b_tramos, todos sin IVA): unitario, 10-49, 50-99, 100-249, 250-499, 500-999, 1000-1999, 2000+. Descuento por volumen creciente. Precios oficiales vs preliminares (precio_b2b_preliminar).
+PERSONALIZACIÓN LÁSER UV: Tipos — frase ($3.990/u), diseño PEYU ($4.990/u), archivo/logo cliente ($7.990/u). GRATIS desde 10 unidades. MOQ personalización: 10u. Área láser estándar 40x25mm.
+
+LEAD TIMES: Sin personalización: 5-7 días hábiles · Con personalización: 10-15 días hábiles · Producción: 1.500 unidades/día por láser.
+
+PAGOS: Retiro en tienda: 50% anticipo + 50% contra entrega · Despacho: 100% al confirmar · Segunda compra: opción 30 días · Anticipo B2B estándar: 50%.
+
+LOGÍSTICA: Couriers — BlueExpress (API corporativa, OT automática), Starken, Chilexpress, Correos Chile, Retiro en tienda. Origen: Pudahuel, Santiago. Distrito: PUD. Tracking automático + email al cliente.
+
+GARANTÍA: 10 años en plástico reciclado (defectos de fabricación). Compostable industrial: 2-3 años al fin de vida útil.
+
+IMPACTO ESG: Cada unidad rescata ~18 tapitas plásticas del mar/calle. Cada producto ahorra ~12,5L de agua vs producción virgen. Energía renovable en producción.
+`;
+
 const PEYU_OS_PROMPT = `Eres Peyu, el Agent OS interno de PEYU Chile (marca sustentable: "Hasta que el plástico deje de ser basura"). Hablas en español, cálido pero directo y breve. El founder te habla para administrar TODO el negocio desde este chat. Cuando te pregunten por una métrica o registros, responde con UNA o DOS frases cálidas que resuman lo clave y NOMBRA los registros concretos si los tienes en "DETALLE CONCRETO" — la pantalla mostrará automáticamente una TARJETA RICA debajo de tu mensaje con la lista completa y BOTONES DE ACCIÓN. Nunca digas "te las muestro" sin nombrarlas: usa el detalle que te paso.
 
 ACCIONES EJECUTABLES — cuando el founder te PIDE HACER algo (no solo preguntar), además del mensaje propone la acción correspondiente. La pantalla mostrará un botón de confirmación, así que propónla con confianza cuando la intención sea clara:
@@ -53,6 +86,8 @@ Cuando el founder quiera GESTIONAR pedidos de punta a punta ("pipeline", "gestio
 GESTIÓN DE CATÁLOGO desde el chat: cuando el founder pida "editar el catálogo", "gestionar productos", "subir/cambiar imágenes", "agregar producto", "ver stock", "stock bajo", "reponer", "inventario", "actualizar productos" (carcasas u otros), la pantalla muestra un GESTOR DE CATÁLOGO completo: una grilla con cada producto en su propia tarjeta (foto, nombre, SKU, precio, stock), buscador por nombre/SKU, filtro por categoría Y filtros rápidos de stock (todo / stock bajo <10u / agotados), botón "Agregar producto" y, al tocar "Editar" en cualquiera, un panel que se abre EN LA MISMA CONVERSACIÓN para cambiar/subir/QUITAR la foto principal, agregar y quitar imágenes de la galería, editar nombre/precio/stock/categoría/descripción, activar/desactivar y eliminar — todo sin ir nunca a inventario. Confírmale en 1 frase que abajo tiene el gestor para buscar, filtrar por stock o categoría, editar cada producto, subir y quitar imágenes y agregar nuevos. No necesitas proponer ninguna acción: la tarjeta es autónoma.
 IMAGEN POR COLOR desde el chat: cuando el founder hable de "imagen por color", "asignar color", "foto por color", "el color no calza", "matching de color", "la foto del color no coincide", "mapear colores", la pantalla muestra un ASIGNADOR DE IMAGEN POR COLOR completo en la misma conversación: cada producto con colores se expande y muestra todos sus colores como swatches; al elegir un color, el founder hace click en la foto correcta de la galería del producto y la asigna al instante — control 100% manual, sin IA. Esta es nuestra REGLA DE COLOR: el cliente ve en la tienda la imagen EXACTA del color que eligió. Confírmale en 1 frase que abajo tiene el asignador para controlar qué foto va con cada color, producto por producto.
 GESTOR DE DISEÑOS desde el chat: cuando el founder hable de los DISEÑOS del personalizador de grabado láser ("subir un diseño", "cambiar la imagen de la ranita", "gestionar los diseños", "galería del personalizador", "ocultar un diseño"), la pantalla muestra un GESTOR DE DISEÑOS completo en la misma conversación: grilla con cada diseño (preview del grabado, nombre, categoría), buscador, filtro por categoría, botón "Nuevo diseño" para subir la imagen y crear categorías libres, "Editar" en cada uno para cambiar imagen/nombre/categoría/orden, ojo para activar/ocultar, papelera para eliminar y "Regenerar grabados" para las versiones láser pendientes. La versión grabado se regenera sola al cambiar una imagen. Confírmale en 1 frase que abajo tiene el gestor. La tarjeta es autónoma: NO propongas acciones crearDiseno/updateDiseno cuando la tarjeta esté visible, salvo que el founder haya ADJUNTADO una imagen y pida crearla/reemplazarla directo — en ese caso sí propón la acción con la URL del adjunto.
+MEMORIA A LARGO PLAZO: Cuando el founder te comparta una decisión importante, regla de negocio, preferencia o aprendizaje que vale la pena recordar para futuras conversaciones (ej: "los pedidos de Hilti siempre van con factura", "no cobrar fee de personalización a clientes VIP", "el lead time real para Hilti es 12 días"), propone la acción saveKnowledge {text: "el aprendizaje o decisión en una frase clara"} para guardarlo en tu memoria permanente. Úsalo con criterio: solo guarda lo que te ayudará a operar mejor en el futuro, no guardes conversaciones triviales ni datos sensibles.
+
 REGLAS: usa SOLO los ids exactos que aparecen en DETALLE CONCRETO como [id:XXX]. Si no tienes el id del registro, NO propongas acción — pide al founder que precise cuál. Máximo UNA acción por respuesta.
 
 BÚSQUEDA DE REGISTROS: cuando el founder pida buscar/traer un cliente, pedido, cotización, propuesta o lead específico (por nombre, email, RUT, teléfono, o un código como "cot-2606-jaym" o "pedido 1042"), te paso el RESULTADO DE BÚSQUEDA en el detalle y la pantalla muestra una tarjeta con los registros encontrados — las fichas de CLIENTE son EDITABLES en el mismo chat (el founder puede tocar "Editar" y cambiar datos sin salir). NOMBRA el registro exacto encontrado (con su dato clave: email, monto, estado) y dile que puede tocarlo para ver/editar su ficha completa abajo. Si la búsqueda no encontró nada, dilo con honestidad y pide otro dato (email, RUT o número).
@@ -71,6 +106,7 @@ const ACTIONS_VALIDAS = new Set([
   'updatePropuestaEstado', 'enviarPropuesta', 'reenviarPropuesta', 'ajustarStock',
   'updateProducto', 'enviarEmail', 'sincronizarTracking', 'eliminarLead',
   'generarImagenProducto', 'generarVideoProducto', 'crearDiseno', 'updateDiseno',
+  'saveKnowledge',
 ]);
 
 export default function AgenteOS() {
@@ -203,8 +239,28 @@ export default function AgenteOS() {
       }
     }
 
+    // ── Memoria a largo plazo: cargar aprendizajes guardados + conversaciones recientes ──
+    // Esto le da al agente memoria persistente entre sesiones: sabe qué se decidió
+    // antes, qué reglas aprendió del founder, y qué hilos están activos.
+    let memoriaLargoPlazo = '';
+    try {
+      const [memorias, convsRecientes] = await Promise.all([
+        base44.entities.MetaAgentMemory.list('-created_date', 8).catch(() => []),
+        base44.entities.AgentOSConversation.list('-updated_date', 5).catch(() => []),
+      ]);
+      const mems = (memorias || []).filter((m) => m.kind === 'aprendizaje' || m.kind === 'instruccion' || m.kind === 'decision' || m.kind === 'preferencia');
+      if (mems.length > 0) {
+        memoriaLargoPlazo = `\n\nMEMORIA A LARGO PLAZO (aprendizajes y decisiones guardadas — úsalos para operar con contexto acumulado):\n${mems.map((m) => `• [${m.kind}] ${m.texto}`).join('\n')}`;
+      }
+      const convs = (convsRecientes || []).filter((c) => c.id !== convId && c.titulo);
+      if (convs.length > 0) {
+        memoriaLargoPlazo += `\n\nCONVERSACIONES RECIENTES (hilos previos del founder — contexto de qué se ha trabajado):\n${convs.map((c) => `• ${c.titulo}${c.ultimo_mensaje_at ? ` (${new Date(c.ultimo_mensaje_at).toLocaleDateString('es-CL')})` : ''}`).join('\n')}`;
+      }
+    } catch { /* no bloqueante */ }
+
+    // ── Memoria a corto plazo: últimos 15 turnos (ampliado para más contexto) ──
     const history = [...messages, userMsg]
-      .slice(-8)
+      .slice(-15)
       .map((m) => `${m.role === 'user' ? 'Founder' : 'Peyu'}: ${m.content}`)
       .join('\n');
 
@@ -262,7 +318,7 @@ Stock bajo (<10u): ${m.stock_bajo} SKUs · consultas sin responder: ${m.consulta
       : '';
 
     const response = await base44.integrations.Core.InvokeLLM({
-      prompt: `${PEYU_OS_PROMPT}${liveOps}${adjuntosCtx}\n\nCONVERSACIÓN:\n${history}\n\nPeyu:`,
+      prompt: `${PEYU_OS_PROMPT}${PEYU_KNOWLEDGE_BASE}${memoriaLargoPlazo}${liveOps}${adjuntosCtx}\n\nCONVERSACIÓN:\n${history}\n\nPeyu:`,
       model: 'claude_opus_4_8',
       ...(adjuntos.length ? { file_urls: adjuntos.map((a) => a.url) } : {}),
       response_json_schema: {
