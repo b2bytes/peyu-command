@@ -24,6 +24,7 @@ import { getColoresProducto } from '@/lib/color-parser';
 import { findColorImageMatch } from '@/lib/color-image-matcher';
 import { resolveColorImageAll, getAllImageUrls } from '@/lib/color-image-resolver-all';
 import { getColorTintFilter } from '@/lib/color-tint';
+import { toneFromHex } from '@/lib/engraving-rule';
 import { MOQ_PERSONALIZACION_GRATIS } from '@/lib/personalizacion-config';
 import { addToCartV2, fmtCLP } from '@/lib/shop-v2-cart';
 import { trackViewContent } from '@/lib/meta-pixel';
@@ -381,6 +382,9 @@ export default function ProductoNuevo() {
   // el grabado se compone encima de la imagen elegida. Cero fricción.
   const mockupBase = colorImg;
   const mockupFilter = colorFilter;
+  // Si el color se pinta con filtro CSS (sin foto real), el tono del grabado
+  // se deriva del HEX del color elegido — la foto original no refleja lo visto.
+  const mockupTint = mockupFilter && color?.hex ? toneFromHex(color.hex) : null;
 
   // Mobile: cuando el cliente carga su logo o elige un diseño PEYU, la página
   // sube SOLA al mockup (que vive arriba, en el lugar de la foto principal)
@@ -680,6 +684,7 @@ export default function ProductoNuevo() {
                       capas={capas}
                       onPlacementChange={setPlacements}
                       baseFilter={mockupFilter}
+                      tintOverride={mockupTint}
                       esCarcasa={esCarcasa}
                       customArea={engraggingArea}
                     />

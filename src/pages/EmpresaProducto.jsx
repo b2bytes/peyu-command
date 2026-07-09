@@ -19,6 +19,7 @@ import B2BLogoMockup from '@/components/b2b/B2BLogoMockup';
 import ColorSwatchesV2 from '@/components/shopv2/ColorSwatchesV2';
 import { getColoresProducto } from '@/lib/color-parser';
 import { getColorTintFilter } from '@/lib/color-tint';
+import { toneFromHex } from '@/lib/engraving-rule';
 import { getProductImage, getProductImageForColor } from '@/utils/productImages';
 import { findColorImageMatch } from '@/lib/color-image-matcher';
 import { getB2BPriceForQty, getUnitBasePrice } from '@/lib/catalog-pricing';
@@ -349,6 +350,7 @@ export default function EmpresaProducto() {
               onLogoChange={setLogoUrl}
               productImgOverride={displayImg}
               colorFilterOverride={colorFilter}
+              tintOverride={colorFilter && color?.hex ? toneFromHex(color.hex) : null}
             />
 
             {/* Qué incluye */}

@@ -23,6 +23,9 @@ export default function B2BLogoMockup({
   // Filtro CSS del color (tinte) — se aplica también al mockup para que
   // coincida 1:1 con la galería cuando no hay foto real del color.
   colorFilterOverride = '',
+  // Tono del grabado ya resuelto por el padre (cuando el color viene de un
+  // tinte CSS, la foto real no refleja el color visto).
+  tintOverride = null,
 }) {
   const [logoUrl, setLogoUrlState] = useState(initialLogoUrl);
   // Notifica cada cambio de logo al padre → el logo VIAJA al cotizador y no
@@ -33,13 +36,10 @@ export default function B2BLogoMockup({
   const [error, setError] = useState('');
   const inputRef = useRef(null);
 
-  // Imagen del producto para el mockup:
-  // ① override del padre (color elegido = misma que la galería)
-  // ② imagen base limpia (sin logo PEYU de fábrica) si existe
-  // ③ imagen principal del catálogo (fallback)
-  const productImg = productImgOverride
-    || producto?.imagen_base_limpia_url
-    || getProductImage(producto);
+  // Imagen del producto para el mockup: SIEMPRE la misma que el cliente está
+  // viendo en la galería (override del padre). NUNCA se sustituye por la "base
+  // limpia" ni otra foto — cero saltos visuales al subir el logo.
+  const productImg = productImgOverride || getProductImage(producto);
 
   const handleFile = async (file) => {
     if (!file) return;
@@ -89,6 +89,7 @@ export default function B2BLogoMockup({
           fallbackUrl={getProductImage(producto)}
           capas={logoUrl ? [{ id: 'archivo', tipo: 'archivo', url: logoUrl }] : []}
           baseFilter={colorFilterOverride || ''}
+          tintOverride={tintOverride}
           esCarcasa={isProductoCarcasa(producto)}
           customArea={getProductEngraggingArea(producto)}
         />

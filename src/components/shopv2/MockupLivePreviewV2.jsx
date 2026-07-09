@@ -123,7 +123,7 @@ function clampToArea(x, y, sizePct, tipo, area) {
 // captureSnapshot(): captura el canvas del preview en vivo como dataURL PNG.
 // Se expone via forwardRef para que el padre (ProductoNuevo, LiveConfiguratorV2)
 // lo llame al agregar al carrito y guarde el mockup REAL (foto base + grabado).
-const MockupLivePreviewV2 = forwardRef(function MockupLivePreviewV2({ productImageUrl, capas = [], onPlacementChange, fallbackUrl, esCarcasa = false, customArea = null, baseFilter = '' }, ref) {
+const MockupLivePreviewV2 = forwardRef(function MockupLivePreviewV2({ productImageUrl, capas = [], onPlacementChange, fallbackUrl, esCarcasa = false, customArea = null, baseFilter = '', tintOverride = null }, ref) {
   // Usa customArea si está disponible (asignada por ProductoNuevo), sino deduce de esCarcasa.
   const area = customArea || getArea(esCarcasa);
   const containerRef = useRef(null);
@@ -172,10 +172,13 @@ const MockupLivePreviewV2 = forwardRef(function MockupLivePreviewV2({ productIma
   // que reemplace el logo PEYU existente en la foto.
   useEffect(() => {
     let cancelled = false;
+    // tintOverride: el padre ya sabe el tono (ej. color pintado con filtro CSS
+    // donde la foto real NO refleja el color visto) → manda sobre la detección.
+    if (tintOverride) { setTint(tintOverride); return; }
     if (!imgSrc) return;
     detectImageTone(imgSrc).then((t) => { if (!cancelled) setTint(t); });
     return () => { cancelled = true; };
-  }, [imgSrc]);
+  }, [imgSrc, tintOverride]);
 
   // Inicializa/auto-acomoda las capas. Las que el usuario NO ha tocado se
   // recalculan con autoLayout (para que al combinar no se apilen). Las tocadas
