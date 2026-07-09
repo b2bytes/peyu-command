@@ -35,6 +35,7 @@ export default function EmpresaProducto() {
   const [loading, setLoading] = useState(true);
   const [qty, setQty] = useState(50);
   const [activeImg, setActiveImg] = useState(0);
+  const [manualPick, setManualPick] = useState(false); // click del cliente en la galería gana sobre el color
   const [logoUrl, setLogoUrl] = useState(null); // logo subido en esta ficha → viaja al cotizador
   const [colorId, setColorId] = useState(null); // color oficial elegido (norma catálogo PDF)
 
@@ -81,6 +82,8 @@ export default function EmpresaProducto() {
   const displayImg = useMemo(() => {
     if (!producto) return null;
     const base = getProductImage(producto);
+    // El click explícito del cliente en un thumbnail SIEMPRE gana.
+    if (manualPick) return images[activeImg] || base;
     if (!color) return images[activeImg] || base;
     // ① Foto real del color (imagenes_por_color)
     const colorPhoto = getProductImageForColor(producto, color);
@@ -90,18 +93,18 @@ export default function EmpresaProducto() {
     if (match) return images[match.index];
     // ③ Sin foto real → imagen activa de la galería
     return images[activeImg] || base;
-  }, [producto, color, images, activeImg]);
+  }, [producto, color, images, activeImg, manualPick]);
 
   // Tinte CSS solo si NO encontramos foto real del color.
   const colorFilter = useMemo(() => {
-    if (!producto || !color) return '';
+    if (!producto || !color || manualPick) return '';
     const base = getProductImage(producto);
     const colorPhoto = getProductImageForColor(producto, color);
     if (colorPhoto !== base) return ''; // hay foto real, no se tinta
     const match = findColorImageMatch(images, color);
     if (match) return ''; // hay match en galería, no se tinta
     return getColorTintFilter(producto, color);
-  }, [producto, color, images]);
+  }, [producto, color, images, manualPick]);
 
   const b2b = useMemo(() => getB2BPriceForQty(producto, qty), [producto, qty]);
   const unitPrice = b2b?.precio ?? getUnitBasePrice(producto);
@@ -225,7 +228,7 @@ export default function EmpresaProducto() {
                 {images.map((img, i) => (
                   <button
                     key={i}
-                    onClick={() => setActiveImg(i)}
+                    onClick={() => { setActiveImg(i); setManualPick(true); }}
                     className="flex-shrink-0 w-16 h-16 rounded-xl overflow-hidden transition-all"
                     style={{ border: activeImg === i ? '2px solid #0F8B6C' : '1.5px solid #D4C4B0', opacity: activeImg === i ? 1 : 0.7 }}
                   >
@@ -253,7 +256,7 @@ export default function EmpresaProducto() {
 
             {/* Color oficial (norma catálogo B2B): actualiza la imagen al tiro */}
             {colores.length > 1 && (
-              <ColorSwatchesV2 colores={colores} value={colorId} onSelect={setColorId} producto={producto} />
+              <ColorSwatchesV2 colores={colores} value={colorId} onSelect={(v) => { setColorId(v); setManualPick(false); }} producto={producto} />
             )}
 
             {/* Precio en vivo */}

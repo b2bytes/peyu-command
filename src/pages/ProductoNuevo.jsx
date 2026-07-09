@@ -390,15 +390,19 @@ export default function ProductoNuevo() {
   // lienzo limpio (sin logo PEYU) y lo re-tintamos al color elegido con filtro
   // CSS — el mockup nace automáticamente sobre la imagen del color escogido.
   const baseLimpia = !esCarcasa ? (producto?.imagen_base_limpia_url || cleanBaseUrl || null) : null;
-  const mockupBase = (muestraMockup && baseLimpia) ? baseLimpia : colorImg;
+  // 🔒 La foto del COLOR elegido SIEMPRE se respeta: la base limpia (derivada
+  // de la foto principal) solo se usa cuando NO hay foto real de color distinta.
+  // Antes el mockup cambiaba la foto escogida por otra imagen del producto.
+  const usaBaseLimpia = muestraMockup && !!baseLimpia && !!producto && colorImg === getProductImage(producto);
+  const mockupBase = usaBaseLimpia ? baseLimpia : colorImg;
   const mockupFilter = useMemo(() => {
     if (!producto || esCarcasa) return colorFilter;
-    if (muestraMockup && baseLimpia && color && baseLimpia !== colorImg) {
+    if (usaBaseLimpia && color) {
       // La base limpia proviene de la foto principal → re-tintar al color elegido.
       return getColorTintFilter(producto, color, false);
     }
     return colorFilter;
-  }, [producto, color, esCarcasa, colorFilter, muestraMockup, baseLimpia, colorImg]);
+  }, [producto, color, esCarcasa, colorFilter, usaBaseLimpia]);
 
   // Mobile: cuando el cliente carga su logo o elige un diseño PEYU, la página
   // sube SOLA al mockup (que vive arriba, en el lugar de la foto principal)

@@ -13,11 +13,13 @@ export default function ProductGalleryV2({
   const [pos, setPos] = useState({ x: 50, y: 50 });
   const ref = useRef(null);
 
-  // mainImage tiene prioridad: es la imagen resuelta del color elegido por el
-  // padre (displayImg). Si no se pasa, cae al índice activo de la galería.
-  // Esto hace que el cambio de color sea INMEDIATO y fluido — el padre ya
-  // resolvió la URL correcta, no dependemos de sincronizar índices frágiles.
-  const main = mainImage || images[active] || images[0] || fallback;
+  // El CLICK del usuario en un thumbnail SIEMPRE gana (userPick): antes
+  // mainImage (foto del color) pisaba la selección y la galería parecía
+  // "muerta". Al cambiar el color (mainImage cambia), userPick se resetea
+  // y vuelve a mandar la foto del color elegido.
+  const [userPick, setUserPick] = useState(null);
+  useEffect(() => { setUserPick(null); }, [mainImage]);
+  const main = userPick || mainImage || images[active] || images[0] || fallback;
 
   // ── Transición de carga: cuando cambia la imagen principal (color/ángulo),
   //     mostramos un shimmer hasta que la nueva imagen cargue. Así el cliente
@@ -104,7 +106,7 @@ export default function ProductGalleryV2({
           {images.map((img, i) => (
             <button
               key={i}
-              onClick={() => onSelect?.(i)}
+              onClick={() => { setUserPick(images[i]); onSelect?.(i); }}
               className={`relative flex-shrink-0 w-16 h-16 rounded-2xl overflow-hidden bg-white border-2 transition-all ${
                 i === active ? 'border-[#0F8B6C] shadow-md' : 'border-[#EBE3D6] hover:border-[#0F8B6C]/40'
               }`}

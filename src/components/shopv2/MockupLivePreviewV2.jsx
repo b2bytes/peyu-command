@@ -314,8 +314,15 @@ const MockupLivePreviewV2 = forwardRef(function MockupLivePreviewV2({ productIma
             fetchpriority="high"
             loading="eager"
             draggable={false}
-            className="w-full h-full object-cover"
-            style={{ filter: baseFilter || undefined, transition: 'filter .25s ease' }}
+            className="w-full h-full"
+            style={{
+              // Carcasas: cover (fotos cuadradas). Resto de productos: contain —
+              // cover recortaba el artículo y el grabado quedaba "flotando" fuera
+              // de la superficie real.
+              objectFit: esCarcasa ? 'cover' : 'contain',
+              filter: baseFilter || undefined,
+              transition: 'filter .25s ease',
+            }}
             onError={() => {
               // Si la imagen principal falla y existe un fallback distinto, úsalo.
               if (fallbackUrl && imgSrc !== fallbackUrl) setImgSrc(fallbackUrl);
