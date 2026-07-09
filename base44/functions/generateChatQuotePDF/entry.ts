@@ -288,7 +288,7 @@ Deno.serve(async (req) => {
 
     // ── Logo oficial PEYU (tortuga + PEYU tinta) sobre chip arena claro ──
     const PEYU_LOGO_URL = 'https://media.base44.com/images/public/69d99b9d61f699701129c103/cead5fbd1_image.png';
-    let peyuLogoB64 = null;
+    let peyuLogoB64 = null, logoAR = 2.8; // aspect ratio real (ancho/alto) del logo
     try {
       const lr = await fetch(PEYU_LOGO_URL);
       if (lr.ok) {
@@ -296,6 +296,12 @@ Deno.serve(async (req) => {
         let lbin = '';
         for (let i = 0; i < lbuf.length; i += 0x8000) lbin += String.fromCharCode.apply(null, lbuf.subarray(i, i + 0x8000));
         peyuLogoB64 = btoa(lbin);
+        // Dimensiones reales del PNG (cabecera IHDR) → el logo NUNCA se deforma
+        if (lbuf.length > 24 && lbuf[0] === 0x89) {
+          const lw = (lbuf[16] << 24) | (lbuf[17] << 16) | (lbuf[18] << 8) | lbuf[19];
+          const lh = (lbuf[20] << 24) | (lbuf[21] << 16) | (lbuf[22] << 8) | lbuf[23];
+          if (lw > 0 && lh > 0) logoAR = lw / lh;
+        }
       }
     } catch { /* sin logo → fallback texto */ }
 
@@ -306,18 +312,19 @@ Deno.serve(async (req) => {
     doc.setFillColor(...LEAF); doc.circle(pw + 8, heroH - 2, 20, 'F');
     doc.setFillColor(...CREAM); doc.rect(0, heroH, pw, 2, 'F');
 
-    // Logo PEYU completo sobre chip arena vertical (logo vertical: tortuga + PEYU)
-    const lgW = 22, lgH = 30, lgX = PMX, lgY = 6;
+    // Logo PEYU horizontal sobre chip arena, con sus proporciones REALES
+    const lgImgH = 11, lgImgW = Math.min(52, lgImgH * logoAR);
+    const lgX = PMX, lgY = 8, lgW = lgImgW + 8, lgH = lgImgH + 6;
     if (peyuLogoB64) {
       try {
         doc.setFillColor(...SAND);
-        doc.roundedRect(lgX, lgY, lgW, lgH, 3, 3, 'F');
-        doc.addImage(`data:image/png;base64,${peyuLogoB64}`, 'PNG', lgX + 1.5, lgY + 1.5, lgW - 3, lgH - 3);
+        doc.roundedRect(lgX, lgY, lgW, lgH, 3.5, 3.5, 'F');
+        doc.addImage(`data:image/png;base64,${peyuLogoB64}`, 'PNG', lgX + 4, lgY + 3, lgImgW, lgImgH);
       } catch { T('PEYU', PMX, 20, { size: 22, font: 'bold', color: WHITE }); }
     } else {
       T('PEYU', PMX, 20, { size: 22, font: 'bold', color: WHITE });
     }
-    T('Plástico que renace · 100% reciclado · Hecho en Chile', PMX, 28, { size: 8, color: CREAM });
+    T('Plástico que renace · 100% reciclado · Hecho en Chile', PMX, lgY + lgH + 6, { size: 8, color: CREAM });
     T('PROPUESTA N°', RX, 15, { size: 7, font: 'bold', color: CREAM, align: 'right', spacing: 1 });
     T(numero, RX, 23, { size: 14, font: 'bold', color: WHITE, align: 'right' });
 
@@ -326,7 +333,19 @@ Deno.serve(async (req) => {
     T(`Emisión  ${hoy.toLocaleDateString('es-CL')}`, RX, 44, { size: 8, color: [210, 228, 220], align: 'right' });
     T(`Válida hasta  ${vence.toLocaleDateString('es-CL')}`, RX, 50, { size: 8, color: [210, 228, 220], align: 'right' });
 
-    y = heroH + 9;
+    // ═══ BARRA DE DATOS PEYU (arriba) · direcciones con link a Google Maps ═══
+    const MAPS_BILBAO = 'https://maps.google.com/?q=Av.+Francisco+Bilbao+3775,+Local+06,+Providencia,+Santiago';
+    const MAPS_MACUL = 'https://maps.google.com/?q=Pedro+de+Valdivia+6603,+Macul,+Santiago';
+    const dbY = heroH + 2, dbH = 13;
+    doc.setFillColor(...INK); doc.rect(0, dbY, pw, dbH, 'F');
+    T('PEYU Chile SpA · RUT 77.069.974-6', PMX, dbY + 5.5, { size: 7.5, font: 'bold', color: WHITE });
+    T('peyuchile.cl · ventas@peyuchile.cl · WhatsApp +56 9 3504 0242', RX, dbY + 5.5, { size: 7, color: CREAM, align: 'right' });
+    T('F. Bilbao 3775, Local 06, Providencia — ver mapa >', PMX, dbY + 10.2, { size: 6.8, font: 'bold', color: [140, 220, 195] });
+    doc.link(PMX, dbY + 7, 72, 4.5, { url: MAPS_BILBAO });
+    T('Pedro de Valdivia 6603, Macul — ver mapa >', RX, dbY + 10.2, { size: 6.8, font: 'bold', color: [140, 220, 195], align: 'right' });
+    doc.link(RX - 62, dbY + 7, 62, 4.5, { url: MAPS_MACUL });
+
+    y = dbY + dbH + 7;
 
     // ═══ RELATO DE MARCA (el viaje eco) ═══
     const relatoH = 22;
@@ -476,28 +495,70 @@ Deno.serve(async (req) => {
     T(`Rescata ~${tapitas.toLocaleString('es-CL')} tapitas (~${kgRescatados}kg de plástico) y ahorra ${(cantidad * 12.5).toLocaleString('es-CL')}L de agua vs producción virgen.`, PMX + 8, y + 11.5, { size: 8, color: STONE });
     y += 15 + 7;
 
-    // CTA Aprobar propuesta — link a la página pública que dispara el embudo.
+    // ═══ SERVICIO INCLUIDO (sin costo) ═══
+    if (y + 24 > ph - 18) { doc.addPage(); y = 20; }
+    doc.setFillColor(...SAND); doc.roundedRect(PMX, y, CW, 21, 3, 3, 'F');
+    T('SERVICIO INCLUIDO SIN COSTO', PMX + 8, y + 6.5, { size: 6.5, font: 'bold', color: STONE2, spacing: 0.8 });
+    const servs = [
+      ['Mockup digital', 'Apruebas el diseño antes'],
+      ['Revisión de arte', 'Afinamos tu logo al láser'],
+      ['Ejecutivo dedicado', 'Un contacto de inicio a fin'],
+      ['Seguimiento', 'Tracking hasta tu oficina'],
+    ];
+    const sCol = CW / 4;
+    servs.forEach((s, i) => {
+      const sx = PMX + i * sCol + 8;
+      T('>', sx, y + 12.5, { size: 8, font: 'bold', color: TEAL });
+      T(s[0], sx + 4, y + 12.5, { size: 7.5, font: 'bold', color: INK });
+      T(s[1], sx + 4, y + 17, { size: 6.5, color: STONE });
+    });
+    y += 21 + 7;
+
+    // ═══ EMBUDO · CÓMO SEGUIMOS (4 pasos) ═══
+    if (y + 26 > ph - 18) { doc.addPage(); y = 20; }
+    T('¿CÓMO SEGUIMOS?', PMX, y, { size: 7, font: 'bold', color: STONE2, spacing: 1 });
+    y += 4;
+    const pasos = [
+      ['Apruebas online', '1 clic en el botón'],
+      ['Confirmas anticipo', 'Según condiciones'],
+      ['Producimos y grabamos', `${leadTime} días hábiles`],
+      ['Recibes con factura', 'Despacho o retiro'],
+    ];
+    const pCol = CW / 4, pH = 18;
+    doc.setFillColor(...MINT); doc.roundedRect(PMX, y, CW, pH, 3, 3, 'F');
+    pasos.forEach((p, i) => {
+      const px2 = PMX + i * pCol + 7;
+      doc.setFillColor(...TEAL); doc.circle(px2 + 2.5, y + 7, 2.8, 'F');
+      T(String(i + 1), px2 + 2.5, y + 8.3, { size: 7.5, font: 'bold', color: WHITE, align: 'center' });
+      T(p[0], px2 + 7, y + 6.5, { size: 7, font: 'bold', color: FOREST });
+      T(p[1], px2 + 7, y + 10.8, { size: 6.2, color: STONE });
+      if (i < 3) T('>', PMX + (i + 1) * pCol - 1.5, y + 8.3, { size: 9, font: 'bold', color: TEAL });
+    });
+    y += pH + 8;
+
+    // ═══ CTA APROBAR — link a la página pública que dispara el embudo ═══
+    if (y + 18 > ph - 18) { doc.addPage(); y = 20; }
     const aprobarLink = `https://peyuchile.cl/aprobar-propuesta?cot=${cot.id}`;
-    const btnW = 110, btnH = 13, btnX = PMX, btnY = y;
-    doc.setFillColor(...TEAL); doc.roundedRect(btnX, btnY, btnW, btnH, 6.5, 6.5, 'F');
-    T('APROBAR PROPUESTA  >', btnX + btnW / 2, btnY + 8.5, { size: 10, font: 'bold', color: WHITE, align: 'center' });
+    const waLinkPdf = `https://wa.me/56935040242?text=${encodeURIComponent(`Hola PEYU, quiero avanzar con la propuesta ${numero}`)}`;
+    const btnW = 104, btnH = 14, btnX = PMX, btnY = y;
+    doc.setFillColor(...FOREST); doc.roundedRect(btnX - 1, btnY - 1, btnW + 2, btnH + 2, 8, 8, 'F');
+    doc.setFillColor(...TEAL); doc.roundedRect(btnX, btnY, btnW, btnH, 7, 7, 'F');
+    T('APROBAR PROPUESTA EN 1 CLIC  >', btnX + btnW / 2, btnY + 9, { size: 10, font: 'bold', color: WHITE, align: 'center' });
     doc.link(btnX, btnY, btnW, btnH, { url: aprobarLink });
-    T('Responde a ventas@peyuchile.cl', RX, btnY + 5, { size: 7.5, color: STONE, align: 'right' });
-    T('o WhatsApp +56 9 3504 0242', RX, btnY + 10, { size: 7.5, font: 'bold', color: TEAL, align: 'right' });
+    T('¿Dudas o ajustes? WhatsApp +56 9 3504 0242 >', RX, btnY + 6, { size: 7.5, font: 'bold', color: TEAL, align: 'right' });
+    doc.link(RX - 70, btnY + 2.5, 70, 5, { url: waLinkPdf });
+    T('o responde a ventas@peyuchile.cl', RX, btnY + 11, { size: 7, color: STONE, align: 'right' });
     y += btnH + 8;
 
-    // ═══ FOOTER (todas las páginas) · datos legales reales ═══
+    // ═══ FOOTER slim (todas las páginas) — los datos completos van arriba ═══
     const pages = doc.getNumberOfPages();
     for (let pg = 1; pg <= pages; pg++) {
       doc.setPage(pg);
-      const fy = ph - 22;
-      doc.setFillColor(...INK); doc.rect(0, fy, pw, 22, 'F');
-      doc.setFillColor(...TEAL); doc.rect(0, fy, pw, 1.5, 'F');
-      T('PEYU Chile SpA · RUT 77.069.974-6', PMX, fy + 7.5, { size: 9, font: 'bold', color: WHITE });
-      T('Pedro de Valdivia 6603, Macul · F. Bilbao 3775, Providencia', PMX, fy + 12.5, { size: 6.5, color: CREAM });
-      T('Plástico que renace · Hecho en Chile', PMX, fy + 17, { size: 6.5, color: [180, 200, 195] });
-      T('peyuchile.cl · ventas@peyuchile.cl', RX, fy + 7.5, { size: 8, font: 'bold', color: WHITE, align: 'right' });
-      T('WhatsApp +56 9 3504 0242', RX, fy + 12.5, { size: 7.5, font: 'bold', color: CREAM, align: 'right' });
+      const fy = ph - 12;
+      doc.setFillColor(...INK); doc.rect(0, fy, pw, 12, 'F');
+      doc.setFillColor(...TEAL); doc.rect(0, fy, pw, 1, 'F');
+      T('PEYU Chile SpA · Plástico que renace · Hecho en Chile', PMX, fy + 7.5, { size: 7, color: CREAM });
+      T(`peyuchile.cl · Propuesta ${numero}`, RX, fy + 7.5, { size: 7, font: 'bold', color: WHITE, align: 'right' });
     }
 
     // Devolver PDF como base64 (chunked: evita stack overflow en PDFs grandes)
@@ -556,7 +617,8 @@ Deno.serve(async (req) => {
             </td></tr>
             <tr><td style="background:#121C18;padding:18px 28px;border-radius:0 0 16px 16px">
               <p style="color:#fff;font-size:12px;font-weight:700;margin:0">PEYUCHILE SpA · peyuchile.cl</p>
-              <p style="color:#AADCCD;font-size:11px;margin:4px 0 0">ventas@peyuchile.cl · WhatsApp +56 9 3504 0242 · Pedro de Valdivia 6603, Macul</p>
+              <p style="color:#AADCCD;font-size:11px;margin:4px 0 0">ventas@peyuchile.cl · WhatsApp +56 9 3504 0242</p>
+              <p style="font-size:11px;margin:4px 0 0"><a href="https://maps.google.com/?q=Av.+Francisco+Bilbao+3775,+Local+06,+Providencia,+Santiago" style="color:#AADCCD;text-decoration:underline">F. Bilbao 3775, Local 06, Providencia 📍</a> · <a href="https://maps.google.com/?q=Pedro+de+Valdivia+6603,+Macul,+Santiago" style="color:#AADCCD;text-decoration:underline">Pedro de Valdivia 6603, Macul 📍</a></p>
             </td></tr>
           </table>
         </td></tr>
