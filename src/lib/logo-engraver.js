@@ -40,8 +40,12 @@ export async function detectImageTone(src) {
     }
     if (!n) return 'dark';
     const avg = lum / n;
-    // Producto oscuro → grabado claro ('light'); producto claro → grabado oscuro ('dark').
-    return avg < 128 ? 'light' : 'dark';
+    // REGLA PEYU: solo superficies REALMENTE claras (crema, arena, blanco,
+    // rosado claro, lum ≥ 155) reciben tinta gris OSCURA. Colores medios y
+    // saturados (azul, teal, verde, rojo) y oscuros → tinta gris CLARA.
+    // El umbral anterior (128) clasificaba azul/teal como "claros" y les
+    // aplicaba grabado oscuro invisible.
+    return avg < 155 ? 'light' : 'dark';
   } catch {
     return 'light';
   }
@@ -143,11 +147,12 @@ export async function engraveLogo(input, tint = 'dark') {
       hasSolidBg = true; br = 255; bg = 255; bb = 255;
     }
 
-    // Tono de tinta del grabado láser inteligente (1 sola tinta), gris profesional:
-    // light = GRIS CLARO (#E8E8E8 ≈ 232) sobre producto oscuro → grabado realista.
-    // dark  = GRIS OSCURO (#2E2E2E ≈ 46) sobre producto claro  → contraste legible.
-    // Grises (no blanco/negro puro) imitan el grabado láser UV real sobre plástico.
-    const ink = tint === 'light' ? 232 : 46;
+    // Tono de tinta del grabado láser (REGLA ÚNICA, misma que engraving-rule.js):
+    // light = GRIS CLARO (#D6D6D6 ≈ 214) sobre producto oscuro/colorido.
+    // dark  = GRIS OSCURO (#545454 ≈ 84) sobre producto claro.
+    // Grises EVIDENTES (no blanco 232 / negro 46) — el founder reportó que el
+    // mockup se veía "en blanco y negro" en vez de la regla de grises láser.
+    const ink = tint === 'light' ? 214 : 84;
     // Umbral de similitud al fondo para volverlo transparente.
     const KEY_THRESHOLD = 60;
 

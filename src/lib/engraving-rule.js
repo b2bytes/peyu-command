@@ -12,10 +12,11 @@
 // de aquí — nunca dupliques estos valores en un componente.
 // ════════════════════════════════════════════════════════════════════════
 
-// Color CSS de la tinta del grabado según su tono.
+// Color CSS de la tinta del grabado según su tono. Grises EVIDENTES (no
+// blanco/negro puro): el mockup debe leerse como grabado láser gris.
 export const INK_CSS = {
-  light: 'rgba(232,232,232,0.94)', // gris claro láser sobre producto oscuro
-  dark: 'rgba(46,46,46,0.92)',     // gris oscuro láser sobre producto claro
+  light: 'rgba(214,214,214,0.95)', // gris claro láser (#D6D6D6) sobre producto oscuro/colorido
+  dark: 'rgba(84,84,84,0.95)',     // gris oscuro láser (#545454) sobre producto claro
 };
 
 // Blend mode que hace VISIBLE la tinta sobre el producto:
@@ -35,6 +36,6 @@ export function biselFx(tint) {
 // logo crudo pero respetando la regla — invertido a claro sobre oscuro.
 export function fallbackFilter(tint) {
   return tint === 'light'
-    ? 'grayscale(1) invert(1) contrast(1.25)'
-    : 'grayscale(1) contrast(1.2)';
+    ? 'grayscale(1) invert(0.85) contrast(1.15)' // trazos → gris claro (no blanco puro)
+    : 'grayscale(1) contrast(1.15) brightness(1.1)'; // trazos → gris oscuro suave
 }
