@@ -106,7 +106,7 @@ export default function ProductGalleryV2({
           {images.map((img, i) => (
             <button
               key={i}
-              onClick={() => { setUserPick(images[i]); onSelect?.(i); }}
+              onClick={() => { setUserPick(images[i]); onSelect?.(i, true); }}
               className={`relative flex-shrink-0 w-16 h-16 rounded-2xl overflow-hidden bg-white border-2 transition-all ${
                 i === active ? 'border-[#0F8B6C] shadow-md' : 'border-[#EBE3D6] hover:border-[#0F8B6C]/40'
               }`}

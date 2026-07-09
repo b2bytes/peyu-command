@@ -68,6 +68,7 @@ export default function ProductoNuevo() {
   const [colorError, setColorError] = useState(false);
   const [added, setAdded] = useState(false);
   const [galIdx, setGalIdx] = useState(0);
+  const [manualPick, setManualPick] = useState(false); // click del cliente en un thumbnail gana sobre el color
   const mockupRefDesktop = useRef(null); // preview central gigante (desktop)
   const mockupRefMobile = useRef(null);  // preview bajo el personalizador (mobile)
 
@@ -273,6 +274,8 @@ export default function ProductoNuevo() {
   // Prioridad: 1) imagenes_por_color (foto real del color) → 2) match por nombre en galería → 3) base + tinte.
   const displayImg = useMemo(() => {
     if (!producto) return null;
+    // El thumbnail clickeado por el cliente SIEMPRE gana.
+    if (manualPick && galleryImages[galIdx]) return galleryImages[galIdx];
     if (esCarcasa && color) return getProductImageForColor(producto, color);
     if (color) {
       const colorPhoto = resolveColorImageAll(producto, color);
@@ -282,18 +285,19 @@ export default function ProductoNuevo() {
       if (match) return galleryImages[match.index];
     }
     return getProductImage(producto);
-  }, [producto, color, esCarcasa, galleryImages]);
+  }, [producto, color, esCarcasa, galleryImages, manualPick, galIdx]);
 
   // Tinte instantáneo al tono OFICIAL (norma catálogo B2B PDF): si el color
   // elegido NO tiene foto real (ni mapa ni match en galería), la imagen y el
   // mockup se re-pintan al tono oficial vía filtro CSS — cambio inmediato.
   const colorFilter = useMemo(() => {
-    if (!producto || !color || esCarcasa) return '';
+    // Un thumbnail elegido a mano se muestra tal cual, sin tinte.
+    if (!producto || !color || esCarcasa || manualPick) return '';
     // Busca en TODAS las URLs del producto (no solo en la galería truncada a 6).
     const allUrls = getAllImageUrls(producto);
     const fotoReal = !!findColorImageMatch(allUrls, color, { minScore: 60 });
     return getColorTintFilter(producto, color, fotoReal);
-  }, [producto, color, esCarcasa]);
+  }, [producto, color, esCarcasa, manualPick]);
 
   const precioUnit = producto?.precio_b2c || 9990;
   const moq = producto?.personalizacion_gratis_desde || producto?.moq_personalizacion || MOQ_PERSONALIZACION_GRATIS;
@@ -320,12 +324,14 @@ export default function ProductoNuevo() {
 
   const total = precioEfectivoUnit * cantidad + feeTotal;
 
-  // Imagen base (lienzo) del mockup: versión LIMPIA sin marca PEYU si existe,
-  // o la generada al vuelo (cleanBaseUrl) cuando el cliente carga su diseño.
-  const [cleanBaseUrl, setCleanBaseUrl] = useState(null);
+  // Imagen base (lienzo) del mockup: EXACTAMENTE la misma imagen que el cliente
+  // está viendo (color elegido o thumbnail clickeado). NUNCA se sustituye por
+  // otra al cargar un diseño — cero fricción visual.
   const colorImg = useMemo(() => {
     if (!producto) return null;
     const base = getProductImage(producto);
+    // El thumbnail clickeado por el cliente SIEMPRE gana.
+    if (manualPick && galleryImages[galIdx]) return galleryImages[galIdx];
 
     // ① CARCASA con color → foto real del color (imagenes_por_color).
     if (esCarcasa && color) {
@@ -342,7 +348,7 @@ export default function ProductoNuevo() {
     }
     // ③ Fallback universal: la imagen principal del producto (SIEMPRE real, nunca IA).
     return base;
-  }, [producto, color, esCarcasa, galleryImages]);
+  }, [producto, color, esCarcasa, galleryImages, manualPick, galIdx]);
 
   // Capas (combinables) para el mockup en vivo. ORDEN FIJO de apilado
   // (arriba→abajo): 1) Tu logo  2) Diseño PEYU  3) Frase.
@@ -370,39 +376,11 @@ export default function ProductoNuevo() {
     return Object.values(mapa).filter((u) => typeof u === 'string' && u.startsWith('http'));
   }, [producto]);
 
-  // 🎯 BASE INTELIGENTE DEL MOCKUP (no-carcasas): el grabado del cliente debe
-  // componerse sobre una imagen del producto SIN el logo PEYU ya grabado —
-  // antes se estampaba encima del grabado existente (reclamo de clientes).
-  // Prioridad: imagen_base_limpia_url (lienzo limpio del producto) → limpia
-  // generada al vuelo → foto real del color. Se genera PROACTIVAMENTE al abrir
-  // la ficha para que esté lista antes de que el cliente suba su logo.
-  const cleanRequestedRef = useRef(false);
-  useEffect(() => {
-    if (!producto || esCarcasa) return;
-    if (producto.imagen_base_limpia_url || cleanBaseUrl || cleanRequestedRef.current) return;
-    cleanRequestedRef.current = true;
-    base44.functions.invoke('generateCleanBaseImage', { productoId: producto.id })
-      .then((res) => { if (res?.data?.clean_url) setCleanBaseUrl(res.data.clean_url); })
-      .catch(() => {});
-  }, [producto, esCarcasa, cleanBaseUrl]);
-
-  // Base efectiva del mockup: al personalizar un producto NO-carcasa usamos el
-  // lienzo limpio (sin logo PEYU) y lo re-tintamos al color elegido con filtro
-  // CSS — el mockup nace automáticamente sobre la imagen del color escogido.
-  const baseLimpia = !esCarcasa ? (producto?.imagen_base_limpia_url || cleanBaseUrl || null) : null;
-  // 🔒 La foto del COLOR elegido SIEMPRE se respeta: la base limpia (derivada
-  // de la foto principal) solo se usa cuando NO hay foto real de color distinta.
-  // Antes el mockup cambiaba la foto escogida por otra imagen del producto.
-  const usaBaseLimpia = muestraMockup && !!baseLimpia && !!producto && colorImg === getProductImage(producto);
-  const mockupBase = usaBaseLimpia ? baseLimpia : colorImg;
-  const mockupFilter = useMemo(() => {
-    if (!producto || esCarcasa) return colorFilter;
-    if (usaBaseLimpia && color) {
-      // La base limpia proviene de la foto principal → re-tintar al color elegido.
-      return getColorTintFilter(producto, color, false);
-    }
-    return colorFilter;
-  }, [producto, color, esCarcasa, colorFilter, usaBaseLimpia]);
+  // 🎯 BASE DEL MOCKUP = la MISMA imagen que el cliente ya está viendo.
+  // Al activar "Frase", "Diseño PEYU" o "Tu diseño", la foto NO cambia:
+  // el grabado se compone encima de la imagen elegida. Cero fricción.
+  const mockupBase = colorImg;
+  const mockupFilter = colorFilter;
 
   // Mobile: cuando el cliente carga su logo o elige un diseño PEYU, la página
   // sube SOLA al mockup (que vive arriba, en el lugar de la foto principal)
@@ -712,7 +690,7 @@ export default function ProductoNuevo() {
                   <ProductGalleryV2
                     images={galleryImages}
                     active={galIdx}
-                    onSelect={setGalIdx}
+                    onSelect={(i, manual) => { setGalIdx(i); if (manual) setManualPick(true); }}
                     mainImage={displayImg}
                     badge={esCompostable ? 'Compostable' : '100% Reciclado'}
                     imgFilter={colorFilter}
@@ -767,7 +745,7 @@ export default function ProductoNuevo() {
                   <ProductGalleryV2
                     images={galleryImages}
                     active={galIdx}
-                    onSelect={setGalIdx}
+                    onSelect={(i, manual) => { setGalIdx(i); if (manual) setManualPick(true); }}
                     mainImage={displayImg}
                     badge={esCompostable ? 'Compostable' : '100% Reciclado'}
                     imgFilter={colorFilter}
@@ -801,6 +779,8 @@ export default function ProductoNuevo() {
                   onSelect={(v) => {
                     setColorId(v);
                     setColorError(false);
+                    setManualPick(false); // el color vuelve a mandar la imagen
+                    setGalIdx(0);
                     if (typeof window !== 'undefined' && window.innerWidth < 1024) {
                       setTimeout(() => {
                         document.querySelector('[data-product-gallery]')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
