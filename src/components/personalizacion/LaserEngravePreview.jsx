@@ -51,14 +51,13 @@ export default function LaserEngravePreview({
   // nunca quede "atascado" ampliado al volver al paso.
   useEffect(() => { zoom.reset(); }, [logoSource, texto, productImageUrl]); // eslint-disable-line
 
-  // Cuando el cliente aporta su propio diseño (logo o texto), componemos sobre
-  // la base LIMPIA (sin el logo PEYU) para que no queden dos logos. Si aún no
-  // hay base limpia, caemos a la original (mejor mostrar algo que romper).
-  // Sin diseño del cliente → mostramos la foto original tal cual (con PEYU).
-  const hasClientDesign = !!logoSource || !!texto;
-  // Si la base limpia falló a cargar, usamos directamente la imagen del producto.
-  const preferClean = hasClientDesign && cleanImageUrl && !imgFailed;
-  const canvasImage = preferClean ? cleanImageUrl : productImageUrl;
+  // REGLA ÚNICA (igual que B2C y B2B): el lienzo del mockup es SIEMPRE la misma
+  // foto que el cliente ya está viendo. NUNCA se sustituye por la "base limpia"
+  // al agregar un diseño — eso producía un salto visual (cambio de foto). La
+  // base limpia queda solo como fallback si la foto principal falla en cargar.
+  const canvasImage = (!imgFailed && productImageUrl)
+    ? productImageUrl
+    : (cleanImageUrl || productImageUrl);
 
   // Reset del flag cuando cambia la imagen candidata.
   useEffect(() => { setImgFailed(false); }, [cleanImageUrl, productImageUrl]);
@@ -154,7 +153,7 @@ export default function LaserEngravePreview({
                 className="w-full h-full object-cover"
                 draggable={false}
                 onError={() => {
-                  if (preferClean) setImgFailed(true);
+                  if (!imgFailed) setImgFailed(true);
                 }}
               />
             : <div className={`w-full h-full bg-gradient-to-br ${light ? 'from-[#F2EBE0] to-[#E7D8C6]' : 'from-slate-800 to-slate-900'}`} />
