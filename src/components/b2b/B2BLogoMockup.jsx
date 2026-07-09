@@ -9,7 +9,8 @@ import { useState, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Upload, Loader2, Sparkles, RefreshCw, Check } from 'lucide-react';
 import { getProductImage } from '@/utils/productImages';
-import LogoMockupPreview from '@/components/cotizacion/LogoMockupPreview';
+import MockupLivePreviewV2 from '@/components/shopv2/MockupLivePreviewV2';
+import { getProductEngraggingArea, isProductoCarcasa } from '@/lib/product-engraving-areas';
 
 export default function B2BLogoMockup({
   producto,
@@ -80,19 +81,17 @@ export default function B2BLogoMockup({
       </div>
 
       <div className="p-4 space-y-4">
-        {/* Preview instantáneo CSS — EL mockup definitivo.
-            Usa productImg (override del color elegido) + colorFilterOverride
-            para coincidir 1:1 con la galería. */}
-        <div className="relative rounded-2xl overflow-hidden" style={{ aspectRatio: '1', background: '#F2ECE2', border: '1.5px solid #EDE3D6' }}>
-          <LogoMockupPreview
-            logoUrl={logoUrl}
-            productImg={productImg}
-            producto={producto}
-            size="md"
-            showBadge={!!logoUrl}
-            imgFilter={colorFilterOverride || undefined}
-          />
-        </div>
+        {/* Mockup COMPLETO — mismo motor que B2C (MockupLivePreviewV2):
+            el logo se ARRASTRA para posicionarlo y se escala con el slider,
+            con la regla única de tinta. Usa la MISMA imagen que la galería. */}
+        <MockupLivePreviewV2
+          productImageUrl={productImg}
+          fallbackUrl={getProductImage(producto)}
+          capas={logoUrl ? [{ id: 'archivo', tipo: 'archivo', url: logoUrl }] : []}
+          baseFilter={colorFilterOverride || ''}
+          esCarcasa={isProductoCarcasa(producto)}
+          customArea={getProductEngraggingArea(producto)}
+        />
 
         {/* Upload zone o logo preview */}
         {!logoUrl ? (

@@ -16,6 +16,7 @@ import ColorImageAssignerCard from './cards/ColorImageAssignerCard';
 import DisenosManagerCard from './cards/DisenosManagerCard';
 import CuponesManagerCard from './cards/CuponesManagerCard';
 import GiftCardsManagerCard from './cards/GiftCardsManagerCard';
+import StockColorCard from './cards/StockColorCard';
 
 // Renderiza la tarjeta rica correcta según el tipo detectado, hidratada con
 // los datos reales del CRM + las listas/métricas en vivo de peyuBrainOps.
@@ -38,6 +39,9 @@ export default function CardDispatcher({ card, crm, metrics, lists = {}, onAsk, 
       return <PipelineCard lista={crm.pedidos?.length ? crm.pedidos : (lists.pedidos_pendientes || [])} onDone={onDone} />;
     case 'stock':
       return <StockCard productos={crm.productos} lista={lists.stock_bajo_list} onDone={onDone} />;
+    case 'stock_color':
+      // Gestión de stock POR COLOR directo en el chat (ej. carcasas Samsung S25).
+      return <StockColorCard query={card.query} onDone={onDone} />;
     case 'catalog':
       // Gestor de catálogo completo: buscador, filtros por categoría/stock,
       // editar, subir/cambiar/quitar imágenes y agregar productos desde el chat.

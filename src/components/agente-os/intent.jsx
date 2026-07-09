@@ -66,7 +66,13 @@ export function detectCards(text) {
     'catálogo', 'catalogo', 'sku', 'actualizar producto', 'actualizar precio',
     'cambiar precio', 'cambiar stock', 'ver productos', 'mis productos',
   ]);
-  if (quiereGestionCatalogo || quiereStock) {
+  // Stock POR COLOR (ej. "poner stock de carcasa samsung s25 por color"):
+  // card dedicada con steppers por variante — prioridad sobre catálogo/stock genérico.
+  const quiereStockColor = has(['stock por color', 'stock de color', 'stock por colores', 'stock del color'])
+    || (has(['stock', 'inventario']) && has(['color', 'colores']));
+  if (quiereStockColor) {
+    cards.push({ type: 'stock_color', query: text });
+  } else if (quiereGestionCatalogo || quiereStock) {
     cards.push({
       type: 'catalog',
       categoria: has(['carcasa']) ? 'Carcasas B2C' : undefined,
