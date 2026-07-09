@@ -1,6 +1,8 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { Move, Sparkles, Loader2, ZoomIn, ZoomOut, Maximize } from 'lucide-react';
 import { engraveLogo, detectImageTone } from '@/lib/logo-engraver';
+// REGLA ÚNICA del grabado (compartida por todos los flujos de mockup).
+import { inkBlend, biselFx, INK_CSS } from '@/lib/engraving-rule';
 import { useMockupZoom } from '@/components/personalizacion/useMockupZoom.jsx';
 
 // ============================================================================
@@ -199,11 +201,9 @@ export default function LaserEngravePreview({
                 src={engravedUrl} alt="Tu logo grabado" draggable={false}
                 className={`w-full h-auto pointer-events-none ${processing ? 'animate-pulse' : ''}`}
                 style={{
-                  mixBlendMode: engravedOk ? (tint === 'light' ? 'screen' : 'multiply') : 'normal',
+                  mixBlendMode: engravedOk ? inkBlend(tint) : 'normal',
                   opacity: engravedOk ? 0.9 : 0.92,
-                  filter: tint === 'light'
-                    ? 'drop-shadow(0 1px 0.6px rgba(0,0,0,0.5)) drop-shadow(0 -0.8px 0.5px rgba(255,255,255,0.28))'
-                    : 'drop-shadow(0 1px 0.6px rgba(255,255,255,0.45)) drop-shadow(0 -0.8px 0.5px rgba(0,0,0,0.32))',
+                  filter: biselFx(tint),
                 }}
               />
               {/* Pasada 2 · TEXTURA: la foto del producto recortada con la
@@ -238,10 +238,10 @@ export default function LaserEngravePreview({
                 transform: 'translate(-50%, -50%)',
                 fontSize: `${size * 0.42}px`,
                 fontFamily: 'monospace', fontWeight: 'bold',
-                color: tint === 'light' ? '#f5f5f5' : '#1c1c1c',
+                color: INK_CSS[tint],
                 letterSpacing: '0.15em',
                 opacity: 0.88,
-                mixBlendMode: tint === 'light' ? 'screen' : 'multiply',
+                mixBlendMode: inkBlend(tint),
                 textShadow: '0 1px 1px rgba(0,0,0,0.25)',
                 whiteSpace: 'nowrap',
               }}

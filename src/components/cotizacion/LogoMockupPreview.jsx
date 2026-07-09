@@ -16,13 +16,8 @@ import { useState, useEffect, useRef } from 'react';
 import { Image, Sparkles, Loader2 } from 'lucide-react';
 import { getEngraveZone } from '@/lib/mockup-engine';
 import { engraveLogo, detectImageTone } from '@/lib/logo-engraver';
-
-// Bisel del láser según la tinta: reflejo + surco de medio píxel.
-function biselFx(tint) {
-  return tint === 'light'
-    ? 'drop-shadow(0 1px 0.6px rgba(0,0,0,0.5)) drop-shadow(0 -0.8px 0.5px rgba(255,255,255,0.28))'
-    : 'drop-shadow(0 1px 0.6px rgba(255,255,255,0.45)) drop-shadow(0 -0.8px 0.5px rgba(0,0,0,0.32))';
-}
+// REGLA ÚNICA del grabado (compartida por todos los flujos de mockup).
+import { inkBlend, biselFx, fallbackFilter } from '@/lib/engraving-rule';
 
 export default function LogoMockupPreview({
   logoUrl,
@@ -153,7 +148,7 @@ export default function LogoMockupPreview({
                     objectFit: 'contain',
                     filter: biselFx(tint),
                     opacity: zone.opacity ?? 0.92,
-                    mixBlendMode: tint === 'light' ? 'screen' : 'multiply',
+                    mixBlendMode: inkBlend(tint),
                   }}
                 />
                 {/* Pasada 2 · TEXTURA: la foto del producto recortada con la
@@ -187,9 +182,9 @@ export default function LogoMockupPreview({
                   width: '92%',
                   height: '92%',
                   objectFit: 'contain',
-                  filter: `grayscale(1) contrast(1.2) ${biselFx(tint)}`,
+                  filter: `${fallbackFilter(tint)} ${biselFx(tint)}`,
                   opacity: 0.85,
-                  mixBlendMode: 'multiply',
+                  mixBlendMode: inkBlend(tint),
                 }}
               />
             )}

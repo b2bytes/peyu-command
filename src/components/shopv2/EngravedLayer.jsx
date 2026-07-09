@@ -26,19 +26,9 @@
 //   productImg: URL de la foto del producto (para la pasada de textura)
 // ════════════════════════════════════════════════════════════════════════
 
-// Color de la tinta del grabado según el tono del producto.
-const INK = {
-  light: 'rgba(232,232,232,0.92)',
-  dark: 'rgba(40,40,40,0.90)',
-};
-
-// Bisel del láser: reflejo arriba (highlight) + sombra abajo (surco). Sutil,
-// medio píxel, para que se sienta hundido sin caricaturizar.
-function biselFx(tint) {
-  return tint === 'light'
-    ? 'drop-shadow(0 0.8px 0.5px rgba(0,0,0,0.55)) drop-shadow(0 -0.6px 0.5px rgba(255,255,255,0.25))'
-    : 'drop-shadow(0 0.8px 0.5px rgba(255,255,255,0.5)) drop-shadow(0 -0.6px 0.5px rgba(0,0,0,0.32))';
-}
+// REGLA ÚNICA del grabado (compartida por TODOS los flujos de mockup):
+// producto oscuro → tinta clara + screen · producto claro → tinta oscura + multiply.
+import { INK_CSS as INK, inkBlend, biselFx, fallbackFilter } from '@/lib/engraving-rule';
 
 // Estilo base de una máscara cuadrada centrada y contenida.
 function maskStyle(dataUrl) {
@@ -85,7 +75,7 @@ export default function EngravedLayer({ eng, tipo, texto, sizePct, tint, product
            textShadow: tint === 'light'
              ? '0 0.8px 0.5px rgba(0,0,0,0.55), 0 -0.6px 0.5px rgba(255,255,255,0.25)'
              : '0 0.8px 0.5px rgba(255,255,255,0.5), 0 -0.6px 0.5px rgba(0,0,0,0.3)',
-           mixBlendMode: tint === 'light' ? 'soft-light' : 'multiply',
+           mixBlendMode: inkBlend(tint),
          }}
        >
          {txt.toUpperCase()}
@@ -104,14 +94,14 @@ export default function EngravedLayer({ eng, tipo, texto, sizePct, tint, product
        <img
          src={eng.dataUrl} alt="Tu diseño" draggable={false}
          className="w-full h-auto pointer-events-none"
-         style={{ mixBlendMode: 'multiply', opacity: 0.92, filter: `grayscale(1) contrast(1.2) ${biselFx(tint)}` }}
+         style={{ mixBlendMode: inkBlend(tint), opacity: 0.92, filter: `${fallbackFilter(tint)} ${biselFx(tint)}` }}
        />
      );
    }
 
-   // Blend mode inteligente: logos de cliente (archivo) usan 'darken' para reemplazar
-   // el logo PEYU existente en la foto. Otros diseños usan soft-light/multiply.
-   const baseBlend = tipo === 'archivo' ? 'darken' : (tint === 'light' ? 'soft-light' : 'multiply');
+   // REGLA ÚNICA de blend: tinta clara → screen · tinta oscura → multiply.
+   // Igual para logo del cliente, diseño PEYU y frase, en todos los productos.
+   const baseBlend = inkBlend(tint);
    const useTexture = !!productImg; // pasada de textura solo si tenemos la foto
 
   // Caja cuadrada que aloja las pasadas superpuestas (todas con la misma máscara).
@@ -184,11 +174,6 @@ export default function EngravedLayer({ eng, tipo, texto, sizePct, tint, product
   // define su propia altura natural (object-contain con altura automática) y la
   // textura se superpone con position:absolute sobre esa misma silueta. Así el
   // grabado del cliente se ve COMPLETO, nunca cortado.
-  const clientLogoOpacity = tipo === 'archivo' ? 0.95 : 0.92;
-  const clientLogoBrightness = tipo === 'archivo' 
-    ? (tint === 'light' ? 1.4 : 0.85)
-    : (tint === 'light' ? 1.3 : 1);
-
   return (
     <div className="relative w-full pointer-events-none">
       <img
@@ -196,12 +181,10 @@ export default function EngravedLayer({ eng, tipo, texto, sizePct, tint, product
         className="block w-full h-auto object-contain"
         style={{
           mixBlendMode: baseBlend,
-          opacity: clientLogoOpacity,
-          filter: tipo === 'archivo'
-            ? `brightness(${clientLogoBrightness}) contrast(1.15) saturate(1.05) ${biselFx(tint)}`
-            : (tint === 'light'
-              ? `brightness(1.3) contrast(1.08) ${biselFx(tint)}`
-              : `contrast(1.12) ${biselFx(tint)}`),
+          opacity: 0.94,
+          filter: tint === 'light'
+            ? `brightness(1.15) contrast(1.1) ${biselFx(tint)}`
+            : `contrast(1.12) ${biselFx(tint)}`,
         }}
       />
       {TextureLayer}

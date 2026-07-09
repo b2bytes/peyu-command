@@ -95,7 +95,9 @@ export default function Catalogo() {
 
   const loadData = async () => {
     setLoading(true);
-    const data = await base44.entities.Producto.list('nombre', 200);
+    // Carga TODO el catálogo real (350+ SKUs): el límite anterior de 200
+    // dejaba fuera casi la mitad de los productos publicados.
+    const data = await base44.entities.Producto.list('nombre', 1000);
     setProductos(data);
     setLoading(false);
   };
