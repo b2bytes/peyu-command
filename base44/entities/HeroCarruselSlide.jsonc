@@ -3,6 +3,11 @@
   "type": "object",
   "description": "Config del carrusel del home (TiendaNueva). Cada registro es un slide: guarda la imagen final compuesta (fondo de dise\u00f1o + producto recortado) SIN tocar la foto del cat\u00e1logo (Producto.imagen_url). Clave estable por sku.",
   "properties": {
+    "description": {
+      "type": "string",
+      "title": "Descripci\u00f3n",
+      "maxLength": 1000
+    },
     "sku": {
       "type": "string",
       "title": "SKU del producto"

@@ -338,6 +338,11 @@ function App() {
               <Route path="/compras" element={<Navigate to="/seguimiento" replace />} />
               <Route path="/Compras" element={<Navigate to="/seguimiento" replace />} />
               <Route path="/mis-compras" element={<Navigate to="/seguimiento" replace />} />
+              {/* Alias SEO en inglés → páginas About/Contact existentes */}
+              <Route path="/about" element={<Navigate to="/nosotros" replace />} />
+              <Route path="/About" element={<Navigate to="/nosotros" replace />} />
+              <Route path="/contact" element={<Navigate to="/contacto" replace />} />
+              <Route path="/Contact" element={<Navigate to="/contacto" replace />} />
               <Route path="/pedidos" element={<Navigate to="/seguimiento" replace />} />
 
               {/* ── Standalone (sin PublicPageLayout) ──────────────────────────── */}

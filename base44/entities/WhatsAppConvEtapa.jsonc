@@ -3,6 +3,11 @@
   "type": "object",
   "description": "Etapa del pipeline de cada conversaci\u00f3n WhatsApp del agente whatsapp_peyu. Un registro por conversation_id, actualizado autom\u00e1ticamente por whatsappPipelineSync seg\u00fan el avance REAL de la conversaci\u00f3n (exploraci\u00f3n, captura de datos, cotizaci\u00f3n B2B, link de pago B2C, conversi\u00f3n, postventa, escalado a humano).",
   "properties": {
+    "description": {
+      "type": "string",
+      "title": "Descripci\u00f3n",
+      "maxLength": 1000
+    },
     "conversation_id": {
       "type": "string",
       "title": "ID conversaci\u00f3n Base44 (clave \u00fanica)"
