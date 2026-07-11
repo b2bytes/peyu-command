@@ -56,14 +56,16 @@ Deno.serve(async (req) => {
   </div>
 </body></html>`;
 
-    // Notifica a todos los buzones del equipo comercial
+    // Notifica a todos los buzones del equipo comercial vía Gmail (conector
+    // propio, no consume créditos de integración del plan)
     const TEAM_INBOXES = ['jnilo@peyuchile.cl', 'ventas@peyuchile.cl', 'ti@peyuchile.cl'];
     await Promise.all(TEAM_INBOXES.map(to =>
-      base44.integrations.Core.SendEmail({
+      base44.asServiceRole.functions.invoke('sendGmailEmail', {
+        internal_token: Deno.env.get('MADRE_V2_SECRET'),
         from_name: 'PEYU Consultas',
         to,
         subject,
-        body: html,
+        html,
       })
     ));
 

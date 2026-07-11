@@ -192,11 +192,13 @@ Deno.serve(async (req) => {
     const html = buildHtmlEmail(pedido, nuevoEstado);
     const cfg = STATUS_CONFIG[nuevoEstado];
 
-    await base44.asServiceRole.integrations.Core.SendEmail({
+    // Envío vía Gmail (conector propio, no consume créditos de integración)
+    await base44.asServiceRole.functions.invoke('sendGmailEmail', {
+      internal_token: Deno.env.get('MADRE_V2_SECRET'),
       to: pedido.cliente_email,
       from_name: 'PEYU Chile',
       subject: `${cfg.emoji} ${cfg.title} · Pedido ${pedido.numero_pedido}`,
-      body: html,
+      html,
     });
 
     // META CONVERSIONS API — cierra el gap de Purchase server-side para pedidos

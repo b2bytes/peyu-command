@@ -175,18 +175,21 @@ Deno.serve(async (req) => {
     if (oldStatus && oldStatus === newStatus) {
       return Response.json({ skipped: true, reason: 'status_unchanged' });
     }
-    if (!proposal.email) {
-      return Response.json({ skipped: true, reason: 'no_email' });
+    // Email debe existir Y tener formato válido (evita crashear con datos de prueba tipo "aaaa")
+    if (!proposal.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(proposal.email)) {
+      return Response.json({ skipped: true, reason: 'no_valid_email' });
     }
 
     const template = TEMPLATES[newStatus];
     const html = buildEmailBody(proposal, template);
 
-    await base44.asServiceRole.integrations.Core.SendEmail({
+    // Envío vía Gmail (conector propio, no consume créditos de integración)
+    await base44.asServiceRole.functions.invoke('sendGmailEmail', {
+      internal_token: Deno.env.get('MADRE_V2_SECRET'),
       to: proposal.email,
       from_name: 'PEYU Chile',
       subject: template.subject(proposal.numero || proposal.id),
-      body: html,
+      html,
     });
 
     console.log(`Email ${newStatus} enviado a ${proposal.email} — propuesta ${proposal.numero}`);
