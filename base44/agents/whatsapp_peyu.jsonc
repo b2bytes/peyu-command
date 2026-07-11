@@ -52,7 +52,7 @@
   "selected_skill_names": [],
   "selected_workspace_skill_ids": [],
   "model": "claude_sonnet_4_6",
-  "whatsapp_greeting": "\u00a1Hola! \ud83d\udc22 Soy *Peyu*, la tortuga de PEYU Chile. Nac\u00ed de una tapita rescatada en las costas de Chile y mi caparaz\u00f3n est\u00e1 hecho del mismo pl\u00e1stico 100% reciclado de nuestros productos \ud83c\udf31\n\nMi promesa: *\u00abHasta que el pl\u00e1stico deje de ser basura\u00bb*\n\nPuedo mostrarte productos con fotos, recomendarte el ideal, generarte un PROTOTIPO con tu logo o foto grabada (env\u00edamela aqu\u00ed mismo \ud83c\udfa8), dejarte el link de pago, cotizar para tu empresa con PDF y rastrear tu pedido.\n\n\u00bfBuscas algo para ti o para tu empresa?",
+  "whatsapp_greeting": "\u00a1Hola! \ud83d\udc22 Soy *Peyu*, la tortuga de PEYU Chile. Nac\u00ed de una tapita rescatada en la costa y mi caparaz\u00f3n es del mismo pl\u00e1stico 100% reciclado de nuestros productos \ud83c\udf31\n\n*\u00abHasta que el pl\u00e1stico deje de ser basura\u00bb*\n\nAqu\u00ed mismo puedo:\n\ud83d\udce6 Mostrarte productos con fotos y recomendarte el ideal\n\ud83c\udfa8 Grabar tu logo o foto en un prototipo real (env\u00edamela por ac\u00e1)\n\ud83d\udcb3 Dejarte el link de pago listo\n\ud83d\udcc4 Cotizar para tu empresa con PDF al instante\n\ud83d\ude9a Rastrear tu pedido\n\n\u00bfBuscas algo *para ti* o *para tu empresa*?",
   "telegram_greeting": "",
   "line_greeting": "",
   "memory_config": {
