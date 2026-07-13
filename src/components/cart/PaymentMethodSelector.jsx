@@ -1,129 +1,149 @@
-import { CreditCard, Building2, Wallet, Gift, Check } from 'lucide-react';
+import { CreditCard, Building2, Wallet, Gift, Check, Lock } from 'lucide-react';
 
 /**
- * Selector de método de pago. Muestra cards visuales con instrucciones según método.
+ * Selector de método de pago — piel Warm Dusk (misma paleta del checkout).
+ * WebPay Plus · Mercado Pago · Transferencia. Cards grandes, selección clara.
  * Props: value, onChange, totalCubiertoConGC (boolean → fuerza GiftCard como único)
  */
 export const PAYMENT_METHODS = [
   {
     id: 'WebPay',
     label: 'WebPay Plus',
-    sub: 'Débito, crédito y prepago · Transbank',
+    sub: 'Débito, crédito y prepago',
+    tag: 'Transbank',
     icon: CreditCard,
-    color: 'from-rose-500 to-red-600',
-    badge: 'Nuevo',
+    color: 'linear-gradient(135deg,#E85D75,#C2334D)',
   },
   {
     id: 'MercadoPago',
     label: 'Mercado Pago',
-    sub: 'Tarjetas de crédito y débito',
+    sub: 'Tarjetas, saldo MP o cuotas',
+    tag: 'Más usado',
     icon: Wallet,
-    color: 'from-cyan-400 to-sky-500',
-    badge: 'Más usado',
+    color: 'linear-gradient(135deg,#38BDF8,#0284C7)',
   },
   {
     id: 'Transferencia',
     label: 'Transferencia bancaria',
-    sub: 'Banco Santander · 5% dscto',
+    sub: 'Te enviamos los datos por email',
+    tag: '−5% dscto',
     icon: Building2,
-    color: 'from-emerald-500 to-teal-600',
-    badge: '−5%',
+    color: 'linear-gradient(135deg,#8BAD8A,#5B7D5A)',
   },
 ];
+
+const C = {
+  fg: '#2C1810', fgSoft: '#7A6050', fgMuted: '#A08070',
+  border: '#D4C4B0', action: '#C0785C',
+};
+
+function InfoBox({ children }) {
+  return (
+    <div className="mt-2.5 rounded-2xl p-3.5 text-xs space-y-1.5"
+      style={{ background: 'rgba(192,120,92,.06)', border: '1.5px solid rgba(192,120,92,.25)', color: C.fgSoft }}>
+      {children}
+    </div>
+  );
+}
 
 export default function PaymentMethodSelector({ value, onChange, totalCubiertoConGC }) {
   if (totalCubiertoConGC) {
     return (
-      <div className="bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-200 rounded-2xl p-4 flex items-center gap-3">
-        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white">
+      <div className="rounded-2xl p-4 flex items-center gap-3"
+        style={{ background: 'rgba(139,173,138,.1)', border: '1.5px solid rgba(139,173,138,.35)' }}>
+        <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white flex-shrink-0"
+          style={{ background: 'linear-gradient(135deg,#8BAD8A,#5B7D5A)' }}>
           <Gift className="w-5 h-5" />
         </div>
         <div>
-          <p className="font-bold text-emerald-900 text-sm">Cubierto 100% con Gift Card</p>
-          <p className="text-xs text-emerald-700">No se requiere medio de pago adicional</p>
+          <p className="font-bold text-sm" style={{ color: C.fg }}>Cubierto 100% con Gift Card</p>
+          <p className="text-xs" style={{ color: C.fgSoft }}>No se requiere medio de pago adicional</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-2">
-      <label className="text-xs font-bold text-gray-700 block mb-1">Método de pago</label>
-      {PAYMENT_METHODS.map((m) => {
-        const selected = value === m.id;
-        return (
-          <button
-            key={m.id}
-            type="button"
-            onClick={() => onChange(m.id)}
-            aria-pressed={selected}
-            className={`w-full flex items-center gap-3 p-3.5 rounded-2xl border-2 transition-all text-left ${
-              selected
-                ? 'border-teal-600 bg-teal-50/40 shadow-md ring-2 ring-teal-100'
-                : 'border-gray-200 bg-white hover:border-gray-400 hover:shadow-sm'
-            }`}
-          >
-            <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${m.color} flex items-center justify-center text-white flex-shrink-0`}>
-              <m.icon className="w-5 h-5" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2">
-                <p className="font-bold text-gray-900 text-sm">{m.label}</p>
-                {m.badge && (
-                  <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100 border border-emerald-200 px-1.5 py-0.5 rounded-full">
-                    {m.badge}
-                  </span>
-                )}
+    <div>
+      <div className="space-y-2">
+        {PAYMENT_METHODS.map((m) => {
+          const selected = value === m.id;
+          return (
+            <button
+              key={m.id}
+              type="button"
+              onClick={() => onChange(m.id)}
+              aria-pressed={selected}
+              className="w-full flex items-center gap-3 p-3.5 rounded-2xl transition-all text-left active:scale-[0.99]"
+              style={{
+                border: selected ? `2px solid ${C.action}` : `1.5px solid ${C.border}`,
+                background: selected ? 'rgba(192,120,92,.05)' : 'white',
+                boxShadow: selected ? '0 4px 16px rgba(192,120,92,.15)' : 'none',
+              }}
+            >
+              <div className="w-11 h-11 rounded-xl flex items-center justify-center text-white flex-shrink-0"
+                style={{ background: m.color }}>
+                <m.icon className="w-5 h-5" />
               </div>
-              <p className="text-xs text-gray-500 truncate">{m.sub}</p>
-            </div>
-            <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all ${
-              selected ? 'border-teal-600 bg-teal-600' : 'border-gray-300'
-            }`}>
-              {selected && <Check className="w-3 h-3 text-white" strokeWidth={3} />}
-            </div>
-          </button>
-        );
-      })}
-
-      {value === 'Transferencia' && (
-        <div className="mt-3 bg-emerald-50 border border-emerald-200 rounded-2xl p-4 text-xs text-emerald-900 space-y-2">
-          <div className="flex items-center justify-between">
-            <p className="font-bold">📋 Datos para transferencia</p>
-            <span className="text-[10px] font-bold text-emerald-700 bg-white border border-emerald-200 px-2 py-0.5 rounded-full">5% dscto incluido</span>
-          </div>
-          <div className="bg-white/70 rounded-xl p-3 space-y-1 border border-emerald-100">
-            <p><span className="text-emerald-700">Titular:</span> <strong>Peyu Chile SpA</strong></p>
-            <p><span className="text-emerald-700">RUT:</span> <strong>77.069.974-6</strong></p>
-            <p><span className="text-emerald-700">Banco:</span> <strong>Banco Santander</strong></p>
-            <p><span className="text-emerald-700">Tipo:</span> <strong>Cuenta Corriente</strong></p>
-            <p><span className="text-emerald-700">N° cuenta:</span> <strong>94151872</strong></p>
-            <p><span className="text-emerald-700">Email:</span> <strong>ventas@peyuchile.cl</strong></p>
-          </div>
-          <p className="text-emerald-700 leading-relaxed">
-            Te enviaremos los datos por email al confirmar. Despachamos apenas recibimos el comprobante.
-          </p>
-        </div>
-      )}
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2">
+                  <p className="font-bold text-sm" style={{ color: C.fg }}>{m.label}</p>
+                  <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full flex-shrink-0"
+                    style={{ background: 'rgba(139,173,138,.15)', color: '#5B7D5A', border: '1px solid rgba(139,173,138,.3)' }}>
+                    {m.tag}
+                  </span>
+                </div>
+                <p className="text-xs truncate" style={{ color: C.fgMuted }}>{m.sub}</p>
+              </div>
+              <div className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 transition-all"
+                style={{
+                  border: selected ? `2px solid ${C.action}` : `2px solid ${C.border}`,
+                  background: selected ? C.action : 'white',
+                }}>
+                {selected && <Check className="w-3 h-3 text-white" strokeWidth={3} />}
+              </div>
+            </button>
+          );
+        })}
+      </div>
 
       {value === 'WebPay' && (
-        <div className="mt-3 bg-rose-50 border border-rose-200 rounded-2xl p-3.5 text-xs text-rose-900 space-y-1.5">
-          <p className="font-bold flex items-center gap-1.5">💳 Pago seguro con WebPay Plus (Transbank)</p>
-          <ul className="space-y-0.5 text-rose-800/90 pl-1">
-            <li>• Tarjetas de débito, crédito y prepago de cualquier banco</li>
-            <li>• Te redirigimos al formulario oficial de Transbank</li>
-          </ul>
-        </div>
+        <InfoBox>
+          <p className="font-bold flex items-center gap-1.5" style={{ color: C.fg }}>
+            <Lock className="w-3.5 h-3.5" style={{ color: C.action }} /> Pago seguro con WebPay Plus
+          </p>
+          <p>Te redirigimos al formulario oficial de Transbank. Acepta tarjetas de débito, crédito y prepago de cualquier banco.</p>
+        </InfoBox>
       )}
 
       {value === 'MercadoPago' && (
-        <div className="mt-3 bg-sky-50 border border-sky-200 rounded-2xl p-3.5 text-xs text-sky-900 space-y-1.5">
-          <p className="font-bold flex items-center gap-1.5">💳 Pago seguro con Mercado Pago</p>
-          <ul className="space-y-0.5 text-sky-800/90 pl-1">
-            <li>• Tarjeta de crédito, débito o efectivo en sucursales</li>
-            <li>• Te redirigimos al checkout oficial de Mercado Pago</li>
-          </ul>
-        </div>
+        <InfoBox>
+          <p className="font-bold flex items-center gap-1.5" style={{ color: C.fg }}>
+            <Lock className="w-3.5 h-3.5" style={{ color: C.action }} /> Pago seguro con Mercado Pago
+          </p>
+          <p>Te redirigimos al checkout oficial de Mercado Pago: tarjetas, saldo en cuenta o cuotas.</p>
+        </InfoBox>
+      )}
+
+      {value === 'Transferencia' && (
+        <InfoBox>
+          <div className="flex items-center justify-between">
+            <p className="font-bold" style={{ color: C.fg }}>📋 Datos para transferir</p>
+            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full"
+              style={{ background: 'rgba(139,173,138,.15)', color: '#5B7D5A', border: '1px solid rgba(139,173,138,.3)' }}>
+              5% dscto incluido
+            </span>
+          </div>
+          <div className="bg-white rounded-xl p-3 space-y-1" style={{ border: `1px solid ${C.border}` }}>
+            <p><span style={{ color: C.fgMuted }}>Titular:</span> <strong style={{ color: C.fg }}>Peyu Chile SpA</strong></p>
+            <p><span style={{ color: C.fgMuted }}>RUT:</span> <strong style={{ color: C.fg }}>77.069.974-6</strong></p>
+            <p><span style={{ color: C.fgMuted }}>Banco:</span> <strong style={{ color: C.fg }}>Banco Santander</strong></p>
+            <p><span style={{ color: C.fgMuted }}>Tipo:</span> <strong style={{ color: C.fg }}>Cuenta Corriente</strong></p>
+            <p><span style={{ color: C.fgMuted }}>N° cuenta:</span> <strong style={{ color: C.fg }}>94151872</strong></p>
+            <p><span style={{ color: C.fgMuted }}>Email:</span> <strong style={{ color: C.fg }}>ventas@peyuchile.cl</strong></p>
+          </div>
+          <p className="leading-relaxed">También te enviamos estos datos por email al confirmar. Despachamos apenas recibimos el comprobante.</p>
+        </InfoBox>
       )}
     </div>
   );

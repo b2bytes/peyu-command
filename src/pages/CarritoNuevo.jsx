@@ -110,7 +110,12 @@ export default function CarritoNuevo() {
           <ArrowLeft className="w-4 h-4" /> Seguir comprando
         </Link>
 
-        <h1 className="font-fraunces text-lg sm:text-4xl mb-3 sm:mb-5">Tu carrito</h1>
+        <div className="flex items-end justify-between mb-3 sm:mb-5">
+          <h1 className="font-fraunces text-2xl sm:text-4xl">Tu carrito</h1>
+          <span className="text-xs font-bold px-2.5 py-1 rounded-full" style={{ background: 'rgba(192,120,92,.1)', color: '#C0785C' }}>
+            {items.reduce((s, i) => s + (i.cantidad || 1), 0)} {items.reduce((s, i) => s + (i.cantidad || 1), 0) === 1 ? 'producto' : 'productos'}
+          </span>
+        </div>
 
         <div className="grid lg:grid-cols-3 gap-6">
           {/* Líneas */}

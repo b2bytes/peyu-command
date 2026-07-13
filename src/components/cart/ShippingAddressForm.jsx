@@ -204,8 +204,8 @@ function Section({ icon: Icon, title, subtitle, children }) {
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-2.5 pb-1">
-        <div className="w-8 h-8 rounded-xl bg-gray-100 flex items-center justify-center flex-shrink-0">
-          <Icon className="w-4 h-4 text-gray-700" />
+        <div className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: '#F2EBE1' }}>
+          <Icon className="w-4 h-4" style={{ color: '#C0785C' }} />
         </div>
         <div className="min-w-0">
           <h4 className="font-poppins font-bold text-gray-900 text-sm leading-tight">{title}</h4>
