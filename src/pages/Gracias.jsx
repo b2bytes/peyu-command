@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { CheckCircle2, Mail, MessageCircle, Package, Sparkles, Heart, Copy, Check } from 'lucide-react';
+import { CheckCircle2, Mail, MessageCircle, Package, Sparkles, Heart, Copy, Check, Loader2, XCircle } from 'lucide-react';
+import { base44 } from '@/api/base44Client';
 import SEO from '@/components/SEO';
 import { trackPurchase } from '@/lib/analytics-peyu';
 import { clearCartV2 } from '@/lib/shop-v2-cart';
@@ -15,14 +16,38 @@ import InstalarAppPedido from '@/components/gracias/InstalarAppPedido';
  */
 export default function Gracias() {
   const [params] = useSearchParams();
-  const numero = params.get('numero') || '';
-  const email = params.get('email') || '';
-  const total = parseInt(params.get('total') || '0', 10);
+  // WebPay devuelve al cliente con token_ws (pagó/rechazado) o TBK_TOKEN (anuló).
+  const tokenWs = params.get('token_ws') || '';
+  const tbkToken = params.get('TBK_TOKEN') || '';
+  const [numero, setNumero] = useState(params.get('numero') || '');
+  const [email, setEmail] = useState(params.get('email') || '');
+  const [total, setTotal] = useState(parseInt(params.get('total') || '0', 10));
   const mpStatus = params.get('mp') || '';
   const pago = params.get('pago') || '';
   const isTransferencia = pago === 'Transferencia';
   const [tracked, setTracked] = useState(false);
   const [copiado, setCopiado] = useState(false);
+  // null = no es flujo WebPay · confirmando | aprobado | rechazado | abortado
+  const [webpay, setWebpay] = useState(() => (tokenWs ? 'confirmando' : tbkToken ? 'abortado' : null));
+
+  // Confirmación (commit) del pago WebPay contra Transbank
+  useEffect(() => {
+    if (!tokenWs) return;
+    base44.functions.invoke('tbkCommitTransaction', { token_ws: tokenWs })
+      .then((res) => {
+        const d = res?.data || {};
+        if (d.approved) {
+          if (d.numero) setNumero(d.numero);
+          if (d.email) setEmail(d.email);
+          if (d.total) setTotal(Number(d.total) || 0);
+          setWebpay('aprobado');
+        } else {
+          setWebpay('rechazado');
+        }
+      })
+      .catch(() => setWebpay('rechazado'));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tokenWs]);
 
   const copiarNumero = async () => {
     try {
@@ -53,6 +78,50 @@ export default function Gracias() {
     setTracked(true);
   }, [numero, total, tracked]);
 
+  // ── Pantallas dedicadas del flujo WebPay ────────────────────────────────
+  if (webpay === 'confirmando') {
+    return (
+      <div className="min-h-screen flex items-center justify-center font-inter px-5" style={{ background: '#F8F3ED', color: '#2C1810' }}>
+        <div className="text-center">
+          <Loader2 className="w-10 h-10 mx-auto animate-spin mb-4" style={{ color: '#0F8B6C' }} />
+          <h1 className="font-fraunces text-2xl mb-2">Confirmando tu pago…</h1>
+          <p className="text-sm" style={{ color: '#7A6050' }}>Estamos verificando la transacción con Transbank. No cierres esta página.</p>
+        </div>
+      </div>
+    );
+  }
+  if (webpay === 'rechazado' || webpay === 'abortado') {
+    return (
+      <div className="min-h-screen flex items-center justify-center font-inter px-5" style={{ background: '#F8F3ED', color: '#2C1810' }}>
+        <div className="bg-white rounded-3xl p-8 sm:p-10 text-center max-w-md w-full" style={{ border: '1.5px solid #E8DDD0' }}>
+          <div className="w-16 h-16 mx-auto rounded-3xl flex items-center justify-center mb-4" style={{ background: 'rgba(217,107,77,.12)' }}>
+            <XCircle className="w-8 h-8" style={{ color: '#D96B4D' }} />
+          </div>
+          <h1 className="font-fraunces text-2xl mb-2">
+            {webpay === 'abortado' ? 'Pago cancelado' : 'El pago no se completó'}
+          </h1>
+          <p className="text-sm mb-6" style={{ color: '#7A6050' }}>
+            {webpay === 'abortado'
+              ? 'Anulaste el pago en WebPay. Tu carrito sigue intacto: puedes reintentar cuando quieras.'
+              : 'WebPay rechazó la transacción. No se realizó ningún cargo. Puedes reintentar o usar otro medio de pago.'}
+          </p>
+          <div className="flex flex-col gap-2.5">
+            <Link to="/CheckoutNuevo">
+              <button className="w-full text-white font-bold px-6 py-3.5 rounded-2xl transition-all" style={{ background: 'linear-gradient(135deg,#C0785C,#A86440)' }}>
+                Volver a intentar el pago
+              </button>
+            </Link>
+            <Link to="/CarritoNuevo">
+              <button className="w-full font-bold px-6 py-3.5 rounded-2xl transition-all" style={{ background: 'white', border: '1.5px solid #D4C4B0', color: '#2C1810' }}>
+                Revisar mi carrito
+              </button>
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <>
       <SEO
@@ -68,6 +137,11 @@ export default function Gracias() {
           {mpStatus === 'pending' && (
             <div className="mb-4 rounded-2xl p-4 text-center text-sm" style={{ borderColor: '#C0785C', background: 'rgba(192,120,92,.08)', border: '1.5px solid rgba(192,120,92,.25)' }}>
               ⏳ <strong style={{ color: '#2C1810' }}>Pago en proceso.</strong> <span style={{ color: '#7A6050' }}>Mercado Pago está procesando tu transacción. Te notificaremos por email apenas se confirme.</span>
+            </div>
+          )}
+          {webpay === 'aprobado' && (
+            <div className="mb-4 rounded-2xl p-4 text-center text-sm" style={{ background: 'rgba(15,139,108,.08)', border: '1.5px solid rgba(15,139,108,.2)' }}>
+              ✅ <strong style={{ color: '#2C1810' }}>Pago aprobado por WebPay.</strong> <span style={{ color: '#7A6050' }}>Tu pedido entró en preparación.</span>
             </div>
           )}
           {mpStatus === 'success' && (

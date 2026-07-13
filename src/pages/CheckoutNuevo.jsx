@@ -453,6 +453,31 @@ export default function CheckoutNuevo() {
       }
     }
 
+    // WebPay Plus (Transbank): crear transacción y redirigir al formulario oficial
+    if (medioPago === 'WebPay' && totalFinal > 0) {
+      try {
+        const tbk = await base44.functions.invoke('tbkCreateTransaction', { pedido_id: pedido.id });
+        const redirectUrl = tbk?.data?.redirect_url;
+        if (redirectUrl) {
+          // Igual que MP: NO limpiamos el carrito — si anula en Transbank y
+          // vuelve, conserva todo para reintentar. Se vacía en /gracias.
+          trackPurchase({ transactionId: numero, total: totalFinal, shipping: envio, cart: carrito });
+          window.location.href = redirectUrl;
+          return;
+        }
+        setErrorPago('No pudimos iniciar WebPay. Intenta de nuevo o usa otro medio de pago.');
+        setCreando(false);
+        enviandoRef.current = false;
+        return;
+      } catch (e) {
+        console.error('Error WebPay:', e);
+        setErrorPago('No pudimos iniciar WebPay. Intenta de nuevo o usa otro medio de pago.');
+        setCreando(false);
+        enviandoRef.current = false;
+        return;
+      }
+    }
+
     // Transferencia → gracias.
     // NO limpiamos el carrito ni los datos del checkout: el pago aún no está
     // confirmado (queda "por confirmar transferencia"). Si el cliente vuelve
@@ -616,7 +641,7 @@ export default function CheckoutNuevo() {
         subtitle="Elige cómo quieres pagar"
         {...sectionProps('pago')}
         complete={!!medioPago}
-        summary={medioPago ? (medioPago === 'Transferencia' ? 'Transferencia bancaria' : 'Mercado Pago') : null}
+        summary={medioPago ? ({ Transferencia: 'Transferencia bancaria', WebPay: 'WebPay Plus (Transbank)' }[medioPago] || 'Mercado Pago') : null}
       >
         <PaymentMethodSelector value={medioPago} onChange={setMedioPago} totalCubiertoConGC={totalFinal === 0} />
       </CollapsibleSectionV2>
@@ -659,7 +684,7 @@ export default function CheckoutNuevo() {
             </div>
             <div className="min-w-0">
               <p className="font-poppins font-bold text-sm leading-tight truncate">Finaliza tu compra</p>
-              <p className="text-[10px] leading-tight font-semibold" style={{ color: '#C0785C' }}>Pago seguro · Mercado Pago o transferencia</p>
+              <p className="text-[10px] leading-tight font-semibold" style={{ color: '#C0785C' }}>Pago seguro · WebPay, Mercado Pago o transferencia</p>
             </div>
           </div>
 

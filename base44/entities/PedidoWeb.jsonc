@@ -130,6 +130,41 @@
             "type": "string",
             "description": "URL del mockup generado (preview del grabado del cliente sobre el producto) para esta l\u00ednea."
           },
+          "capas_grabado": {
+            "type": "array",
+            "description": "Capas del grabado elegidas por el cliente (frase/dise\u00f1o PEYU/logo) con su URL y posici\u00f3n. Fuente de verdad del arte aunque falle la captura del mockup.",
+            "items": {
+              "type": "object",
+              "properties": {
+                "tipo": {
+                  "type": "string"
+                },
+                "nombre": {
+                  "type": "string"
+                },
+                "texto": {
+                  "type": "string"
+                },
+                "url": {
+                  "type": "string"
+                },
+                "size": {
+                  "type": "number"
+                },
+                "x": {
+                  "type": "number"
+                },
+                "y": {
+                  "type": "number"
+                }
+              }
+            },
+            "default": []
+          },
+          "imagen_base": {
+            "type": "string",
+            "description": "Foto del producto/color usada como base del mockup, para reconstruir el dise\u00f1o en el admin."
+          },
           "posicion_grabado": {
             "type": "string",
             "description": "Posici\u00f3n del grabado sobre el producto: arriba | centro | abajo."
@@ -215,9 +250,10 @@
     "payment_status": {
       "type": "string",
       "title": "Estado del pago",
-      "description": "Estado fino del pago, independiente del estado operativo. Permite distinguir 'esperando MP' de 'cancelado por expiraci\u00f3n' o 'pagado'.",
+      "description": "Estado fino del pago, independiente del estado operativo. Permite distinguir 'esperando MP' o 'esperando WebPay' de 'cancelado por expiraci\u00f3n' o 'pagado'.",
       "enum": [
         "pending_mp",
+        "pending_webpay",
         "pending_transfer",
         "paid",
         "expired",

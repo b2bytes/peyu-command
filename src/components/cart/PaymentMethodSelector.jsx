@@ -6,6 +6,14 @@ import { CreditCard, Building2, Wallet, Gift, Check } from 'lucide-react';
  */
 export const PAYMENT_METHODS = [
   {
+    id: 'WebPay',
+    label: 'WebPay Plus',
+    sub: 'Débito, crédito y prepago · Transbank',
+    icon: CreditCard,
+    color: 'from-rose-500 to-red-600',
+    badge: 'Nuevo',
+  },
+  {
     id: 'MercadoPago',
     label: 'Mercado Pago',
     sub: 'Tarjetas de crédito y débito',
@@ -95,6 +103,16 @@ export default function PaymentMethodSelector({ value, onChange, totalCubiertoCo
           <p className="text-emerald-700 leading-relaxed">
             Te enviaremos los datos por email al confirmar. Despachamos apenas recibimos el comprobante.
           </p>
+        </div>
+      )}
+
+      {value === 'WebPay' && (
+        <div className="mt-3 bg-rose-50 border border-rose-200 rounded-2xl p-3.5 text-xs text-rose-900 space-y-1.5">
+          <p className="font-bold flex items-center gap-1.5">💳 Pago seguro con WebPay Plus (Transbank)</p>
+          <ul className="space-y-0.5 text-rose-800/90 pl-1">
+            <li>• Tarjetas de débito, crédito y prepago de cualquier banco</li>
+            <li>• Te redirigimos al formulario oficial de Transbank</li>
+          </ul>
         </div>
       )}
 
