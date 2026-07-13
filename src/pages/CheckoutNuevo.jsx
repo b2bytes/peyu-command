@@ -259,6 +259,25 @@ export default function CheckoutNuevo() {
     const itemsDetalle = carrito.map(i => {
       // Usa la URL subida si existe (mockup capturado del canvas), sino la original.
       const mockupFinal = uploadedMockups[i.id] || (!(i.mockupUrl || '').startsWith('data:') ? (i.mockupUrl || i.mockup_url || '') : '');
+      // Capas del grabado (diseño PEYU / logo / frase) SIEMPRE persistidas: son la
+      // fuente de verdad del arte del cliente aunque falle la captura del mockup.
+      // Se excluyen urls data: (base64 gigante rompería el registro).
+      const capasLimpias = (Array.isArray(i.capas_grabado) ? i.capas_grabado : [])
+        .map((c) => ({
+          tipo: c.tipo || '',
+          nombre: c.nombre || '',
+          texto: c.texto || '',
+          url: (c.url && !String(c.url).startsWith('data:')) ? c.url : '',
+          size: Number(c.size) || 0,
+          x: Number(c.x) || 0,
+          y: Number(c.y) || 0,
+        }));
+      // Arte original para producción: logo subido o, si no, la imagen del diseño
+      // PEYU elegido (antes se perdía y el admin no podía ver el diseño).
+      const arteCapa = capasLimpias.find((c) => (c.tipo === 'archivo' || c.tipo === 'peyu') && c.url);
+      const logoFinal = i.logoUrl || i.logo_url || arteCapa?.url || '';
+      const imagenBase = [i.imagen_base, i.imagenBase, i.imagen]
+        .find((u) => u && !String(u).startsWith('data:')) || '';
       return {
         sku: i.sku || '',
         nombre: i.nombre || '',
@@ -267,15 +286,19 @@ export default function CheckoutNuevo() {
         personalizacion: i.personalizacion || '',
         tipo_personalizacion: i.personalizacion ? tipoLineaCombinado(i) : '',
         fee_personalizacion: Number(feePersItem(i)) || 0,
-        logo_url: i.logoUrl || i.logo_url || '',
+        logo_url: logoFinal,
         mockup_url: mockupFinal || '',
+        capas_grabado: capasLimpias,
+        imagen_base: imagenBase,
         posicion_grabado: posicionLinea(i),
         precio_unitario: Number(precioUnitEfectivo[i.sku || i.nombre] ?? i.precio) || 0,
         cantidad: Number(i.cantidad) || 1,
       };
     });
     const colorTopLevel = carrito.length === 1 ? (carrito[0]?.color || '') : '';
-    const itemConLogo = carrito.find(i => i.logoUrl || i.logo_url);
+    const itemConLogo = carrito.find(i => i.logoUrl || i.logo_url) ||
+      // Fallback: diseño PEYU elegido en capas (para que el arte quede accesible top-level)
+      carrito.find(i => (i.capas_grabado || []).some(c => (c.tipo === 'archivo' || c.tipo === 'peyu') && c.url && !String(c.url).startsWith('data:')));
     const itemConMockup = carrito.find(i => uploadedMockups[i.id] || (i.mockupUrl && !i.mockupUrl.startsWith('data:')) || i.mockup_url);
 
     const datosPedido = {
@@ -311,7 +334,10 @@ export default function CheckoutNuevo() {
       direccion_envio: direccionCompleta,
       requiere_personalizacion: carrito.some(i => i.personalizacion),
       texto_personalizacion: carrito.filter(i => i.personalizacion).map(i => i.personalizacion).join(', '),
-      logo_url: itemConLogo ? (itemConLogo.logoUrl || itemConLogo.logo_url) : '',
+      logo_url: itemConLogo
+        ? (itemConLogo.logoUrl || itemConLogo.logo_url ||
+           ((itemConLogo.capas_grabado || []).find(c => (c.tipo === 'archivo' || c.tipo === 'peyu') && c.url && !String(c.url).startsWith('data:'))?.url) || '')
+        : '',
       mockup_url: itemConMockup ? (uploadedMockups[itemConMockup.id] || (!(itemConMockup.mockupUrl || '').startsWith('data:') ? (itemConMockup.mockupUrl || itemConMockup.mockup_url || '') : '')) : '',
       logo_recibido: !!(itemConLogo || itemConMockup),
       courier: esRetiroPedido ? 'Retiro en Tienda' : 'BlueExpress',
