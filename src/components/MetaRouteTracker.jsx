@@ -22,6 +22,8 @@ export default function MetaRouteTracker() {
 
   useEffect(() => {
     const path = location.pathname.toLowerCase();
+    // No trackear el backoffice: solo el sitio público cuenta como visita.
+    if (path.startsWith('/admin')) return;
     const params = new URLSearchParams(location.search);
 
     // Recorrido del cliente: cada cambio de página registra una visita en

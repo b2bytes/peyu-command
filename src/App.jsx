@@ -14,6 +14,7 @@ import { isTeamMember } from '@/lib/team-whitelist';
 
 import CookieBanner from '@/components/CookieBanner';
 import PublicPageLayout from '@/components/PublicPageLayout';
+import MetaRouteTracker from '@/components/MetaRouteTracker';
 
 // ── PUBLIC PAGES (eager) ─────────────────────────────────────────────
 // Cargadas inmediatamente porque son la cara pública del sitio:
@@ -301,6 +302,9 @@ function App() {
       <AuthProvider>
         <QueryClientProvider client={queryClientInstance}>
           <Router>
+            {/* Tracking global de visitas: ahora cubre TODAS las rutas públicas,
+                incluidas /ProductoNuevo y /CheckoutNuevo que antes quedaban ciegas */}
+            <MetaRouteTracker />
             <Routes>
               {/* ── SEO redirects (sin layout) ───────────────────────────────────── */}
               <Route path="/shop" element={<Navigate to="/" replace />} />
