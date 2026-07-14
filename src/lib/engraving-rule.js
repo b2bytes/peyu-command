@@ -15,8 +15,11 @@
 // Color CSS de la tinta del grabado según su tono. Grises EVIDENTES (no
 // blanco/negro puro): el mockup debe leerse como grabado láser gris.
 export const INK_CSS = {
-  light: 'rgba(214,214,214,0.95)', // gris claro láser (#D6D6D6) sobre producto oscuro/colorido
-  dark: 'rgba(84,84,84,0.95)',     // gris oscuro láser (#545454) sobre producto claro
+  // NUNCA blanco: el grabado láser sobre producto oscuro es GRIS CLARO.
+  // 176 + blend screen sobre negro/azul marino ≈ #B0—C0 (gris claro real);
+  // el 214 anterior + boosts de brillo llegaba a casi blanco puro.
+  light: 'rgba(176,176,176,0.95)', // gris claro láser sobre producto oscuro (negro, azul marino)
+  dark: 'rgba(84,84,84,0.95)',     // gris láser (#545454) sobre producto claro
 };
 
 // Blend mode que hace VISIBLE la tinta sobre el producto:
@@ -55,6 +58,6 @@ export function toneFromHex(hex) {
 // logo crudo pero respetando la regla — invertido a claro sobre oscuro.
 export function fallbackFilter(tint) {
   return tint === 'light'
-    ? 'grayscale(1) invert(0.85) contrast(1.15)' // trazos → gris claro (no blanco puro)
+    ? 'grayscale(1) invert(0.72) contrast(1.1)' // trazos → gris claro (jamás blanco puro)
     : 'grayscale(1) contrast(1.15) brightness(1.1)'; // trazos → gris oscuro suave
 }

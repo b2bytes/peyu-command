@@ -157,11 +157,11 @@ export async function engraveLogo(input, tint = 'dark') {
     }
 
     // Tono de tinta del grabado láser (REGLA ÚNICA, misma que engraving-rule.js):
-    // light = GRIS CLARO (#D6D6D6 ≈ 214) sobre producto oscuro/colorido.
-    // dark  = GRIS OSCURO (#545454 ≈ 84) sobre producto claro.
-    // Grises EVIDENTES (no blanco 232 / negro 46) — el founder reportó que el
-    // mockup se veía "en blanco y negro" en vez de la regla de grises láser.
-    const ink = tint === 'light' ? 214 : 84;
+    // light = GRIS CLARO (176) sobre producto oscuro (negro, azul marino).
+    // dark  = GRIS (#545454 ≈ 84) sobre producto claro.
+    // NUNCA blanco: el 214 anterior + blend screen llegaba a blanco puro
+    // (reporte founder: "no existe grabado blanco, siempre es gris claro").
+    const ink = tint === 'light' ? 176 : 84;
     // Umbral de similitud al fondo para volverlo transparente.
     const KEY_THRESHOLD = 60;
 

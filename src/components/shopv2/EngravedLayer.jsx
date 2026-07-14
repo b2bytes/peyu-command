@@ -141,7 +141,7 @@ export default function EngravedLayer({ eng, tipo, texto, sizePct, tint, product
         backgroundPosition: texBgPos,
         mixBlendMode: 'soft-light',
         opacity: 0.6,
-        filter: tint === 'light' ? 'brightness(1.15) contrast(1.1)' : 'brightness(0.9) contrast(1.15)',
+        filter: tint === 'light' ? 'brightness(1.05) contrast(1.08)' : 'brightness(0.9) contrast(1.15)',
       }}
     />
   );
@@ -182,8 +182,10 @@ export default function EngravedLayer({ eng, tipo, texto, sizePct, tint, product
         style={{
           mixBlendMode: baseBlend,
           opacity: 0.94,
+          // Sin boost de brillo en tinta clara: 176 + screen ya da gris claro;
+          // el brightness(1.15) anterior la empujaba a blanco puro.
           filter: tint === 'light'
-            ? `brightness(1.15) contrast(1.1) ${biselFx(tint)}`
+            ? `contrast(1.05) ${biselFx(tint)}`
             : `contrast(1.12) ${biselFx(tint)}`,
         }}
       />
