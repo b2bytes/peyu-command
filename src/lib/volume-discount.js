@@ -118,8 +118,10 @@ export function computeQtyDiscountBySku({ carrito = [], hasCupon = false, produc
       unidades: 0,
       precioUnit: it.precio || 0,
       cyber: !!it.cyber, // línea con oferta Cyber ya aplicada
+      b2b: false,        // línea agregada desde el flujo B2B (precio tramo ya aplicado)
     };
     prev.unidades += (it.cantidad || 0);
+    if (it.es_b2b) prev.b2b = true;
     grupos.set(key, prev);
   }
 
@@ -145,6 +147,19 @@ export function computeQtyDiscountBySku({ carrito = [], hasCupon = false, produc
         });
         continue;
       }
+    }
+
+    // ── LÍNEA B2B (compra directa desde EmpresaProducto) ──────────────────
+    // El precio ya ES el tramo mayorista B2B (+IVA). NUNCA se le suma el
+    // descuento B2C por cantidad encima (doble descuento). Se marca como
+    // mayorista (ahorro 0) para que el carrito muestre el badge 🏭 correcto.
+    if (g.b2b) {
+      lineas.push({
+        sku: g.sku, nombre: g.nombre, unidades: g.unidades, pct: 0,
+        montoBruto, ahorro: 0, beneficioAplicado: 'mayorista',
+        precioMayoristaUnit: g.precioUnit, tramoLabel: 'Precio B2B',
+      });
+      continue;
     }
 
     const pct = getQtyDiscountPct(g.unidades);
