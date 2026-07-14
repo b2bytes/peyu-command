@@ -151,13 +151,42 @@ export function computeQtyDiscountBySku({ carrito = [], hasCupon = false, produc
 
     // ── LÍNEA B2B (compra directa desde EmpresaProducto) ──────────────────
     // El precio ya ES el tramo mayorista B2B (+IVA). NUNCA se le suma el
-    // descuento B2C por cantidad encima (doble descuento). Se marca como
-    // mayorista (ahorro 0) para que el carrito muestre el badge 🏭 correcto.
+    // descuento B2C por cantidad encima (doble descuento). Si el cliente
+    // cambia la cantidad en el carrito, el tramo se RE-CALCULA EN VIVO con
+    // los tramos oficiales del producto: subir de tramo abarata, bajar de
+    // tramo encarece (ahorro negativo ajusta el total). Sin producto cargado,
+    // mantiene el precio con el que entró.
     if (g.b2b) {
+      let unit = g.precioUnit;
+      let tramoLabel = 'Precio B2B';
+      let pct = 0;
+      const prodB2B = productosBySku ? productosBySku[g.sku] : null;
+      const tramos = prodB2B?.precio_b2b_tramos;
+      if (tramos && typeof tramos === 'object') {
+        let neto = null;
+        const idx = TRAMOS_MAYORISTA.findIndex((t) => g.unidades >= t.min);
+        if (idx >= 0) {
+          for (let i = idx; i < TRAMOS_MAYORISTA.length; i++) {
+            neto = numPos(tramos[TRAMOS_MAYORISTA[i].key]);
+            if (neto) { tramoLabel = TRAMOS_MAYORISTA[i].label; break; }
+          }
+        }
+        if (!neto) {
+          neto = numPos(tramos.unitario);
+          if (neto) tramoLabel = 'Unitario B2B';
+        }
+        if (neto) {
+          unit = Math.round(neto * IVA);
+          const base = numPos(tramos.unitario);
+          if (base) pct = Math.max(0, Math.round((1 - neto / base) * 100));
+        }
+      }
+      const ahorro = (g.precioUnit - unit) * g.unidades; // negativo si bajó de tramo
+      ahorroTotal += ahorro;
       lineas.push({
-        sku: g.sku, nombre: g.nombre, unidades: g.unidades, pct: 0,
-        montoBruto, ahorro: 0, beneficioAplicado: 'mayorista',
-        precioMayoristaUnit: g.precioUnit, tramoLabel: 'Precio B2B',
+        sku: g.sku, nombre: g.nombre, unidades: g.unidades, pct,
+        montoBruto, ahorro, beneficioAplicado: 'mayorista',
+        precioMayoristaUnit: unit, tramoLabel,
       });
       continue;
     }

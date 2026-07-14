@@ -56,8 +56,11 @@ export default function CheckoutNuevo() {
     referencia: saved.referencia, codigo_postal: saved.codigo_postal,
   });
   const [errors, setErrors] = useState({});
+  // Compra directa B2B (desde EmpresaProducto): la Factura empresa es el
+  // default natural del flujo — el cliente puede cambiarla a Boleta si quiere.
+  const tieneLineaB2B = carrito.some((i) => i.es_b2b);
   const [billing, setBilling] = useState({
-    tipo_documento: saved.tipo_documento, razon_social: saved.razon_social,
+    tipo_documento: tieneLineaB2B ? 'Factura' : saved.tipo_documento, razon_social: saved.razon_social,
     rut_empresa: saved.rut_empresa, giro: saved.giro,
     direccion_facturacion: saved.direccion_facturacion, comuna_facturacion: saved.comuna_facturacion,
   });

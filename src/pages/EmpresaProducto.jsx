@@ -3,7 +3,7 @@
 // Galería · tabla de precios por volumen · calculadora de qty · mockup IA
 // · botón "Agregar a cotización" persistente en mobile.
 // ════════════════════════════════════════════════════════════════════════
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { useLocation, Link, useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import {
@@ -39,6 +39,9 @@ export default function EmpresaProducto() {
   const [manualPick, setManualPick] = useState(false); // click del cliente en la galería gana sobre el color
   const [logoUrl, setLogoUrl] = useState(null); // logo subido en esta ficha → viaja al cotizador
   const [colorId, setColorId] = useState(null); // color oficial elegido (norma catálogo PDF)
+  const [placements, setPlacements] = useState({}); // posición/tamaño del logo en el mockup
+  const [comprando, setComprando] = useState(false); // capturando mockup + agregando al carrito
+  const mockupRef = useRef(null); // ref al preview en vivo (captureSnapshot)
 
   // ── Captura de lead B2B inline (reemplaza el paso CotizacionRapida) ──
   const [showForm, setShowForm] = useState(false);
@@ -125,7 +128,16 @@ export default function EmpresaProducto() {
   // con el precio B2B por volumen (neto + IVA) y va DIRECTO al checkout, donde
   // la empresa paga con WebPay/Mercado Pago/transferencia y pide Factura.
   // Ya no deriva al embudo de cotización — comprar es comprar.
-  const goToComprar = () => {
+  const goToComprar = async () => {
+    if (comprando) return;
+    setComprando(true);
+    // Captura el mockup REAL (foto + logo grabado) para que viaje al pedido y
+    // producción lo vea tal cual el cliente lo diseñó. Best-effort: si falla,
+    // el logo original igual viaja en logoUrl/capas_grabado.
+    let mockupUrl = null;
+    if (logoUrl) {
+      try { mockupUrl = (await mockupRef.current?.captureSnapshot?.()) || null; } catch { /* noop */ }
+    }
     addToCartV2({
       productoId: producto.id,
       sku: producto.sku || null,
@@ -137,6 +149,8 @@ export default function EmpresaProducto() {
       color: color?.label || null,
       personalizacion: logoUrl ? 'Logo empresa · grabado láser' : null,
       logoUrl: logoUrl || null,
+      mockupUrl,
+      capas_grabado: logoUrl ? [{ tipo: 'archivo', url: logoUrl, ...(placements.archivo || {}) }] : [],
       imagen_base: displayImg,
       imagen: displayImg,
       es_b2b: true,
@@ -358,6 +372,8 @@ export default function EmpresaProducto() {
               productImgOverride={displayImg}
               colorFilterOverride={colorFilter}
               tintOverride={colorFilter && color?.hex ? toneFromHex(color.hex) : null}
+              mockupRef={mockupRef}
+              onPlacementChange={setPlacements}
             />
 
             {/* Qué incluye */}
@@ -435,11 +451,12 @@ export default function EmpresaProducto() {
                 <div className="flex gap-2">
                   <button
                     onClick={goToComprar}
-                    className="flex-1 h-14 rounded-2xl text-white font-bold text-base flex items-center justify-center gap-2 transition-all hover:scale-[1.01] active:scale-[0.98]"
+                    disabled={comprando}
+                    className="flex-1 h-14 rounded-2xl text-white font-bold text-base flex items-center justify-center gap-2 transition-all hover:scale-[1.01] active:scale-[0.98] disabled:opacity-60"
                     style={{ background: 'linear-gradient(135deg,#C0785C,#A86440)', boxShadow: '0 8px 28px rgba(192,120,92,.3)' }}
                     title="Comprar ahora con WebPay o Mercado Pago"
                   >
-                    <ShoppingCart className="w-5 h-5" /> Comprar ahora
+                    <ShoppingCart className="w-5 h-5" /> {comprando ? 'Preparando…' : 'Comprar ahora'}
                   </button>
                   <button
                     onClick={goToCotizar}
@@ -516,11 +533,14 @@ export default function EmpresaProducto() {
             </button>
             <button
               onClick={goToComprar}
-              className="flex-shrink-0 h-12 px-3 rounded-2xl flex items-center justify-center gap-1 font-bold text-xs text-white transition-all active:scale-[0.97]"
+              disabled={comprando}
+              className="flex-shrink-0 h-12 px-3 rounded-2xl flex items-center justify-center gap-1 font-bold text-xs text-white transition-all active:scale-[0.97] disabled:opacity-60"
               style={{ background: 'linear-gradient(135deg,#C0785C,#A86440)', boxShadow: '0 4px 14px rgba(192,120,92,.3)' }}
               title="Comprar ahora con WebPay o Mercado Pago"
             >
-              <ShoppingCart className="w-4 h-4" /> Comprar
+              {comprando
+                ? <div className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+                : <><ShoppingCart className="w-4 h-4" /> Comprar</>}
             </button>
             <div className="flex-1 min-w-0 flex flex-col justify-center">
               <button

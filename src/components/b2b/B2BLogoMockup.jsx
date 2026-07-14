@@ -26,6 +26,11 @@ export default function B2BLogoMockup({
   // Tono del grabado ya resuelto por el padre (cuando el color viene de un
   // tinte CSS, la foto real no refleja el color visto).
   tintOverride = null,
+  // Ref del preview en vivo — el padre puede llamar captureSnapshot() para
+  // guardar el mockup REAL (foto + logo grabado) al comprar/cotizar.
+  mockupRef = null,
+  // Posición/tamaño del logo elegidos por el cliente → viajan al pedido.
+  onPlacementChange = null,
 }) {
   const [logoUrl, setLogoUrlState] = useState(initialLogoUrl);
   // Notifica cada cambio de logo al padre → el logo VIAJA al cotizador y no
@@ -85,9 +90,11 @@ export default function B2BLogoMockup({
             el logo se ARRASTRA para posicionarlo y se escala con el slider,
             con la regla única de tinta. Usa la MISMA imagen que la galería. */}
         <MockupLivePreviewV2
+          ref={mockupRef}
           productImageUrl={productImg}
           fallbackUrl={getProductImage(producto)}
           capas={logoUrl ? [{ id: 'archivo', tipo: 'archivo', url: logoUrl }] : []}
+          onPlacementChange={onPlacementChange}
           baseFilter={colorFilterOverride || ''}
           tintOverride={tintOverride}
           esCarcasa={isProductoCarcasa(producto)}
