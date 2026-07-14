@@ -102,7 +102,10 @@ function autoLayout(capas, area, esCarcasa = true) {
 }
 
 // Restringe el centro de una capa para que su caja quede dentro del área.
-function clampToArea(x, y, sizePct, tipo, area) {
+// free=true (productos de forma libre, no-carcasa): el CENTRO puede llegar
+// hasta casi el borde del lienzo aunque la caja sobresalga — el cliente
+// posiciona el logo en CUALQUIER parte de la pieza sin tope artificial.
+function clampToArea(x, y, sizePct, tipo, area, free = false) {
   const A = area || AREA_CARCASA;
   const aw = A.right - A.left;
   const ah = A.bottom - A.top;
@@ -114,6 +117,10 @@ function clampToArea(x, y, sizePct, tipo, area) {
   // y la capa quedaba CLAVADA (no se podía centrar). Acotamos al área siempre.
   halfW = Math.min(halfW, aw / 2);
   halfH = Math.min(halfH, ah / 2);
+  if (free) {
+    halfW = Math.min(halfW, 4);
+    halfH = Math.min(halfH, 4);
+  }
   return {
     x: Math.max(A.left + halfW, Math.min(A.right - halfW, x)),
     y: Math.max(A.top + halfH, Math.min(A.bottom - halfH, y)),
@@ -239,7 +246,7 @@ const MockupLivePreviewV2 = forwardRef(function MockupLivePreviewV2({ productIma
       const cur = prev[activeId];
       if (!cur) return prev;
       const capa = capas.find((c) => c.id === activeId);
-      const { x, y } = clampToArea(rawX, rawY, cur.size, capa?.tipo, area);
+      const { x, y } = clampToArea(rawX, rawY, cur.size, capa?.tipo, area, !esCarcasa);
       return { ...prev, [activeId]: { ...cur, x, y } };
     });
     setTouched((prev) => ({ ...prev, [activeId]: true }));
@@ -252,7 +259,7 @@ const MockupLivePreviewV2 = forwardRef(function MockupLivePreviewV2({ productIma
       const cur = prev[id];
       if (!cur) return prev;
       const capa = capas.find((c) => c.id === id);
-      const { x, y } = clampToArea(cur.x, cur.y, size, capa?.tipo, area);
+      const { x, y } = clampToArea(cur.x, cur.y, size, capa?.tipo, area, !esCarcasa);
       return { ...prev, [id]: { ...cur, size, x, y } };
     });
     setTouched((prev) => ({ ...prev, [id]: true }));

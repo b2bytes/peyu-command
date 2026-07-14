@@ -23,7 +23,7 @@ import { toneFromHex } from '@/lib/engraving-rule';
 import { getProductImage, getProductImageForColor } from '@/utils/productImages';
 import { findColorImageMatch } from '@/lib/color-image-matcher';
 import { getB2BPriceForQty, getUnitBasePrice } from '@/lib/catalog-pricing';
-import { fmtCLP } from '@/lib/shop-v2-cart';
+import { fmtCLP, addToCartV2 } from '@/lib/shop-v2-cart';
 
 const IVA = 0.19;
 
@@ -121,20 +121,27 @@ export default function EmpresaProducto() {
 
   const goToCotizar = () => setShowForm(true);
 
-  // Compra B2B: ancla el producto (con qty + color + logo) al embudo
-  // self-service B2B y envía directo al paso de datos de empresa. El flujo
-  // B2B genera una propuesta formal con PDF → aceptación → factura.
-  // NUNCA deriva al carrito B2C.
+  // COMPRA DIRECTA B2B (pedido founder jul-2026): agrega el producto al carrito
+  // con el precio B2B por volumen (neto + IVA) y va DIRECTO al checkout, donde
+  // la empresa paga con WebPay/Mercado Pago/transferencia y pide Factura.
+  // Ya no deriva al embudo de cotización — comprar es comprar.
   const goToComprar = () => {
-    try {
-      sessionStorage.setItem('peyu_b2b_anchor', JSON.stringify({
-        sku: producto.sku,
-        cantidad: qty,
-        personalizar: true,
-        logoUrl: logoUrl || undefined,
-      }));
-    } catch { /* ignore */ }
-    navigate(`/b2b/self-service?sku=${encodeURIComponent(producto.sku)}`);
+    addToCartV2({
+      productoId: producto.id,
+      sku: producto.sku || null,
+      nombre: producto.nombre,
+      precio: Math.round(unitPrice * (1 + IVA)), // B2B neto → precio final con IVA (formato carrito)
+      cargo_personalizacion: 0,
+      tipo_personalizacion: logoUrl ? 'archivo' : null,
+      cantidad: qty,
+      color: color?.label || null,
+      personalizacion: logoUrl ? 'Logo empresa · grabado láser' : null,
+      logoUrl: logoUrl || null,
+      imagen_base: displayImg,
+      imagen: displayImg,
+      es_b2b: true,
+    });
+    navigate('/CheckoutNuevo');
   };
 
   const submitLead = async () => {
@@ -207,7 +214,7 @@ export default function EmpresaProducto() {
         <div className="grid lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-12 lg:items-start">
 
           {/* ── GALERÍA ── */}
-          <div className="lg:sticky lg:top-24 lg:self-start space-y-3">
+          <div className="min-w-0 lg:sticky lg:top-24 lg:self-start space-y-3">
             {/* Imagen principal */}
             <div className="relative aspect-square rounded-3xl overflow-hidden" style={{ background: 'linear-gradient(145deg,#F7F2EC,#EDE3D6)', border: '1.5px solid #D4C4B0' }}>
               <img
@@ -241,7 +248,7 @@ export default function EmpresaProducto() {
           </div>
 
           {/* ── CONFIGURADOR ── */}
-          <div className="space-y-4 sm:space-y-6 lg:pb-8">
+          <div className="min-w-0 space-y-4 sm:space-y-6 lg:pb-8">
             {/* Encabezado */}
             <div>
               <p className="text-[10px] sm:text-xs font-bold uppercase tracking-wider mb-1" style={{ color: '#A08070' }}>
@@ -428,11 +435,11 @@ export default function EmpresaProducto() {
                 <div className="flex gap-2">
                   <button
                     onClick={goToComprar}
-                    className="flex-1 h-14 rounded-2xl font-bold text-base flex items-center justify-center gap-2 transition-all hover:scale-[1.01] active:scale-[0.98]"
-                    style={{ background: 'white', border: '1.5px solid #D4C4B0', color: '#C0785C' }}
-                    title="Generar propuesta de compra B2B"
+                    className="flex-1 h-14 rounded-2xl text-white font-bold text-base flex items-center justify-center gap-2 transition-all hover:scale-[1.01] active:scale-[0.98]"
+                    style={{ background: 'linear-gradient(135deg,#C0785C,#A86440)', boxShadow: '0 8px 28px rgba(192,120,92,.3)' }}
+                    title="Comprar ahora con WebPay o Mercado Pago"
                   >
-                    <ShoppingCart className="w-5 h-5" /> Comprar
+                    <ShoppingCart className="w-5 h-5" /> Comprar ahora
                   </button>
                   <button
                     onClick={goToCotizar}
@@ -443,7 +450,7 @@ export default function EmpresaProducto() {
                   </button>
                 </div>
                 <p className="text-[11px] text-center px-1" style={{ color: '#A08070' }}>
-                  {fmtCLP(neto)} neto + IVA · Propuesta formal con PDF en 60 seg
+                  {fmtCLP(neto)} neto + IVA · Compra directa con WebPay/Mercado Pago y factura empresa
                 </p>
               </div>
             )}
@@ -509,11 +516,11 @@ export default function EmpresaProducto() {
             </button>
             <button
               onClick={goToComprar}
-              className="flex-shrink-0 h-12 px-3.5 rounded-2xl flex items-center justify-center font-bold text-xs transition-all active:scale-[0.97]"
-              style={{ background: 'white', border: '1.5px solid #D4C4B0', color: '#C0785C' }}
-              title="Generar propuesta de compra B2B"
+              className="flex-shrink-0 h-12 px-3 rounded-2xl flex items-center justify-center gap-1 font-bold text-xs text-white transition-all active:scale-[0.97]"
+              style={{ background: 'linear-gradient(135deg,#C0785C,#A86440)', boxShadow: '0 4px 14px rgba(192,120,92,.3)' }}
+              title="Comprar ahora con WebPay o Mercado Pago"
             >
-              <ShoppingCart className="w-4 h-4" />
+              <ShoppingCart className="w-4 h-4" /> Comprar
             </button>
             <div className="flex-1 min-w-0 flex flex-col justify-center">
               <button
