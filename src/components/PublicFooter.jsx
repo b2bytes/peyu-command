@@ -166,16 +166,30 @@ export default function PublicFooter() {
       </div>
 
       {/* Barra legal */}
-      <div className="max-w-7xl mx-auto border-t border-ld-border pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-ld-fg-muted">
-        <p>© 2026 PEYU Chile SpA · RUT 77.069.974-6 · Todos los derechos reservados</p>
-        <div className="flex gap-4 flex-wrap justify-center">
-          <Link to="/terminos" className="hover:text-ld-fg transition">Términos</Link>
-          <Link to="/privacidad" className="hover:text-ld-fg transition">Privacidad</Link>
-          <Link to="/cookies" className="hover:text-ld-fg transition">Cookies</Link>
-          <Link to="/envios" className="hover:text-ld-fg transition">Envíos</Link>
-          <Link to="/cambios" className="hover:text-ld-fg transition">Cambios</Link>
-          <Link to="/contacto" className="hover:text-ld-fg transition">Contacto</Link>
+      <div className="max-w-7xl mx-auto border-t border-ld-border pt-6 flex flex-col gap-3 text-xs text-ld-fg-muted">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
+          <p>© 2026 PEYU Chile SpA · RUT 77.069.974-6 · Todos los derechos reservados</p>
+          <div className="flex gap-4 flex-wrap justify-center">
+            <Link to="/terminos" className="hover:text-ld-fg transition">Términos y Condiciones</Link>
+            <Link to="/privacidad" className="hover:text-ld-fg transition">Política de Privacidad</Link>
+            <Link to="/cookies" className="hover:text-ld-fg transition">Cookies</Link>
+            <Link to="/envios" className="hover:text-ld-fg transition">Envíos</Link>
+            <Link to="/cambios" className="hover:text-ld-fg transition">Cambios y Devoluciones</Link>
+            <Link to="/contacto" className="hover:text-ld-fg transition">Contacto</Link>
+          </div>
         </div>
+        <p className="text-center sm:text-left">
+          Creado por{' '}
+          <a
+            href="https://b2bytes.tech"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-semibold hover:opacity-80 transition"
+            style={{ color: 'var(--ld-action)' }}
+          >
+            B2Bytes.tech
+          </a>
+        </p>
       </div>
     </footer>
   );
