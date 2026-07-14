@@ -40,12 +40,12 @@ export async function detectImageTone(src) {
     }
     if (!n) return 'dark';
     const avg = lum / n;
-    // REGLA PEYU: solo superficies REALMENTE claras (crema, arena, blanco,
-    // rosado claro, lum ≥ 155) reciben tinta gris OSCURA. Colores medios y
-    // saturados (azul, teal, verde, rojo) y oscuros → tinta gris CLARA.
-    // El umbral anterior (128) clasificaba azul/teal como "claros" y les
-    // aplicaba grabado oscuro invisible.
-    return avg < 155 ? 'light' : 'dark';
+    // REGLA PEYU: superficies claras y pasteles (crema, arena, blanco, rosado
+    // claro y AZUL CLARO/celeste) reciben tinta gris OSCURA. Colores saturados
+    // medios (teal PEYU, verde, rojo) y oscuros → tinta gris CLARA.
+    // Umbral 140: el 155 anterior dejaba el celeste como "oscuro" y le aplicaba
+    // grabado gris claro invisible (reporte founder: azul claro → gris oscuro).
+    return avg < 140 ? 'light' : 'dark';
   } catch {
     return 'light';
   }

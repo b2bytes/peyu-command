@@ -14,7 +14,7 @@ const AREAS = {
   COASTER: { left: 15, right: 85, top: 20, bottom: 80 },     // Coasters redondos
   PALETA: { left: 8, right: 92, top: 10, bottom: 90 },       // Paletas
   ESCRITORIO: { left: 8, right: 92, top: 8, bottom: 92 },    // Objetos escritorio (taza, libreta, etc)
-  LLAVERO: { left: 32, right: 68, top: 30, bottom: 70 },     // Llaveros (área pequeña central, sobre la placa)
+  LLAVERO: { left: 20, right: 80, top: 22, bottom: 84 },     // Llaveros y soportes (la pieza llena la foto → área amplia; antes 32-68/30-70 no dejaba posicionar el logo)
   CORPORATIVO: { left: 10, right: 90, top: 12, bottom: 88 }, // Artículos corporativos
   LIBRE: { left: 8, right: 92, top: 8, bottom: 92 },          // Fallback general
 };
