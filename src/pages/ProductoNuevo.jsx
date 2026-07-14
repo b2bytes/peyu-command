@@ -740,6 +740,7 @@ export default function ProductoNuevo() {
                     capas={capas}
                     onPlacementChange={setPlacements}
                     baseFilter={mockupFilter}
+                    tintOverride={mockupTint}
                     esCarcasa={esCarcasa}
                     customArea={engraggingArea}
                   />
