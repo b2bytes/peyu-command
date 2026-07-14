@@ -26,7 +26,7 @@ const NOMBRE = { frase: 'Frase', peyu: 'Diseño PEYU', archivo: 'Tu diseño' };
 // toda la imagen — el cliente puede posicionar el logo donde quiera sobre
 // cualquier pieza del producto (posavaso hexagonal, cacho individual, etc.).
 const AREA_CARCASA    = { left: 26, right: 74, top: 18, bottom: 86 };
-const AREA_LIBRE      = { left: 8,  right: 92, top: 8,  bottom: 92 };
+const AREA_LIBRE      = { left: 2,  right: 98, top: 2,  bottom: 98 };
 
 function getArea(esCarcasa) {
   return esCarcasa ? AREA_CARCASA : AREA_LIBRE;

@@ -6,17 +6,22 @@
  * 3. Nombre del producto (fallback)
  */
 
-// Áreas estándar predefinidas
+// Áreas estándar predefinidas.
+// REGLA FUNDADOR (jul 2026): salvo carcasas (cuya forma física limita el láser),
+// TODOS los productos usan el lienzo COMPLETO — el cliente posiciona su logo en
+// cualquier parte de la pieza, sin importar la forma del producto (llaveros con
+// formas irregulares, cachos, posavasos hexagonales, paletas, etc.).
+const TOTAL = { left: 2, right: 98, top: 2, bottom: 98 };
 const AREAS = {
-  CARCASA: { left: 26, right: 74, top: 18, bottom: 86 },    // Carcasas de celular
-  CACHO: { left: 10, right: 90, top: 12, bottom: 88 },       // Cachos individuales
-  POSAVASO: { left: 12, right: 88, top: 15, bottom: 85 },    // Posavasos hexagonales
-  COASTER: { left: 15, right: 85, top: 20, bottom: 80 },     // Coasters redondos
-  PALETA: { left: 8, right: 92, top: 10, bottom: 90 },       // Paletas
-  ESCRITORIO: { left: 8, right: 92, top: 8, bottom: 92 },    // Objetos escritorio (taza, libreta, etc)
-  LLAVERO: { left: 10, right: 90, top: 10, bottom: 90 },     // Llaveros y soportes: área casi libre — la pieza llena la foto y el cliente posiciona donde quiera
-  CORPORATIVO: { left: 10, right: 90, top: 12, bottom: 88 }, // Artículos corporativos
-  LIBRE: { left: 8, right: 92, top: 8, bottom: 92 },          // Fallback general
+  CARCASA: { left: 26, right: 74, top: 18, bottom: 86 },    // Carcasas de celular (forma contenida)
+  CACHO: TOTAL,
+  POSAVASO: TOTAL,
+  COASTER: TOTAL,
+  PALETA: TOTAL,
+  ESCRITORIO: TOTAL,
+  LLAVERO: TOTAL,
+  CORPORATIVO: TOTAL,
+  LIBRE: TOTAL,
 };
 
 /**
