@@ -39,13 +39,22 @@ export async function detectImageTone(src) {
       n++;
     }
     if (!n) return 'dark';
+    // REGLA PEYU: SOLO los plásticos realmente OSCUROS (negro, azul marino,
+    // verde oscuro) reciben tinta gris CLARA/blanca. Todo lo demás — incluidos
+    // azules medios y celestes — recibe tinta gris OSCURA visible.
+    // Además, la fórmula de luminancia subestima el canal azul (peso 0.114):
+    // un azul medio brillante parecía "oscuro" y salía grabado blanco
+    // (reporte founder: llavero azul → debe ser gris oscuro). Usamos el MAYOR
+    // entre luminancia y promedio simple RGB para no castigar los azules.
     const avg = lum / n;
-    // REGLA PEYU: superficies claras y pasteles (crema, arena, blanco, rosado
-    // claro y AZUL CLARO/celeste) reciben tinta gris OSCURA. Colores saturados
-    // medios (teal PEYU, verde, rojo) y oscuros → tinta gris CLARA.
-    // Umbral 140: el 155 anterior dejaba el celeste como "oscuro" y le aplicaba
-    // grabado gris claro invisible (reporte founder: azul claro → gris oscuro).
-    return avg < 140 ? 'light' : 'dark';
+    let mean = 0, n2 = 0;
+    for (let i = 0; i < d.length; i += 4) {
+      if (d[i + 3] < 20) continue;
+      mean += (d[i] + d[i + 1] + d[i + 2]) / 3;
+      n2++;
+    }
+    const eff = Math.max(avg, n2 ? mean / n2 : 0);
+    return eff < 100 ? 'light' : 'dark';
   } catch {
     return 'light';
   }

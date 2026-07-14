@@ -35,8 +35,10 @@ export function biselFx(tint) {
 // Tono de tinta a partir de un color HEX conocido. Se usa cuando la imagen
 // base se re-pinta con un filtro CSS (tinte de color sin foto real): en ese
 // caso detectImageTone leería la foto ORIGINAL y no el color que el cliente
-// está viendo. Misma regla/umbral que detectImageTone (lum ≥ 140 = claro:
-// incluye pasteles como el azul claro/celeste → tinta gris OSCURA visible).
+// está viendo. Misma regla/umbral que detectImageTone: SOLO colores realmente
+// OSCUROS (negro, azul marino) → tinta clara; azules medios/celestes y todo
+// lo demás → tinta gris OSCURA. Se usa el MAYOR entre luminancia y promedio
+// RGB para no castigar los azules (el canal azul pesa poco en la luminancia).
 export function toneFromHex(hex) {
   const m = String(hex || '').replace('#', '');
   if (m.length < 6) return null;
@@ -45,7 +47,8 @@ export function toneFromHex(hex) {
   const b = parseInt(m.slice(4, 6), 16);
   if ([r, g, b].some(Number.isNaN)) return null;
   const lum = 0.299 * r + 0.587 * g + 0.114 * b;
-  return lum >= 140 ? 'dark' : 'light';
+  const eff = Math.max(lum, (r + g + b) / 3);
+  return eff >= 100 ? 'dark' : 'light';
 }
 
 // Fallback cuando el engraver NO pudo procesar el logo (CORS): mostramos el

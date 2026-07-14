@@ -462,7 +462,7 @@ const MockupLivePreviewV2 = forwardRef(function MockupLivePreviewV2({ productIma
                   <input
                     type="range" min="10"
                     max={Math.round(Math.min(
-                      c.tipo === 'frase' ? (esCarcasa ? 40 : 55) : (esCarcasa ? 34 : 52),
+                      c.tipo === 'frase' ? (esCarcasa ? 40 : 60) : (esCarcasa ? 34 : 68),
                       Math.max(16, (area.right - area.left) * 0.95)
                     ))}
                     value={pl.size}
