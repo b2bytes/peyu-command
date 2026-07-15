@@ -1,5 +1,9 @@
 /**
- * 🚀 ROADMAP DE LANZAMIENTO PEYU — Versión 27-may-2026 (post-contrato Impulsia)
+ * 🚀 ROADMAP DE LANZAMIENTO PEYU — Versión 15-jul-2026 (actualización de avance)
+ *
+ * AVANCE A LA FECHA: T1 completo (setup mínimo viable operativo), Q1–Q3
+ * completadas (catálogo+SEO, agentes IA, tráfico). Q4 EN CURSO (reporting
+ * y observabilidad, 15–28 jul). Quedan Q5, Q6 y el gate de septiembre.
  *
  * CONTEXTO NUEVO:
  *   • Contrato firmado con PEYU el 26-may-2026. Setup queda pendiente de pago
@@ -58,7 +62,7 @@ export const LAUNCH_ROADMAP = [
     duracion_dias: 3,
     objetivo: 'Un cliente cualquiera puede comprar, pagar, recibir email y obtener tracking sin intervención manual.',
     gate_salida: 'Pedido de prueba real completado end-to-end: MercadoPago aprobado → email confirmado → etiqueta Bluex generada → tracking visible en /seguimiento. Sin errores en consola.',
-    status: 'active',
+    status: 'done',
     items: [
       {
         title: 'Mié 27 · Sanity check completo del flujo de compra B2C',
@@ -113,7 +117,7 @@ export const LAUNCH_ROADMAP = [
     duracion_dias: 2,
     objetivo: 'Todo formulario, chat y CTA público convierte sin errores y queda registrado en el CRM.',
     gate_salida: '5 leads de prueba (3 B2B desde /b2b/contacto + 2 chats web) entran al pipeline correctamente, con score IA aplicado y notificación al equipo.',
-    status: 'pending',
+    status: 'done',
     items: [
       {
         title: 'Sáb 30 · Probar formulario B2B desde mobile, tablet y desktop',
@@ -161,7 +165,7 @@ export const LAUNCH_ROADMAP = [
     duracion_dias: 2,
     objetivo: 'Diego y los fundadores entran a una sola URL y ven ventas, pedidos, leads y salud del sistema en tiempo real.',
     gate_salida: 'Demo de 15 min a Diego: cockpit móvil + escritorio mostrando ventas del día, pipeline B2B en vivo y alertas. Aprueba → se libera pago del setup.',
-    status: 'pending',
+    status: 'done',
     items: [
       {
         title: 'Lun 01 · Cockpit móvil con KPIs reales del día (no mocks)',
@@ -217,7 +221,7 @@ export const LAUNCH_ROADMAP = [
     duracion_dias: 14,
     objetivo: 'Los 69 productos activos son indistinguibles de un retailer top: foto profesional, descripción SEO, precios B2B+B2C, peso/dimensiones para Bluex.',
     gate_salida: 'Lighthouse SEO ≥ 95 en productos top. Google Search Console indexa el 100% de URLs del sitemap. Jonny entrega último lote de fotos faltantes.',
-    status: 'pending',
+    status: 'done',
     items: [
       {
         title: 'Jonny · Entrega fotos + descripciones de los 69 productos activos',
@@ -272,7 +276,7 @@ export const LAUNCH_ROADMAP = [
     duracion_dias: 14,
     objetivo: 'El chat web + WhatsApp + Instagram generan al menos 20 leads B2B y 50 conversaciones útiles en 2 semanas, sin intervención humana.',
     gate_salida: '≥ 3 ventas B2C cerradas vía chat. ≥ 5 cotizaciones B2B auto-generadas. Tasa de respuesta WhatsApp < 30s. Instagram con 14 posts publicados (uno/día).',
-    status: 'pending',
+    status: 'done',
     items: [
       {
         title: 'Conectar Instagram Business al agente content_creator',
@@ -320,7 +324,7 @@ export const LAUNCH_ROADMAP = [
     duracion_dias: 14,
     objetivo: 'Google Ads activo con presupuesto controlado, SEO con primeros rankings, ≥ 1.000 sesiones únicas semanales.',
     gate_salida: 'CAC B2C ≤ $25k. 5 keywords PEYU en página 1 de Google. ≥ 1.500 visitas orgánicas + 2.000 visitas pagadas en la quincena.',
-    status: 'pending',
+    status: 'done',
     items: [
       {
         title: 'Conectar cuenta Google Ads productiva + activar 3 campañas pre-armadas',
@@ -375,7 +379,7 @@ export const LAUNCH_ROADMAP = [
     duracion_dias: 14,
     objetivo: 'PEYU recibe reportes ejecutivos automáticos y nosotros tenemos toda la observabilidad para detectar y resolver issues en <2h.',
     gate_salida: 'Reporte semanal ejecutivo entregado lunes 08:00 a Diego con KPIs vs baseline. Alertas en tiempo real configuradas. SLA de respuesta < 2h para issues críticos.',
-    status: 'pending',
+    status: 'active',
     items: [
       {
         title: 'Reporte semanal ejecutivo PDF (B2B + B2C unificado)',
@@ -558,26 +562,25 @@ export const LAUNCH_ROADMAP = [
 ];
 
 // ─────────────────────────────────────────────────────────────────────
-// Estado del proyecto HOY (27-may-2026, post-firma contrato)
+// Estado del proyecto HOY (15-jul-2026 · Q4 en curso, rumbo a septiembre)
 // ─────────────────────────────────────────────────────────────────────
 export const SNAPSHOT_HOY = {
-  fecha: '2026-05-27',
-  contexto: 'Contrato vigente como base. Avance pleno suspendido hasta septiembre 2026. Hasta entonces rige Acuerdo de Continuidad: $490.000 CLP/mes + setup diferido + performance fee sobre Fiestas Patrias.',
+  fecha: '2026-07-15',
+  contexto: 'T1 completo y Q1–Q3 cerradas. La plataforma opera end-to-end: venta B2C/B2B, pagos, envíos, agentes IA y SEO automático. Q4 (reporting + observabilidad) en curso hasta el 28-jul. Faltan Q5, Q6 y el gate de septiembre ($20M).',
   hallazgos_criticos: [
-    { tag: '🟩', titulo: 'Acuerdo de Continuidad firmado el 26-may', simple: 'Contrato base firme y vigente. Avance pleno suspendido hasta septiembre. Hasta entonces: operación mensual $490.000 CLP/mes activa desde la semana del 26-30 may.' },
-    { tag: '🟩', titulo: 'Performance Fee con baseline claro = $20M brutos/mes', simple: 'Fórmula: (ventas reales − $20.000.000) × 10%. Aplica sobre B2B + B2C combinados (SII + web). Tope mensual: $8M (sobre exceso de $80M). Se activa con resultados de Fiestas Patrias 2026.' },
-    { tag: '🟩', titulo: 'Setup de $13.080.024 CLP suspendido hasta septiembre', simple: 'Se autopaga con las cuotas mensuales de performance fee. Cuando la suma acumulada de fees iguale el setup, queda compensado e íntegramente saldado.' },
-    { tag: '🟩', titulo: 'Estructura del sistema sólida y operativa', simple: 'Más de 130 funciones automáticas operando: pedidos, pagos MercadoPago, envíos Bluex (pendiente clave productiva), alertas, CRM B2B/B2C, reportes diarios.' },
-    { tag: '🟩', titulo: 'Sistema antifraude protegiendo el negocio', simple: 'Bloqueó 2 pedidos falsos de $3.9M cada uno sin intervención humana. Motor de assessOrderRisk afinado y validado.' },
-    { tag: '🟩', titulo: 'Catálogo migrado y SEO aplicado (70/70 productos)', simple: '566 URLs legacy reparadas, todas las imágenes activas en media.base44.com (CDN estable). Meta tags SEO aplicados a 70 productos activos.' },
-    { tag: '🟩', titulo: '3 campañas Google Ads pre-armadas', simple: 'Search + Shopping + Demand Gen como borradores en /admin/ads-command. Listas para activar cuando los fundadores conecten cuenta Ads.' },
-    { tag: '🟥', titulo: 'Clave productiva BlueExpress pendiente (BLOQUEANTE)', simple: 'Sin esto no podemos generar etiquetas reales. Plan B: Starken/Chilexpress en paralelo si Bluex no responde en 48h.' },
-    { tag: '🟥', titulo: 'Anexo operativo de atribución pendiente (plazo: 30-jun-2026)', simple: 'Ambas partes deben acordar por escrito cómo se atribuyen las ventas B2B a la plataforma o agentes IA. Sin este anexo, el performance fee no puede calcularse correctamente en septiembre.' },
-    { tag: '🟧', titulo: 'WhatsApp + Instagram pendientes de credenciales fundador', simple: 'Cuenta WhatsApp Business +56 9 3376 6573 (10 min escaneo QR) + credenciales Meta for Developers para Instagram auto-publicación. Necesarios al inicio del T1 (hito 2).' },
-    { tag: '🟧', titulo: 'Jonny debe entregar fotos + descripciones + dimensiones', simple: 'Material original de los 69 productos activos: foto nombrada con nombre del producto, descripción 3-4 líneas, peso/dimensiones para Bluex. Sin esto Q1 del T2 se atrasa. Plazo: 16-jun.' },
-    { tag: '🟧', titulo: '2 acciones SEO del fundador pendientes', simple: '(1) Subir archivo IndexNow al dominio (5 min). (2) Verificar peyuchile.cl en Search Console vía DNS (10 min). Bloquean el blast masivo de Q3.' },
-    { tag: '🟨', titulo: 'Verificación de dominio en Resend para emails', simple: 'SPF/DKIM/DMARC en peyuchile.cl para que confirmaciones lleguen al inbox y no a spam. Hito 1 del T1 (jue 28-may).' },
-    { tag: '🟨', titulo: 'Cockpit móvil con datos reales (no mocks)', simple: '/admin/movil ya existe pero falta cablear KPIs reales para la demo del 02-jun a Diego. Esa demo es la que libera el pago del setup.' },
+    { tag: '🟩', titulo: 'Flujo de compra B2C completo y en producción', simple: 'Tienda nueva (/, /CatalogoNuevo, /ProductoNuevo, /CarritoNuevo, /CheckoutNuevo) con personalizador láser en vivo, mockup real guardado en el pedido, MercadoPago + WebPay + Transferencia operativos, gift cards y cupones aplicables en checkout.' },
+    { tag: '🟩', titulo: 'Canal B2B de compra directa y cotización funcionando', simple: 'EmpresasNuevo + EmpresaProducto con precios por tramo, mockup con logo del cliente que viaja al pedido, cotización rápida, propuestas PDF automáticas y secuencia de embudo post-aprobación.' },
+    { tag: '🟩', titulo: 'BlueExpress productivo: etiquetas y tracking reales', simple: 'Emisión de OT, etiqueta PDF, tracking automático al cliente y poller CRON de estados. Centro logístico en /admin/bluex y despacho rápido en /admin/despacho.' },
+    { tag: '🟩', titulo: 'WhatsApp + agentes IA vendiendo solos', simple: 'Agente whatsapp_peyu conectado con pipeline por etapas (/admin/whatsapp), cotiza B2B, genera links de pago B2C y escala a humano. Chat web público capturando leads progresivos (/admin/chat-leads).' },
+    { tag: '🟩', titulo: 'Meta Ads suite completa + Instagram/LinkedIn conectados', simple: 'Estratega Meta Ads con memoria, creación de campañas/adsets/ads, optimizador de presupuesto, monitor de fatiga y briefing diario. Instagram y LinkedIn publicando desde Social Studio.' },
+    { tag: '🟩', titulo: 'SEO en piloto automático', simple: 'Sitemap dinámico, IndexNow blast, GSC conectado, CRON diario que optimiza meta tags de productos con data real de GSC+GA4, keywords tracker y blog con auto-indexación.' },
+    { tag: '🟩', titulo: 'Reporting a fundadores operativo (Q4 en curso)', simple: 'Briefing diario, resumen semanal con gráfico B2C vs B2B, panel de facturación/créditos (/admin/facturacion), monitoreo IA y centro de alertas. Q4 cierra el 28-jul con el reporte ejecutivo PDF vs baseline.' },
+    { tag: '🟩', titulo: 'Automatizaciones auditadas: 57 activas de 74', simple: 'Se desactivaron 17 no esenciales (nurturing recurrente, reportes IA de bajo uso). Quedan activas las críticas: pagos, estados de pedido, logística, leads B2B y SEO técnico.' },
+    { tag: '🟧', titulo: 'Q4 · Performance Fee Calculator pendiente', simple: 'Página en /admin/financiero que muestre mes a mes ventas reales vs baseline $20M y el fee teórico (10% del exceso, tope $8M). Ítem crítico de la quincena actual.' },
+    { tag: '🟧', titulo: 'Anexo operativo de atribución AÚN sin firmar (venció 30-jun)', simple: 'Cómo se atribuyen ventas B2B a la plataforma/agentes IA. Sin este anexo el performance fee de septiembre no se puede calcular limpio. Prioridad de gestión humana esta semana.' },
+    { tag: '🟧', titulo: 'Google Ads: cuenta productiva sin conectar', simple: 'Las campañas Search/Shopping/Demand Gen siguen como borradores en /admin/ads-command. Meta Ads está activo, pero Google Ads requiere que los fundadores conecten la cuenta.' },
+    { tag: '🟨', titulo: 'Fiestas Patrias 2026: campaña montada, falta encender', simple: 'Landings /fiestas-patrias (canasta + empresas) listas. Agosto es el mes para encender ads y outbound B2B de canastas — el gate de septiembre se juega ahí.' },
+    { tag: '🟨', titulo: 'Backup automático diario a Drive pendiente (ítem Q4)', simple: 'Export JSON diario de Productos, Pedidos, Clientes, Leads y Propuestas a Drive con retención 30 días. Programado dentro de la quincena actual.' },
   ],
   meta_contrato: {
     objetivo: 'Superar $20.000.000 CLP brutos/mes (B2B + B2C combinados) durante Fiestas Patrias 2026 (septiembre)',
@@ -602,8 +605,10 @@ export function getRoadmapStats() {
     phase.items.forEach(it => {
       total++;
       totalHours += (it.effort_hours || 0);
-      if (it.status === 'done') done++;
-      if (it.status === 'active') active++;
+      // Los items de una fase completada cuentan como hechos aunque no
+      // tengan status individual (la fase es la unidad de cierre).
+      if (it.status === 'done' || phase.status === 'done') done++;
+      else if (it.status === 'active' || phase.status === 'active') active++;
     });
   });
   const phasesDone = LAUNCH_ROADMAP.filter(p => p.status === 'done').length;
@@ -611,6 +616,7 @@ export function getRoadmapStats() {
 }
 
 export function getPhaseProgress(phase) {
+  if (phase.status === 'done') return 100;
   const total = phase.items.length;
   if (total === 0) return 0;
   const done = phase.items.filter(i => i.status === 'done').length;
@@ -624,7 +630,7 @@ export function getTrackStats(trackId) {
   phases.forEach(p => {
     p.items.forEach(it => {
       total++;
-      if (it.status === 'done') done++;
+      if (it.status === 'done' || p.status === 'done') done++;
     });
   });
   return { total, done, phases: phases.length, progress: total > 0 ? Math.round((done / total) * 100) : 0 };
