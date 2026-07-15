@@ -162,6 +162,7 @@ const CampaignCalendar = lazyWithRetry(() => import('./pages/CampaignCalendar'),
 const CorreosCatalogo = lazyWithRetry(() => import('./pages/CorreosCatalogo'), { name: 'CorreosCatalogo' });
 const HeroCarruselRevisar = lazyWithRetry(() => import('./pages/HeroCarruselRevisar'), { name: 'HeroCarruselRevisar' });
 const DisenosPeyu = lazyWithRetry(() => import('./pages/DisenosPeyu'), { name: 'DisenosPeyu' });
+const FacturacionCreditos = lazyWithRetry(() => import('./pages/FacturacionCreditos'), { name: 'FacturacionCreditos' });
 
 const AdminLoader = () => (
   <div className="fixed inset-0 flex items-center justify-center bg-background">
@@ -287,6 +288,7 @@ const AuthenticatedApp = () => {
           <Route path="correos" element={<CorreosCatalogo />} />
           <Route path="hero-carrusel" element={<HeroCarruselRevisar />} />
           <Route path="disenos" element={<DisenosPeyu />} />
+          <Route path="facturacion" element={<FacturacionCreditos />} />
         </Route>
         <Route path="*" element={<PageNotFound />} />
       </Routes>
