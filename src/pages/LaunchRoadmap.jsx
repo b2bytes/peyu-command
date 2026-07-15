@@ -134,17 +134,17 @@ export default function LaunchRoadmap() {
           <div className="relative">
             <div className="inline-flex items-center gap-2 text-xs font-bold tracking-[0.18em] uppercase" style={{ color: 'var(--ld-action)' }}>
               <Rocket className="w-3.5 h-3.5" />
-              Plan de lanzamiento · actualizado 15-may
+              Plan de lanzamiento · actualizado 15-jul-2026
             </div>
             <h1 className="ld-display text-3xl sm:text-5xl mt-3 leading-[1.05] text-ld-fg">
-              De catálogo a medio terminar a{' '}
+              La máquina ya vende sola —{' '}
               <span className="ld-display-italic" style={{ color: 'var(--ld-highlight)' }}>
-                máquina vendiendo sola
+                recta final a septiembre
               </span>
             </h1>
             <p className="text-ld-fg-soft mt-3 max-w-2xl leading-relaxed text-sm sm:text-base">
-              Plan honesto, paso a paso. Cada fase termina cuando algo concreto funciona.
-              <strong className="text-ld-fg"> Estabilidad primero, escala después.</strong>
+              T1 completo y Q1–Q3 cerradas: tienda nueva, pagos, envíos Bluex, WhatsApp, Meta Ads y SEO automático operando.
+              <strong className="text-ld-fg"> Q4 en curso · quedan Q5, Q6 y el gate de los $20M.</strong>
             </p>
 
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-6">
@@ -153,16 +153,16 @@ export default function LaunchRoadmap() {
                 <p className="font-bold text-2xl mt-0.5 text-ld-fg">{stats.totalPhases}</p>
               </div>
               <div className="ld-glass rounded-2xl p-3">
-                <p className="text-xs text-ld-fg-muted">Tareas</p>
-                <p className="font-bold text-2xl mt-0.5 text-ld-fg">{stats.total}</p>
+                <p className="text-xs text-ld-fg-muted">Tareas hechas</p>
+                <p className="font-bold text-2xl mt-0.5 text-ld-fg">{stats.done}<span className="text-sm text-ld-fg-muted">/{stats.total}</span></p>
               </div>
               <div className="ld-glass rounded-2xl p-3">
-                <p className="text-xs text-ld-fg-muted">Trabajo total</p>
-                <p className="font-bold text-2xl mt-0.5 text-ld-fg">~{stats.totalHours}h</p>
+                <p className="text-xs text-ld-fg-muted">Avance total</p>
+                <p className="font-bold text-2xl mt-0.5" style={{ color: 'var(--ld-action)' }}>{stats.total > 0 ? Math.round((stats.done / stats.total) * 100) : 0}%</p>
               </div>
               <div className="ld-glass rounded-2xl p-3">
-                <p className="text-xs text-ld-fg-muted">Arranca</p>
-                <p className="font-bold text-2xl mt-0.5" style={{ color: 'var(--ld-action)' }}>Sáb 16</p>
+                <p className="text-xs text-ld-fg-muted">En curso</p>
+                <p className="font-bold text-2xl mt-0.5" style={{ color: 'var(--ld-highlight)' }}>Q4</p>
               </div>
             </div>
           </div>
@@ -175,7 +175,7 @@ export default function LaunchRoadmap() {
             <h2 className="font-poppins font-bold text-lg text-ld-fg">Dónde estamos parados</h2>
           </div>
           <p className="text-sm text-ld-fg-muted mb-4">
-            La máquina está armada y operando. Quedan ajustes finos para dejarla impecable. 🟩 funcionando · 🟧 esta semana · 🟨 ajustes finos.
+            Estado real al 15 de julio 2026. 🟩 funcionando en producción · 🟧 prioridad de esta quincena (Q4) · 🟨 preparado, falta encender.
           </p>
           <div className="space-y-2">
             {SNAPSHOT_HOY.hallazgos_criticos.map((h, i) => (
@@ -194,16 +194,16 @@ export default function LaunchRoadmap() {
           >
             <CheckCircle2 className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: 'var(--ld-action)' }} />
             <p className="text-xs text-ld-fg leading-relaxed">
-              <strong>La buena noticia:</strong> la base es sólida. La mayoría del trabajo está hecho. Lo que falta es{' '}
-              <strong>limpiar, ajustar y darle play</strong>. No es construir desde cero, es ordenar y lanzar.
+              <strong>El grueso está construido y operando:</strong> venta B2C/B2B end-to-end, pagos, logística, agentes IA y SEO automático.
+              Lo que queda es <strong>reporting ejecutivo (Q4), conectar WhatsApp al embudo tras la aprobación de los fundadores, y encender Fiestas Patrias</strong> para llegar al gate de septiembre.
             </p>
           </div>
         </div>
 
         {/* FASES */}
         <div className="space-y-3">
-          {LAUNCH_ROADMAP.map((phase, idx) => (
-            <PhaseCard key={phase.id} phase={phase} defaultOpen={idx === 0} />
+          {LAUNCH_ROADMAP.map((phase) => (
+            <PhaseCard key={phase.id} phase={phase} defaultOpen={phase.status === 'active'} />
           ))}
         </div>
 
@@ -217,10 +217,11 @@ export default function LaunchRoadmap() {
           <div className="relative flex items-start gap-4">
             <Flame className="w-8 h-8 flex-shrink-0" style={{ color: 'var(--ld-highlight)' }} />
             <div className="flex-1">
-              <h3 className="font-poppins font-bold text-lg text-ld-fg">Empezamos mañana sábado 16</h3>
+              <h3 className="font-poppins font-bold text-lg text-ld-fg">Foco de esta quincena (Q4 · hasta el 28-jul)</h3>
               <p className="text-sm text-ld-fg-soft mt-1 leading-relaxed">
-                La Fase 0 son aproximadamente <strong className="text-ld-fg">4 horas de trabajo</strong>. Si arrancamos
-                temprano, el domingo en la tarde ya tienes todo en verde para empujar Fase 1 con tranquilidad.
+                1) Reporte ejecutivo semanal PDF a fundadores · 2) Performance Fee Calculator en /admin/financiero ·
+                3) <strong className="text-ld-fg">Evaluación y aprobación del WhatsApp para conectarlo al embudo</strong> ·
+                4) Firmar anexo de atribución (venció 30-jun) · 5) Dejar Fiestas Patrias lista para encender en agosto.
               </p>
               <div className="flex gap-2 mt-4 flex-wrap">
                 <a
