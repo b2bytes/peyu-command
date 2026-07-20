@@ -7,6 +7,7 @@ import { ArrowRight, Recycle, Sparkles } from 'lucide-react';
 import HeroBoldV2 from '@/components/shopv2/HeroBoldV2';
 import ResumeJourneyBannerV2 from '@/components/shopv2/ResumeJourneyBannerV2';
 import TrustSocialBarV2 from '@/components/shopv2/TrustSocialBarV2';
+import FiestasBannerV2 from '@/components/shopv2/FiestasBannerV2';
 import ImpactStoryV2 from '@/components/shopv2/ImpactStoryV2';
 import ProductCardV2 from '@/components/shopv2/ProductCardV2';
 import { CATEGORIAS_V2 } from '@/lib/shop-v2-config';
@@ -97,6 +98,9 @@ export default function TiendaNueva() {
 
       {/* 1b · TRUST + SOCIAL PROOF */}
       <TrustSocialBarV2 />
+
+      {/* 1c · CAMPAÑA FIESTAS PATRIAS 2026 */}
+      <FiestasBannerV2 />
 
       {/* 2 · STORYTELLING DE IMPACTO */}
       <ImpactStoryV2 />

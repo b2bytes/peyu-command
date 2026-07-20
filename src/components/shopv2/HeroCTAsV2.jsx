@@ -18,7 +18,7 @@ export default function HeroCTAsV2({ compact = false }) {
           style={{
             background: 'linear-gradient(135deg,#C0785C,#A86440)',
             color: '#FFFFFF',
-            boxShadow: '0 6px 20px rgba(192,120,92,.3)',
+            boxShadow: 'none',
           }}
         >
           <Sparkles className="w-4 h-4" strokeWidth={1.75} />
