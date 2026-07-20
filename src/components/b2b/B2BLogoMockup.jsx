@@ -6,7 +6,7 @@
 // MISMA imagen que muestra la galería (con el color seleccionado). Así el
 // mockup nunca cambia a una foto por defecto distinta del color elegido.
 import { useState, useRef } from 'react';
-import { base44 } from '@/api/base44Client';
+import { uploadImagePublic } from '@/lib/public-upload';
 import { Upload, Loader2, Sparkles, RefreshCw, Check } from 'lucide-react';
 import { getProductImage } from '@/utils/productImages';
 import MockupLivePreviewV2 from '@/components/shopv2/MockupLivePreviewV2';
@@ -57,9 +57,10 @@ export default function B2BLogoMockup({
     setLogoUrlState(localUrl);
     setLogoFile(file);
     try {
-      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      const { file_url } = await uploadImagePublic(file);
       setLogoUrl(file_url);
-    } catch {
+    } catch (err) {
+      console.error('Error subiendo logo B2B:', err);
       setError('No se pudo subir el archivo. Prueba con PNG o JPG.');
     } finally {
       setUploading(false);

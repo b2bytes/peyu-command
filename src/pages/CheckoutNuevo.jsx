@@ -14,6 +14,7 @@ import PaymentMethodSelector from '@/components/cart/PaymentMethodSelector';
 import GiftCardRedeemBox from '@/components/cart/GiftCardRedeemBox';
 import { getCartV2, clearCartV2, fmtCLP } from '@/lib/shop-v2-cart';
 import { readShopCheckout, mergeShopCheckout, clearShopCheckout } from '@/lib/shop-v2-checkout-store';
+import { uploadImagePublic } from '@/lib/public-upload';
 import { calcularCargoPersonalizacionCarrito, calcularCargoPersonalizacion, getTipoPersonalizacion, MOQ_PERSONALIZACION_GRATIS } from '@/lib/personalizacion-config';
 import { computeQtyDiscountBySku } from '@/lib/volume-discount';
 import { normalizarRut } from '@/lib/rut-chile';
@@ -216,7 +217,7 @@ export default function CheckoutNuevo() {
         const res = await fetch(mu);
         const blob = await res.blob();
         const file = new File([blob], `mockup-${item.id || Date.now()}.jpg`, { type: 'image/jpeg' });
-        const uploaded = await base44.integrations.Core.UploadFile({ file });
+        const uploaded = await uploadImagePublic(file);
         if (uploaded?.file_url) uploadedMockups[item.id] = uploaded.file_url;
       } catch (e) {
         console.warn('No se pudo subir mockup dataURL para item:', item.nombre, e?.message);

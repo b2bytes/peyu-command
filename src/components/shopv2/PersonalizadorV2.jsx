@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { base44 } from '@/api/base44Client';
+import { uploadImagePublic } from '@/lib/public-upload';
 import { Sparkles, Upload, X, Check, Loader2, Type, Palette, CheckCircle2, Pencil } from 'lucide-react';
 import { fmtCLP } from '@/lib/shop-v2-cart';
 import PersToggleCardV2 from '@/components/shopv2/PersToggleCardV2';
@@ -41,9 +41,10 @@ export default function PersonalizadorV2({ pers, setPers, gratis, moq = 10, solo
     setError('');
     setUploading(true);
     try {
-      const res = await base44.integrations.Core.UploadFile({ file });
+      const res = await uploadImagePublic(file);
       editar({ logoUrl: res.file_url || '' });
-    } catch {
+    } catch (err) {
+      console.error('Error subiendo diseño del cliente:', err);
       setError('No se pudo subir el archivo. Intenta de nuevo.');
     } finally {
       setUploading(false);
