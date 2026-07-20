@@ -94,7 +94,7 @@ export default function FiestasEmpresas() {
           <div className="mb-9 flex justify-center"><CountdownDieciocho label="Cierre de pedidos B2B" /></div>
           <button onClick={scrollToForm}
             className="inline-flex items-center gap-2 h-14 px-8 rounded-2xl text-white font-bold transition-all active:scale-[0.98] hover:-translate-y-0.5"
-            style={{ background: 'linear-gradient(135deg,#C0785C,#A86440)', boxShadow: '0 10px 28px rgba(192,120,92,.35)' }}>
+            style={{ background: 'linear-gradient(135deg,#C0785C,#A86440)' }}>
             Cotizar mi kit corporativo <ArrowRight className="w-5 h-5" />
           </button>
         </div>
@@ -165,7 +165,7 @@ export default function FiestasEmpresas() {
                 {error && <p className="text-xs font-semibold" style={{ color: '#A8443A' }}>{error}</p>}
                 <button type="submit" disabled={sending}
                   className="w-full h-13 py-3.5 rounded-2xl text-white font-bold flex items-center justify-center gap-2 transition-all active:scale-[0.98] disabled:opacity-60"
-                  style={{ background: 'linear-gradient(135deg,#C0785C,#A86440)', boxShadow: '0 8px 24px rgba(192,120,92,.3)' }}>
+                  style={{ background: 'linear-gradient(135deg,#C0785C,#A86440)' }}>
                   {sending ? <><Loader2 className="w-4 h-4 animate-spin" /> Enviando…</> : <><Briefcase className="w-5 h-5" /> Solicitar cotización</>}
                 </button>
               </form>

@@ -72,7 +72,7 @@ import AprobarPropuesta from './pages/AprobarPropuesta';
 import FirmaAgente from './pages/FirmaAgente';
 import FiestasPatrias from './pages/FiestasPatrias';
 import ManualPeyu from './pages/ManualPeyu';
-import FiestasCanasta from './pages/FiestasCanasta';
+import FiestasKits from './pages/FiestasKits';
 import FiestasEmpresas from './pages/FiestasEmpresas';
 
 // ── ADMIN PAGES (lazy + retry) ───────────────────────────────────────
@@ -412,7 +412,8 @@ function App() {
                 <Route path="/mi-cuenta" element={<MiCuenta />} />
                 <Route path="/catalogo-visual" element={<CatalogoVisual />} />
                 <Route path="/fiestas-patrias" element={<FiestasPatrias />} />
-                <Route path="/fiestas-patrias/canasta" element={<FiestasCanasta />} />
+                <Route path="/fiestas-patrias/kits" element={<FiestasKits />} />
+                <Route path="/fiestas-patrias/canasta" element={<Navigate to="/fiestas-patrias/kits" replace />} />
                 <Route path="/fiestas-patrias/empresas" element={<FiestasEmpresas />} />
               </Route>
 

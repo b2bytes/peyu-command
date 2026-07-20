@@ -28,7 +28,7 @@ export default function FiestasPatrias() {
     <div className="min-h-screen font-inter" style={{ background: '#F8F3ED', color: '#2C1810' }}>
       <SEO
         title="PEYU Fiestas Patrias 2026 — Lo chileno de verdad 🇨🇱"
-        description="Productos 100% chilenos, calidad premium y entrega garantizada antes del 18. Arma tu canasta de Fiestas o regala kits corporativos con identidad."
+        description="Productos 100% chilenos, calidad premium y entrega garantizada antes del 18. Elige tu kit de regalo de Fiestas o regala kits corporativos con identidad."
         canonical="https://peyuchile.cl/fiestas-patrias"
       />
 
@@ -67,11 +67,11 @@ export default function FiestasPatrias() {
 
           <div className="flex flex-col sm:flex-row gap-3 justify-center max-w-lg mx-auto">
             <Link
-              to="/fiestas-patrias/canasta"
-              className="flex-1 h-14 rounded-2xl text-white font-bold flex items-center justify-center gap-2 transition-all active:scale-[0.98] hover:-translate-y-0.5"
-              style={{ background: 'linear-gradient(135deg,#C0785C,#A86440)', boxShadow: '0 10px 28px rgba(192,120,92,.35)' }}
+              to="/fiestas-patrias/kits"
+              className="flex-1 h-14 rounded-2xl text-white font-bold flex items-center justify-center gap-2 transition-all active:scale-[0.98] hover:brightness-110"
+              style={{ background: 'linear-gradient(135deg,#C0785C,#A86440)' }}
             >
-              <ShoppingBag className="w-5 h-5" /> Arma tu canasta
+              <ShoppingBag className="w-5 h-5" /> Ver los 15 kits
             </Link>
             <Link
               to="/fiestas-patrias/empresas"
@@ -88,23 +88,23 @@ export default function FiestasPatrias() {
       <section className="max-w-5xl mx-auto px-5 py-14">
         <div className="grid sm:grid-cols-2 gap-5">
           {/* B2C */}
-          <Link to="/fiestas-patrias/canasta" className="group rounded-3xl p-7 transition-all hover:-translate-y-1"
-            style={{ background: 'white', border: '1.5px solid #D4C4B0', boxShadow: '0 8px 24px rgba(44,24,16,.06)' }}>
+          <Link to="/fiestas-patrias/kits" className="group rounded-3xl p-7 transition-all hover:-translate-y-1"
+            style={{ background: 'white', border: '1.5px solid #D4C4B0' }}>
             <div className="w-12 h-12 rounded-2xl flex items-center justify-center mb-4" style={{ background: 'rgba(192,120,92,.12)' }}>
               <ShoppingBag className="w-6 h-6" style={{ color: '#C0785C' }} />
             </div>
             <h2 className="font-fraunces text-2xl mb-2">Para ti y los tuyos</h2>
             <p className="text-sm mb-4" style={{ color: '#7A6050' }}>
-              Arma tu canasta de Fiestas con un clic. Productos chilenos premium para tu mesa, tu asado y tus regalos.
+              15 kits de regalo listos para el 18: cachos, paletas, posavasos y más, con grabado láser.
             </p>
             <span className="inline-flex items-center gap-1.5 font-bold text-sm" style={{ color: '#A8443A' }}>
-              Ver la canasta <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+              Ver los kits <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </span>
           </Link>
 
           {/* B2B */}
           <Link to="/fiestas-patrias/empresas" className="group rounded-3xl p-7 transition-all hover:-translate-y-1"
-            style={{ background: '#2C1810', border: '1.5px solid #2C1810', boxShadow: '0 8px 24px rgba(44,24,16,.18)' }}>
+            style={{ background: '#2C1810', border: '1.5px solid #2C1810' }}>
             <div className="w-12 h-12 rounded-2xl flex items-center justify-center mb-4" style={{ background: 'rgba(255,255,255,.1)' }}>
               <Briefcase className="w-6 h-6 text-white" />
             </div>
@@ -142,8 +142,8 @@ export default function FiestasPatrias() {
           <p className="text-sm mb-6" style={{ color: '#F2D9C9' }}>
             Entrega garantizada antes del 18 de septiembre comprando dentro de plazo. Stock limitado.
           </p>
-          <Link to="/CatalogoNuevo"
-            className="inline-flex items-center gap-2 h-13 px-7 py-3.5 rounded-2xl font-bold transition-all active:scale-[0.98] hover:-translate-y-0.5"
+          <Link to="/fiestas-patrias/kits"
+            className="inline-flex items-center gap-2 h-13 px-7 py-3.5 rounded-2xl font-bold transition-all active:scale-[0.98] hover:brightness-95"
             style={{ background: 'white', color: '#A8443A' }}>
             Ver toda la tienda <ArrowRight className="w-5 h-5" />
           </Link>

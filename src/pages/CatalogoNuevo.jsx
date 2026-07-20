@@ -178,7 +178,6 @@ export default function CatalogoNuevo() {
                 background: cat === c ? '#C0785C' : 'white',
                 color: cat === c ? 'white' : '#7A6050',
                 border: `1.5px solid ${cat === c ? '#C0785C' : '#D4C4B0'}`,
-                boxShadow: cat === c ? '0 4px 12px rgba(192,120,92,.25)' : 'none',
               }}
             >
               {chipLabel(c)}
@@ -274,7 +273,7 @@ export default function CatalogoNuevo() {
              <button
                onClick={() => { setCat('Todos'); setQ(''); setMarca('Todas'); setModelo('Todos'); }}
                className="mt-5 inline-flex items-center gap-2 text-white font-bold px-6 py-3 rounded-2xl transition-all active:scale-95"
-               style={{ background: 'linear-gradient(135deg,#C0785C,#A86440)', boxShadow: '0 6px 20px rgba(192,120,92,.25)' }}
+               style={{ background: 'linear-gradient(135deg,#C0785C,#A86440)' }}
              >
                Ver todo el catálogo
              </button>
