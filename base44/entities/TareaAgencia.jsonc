@@ -1,0 +1,116 @@
+{
+  "name": "TareaAgencia",
+  "type": "object",
+  "description": "Tarea/cambio de plataforma acordado entre PEYU Chile y la agencia B2bytes.tech. Alimenta el Plan de Cambios (vista Gantt moderna del admin): cada registro es un cambio solicitado con estado, responsable por lado, fechas y avance.",
+  "properties": {
+    "description": {
+      "type": "string",
+      "title": "Descripci\u00f3n",
+      "maxLength": 1000
+    },
+    "titulo": {
+      "type": "string",
+      "title": "T\u00edtulo del cambio"
+    },
+    "detalle": {
+      "type": "string",
+      "title": "Detalle / alcance"
+    },
+    "fase": {
+      "type": "string",
+      "title": "Fase / Sprint",
+      "default": "Sprint Julio 2026"
+    },
+    "estado": {
+      "type": "string",
+      "title": "Estado",
+      "enum": [
+        "Pendiente",
+        "En curso",
+        "En revisi\u00f3n",
+        "Bloqueada",
+        "Completada"
+      ],
+      "default": "Pendiente"
+    },
+    "prioridad": {
+      "type": "string",
+      "title": "Prioridad",
+      "enum": [
+        "Alta",
+        "Media",
+        "Baja"
+      ],
+      "default": "Media"
+    },
+    "lado_responsable": {
+      "type": "string",
+      "title": "Responsable",
+      "enum": [
+        "agencia",
+        "peyu",
+        "ambos"
+      ],
+      "default": "agencia",
+      "description": "agencia = B2bytes.tech \u00b7 peyu = equipo PEYU \u00b7 ambos = requiere coordinaci\u00f3n."
+    },
+    "solicitado_por": {
+      "type": "string",
+      "title": "Solicitado por"
+    },
+    "avance_pct": {
+      "type": "number",
+      "title": "Avance (%)",
+      "default": 0
+    },
+    "fecha_inicio": {
+      "type": "string",
+      "format": "date",
+      "title": "Fecha inicio"
+    },
+    "fecha_objetivo": {
+      "type": "string",
+      "format": "date",
+      "title": "Fecha objetivo"
+    },
+    "fecha_completada": {
+      "type": "string",
+      "format": "date",
+      "title": "Fecha completada"
+    },
+    "orden": {
+      "type": "number",
+      "title": "Orden",
+      "default": 0
+    },
+    "notas": {
+      "type": "string",
+      "title": "Notas / acuerdos"
+    }
+  },
+  "required": [
+    "titulo"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

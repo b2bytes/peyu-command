@@ -154,6 +154,7 @@ const WhatsAppInbox = lazyWithRetry(() => import('./pages/WhatsAppInbox'), { nam
 const CentroMensajes = lazyWithRetry(() => import('./pages/CentroMensajes'), { name: 'CentroMensajes' });
 const EditorTextos = lazyWithRetry(() => import('./pages/EditorTextos'), { name: 'EditorTextos' });
 const CanalAgencia = lazyWithRetry(() => import('./pages/CanalAgencia'), { name: 'CanalAgencia' });
+const PlanCambios = lazyWithRetry(() => import('./pages/PlanCambios'), { name: 'PlanCambios' });
 const CrearCampanas = lazyWithRetry(() => import('./pages/CrearCampanas'), { name: 'CrearCampanas' });
 const SecuenciasAutomaticas = lazyWithRetry(() => import('./pages/SecuenciasAutomaticas'), { name: 'SecuenciasAutomaticas' });
 const FlujoCorreos = lazyWithRetry(() => import('./pages/FlujoCorreos'), { name: 'FlujoCorreos' });
@@ -280,6 +281,7 @@ const AuthenticatedApp = () => {
           <Route path="mensajes" element={<CentroMensajes />} />
           <Route path="textos" element={<EditorTextos />} />
           <Route path="canal-agencia" element={<CanalAgencia />} />
+          <Route path="plan-cambios" element={<PlanCambios />} />
           <Route path="crear-campanas" element={<CrearCampanas />} />
           <Route path="secuencias" element={<SecuenciasAutomaticas />} />
           <Route path="flujo-correos" element={<FlujoCorreos />} />
