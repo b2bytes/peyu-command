@@ -1,6 +1,7 @@
 import { ArrowRight, Leaf, Recycle, Sparkles, ShieldCheck } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import CarouselHeroV2 from './CarouselHeroV2';
+import HeroCTAsV2 from './HeroCTAsV2';
 
 // Imágenes editoriales generadas A PARTIR de los productos reales del catálogo
 // (los productos no cambian — solo su presentación). Cada slide cuenta una
@@ -79,33 +80,8 @@ export default function HeroBoldV2({ heroImg, onPersonaliza, slides }) {
             Tapitas recicladas de Santiago · Grabado láser gratis desde 10u
           </p>
 
-          {/* CTAs móvil — limpios, grandes, apilados */}
-          <div className="flex gap-2.5 mt-4">
-            <button
-              onClick={() => navigate('/personalizar')}
-              className="flex-1 inline-flex items-center justify-center gap-2 text-white font-bold text-sm px-4 py-3.5 rounded-2xl transition-all active:scale-[0.97]"
-              style={{ background: 'linear-gradient(135deg,#C0785C,#A86440)', boxShadow: '0 6px 20px rgba(192,120,92,.3)' }}
-            >
-              <Sparkles className="w-4 h-4" strokeWidth={1.75} />
-              <span>Personalizar</span>
-            </button>
-            <Link
-              to="/CatalogoNuevo"
-              className="flex-1 inline-flex items-center justify-center gap-2 font-bold text-sm px-4 py-3.5 rounded-2xl transition-all active:scale-[0.97]"
-              style={{ background: 'white', border: '1.5px solid #D4C4B0', color: '#2C1810' }}
-            >
-              Ver tienda
-              <ArrowRight className="w-4 h-4" strokeWidth={2.5} />
-            </Link>
-          </div>
-          <Link
-            to="/EmpresasNuevo"
-            className="w-full mt-2.5 inline-flex items-center justify-center gap-2 font-bold text-[13px] px-4 py-3 rounded-2xl transition-all active:scale-[0.97]"
-            style={{ background: 'rgba(15,139,108,.08)', border: '1.5px solid rgba(15,139,108,.2)', color: '#0B6E55' }}
-          >
-            <Recycle className="w-3.5 h-3.5" strokeWidth={1.75} />
-            Para empresas
-          </Link>
+          {/* CTAs móvil — componente unificado HeroCTAsV2 */}
+          <HeroCTAsV2 compact />
         </div>
 
         <div className="grid lg:grid-cols-2 gap-4 sm:gap-8 xl:gap-12 items-center">
@@ -136,34 +112,9 @@ export default function HeroBoldV2({ heroImg, onPersonaliza, slides }) {
               Personalizables con grabado láser permanente — tu frase, logo o diseño. Gratis desde 10 unidades.
             </p>
 
-            {/* CTAs — desktop only (móvil ya los tiene arriba del carrusel) */}
-            <div className="hidden lg:flex flex-col gap-3 mb-8">
-              <div className="flex gap-3">
-                <button
-                  onClick={() => navigate('/personalizar')}
-                  className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 text-white font-bold text-sm sm:text-base px-5 sm:px-8 py-3 sm:py-4 rounded-2xl transition-all hover:scale-[1.02] hover:shadow-xl active:scale-[0.99]"
-                  style={{ background: 'linear-gradient(135deg,#C0785C,#A86440)', boxShadow: '0 8px 24px rgba(192,120,92,.28)' }}
-                >
-                  <Sparkles className="w-4 h-4" strokeWidth={1.75} />
-                  <span>Personalizar</span>
-                  <ArrowRight className="w-4 h-4" strokeWidth={2.5} />
-                </button>
-                <Link
-                  to="/CatalogoNuevo"
-                  className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 font-bold text-sm sm:text-base px-5 sm:px-8 py-3 sm:py-4 rounded-2xl transition-all hover:bg-[#F0E8DE]"
-                  style={{ background: 'white', border: '1.5px solid #D4C4B0', color: '#2C1810' }}
-                >
-                  Ver tienda
-                </Link>
-              </div>
-              <Link
-                to="/EmpresasNuevo"
-                className="w-auto inline-flex items-center justify-center gap-2 font-bold text-base px-8 py-4 rounded-2xl transition-all hover:shadow-md"
-                style={{ background: 'rgba(15,139,108,.09)', border: '1.5px solid rgba(15,139,108,.22)', color: '#0B6E55' }}
-              >
-                <Recycle className="w-4 h-4" strokeWidth={1.75} />
-                Para empresas
-              </Link>
+            {/* CTAs — desktop only (componente unificado HeroCTAsV2) */}
+            <div className="hidden lg:block">
+              <HeroCTAsV2 />
             </div>
 
             {/* Stats row — desktop */}
