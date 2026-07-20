@@ -2,6 +2,7 @@ import { Outlet, useLocation } from 'react-router-dom';
 import PublicNavBar from '@/components/PublicNavBar';
 import MobileNavBarV2 from '@/components/shopv2/MobileNavBarV2';
 import VendedorChatBar from '@/components/vendedor/VendedorChatBar';
+import WhatsAppFloat from '@/components/WhatsAppFloat';
 
 // Rutas que renderizan su PROPIA MobileNavBarV2 en modo acción (CTA comprar/pagar).
 // En ellas NO mostramos los tabs de navegación para no tapar el botón de compra.
@@ -27,6 +28,8 @@ export default function PublicPageLayout() {
       {!isActionRoute && <MobileNavBarV2 />}
       {/* Vendedor IA persistente: input central fijo abajo en TODAS las páginas públicas */}
       <VendedorChatBar />
+      {/* Canal paralelo: botón WhatsApp → agente whatsapp_peyu (vendedor 24/7) */}
+      <WhatsAppFloat />
     </div>
   );
 }

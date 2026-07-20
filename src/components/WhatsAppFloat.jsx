@@ -1,47 +1,34 @@
 import { useLocation } from 'react-router-dom';
+import { base44 } from '@/api/base44Client';
 
+// Botón flotante de WhatsApp — canal PARALELO al chat web (VendedorChatBar).
+// Conecta directo con el agente whatsapp_peyu (vendedor 24/7 con mockups,
+// links de pago y cotización B2B). El link de conexión maneja el número y la
+// autenticación automáticamente.
 export default function WhatsAppFloat() {
   const { pathname } = useLocation();
-  // Ocultar en checkout (Amazon/Shopify best practice — sin distracciones del CTA)
-  if (pathname.startsWith('/cart') || pathname.startsWith('/gracias')) return null;
-  // Ocultar en la home: el chat Peyu (esquina inferior derecha) ya es el canal
-  // principal y el WhatsApp queda visualmente tapado por la card del chat.
-  if (pathname === '/') return null;
-  // 🎯 Rutas públicas con AsistenteChat: el dock unificado (FloatingActionDock)
-  // ya integra WhatsApp + Peyu IA en una sola pieza. Ocultamos este float
-  // standalone para evitar el solapamiento de dos botones flotantes.
-  const isPublicRoute = (
-    pathname.startsWith('/shop') ||
-    pathname.startsWith('/producto') ||
-    pathname.startsWith('/b2b') ||
-    pathname.startsWith('/catalogo-visual') ||
-    pathname.startsWith('/nosotros') ||
-    pathname.startsWith('/soporte') ||
-    pathname.startsWith('/seguimiento') ||
-    pathname.startsWith('/personalizar') ||
-    pathname.startsWith('/blog') ||
-    pathname.startsWith('/faq') ||
-    pathname.startsWith('/contacto') ||
-    pathname.startsWith('/envios') ||
-    pathname.startsWith('/cambios') ||
-    pathname.startsWith('/privacidad') ||
-    pathname.startsWith('/terminos')
-  );
-  if (isPublicRoute) return null;
+  // Ocultar en checkout/carrito/gracias (sin distracciones del CTA de pago)
+  if (
+    pathname.startsWith('/cart') ||
+    pathname.startsWith('/CarritoNuevo') ||
+    pathname.startsWith('/CheckoutNuevo') ||
+    pathname.startsWith('/gracias')
+  ) return null;
 
   return (
     <a
-      href="https://wa.me/56935040242?text=Hola%2C%20me%20interesa%20información%20sobre%20regalos%20corporativos%20sostenibles"
+      href={base44.agents.getWhatsAppConnectURL('whatsapp_peyu')}
       target="_blank"
       rel="noreferrer"
-      /* Oculto en mobile: el chat IA Peyu es el canal principal y WhatsApp acá
-         competía visualmente con él. En desktop sí se muestra como respaldo. */
-      className="hidden sm:flex fixed right-6 z-40 w-14 h-14 rounded-full items-center justify-center shadow-2xl shadow-green-500/40 hover:scale-110 active:scale-95 transition-transform"
+      className="fixed right-4 sm:right-6 z-40 w-13 h-13 sm:w-14 sm:h-14 rounded-full flex items-center justify-center shadow-2xl shadow-green-500/40 hover:scale-110 active:scale-95 transition-transform"
       style={{
         backgroundColor: '#25D366',
-        bottom: 'calc(env(safe-area-inset-bottom) + 7rem)',
+        width: '3.25rem',
+        height: '3.25rem',
+        // Sobre la MobileNavBarV2 / VendedorChatBar en mobile; más abajo en desktop
+        bottom: 'calc(env(safe-area-inset-bottom) + 9.5rem)',
       }}
-      title="Chatear por WhatsApp"
+      title="Chatear con Peyu por WhatsApp"
     >
       <svg viewBox="0 0 24 24" className="w-7 h-7 fill-white">
         <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/>
