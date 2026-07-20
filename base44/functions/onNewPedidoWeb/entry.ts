@@ -470,6 +470,11 @@ Deno.serve(async (req) => {
       return Response.json({ ok: true, skip: true });
     }
 
+    // El payload de la automatización trae el id en event.entity_id, no siempre
+    // dentro de data. Sin esto, los flags de idempotencia nunca se marcaban y
+    // enviarConfirmacionPedido mandaba un correo duplicado más tarde.
+    if (!pedido.id && event?.entity_id) pedido.id = event.entity_id;
+
     const tareas = [];
 
     // ── 1. EMAIL CLIENTE (vía Gmail — entrega a destinatarios externos) ──
@@ -527,19 +532,41 @@ Deno.serve(async (req) => {
     const internalSubject = `${esB2B ? '🏢 Nuevo pedido B2B' : '🛒 Nuevo pedido'} · ${pedido.numero_pedido} · ${fmtCLP(pedido.total)} · ${pedido.medio_pago || 'WebPay'}`;
     const internalHtml = buildInternalHtml(pedido);
     tareas.push((async () => {
+      const fallidos = [];
       try {
         const { accessToken } = await base44.asServiceRole.connectors.getConnection('gmail');
         for (const to of INTERNAL_EMAILS) {
-          await sendViaGmail(accessToken, {
-            to,
-            subject: internalSubject,
-            html: internalHtml,
-            replyTo: esB2B ? 'corporativos@peyuchile.cl' : 'ventas@peyuchile.cl',
-            fromName: 'PEYU · Nuevos pedidos',
-          }).catch(e => console.error(`Email interno (${to}) falló:`, e.message));
+          try {
+            await sendViaGmail(accessToken, {
+              to,
+              subject: internalSubject,
+              html: internalHtml,
+              replyTo: esB2B ? 'corporativos@peyuchile.cl' : 'ventas@peyuchile.cl',
+              fromName: 'PEYU · Nuevos pedidos',
+            });
+          } catch (e) {
+            console.error(`Email interno (${to}) falló:`, e.message);
+            fallidos.push(to);
+          }
         }
       } catch (e) {
         console.error('Gmail interno falló:', e.message);
+        fallidos.push(...INTERNAL_EMAILS);
+      }
+      // Fallback Resend para los que fallaron por Gmail (usa la API key propia,
+      // no consume créditos de integración). Antes se perdían en silencio.
+      for (const to of fallidos) {
+        await sendViaResend({ to, subject: internalSubject, html: internalHtml })
+          .catch(err => console.error(`Fallback Resend interno (${to}) falló:`, err.message));
+      }
+      // Deja rastro visible si NADA salió, para que el equipo lo vea en Monitoreo.
+      if (fallidos.length === INTERNAL_EMAILS.length) {
+        await base44.asServiceRole.entities.ErrorLog.create({
+          source: 'backend',
+          severity: 'high',
+          message: `onNewPedidoWeb: notificación interna del pedido ${pedido.numero_pedido} NO pudo enviarse por Gmail ni Resend`,
+          extra: { pedido: pedido.numero_pedido, destinatarios: INTERNAL_EMAILS },
+        }).catch(() => {});
       }
     })());
 
