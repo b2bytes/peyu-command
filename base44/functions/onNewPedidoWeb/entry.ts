@@ -527,8 +527,8 @@ Deno.serve(async (req) => {
     // alfonsovambe@gmail.com como respaldo del founder siempre recibe.
     const esB2B = pedido.tipo_cliente?.includes('B2B') || pedido.tipo_documento === 'Factura';
     const INTERNAL_EMAILS = esB2B
-      ? ['corporativos@peyuchile.cl', 'jnilo@peyuchile.cl', 'alfonsovambe@gmail.com']
-      : ['ventas@peyuchile.cl', 'jnilo@peyuchile.cl', 'alfonsovambe@gmail.com'];
+      ? ['corporativos@peyuchile.cl', 'jnilo@peyuchile.cl']
+      : ['ventas@peyuchile.cl', 'jnilo@peyuchile.cl'];
     const internalSubject = `${esB2B ? '🏢 Nuevo pedido B2B' : '🛒 Nuevo pedido'} · ${pedido.numero_pedido} · ${fmtCLP(pedido.total)} · ${pedido.medio_pago || 'WebPay'}`;
     const internalHtml = buildInternalHtml(pedido);
     tareas.push((async () => {
