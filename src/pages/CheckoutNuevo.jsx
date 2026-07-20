@@ -334,6 +334,13 @@ export default function CheckoutNuevo() {
       descuento: Number(ahorroTotal) + Number(descuentoGift) || 0,
       total: Number(totalFinal) || 0,
       medio_pago: totalFinal === 0 ? 'GiftCard' : medioPago,
+      // Estado fino del pago correcto según el medio elegido (antes todos
+      // nacían "pending_mp" y las transferencias/WebPay contaminaban la
+      // reconciliación de MercadoPago).
+      payment_status: totalFinal === 0 ? 'paid'
+        : medioPago === 'Transferencia' ? 'pending_transfer'
+        : medioPago === 'WebPay' ? 'pending_webpay'
+        : 'pending_mp',
       estado: 'Nuevo',
       direccion_envio: direccionCompleta,
       requiere_personalizacion: carrito.some(i => i.personalizacion),

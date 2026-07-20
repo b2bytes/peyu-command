@@ -103,8 +103,15 @@ Deno.serve(async (req) => {
     else if (['rejected', 'cancelled', 'charged_back'].includes(mpStatus)) nuevoPaymentStatus = 'failed';
     else if (mpStatus === 'refunded') nuevoPaymentStatus = 'refunded';
 
+    // Guard anti-regresión: si el equipo ya avanzó el pedido (En Producción,
+    // Despachado...), un webhook tardío de MP no debe devolverlo a 'Confirmado'.
+    const estadosAvanzados = ['En Producción', 'Listo para Despacho', 'Despachado', 'Entregado'];
+    const estadoFinal = (nuevoEstado === 'Confirmado' && estadosAvanzados.includes(estadoAnterior))
+      ? estadoAnterior
+      : nuevoEstado;
+
     await base44.asServiceRole.entities.PedidoWeb.update(pedido.id, {
-      estado: nuevoEstado,
+      estado: estadoFinal,
       medio_pago: 'MercadoPago',
       payment_status: nuevoPaymentStatus,
       mp_payment_id: String(dataId),

@@ -33,12 +33,16 @@ Deno.serve(async (req) => {
 
     // Cargar pendientes recientes con preferencia MP creada
     const todos = await base44.asServiceRole.entities.PedidoWeb.list('-created_date', 300);
+    // FIX 20-jul: se quitó el requisito estado==='Nuevo'. El equipo a veces
+    // avanza manualmente pedidos pagados (a Producción/Despacho) y quedaban
+    // pending_mp para siempre, sin comprobante. Solo excluimos los cerrados.
     const pendientes = todos.filter(p =>
       p.payment_status === 'pending_mp' &&
+      p.medio_pago === 'MercadoPago' &&
       p.mp_preference_id &&
       !p.mp_payment_id &&
       p.created_date >= hace5d &&
-      p.estado === 'Nuevo'
+      !['Cancelado', 'Reembolsado'].includes(p.estado)
     );
 
     const stats = {
@@ -80,8 +84,10 @@ Deno.serve(async (req) => {
         }
 
         if (pago.status === 'approved') {
+          // No regresar pedidos ya avanzados manualmente por el equipo.
+          const avanzados = ['En Producción', 'Listo para Despacho', 'Despachado', 'Entregado'];
           await base44.asServiceRole.entities.PedidoWeb.update(pedido.id, {
-            estado: 'Confirmado',
+            estado: avanzados.includes(pedido.estado) ? pedido.estado : 'Confirmado',
             payment_status: 'paid',
             mp_payment_id: String(pago.id),
             medio_pago: 'MercadoPago',

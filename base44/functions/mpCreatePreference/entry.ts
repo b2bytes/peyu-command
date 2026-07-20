@@ -69,7 +69,10 @@ Deno.serve(async (req) => {
         failure: `${origin}/cart?mp=failure&numero=${encodeURIComponent(pedido.numero_pedido)}`,
       },
       auto_return: 'approved',
-      notification_url: `https://app.base44.com/api/apps/${Deno.env.get('BASE44_APP_ID')}/functions/mpWebhook`,
+      // FIX 20-jul: app.base44.com devuelve 403 a los webhooks (dominio de la
+      // plataforma). El dominio correcto para funciones es base44.app — por esto
+      // MP nunca pudo confirmar pedidos automáticamente.
+      notification_url: `https://base44.app/api/apps/${Deno.env.get('BASE44_APP_ID')}/functions/mpWebhook`,
       statement_descriptor: 'PEYU CHILE',
       binary_mode: false, // permite estados pendientes (transferencia/efectivo)
     };
