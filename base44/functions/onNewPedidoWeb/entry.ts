@@ -526,9 +526,11 @@ Deno.serve(async (req) => {
     // B2C → ventas@peyuchile.cl · B2B → corporativos@peyuchile.cl
     // alfonsovambe@gmail.com como respaldo del founder siempre recibe.
     const esB2B = pedido.tipo_cliente?.includes('B2B') || pedido.tipo_documento === 'Factura';
+    // Pedido de los founders (20-jul): los avisos de venta llegan SOLO a ventas@
+    // (B2B mantiene corporativos@ como buzón del canal empresa).
     const INTERNAL_EMAILS = esB2B
-      ? ['corporativos@peyuchile.cl', 'jnilo@peyuchile.cl']
-      : ['ventas@peyuchile.cl', 'jnilo@peyuchile.cl'];
+      ? ['corporativos@peyuchile.cl']
+      : ['ventas@peyuchile.cl'];
     const internalSubject = `${esB2B ? '🏢 Nuevo pedido B2B' : '🛒 Nuevo pedido'} · ${pedido.numero_pedido} · ${fmtCLP(pedido.total)} · ${pedido.medio_pago || 'WebPay'}`;
     const internalHtml = buildInternalHtml(pedido);
     tareas.push((async () => {
