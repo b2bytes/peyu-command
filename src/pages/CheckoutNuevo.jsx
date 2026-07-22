@@ -203,7 +203,31 @@ export default function CheckoutNuevo() {
     }
 
     setCreando(true);
-    const numero = `WEB-${Date.now()}`;
+
+    // ── Reintento de pago SIN duplicar pedidos ─────────────────────────────
+    // Si este mismo carrito (misma firma: email+total+items) ya creó un pedido
+    // pendiente (ej: el pago WebPay/MP falló y el cliente vuelve a intentar),
+    // REUTILIZAMOS ese pedido en vez de crear uno nuevo. Antes cada reintento
+    // generaba un pedido + correo + descuento de stock duplicados.
+    const emailNorm = cliente.email.trim().toLowerCase();
+    const firmaPedido = `${emailNorm}|${totalFinal}|${carrito.map((i) => `${i.sku || i.nombre}x${i.cantidad || 1}`).join(',')}`;
+    let pedido = null;
+    let numero = `WEB-${Date.now()}`;
+    try {
+      const pend = JSON.parse(localStorage.getItem('peyu_v2_pending_order') || 'null');
+      if (pend?.id && pend.firma === firmaPedido && Date.now() - (pend.at || 0) < 2 * 60 * 60 * 1000) {
+        const r = await base44.functions.invoke('retomarPedidoPendiente', {
+          pedido_id: pend.id,
+          email: emailNorm,
+          medio_pago: totalFinal === 0 ? 'GiftCard' : medioPago,
+          total: totalFinal,
+        });
+        if (r?.data?.ok) {
+          pedido = { id: pend.id };
+          numero = pend.numero;
+        }
+      }
+    } catch { /* si falla la verificación, se crea un pedido nuevo como siempre */ }
 
     // Sube los dataURLs de mockup (capturados del canvas) a Base44 para obtener
     // URLs persistentes antes de guardar en el pedido. Sin esto, el mockup sería
@@ -361,20 +385,29 @@ export default function CheckoutNuevo() {
     // Reintento automático: hasta 2 intentos extra con espera creciente para
     // absorber fallos de red transitorios. El 1er intento falla rápido, pero los
     // siguientes tienen delay para esquivar microcortes.
-    let pedido;
+    // (Se salta por completo si estamos REUTILIZANDO un pedido pendiente.)
     let ultimoError = null;
     const MAX_INTENTOS = 3;
-    for (let intento = 0; intento < MAX_INTENTOS; intento++) {
-      try {
-        pedido = await base44.entities.PedidoWeb.create(datosPedido);
-        ultimoError = null;
-        break;
-      } catch (e) {
-        ultimoError = e;
-        console.error(`Error creando pedido (intento ${intento + 1}/${MAX_INTENTOS}):`, e);
-        if (intento < MAX_INTENTOS - 1) {
-          await new Promise(r => setTimeout(r, 800 * (intento + 1)));
+    if (!pedido) {
+      for (let intento = 0; intento < MAX_INTENTOS; intento++) {
+        try {
+          pedido = await base44.entities.PedidoWeb.create(datosPedido);
+          ultimoError = null;
+          break;
+        } catch (e) {
+          ultimoError = e;
+          console.error(`Error creando pedido (intento ${intento + 1}/${MAX_INTENTOS}):`, e);
+          if (intento < MAX_INTENTOS - 1) {
+            await new Promise(r => setTimeout(r, 800 * (intento + 1)));
+          }
         }
+      }
+      // Recuerda el pedido pendiente: si el pago falla y el cliente reintenta
+      // con el mismo carrito, se reutiliza este pedido (sin duplicar).
+      if (pedido?.id) {
+        try {
+          localStorage.setItem('peyu_v2_pending_order', JSON.stringify({ id: pedido.id, numero, firma: firmaPedido, at: Date.now() }));
+        } catch {}
       }
     }
     if (ultimoError) {

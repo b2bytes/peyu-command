@@ -235,7 +235,22 @@ function buildPaymentBlock(pedido) {
     </table>`;
   }
 
-  // ── WEBPAY / OTROS ── Pago confirmado
+  // ── WEBPAY ── Pago en proceso (el comprobante llega en un 2° correo al
+  // confirmarse en Transbank; este correo NO debe decir "pago confirmado")
+  if (medio === 'WebPay') {
+    return `
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#EFF6FF;border:1px solid #BFDBFE;border-radius:16px;margin-bottom:24px;">
+      <tr><td style="padding:20px 24px;">
+        <p style="margin:0 0 4px;font-size:11px;font-weight:700;letter-spacing:1.5px;color:#1D4ED8;text-transform:uppercase;">💳 Pago vía WebPay</p>
+        <p style="margin:0;font-size:14px;color:#1E3A8A;line-height:1.55;">
+          Recibimos tu pedido. Apenas WebPay confirme el pago te enviaremos el <strong>comprobante en un segundo correo</strong> y comenzamos la producción.
+          Si no alcanzaste a completar el pago, puedes reintentarlo desde tu carrito — tu pedido queda guardado.
+        </p>
+      </td></tr>
+    </table>`;
+  }
+
+  // ── OTROS (Débito/Crédito/Efectivo en tienda) ── Pago confirmado
   return `
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:linear-gradient(135deg,#F0FAF7 0%,#E0F2EB 100%);border:1px solid #C8E6DA;border-radius:16px;margin-bottom:24px;">
       <tr><td style="padding:20px 24px;">
@@ -252,7 +267,7 @@ function buildSubject(pedido) {
   if (pedido.medio_pago === 'Transferencia') {
     return `📋 Datos para transferencia · Pedido ${num}`;
   }
-  if (pedido.medio_pago === 'MercadoPago') {
+  if (pedido.medio_pago === 'MercadoPago' || pedido.medio_pago === 'WebPay') {
     return `🛒 Pedido recibido · ${num} · Esperando confirmación de pago`;
   }
   return `🎉 Pedido confirmado · ${num}`;
@@ -260,7 +275,7 @@ function buildSubject(pedido) {
 
 function buildHeroLabel(pedido) {
   if (pedido.medio_pago === 'Transferencia') return 'Pedido recibido · pago pendiente';
-  if (pedido.medio_pago === 'MercadoPago') return 'Pedido recibido · pago en proceso';
+  if (pedido.medio_pago === 'MercadoPago' || pedido.medio_pago === 'WebPay') return 'Pedido recibido · pago en proceso';
   return 'Pedido confirmado';
 }
 
@@ -268,8 +283,10 @@ function buildClientHtml(pedido) {
   const envioTexto = pedido.costo_envio === 0 ? 'GRATIS' : fmtCLP(pedido.costo_envio || 0);
   const heroLabel = buildHeroLabel(pedido);
   const paymentBlock = buildPaymentBlock(pedido);
-  const heroEmoji = pedido.medio_pago === 'Transferencia' ? '🏦' : '🎉';
-  const heroTitle = pedido.medio_pago === 'Transferencia' ? '¡Falta solo un paso!' : '¡Gracias por tu compra!';
+  const esPendiente = pedido.medio_pago === 'MercadoPago' || pedido.medio_pago === 'WebPay';
+  const heroEmoji = pedido.medio_pago === 'Transferencia' ? '🏦' : esPendiente ? '🛒' : '🎉';
+  const heroTitle = pedido.medio_pago === 'Transferencia' ? '¡Falta solo un paso!'
+    : esPendiente ? '¡Recibimos tu pedido!' : '¡Gracias por tu compra!';
 
   return `<!DOCTYPE html>
 <html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"></head>
@@ -424,12 +441,15 @@ function buildClientHtml(pedido) {
 function buildInternalHtml(pedido) {
   const isTransferencia = pedido.medio_pago === 'Transferencia';
   const isMP = pedido.medio_pago === 'MercadoPago';
-  const alertColor = isTransferencia ? '#F59E0B' : isMP ? '#3B82F6' : '#0F8B6C';
+  const isWebPay = pedido.medio_pago === 'WebPay';
+  const alertColor = isTransferencia ? '#F59E0B' : (isMP || isWebPay) ? '#3B82F6' : '#0F8B6C';
   const alertText = isTransferencia
     ? '⏳ ESPERANDO COMPROBANTE DE TRANSFERENCIA'
     : isMP
       ? '⏳ ESPERANDO CONFIRMACIÓN DE MERCADO PAGO'
-      : '✅ PAGO CONFIRMADO · Procesar pedido';
+      : isWebPay
+        ? '⏳ ESPERANDO CONFIRMACIÓN DE WEBPAY'
+        : '✅ PAGO CONFIRMADO · Procesar pedido';
 
   return `<!DOCTYPE html>
 <html><body style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;background:#F4F1EB;padding:24px;margin:0;">

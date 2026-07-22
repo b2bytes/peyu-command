@@ -67,6 +67,8 @@ export function removeFromCartV2(id) {
 
 export function clearCartV2() {
   persist([]);
+  // El pedido pendiente asociado a este carrito ya no aplica (compra cerrada).
+  try { localStorage.removeItem('peyu_v2_pending_order'); } catch {}
 }
 
 export function cartCountV2() {
