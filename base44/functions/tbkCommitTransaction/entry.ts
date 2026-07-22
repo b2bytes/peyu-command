@@ -73,6 +73,17 @@ Deno.serve(async (req) => {
       numero: pedido?.numero_pedido || buyOrder,
       email: pedido?.cliente_email || '',
       total: data.amount || pedido?.total || 0,
+      // Voucher exigido por Transbank en la página de resultado (requisito de
+      // la validación oficial): autorización, tarjeta, tipo de pago y fecha.
+      voucher: approved ? {
+        authorization_code: data.authorization_code || '',
+        card_number: data.card_detail?.card_number || '',
+        payment_type_code: data.payment_type_code || '',
+        installments_number: data.installments_number || 0,
+        transaction_date: data.transaction_date || '',
+        buy_order: buyOrder,
+        amount: data.amount || 0,
+      } : null,
     });
   } catch (error) {
     console.error('tbkCommitTransaction error:', error);

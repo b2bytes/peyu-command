@@ -7,6 +7,7 @@ import { trackPurchase } from '@/lib/analytics-peyu';
 import { clearCartV2 } from '@/lib/shop-v2-cart';
 import NewsletterCTA from '@/components/newsletter/NewsletterCTA';
 import TransferenciaInstrucciones from '@/components/gracias/TransferenciaInstrucciones';
+import WebPayVoucher from '@/components/gracias/WebPayVoucher';
 import InstalarAppPedido from '@/components/gracias/InstalarAppPedido';
 
 /**
@@ -27,8 +28,10 @@ export default function Gracias() {
   const isTransferencia = pago === 'Transferencia';
   const [tracked, setTracked] = useState(false);
   const [copiado, setCopiado] = useState(false);
-  // null = no es flujo WebPay · confirmando | aprobado | rechazado | abortado
+  // null = no es flujo WebPay · confirmando | aprobado | rechazado | abortado | error
   const [webpay, setWebpay] = useState(() => (tokenWs ? 'confirmando' : tbkToken ? 'abortado' : null));
+  // Voucher Transbank (requisito de la página de resultado para la validación)
+  const [voucher, setVoucher] = useState(null);
 
   // Confirmación (commit) del pago WebPay contra Transbank
   useEffect(() => {
@@ -40,6 +43,7 @@ export default function Gracias() {
           if (d.numero) setNumero(d.numero);
           if (d.email) setEmail(d.email);
           if (d.total) setTotal(Number(d.total) || 0);
+          if (d.voucher) setVoucher(d.voucher);
           setWebpay('aprobado');
         } else {
           setWebpay('rechazado');
@@ -169,8 +173,11 @@ export default function Gracias() {
             </div>
           )}
           {webpay === 'aprobado' && (
-            <div className="mb-4 rounded-2xl p-4 text-center text-sm" style={{ background: 'rgba(15,139,108,.08)', border: '1.5px solid rgba(15,139,108,.2)' }}>
-              ✅ <strong style={{ color: '#2C1810' }}>Pago aprobado por WebPay.</strong> <span style={{ color: '#7A6050' }}>Tu pedido entró en preparación.</span>
+            <div className="mb-4 rounded-2xl p-4 text-sm" style={{ background: 'rgba(15,139,108,.08)', border: '1.5px solid rgba(15,139,108,.2)' }}>
+              <p className="text-center">
+                ✅ <strong style={{ color: '#2C1810' }}>Pago aprobado por WebPay.</strong> <span style={{ color: '#7A6050' }}>Tu pedido entró en preparación.</span>
+              </p>
+              <WebPayVoucher voucher={voucher} />
             </div>
           )}
           {mpStatus === 'success' && (
