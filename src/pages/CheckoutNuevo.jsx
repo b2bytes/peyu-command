@@ -66,7 +66,11 @@ export default function CheckoutNuevo() {
     direccion_facturacion: saved.direccion_facturacion, comuna_facturacion: saved.comuna_facturacion,
   });
   const [billingErrors, setBillingErrors] = useState({});
-  const [medioPago, setMedioPago] = useState(saved.medio_pago || 'MercadoPago');
+  // WebPay oculto temporalmente (credenciales de integración): si el cliente
+  // tenía WebPay guardado de una sesión anterior, cae a Mercado Pago.
+  const [medioPago, setMedioPago] = useState(
+    saved.medio_pago && saved.medio_pago !== 'WebPay' ? saved.medio_pago : 'MercadoPago'
+  );
   const [envioBluex, setEnvioBluex] = useState(null);
   const [giftcard, setGiftcard] = useState(() => {
     try { return JSON.parse(localStorage.getItem('peyu_giftcard_active') || 'null'); }

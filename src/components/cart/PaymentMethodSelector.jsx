@@ -5,6 +5,12 @@ import { CreditCard, Building2, Wallet, Gift, Check, Lock } from 'lucide-react';
  * WebPay Plus · Mercado Pago · Transferencia. Cards grandes, selección clara.
  * Props: value, onChange, totalCubiertoConGC (boolean → fuerza GiftCard como único)
  */
+// ⛔ WebPay OCULTO temporalmente: las llaves configuradas son del ambiente de
+// INTEGRACIÓN de Transbank (webpay3gint, comercio "WEBPAY REST SIMULTANEA"),
+// que solo acepta tarjetas de prueba — toda tarjeta real es rechazada.
+// Cambiar a true cuando se configuren las credenciales PRODUCTIVAS.
+export const WEBPAY_ENABLED = false;
+
 export const PAYMENT_METHODS = [
   {
     id: 'WebPay',
@@ -66,7 +72,7 @@ export default function PaymentMethodSelector({ value, onChange, totalCubiertoCo
   return (
     <div>
       <div className="space-y-2">
-        {PAYMENT_METHODS.map((m) => {
+        {PAYMENT_METHODS.filter((m) => WEBPAY_ENABLED || m.id !== 'WebPay').map((m) => {
           const selected = value === m.id;
           return (
             <button
