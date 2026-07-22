@@ -2,12 +2,17 @@
 // tbkCommitTransaction — Confirma (commit) una transacción WebPay Plus
 // ----------------------------------------------------------------------------
 // Llamada desde /gracias cuando Transbank devuelve al cliente con token_ws.
-// El PUT de commit contra Transbank ES la validación de autenticidad: solo un
-// token real emitido por Transbank puede confirmarse. Si el pago fue aprobado
-// (status AUTHORIZED + response_code 0) marca el pedido como pagado/Confirmado
-// y dispara el comprobante al cliente.
+// El PUT de commit ES la validación de autenticidad: solo un token real emitido
+// por Transbank puede confirmarse.
+//
+// Blindaje (22-jul):
+//   - Si el PUT falla (ej: el cliente refrescó /gracias y el token ya fue
+//     confirmado), hacemos GET status con el mismo token: si el pago está
+//     AUTHORIZED lo tratamos como aprobado en vez de mostrar "rechazado".
+//   - Si el pedido ya está pagado, respondemos approved de inmediato.
 // ============================================================================
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.38';
+import { tbkCommit, tbkGetStatus, esAprobado, marcarPagadoWebPay, marcarFallidoWebPay } from '../../shared/webpay.ts';
 
 Deno.serve(async (req) => {
   try {
@@ -17,26 +22,29 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'token_ws requerido' }, { status: 400 });
     }
 
-    const keyId = Deno.env.get('TBK_API_KEY_ID') || '';
-    const keySecret = Deno.env.get('TBK_API_KEY_SECRET') || '';
-    const esIntegracion = keyId.startsWith('59705555');
-    const host = esIntegracion ? 'https://webpay3gint.transbank.cl' : 'https://webpay3g.transbank.cl';
-
-    const res = await fetch(`${host}/rswebpaytransaction/api/webpay/v1.2/transactions/${token_ws}`, {
-      method: 'PUT',
-      headers: {
-        'Tbk-Api-Key-Id': keyId,
-        'Tbk-Api-Key-Secret': keySecret,
-        'Content-Type': 'application/json',
-      },
-    });
-    const data = await res.json().catch(() => ({}));
-    if (!res.ok) {
-      console.error('Transbank commit error:', res.status, JSON.stringify(data));
-      return Response.json({ ok: false, approved: false, error: data.error_message || 'No se pudo confirmar el pago' }, { status: 502 });
+    // 1) Intentar el commit. 2) Si falla, GET status (token ya confirmado /
+    //    refresh de la página) para no perder pagos reales.
+    let result = await tbkCommit(token_ws);
+    let via = 'commit';
+    if (!result.ok) {
+      console.warn('Commit falló, verificando con GET status:', result.status, JSON.stringify(result.data));
+      const statusRes = await tbkGetStatus(token_ws);
+      if (statusRes.ok) {
+        result = statusRes;
+        via = 'status';
+      } else {
+        console.error('Transbank commit+status error:', result.status, JSON.stringify(result.data));
+        return Response.json({
+          ok: false,
+          approved: false,
+          unconfirmed: true,
+          error: result.data?.error_message || 'No se pudo confirmar el pago con Transbank',
+        }, { status: 502 });
+      }
     }
 
-    const approved = data.status === 'AUTHORIZED' && data.response_code === 0;
+    const data = result.data;
+    const approved = esAprobado(data);
     const buyOrder = data.buy_order || '';
 
     // session_id lleva el id del pedido; buy_order lleva el numero_pedido.
@@ -50,45 +58,10 @@ Deno.serve(async (req) => {
     }
 
     if (pedido) {
-      if (approved && pedido.payment_status !== 'paid') {
-        await base44.asServiceRole.entities.PedidoWeb.update(pedido.id, {
-          estado: pedido.estado === 'Nuevo' ? 'Confirmado' : pedido.estado,
-          payment_status: 'paid',
-          medio_pago: 'WebPay',
-          historial: [
-            ...(Array.isArray(pedido.historial) ? pedido.historial : []),
-            {
-              at: new Date().toISOString(),
-              type: 'paid',
-              actor: 'webpay',
-              channel: 'system',
-              detail: `Pago WebPay aprobado · auth ${data.authorization_code || ''} · ${data.payment_type_code || ''} ${data.card_detail?.card_number ? '**** ' + data.card_detail.card_number : ''}`.trim(),
-              meta: { authorization_code: data.authorization_code, amount: data.amount, transaction_date: data.transaction_date },
-            },
-          ],
-        });
-        // Comprobante al cliente (idempotente vía flag comprobante_enviado). Best-effort.
-        if (!pedido.comprobante_enviado) {
-          try {
-            await base44.asServiceRole.functions.invoke('enviarComprobantePedido', { pedido_id: pedido.id });
-          } catch (e) {
-            console.warn('No se pudo enviar comprobante:', e.message);
-          }
-        }
-      } else if (!approved && pedido.payment_status !== 'paid') {
-        await base44.asServiceRole.entities.PedidoWeb.update(pedido.id, {
-          payment_status: 'failed',
-          historial: [
-            ...(Array.isArray(pedido.historial) ? pedido.historial : []),
-            {
-              at: new Date().toISOString(),
-              type: 'note',
-              actor: 'webpay',
-              channel: 'system',
-              detail: `Pago WebPay rechazado · status ${data.status} · response_code ${data.response_code}`,
-            },
-          ],
-        });
+      if (approved) {
+        await marcarPagadoWebPay(base44, pedido, data, `webpay:${via}`);
+      } else {
+        await marcarFallidoWebPay(base44, pedido, data, `webpay:${via}`);
       }
     }
 
@@ -103,6 +76,6 @@ Deno.serve(async (req) => {
     });
   } catch (error) {
     console.error('tbkCommitTransaction error:', error);
-    return Response.json({ ok: false, approved: false, error: error.message }, { status: 500 });
+    return Response.json({ ok: false, approved: false, unconfirmed: true, error: error.message }, { status: 500 });
   }
 });

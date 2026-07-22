@@ -45,7 +45,9 @@ export default function Gracias() {
           setWebpay('rechazado');
         }
       })
-      .catch(() => setWebpay('rechazado'));
+      // Error de red o Transbank caído: NO sabemos si hubo cargo. No decimos
+      // "rechazado" (podría ser falso) — el reconciliador confirma solo.
+      .catch(() => setWebpay('error'));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tokenWs]);
 
@@ -86,6 +88,33 @@ export default function Gracias() {
           <Loader2 className="w-10 h-10 mx-auto animate-spin mb-4" style={{ color: '#0F8B6C' }} />
           <h1 className="font-fraunces text-2xl mb-2">Confirmando tu pago…</h1>
           <p className="text-sm" style={{ color: '#7A6050' }}>Estamos verificando la transacción con Transbank. No cierres esta página.</p>
+        </div>
+      </div>
+    );
+  }
+  if (webpay === 'error') {
+    return (
+      <div className="min-h-screen flex items-center justify-center font-inter px-5" style={{ background: '#F8F3ED', color: '#2C1810' }}>
+        <div className="bg-white rounded-3xl p-8 sm:p-10 text-center max-w-md w-full" style={{ border: '1.5px solid #E8DDD0' }}>
+          <div className="w-16 h-16 mx-auto rounded-3xl flex items-center justify-center mb-4" style={{ background: 'rgba(240,180,90,.18)' }}>
+            <Loader2 className="w-8 h-8" style={{ color: '#B45309' }} />
+          </div>
+          <h1 className="font-fraunces text-2xl mb-2">No pudimos confirmar tu pago aún</h1>
+          <p className="text-sm mb-6" style={{ color: '#7A6050' }}>
+            Hubo un problema de conexión al verificar con Transbank. <strong style={{ color: '#2C1810' }}>Si el cargo aparece en tu tarjeta, tu pedido se confirmará automáticamente</strong> en los próximos minutos y te llegará el comprobante por email. Si no hay cargo, puedes reintentar el pago — tu carrito sigue intacto.
+          </p>
+          <div className="flex flex-col gap-2.5">
+            <Link to="/seguimiento">
+              <button className="w-full text-white font-bold px-6 py-3.5 rounded-2xl transition-all" style={{ background: 'linear-gradient(135deg,#0F8B6C,#0B6E55)' }}>
+                Ver estado de mi pedido
+              </button>
+            </Link>
+            <a href="https://wa.me/56935040242?text=Hola%2C%20pagu%C3%A9%20con%20WebPay%20pero%20no%20se%20confirm%C3%B3%20mi%20pedido" target="_blank" rel="noreferrer">
+              <button className="w-full font-bold px-6 py-3.5 rounded-2xl transition-all" style={{ background: 'white', border: '1.5px solid #D4C4B0', color: '#2C1810' }}>
+                Escribirnos por WhatsApp
+              </button>
+            </a>
+          </div>
         </div>
       </div>
     );

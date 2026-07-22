@@ -53,6 +53,10 @@ Deno.serve(async (req) => {
 
     await base44.asServiceRole.entities.PedidoWeb.update(pedido_id, {
       payment_status: 'pending_webpay',
+      // Campo dedicado: el token en historial se perdía cuando otro proceso
+      // (onNewPedidoWeb) actualizaba historial en paralelo. Este campo es la
+      // fuente de verdad para tbkReconcilePending.
+      tbk_token: data.token,
       historial: [
         ...(Array.isArray(pedido.historial) ? pedido.historial : []),
         {

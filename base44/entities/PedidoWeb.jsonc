@@ -273,6 +273,11 @@
       "title": "ID Pago MercadoPago",
       "description": "ID del pago efectivo en MP (poblado por el webhook al confirmar)."
     },
+    "tbk_token": {
+      "type": "string",
+      "title": "Token WebPay (Transbank)",
+      "description": "Token de la \u00faltima transacci\u00f3n WebPay Plus creada para este pedido. Campo dedicado (a prueba de colisiones de historial) que permite reconciliar el pago con GET /transactions/{token} si el cliente nunca vuelve a /gracias."
+    },
     "comprobante_enviado": {
       "type": "boolean",
       "title": "Comprobante de compra enviado",
