@@ -2,6 +2,7 @@ import { useState, useCallback } from 'react';
 import { base44 } from '@/api/base44Client';
 import { X, Gift, Loader2, Copy, Check, Mail } from 'lucide-react';
 import RuletaWheel from '@/components/fidelizacion/RuletaWheel';
+import useFeatureFlag from '@/hooks/useFeatureFlag';
 
 // ════════════════════════════════════════════════════════════════════════
 // RuletaDescuento — Widget flotante "Gira y gana" (home Shop v2).
@@ -13,6 +14,9 @@ import RuletaWheel from '@/components/fidelizacion/RuletaWheel';
 const LS_KEY = 'peyu_ruleta_jugada';
 
 export default function RuletaDescuento() {
+  // Interruptor de activación: la ruleta solo es pública cuando el módulo
+  // 'ruleta_descuento' está encendido en /admin/fidelizacion.
+  const habilitada = useFeatureFlag('ruleta_descuento');
   const [open, setOpen] = useState(false);
   const [jugada, setJugada] = useState(() => {
     try { return !!localStorage.getItem(LS_KEY); } catch { return false; }
@@ -60,6 +64,7 @@ export default function RuletaDescuento() {
     setTimeout(() => setCopiado(false), 2000);
   };
 
+  if (!habilitada) return null;
   if (jugada && !open) return null;
 
   return (

@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Plus, Tag, Gift, Mail, Users, ExternalLink } from 'lucide-react';
 import CuponFormModal from '@/components/fidelizacion/CuponFormModal';
+import FeatureFlagsPanel from '@/components/fidelizacion/FeatureFlagsPanel';
 import CuponRow from '@/components/fidelizacion/CuponRow';
 
 // ════════════════════════════════════════════════════════════════════════
@@ -60,6 +61,8 @@ export default function CentroFidelizacion() {
         </div>
         <Button onClick={() => setModalOpen(true)}><Plus className="w-4 h-4 mr-1.5" /> Nuevo cupón</Button>
       </div>
+
+      <FeatureFlagsPanel />
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <KPI icon={Tag} label="Cupones activos" value={cupones.filter((c) => c.activo).length} sub={`${cupones.length} en total`} />
