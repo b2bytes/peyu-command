@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { base44 } from '@/api/base44Client';
 import { getPagoStatus } from '@/lib/pago-status';
 import { Loader2, RefreshCw, Search, CheckCircle2, AlertTriangle } from 'lucide-react';
+import { mensajeError } from '@/lib/api-error';
 import OpsPedidoRow from './OpsPedidoRow';
 import EtiquetaWizardModal from './EtiquetaWizardModal';
 import EtiquetaViewerModal from './EtiquetaViewerModal';
@@ -97,7 +98,8 @@ export default function OpsCenter({ onRefreshAll }) {
       await load();
       onRefreshAll?.();
     } catch (err) {
-      setFeedback({ ok: false, message: err?.response?.data?.error || err.message });
+      setFeedback({ ok: false, message: mensajeError(err) });
+      await load(); // el servidor pudo avanzar: mostramos el estado real
     }
     setBusyId(null);
   };

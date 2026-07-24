@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Loader2, Check, X } from 'lucide-react';
+import { mensajeError } from '@/lib/api-error';
 
 // Botón de acción real del Agent OS. Llama a agentOSAction con confirmación
 // opcional inline. Muestra estado (idle → confirm → loading → done/error).
@@ -38,8 +39,12 @@ export default function ActionButton({
       setState('done');
       onDone?.();
     } catch (e) {
-      setMsg(e?.response?.data?.error || e?.message || 'Error');
+      setMsg(mensajeError(e));
       setState('error');
+      // La acción pudo haber avanzado en el servidor antes de fallar (ej. la
+      // etiqueta se emitió pero el email falló): refrescamos para mostrar el
+      // estado REAL y que el founder no repita una operación ya hecha.
+      onDone?.();
     }
   };
 
@@ -58,8 +63,13 @@ export default function ActionButton({
   }
   if (state === 'error') {
     return (
-      <button onClick={() => setState('idle')} className={`${base} bg-ld-highlight-soft text-ld-highlight ${className}`}>
-        <X className="w-3.5 h-3.5" /> {msg} · reintentar
+      <button
+        onClick={() => setState('idle')}
+        title={msg}
+        className={`${base} bg-ld-highlight-soft text-ld-highlight text-left !items-start ${className}`}
+      >
+        <X className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
+        <span className="flex-1">{msg} · <span className="underline font-bold">reintentar</span></span>
       </button>
     );
   }

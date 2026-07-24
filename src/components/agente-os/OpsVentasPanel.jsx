@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Loader2, RefreshCw, Search, Send, FileText, CheckCircle2, AlertTriangle, Eye, User, ExternalLink } from 'lucide-react';
+import { mensajeError } from '@/lib/api-error';
 import PropuestaViewerModal from './PropuestaViewerModal';
 
 // ════════════════════════════════════════════════════════════════════════
@@ -93,7 +94,7 @@ export default function OpsVentasPanel({ onRefreshAll }) {
       await load();
       onRefreshAll?.();
     } catch (err) {
-      setFeedback({ ok: false, message: err?.response?.data?.error || err.message });
+      setFeedback({ ok: false, message: mensajeError(err) });
     }
     setBusyId(null);
   };
