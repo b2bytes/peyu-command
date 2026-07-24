@@ -1,7 +1,7 @@
 {
   "name": "Cupon",
   "type": "object",
-  "description": "Cupones de descuento aplicables en checkout B2C. Pueden ser % o monto fijo, con m\u00ednimo de compra y fecha de expiraci\u00f3n.",
+  "description": "Cupones de descuento aplicables en checkout B2C. Pueden ser % o monto fijo, con m\u00ednimo de compra y fecha de expiraci\u00f3n. Los cupones de la ruleta de fidelizaci\u00f3n nacen con origen='ruleta' y email_asignado (un giro por email, un solo uso).",
   "properties": {
     "description": {
       "type": "string",
@@ -54,6 +54,24 @@
       "title": "Un uso por email",
       "default": false
     },
+    "origen": {
+      "type": "string",
+      "title": "Origen del cup\u00f3n",
+      "enum": [
+        "manual",
+        "ruleta",
+        "recovery",
+        "post_entrega",
+        "campa\u00f1a"
+      ],
+      "default": "manual",
+      "description": "C\u00f3mo naci\u00f3 el cup\u00f3n: creado a mano en el admin, ganado en la ruleta de fidelizaci\u00f3n, emitido por recuperaci\u00f3n de carrito, etc."
+    },
+    "email_asignado": {
+      "type": "string",
+      "title": "Email asignado (cup\u00f3n personal)",
+      "description": "Si tiene valor, el cup\u00f3n es personal: solo ese email deber\u00eda usarlo. Usado por la ruleta para permitir 1 giro por email."
+    },
     "fecha_inicio": {
       "type": "string",
       "format": "date",
@@ -81,11 +99,7 @@
         "role": "admin"
       }
     },
-    "read": {
-      "user_condition": {
-        "role": "admin"
-      }
-    },
+    "read": {},
     "update": {
       "user_condition": {
         "role": "admin"
