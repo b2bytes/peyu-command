@@ -1,10 +1,9 @@
 import { useLocation } from 'react-router-dom';
-import { base44 } from '@/api/base44Client';
 
-// Botón flotante de WhatsApp — canal PARALELO al chat web (VendedorChatBar).
-// Conecta directo con el agente whatsapp_peyu (vendedor 24/7 con mockups,
-// links de pago y cotización B2B). El link de conexión maneja el número y la
-// autenticación automáticamente.
+// Botón flotante de WhatsApp — abre el WhatsApp OFICIAL de contacto de PEYU
+// (+56 9 3504 0242), el mismo número del pie de página y la página /contacto.
+// El agente whatsapp_peyu atiende sobre ese mismo teléfono, así todo el
+// tráfico de WhatsApp converge en un solo número.
 export default function WhatsAppFloat() {
   const { pathname } = useLocation();
   // Ocultar en checkout/carrito/gracias (sin distracciones del CTA de pago)
@@ -17,7 +16,7 @@ export default function WhatsAppFloat() {
 
   return (
     <a
-      href={base44.agents.getWhatsAppConnectURL('whatsapp_peyu')}
+      href="https://wa.me/56935040242?text=Hola%20PEYU%20%F0%9F%90%A2"
       target="_blank"
       rel="noreferrer"
       className="fixed right-4 sm:right-6 z-40 w-13 h-13 sm:w-14 sm:h-14 rounded-full flex items-center justify-center shadow-2xl shadow-green-500/40 hover:scale-110 active:scale-95 transition-transform"

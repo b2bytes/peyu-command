@@ -18,10 +18,21 @@ export default function ActionButton({
   const [state, setState] = useState('idle'); // idle | confirm | loading | done | error
   const [msg, setMsg] = useState('');
 
+  // HARNESS · Las acciones irreversibles SIEMPRE piden confirmación inline
+  // (aunque el caller pase confirm={false}) y viajan con confirmado:true,
+  // que el backend exige para ejecutarlas.
+  const esDestructiva =
+    ['eliminarLead', 'cancelarPedido', 'anularGiftCard'].includes(action) ||
+    (action === 'toggleCupon' && payload?.accion === 'eliminar');
+  const requiereConfirm = confirm || esDestructiva;
+
   const run = async () => {
     setState('loading');
     try {
-      const res = await base44.functions.invoke('agentOSAction', { action, payload });
+      const res = await base44.functions.invoke('agentOSAction', {
+        action,
+        payload: esDestructiva ? { ...payload, confirmado: true } : payload,
+      });
       if (res?.data?.error) throw new Error(res.data.error);
       setMsg(res?.data?.message || 'Listo');
       setState('done');
@@ -72,7 +83,7 @@ export default function ActionButton({
     );
   }
   return (
-    <button onClick={() => (confirm ? setState('confirm') : run())} className={`${base} ${styles} ${className}`}>
+    <button onClick={() => (requiereConfirm ? setState('confirm') : run())} className={`${base} ${styles} ${className}`}>
       {Icon && <Icon className="w-3.5 h-3.5" />} {label}
     </button>
   );

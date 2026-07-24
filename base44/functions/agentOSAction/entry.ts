@@ -67,6 +67,38 @@ Deno.serve(async (req) => {
     const { action, payload = {} } = await req.json();
     const svc = base44.asServiceRole.entities;
 
+    // ═══ HARNESS · Auditoría central ════════════════════════════════════
+    // Cada acción del Agent OS queda registrada (quién, qué, cuándo, resultado)
+    // en ActivityLog. Fire-and-forget: si la auditoría falla, JAMÁS afecta la
+    // respuesta al founder — estabilidad primero.
+    const auditar = (ok, detalle = '') => {
+      svc.ActivityLog.create({
+        event_type: 'other',
+        category: 'Sistema',
+        user_email: user.email,
+        user_name: user.full_name || '',
+        description: `[AgentOS] ${action} · ${ok ? 'OK' : 'ERROR'}${detalle ? ` · ${String(detalle).slice(0, 300)}` : ''}`,
+        entity_type: 'AgentOSAction',
+        entity_id: payload.id || payload.proposalId || payload.pedido_id || '',
+        meta: { action, payload_keys: Object.keys(payload), ok },
+      }).catch(() => null);
+    };
+
+    // ═══ HARNESS · Guard de acciones destructivas ═══════════════════════
+    // Las acciones irreversibles exigen confirmación explícita del founder
+    // (payload.confirmado=true, que el front envía tras su diálogo de confirmación).
+    const DESTRUCTIVAS = ['eliminarLead', 'cancelarPedido', 'anularGiftCard'];
+    const esCuponEliminar = action === 'toggleCupon' && payload.accion === 'eliminar';
+    if ((DESTRUCTIVAS.includes(action) || esCuponEliminar) && payload.confirmado !== true) {
+      auditar(false, 'bloqueada: falta confirmación explícita');
+      return Response.json({
+        ok: false,
+        requires_confirmation: true,
+        error: 'Esta acción es irreversible y requiere confirmación explícita.',
+      }, { status: 428 });
+    }
+
+    const ejecutar = async () => {
     switch (action) {
       case 'updatePedidoEstado': {
         if (!payload.id || !payload.estado) throw new Error('Falta id o estado');
@@ -596,6 +628,18 @@ Deno.serve(async (req) => {
 
       default:
         return Response.json({ error: `Acción no soportada: ${action}` }, { status: 400 });
+    }
+    };
+
+    // HARNESS · Estabilidad: ejecutar y auditar siempre; el error se propaga
+    // al catch general que responde con el mensaje claro de siempre.
+    try {
+      const resp = await ejecutar();
+      auditar(resp.status < 400);
+      return resp;
+    } catch (error) {
+      auditar(false, error.message);
+      throw error;
     }
   } catch (error) {
     console.error('agentOSAction error:', error);
