@@ -77,7 +77,14 @@ export default function CheckoutNuevo() {
     catch { return null; }
   });
   const [creando, setCreando] = useState(false);
-  const [errorPago, setErrorPago] = useState(null);
+  // Si Mercado Pago devolvió al cliente con pago fallido (?mp=failure), se lo
+  // decimos de entrada: su carrito y datos siguen intactos para reintentar.
+  const [errorPago, setErrorPago] = useState(() => {
+    const p = new URLSearchParams(window.location.search);
+    return p.get('mp') === 'failure'
+      ? 'El pago en Mercado Pago no se completó. No se realizó ningún cargo — tus datos siguen aquí, puedes reintentar cuando quieras.'
+      : null;
+  });
   // Guard SÍNCRONO contra doble pedido: `creando` (estado) tarda un tick en
   // propagarse, así que dos taps rápidos en móvil podían crear 2 pedidos antes
   // de que el guard de estado actuara. Este ref bloquea en el mismo instante.
@@ -488,13 +495,15 @@ export default function CheckoutNuevo() {
           window.location.href = initUrl;
           return;
         }
-        setErrorPago('No pudimos iniciar Mercado Pago. Intenta de nuevo o usa transferencia.');
+        setErrorPago(mp?.data?.error || 'No pudimos iniciar Mercado Pago. Intenta de nuevo o usa transferencia.');
         setCreando(false);
         enviandoRef.current = false;
         return;
       } catch (e) {
         console.error('Error MP:', e);
-        setErrorPago('No pudimos iniciar Mercado Pago. Intenta de nuevo o usa transferencia.');
+        // Pedido ya pagado (guard anti doble cobro del backend) u otro error:
+        // mostramos el mensaje real si viene del servidor.
+        setErrorPago(e?.response?.data?.error || 'No pudimos iniciar Mercado Pago. Intenta de nuevo o usa transferencia.');
         setCreando(false);
         enviandoRef.current = false;
         return;

@@ -37,6 +37,16 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Total inválido' }, { status: 400 });
     }
 
+    // HARNESS · Anti doble cobro: si el pedido ya está pagado (webhook o
+    // reconciliador lo confirmó mientras el cliente reintentaba), jamás
+    // creamos otra preferencia de pago.
+    if (pedido.payment_status === 'paid') {
+      return Response.json({
+        error: `El pedido ${pedido.numero_pedido} ya está pagado. No necesitas volver a pagar.`,
+        already_paid: true,
+      }, { status: 409 });
+    }
+
     // Origin para construir URLs de retorno y webhook.
     const origin = req.headers.get('origin') || 'https://peyuchile.cl';
 
@@ -66,7 +76,10 @@ Deno.serve(async (req) => {
       back_urls: {
         success: `${origin}/gracias?numero=${encodeURIComponent(pedido.numero_pedido)}&email=${encodeURIComponent(pedido.cliente_email || '')}&total=${pedido.total}&mp=success`,
         pending: `${origin}/gracias?numero=${encodeURIComponent(pedido.numero_pedido)}&email=${encodeURIComponent(pedido.cliente_email || '')}&total=${pedido.total}&mp=pending`,
-        failure: `${origin}/cart?mp=failure&numero=${encodeURIComponent(pedido.numero_pedido)}`,
+        // FIX: antes iba a /cart, que redirige a /CarritoNuevo PERDIENDO los
+        // parámetros — el cliente nunca veía por qué falló. Ahora vuelve
+        // directo al checkout con sus datos intactos para reintentar.
+        failure: `${origin}/CheckoutNuevo?mp=failure&numero=${encodeURIComponent(pedido.numero_pedido)}`,
       },
       auto_return: 'approved',
       // FIX 20-jul: app.base44.com devuelve 403 a los webhooks (dominio de la
