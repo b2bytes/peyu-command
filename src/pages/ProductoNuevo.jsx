@@ -531,9 +531,13 @@ export default function ProductoNuevo() {
     material: producto.material,
   };
 
+  // Si el grabado quedó a medias, el CTA sigue ACTIVO: al tocarlo lleva al
+  // campo que falta (antes quedaba gris y parecía roto).
   const ctaLabel = added
     ? '✓ ¡Agregado!'
-    : `Agregar al carrito · ${fmtCLP(total)}`;
+    : !persOk
+      ? 'Completa tu grabado para continuar'
+      : `Agregar al carrito · ${fmtCLP(total)}`;
 
   const persResumen = resumenPersonalizacion(pers);
 
@@ -586,7 +590,7 @@ export default function ProductoNuevo() {
           {/* CTA en header (desktop) */}
           <button
             onClick={handleAdd}
-            disabled={added || !persOk || agotado}
+            disabled={added || agotado}
             className="hidden lg:flex items-center gap-2 px-5 h-10 rounded-xl text-white font-bold text-sm transition-all hover:-translate-y-0.5 active:scale-[0.97] disabled:opacity-60 disabled:hover:translate-y-0"
             style={{ background: C.actionGrad, boxShadow: C.actionShadow, flexShrink: 0 }}
           >
@@ -889,7 +893,7 @@ export default function ProductoNuevo() {
             <div className="hidden lg:block mt-3 lg:flex-shrink-0">
              <button
                onClick={handleAdd}
-               disabled={added || !persOk || agotado}
+               disabled={added || agotado}
                className="w-full h-14 rounded-2xl text-white font-bold text-base flex items-center justify-center gap-2 transition-all hover:-translate-y-0.5 active:scale-[0.98] disabled:opacity-60 disabled:hover:translate-y-0"
                style={{ background: C.actionGrad, boxShadow: C.actionShadow }}
              >
@@ -916,10 +920,10 @@ export default function ProductoNuevo() {
       <MobileNavBarV2
         backTo="/CatalogoNuevo"
         backLabel="Tienda"
-        ctaLabel={added ? '✓ ¡Agregado!' : agotado ? 'Agotado' : 'Agregar al carrito'}
+        ctaLabel={added ? '✓ ¡Agregado!' : agotado ? 'Agotado' : !persOk ? 'Completa tu grabado' : 'Agregar al carrito'}
         onCta={handleAdd}
-        ctaDisabled={added || !persOk || agotado}
-        total={added ? null : total}
+        ctaDisabled={added || agotado}
+        total={added || !persOk ? null : total}
       />
     </div>
   );

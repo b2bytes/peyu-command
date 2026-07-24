@@ -41,11 +41,13 @@ export default function CheckoutNuevo() {
   useEffect(() => {
     const skus = [...new Set(carrito.map((i) => i.sku).filter(Boolean))];
     if (skus.length === 0) return;
-    base44.entities.Producto.list('-updated_date', 300)
-      .then((all) => {
+    // Solo los productos del carrito (antes se bajaba el catálogo completo de
+    // 300 registros en cada carga del checkout → payload enorme, causa del 509).
+    base44.entities.Producto.filter({ sku: { $in: skus } }, '-updated_date', skus.length)
+      .then((rows) => {
         const map = {};
-        for (const p of all || []) {
-          if (p.sku && skus.includes(p.sku)) map[p.sku] = p;
+        for (const p of rows || []) {
+          if (p.sku) map[p.sku] = p;
         }
         setProductosBySku(map);
       })
@@ -571,14 +573,10 @@ export default function CheckoutNuevo() {
   }, []);
   // Sección abierta en móvil: 'envio' | 'forma' | 'pago' | 'facturacion' | null
   const [openSection, setOpenSection] = useState('envio');
-  // Auto-avance: al completar envío → abre forma; al elegir envío → abre pago.
-  const prevEnvioCompleto = useRef(false);
+  // ⚠️ NO auto-cerramos la sección de envío al validar: el cliente seguía
+  // escribiendo (depto, referencia) y la sección se colapsaba sola, sacándolo
+  // del formulario. Ahora avanza SOLO con el botón "Continuar".
   const prevEnvioElegido = useRef(false);
-  useEffect(() => {
-    if (!isMobile) return;
-    if (envioCompleto && !prevEnvioCompleto.current && openSection === 'envio') setOpenSection('forma');
-    prevEnvioCompleto.current = envioCompleto;
-  }, [envioCompleto, isMobile, openSection]);
   useEffect(() => {
     if (!isMobile) return;
     if (envioBluex && !prevEnvioElegido.current && openSection === 'forma') setOpenSection('pago');
@@ -664,6 +662,21 @@ export default function CheckoutNuevo() {
           setCliente={(c) => { setCliente(c); setErrors({}); }}
           errors={errors}
         />
+        {/* Avance explícito: el cliente decide cuándo terminó de escribir */}
+        {isMobile && (
+          <button
+            type="button"
+            onClick={() => {
+              const errs = validarShippingForm(cliente);
+              setErrors(errs);
+              if (Object.keys(errs).length === 0) setOpenSection('forma');
+            }}
+            className="w-full mt-4 h-12 rounded-2xl text-white font-bold text-sm transition-all active:scale-[0.98]"
+            style={{ background: 'linear-gradient(135deg,var(--ck-action, #C0785C),var(--ck-action-dark, #A86440))' }}
+          >
+            Continuar a forma de envío
+          </button>
+        )}
       </CollapsibleSectionV2>
 
       {/* 2 · Forma de envío (BlueExpress inline) */}
