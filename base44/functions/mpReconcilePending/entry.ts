@@ -36,11 +36,13 @@ Deno.serve(async (req) => {
     // FIX 20-jul: se quitó el requisito estado==='Nuevo'. El equipo a veces
     // avanza manualmente pedidos pagados (a Producción/Despacho) y quedaban
     // pending_mp para siempre, sin comprobante. Solo excluimos los cerrados.
+    // FIX 24-jul: se quitó el requisito !mp_payment_id. Un pedido podía quedar
+    // con mp_payment_id seteado pero payment_status='pending_mp' (carrera entre
+    // el webhook y assessOrderRisk) y el reconciliador lo saltaba para siempre.
     const pendientes = todos.filter(p =>
       p.payment_status === 'pending_mp' &&
       p.medio_pago === 'MercadoPago' &&
       p.mp_preference_id &&
-      !p.mp_payment_id &&
       p.created_date >= hace5d &&
       !['Cancelado', 'Reembolsado'].includes(p.estado)
     );

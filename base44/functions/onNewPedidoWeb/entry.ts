@@ -520,12 +520,16 @@ Deno.serve(async (req) => {
           // enviarConfirmacionPedido NUNCA mande un segundo correo duplicado, y
           // email_instrucciones_transferencia_enviado solo en transferencias.
           if (pedido.id) {
+            // Historial FRESCO antes de escribir: el webhook de MP puede haber
+            // marcado 'paid' mientras se enviaba el correo — con la copia vieja
+            // se perdía ese evento del historial.
+            const fresco = await base44.asServiceRole.entities.PedidoWeb.get(pedido.id).catch(() => null);
             await base44.asServiceRole.entities.PedidoWeb.update(pedido.id, {
               email_confirmacion_enviado: true,
               email_confirmacion_enviado_at: new Date().toISOString(),
               ...(esTransferencia ? { email_instrucciones_transferencia_enviado: true } : {}),
               historial: [
-                ...(pedido.historial || []),
+                ...((fresco || pedido).historial || []),
                 { at: new Date().toISOString(), type: 'email_sent', actor: 'onNewPedidoWeb', channel: 'email', detail: esTransferencia ? 'Confirmación + instrucciones de transferencia enviadas vía Gmail' : 'Confirmación de pedido enviada vía Gmail' },
               ],
             });

@@ -126,13 +126,23 @@ Deno.serve(async (req) => {
       payment_status = 'manual_review';
     }
 
-    // Actualizar pedido
-    await base44.asServiceRole.entities.PedidoWeb.update(pedido.id, {
+    // Actualizar pedido — releyendo el estado FRESCO justo antes de escribir:
+    // esta función corre en PARALELO con el webhook de MP y con una copia
+    // vieja pisaba payment_status='paid' → el pedido quedaba pending_mp para
+    // siempre aunque el cliente pagó. payment_status solo se ESCALA a
+    // manual_review; jamás se regresa un pago ya confirmado.
+    const fresco = await base44.asServiceRole.entities.PedidoWeb.get(pedido.id).catch(() => null) || pedido;
+    const updates = {
       risk_score: score,
       risk_flags: flags,
-      payment_status,
+    };
+    if (payment_status === 'manual_review' && !['paid', 'refunded'].includes(fresco.payment_status)) {
+      updates.payment_status = 'manual_review';
+    }
+    await base44.asServiceRole.entities.PedidoWeb.update(pedido.id, {
+      ...updates,
       historial: [
-        ...(pedido.historial || []),
+        ...(fresco.historial || []),
         {
           at: new Date().toISOString(),
           type: 'risk_assessed',

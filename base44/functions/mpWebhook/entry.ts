@@ -90,8 +90,24 @@ Deno.serve(async (req) => {
     const notaMP = `MP[${dataId}] ${mpStatus}/${mpStatusDetail} $${transactionAmount}`;
 
     // Idempotencia: si la nota ya tiene este payment_id, no reprocesamos
-    // (MP reintenta la notificación varias veces)
+    // (MP reintenta la notificación varias veces). EXCEPCIÓN de reparación:
+    // si el pago está aprobado pero otra función pisó payment_status en una
+    // carrera (quedó pending_mp), el reintento de MP lo corrige.
     if ((pedido.notas || '').includes(`MP[${dataId}]`)) {
+      if (mpStatus === 'approved' && pedido.payment_status !== 'paid') {
+        const avanzadosFix = ['En Producción', 'Listo para Despacho', 'Despachado', 'Entregado'];
+        await base44.asServiceRole.entities.PedidoWeb.update(pedido.id, {
+          payment_status: 'paid',
+          mp_payment_id: String(dataId),
+          estado: avanzadosFix.includes(pedido.estado) || pedido.estado === 'Confirmado' ? pedido.estado : 'Confirmado',
+        });
+        try {
+          await base44.asServiceRole.functions.invoke('enviarComprobantePedido', { pedido_id: pedido.id });
+        } catch (e) {
+          console.warn('Comprobante en reparación falló (no bloqueante):', e.message);
+        }
+        return Response.json({ ok: true, repaired: true });
+      }
       return Response.json({ ok: true, duplicate: true });
     }
 
