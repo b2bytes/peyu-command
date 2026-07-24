@@ -17,6 +17,8 @@ import DisenosManagerCard from './cards/DisenosManagerCard';
 import CuponesManagerCard from './cards/CuponesManagerCard';
 import GiftCardsManagerCard from './cards/GiftCardsManagerCard';
 import StockColorCard from './cards/StockColorCard';
+import TextosManagerCard from './cards/TextosManagerCard';
+import BlogManagerCard from './cards/BlogManagerCard';
 
 // Renderiza la tarjeta rica correcta según el tipo detectado, hidratada con
 // los datos reales del CRM + las listas/métricas en vivo de peyuBrainOps.
@@ -71,6 +73,12 @@ export default function CardDispatcher({ card, crm, metrics, lists = {}, onAsk, 
       return card.modo === 'nuevos'
         ? <ClientsCard clientes={lists.clientes_nuevos || crm.clientes} titulo="Clientes nuevos (últimos registrados)" mostrarFecha onChanged={onDone} />
         : <ClientsCard clientes={lists.clientes_top || crm.clientes} titulo="Clientes top (mejores compradores)" onChanged={onDone} />;
+    case 'textos':
+      // Editor de textos de las páginas públicas del sitio, directo en el chat.
+      return <TextosManagerCard />;
+    case 'blog':
+      // Gestor del blog: crear con IA, editar, publicar/despublicar, eliminar.
+      return <BlogManagerCard />;
     case 'cupones':
       return <CuponesManagerCard />;
     case 'giftcards':

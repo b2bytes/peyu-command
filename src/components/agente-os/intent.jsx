@@ -31,6 +31,21 @@ export function detectCards(text) {
   } else if (has(['pedido', 'pendiente', 'producción', 'produccion'])) {
     cards.push({ type: 'orders' });
   }
+  // Editor de TEXTOS del sitio (páginas públicas: Nosotros, FAQ, Envíos, etc.)
+  // El founder edita el copy de la web directamente en el chat.
+  if (has([
+    'editar texto', 'editar textos', 'cambiar texto', 'cambiar textos', 'textos de la página',
+    'textos de la pagina', 'textos del sitio', 'textos de la web', 'texto de la página',
+    'texto de la pagina', 'editor de textos', 'textos públicos', 'textos publicos',
+    'copy del sitio', 'copy de la página', 'copy de la pagina', 'página nosotros', 'pagina nosotros',
+  ])) {
+    cards.push({ type: 'textos' });
+  }
+  // Gestor del BLOG: crear artículos con IA, editar, publicar/despublicar.
+  if (has(['blog', 'artículo', 'articulo', 'artículos', 'articulos', 'post del blog', 'nuevo post', 'escribir un post'])) {
+    cards.push({ type: 'blog' });
+  }
+
   // Gestor de DISEÑOS PEYU del personalizador (galería de grabado láser):
   // subir diseños, cambiar la imagen de uno (ej. la ranita), activar/ocultar.
   // Se evalúa ANTES que catálogo para que "subir un diseño" o "cambiar la
