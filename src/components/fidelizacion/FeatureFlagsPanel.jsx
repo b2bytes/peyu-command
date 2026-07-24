@@ -16,6 +16,11 @@ const MODULOS = [
     nombre: 'Ruleta "Gira y gana" 🎡',
     detalle: 'Botón flotante en la portada: captura email y regala un cupón personal de un solo uso (válido 7 días, compra mínima $15.000).',
   },
+  {
+    clave: 'checkout_tema_verde',
+    nombre: 'Checkout · plantilla Verde PEYU 💳',
+    detalle: 'Nueva piel del checkout (escritorio y móvil) con la paleta de marca: fondo blanco, acción verde PEYU. Apagado = diseño actual Warm Dusk.',
+  },
 ];
 
 export default function FeatureFlagsPanel() {

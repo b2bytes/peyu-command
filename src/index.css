@@ -8,6 +8,9 @@
    TODAS las secciones compartan la misma identidad en modo día y noche. */
 @import './styles/admin-unify.css';
 
+/* Plantillas del checkout (Warm Dusk por defecto · Verde PEYU vía flag) */
+@import './styles/checkout-themes.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;

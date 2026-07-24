@@ -27,7 +27,7 @@ export default function CollapsibleSectionV2({
   return (
     <section
       className="bg-white rounded-2xl overflow-hidden"
-      style={{ border: '1.5px solid #D4C4B0', boxShadow: '0 2px 12px rgba(44,24,16,.05)' }}
+      style={{ border: '1.5px solid var(--ck-border, #D4C4B0)', boxShadow: '0 2px 12px rgba(var(--ck-fg-rgb, 44,24,16),.05)' }}
     >
       {/* Header — tap target mínimo 52px en mobile */}
       <button
@@ -35,7 +35,7 @@ export default function CollapsibleSectionV2({
         onClick={toggle}
         className="w-full flex items-center gap-3 px-4 py-3.5 sm:p-5 text-left transition-colors"
         style={{ minHeight: 52, background: 'white' }}
-        onMouseOver={e => e.currentTarget.style.background = '#FAF6F0'}
+        onMouseOver={e => e.currentTarget.style.background = 'var(--ck-bg-hover, #FAF6F0)'}
         onMouseOut={e => e.currentTarget.style.background = 'white'}
       >
         {/* Badge de paso */}
@@ -44,7 +44,7 @@ export default function CollapsibleSectionV2({
           style={{
             background: complete
               ? 'linear-gradient(135deg,#8BAD8A,#5B7D5A)'
-              : 'linear-gradient(135deg,#C0785C,#A86440)',
+              : 'linear-gradient(135deg,var(--ck-action, #C0785C),var(--ck-action-dark, #A86440))',
           }}
         >
           {complete ? <Check className="w-3.5 h-3.5" /> : step}
@@ -52,20 +52,20 @@ export default function CollapsibleSectionV2({
 
         {/* Texto */}
         <div className="flex-1 min-w-0">
-          <h2 className="font-fraunces text-base sm:text-lg leading-tight" style={{ color: '#2C1810' }}>
+          <h2 className="font-fraunces text-base sm:text-lg leading-tight" style={{ color: 'var(--ck-fg, #2C1810)' }}>
             {title}
           </h2>
           {!open && summary ? (
             <p className="text-[11px] font-semibold truncate mt-0.5" style={{ color: '#8BAD8A' }}>✓ {summary}</p>
           ) : subtitle ? (
-            <p className="text-[11px] sm:text-xs mt-0.5" style={{ color: '#A08070' }}>{subtitle}</p>
+            <p className="text-[11px] sm:text-xs mt-0.5" style={{ color: 'var(--ck-fg-muted, #A08070)' }}>{subtitle}</p>
           ) : null}
         </div>
 
         {/* Chevron */}
         <ChevronDown
           className={`w-4 h-4 flex-shrink-0 transition-transform duration-300 ${open ? 'rotate-180' : ''}`}
-          style={{ color: '#A08070' }}
+          style={{ color: 'var(--ck-fg-muted, #A08070)' }}
         />
       </button>
 
@@ -77,7 +77,7 @@ export default function CollapsibleSectionV2({
           transition: 'max-height 0.3s ease',
         }}
       >
-        <div className="px-4 pb-5 sm:px-6 sm:pb-6" style={{ borderTop: '1px solid #EDE3D6' }}>
+        <div className="px-4 pb-5 sm:px-6 sm:pb-6" style={{ borderTop: '1px solid var(--ck-border-soft, #EDE3D6)' }}>
           <div className="pt-4">{children}</div>
         </div>
       </div>

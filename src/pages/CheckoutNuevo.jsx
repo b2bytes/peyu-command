@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { ArrowLeft, Lock, ShieldCheck, Recycle, AlertCircle, Gift } from 'lucide-react';
 import NoIndex from '@/components/NoIndex';
+import useFeatureFlag from '@/hooks/useFeatureFlag';
 import MobileNavBarV2 from '@/components/shopv2/MobileNavBarV2';
 import CheckoutStepperV2 from '@/components/shopv2/CheckoutStepperV2';
 import CheckoutSummaryCardV2 from '@/components/shopv2/CheckoutSummaryCardV2';
@@ -28,6 +29,10 @@ import { trackBeginCheckout } from '@/lib/analytics-peyu';
 // ════════════════════════════════════════════════════════════════════════
 export default function CheckoutNuevo() {
   const navigate = useNavigate();
+  // Plantilla nueva "Verde PEYU": solo se aplica si el módulo está activado
+  // desde /admin/fidelizacion (flag checkout_tema_verde). Apagado = tema actual.
+  const temaVerde = useFeatureFlag('checkout_tema_verde');
+  const temaClass = temaVerde ? 'ck-theme-verde' : '';
   const [carrito] = useState(() => getCartV2());
   const [productosBySku, setProductosBySku] = useState({});
 
@@ -595,26 +600,26 @@ export default function CheckoutNuevo() {
     } catch { /* noop */ }
 
     return (
-      <div className="min-h-screen font-inter" style={{ background: '#F8F3ED', color: '#2C1810' }}>
+      <div className={`min-h-screen font-inter ${temaClass}`} style={{ background: 'var(--ck-bg, #F8F3ED)', color: 'var(--ck-fg, #2C1810)' }}>
         <NoIndex />
         <div className="max-w-md mx-auto text-center py-24 px-4">
           {ultimaCompra ? (
             <>
-              <div className="w-16 h-16 mx-auto rounded-3xl flex items-center justify-center mb-5" style={{ background: 'linear-gradient(135deg,#C0785C,#A86440)' }}>
+              <div className="w-16 h-16 mx-auto rounded-3xl flex items-center justify-center mb-5" style={{ background: 'linear-gradient(135deg,var(--ck-action, #C0785C),var(--ck-action-dark, #A86440))' }}>
                 <ShieldCheck className="w-8 h-8 text-white" />
               </div>
               <h1 className="font-fraunces text-2xl mb-2">¡Tu compra ya está hecha!</h1>
-              <p className="text-sm mb-6" style={{ color: '#7A6050' }}>
-                El pedido <span className="font-mono font-bold" style={{ color: '#C0785C' }}>{ultimaCompra.numero}</span> fue creado. No necesitas volver a pagar.
+              <p className="text-sm mb-6" style={{ color: 'var(--ck-fg-soft, #7A6050)' }}>
+                El pedido <span className="font-mono font-bold" style={{ color: 'var(--ck-action, #C0785C)' }}>{ultimaCompra.numero}</span> fue creado. No necesitas volver a pagar.
               </p>
               <div className="flex flex-col gap-2.5">
                 <Link to={`/seguimiento?pedido=${encodeURIComponent(ultimaCompra.numero)}`}>
-                  <button className="w-full text-white font-bold px-6 py-3.5 rounded-2xl transition-all" style={{ background: 'linear-gradient(135deg,#C0785C,#A86440)' }}>
+                  <button className="w-full text-white font-bold px-6 py-3.5 rounded-2xl transition-all" style={{ background: 'linear-gradient(135deg,var(--ck-action, #C0785C),var(--ck-action-dark, #A86440))' }}>
                     Seguir mi pedido
                   </button>
                 </Link>
                 <Link to="/CatalogoNuevo">
-                  <button className="w-full font-bold px-6 py-3.5 rounded-2xl transition-all" style={{ background: 'white', border: '1.5px solid #D4C4B0', color: '#2C1810' }}>
+                  <button className="w-full font-bold px-6 py-3.5 rounded-2xl transition-all" style={{ background: 'white', border: '1.5px solid var(--ck-border, #D4C4B0)', color: 'var(--ck-fg, #2C1810)' }}>
                     Seguir comprando
                   </button>
                 </Link>
@@ -624,7 +629,7 @@ export default function CheckoutNuevo() {
             <>
               <h1 className="font-fraunces text-2xl mb-3">Tu carrito está vacío</h1>
               <Link to="/CatalogoNuevo">
-                <button className="text-white font-bold px-6 py-3.5 rounded-2xl transition-all" style={{ background: 'linear-gradient(135deg,#C0785C,#A86440)' }}>
+                <button className="text-white font-bold px-6 py-3.5 rounded-2xl transition-all" style={{ background: 'linear-gradient(135deg,var(--ck-action, #C0785C),var(--ck-action-dark, #A86440))' }}>
                   Ir a la tienda
                 </button>
               </Link>
@@ -710,17 +715,17 @@ export default function CheckoutNuevo() {
   );
 
   return (
-    <div className="min-h-screen lg:h-screen lg:min-h-0 lg:flex lg:flex-col lg:overflow-hidden font-inter pb-36 lg:pb-0" style={{ background: '#F8F3ED', color: '#2C1810' }}>
+    <div className={`min-h-screen lg:h-screen lg:min-h-0 lg:flex lg:flex-col lg:overflow-hidden font-inter pb-36 lg:pb-0 ${temaClass}`} style={{ background: 'var(--ck-bg, #F8F3ED)', color: 'var(--ck-fg, #2C1810)' }}>
       <NoIndex />
 
       {/* ── TOP NAV cockpit: viaje completo + CTA siempre visible ─────────── */}
       <header className="sticky top-0 z-50 backdrop-blur-xl"
-        style={{ background: 'rgba(248,243,237,.97)', borderBottom: '1px solid #D4C4B0', boxShadow: '0 1px 10px rgba(44,24,16,.07)' }}>
+        style={{ background: 'var(--ck-header-bg, rgba(248,243,237,.97))', borderBottom: '1px solid var(--ck-border, #D4C4B0)', boxShadow: '0 1px 10px rgba(var(--ck-fg-rgb, 44,24,16),.07)' }}>
         <div className="max-w-7xl mx-auto px-4 lg:px-8 py-2.5 flex items-center gap-3">
           <Link to="/CarritoNuevo"
             className="w-9 h-9 rounded-xl flex items-center justify-center transition-all hover:bg-white flex-shrink-0"
-            style={{ border: '1.5px solid #D4C4B0' }}>
-            <ArrowLeft className="w-4 h-4" style={{ color: '#7A6050' }} />
+            style={{ border: '1.5px solid var(--ck-border, #D4C4B0)' }}>
+            <ArrowLeft className="w-4 h-4" style={{ color: 'var(--ck-fg-soft, #7A6050)' }} />
           </Link>
 
           {/* Logo (solo desktop) */}
@@ -731,12 +736,12 @@ export default function CheckoutNuevo() {
 
           {/* Brand mobile */}
           <div className="flex items-center gap-2 lg:hidden flex-1 min-w-0">
-            <div className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: 'linear-gradient(135deg,#C0785C,#A86440)' }}>
+            <div className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: 'linear-gradient(135deg,var(--ck-action, #C0785C),var(--ck-action-dark, #A86440))' }}>
               <Lock className="w-4 h-4 text-white" />
             </div>
             <div className="min-w-0">
               <p className="font-poppins font-bold text-sm leading-tight truncate">Finaliza tu compra</p>
-              <p className="text-[10px] leading-tight font-semibold" style={{ color: '#C0785C' }}>Pago seguro · WebPay, Mercado Pago o transferencia</p>
+              <p className="text-[10px] leading-tight font-semibold" style={{ color: 'var(--ck-action, #C0785C)' }}>Pago seguro · WebPay, Mercado Pago o transferencia</p>
             </div>
           </div>
 
@@ -750,7 +755,7 @@ export default function CheckoutNuevo() {
             onClick={crearPedido}
             disabled={creando}
             className="hidden lg:flex items-center gap-2 px-5 h-10 rounded-xl text-white font-bold text-sm transition-all hover:-translate-y-0.5 active:scale-[0.97] disabled:opacity-60 flex-shrink-0"
-            style={{ background: 'linear-gradient(135deg,#C0785C,#A86440)', boxShadow: '0 6px 20px rgba(192,120,92,.28)' }}
+            style={{ background: 'linear-gradient(135deg,var(--ck-action, #C0785C),var(--ck-action-dark, #A86440))', boxShadow: '0 6px 20px rgba(var(--ck-action-rgb, 192,120,92),.28)' }}
           >
             {creando ? <div className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" /> : <Lock className="w-4 h-4" />}
             <span>{ctaPagar}</span>
@@ -770,10 +775,10 @@ export default function CheckoutNuevo() {
           {/* Panel izquierdo desktop: Tu pedido SIEMPRE visible + sellos */}
           <aside className="hidden lg:flex flex-col gap-3 w-72 xl:w-80 flex-shrink-0 lg:h-full lg:min-h-0 lg:overflow-y-auto peyu-scrollbar pr-1">
             <div className="flex items-center gap-2 mb-1">
-              <span className="text-xs font-bold px-2 py-0.5 rounded-full" style={{ background: 'rgba(192,120,92,.12)', color: '#C0785C' }}>
+              <span className="text-xs font-bold px-2 py-0.5 rounded-full" style={{ background: 'rgba(var(--ck-action-rgb, 192,120,92),.12)', color: 'var(--ck-action, #C0785C)' }}>
                 Pago seguro
               </span>
-              <span className="text-[10px] font-semibold" style={{ color: '#A08070' }}>Último paso de tu viaje</span>
+              <span className="text-[10px] font-semibold" style={{ color: 'var(--ck-fg-muted, #A08070)' }}>Último paso de tu viaje</span>
             </div>
 
             <CheckoutSummaryCardV2
@@ -792,10 +797,10 @@ export default function CheckoutNuevo() {
                 { icon: Recycle, label: '100%', sub: 'reciclado' },
               ].map(({ icon: Icon, label, sub }) => (
                 <div key={label} className="flex flex-col items-center gap-1 p-2 rounded-xl text-center bg-white"
-                  style={{ border: '1px solid #D4C4B0' }}>
-                  <Icon className="w-4 h-4" style={{ color: '#C0785C' }} />
-                  <span className="text-[10px] font-bold leading-tight" style={{ color: '#2C1810' }}>{label}</span>
-                  <span className="text-[9px]" style={{ color: '#A08070' }}>{sub}</span>
+                  style={{ border: '1px solid var(--ck-border, #D4C4B0)' }}>
+                  <Icon className="w-4 h-4" style={{ color: 'var(--ck-action, #C0785C)' }} />
+                  <span className="text-[10px] font-bold leading-tight" style={{ color: 'var(--ck-fg, #2C1810)' }}>{label}</span>
+                  <span className="text-[9px]" style={{ color: 'var(--ck-fg-muted, #A08070)' }}>{sub}</span>
                 </div>
               ))}
             </div>
@@ -810,9 +815,9 @@ export default function CheckoutNuevo() {
 
               {/* Error de pago visible en mobile (el banner del CTA es desktop-only) */}
               {errorPago && (
-                <div className="lg:hidden rounded-xl p-3 flex items-start gap-2" style={{ background: 'rgba(192,120,92,.08)', border: '1px solid rgba(192,120,92,.3)' }}>
-                  <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: '#C0785C' }} />
-                  <p className="text-xs font-semibold" style={{ color: '#C0785C' }}>{errorPago}</p>
+                <div className="lg:hidden rounded-xl p-3 flex items-start gap-2" style={{ background: 'rgba(var(--ck-action-rgb, 192,120,92),.08)', border: '1px solid rgba(var(--ck-action-rgb, 192,120,92),.3)' }}>
+                  <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: 'var(--ck-action, #C0785C)' }} />
+                  <p className="text-xs font-semibold" style={{ color: 'var(--ck-action, #C0785C)' }}>{errorPago}</p>
                 </div>
               )}
 
@@ -831,22 +836,22 @@ export default function CheckoutNuevo() {
             {/* CTA desktop fijo bajo la columna (siempre visible) */}
             <div className="hidden lg:block mt-3 lg:flex-shrink-0">
               {errorPago && (
-                <div className="mb-2 rounded-xl p-3 flex items-start gap-2" style={{ background: 'rgba(192,120,92,.08)', border: '1px solid rgba(192,120,92,.3)' }}>
-                  <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: '#C0785C' }} />
-                  <p className="text-xs font-semibold" style={{ color: '#C0785C' }}>{errorPago}</p>
+                <div className="mb-2 rounded-xl p-3 flex items-start gap-2" style={{ background: 'rgba(var(--ck-action-rgb, 192,120,92),.08)', border: '1px solid rgba(var(--ck-action-rgb, 192,120,92),.3)' }}>
+                  <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: 'var(--ck-action, #C0785C)' }} />
+                  <p className="text-xs font-semibold" style={{ color: 'var(--ck-action, #C0785C)' }}>{errorPago}</p>
                 </div>
               )}
               <div className="flex items-center gap-4">
                 <Link to="/CarritoNuevo"
                   className="h-12 px-5 rounded-2xl font-semibold text-sm flex items-center gap-2 transition-all hover:bg-white"
-                  style={{ border: '1.5px solid #D4C4B0', color: '#7A6050' }}>
+                  style={{ border: '1.5px solid var(--ck-border, #D4C4B0)', color: 'var(--ck-fg-soft, #7A6050)' }}>
                   <ArrowLeft className="w-4 h-4" /> Carrito
                 </Link>
                 <button
                   onClick={crearPedido}
                   disabled={creando}
                   className="flex-1 h-14 rounded-2xl text-white font-bold text-base flex items-center justify-center gap-2 transition-all active:scale-[0.98] disabled:opacity-60 hover:-translate-y-0.5"
-                  style={{ background: 'linear-gradient(135deg,#C0785C,#A86440)', boxShadow: '0 8px 24px rgba(192,120,92,.28)' }}
+                  style={{ background: 'linear-gradient(135deg,var(--ck-action, #C0785C),var(--ck-action-dark, #A86440))', boxShadow: '0 8px 24px rgba(var(--ck-action-rgb, 192,120,92),.28)' }}
                 >
                   {creando ? (
                     <><div className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" /> Procesando…</>

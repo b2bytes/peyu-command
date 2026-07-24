@@ -1,0 +1,22 @@
+/* ═══════════════════════════════════════════════════════════════════
+   PLANTILLAS DE CHECKOUT — sistema de temas por CSS variables.
+   El checkout usa var(--ck-*, fallback WarmDusk) en todos sus colores.
+   Sin clase → tema actual (Warm Dusk). Con .ck-theme-verde → plantilla
+   "Verde PEYU premium" (flag checkout_tema_verde en /admin/fidelizacion).
+   ─────────────────────────────────────────────────────────────────── */
+.ck-theme-verde {
+  --ck-bg: #FFFFFF;
+  --ck-bg-soft: #E6F4EF;
+  --ck-bg-hover: #F2F9F6;
+  --ck-action: #0F8B6C;
+  --ck-action-dark: #0B6E55;
+  --ck-action-rgb: 15, 139, 108;
+  --ck-action-tint: rgba(15, 139, 108, 0.06);
+  --ck-fg: #0B1F18;
+  --ck-fg-soft: #40594F;
+  --ck-fg-muted: #6E8A80;
+  --ck-fg-rgb: 7, 24, 17;
+  --ck-border: #C9DED6;
+  --ck-border-soft: #DCEAE4;
+  --ck-header-bg: rgba(255, 255, 255, 0.97);
+}

@@ -24,7 +24,7 @@ export default function BillingSection({ billing, setBilling, errors = {} }) {
   return (
     <div className="bg-white border border-gray-100 rounded-3xl p-5 sm:p-7 shadow-sm">
       <div className="flex items-center gap-3 mb-5 pb-4 border-b border-gray-100">
-        <div className="w-9 h-9 rounded-xl text-white flex items-center justify-center font-poppins font-bold text-sm shadow-sm" style={{ background: 'linear-gradient(135deg,#C0785C,#A86440)' }}>
+        <div className="w-9 h-9 rounded-xl text-white flex items-center justify-center font-poppins font-bold text-sm shadow-sm" style={{ background: 'linear-gradient(135deg,var(--ck-action, #C0785C),var(--ck-action-dark, #A86440))' }}>
           <Receipt className="w-4 h-4" />
         </div>
         <div>
@@ -46,10 +46,11 @@ export default function BillingSection({ billing, setBilling, errors = {} }) {
               type="button"
               onClick={() => setBilling({ ...billing, tipo_documento: opt.id })}
               className={`relative p-4 rounded-2xl border-2 text-left transition-all ${
-                active ? 'border-[#C0785C] bg-[#C0785C]/5 shadow-sm' : 'border-gray-200 bg-white hover:border-gray-300'
+                active ? 'shadow-sm' : 'border-gray-200 bg-white hover:border-gray-300'
               }`}
+              style={active ? { borderColor: 'var(--ck-action, #C0785C)', background: 'var(--ck-action-tint, rgba(192,120,92,.05))' } : undefined}
             >
-              <opt.icon className={`w-5 h-5 mb-2 ${active ? 'text-[#C0785C]' : 'text-gray-400'}`} />
+              <opt.icon className={`w-5 h-5 mb-2 ${active ? '' : 'text-gray-400'}`} style={active ? { color: 'var(--ck-action, #C0785C)' } : undefined} />
               <p className="font-bold text-sm text-gray-900">{opt.label}</p>
               <p className="text-[11px] text-gray-500 mt-0.5">{opt.sub}</p>
             </button>

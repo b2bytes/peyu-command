@@ -29,19 +29,19 @@ export default function CheckoutStepperV2({ current = 'tienda', className }) {
             className="flex items-center gap-1 sm:gap-2 px-2 sm:px-3.5 py-1 sm:py-1.5 rounded-full font-bold transition-all"
             style={{
               fontSize: active ? '11px' : '10px',
-              background: active ? '#C0785C' : done ? 'rgba(192,120,92,.1)' : 'white',
-              color: active ? 'white' : done ? '#C0785C' : '#A08070',
-              border: active ? 'none' : done ? '1.5px solid rgba(192,120,92,.25)' : '1.5px solid #D4C4B0',
-              boxShadow: active ? '0 4px 16px rgba(192,120,92,.25)' : 'none',
+              background: active ? 'var(--ck-action, #C0785C)' : done ? 'rgba(var(--ck-action-rgb, 192,120,92),.1)' : 'white',
+              color: active ? 'white' : done ? 'var(--ck-action, #C0785C)' : 'var(--ck-fg-muted, #A08070)',
+              border: active ? 'none' : done ? '1.5px solid rgba(var(--ck-action-rgb, 192,120,92),.25)' : '1.5px solid var(--ck-border, #D4C4B0)',
+              boxShadow: active ? '0 4px 16px rgba(var(--ck-action-rgb, 192,120,92),.25)' : 'none',
             }}
           >
             <span
               className="w-4 h-4 sm:w-5 sm:h-5 rounded-full flex items-center justify-center flex-shrink-0"
               style={{
                 fontSize: '9px',
-                background: active ? 'rgba(255,255,255,.2)' : done ? '#C0785C' : '#F2EBE1',
+                background: active ? 'rgba(255,255,255,.2)' : done ? 'var(--ck-action, #C0785C)' : 'var(--ck-bg-soft, #F2EBE1)',
                 color: done && !active ? 'white' : undefined,
-                border: !active && !done ? '1px solid #D4C4B0' : 'none',
+                border: !active && !done ? '1px solid var(--ck-border, #D4C4B0)' : 'none',
               }}
             >
               {done ? <Check className="w-2.5 h-2.5" /> : i + 1}
@@ -58,7 +58,7 @@ export default function CheckoutStepperV2({ current = 'tienda', className }) {
               <Link to={p.to} aria-label={`Ir a ${p.label}`} title={p.label}>{inner}</Link>
             ) : inner}
             {i < PASOS.length - 1 && (
-              <span className="w-3 sm:w-6 h-px" style={{ background: done ? 'rgba(192,120,92,.4)' : '#D4C4B0' }} />
+              <span className="w-3 sm:w-6 h-px" style={{ background: done ? 'rgba(var(--ck-action-rgb, 192,120,92),.4)' : 'var(--ck-border, #D4C4B0)' }} />
             )}
           </div>
         );

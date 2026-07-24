@@ -39,14 +39,14 @@ export const PAYMENT_METHODS = [
 ];
 
 const C = {
-  fg: '#2C1810', fgSoft: '#7A6050', fgMuted: '#A08070',
-  border: '#D4C4B0', action: '#C0785C',
+  fg: 'var(--ck-fg, #2C1810)', fgSoft: 'var(--ck-fg-soft, #7A6050)', fgMuted: 'var(--ck-fg-muted, #A08070)',
+  border: 'var(--ck-border, #D4C4B0)', action: 'var(--ck-action, #C0785C)',
 };
 
 function InfoBox({ children }) {
   return (
     <div className="mt-2.5 rounded-2xl p-3.5 text-xs space-y-1.5"
-      style={{ background: 'rgba(192,120,92,.06)', border: '1.5px solid rgba(192,120,92,.25)', color: C.fgSoft }}>
+      style={{ background: 'rgba(var(--ck-action-rgb, 192,120,92),.06)', border: '1.5px solid rgba(var(--ck-action-rgb, 192,120,92),.25)', color: C.fgSoft }}>
       {children}
     </div>
   );
@@ -83,8 +83,8 @@ export default function PaymentMethodSelector({ value, onChange, totalCubiertoCo
               className="w-full flex items-center gap-3 p-3.5 rounded-2xl transition-all text-left active:scale-[0.99]"
               style={{
                 border: selected ? `2px solid ${C.action}` : `1.5px solid ${C.border}`,
-                background: selected ? 'rgba(192,120,92,.05)' : 'white',
-                boxShadow: selected ? '0 4px 16px rgba(192,120,92,.15)' : 'none',
+                background: selected ? 'rgba(var(--ck-action-rgb, 192,120,92),.05)' : 'white',
+                boxShadow: selected ? '0 4px 16px rgba(var(--ck-action-rgb, 192,120,92),.15)' : 'none',
               }}
             >
               <div className="w-11 h-11 rounded-xl flex items-center justify-center text-white flex-shrink-0"

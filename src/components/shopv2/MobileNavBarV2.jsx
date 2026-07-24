@@ -31,18 +31,18 @@ function NavTabs({ cartCount }) {
             <div className="relative">
               <t.icon
                 className="w-5 h-5 transition-colors"
-                style={{ color: active ? '#C0785C' : '#A08070' }}
+                style={{ color: active ? 'var(--ck-action, #C0785C)' : 'var(--ck-fg-muted, #A08070)' }}
               />
               {t.badge > 0 && (
                 <span className="absolute -top-1.5 -right-1.5 min-w-[16px] h-4 px-0.5 rounded-full text-white text-[8px] font-bold flex items-center justify-center"
-                  style={{ background: '#C0785C' }}>
+                  style={{ background: 'var(--ck-action, #C0785C)' }}>
                   {t.badge}
                 </span>
               )}
             </div>
-            <span className="text-[10px] font-bold leading-tight" style={{ color: active ? '#C0785C' : '#A08070' }}>{t.label}</span>
+            <span className="text-[10px] font-bold leading-tight" style={{ color: active ? 'var(--ck-action, #C0785C)' : 'var(--ck-fg-muted, #A08070)' }}>{t.label}</span>
             {active && (
-              <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-6 h-0.5 rounded-full" style={{ background: '#C0785C' }} />
+              <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-6 h-0.5 rounded-full" style={{ background: 'var(--ck-action, #C0785C)' }} />
             )}
           </Link>
         );
@@ -59,7 +59,7 @@ function ActionBar({ backTo, backLabel, ctaLabel, onCta, ctaDisabled, ctaLoading
       <button
         onClick={() => backTo ? navigate(backTo) : navigate(-1)}
         className="flex-shrink-0 h-12 w-12 sm:w-auto sm:px-4 rounded-2xl flex items-center justify-center gap-1.5 font-bold transition-all active:scale-[0.97]"
-        style={{ background: 'white', border: '1.5px solid #D4C4B0', color: '#7A6050' }}
+        style={{ background: 'white', border: '1.5px solid var(--ck-border, #D4C4B0)', color: 'var(--ck-fg-soft, #7A6050)' }}
         aria-label={backLabel || 'Atrás'}
       >
         <ArrowLeft className="w-4 h-4 flex-shrink-0" />
@@ -69,7 +69,7 @@ function ActionBar({ backTo, backLabel, ctaLabel, onCta, ctaDisabled, ctaLoading
         onClick={onCta}
         disabled={ctaDisabled || ctaLoading}
         className="flex-1 min-w-0 h-12 rounded-2xl text-white font-bold text-sm flex items-center justify-center gap-1.5 px-3 transition-all active:scale-[0.98] disabled:opacity-55"
-        style={{ background: 'linear-gradient(135deg,#C0785C,#A86440)', boxShadow: '0 6px 20px rgba(192,120,92,.35)' }}
+        style={{ background: 'linear-gradient(135deg,var(--ck-action, #C0785C),var(--ck-action-dark, #A86440))', boxShadow: '0 6px 20px rgba(var(--ck-action-rgb, 192,120,92),.35)' }}
       >
         {ctaLoading ? (
           <><div className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin flex-shrink-0" /><span className="truncate">Procesando…</span></>
@@ -107,11 +107,11 @@ export default function MobileNavBarV2({
       style={{
         maxWidth: '100vw',
         overflowX: 'hidden',
-        background: 'rgba(248,243,237,.98)',
-        borderTop: '1.5px solid #D4C4B0',
+        background: 'var(--ck-header-bg, rgba(248,243,237,.98))',
+        borderTop: '1.5px solid var(--ck-border, #D4C4B0)',
         backdropFilter: 'blur(20px) saturate(160%)',
         WebkitBackdropFilter: 'blur(20px) saturate(160%)',
-        boxShadow: '0 -6px 28px rgba(44,24,16,.14)',
+        boxShadow: '0 -6px 28px rgba(var(--ck-fg-rgb, 44,24,16),.14)',
         transform: 'translateZ(0)',
         WebkitTransform: 'translateZ(0)',
       }}
