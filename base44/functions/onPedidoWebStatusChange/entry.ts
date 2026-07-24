@@ -177,6 +177,20 @@ Deno.serve(async (req) => {
     if (!changed_fields?.includes('estado')) return Response.json({ ok: true, skip: 'estado_unchanged' });
 
     const nuevoEstado = pedido?.estado;
+
+    // HARNESS · Auditoría: TODO cambio de estado de pedido queda registrado
+    // (incluye Cancelado/Reembolsado que no envían email). Fire-and-forget.
+    base44.asServiceRole.entities.ActivityLog.create({
+      event_type: 'other',
+      category: 'Sistema',
+      user_email: pedido?.cliente_email || '',
+      description: `[Pedido] ${pedido?.numero_pedido || event?.entity_id}: estado ${body?.old_data?.estado || '?'} → ${nuevoEstado}`,
+      entity_type: 'PedidoWeb',
+      entity_id: event?.entity_id || pedido?.id || '',
+      value_clp: Number(pedido?.total) || 0,
+      meta: { estado_anterior: body?.old_data?.estado || '', estado_nuevo: nuevoEstado },
+    }).catch(() => null);
+
     if (!STATUS_CONFIG[nuevoEstado]) return Response.json({ ok: true, skip: `estado_${nuevoEstado}_no_email` });
     if (!pedido?.cliente_email) return Response.json({ ok: true, skip: 'no_email' });
 

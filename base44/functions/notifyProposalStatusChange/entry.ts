@@ -168,6 +168,21 @@ Deno.serve(async (req) => {
     const newStatus = proposal.status;
     const oldStatus = oldData?.status;
 
+    // HARNESS · Auditoría: todo cambio real de estado de propuesta queda
+    // registrado, incluso los que no gatillan email. Fire-and-forget.
+    if (oldStatus && oldStatus !== newStatus) {
+      base44.asServiceRole.entities.ActivityLog.create({
+        event_type: 'other',
+        category: 'B2B',
+        user_email: proposal.email || '',
+        description: `[Propuesta] ${proposal.numero || proposal.id} (${proposal.empresa || ''}): estado ${oldStatus} → ${newStatus}`,
+        entity_type: 'CorporateProposal',
+        entity_id: proposal.id || entityId || '',
+        value_clp: Number(proposal.total) || 0,
+        meta: { estado_anterior: oldStatus, estado_nuevo: newStatus },
+      }).catch(() => null);
+    }
+
     // Validaciones: solo disparamos en cambio real a estos dos estados
     if (!['Aceptada', 'Rechazada'].includes(newStatus)) {
       return Response.json({ skipped: true, reason: `status_not_target: ${newStatus}` });
