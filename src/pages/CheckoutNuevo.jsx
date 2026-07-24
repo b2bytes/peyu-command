@@ -11,7 +11,6 @@ import ShippingAddressForm, { validarShippingForm } from '@/components/cart/Ship
 import BillingSection, { validarBilling } from '@/components/cart/BillingSection';
 import ShippingSelector from '@/components/cart/ShippingSelector';
 import PaymentMethodSelector from '@/components/cart/PaymentMethodSelector';
-import GiftCardRedeemBox from '@/components/cart/GiftCardRedeemBox';
 import { getCartV2, clearCartV2, fmtCLP } from '@/lib/shop-v2-cart';
 import { readShopCheckout, mergeShopCheckout, clearShopCheckout } from '@/lib/shop-v2-checkout-store';
 import { uploadImagePublic } from '@/lib/public-upload';
@@ -72,7 +71,9 @@ export default function CheckoutNuevo() {
     saved.medio_pago && saved.medio_pago !== 'WebPay' ? saved.medio_pago : 'MercadoPago'
   );
   const [envioBluex, setEnvioBluex] = useState(null);
-  const [giftcard, setGiftcard] = useState(() => {
+  // Gift Card: se canjea en el CARRITO (paso anterior). Aquí solo se LEE la
+  // tarjeta ya aplicada para descontarla del total — sin input duplicado.
+  const [giftcard] = useState(() => {
     try { return JSON.parse(localStorage.getItem('peyu_giftcard_active') || 'null'); }
     catch { return null; }
   });
@@ -97,6 +98,9 @@ export default function CheckoutNuevo() {
   // bajo 10u → descuento B2C de siempre (2u −10% · 3+u −15%). Misma fuente que
   // ficha y carrito, ahora con los productos para que el mayorista persista.
   const { lineas: descLineas, ahorroTotal } = computeQtyDiscountBySku({ carrito, productosBySku });
+  // 🚚 Envío gratis ≥$40.000 SOLO B2C: pedidos B2B (líneas B2B del catálogo
+  // corporativo o compra con Factura empresa) pagan siempre su envío real.
+  const esB2B = tieneLineaB2B || billing.tipo_documento === 'Factura';
   const envio = envioBluex ? envioBluex.costo : 0;
   const total = Math.max(0, subtotal + cargoPersonalizacion - ahorroTotal + envio);
   // Descuento por Gift Card canjeada en el checkout.
@@ -673,23 +677,14 @@ export default function CheckoutNuevo() {
             comuna={cliente.ciudad}
             region={cliente.region}
             subtotal={subtotal}
-            umbralEnvioGratis={40000}
+            umbralEnvioGratis={esB2B ? Infinity : 40000}
             onSelect={setEnvioBluex}
           />
         </CollapsibleSectionV2>
       </div>
 
-      {/* 2.5 · Gift Card (canje opcional antes de pagar) */}
-      <CollapsibleSectionV2
-        step={null}
-        title="Gift Card"
-        subtitle="¿Tienes una tarjeta de regalo?"
-        {...sectionProps('giftcard')}
-        complete={!!giftcard}
-        summary={giftcard ? `Código ${giftcard.codigo} aplicado · saldo $${giftcard.saldo_clp.toLocaleString('es-CL')}` : null}
-      >
-        <GiftCardRedeemBox onChange={setGiftcard} />
-      </CollapsibleSectionV2>
+      {/* Gift Card: el canje vive en el carrito (paso anterior). Si viene una
+          aplicada, el resumen ya muestra su descuento. */}
 
       {/* 3 · Pago */}
       <CollapsibleSectionV2
