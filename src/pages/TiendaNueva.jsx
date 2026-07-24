@@ -9,6 +9,7 @@ import ResumeJourneyBannerV2 from '@/components/shopv2/ResumeJourneyBannerV2';
 import TrustSocialBarV2 from '@/components/shopv2/TrustSocialBarV2';
 import ImpactStoryV2 from '@/components/shopv2/ImpactStoryV2';
 import ProductCardV2 from '@/components/shopv2/ProductCardV2';
+import RuletaDescuento from '@/components/fidelizacion/RuletaDescuento';
 import { CATEGORIAS_V2 } from '@/lib/shop-v2-config';
 import { getProductImage } from '@/utils/productImages';
 
@@ -91,6 +92,9 @@ export default function TiendaNueva() {
       />
       {/* Continuidad: retomar personalización o cotización a medias */}
       <ResumeJourneyBannerV2 />
+
+      {/* Ruleta de fidelización "Gira y gana" (botón flotante, 1 giro por email) */}
+      <RuletaDescuento />
 
       {/* 1 · HERO BOLD */}
       <HeroBoldV2 heroImg={heroImg} slides={heroSlides} />
