@@ -15,7 +15,9 @@ import SEOHead from '@/components/SEOHead';
 import { trackGenerateLead } from '@/lib/analytics-peyu';
 import B2BHeader from '@/components/b2b/B2BHeader';
 import B2BPriceTable from '@/components/b2b/B2BPriceTable';
-import B2BLogoMockup from '@/components/b2b/B2BLogoMockup';
+import B2BLogoUploader from '@/components/b2b/B2BLogoUploader';
+import MockupLivePreviewV2 from '@/components/shopv2/MockupLivePreviewV2';
+import { isProductoCarcasa, getProductEngraggingArea } from '@/lib/product-engraving-areas';
 import ColorSwatchesV2 from '@/components/shopv2/ColorSwatchesV2';
 import { getColoresProducto } from '@/lib/color-parser';
 import { getColorTintFilter } from '@/lib/color-tint';
@@ -229,20 +231,36 @@ export default function EmpresaProducto() {
 
           {/* ── GALERÍA ── */}
           <div className="min-w-0 lg:sticky lg:top-24 lg:self-start space-y-3">
-            {/* Imagen principal */}
-            <div className="relative aspect-square rounded-3xl overflow-hidden" style={{ background: 'linear-gradient(145deg,#F7F2EC,#EDE3D6)', border: '1.5px solid #D4C4B0' }}>
-              <img
-                src={displayImg}
-                alt={producto.nombre}
-                className="w-full h-full"
-                style={{ objectFit: 'contain', objectPosition: 'center', padding: '12px', filter: colorFilter || undefined, transition: 'filter .25s ease' }}
-                onError={(e) => { e.target.style.opacity = '0.3'; }}
+            {/* Imagen principal — al subir el logo, el grabado ocurre AQUÍ MISMO
+                (misma imagen y color que se está viendo), sin duplicar la foto
+                más abajo. Se arrastra y escala directo sobre el producto. */}
+            {logoUrl ? (
+              <MockupLivePreviewV2
+                ref={mockupRef}
+                productImageUrl={displayImg}
+                fallbackUrl={getProductImage(producto)}
+                capas={[{ id: 'archivo', tipo: 'archivo', url: logoUrl }]}
+                onPlacementChange={setPlacements}
+                baseFilter={colorFilter || ''}
+                tintOverride={colorFilter && color?.hex ? toneFromHex(color.hex) : null}
+                esCarcasa={isProductoCarcasa(producto)}
+                customArea={getProductEngraggingArea(producto)}
               />
-              <span className="absolute top-4 left-4 text-[10px] font-bold px-2.5 py-1 rounded-full"
-                style={{ background: 'rgba(248,243,237,.92)', color: '#7A6050', border: '1px solid #D4C4B0' }}>
-                {esCompostable ? 'Compostable' : '100% Reciclado'}
-              </span>
-            </div>
+            ) : (
+              <div className="relative aspect-square rounded-3xl overflow-hidden" style={{ background: 'linear-gradient(145deg,#F7F2EC,#EDE3D6)', border: '1.5px solid #D4C4B0' }}>
+                <img
+                  src={displayImg}
+                  alt={producto.nombre}
+                  className="w-full h-full"
+                  style={{ objectFit: 'contain', objectPosition: 'center', padding: '12px', filter: colorFilter || undefined, transition: 'filter .25s ease' }}
+                  onError={(e) => { e.target.style.opacity = '0.3'; }}
+                />
+                <span className="absolute top-4 left-4 text-[10px] font-bold px-2.5 py-1 rounded-full"
+                  style={{ background: 'rgba(248,243,237,.92)', color: '#7A6050', border: '1px solid #D4C4B0' }}>
+                  {esCompostable ? 'Compostable' : '100% Reciclado'}
+                </span>
+              </div>
+            )}
 
             {/* Thumbnails */}
             {images.length > 1 && (
@@ -364,47 +382,35 @@ export default function EmpresaProducto() {
             {/* Tabla de precios */}
             <B2BPriceTable producto={producto} qtyActual={qty} />
 
-            {/* Mockup con logo — usa la MISMA imagen que la galería (color elegido).
-                El mockup CSS es instantáneo y definitivo, sin botón de generar. */}
-            <B2BLogoMockup
-              producto={producto}
-              onLogoChange={setLogoUrl}
-              productImgOverride={displayImg}
-              colorFilterOverride={colorFilter}
-              tintOverride={colorFilter && color?.hex ? toneFromHex(color.hex) : null}
-              mockupRef={mockupRef}
-              onPlacementChange={setPlacements}
-            />
+            {/* Logo del cliente — el grabado se muestra sobre la imagen de arriba */}
+            <B2BLogoUploader value={logoUrl} onChange={setLogoUrl} logoGratis={logoGratis} moq={moq} />
 
-            {/* Qué incluye */}
+            {/* Qué incluye — chips compactos (antes era una lista larga vertical) */}
             {incluye.length > 0 && (
-              <div>
-                <p className="text-xs font-bold uppercase tracking-wider mb-2.5 flex items-center gap-1.5" style={{ color: '#7A6050' }}>
-                  <Package className="w-3.5 h-3.5" style={{ color: '#0F8B6C' }} /> Qué incluye
-                </p>
-                <ul className="space-y-2">
-                  {incluye.map((item, i) => (
-                    <li key={i} className="flex items-start gap-2 text-sm" style={{ color: '#4B4F54' }}>
-                      <Check className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" style={{ color: '#0F8B6C' }} /> {item}
-                    </li>
-                  ))}
-                </ul>
+              <div className="flex flex-wrap items-center gap-1.5">
+                <span className="inline-flex items-center gap-1 text-[11px] font-bold uppercase tracking-wider mr-0.5" style={{ color: '#7A6050' }}>
+                  <Package className="w-3.5 h-3.5" style={{ color: '#0F8B6C' }} /> Incluye
+                </span>
+                {incluye.map((item, i) => (
+                  <span key={i} className="inline-flex items-center gap-1 text-[11px] font-semibold px-2.5 py-1.5 rounded-full"
+                    style={{ background: 'white', border: '1px solid #D4C4B0', color: '#4B4F54' }}>
+                    <Check className="w-3 h-3 flex-shrink-0" style={{ color: '#0F8B6C' }} /> {item}
+                  </span>
+                ))}
               </div>
             )}
 
-            {/* Trust badges */}
-            <div className="grid grid-cols-3 gap-1.5 sm:gap-2">
+            {/* Sellos en una sola línea fina */}
+            <div className="flex items-center justify-between gap-2 rounded-2xl px-3.5 py-2.5" style={{ background: 'white', border: '1.5px solid #D4C4B0' }}>
               {[
                 { icon: Recycle, t: '100% reciclado' },
                 { icon: Truck, t: 'Envío a Chile' },
                 { icon: ShieldCheck, t: '10 años garantía' },
               ].map((b, i) => (
-                <div key={i} className="flex flex-col items-center gap-1 sm:gap-2 rounded-xl sm:rounded-2xl p-2 sm:p-3.5 text-center" style={{ background: 'white', border: '1.5px solid #D4C4B0' }}>
-                  <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl flex items-center justify-center" style={{ background: 'rgba(139,173,138,.12)' }}>
-                    <b.icon className="w-4 h-4 sm:w-5 sm:h-5" style={{ color: '#8BAD8A' }} />
-                  </div>
-                  <span className="text-[9px] sm:text-xs font-bold leading-tight" style={{ color: '#7A6050' }}>{b.t}</span>
-                </div>
+                <span key={i} className="flex items-center gap-1.5 min-w-0">
+                  <b.icon className="w-4 h-4 flex-shrink-0" style={{ color: '#8BAD8A' }} />
+                  <span className="text-[10px] sm:text-[11px] font-bold truncate" style={{ color: '#7A6050' }}>{b.t}</span>
+                </span>
               ))}
             </div>
 
