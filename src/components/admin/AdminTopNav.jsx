@@ -55,7 +55,15 @@ export default function AdminTopNav() {
           >
             📊 Inicio
           </Link>
-          {GUIDE_AREAS.map((area) => <AdminNavMenu key={area.id} area={area} />)}
+          {GUIDE_AREAS.map((area) => (
+            <AdminNavMenu key={area.id} area={area} onSearch={() => setLauncherOpen(true)} />
+          ))}
+          <Link
+            to="/admin/agente"
+            className="px-3 py-2 rounded-lg text-sm font-medium text-teal-300/90 hover:text-white hover:bg-teal-500/10 transition-colors"
+          >
+            🐢 Peyu
+          </Link>
         </div>
 
         {/* Mobile dropdown */}
@@ -75,6 +83,13 @@ export default function AdminTopNav() {
                 className="block px-3 py-2 text-sm font-semibold text-white/90 hover:bg-teal-500/20"
               >
                 📊 Inicio
+              </Link>
+              <Link
+                to="/admin/agente"
+                onClick={() => setDropdownOpen(false)}
+                className="block px-3 py-2 text-sm font-semibold text-teal-300 hover:bg-teal-500/20"
+              >
+                🐢 Preguntarle a Peyu
               </Link>
               {GUIDE_AREAS.map((area) => (
                 <div key={area.id} className="border-t border-white/5">

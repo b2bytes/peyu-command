@@ -3,7 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { ChevronDown } from 'lucide-react';
 
 // Un menú del top nav: un área (Vender, Producir…) con sus destinos.
-export default function AdminNavMenu({ area }) {
+export default function AdminNavMenu({ area, onSearch }) {
   const [open, setOpen] = useState(false);
   const { pathname } = useLocation();
   const isActive = area.links.some((l) => pathname === l.to);
@@ -35,6 +35,12 @@ export default function AdminNavMenu({ area }) {
               {l.label}
             </Link>
           ))}
+          <button
+            onClick={() => { setOpen(false); onSearch?.(); }}
+            className="w-full text-left px-3 py-2 text-xs text-white/45 hover:text-white/80 border-t border-white/10 mt-1"
+          >
+            Buscar otro módulo · ⌘K
+          </button>
         </div>
       )}
     </div>
