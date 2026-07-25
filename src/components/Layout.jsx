@@ -5,6 +5,7 @@
 import { Outlet, useLocation } from 'react-router-dom';
 import SEO from '@/components/SEO';
 import PeyuCompanion from '@/components/admin/PeyuCompanion';
+import PeyuGuide from '@/components/admin/PeyuGuide';
 import AdminTopNav from '@/components/admin/AdminTopNav';
 import AdminInstallBanner from '@/components/agente-os/mobile/AdminInstallBanner';
 
@@ -42,6 +43,9 @@ export default function Layout() {
       {/* Banner para instalar PEYU OS en el celular (solo founders/admin).
           En el Agente NO se muestra: ahí el bottom tab bar ocupa esa zona. */}
       {!esAgente && <AdminInstallBanner />}
+      {/* Peyu Guide: el avatar que acompaña a fundadores y equipo — dice qué
+          hacer ahora y guía por caminos (vender, producir, administrar, crecer). */}
+      {!esAgente && <PeyuGuide />}
     </div>
   );
 }
