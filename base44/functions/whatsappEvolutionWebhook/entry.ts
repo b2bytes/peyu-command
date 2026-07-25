@@ -12,6 +12,7 @@ import {
   enviarTexto, enviarPresencia, partirEnBurbujas, delayHumano, formatearTelefonoCL,
 } from '../../shared/evolution.ts';
 import { clasificarConversacion } from '../../shared/whatsapp-pipeline.ts';
+import { interpretarAdjunto } from '../../shared/whatsapp-media.ts';
 
 const ESPERA_MAX_MS = 55000;
 const INTERVALO_POLL_MS = 1800;
@@ -87,19 +88,29 @@ Deno.serve(async (req) => {
     const nombreCliente = data.pushName || '';
     let texto = extraerTexto(data.message);
 
-    // 4 · Adjuntos sin texto: se pide al cliente que escriba
-    if (!texto) {
-      const adjunto = tipoAdjunto(data.message);
+    const base44 = createClientFromRequest(req);
+    const agents = base44.asServiceRole.agents;
+
+    // 4 · Adjuntos: notas de voz se transcriben y las fotos se "miran".
+    const adjunto = tipoAdjunto(data.message);
+    if (adjunto === 'audio' || adjunto === 'imagen') {
+      await enviarPresencia(telefono, 'composing', 2500);
+      const interpretado = await interpretarAdjunto(base44.asServiceRole, data, adjunto, texto).catch(() => '');
+      if (interpretado) {
+        texto = interpretado;
+      } else if (!texto) {
+        await enviarTexto(telefono, `Recibí tu ${adjunto} 🐢 pero no logré abrirlo bien. ¿Me lo cuentas en un mensaje escrito? Te ayudo al instante.`);
+        return Response.json({ ok: true, respondido: 'adjunto_ilegible' });
+      }
+    } else if (!texto) {
       if (adjunto) {
-        await enviarTexto(telefono, `¡Gracias! Recibí tu ${adjunto} 🐢 Por ahora leo mejor los mensajes escritos — cuéntame en texto qué necesitas y te ayudo al instante.`);
+        await enviarTexto(telefono, `¡Gracias! Recibí tu ${adjunto} 🐢 Cuéntame en texto qué necesitas y te ayudo al instante.`);
         return Response.json({ ok: true, respondido: 'aviso_adjunto' });
       }
       return Response.json({ ok: true, ignorado: 'sin_contenido' });
     }
 
     // 5 · Conversación del agente (service role: no hay usuario logueado)
-    const base44 = createClientFromRequest(req);
-    const agents = base44.asServiceRole.agents;
     const conversacion = await obtenerConversacion(agents, telefono, nombreCliente);
     if (!conversacion?.id) {
       return Response.json({ ok: false, error: 'No se pudo abrir la conversación del agente' }, { status: 500 });

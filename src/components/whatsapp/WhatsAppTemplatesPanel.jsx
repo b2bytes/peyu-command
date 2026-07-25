@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
-import { Plus, Pencil, Trash2, Loader2, FileText, Copy, Check } from 'lucide-react';
+import { Plus, Pencil, Trash2, Loader2, FileText, Copy, Check, Sparkles } from 'lucide-react';
 import PlantillaFormModal from './PlantillaFormModal';
+import PlantillasIAModal from './PlantillasIAModal';
 
 // Biblioteca de plantillas de WhatsApp del equipo.
 export default function WhatsAppTemplatesPanel() {
@@ -10,6 +11,7 @@ export default function WhatsAppTemplatesPanel() {
   const [editando, setEditando] = useState(null);
   const [abrirForm, setAbrirForm] = useState(false);
   const [copiada, setCopiada] = useState('');
+  const [abrirIA, setAbrirIA] = useState(false);
 
   const cargar = async () => {
     const l = await base44.entities.PlantillaWhatsApp.list('-updated_date', 200).catch(() => []);
@@ -39,6 +41,13 @@ export default function WhatsAppTemplatesPanel() {
           <p className="text-sm font-bold text-white leading-none">Plantillas</p>
           <p className="text-[10px] text-white/40 mt-0.5">{plantillas.length} mensajes guardados</p>
         </div>
+        <button
+          onClick={() => setAbrirIA(true)}
+          className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full text-xs font-bold text-white hover:brightness-110"
+          style={{ background: 'linear-gradient(135deg,#8B5CF6,#EC4899)' }}
+        >
+          <Sparkles className="w-4 h-4" /> <span className="hidden sm:inline">Crear con</span> IA
+        </button>
         <button
           onClick={() => { setEditando(null); setAbrirForm(true); }}
           className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full text-xs font-bold text-white hover:brightness-110"
@@ -89,6 +98,8 @@ export default function WhatsAppTemplatesPanel() {
           </div>
         )}
       </div>
+
+      {abrirIA && <PlantillasIAModal onClose={() => setAbrirIA(false)} onSaved={cargar} />}
 
       {abrirForm && (
         <PlantillaFormModal plantilla={editando} onClose={() => setAbrirForm(false)} onSaved={cargar} />

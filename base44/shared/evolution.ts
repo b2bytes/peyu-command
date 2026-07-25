@@ -120,6 +120,19 @@ export function tipoAdjunto(message) {
   return '';
 }
 
+/**
+ * Descarga el adjunto de un mensaje entrante en base64 (audio, imagen, doc).
+ * Evolution guarda el archivo cifrado en WhatsApp: este endpoint lo descifra.
+ */
+export async function descargarMediaBase64(data) {
+  const cfg = getEvoConfig();
+  const r = await evoFetch(`/chat/getBase64FromMediaMessage/${cfg.instance}`, {
+    method: 'POST',
+    body: { message: { key: data?.key, message: data?.message }, convertToMp4: false },
+  });
+  return r?.data?.base64 || '';
+}
+
 // ── Envío ──────────────────────────────────────────────────────────────
 
 /** Marca "escribiendo…" para que la respuesta se sienta humana. */
