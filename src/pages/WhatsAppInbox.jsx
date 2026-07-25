@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import {
   MessageCircle, RefreshCw, Loader2, ArrowLeft, QrCode,
-  Inbox, KanbanSquare, Sparkles, PanelRightClose, PanelRightOpen,
+  Inbox, Sparkles, PanelRightClose, PanelRightOpen,
 } from 'lucide-react';
 import WhatsAppConvList from '@/components/whatsapp/WhatsAppConvList';
 import WhatsAppPipeline from '@/components/whatsapp/WhatsAppPipeline';
@@ -11,6 +11,9 @@ import WhatsAppThread from '@/components/whatsapp/WhatsAppThread';
 import WhatsAppQRModal from '@/components/whatsapp/WhatsAppQRModal';
 import EvolutionConnectModal from '@/components/whatsapp/EvolutionConnectModal';
 import WhatsAppContextPanel from '@/components/whatsapp/WhatsAppContextPanel';
+import WhatsAppViewTabs from '@/components/whatsapp/WhatsAppViewTabs';
+import WhatsAppClientesPanel from '@/components/whatsapp/WhatsAppClientesPanel';
+import WhatsAppTemplatesPanel from '@/components/whatsapp/WhatsAppTemplatesPanel';
 
 // ════════════════════════════════════════════════════════════════════════
 // /admin/whatsapp — WhatsApp Studio: bandeja de entrada conversacional
@@ -25,7 +28,7 @@ export default function WhatsAppInbox() {
   const [showQR, setShowQR] = useState(false);
   const [connectUrl, setConnectUrl] = useState('');
   const [connectError, setConnectError] = useState('');
-  const [view, setView] = useState('inbox'); // 'inbox' | 'pipeline'
+  const [view, setView] = useState('inbox'); // 'inbox' | 'pipeline' | 'clientes' | 'plantillas'
   const [etapas, setEtapas] = useState([]);
   const [syncing, setSyncing] = useState(false);
   const [rightOpen, setRightOpen] = useState(true);
@@ -114,7 +117,7 @@ export default function WhatsAppInbox() {
         className="relative flex-shrink-0 flex items-center gap-2.5 px-3 sm:px-4 py-2.5 z-10"
         style={{ background: 'rgba(7,94,84,.10)', backdropFilter: 'blur(20px) saturate(160%)', WebkitBackdropFilter: 'blur(20px) saturate(160%)', borderBottom: '1px solid rgba(255,255,255,.08)' }}
       >
-        {active && view !== 'pipeline' && (
+        {active && view === 'inbox' && (
           <button onClick={() => setActive(null)} className="md:hidden w-9 h-9 rounded-full hover:bg-white/10 flex items-center justify-center text-white/80 transition-colors" aria-label="Volver">
             <ArrowLeft className="w-5 h-5" />
           </button>
@@ -127,29 +130,18 @@ export default function WhatsAppInbox() {
         </div>
         <div className="min-w-0 flex-1">
           <h1 className="text-sm font-bold text-white leading-none truncate">
-            {active && view !== 'pipeline' ? activeNombre : 'WhatsApp Studio'}
+            {active && view === 'inbox' ? activeNombre : 'WhatsApp Studio'}
           </h1>
           <p className="text-[10px] text-white/50 mt-0.5 truncate">
-            {active && view !== 'pipeline'
+            {active && view === 'inbox'
               ? (active?.metadata?.human_takeover ? '👤 Tú tienes el control' : '🐢 Agente Peyu activo')
               : `En línea 24/7 · ${conversations.length} chats`}
           </p>
         </div>
 
-        {/* Toggle Bandeja | Pipeline — desktop */}
-        <div className="hidden sm:flex items-center gap-0.5 p-0.5 rounded-full bg-white/[0.06] flex-shrink-0">
-          <button
-            onClick={() => setView('inbox')}
-            className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-[11px] font-bold transition-all ${view === 'inbox' ? 'bg-white text-[#075E54] shadow-sm' : 'text-white/60 hover:text-white'}`}
-          >
-            <Inbox className="w-3.5 h-3.5" /> Bandeja
-          </button>
-          <button
-            onClick={() => setView('pipeline')}
-            className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-[11px] font-bold transition-all ${view === 'pipeline' ? 'bg-white text-[#075E54] shadow-sm' : 'text-white/60 hover:text-white'}`}
-          >
-            <KanbanSquare className="w-3.5 h-3.5" /> Pipeline
-          </button>
+        {/* Selector de vista — desktop */}
+        <div className="hidden sm:block">
+          <WhatsAppViewTabs view={view} onChange={setView} />
         </div>
 
         {/* Enlace a Social Studio */}
@@ -184,20 +176,9 @@ export default function WhatsAppInbox() {
         </button>
       </header>
 
-      {/* Toggle mobile Bandeja | Pipeline */}
-      <div className="sm:hidden flex-shrink-0 flex items-center gap-1 px-3 py-2" style={{ borderBottom: '1px solid rgba(255,255,255,.08)' }}>
-        <button
-          onClick={() => setView('inbox')}
-          className={`flex-1 inline-flex items-center justify-center gap-1 px-3 py-1.5 rounded-full text-[11px] font-bold transition-all ${view === 'inbox' ? 'bg-white/15 text-white' : 'text-white/40'}`}
-        >
-          <Inbox className="w-3.5 h-3.5" /> Bandeja
-        </button>
-        <button
-          onClick={() => setView('pipeline')}
-          className={`flex-1 inline-flex items-center justify-center gap-1 px-3 py-1.5 rounded-full text-[11px] font-bold transition-all ${view === 'pipeline' ? 'bg-white/15 text-white' : 'text-white/40'}`}
-        >
-          <KanbanSquare className="w-3.5 h-3.5" /> Pipeline
-        </button>
+      {/* Selector de vista — mobile */}
+      <div className="sm:hidden flex-shrink-0 px-3 py-2" style={{ borderBottom: '1px solid rgba(255,255,255,.08)' }}>
+        <WhatsAppViewTabs view={view} onChange={setView} variant="mobile" />
       </div>
 
       {/* ── Vista Pipeline: kanban inteligente (full width) ──────────────── */}
@@ -217,8 +198,26 @@ export default function WhatsAppInbox() {
         </div>
       )}
 
+      {/* ── Vista Clientes: base de datos + redacción con plantillas ─────── */}
+      {view === 'clientes' && (
+        <div className="relative flex-1 min-h-0 p-2">
+          <div className="h-full rounded-2xl overflow-hidden" style={{ background: 'rgba(0,0,0,.22)', border: '1px solid rgba(255,255,255,.08)' }}>
+            <WhatsAppClientesPanel />
+          </div>
+        </div>
+      )}
+
+      {/* ── Vista Plantillas: biblioteca de mensajes ─────────────────────── */}
+      {view === 'plantillas' && (
+        <div className="relative flex-1 min-h-0 p-2">
+          <div className="h-full rounded-2xl overflow-hidden" style={{ background: 'rgba(0,0,0,.22)', border: '1px solid rgba(255,255,255,.08)' }}>
+            <WhatsAppTemplatesPanel />
+          </div>
+        </div>
+      )}
+
       {/* ── Vista Bandeja: 3 columnas (lista + hilo + contexto) ──────────── */}
-      {view !== 'pipeline' && (
+      {view === 'inbox' && (
         <div className="relative flex-1 flex min-h-0 p-2 gap-2">
 
           {/* Columna izquierda · Bandeja de conversaciones (glass, colapsable implícito en mobile) */}

@@ -1,0 +1,76 @@
+{
+  "name": "PlantillaWhatsApp",
+  "type": "object",
+  "description": "Plantillas de mensajes de WhatsApp reutilizables por el equipo PEYU. Soportan variables {{nombre}} y {{empresa}} que se reemplazan al enviar a cada cliente.",
+  "properties": {
+    "description": {
+      "type": "string",
+      "title": "Descripci\u00f3n",
+      "maxLength": 1000
+    },
+    "nombre": {
+      "type": "string",
+      "title": "Nombre de la plantilla"
+    },
+    "categoria": {
+      "type": "string",
+      "title": "Categor\u00eda",
+      "enum": [
+        "Bienvenida",
+        "Seguimiento",
+        "Cotizaci\u00f3n",
+        "Postventa",
+        "Promoci\u00f3n",
+        "Reactivaci\u00f3n",
+        "Otro"
+      ],
+      "default": "Otro"
+    },
+    "mensaje": {
+      "type": "string",
+      "title": "Mensaje",
+      "description": "Texto del mensaje. Acepta {{nombre}} y {{empresa}}."
+    },
+    "activo": {
+      "type": "boolean",
+      "title": "Activa",
+      "default": true
+    },
+    "usos": {
+      "type": "number",
+      "title": "Veces usada",
+      "default": 0
+    },
+    "orden": {
+      "type": "number",
+      "title": "Orden",
+      "default": 0
+    }
+  },
+  "required": [
+    "nombre",
+    "mensaje"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
