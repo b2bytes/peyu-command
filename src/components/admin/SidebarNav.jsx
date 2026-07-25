@@ -44,6 +44,7 @@ export const NAV_GROUPS = [
       { path: '/admin/propuestas',    label: 'Propuestas B2B',     icon: FileText },
       { path: '/admin/ecommerce',     label: 'E-commerce B2C',     icon: ShoppingCart },
       { path: '/admin/clientes',      label: 'Clientes',           icon: UserCheck },
+      { path: '/admin/whatsapp',    label: 'Inbox WhatsApp',     icon: MessageSquare },
       { path: '/admin/mensajes',    label: 'Centro de Mensajes', icon: MessageSquare },
       { path: '/admin/secuencias',  label: 'Secuencias Auto',    icon: Workflow },
       { path: '/admin/soporte',       label: 'Soporte',            icon: MessageSquare },

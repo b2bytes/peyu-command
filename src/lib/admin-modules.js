@@ -23,6 +23,8 @@ export const ADMIN_MODULES = [
   { ruta: '/admin/clientes', nombre: 'Clientes', grupo: 'Ventas', emoji: '👥', kw: 'base compradores historial' },
   { ruta: '/admin/cliente-360', nombre: 'Cliente 360°', grupo: 'Ventas', emoji: '🔍', kw: 'ficha completa historial persona' },
   { ruta: '/admin/chat-leads', nombre: 'Chat Leads', grupo: 'Ventas', emoji: '💬', kw: 'conversaciones web capturados' },
+  { ruta: '/admin/whatsapp', nombre: 'Inbox WhatsApp', grupo: 'Ventas', emoji: '📱', kw: 'whatsapp clientes conversaciones chats agente peyu pipeline mensajes wsp' },
+  { ruta: '/admin/mensajes', nombre: 'Centro de Mensajes', grupo: 'Ventas', emoji: '📨', kw: 'mensajes conversaciones unificado web whatsapp' },
 
   // ── Catálogo ──
   { ruta: '/admin/catalogo', nombre: 'Catálogo', grupo: 'Catálogo', emoji: '🛍️', kw: 'productos precios stock sku colores' },
