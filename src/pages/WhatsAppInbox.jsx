@@ -9,6 +9,7 @@ import WhatsAppConvList from '@/components/whatsapp/WhatsAppConvList';
 import WhatsAppPipeline from '@/components/whatsapp/WhatsAppPipeline';
 import WhatsAppThread from '@/components/whatsapp/WhatsAppThread';
 import WhatsAppQRModal from '@/components/whatsapp/WhatsAppQRModal';
+import EvolutionConnectModal from '@/components/whatsapp/EvolutionConnectModal';
 import WhatsAppContextPanel from '@/components/whatsapp/WhatsAppContextPanel';
 
 // ════════════════════════════════════════════════════════════════════════
@@ -298,7 +299,10 @@ export default function WhatsAppInbox() {
         </div>
       )}
 
-      {showQR && <WhatsAppQRModal url={connectUrl} errorDetail={connectError} onClose={() => setShowQR(false)} />}
+      {/* Conexión del número REAL de la tienda vía middleware Evolution API.
+          El modal antiguo (número asignado por Base44) queda disponible como
+          respaldo, pero el flujo oficial ahora es el QR del número propio. */}
+      {showQR && <EvolutionConnectModal onClose={() => setShowQR(false)} />}
     </div>
   );
 }
