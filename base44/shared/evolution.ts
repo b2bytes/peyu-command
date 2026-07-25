@@ -17,7 +17,9 @@ export const AGENT_NAME = 'whatsapp_peyu';
 
 /** Lee y valida la configuración. Lanza un error legible si falta algo. */
 export function getEvoConfig() {
-  const url = (Deno.env.get('EVOLUTION_API_URL') || '').replace(/\/+$/, '');
+  // Tolera que el dominio se pegue sin esquema (Railway lo muestra así).
+  let url = (Deno.env.get('EVOLUTION_API_URL') || '').trim().replace(/\/+$/, '');
+  if (url && !/^https?:\/\//i.test(url)) url = `https://${url}`;
   const apiKey = Deno.env.get('EVOLUTION_API_KEY') || '';
   const instance = Deno.env.get('EVOLUTION_INSTANCE') || 'peyu';
   const webhookSecret = Deno.env.get('EVOLUTION_WEBHOOK_SECRET') || '';
