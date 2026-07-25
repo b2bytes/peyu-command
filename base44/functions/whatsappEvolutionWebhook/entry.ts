@@ -11,6 +11,7 @@ import {
   AGENT_NAME, getEvoConfig, fromJid, esGrupo, extraerTexto, tipoAdjunto,
   enviarTexto, enviarPresencia, partirEnBurbujas, delayHumano, formatearTelefonoCL,
 } from '../../shared/evolution.ts';
+import { clasificarConversacion } from '../../shared/whatsapp-pipeline.ts';
 
 const ESPERA_MAX_MS = 55000;
 const INTERVALO_POLL_MS = 1800;
@@ -107,6 +108,7 @@ Deno.serve(async (req) => {
     // 6 · Control humano activo → el mensaje entra a la bandeja y el bot calla
     if (conversacion?.metadata?.human_takeover) {
       await agents.addMessage(conversacion, { role: 'user', content: texto });
+      await clasificarConversacion(base44.asServiceRole, conversacion).catch(() => null);
       console.log(`[WhatsApp] ${telefono}: control humano activo, sin respuesta automática.`);
       return Response.json({ ok: true, modo: 'humano' });
     }
@@ -132,6 +134,9 @@ Deno.serve(async (req) => {
       }
       await enviarTexto(telefono, burbujas[i], { delayMs: i === 0 ? delayHumano(burbujas[i]) : 400 });
     }
+
+    // 9 · El agente mueve la tarjeta del pipeline según lo que acaba de pasar
+    await clasificarConversacion(base44.asServiceRole, { id: conversacion.id }).catch(() => null);
 
     return Response.json({ ok: true, telefono, burbujas: burbujas.length });
   } catch (error) {

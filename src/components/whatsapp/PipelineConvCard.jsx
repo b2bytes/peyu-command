@@ -49,6 +49,9 @@ export default function PipelineConvCard({ item, color, onOpen }) {
           </span>
         )}
       </div>
+      {item.telefono && (
+        <p className="text-[10px] text-ld-fg-subtle mt-0.5">{item.telefono}</p>
+      )}
       {item.resumen && (
         <p className="text-[11px] text-ld-fg-muted mt-1 line-clamp-2 leading-snug">{item.resumen}</p>
       )}

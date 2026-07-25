@@ -67,11 +67,12 @@ export default function WhatsAppInbox() {
     return () => document.documentElement.setAttribute('data-liquid-mode', prev || 'day');
   }, []);
 
+  // La bandeja se lee por backend (whatsappInbox): las conversaciones las crea
+  // el webhook con service role, así que el SDK del navegador no las ve.
   const load = async () => {
-    const convs = await base44.agents.listConversations({ agent_name: 'whatsapp_peyu' }).catch(() => []);
-    setConversations(convs || []);
-    const et = await base44.entities.WhatsAppConvEtapa.list('-updated_date', 300).catch(() => []);
-    setEtapas(et || []);
+    const r = await base44.functions.invoke('whatsappInbox', { action: 'list' }).catch(() => null);
+    setConversations(r?.data?.conversations || []);
+    setEtapas(r?.data?.etapas || []);
     setLoading(false);
   };
 
@@ -90,8 +91,9 @@ export default function WhatsAppInbox() {
   }, []);
 
   const openConversation = async (c) => {
-    const full = await base44.agents.getConversation(c.id).catch(() => c);
-    setActive(full || c);
+    setActive(c);
+    const r = await base44.functions.invoke('whatsappInbox', { action: 'get', conversation_id: c.id }).catch(() => null);
+    if (r?.data?.conversation) setActive(r.data.conversation);
   };
 
   // Cuando el thread hace takeover/resume, actualiza la conversación activa

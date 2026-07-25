@@ -39,7 +39,7 @@ export default function WhatsAppConvList({ conversations, activeId, onSelect }) 
     if (!q) return sorted;
     return sorted.filter((c) => {
       const nombre = (c.metadata?.name || '').toLowerCase();
-      const last = (c.messages?.[c.messages.length - 1]?.content || '').toLowerCase();
+      const last = (c.last_message?.content || c.messages?.[c.messages.length - 1]?.content || '').toLowerCase();
       return nombre.includes(q) || last.includes(q);
     });
   }, [conversations, search, filtro]);
@@ -84,7 +84,7 @@ export default function WhatsAppConvList({ conversations, activeId, onSelect }) 
       ) : (
         <div className="flex-1 overflow-y-auto peyu-scrollbar">
           {filtered.map((c) => {
-            const last = c.messages?.[c.messages.length - 1];
+            const last = c.last_message || c.messages?.[c.messages.length - 1];
             const nombre = c.metadata?.name || `Cliente ${c.id?.slice(-5)}`;
             const isActive = activeId === c.id;
             const humanMode = c.metadata?.human_takeover === true;

@@ -3,6 +3,7 @@ import {
   MessageCircle, User, AlertTriangle, TrendingUp,
   Building2, ShoppingBag, Sparkles, ArrowUpRight,
 } from 'lucide-react';
+import WhatsAppClienteFicha from '@/components/whatsapp/WhatsAppClienteFicha';
 
 const AVATAR_COLORS = ['#128C7E', '#34B7F1', '#FF8C42', '#9C27B0', '#E91E63', '#5C6BC0'];
 const avatarColor = (id = '') => AVATAR_COLORS[(id.charCodeAt(id.length - 1) || 0) % AVATAR_COLORS.length];
@@ -60,7 +61,9 @@ export default function WhatsAppContextPanel({ active, etapa, onOpenPipeline }) 
           </span>
           <div className="min-w-0 flex-1">
             <p className="text-sm font-bold text-white truncate leading-tight">{nombre}</p>
-            {etapa?.telefono && <p className="text-[10px] text-white/40 truncate mt-0.5">{etapa.telefono}</p>}
+            {(active.metadata?.phone || etapa?.telefono) && (
+              <p className="text-[10px] text-white/40 truncate mt-0.5">{active.metadata?.phone || etapa?.telefono}</p>
+            )}
           </div>
         </div>
         {/* Status badges */}
@@ -91,6 +94,9 @@ export default function WhatsAppContextPanel({ active, etapa, onOpenPipeline }) 
           <p className="text-[10px] text-white/40 mt-2.5 leading-snug line-clamp-2 italic">"{etapa.resumen}"</p>
         )}
       </div>
+
+      {/* ── Ficha de cliente PRO (compras, gasto, preferencias) ─────────── */}
+      <WhatsAppClienteFicha telefono={active.metadata?.phone || etapa?.telefono || ''} />
 
       {/* ── Pipeline stage ───────────────────────────────────────────────── */}
       {stageInfo && (
