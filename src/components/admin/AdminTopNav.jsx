@@ -2,15 +2,8 @@ import { Link, useLocation } from 'react-router-dom';
 import { Turtle, ShoppingCart, Building2, ChevronDown, Search } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import AdminQuickLauncher from './AdminQuickLauncher';
-
-const MAIN_SECTIONS = [
-  { label: 'Dashboard', path: '/admin', icon: '📊' },
-  { label: 'Pedidos', path: '/admin/operaciones', icon: '📦' },
-  { label: 'Pipeline B2B', path: '/admin/pipeline', icon: '🎯' },
-  { label: 'Catálogo', path: '/admin/catalogo', icon: '🛍️' },
-  { label: 'Clientes', path: '/admin/clientes', icon: '👥' },
-  { label: 'Reportes', path: '/admin/reportes', icon: '📈' },
-];
+import AdminNavMenu from './AdminNavMenu';
+import { GUIDE_AREAS } from '@/lib/peyu-guide-areas';
 
 const PUBLIC_LINKS = [
   { label: 'Tienda B2C', href: '/', icon: ShoppingCart, color: 'text-teal-400' },
@@ -34,7 +27,7 @@ export default function AdminTopNav() {
     return () => window.removeEventListener('keydown', onKey);
   }, []);
 
-  const currentSection = MAIN_SECTIONS.find(s => location.pathname.startsWith(s.path));
+  const areaActual = GUIDE_AREAS.find((a) => a.links.some((l) => l.to === location.pathname));
 
   return (
     <nav className="sticky top-0 z-50 bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 border-b border-white/10">
@@ -50,25 +43,19 @@ export default function AdminTopNav() {
           </div>
         </div>
 
-        {/* Menú principal */}
+        {/* Menú principal · Inicio + los 4 caminos del negocio */}
         <div className="hidden lg:flex items-center gap-1">
-          {MAIN_SECTIONS.map((section) => {
-            const isActive = location.pathname.startsWith(section.path);
-            return (
-              <Link
-                key={section.path}
-                to={section.path}
-                className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                  isActive
-                    ? 'text-teal-300 bg-teal-500/[0.12]'
-                    : 'text-white/60 hover:text-white/90 hover:bg-white/5'
-                }`}
-              >
-                <span className="mr-1">{section.icon}</span>
-                {section.label}
-              </Link>
-            );
-          })}
+          <Link
+            to="/admin"
+            className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+              location.pathname === '/admin'
+                ? 'text-teal-300 bg-teal-500/[0.12]'
+                : 'text-white/60 hover:text-white/90 hover:bg-white/5'
+            }`}
+          >
+            📊 Inicio
+          </Link>
+          {GUIDE_AREAS.map((area) => <AdminNavMenu key={area.id} area={area} />)}
         </div>
 
         {/* Mobile dropdown */}
@@ -77,20 +64,34 @@ export default function AdminTopNav() {
             onClick={() => setDropdownOpen(!dropdownOpen)}
             className="w-full flex items-center justify-between px-3 py-2 rounded-lg bg-white/5 text-white/80 hover:bg-white/10 transition-colors"
           >
-            <span className="text-sm font-medium">{currentSection?.icon} {currentSection?.label || 'Menú'}</span>
+            <span className="text-sm font-medium">{areaActual ? `${areaActual.emoji} ${areaActual.label}` : '📊 Menú'}</span>
             <ChevronDown className={`w-4 h-4 transition-transform ${dropdownOpen ? 'rotate-180' : ''}`} />
           </button>
           {dropdownOpen && (
-            <div className="absolute top-full mt-1 left-0 right-0 bg-slate-800 border border-white/10 rounded-lg shadow-lg overflow-hidden">
-              {MAIN_SECTIONS.map((section) => (
-                <Link
-                  key={section.path}
-                  to={section.path}
-                  className="block px-3 py-2 text-sm text-white/80 hover:bg-teal-500/20 border-b border-white/5 last:border-0"
-                  onClick={() => setDropdownOpen(false)}
-                >
-                  {section.icon} {section.label}
-                </Link>
+            <div className="absolute top-full mt-1 left-0 right-0 max-h-[70vh] overflow-y-auto bg-slate-800 border border-white/10 rounded-lg shadow-lg">
+              <Link
+                to="/admin"
+                onClick={() => setDropdownOpen(false)}
+                className="block px-3 py-2 text-sm font-semibold text-white/90 hover:bg-teal-500/20"
+              >
+                📊 Inicio
+              </Link>
+              {GUIDE_AREAS.map((area) => (
+                <div key={area.id} className="border-t border-white/5">
+                  <p className="px-3 pt-2 pb-1 text-[10px] uppercase tracking-wider text-white/35 font-bold">
+                    {area.emoji} {area.label}
+                  </p>
+                  {area.links.map((l) => (
+                    <Link
+                      key={l.to}
+                      to={l.to}
+                      onClick={() => setDropdownOpen(false)}
+                      className="block px-3 py-2 text-sm text-white/75 hover:bg-teal-500/20"
+                    >
+                      {l.label}
+                    </Link>
+                  ))}
+                </div>
               ))}
             </div>
           )}
