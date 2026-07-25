@@ -14,6 +14,7 @@ import WhatsAppContextPanel from '@/components/whatsapp/WhatsAppContextPanel';
 import WhatsAppViewTabs from '@/components/whatsapp/WhatsAppViewTabs';
 import WhatsAppClientesPanel from '@/components/whatsapp/WhatsAppClientesPanel';
 import WhatsAppTemplatesPanel from '@/components/whatsapp/WhatsAppTemplatesPanel';
+import WhatsAppBloquesPanel from '@/components/whatsapp/WhatsAppBloquesPanel';
 
 // ════════════════════════════════════════════════════════════════════════
 // /admin/whatsapp — WhatsApp Studio: bandeja de entrada conversacional
@@ -212,6 +213,15 @@ export default function WhatsAppInbox() {
         <div className="relative flex-1 min-h-0 p-2">
           <div className="h-full rounded-2xl overflow-hidden" style={{ background: 'rgba(0,0,0,.22)', border: '1px solid rgba(255,255,255,.08)' }}>
             <WhatsAppTemplatesPanel />
+          </div>
+        </div>
+      )}
+
+      {/* ── Vista Entrenamiento: los 13 bloques del agente ───────────────── */}
+      {view === 'bloques' && (
+        <div className="relative flex-1 min-h-0 p-2">
+          <div className="h-full rounded-2xl overflow-hidden" style={{ background: 'rgba(0,0,0,.22)', border: '1px solid rgba(255,255,255,.08)' }}>
+            <WhatsAppBloquesPanel />
           </div>
         </div>
       )}

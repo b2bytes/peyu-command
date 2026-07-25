@@ -19,19 +19,30 @@ const avatarColor = (id = '') => AVATAR_COLORS[(id.charCodeAt(id.length - 1) || 
 // Muestra avatar, nombre, último mensaje, indicador de takeover humano
 // y badge si la conversación está escalada.
 // ════════════════════════════════════════════════════════════════════════
+const FILTROS = [
+  { id: 'todas', label: 'Todas' },
+  { id: 'agente', label: 'Agente' },
+  { id: 'humano', label: 'Yo' },
+  { id: 'escaladas', label: 'Escaladas' },
+];
+
 export default function WhatsAppConvList({ conversations, activeId, onSelect }) {
   const [search, setSearch] = useState('');
+  const [filtro, setFiltro] = useState('todas');
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
-    const sorted = [...conversations].sort((a, b) => new Date(b.updated_date || 0) - new Date(a.updated_date || 0));
+    let sorted = [...conversations].sort((a, b) => new Date(b.updated_date || 0) - new Date(a.updated_date || 0));
+    if (filtro === 'agente') sorted = sorted.filter((c) => !c.metadata?.human_takeover);
+    if (filtro === 'humano') sorted = sorted.filter((c) => c.metadata?.human_takeover === true);
+    if (filtro === 'escaladas') sorted = sorted.filter((c) => c.metadata?.escalated === true);
     if (!q) return sorted;
     return sorted.filter((c) => {
       const nombre = (c.metadata?.name || '').toLowerCase();
       const last = (c.messages?.[c.messages.length - 1]?.content || '').toLowerCase();
       return nombre.includes(q) || last.includes(q);
     });
-  }, [conversations, search]);
+  }, [conversations, search, filtro]);
 
   return (
     <div className="flex flex-col h-full">
@@ -45,6 +56,20 @@ export default function WhatsAppConvList({ conversations, activeId, onSelect }) 
             placeholder="Buscar conversación…"
             className="ld-input w-full pl-9 pr-3 py-2 text-xs"
           />
+        </div>
+        {/* Filtros rápidos estilo CRM */}
+        <div className="flex items-center gap-1 mt-2">
+          {FILTROS.map((f) => (
+            <button
+              key={f.id}
+              onClick={() => setFiltro(f.id)}
+              className={`flex-1 px-2 py-1 rounded-full text-[10px] font-bold transition-all ${
+                filtro === f.id ? 'bg-[#25D366] text-white' : 'text-ld-fg-muted hover:bg-ld-bg-elevated'
+              }`}
+            >
+              {f.label}
+            </button>
+          ))}
         </div>
       </div>
 
