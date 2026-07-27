@@ -6,13 +6,16 @@
 
 // Modelos reconocidos (orden = prioridad de match: lo más específico primero).
 const MODELOS = [
-  // ── iPhone ──
+  // ── iPhone ── (del más nuevo al más viejo)
+  { key: 'iPhone 17', marca: 'iPhone', test: /iphone\s?17/i },
   { key: 'iPhone 16', marca: 'iPhone', test: /iphone\s?16/i },
   { key: 'iPhone 15', marca: 'iPhone', test: /iphone\s?15/i },
   { key: 'iPhone 14', marca: 'iPhone', test: /iphone\s?14/i },
   { key: 'iPhone 13', marca: 'iPhone', test: /iphone\s?13/i },
   { key: 'iPhone 12', marca: 'iPhone', test: /iphone\s?12/i },
   { key: 'iPhone 11', marca: 'iPhone', test: /iphone\s?11/i },
+  { key: 'iPhone X/XS/XR', marca: 'iPhone', test: /iphone\s?x[rs]?\b/i },
+  { key: 'iPhone 6/7/8/SE', marca: 'iPhone', test: /iphone\s?6\b|iphone\s?se/i },
   // ── Samsung ──
   { key: 'Samsung Galaxy', marca: 'Samsung', test: /samsung|galaxy/i },
   // ── Xiaomi / Redmi / POCO ──
