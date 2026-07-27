@@ -178,7 +178,27 @@ export default function ProductoNuevo() {
       setPlacements(draft.placements || {});
       setCantidad(draft.cantidad || 1);
     } else {
-      setColorId(colores.length === 1 ? colores[0].id : null);
+      // Pre-selecciona el primer color con stock real (evita el "no elegiste
+      // color" que el cliente percibe como "se me actualizó la página").
+      // En carcasas con varios colores, parte del primero que tenga stock.
+      if (colores.length === 1) {
+        setColorId(colores[0].id);
+      } else if (colores.length > 1) {
+        const mapa = producto.stock_por_color;
+        const norm = (s) => String(s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+        const tieneStock = (c) => {
+          if (!mapa || typeof mapa !== 'object' || Object.keys(mapa).length === 0) return true;
+          const cand = [c.label, c.id, ...(c.aliases || [])].map(norm);
+          const hit = Object.entries(mapa).find(([k]) => cand.includes(norm(k)));
+          // No está en el mapa → asumimos con stock (coherente con stockDisponible).
+          if (!hit) return true;
+          return Number(hit[1]) > 0;
+        };
+        const primeroConStock = colores.find(tieneStock);
+        setColorId(primeroConStock ? primeroConStock.id : colores[0].id);
+      } else {
+        setColorId(null);
+      }
       setPers(PERS_VACIO);
       setPlacements({});
       setCantidad(1);
@@ -411,7 +431,14 @@ export default function ProductoNuevo() {
       const norm = (s) => String(s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
       const cand = [color.label, color.id, ...(color.aliases || [])].map(norm);
       const hit = Object.entries(mapa).find(([k]) => cand.includes(norm(k)));
-      return hit ? Number(hit[1]) : 0; // color sin entrada en el mapa = agotado
+      if (hit) return Number(hit[1]);
+      // El color NO está en el mapa de stock por color → NO lo tratamos como
+      // agotado: caemos al stock_actual global. Evita bloquear la venta de
+      // colores que sí tienen stock pero no fueron trackeados por color (ej:
+      // Turquesa en "Carcasa para Iphone 16"). Coherente con ColorSwatchesV2
+      // (que también lo muestra como disponible).
+      if (typeof producto.stock_actual === 'number') return producto.stock_actual;
+      return null;
     }
     if (typeof producto.stock_actual === 'number') return producto.stock_actual;
     return null;
