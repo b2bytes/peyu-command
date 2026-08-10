@@ -15,6 +15,7 @@ import WhatsAppViewTabs from '@/components/whatsapp/WhatsAppViewTabs';
 import WhatsAppClientesPanel from '@/components/whatsapp/WhatsAppClientesPanel';
 import WhatsAppTemplatesPanel from '@/components/whatsapp/WhatsAppTemplatesPanel';
 import WhatsAppBloquesPanel from '@/components/whatsapp/WhatsAppBloquesPanel';
+import WebChatPipeline from '@/components/whatsapp/WebChatPipeline';
 
 // ════════════════════════════════════════════════════════════════════════
 // /admin/whatsapp — WhatsApp Studio: bandeja de entrada conversacional
@@ -197,6 +198,15 @@ export default function WhatsAppInbox() {
                 if (conv) { openConversation(conv); setView('inbox'); }
               }}
             />
+          </div>
+        </div>
+      )}
+
+      {/* ── Vista Chat web: pipeline del vendedor Peyu de la tienda ──────── */}
+      {view === 'webchat' && (
+        <div className="relative flex-1 min-h-0 p-2">
+          <div className="h-full rounded-2xl overflow-hidden" style={{ background: 'rgba(0,0,0,.22)', border: '1px solid rgba(255,255,255,.08)' }}>
+            <WebChatPipeline />
           </div>
         </div>
       )}

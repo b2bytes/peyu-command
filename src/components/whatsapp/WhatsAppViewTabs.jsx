@@ -1,8 +1,9 @@
-import { Inbox, KanbanSquare, Users, FileText, GraduationCap } from 'lucide-react';
+import { Inbox, KanbanSquare, Users, FileText, GraduationCap, Globe } from 'lucide-react';
 
 const TABS = [
   { id: 'inbox', label: 'Bandeja', icon: Inbox },
   { id: 'pipeline', label: 'Pipeline', icon: KanbanSquare },
+  { id: 'webchat', label: 'Chat web', icon: Globe },
   { id: 'clientes', label: 'Clientes', icon: Users },
   { id: 'plantillas', label: 'Plantillas', icon: FileText },
   { id: 'bloques', label: 'Entrenamiento', icon: GraduationCap },
