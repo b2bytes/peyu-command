@@ -10,6 +10,8 @@
 //   · whatsappPipelineSync      → barrido periódico de respaldo (CRON / manual)
 // ════════════════════════════════════════════════════════════════════════
 
+import { detectarIntencion } from './whatsapp-intent.ts';
+
 const parseResult = (r) => {
   if (!r) return null;
   if (typeof r === 'object') return r;
@@ -58,14 +60,21 @@ export async function clasificarConversacion(sr, conv, prevOpcional = null) {
   let tipo = prev?.tipo && prev.tipo !== 'Sin clasificar' ? prev.tipo : 'Sin clasificar';
   if (userMsgs.length >= 2 || has('BuscarProductos') || has('Recomendar')) etapa = 'explorando';
   if (hasEmail) etapa = 'datos';
+
+  // Intención declarada por el cliente: pide cotización o hace un reclamo.
+  // Se detecta sobre TODO lo que ha escrito, con el último mensaje mandando.
+  const intencion = detectarIntencion(userMsgs[userMsgs.length - 1]?.content) || detectarIntencion(userTexts);
+  if (intencion === 'cotizacion') { etapa = 'cotizacion'; tipo = 'B2B'; }
   if (has('CheckoutLink') || has('CartCheckout')) { etapa = 'pago'; tipo = 'B2C'; }
   if (has('generateChatQuotePDF')) { etapa = 'cotizado'; tipo = 'B2B'; }
   if (lastName.toLowerCase().includes('estadopedido')) etapa = 'postventa';
   if (names.some((n) => /consulta/i.test(n))) etapa = 'escalado';
+  // Un reclamo manda por sobre cualquier otro avance: va directo a su columna.
+  if (intencion === 'reclamo') etapa = 'reclamo';
   if (full?.metadata?.human_takeover) etapa = 'escalado';
 
   // Convertido: hay pedido y ya está pagado
-  if (numeroPedido && etapa !== 'escalado') {
+  if (numeroPedido && etapa !== 'escalado' && etapa !== 'reclamo') {
     const pedidos = await sr.entities.PedidoWeb.filter({ numero_pedido: numeroPedido }).catch(() => []);
     if (pedidos.length && pedidos[0].payment_status === 'paid') etapa = 'convertido';
   }

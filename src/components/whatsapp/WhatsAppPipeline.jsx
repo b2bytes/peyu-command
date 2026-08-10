@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from 'framer-motion';
-import { Sparkles, Search, UserRound, FileText, CreditCard, CheckCircle2, Truck, AlertTriangle, RefreshCw, Loader2 } from 'lucide-react';
+import { Sparkles, Search, UserRound, FileText, CreditCard, CheckCircle2, Truck, AlertTriangle, RefreshCw, Loader2, Calculator, ShieldAlert } from 'lucide-react';
 import PipelineConvCard from '@/components/whatsapp/PipelineConvCard';
 
 // ════════════════════════════════════════════════════════════════════════
@@ -11,6 +11,8 @@ import PipelineConvCard from '@/components/whatsapp/PipelineConvCard';
 export const WA_STAGES = [
   { id: 'nuevo', label: 'Nuevo', color: '#64748B', icon: Sparkles },
   { id: 'explorando', label: 'Explorando catálogo', color: '#0EA5E9', icon: Search },
+  { id: 'cotizacion', label: 'Pide cotización', color: '#EAB308', icon: Calculator },
+  { id: 'reclamo', label: 'Reclamo', color: '#DC2626', icon: ShieldAlert },
   { id: 'datos', label: 'Capturando datos', color: '#8B5CF6', icon: UserRound },
   { id: 'cotizado', label: 'Cotización B2B', color: '#F59E0B', icon: FileText },
   { id: 'pago', label: 'Link de pago', color: '#F97316', icon: CreditCard },

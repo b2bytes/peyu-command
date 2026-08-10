@@ -1,7 +1,7 @@
 {
   "name": "WhatsAppConvEtapa",
   "type": "object",
-  "description": "Etapa del pipeline de cada conversaci\u00f3n WhatsApp del agente whatsapp_peyu. Un registro por conversation_id, actualizado autom\u00e1ticamente por whatsappPipelineSync seg\u00fan el avance REAL de la conversaci\u00f3n (exploraci\u00f3n, captura de datos, cotizaci\u00f3n B2B, link de pago B2C, conversi\u00f3n, postventa, escalado a humano).",
+  "description": "Etapa del pipeline de cada conversaci\u00f3n WhatsApp del agente whatsapp_peyu. Un registro por conversation_id, actualizado autom\u00e1ticamente por whatsappPipelineSync seg\u00fan el avance REAL de la conversaci\u00f3n (exploraci\u00f3n, solicitud de cotizaci\u00f3n, reclamo, captura de datos, cotizaci\u00f3n B2B, link de pago B2C, conversi\u00f3n, postventa, escalado a humano).",
   "properties": {
     "description": {
       "type": "string",
@@ -18,6 +18,8 @@
       "enum": [
         "nuevo",
         "explorando",
+        "cotizacion",
+        "reclamo",
         "datos",
         "cotizado",
         "pago",
