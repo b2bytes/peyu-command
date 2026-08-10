@@ -18,6 +18,7 @@ import DescripcionCollapsibleV2 from '@/components/shopv2/DescripcionCollapsible
 import MobileNavBarV2 from '@/components/shopv2/MobileNavBarV2';
 import PaymentMethodsBadgesV2 from '@/components/shopv2/PaymentMethodsBadgesV2';
 import QtyDiscountNoticeV2 from '@/components/shopv2/QtyDiscountNoticeV2';
+import AddWithoutEngravingV2 from '@/components/shopv2/AddWithoutEngravingV2';
 import IntencionCompraV2 from '@/components/shopv2/IntencionCompraV2';
 import { getProductImage, getProductImageForColor } from '@/utils/productImages';
 import { getColoresProducto } from '@/lib/color-parser';
@@ -459,21 +460,28 @@ export default function ProductoNuevo() {
   const stock = stockDisponible;
   const stockBajo = typeof stock === 'number' && stock > 0 && stock <= 8;
 
-  const handleAdd = async () => {
+  // sinGrabado = el cliente eligió continuar sin personalización (salida de
+  // rescate cuando dejó un grabado a medias). Se agrega el producto simple.
+  const handleAdd = async ({ sinGrabado = false } = {}) => {
     if (agotado) return; // sin stock del color elegido → no se puede agregar
     if (requiereColor && !colorId) {
       setColorError(true);
       document.querySelector('[data-color-selector]')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
       return;
     }
-    if (!persOk) {
+    if (!sinGrabado && !persOk) {
       document.querySelector('[data-personalizador]')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
       return;
     }
 
+    const persFinal = sinGrabado ? PERS_VACIO : pers;
+    const activosFinal = sinGrabado ? [] : activos;
+    const feeUnitFinal = sinGrabado ? 0 : feeUnit;
+    const capasFinal = sinGrabado ? [] : capas;
+
     // Captura el snapshot del canvas en vivo (base limpia + grabado) como mockupUrl.
-    let mockupUrl = muestraMockup ? mockupBase : null;
-    if (muestraMockup) {
+    let mockupUrl = (!sinGrabado && muestraMockup) ? mockupBase : null;
+    if (!sinGrabado && muestraMockup) {
       const isDesktop = typeof window !== 'undefined' && window.innerWidth >= 1024;
       const primario = isDesktop ? mockupRefDesktop : mockupRefMobile;
       const secundario = isDesktop ? mockupRefMobile : mockupRefDesktop;
@@ -487,20 +495,20 @@ export default function ProductoNuevo() {
       sku: producto.sku || null,
       nombre: producto.nombre,
       precio: precioUnit,
-      cargo_personalizacion: feeUnit,
-      tipo_personalizacion: activos.length > 1 ? 'mixto' : (activos[0] || null),
-      tipos_personalizacion: activos,
+      cargo_personalizacion: feeUnitFinal,
+      tipo_personalizacion: activosFinal.length > 1 ? 'mixto' : (activosFinal[0] || null),
+      tipos_personalizacion: activosFinal,
       moq_personalizacion: moq,
       personalizacion_gratis_desde: moq,
       cantidad,
       color: color?.label || null,
       stockColor: stockDisponible, // tope real del color elegido (null = sin límite)
-      personalizacion: resumenPersonalizacion(pers),
-      texto: pers.texto || null,
-      logoUrl: pers.logoUrl || null,
-      disenoPeyuUrl: pers.disenoPeyuUrl || null,
+      personalizacion: resumenPersonalizacion(persFinal),
+      texto: persFinal.texto || null,
+      logoUrl: persFinal.logoUrl || null,
+      disenoPeyuUrl: persFinal.disenoPeyuUrl || null,
       mockupUrl,
-      capas_grabado: capas.map((c) => ({ tipo: c.tipo, url: c.url || null, texto: c.texto || null, ...(placements[c.id] || {}) })),
+      capas_grabado: capasFinal.map((c) => ({ tipo: c.tipo, url: c.url || null, texto: c.texto || null, ...(placements[c.id] || {}) })),
       imagen_base: colorImg,
       imagen: colorImg,
     });
@@ -846,6 +854,9 @@ export default function ProductoNuevo() {
                   >
                     <Sparkles className="w-3.5 h-3.5" /> Ver tu diseño grabado
                   </button>
+                )}
+                {!persOk && !agotado && (
+                  <AddWithoutEngravingV2 onSkip={() => handleAdd({ sinGrabado: true })} disabled={added} />
                 )}
               </div>
 
