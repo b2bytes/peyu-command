@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
-import { RefreshCw, Loader2, Globe, Tags, KanbanSquare } from 'lucide-react';
+import { RefreshCw, Loader2, Globe, Tags, KanbanSquare, Wand2 } from 'lucide-react';
 import { agruparPorEtapa } from '@/lib/webchat-pipeline';
 import WebChatConvCard from '@/components/whatsapp/WebChatConvCard';
 import WebChatThreadModal from '@/components/whatsapp/WebChatThreadModal';
@@ -17,6 +17,15 @@ export default function WebChatPipeline() {
   const [loading, setLoading] = useState(true);
   const [openLead, setOpenLead] = useState(null);
   const [modo, setModo] = useState('etiquetas'); // 'etiquetas' | 'kanban'
+  const [recuperando, setRecuperando] = useState(false);
+
+  // Rescata las conversaciones cortadas: reconstruye mensajes y datos del cliente.
+  const recuperar = async () => {
+    setRecuperando(true);
+    await base44.functions.invoke('recuperarChatLeads', { limit: 40 }).catch(() => null);
+    setRecuperando(false);
+    load();
+  };
 
   const load = async () => {
     setLoading(true);
@@ -56,6 +65,16 @@ export default function WebChatPipeline() {
         </div>
 
         <button
+          onClick={recuperar}
+          disabled={recuperando}
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-bold disabled:opacity-60 transition-all hover:brightness-110"
+          style={{ background: 'rgba(139,92,246,.15)', color: '#8B5CF6', border: '1px solid rgba(139,92,246,.3)' }}
+        >
+          {recuperando ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Wand2 className="w-3.5 h-3.5" />}
+          {recuperando ? 'Recuperando…' : 'Recuperar conversaciones'}
+        </button>
+
+        <button
           onClick={load}
           disabled={loading}
           className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-bold text-white disabled:opacity-60 transition-all hover:brightness-105"
@@ -76,7 +95,13 @@ export default function WebChatPipeline() {
       </div>
       )}
 
-      {openLead && <WebChatThreadModal lead={openLead} onClose={() => setOpenLead(null)} />}
+      {openLead && (
+        <WebChatThreadModal
+          lead={openLead}
+          onClose={() => setOpenLead(null)}
+          onSaved={(l) => setLeads((prev) => prev.map((x) => (x.id === l.id ? { ...x, ...l } : x)))}
+        />
+      )}
     </div>
   );
 }

@@ -46,7 +46,8 @@ export default function WebChatTagsView({ leads, onOpen }) {
       <div className="flex-1 min-h-0 overflow-y-auto p-2 space-y-1.5 peyu-scrollbar">
         {visibles.map(({ lead, etapa }) => {
           const stage = WEB_STAGES.find((s) => s.id === etapa);
-          const nombre = lead.nombre || lead.empresa || `Visitante ${String(lead.conversation_id || '').slice(-5)}`;
+          const identificado = !!(lead.nombre || lead.empresa);
+          const nombre = lead.nombre || lead.empresa || `Sin identificar · ${String(lead.conversation_id || '').slice(-5)}`;
           const cuando = lead.ultimo_mensaje_at || lead.created_date;
           return (
             <button
@@ -60,15 +61,15 @@ export default function WebChatTagsView({ leads, onOpen }) {
                 {stage.label}
               </span>
               <div className="min-w-0 flex-1">
-                <p className="text-[12px] font-bold text-ld-fg truncate">{nombre}</p>
+                <p className={`text-[12px] font-bold truncate ${identificado ? 'text-ld-fg' : 'text-ld-fg-muted italic'}`}>{nombre}</p>
                 <p className="text-[10px] text-ld-fg-muted truncate">
                   {lead.ultimo_mensaje_preview || lead.producto_interes_nombre || 'Sin mensajes guardados'}
                 </p>
               </div>
               <div className="hidden sm:flex items-center gap-2 flex-shrink-0 text-[9px] text-ld-fg-subtle">
                 {lead.empresa && <span className="inline-flex items-center gap-0.5"><Building2 className="w-2.5 h-2.5" />{lead.empresa}</span>}
-                {lead.email && <Mail className="w-3 h-3" />}
-                {lead.telefono && <Phone className="w-3 h-3" />}
+                {lead.email && <span className="inline-flex items-center gap-0.5 max-w-[150px] truncate"><Mail className="w-2.5 h-2.5" />{lead.email}</span>}
+                {lead.telefono && <span className="inline-flex items-center gap-0.5"><Phone className="w-2.5 h-2.5" />{lead.telefono}</span>}
                 <span className="inline-flex items-center gap-0.5"><MessageSquare className="w-2.5 h-2.5" />{lead.mensajes_count || 0}</span>
                 <span className="w-[74px] text-right">
                   {cuando ? new Date(cuando).toLocaleDateString('es-CL', { day: '2-digit', month: 'short' }) : ''}

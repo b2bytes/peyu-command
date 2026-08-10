@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { X, Loader2, Globe } from 'lucide-react';
+import WebChatLeadForm from '@/components/whatsapp/WebChatLeadForm';
 
 // Visor de la conversación COMPLETA del vendedor Peyu web (todos los mensajes
 // del visitante y del agente), abierto desde el pipeline de chat web.
-export default function WebChatThreadModal({ lead, onClose }) {
+export default function WebChatThreadModal({ lead: leadProp, onClose, onSaved }) {
+  const [lead, setLead] = useState(leadProp);
   const [messages, setMessages] = useState(null);
 
   useEffect(() => {
@@ -44,6 +46,10 @@ export default function WebChatThreadModal({ lead, onClose }) {
           <button onClick={onClose} className="w-8 h-8 rounded-lg flex items-center justify-center text-ld-fg-muted hover:bg-ld-bg-soft">
             <X className="w-4 h-4" />
           </button>
+        </div>
+
+        <div className="flex-shrink-0 px-4 py-3 border-b border-ld-border" style={{ background: 'var(--ld-bg-soft)' }}>
+          <WebChatLeadForm lead={lead} onSaved={(l) => { setLead(l); onSaved?.(l); }} />
         </div>
 
         <div className="flex-1 min-h-0 overflow-y-auto p-4 space-y-2.5 peyu-scrollbar">
