@@ -6,6 +6,7 @@ import ClienteHero from '@/components/cliente/ClienteHero';
 import ClienteInsights from '@/components/cliente/ClienteInsights';
 import ClientePedidosTimeline from '@/components/cliente/ClientePedidosTimeline';
 import ClienteNotas from '@/components/cliente/ClienteNotas';
+import ClienteResenas from '@/components/cliente/ClienteResenas';
 import PersonalizedProductsSummary from '@/components/cliente/PersonalizedProductsSummary';
 import RecentQuotesSummary from '@/components/cliente/RecentQuotesSummary';
 import B2BProposalHistory from '@/components/cliente/B2BProposalHistory';
@@ -100,6 +101,9 @@ export default function Cliente360() {
             </div>
             <ClienteNotas cliente={cliente} onClienteUpdate={setCliente} />
           </div>
+
+          {/* Valoraciones dejadas por el cliente */}
+          <ClienteResenas email={cliente.email} />
 
           {/* Historial B2B propuestas */}
           <B2BProposalHistory empresa={cliente.empresa || cliente.contacto} />
