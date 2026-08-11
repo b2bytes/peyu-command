@@ -90,7 +90,31 @@ export default function WebChatPipeline() {
       {modo === 'kanban' && (
       <div className="flex-1 min-h-0 overflow-x-auto overflow-y-hidden">
         <div className="h-full flex gap-3 p-3" style={{ minWidth: 'max-content' }}>
-...
+          {columnas.map((col) => (
+            <div key={col.id} className="w-[260px] flex-shrink-0 flex flex-col min-h-0 rounded-2xl bg-ld-bg border border-ld-border">
+              <div className="flex-shrink-0 flex items-center gap-2 px-3 py-2.5 border-b border-ld-border">
+                <span className="w-2 h-2 rounded-full" style={{ background: col.color }} />
+                <p className="text-[11px] font-bold text-ld-fg truncate">{col.label}</p>
+                <span className="ml-auto text-[10px] font-bold px-1.5 py-0.5 rounded-full"
+                  style={{ background: `${col.color}18`, color: col.color }}>
+                  {col.items.length}
+                </span>
+              </div>
+              <div className="flex-1 min-h-0 overflow-y-auto p-2 space-y-2 peyu-scrollbar">
+                <AnimatePresence mode="popLayout">
+                  {col.items.map((lead) => (
+                    <WebChatConvCard key={lead.id} lead={lead} color={col.color} onOpen={() => setOpenLead(lead)} />
+                  ))}
+                </AnimatePresence>
+                {col.items.length === 0 && (
+                  <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+                    className="text-[10px] text-ld-fg-subtle text-center py-6">
+                    Sin conversaciones
+                  </motion.p>
+                )}
+              </div>
+            </div>
+          ))}
         </div>
       </div>
       )}

@@ -11,10 +11,7 @@ export const WEB_STAGES = [
   { id: 'datos', label: 'Capturando datos', color: '#8B5CF6' },
   { id: 'cotizado', label: 'Cotización B2B', color: '#F59E0B' },
   { id: 'convertido', label: 'Convertido', color: '#10B981' },
-  { id: 'abandonado', label: 'Sin respuesta', color: '#EF4444' },
 ];
-
-const DIAS_ABANDONO = 7;
 
 export function clasificarChatLead(lead) {
   if (!lead) return 'nuevo';
@@ -22,12 +19,6 @@ export function clasificarChatLead(lead) {
   if (lead.estado === 'Convertido' || lead.convertido_a_pedido_id || lead.convertido_a_b2b_lead_id) {
     return 'convertido';
   }
-  if (lead.estado === 'Abandonado' || lead.estado === 'Descartado') return 'abandonado';
-
-  // Inactiva hace más de una semana → se enfrió
-  const last = lead.ultimo_mensaje_at ? new Date(lead.ultimo_mensaje_at).getTime() : 0;
-  if (last && (Date.now() - last) > DIAS_ABANDONO * 86400000) return 'abandonado';
-
   const esB2B = lead.tipo === 'B2B' || !!lead.empresa || (lead.cantidad_estimada || 0) >= 10;
   if (esB2B && (lead.empresa || lead.cantidad_estimada)) return 'cotizado';
 
