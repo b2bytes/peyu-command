@@ -33,6 +33,7 @@ import { addToCartV2, fmtCLP } from '@/lib/shop-v2-cart';
 import { trackViewContent } from '@/lib/meta-pixel';
 import { trackViewItem } from '@/lib/analytics-peyu';
 import { saveDraftV2, loadDraftV2, clearDraftV2 } from '@/lib/shop-v2-draft';
+import { reportError } from '@/lib/error-reporter';
 import {
   PERS_VACIO, tiposActivos, feeUnitarioCombinado, labelCombinada,
   resumenPersonalizacion, persCompleta, hayAlgunoActivado,
@@ -72,6 +73,7 @@ export default function ProductoNuevo() {
   const [colorError, setColorError] = useState(false);
   const [added, setAdded] = useState(false);
   const [adding, setAdding] = useState(false); // feedback mientras se procesa el agregar
+  const [addError, setAddError] = useState(''); // NUNCA fallar en silencio: aviso visible
   const [galIdx, setGalIdx] = useState(0);
   const [manualPick, setManualPick] = useState(false); // click del cliente en un thumbnail gana sobre el color
   const mockupRefDesktop = useRef(null); // preview central gigante (desktop)
@@ -478,6 +480,7 @@ export default function ProductoNuevo() {
     }
 
     setAdding(true);
+    setAddError('');
     const persFinal = sinGrabado ? PERS_VACIO : pers;
     const activosFinal = sinGrabado ? [] : activos;
     const feeUnitFinal = sinGrabado ? 0 : feeUnit;
@@ -505,7 +508,7 @@ export default function ProductoNuevo() {
       }
     }
 
-    addToCartV2({
+    const itemCarrito = {
       productoId: producto.id,
       sku: producto.sku || null,
       nombre: producto.nombre,
@@ -526,7 +529,24 @@ export default function ProductoNuevo() {
       capas_grabado: capasFinal.map((c) => ({ tipo: c.tipo, url: c.url || null, texto: c.texto || null, ...(placements[c.id] || {}) })),
       imagen_base: colorImg,
       imagen: colorImg,
-    });
+    };
+
+    // A PRUEBA DE TODO: si agregar falla en algún celular, reintenta sin el
+    // snapshot pesado y, si aún así falla, muestra un aviso visible y reporta
+    // el error al equipo (nunca más un botón "muerto" en silencio).
+    try {
+      addToCartV2(itemCarrito);
+    } catch (e1) {
+      try {
+        addToCartV2({ ...itemCarrito, mockupUrl: itemCarrito.imagen_base || null });
+        reportError({ source: 'add_to_cart_v2_retry', severity: 'medium', message: e1?.message || 'addToCart falló (1er intento)', extra: { sku: producto.sku } });
+      } catch (e2) {
+        reportError({ source: 'add_to_cart_v2', severity: 'high', message: e2?.message || 'addToCart falló', stack: e2?.stack, extra: { sku: producto.sku } });
+        setAdding(false);
+        setAddError('No pudimos agregar el producto al carrito en este dispositivo. Intenta de nuevo, o escríbenos por WhatsApp y lo resolvemos al tiro.');
+        return;
+      }
+    }
     clearDraftV2(producto.id);
     setAdding(false);
     setAdded(true);
@@ -985,6 +1005,14 @@ export default function ProductoNuevo() {
           </div>
         </div>
       </div>
+
+      {/* Aviso visible si agregar al carrito falla (nunca en silencio) */}
+      {addError && (
+        <div className="fixed bottom-20 lg:bottom-6 inset-x-3 lg:left-auto lg:right-6 lg:max-w-sm z-[95] rounded-2xl px-4 py-3 text-sm font-bold shadow-lg"
+          style={{ background: '#FDECE5', border: '1.5px solid #D96B4D', color: '#A8443A' }}>
+          {addError}
+        </div>
+      )}
 
       {/* Barra inferior mobile: back + agregar al carrito */}
       <MobileNavBarV2

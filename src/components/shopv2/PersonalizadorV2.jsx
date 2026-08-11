@@ -163,8 +163,8 @@ export default function PersonalizadorV2({ pers, setPers, gratis, moq = 10, solo
         </div>
       )}
       {haySeleccion && completa && !pers.aprobada && (
-        <p className="text-[11px] font-bold text-center mt-3 text-[#D96B4D]">
-          ↓ Revisa el mockup y apruébalo para continuar
+        <p className="text-[11px] font-bold text-center mt-3 text-[#0F8B6C]">
+          ✓ Grabado listo — revisa el mockup y agrégalo al carrito
         </p>
       )}
       {haySeleccion && pers.aprobada && (

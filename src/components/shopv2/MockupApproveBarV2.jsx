@@ -37,7 +37,7 @@ export default function MockupApproveBarV2({ pers, setPers }) {
     <div className="mt-3 rounded-2xl p-3"
       style={{ background: 'rgba(217,107,77,.08)', border: '1.5px dashed rgba(217,107,77,.45)' }}>
       <p className="text-[11px] font-bold text-center mb-2 flex items-center justify-center gap-1" style={{ color: '#D96B4D' }}>
-        <Sparkles className="w-3.5 h-3.5" /> ¿Te gusta cómo quedó? Aprueba tu mockup para continuar
+        <Sparkles className="w-3.5 h-3.5" /> ¿Te gusta cómo quedó? Ya puedes agregarlo al carrito
       </p>
       <button
         type="button"
@@ -45,7 +45,7 @@ export default function MockupApproveBarV2({ pers, setPers }) {
         className="w-full h-12 rounded-xl font-bold text-sm text-white flex items-center justify-center gap-2 transition-all hover:-translate-y-0.5 active:scale-[0.98]"
         style={{ background: 'linear-gradient(135deg,#0F8B6C,#0B6E55)', boxShadow: '0 6px 20px rgba(15,139,108,.3)' }}
       >
-        <CheckCircle2 className="w-5 h-5" /> Aprobar mockup
+        <CheckCircle2 className="w-5 h-5" /> Me gusta, confirmar diseño
       </button>
     </div>
   );
