@@ -11,6 +11,7 @@ import ImpactStoryV2 from '@/components/shopv2/ImpactStoryV2';
 import ProductCardV2 from '@/components/shopv2/ProductCardV2';
 import RuletaDescuento from '@/components/fidelizacion/RuletaDescuento';
 import HomeFiestasStrip from '@/components/fiestas/HomeFiestasStrip';
+import { FiestasLine, FiestasChip } from '@/components/fiestas/FiestasAccent';
 import { CATEGORIAS_V2 } from '@/lib/shop-v2-config';
 import { getProductImage } from '@/utils/productImages';
 
@@ -112,9 +113,13 @@ export default function TiendaNueva() {
       {/* CATEGORÍAS MEJORADAS 2027 */}
       <section className="w-full px-3 sm:px-4 lg:px-6 mb-8 sm:mb-12">
         <div className="max-w-screen-xl mx-auto">
-          <div className="flex items-center gap-2 mb-3 sm:mb-4">
-            <Sparkles className="w-4 sm:w-5 h-4 sm:h-5" style={{ color: '#C0785C' }} />
-            <h2 className="font-fraunces text-lg sm:text-3xl">Explora</h2>
+          <div className="mb-3 sm:mb-4">
+            <FiestasLine className="mb-2" />
+            <div className="flex items-center gap-2 flex-wrap">
+              <Sparkles className="w-4 sm:w-5 h-4 sm:h-5" style={{ color: '#C0785C' }} />
+              <h2 className="font-fraunces text-lg sm:text-3xl">Explora</h2>
+              <FiestasChip />
+            </div>
           </div>
           <div className="flex sm:grid sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-3 overflow-x-auto scrollbar-hide -mx-4 px-4 sm:mx-0 sm:px-0 pb-2">
             {CATEGORIAS_V2.map((c) => (
@@ -151,7 +156,10 @@ export default function TiendaNueva() {
       <section className="w-full px-3 sm:px-4 lg:px-6 mb-8 sm:mb-12">
         <div className="max-w-screen-xl mx-auto">
           <div className="flex items-center justify-between mb-4 sm:mb-6">
-            <h2 className="font-fraunces text-lg sm:text-3xl">Catálogo completo</h2>
+            <div>
+              <FiestasLine className="mb-2" />
+              <h2 className="font-fraunces text-lg sm:text-3xl">Catálogo completo</h2>
+            </div>
             <Link to="/CatalogoNuevo" className="text-[10px] sm:text-sm font-bold hover:underline inline-flex items-center gap-1 transition-colors" style={{ color: '#C0785C' }}>
               Ver más <ArrowRight className="w-2.5 sm:w-3.5 h-2.5 sm:h-3.5" />
             </Link>
@@ -173,6 +181,7 @@ export default function TiendaNueva() {
       <footer className="py-6 sm:py-10 text-center text-[9px] sm:text-xs flex items-center justify-center gap-2 sm:gap-2.5" style={{ borderTop: '1.5px solid #D4C4B0', color: '#A08070' }}>
         <Recycle className="w-3.5 sm:w-4 h-3.5 sm:h-4" style={{ color: '#8BAD8A' }} />
         <span className="font-semibold">PEYU · Plástico 100% reciclado · Hecho en Santiago 🇨🇱</span>
+        <FiestasLine className="w-10" />
       </footer>
 
 {/* MobileNavBarV2 viene del PublicPageLayout */}
