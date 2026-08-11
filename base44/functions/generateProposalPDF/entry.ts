@@ -65,6 +65,17 @@ Deno.serve(async (req) => {
 
     const items = (() => { try { return p.items_json ? JSON.parse(p.items_json) : []; } catch { return []; } })();
 
+    // ── Totales (una sola fuente de verdad para hero y bloque de totales) ──
+    // Algunas propuestas se guardaron con total = neto (sin IVA sumado). En ese
+    // caso el PDF mostraba IVA $0 y aun así declaraba "incluye IVA". Ahora, si
+    // el total guardado no trae IVA, lo calculamos y mostramos el total real.
+    const fee = p.fee_personalizacion > 0 ? p.fee_personalizacion : 0;
+    const netoBase = (p.subtotal || 0) + fee + (p.fee_packaging > 0 ? p.fee_packaging : 0);
+    const totalGuardado = p.total || netoBase;
+    const traeIva = totalGuardado > netoBase + 1;
+    const ivaCalc = traeIva ? Math.round(totalGuardado - netoBase) : Math.round(netoBase * 0.19);
+    const totalConIva = traeIva ? totalGuardado : netoBase + ivaCalc;
+
     // Helper: descarga una imagen y la devuelve en base64.
     async function fetchImageAsBase64(url) {
       const resp = await fetch(url);
@@ -240,7 +251,7 @@ Deno.serve(async (req) => {
 
     // Columna total (derecha, justificado). Claridad total: neto + IVA = total.
     T('MONTO TOTAL', RX - 8, y + 9, { size: 7, font: 'bold', color: TEAL, align: 'right', spacing: 1 });
-    T(fmtCLP(p.total), RX - 8, y + 21, { size: 21, font: 'bold', color: FOREST, align: 'right' });
+    T(fmtCLP(totalConIva), RX - 8, y + 21, { size: 21, font: 'bold', color: FOREST, align: 'right' });
     T('CLP (incluye IVA 19% · ver detalle)', RX - 8, y + 27, { size: 7, font: 'normal', color: STONE, align: 'right' });
 
     y += cardH + 6;
@@ -448,7 +459,7 @@ Deno.serve(async (req) => {
       T(safeTxt(it.nombre || it.name || it.producto || '-').substring(0, 32), COL_PROD, tY - 1.5, { size: 10, font: 'bold', color: INK });
       const meta = [it.sku ? `SKU ${it.sku}` : '', it.categoria || '', it.tier ? `Tramo ${it.tier}` : ''].filter(Boolean).join('  -  ');
       if (meta) T(meta.substring(0, 48), COL_PROD, tY + 3, { size: 6.8, color: STONE2 });
-      if (it.personalizacion) T('▸ Grabado laser UV incluido', COL_PROD, tY + 6.5, { size: 6.8, font: 'bold', color: TEAL });
+      if (it.personalizacion) T('> Grabado laser UV incluido', COL_PROD, tY + 6.5, { size: 6.8, font: 'bold', color: TEAL });
 
       // Cant (centrado)
       T(`${it.cantidad || it.qty || 0}`, COL_CANT, tY, { size: 10, font: 'bold', color: STONE, align: 'center' });
@@ -466,9 +477,7 @@ Deno.serve(async (req) => {
     //  TOTALES — bloque alineado a la derecha
     // ═══════════════════════════════════════════════════
     y += 4;
-    const fee = p.fee_personalizacion > 0 ? p.fee_personalizacion : 0;
-    const netoBase = (p.subtotal || 0) + fee + (p.fee_packaging > 0 ? p.fee_packaging : 0);
-    const ivaCalc = Math.max(0, Math.round((p.total || netoBase) - netoBase));
+
 
     const TOT_LABEL_X = pw - 78;   // etiquetas
     const TOT_VAL_X = RX;          // valores justificados a la derecha
@@ -478,10 +487,14 @@ Deno.serve(async (req) => {
       y += big ? 9 : 6;
     };
 
-    if (p.subtotal) totRow('Subtotal neto', p.subtotal);
+    if (p.subtotal) totRow('Productos (neto)', p.subtotal);
     if (fee > 0) totRow('Fee personalizacion (neto)', fee);
     if (p.fee_packaging > 0) totRow('Fee packaging (neto)', p.fee_packaging);
-    if (p.descuento_pct > 0) totRow(`Descuento ${p.descuento_pct}% (neto)`, -(p.descuento || 0));
+    // El descuento se deriva del % sobre el subtotal: la propuesta no guarda
+    // un monto de descuento, así que antes esta línea siempre imprimía $0.
+    if (p.descuento_pct > 0) {
+      totRow(`Descuento ${p.descuento_pct}% (neto)`, -Math.round((p.subtotal || 0) * (p.descuento_pct / 100)));
+    }
 
     // Separador antes de IVA
     y += 2;
@@ -500,7 +513,7 @@ Deno.serve(async (req) => {
     doc.setLineWidth(0.8);
     doc.line(TOT_LABEL_X, y, TOT_VAL_X, y);
     y += 7;
-    totRow('TOTAL FINAL (CON IVA)', p.total, { big: true, color: FOREST, valColor: FOREST });
+    totRow('TOTAL FINAL (CON IVA)', totalConIva, { big: true, color: FOREST, valColor: FOREST });
 
     // ═══════════════════════════════════════════════════
     //  CTA ACEPTACIÓN DIGITAL
