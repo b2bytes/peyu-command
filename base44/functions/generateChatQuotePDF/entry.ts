@@ -686,14 +686,18 @@ Deno.serve(async (req) => {
       }
     }
 
+    // 🔒 Por WhatsApp el agente solo puede ver UN link: la página pública de la
+    // propuesta. Antes veía también pdf_url (media.base44.com) y mensaje_founder
+    // y terminaba enviándole al cliente el link crudo del archivo + notas internas.
+    const esWhatsApp = source === 'whatsapp';
+
     return Response.json({
       ok: true,
       cotizacion_id: cot.id,
       lead_id: leadId,
       numero,
       total,
-      pdf_base64: base64,
-      pdf_url: pdfUrl,
+      ...(esWhatsApp ? {} : { pdf_base64: base64, pdf_url: pdfUrl }),
       propuesta_url: propuestaUrl,
       filename: `Cotizacion-Peyu-${numero}.pdf`,
       email_enviado: emailEnviado,
@@ -701,7 +705,9 @@ Deno.serve(async (req) => {
       admin_url_cotizaciones: '/admin/cotizaciones',
       mockup_url: mockup_url || null,
       mensaje_cliente: `¡Listo${contacto ? `, *${contacto}*` : ''}! 🐢 Tu propuesta *${numero}* quedó lista:\n\n📦 *${producto.nombre}* × ${cantidad}u\n💰 Unitario $${(precioUnit || 0).toLocaleString('es-CL')} · *Total $${(total || 0).toLocaleString('es-CL')} CLP* (IVA incl.)${requierePersonal ? `\n🎨 Grabado láser: ${personalizacion}${cantidad >= 10 ? ' — *GRATIS* desde 10u ✅' : ` — fee $${feePersonal.toLocaleString('es-CL')}`}${mockup_url ? ' (mockup incluido en el PDF)' : ''}` : ''}\n🚚 Lead time: ${leadTime} días hábiles · Validez: 15 días${emailEnviado ? `\n📧 Copia enviada a ${email} ✅` : (email ? `\n📧 No pude enviarla al correo — el PDF de abajo es el oficial y el equipo te la reenviará` : '')}\n\n📄 Ver y descargar tu propuesta:\n${propuestaUrl}\n\n¿Avanzamos? Puedo resolver cualquier duda o ajustar cantidades aquí mismo 💚`,
-      mensaje_founder: `📋 Lead: /admin/pipeline · 📄 Cotización ${numero}: /admin/cotizaciones · 📧 Email ${emailEnviado ? 'enviado ✅' : 'NO enviado ⚠️'}${pdfUrl ? ' · PDF hospedado ✅' : ''}`,
+      ...(esWhatsApp ? {} : {
+        mensaje_founder: `📋 Lead: /admin/pipeline · 📄 Cotización ${numero}: /admin/cotizaciones · 📧 Email ${emailEnviado ? 'enviado ✅' : 'NO enviado ⚠️'}${pdfUrl ? ' · PDF hospedado ✅' : ''}`,
+      }),
     });
   } catch (error) {
     console.error('generateChatQuotePDF error:', error);
