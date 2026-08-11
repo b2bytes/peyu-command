@@ -7,7 +7,6 @@ import useFeatureFlag from '@/hooks/useFeatureFlag';
 import MobileNavBarV2 from '@/components/shopv2/MobileNavBarV2';
 import CheckoutStepperV2 from '@/components/shopv2/CheckoutStepperV2';
 import CheckoutSummaryCardV2 from '@/components/shopv2/CheckoutSummaryCardV2';
-import MobilePayCTA from '@/components/shopv2/MobilePayCTA';
 import CollapsibleSectionV2 from '@/components/shopv2/CollapsibleSectionV2';
 import ShippingAddressForm, { validarShippingForm } from '@/components/cart/ShippingAddressForm';
 import BillingSection, { validarBilling } from '@/components/cart/BillingSection';
@@ -874,8 +873,8 @@ export default function CheckoutNuevo() {
                 />
               </div>
 
-              {/* Botón de pago final destacado (móvil) */}
-              <MobilePayCTA label={ctaPagar} total={totalFinal} onClick={crearPedido} loading={creando} />
+              {/* En móvil el pago vive SOLO en la barra fija inferior: tener dos
+                  botones de pago confundía y permitía doble disparo del pedido. */}
             </div>
 
             {/* CTA desktop fijo bajo la columna (siempre visible) */}
@@ -916,8 +915,9 @@ export default function CheckoutNuevo() {
       <MobileNavBarV2
         backTo="/CarritoNuevo"
         backLabel="Carrito"
-        ctaLabel={medioPago === 'Transferencia' ? 'Confirmar pedido' : 'Pagar ahora'}
+        ctaLabel={totalFinal === 0 ? 'Confirmar pedido' : medioPago === 'Transferencia' ? 'Confirmar pedido' : 'Pagar ahora'}
         onCta={crearPedido}
+        ctaDisabled={creando}
         ctaLoading={creando}
         total={totalFinal}
       />
