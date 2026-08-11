@@ -153,13 +153,15 @@ const MockupLivePreviewV2 = forwardRef(function MockupLivePreviewV2({ productIma
     captureSnapshot: async () => {
       if (!containerRef.current) return null;
       try {
+        // scale 1 + JPEG 0.8: snapshot liviano — en móvil el snapshot a 1.5x
+        // generaba data URLs enormes que reventaban el storage del carrito.
         const canvas = await html2canvas(containerRef.current, {
           useCORS: true,
           allowTaint: true,
-          scale: 1.5,
+          scale: 1,
           logging: false,
         });
-        return canvas.toDataURL('image/jpeg', 0.88);
+        return canvas.toDataURL('image/jpeg', 0.8);
       } catch (e) {
         console.warn('MockupLivePreviewV2 captureSnapshot falló:', e?.message);
         return null;

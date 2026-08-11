@@ -26,7 +26,28 @@ export function getCartV2() {
 }
 
 function persist(items) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+  // BLINDADO: los mockups en data: (snapshot del grabado) pueden exceder la
+  // cuota de localStorage en móvil → setItem lanzaba QuotaExceededError y el
+  // "Agregar al carrito" fallaba EN SILENCIO (bug reportado por clientes).
+  // Si no cabe, se guarda igual reemplazando el snapshot pesado por la foto
+  // del producto — la compra NUNCA se bloquea.
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+  } catch {
+    const light = items.map((i) => ({
+      ...i,
+      mockupUrl: (typeof i.mockupUrl === 'string' && i.mockupUrl.startsWith('data:'))
+        ? (i.imagen_base || i.imagen || null)
+        : i.mockupUrl,
+    }));
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(light));
+    } catch {
+      // Último recurso: sin capas de grabado (los datos clave del pedido quedan).
+      const minimal = light.map(({ capas_grabado, ...rest }) => rest);
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(minimal)); } catch {}
+    }
+  }
   window.dispatchEvent(new CustomEvent(EVENT));
 }
 

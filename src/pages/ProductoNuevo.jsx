@@ -71,6 +71,7 @@ export default function ProductoNuevo() {
   const [cantidad, setCantidad] = useState(1);
   const [colorError, setColorError] = useState(false);
   const [added, setAdded] = useState(false);
+  const [adding, setAdding] = useState(false); // feedback mientras se procesa el agregar
   const [galIdx, setGalIdx] = useState(0);
   const [manualPick, setManualPick] = useState(false); // click del cliente en un thumbnail gana sobre el color
   const mockupRefDesktop = useRef(null); // preview central gigante (desktop)
@@ -465,7 +466,7 @@ export default function ProductoNuevo() {
   // sinGrabado = el cliente eligió continuar sin personalización (salida de
   // rescate cuando dejó un grabado a medias). Se agrega el producto simple.
   const handleAdd = async ({ sinGrabado = false } = {}) => {
-    if (agotado) return; // sin stock del color elegido → no se puede agregar
+    if (agotado || adding) return; // sin stock del color elegido → no se puede agregar
     if (requiereColor && !colorId) {
       setColorError(true);
       document.querySelector('[data-color-selector]')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -476,20 +477,32 @@ export default function ProductoNuevo() {
       return;
     }
 
+    setAdding(true);
     const persFinal = sinGrabado ? PERS_VACIO : pers;
     const activosFinal = sinGrabado ? [] : activos;
     const feeUnitFinal = sinGrabado ? 0 : feeUnit;
     const capasFinal = sinGrabado ? [] : capas;
 
     // Captura el snapshot del canvas en vivo (base limpia + grabado) como mockupUrl.
+    // BLINDADO: con tope de 4s y a prueba de errores — en algunos móviles la
+    // captura se colgaba o fallaba y el botón "Agregar al carrito" quedaba
+    // muerto (bug reportado por clientes). Si falla, se usa la foto base.
     let mockupUrl = (!sinGrabado && muestraMockup) ? mockupBase : null;
     if (!sinGrabado && muestraMockup) {
-      const isDesktop = typeof window !== 'undefined' && window.innerWidth >= 1024;
-      const primario = isDesktop ? mockupRefDesktop : mockupRefMobile;
-      const secundario = isDesktop ? mockupRefMobile : mockupRefDesktop;
-      const snap = (await primario.current?.captureSnapshot?.())
-        || (await secundario.current?.captureSnapshot?.());
-      if (snap) mockupUrl = snap;
+      const conTope = (p, ms = 4000) => Promise.race([
+        Promise.resolve(p).catch(() => null),
+        new Promise((r) => setTimeout(() => r(null), ms)),
+      ]);
+      try {
+        const isDesktop = typeof window !== 'undefined' && window.innerWidth >= 1024;
+        const primario = isDesktop ? mockupRefDesktop : mockupRefMobile;
+        const secundario = isDesktop ? mockupRefMobile : mockupRefDesktop;
+        const snap = (await conTope(primario.current?.captureSnapshot?.()))
+          || (await conTope(secundario.current?.captureSnapshot?.()));
+        if (snap) mockupUrl = snap;
+      } catch {
+        // El snapshot es opcional: capas_grabado + imagen_base reconstruyen el diseño.
+      }
     }
 
     addToCartV2({
@@ -515,6 +528,7 @@ export default function ProductoNuevo() {
       imagen: colorImg,
     });
     clearDraftV2(producto.id);
+    setAdding(false);
     setAdded(true);
     setTimeout(() => navigate('/CarritoNuevo'), 700);
   };
@@ -627,12 +641,12 @@ export default function ProductoNuevo() {
           {/* CTA en header (desktop) */}
           <button
             onClick={handleAdd}
-            disabled={added || agotado}
+            disabled={added || agotado || adding}
             className="hidden lg:flex items-center gap-2 px-5 h-10 rounded-xl text-white font-bold text-sm transition-all hover:-translate-y-0.5 active:scale-[0.97] disabled:opacity-60 disabled:hover:translate-y-0"
             style={{ background: C.actionGrad, boxShadow: C.actionShadow, flexShrink: 0 }}
           >
-            {added ? <Check className="w-4 h-4" /> : <ShoppingBag className="w-4 h-4" />}
-            <span>{added ? '¡Agregado!' : agotado ? 'Agotado' : `Agregar · ${fmtCLP(total)}`}</span>
+            {adding ? <Loader2 className="w-4 h-4 animate-spin" /> : added ? <Check className="w-4 h-4" /> : <ShoppingBag className="w-4 h-4" />}
+            <span>{adding ? 'Agregando…' : added ? '¡Agregado!' : agotado ? 'Agotado' : `Agregar · ${fmtCLP(total)}`}</span>
           </button>
         </div>
       </header>
@@ -947,11 +961,13 @@ export default function ProductoNuevo() {
             <div className="hidden lg:block mt-3 lg:flex-shrink-0">
              <button
                onClick={handleAdd}
-               disabled={added || agotado}
+               disabled={added || agotado || adding}
                className="w-full h-14 rounded-2xl text-white font-bold text-base flex items-center justify-center gap-2 transition-all hover:-translate-y-0.5 active:scale-[0.98] disabled:opacity-60 disabled:hover:translate-y-0"
                style={{ background: C.actionGrad, boxShadow: C.actionShadow }}
              >
-               {added ? (
+               {adding ? (
+                 <><Loader2 className="w-5 h-5 animate-spin" /> Agregando…</>
+               ) : added ? (
                  <><Check className="w-5 h-5" /> ¡Agregado!</>
                ) : agotado ? (
                  <>Agotado</>
@@ -977,6 +993,7 @@ export default function ProductoNuevo() {
         ctaLabel={added ? '✓ ¡Agregado!' : agotado ? 'Agotado' : !persOk ? 'Completa tu grabado' : 'Agregar al carrito'}
         onCta={handleAdd}
         ctaDisabled={added || agotado}
+        ctaLoading={adding}
         total={added || !persOk ? null : total}
       />
     </div>
