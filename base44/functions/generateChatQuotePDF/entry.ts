@@ -575,15 +575,25 @@ Deno.serve(async (req) => {
     try {
       const file = new File([pdfU8], `Cotizacion-Peyu-${numero}.pdf`, { type: 'application/pdf' });
       const up = await base44.asServiceRole.integrations.Core.UploadFile({ file });
-      pdfUrl = up?.file_url || '';
+      const candidato = up?.file_url || '';
+      // Verificamos que el link REALMENTE abra: si no responde, no se lo
+      // pasamos al cliente (era la causa de los links que no abrían nada).
+      if (/^https?:\/\//i.test(candidato)) {
+        const check = await fetch(candidato, { method: 'GET' }).catch(() => null);
+        if (check?.ok) pdfUrl = candidato;
+        else console.error('PDF subido pero no accesible públicamente:', candidato, check?.status);
+      }
       if (pdfUrl) {
-        await base44.asServiceRole.entities.Cotizacion.update(cot.id, {
-          notas: `${cot.notas || ''} · PDF: ${pdfUrl}`,
-        }).catch(() => {});
+        await base44.asServiceRole.entities.Cotizacion.update(cot.id, { pdf_url: pdfUrl }).catch(() => {});
       }
     } catch (e) {
       console.error('Error subiendo PDF a storage:', e?.message || e);
     }
+
+    // Link canónico que SIEMPRE abre algo: página pública de la propuesta
+    // (resumen + descarga del PDF + botón de aprobar). Es el que se envía por
+    // WhatsApp, aunque la subida del PDF haya fallado.
+    const propuestaUrl = `https://peyuchile.cl/propuesta?cot=${cot.id}`;
 
     // 💌 Email HTML "estable" (tablas + estilos inline, compatible Gmail/Outlook
     // móvil) con viaje de marca, mockup del cliente y doble CTA de aprobación.
@@ -684,12 +694,13 @@ Deno.serve(async (req) => {
       total,
       pdf_base64: base64,
       pdf_url: pdfUrl,
+      propuesta_url: propuestaUrl,
       filename: `Cotizacion-Peyu-${numero}.pdf`,
       email_enviado: emailEnviado,
       admin_url_pipeline: '/admin/pipeline',
       admin_url_cotizaciones: '/admin/cotizaciones',
       mockup_url: mockup_url || null,
-      mensaje_cliente: `¡Listo${contacto ? `, *${contacto}*` : ''}! 🐢 Tu propuesta *${numero}* quedó lista:\n\n📦 *${producto.nombre}* × ${cantidad}u\n💰 Unitario $${(precioUnit || 0).toLocaleString('es-CL')} · *Total $${(total || 0).toLocaleString('es-CL')} CLP* (IVA incl.)${requierePersonal ? `\n🎨 Grabado láser: ${personalizacion}${cantidad >= 10 ? ' — *GRATIS* desde 10u ✅' : ` — fee $${feePersonal.toLocaleString('es-CL')}`}${mockup_url ? ' (mockup incluido en el PDF)' : ''}` : ''}\n🚚 Lead time: ${leadTime} días hábiles · Validez: 15 días${emailEnviado ? `\n📧 Copia enviada a ${email} ✅` : (email ? `\n📧 No pude enviarla al correo — el PDF de abajo es el oficial y el equipo te la reenviará` : '')}\n\n📄 Tu propuesta completa en PDF:\n${pdfUrl || '(PDF disponible vía el equipo PEYU)'}\n\n¿Avanzamos? Puedo resolver cualquier duda o ajustar cantidades aquí mismo 💚`,
+      mensaje_cliente: `¡Listo${contacto ? `, *${contacto}*` : ''}! 🐢 Tu propuesta *${numero}* quedó lista:\n\n📦 *${producto.nombre}* × ${cantidad}u\n💰 Unitario $${(precioUnit || 0).toLocaleString('es-CL')} · *Total $${(total || 0).toLocaleString('es-CL')} CLP* (IVA incl.)${requierePersonal ? `\n🎨 Grabado láser: ${personalizacion}${cantidad >= 10 ? ' — *GRATIS* desde 10u ✅' : ` — fee $${feePersonal.toLocaleString('es-CL')}`}${mockup_url ? ' (mockup incluido en el PDF)' : ''}` : ''}\n🚚 Lead time: ${leadTime} días hábiles · Validez: 15 días${emailEnviado ? `\n📧 Copia enviada a ${email} ✅` : (email ? `\n📧 No pude enviarla al correo — el PDF de abajo es el oficial y el equipo te la reenviará` : '')}\n\n📄 Ver y descargar tu propuesta:\n${propuestaUrl}\n\n¿Avanzamos? Puedo resolver cualquier duda o ajustar cantidades aquí mismo 💚`,
       mensaje_founder: `📋 Lead: /admin/pipeline · 📄 Cotización ${numero}: /admin/cotizaciones · 📧 Email ${emailEnviado ? 'enviado ✅' : 'NO enviado ⚠️'}${pdfUrl ? ' · PDF hospedado ✅' : ''}`,
     });
   } catch (error) {

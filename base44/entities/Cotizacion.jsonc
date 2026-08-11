@@ -101,6 +101,11 @@
       "type": "string",
       "title": "URL Mockup"
     },
+    "pdf_url": {
+      "type": "string",
+      "title": "URL del PDF de la propuesta",
+      "description": "Link hospedado del PDF generado. Fuente de verdad para la p\u00e1gina p\u00fablica /propuesta y para el link que env\u00eda el agente por WhatsApp."
+    },
     "notas": {
       "type": "string",
       "title": "Notas"

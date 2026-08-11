@@ -69,6 +69,7 @@ import FunnelDesignLab from './pages/FunnelDesignLab';
 import IndiceTest from './pages/IndiceTest';
 import ResumenOperativo from './pages/ResumenOperativo';
 import AprobarPropuesta from './pages/AprobarPropuesta';
+import PropuestaPublica from './pages/PropuestaPublica';
 import FirmaAgente from './pages/FirmaAgente';
 import FiestasPatrias from './pages/FiestasPatrias';
 import ManualPeyu from './pages/ManualPeyu';
@@ -381,6 +382,7 @@ function App() {
               <Route path="/empresas/propuesta-rapida" element={<PropuestaRapida />} />
               <Route path="/resumen-operativo" element={<ResumenOperativo />} />
               <Route path="/aprobar-propuesta" element={<AprobarPropuesta />} />
+              <Route path="/propuesta" element={<PropuestaPublica />} />
               <Route path="/firma-agente" element={<FirmaAgente />} />
 
               {/* ── RUTAS PÚBLICAS — todas con PublicNavBar permanente ──────────── */}
