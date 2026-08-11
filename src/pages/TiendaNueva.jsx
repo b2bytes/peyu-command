@@ -92,6 +92,13 @@ export default function TiendaNueva() {
         url="https://peyuchile.cl/"
         type="website"
       />
+      {/* Franja tricolor Fiestas Patrias — justo bajo el menú superior */}
+      <div className="w-full h-1 flex">
+        <div className="flex-1" style={{ background: '#0F3D91' }} />
+        <div className="flex-1" style={{ background: '#FFFFFF' }} />
+        <div className="flex-1" style={{ background: '#D52B1E' }} />
+      </div>
+
       {/* Continuidad: retomar personalización o cotización a medias */}
       <ResumeJourneyBannerV2 />
 

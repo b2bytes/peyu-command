@@ -1,8 +1,9 @@
 import { useState, useEffect, useMemo } from 'react';
 import { base44 } from '@/api/base44Client';
-import { Search, Loader2, Users, CheckSquare, Square } from 'lucide-react';
+import { Search, Loader2, Users, CheckSquare, Square, UserPlus } from 'lucide-react';
 import ClienteSelectRow from './ClienteSelectRow';
 import WhatsAppComposePanel from './WhatsAppComposePanel';
+import ClienteCreateModal from './ClienteCreateModal';
 
 // Vista "Clientes": toma la base de datos de clientes con teléfono y permite
 // escribirles por WhatsApp usando plantillas.
@@ -11,6 +12,7 @@ export default function WhatsAppClientesPanel() {
   const [cargando, setCargando] = useState(true);
   const [q, setQ] = useState('');
   const [ids, setIds] = useState([]);
+  const [crear, setCrear] = useState(false);
 
   useEffect(() => {
     base44.entities.Cliente.list('-updated_date', 500)
@@ -46,6 +48,13 @@ export default function WhatsAppClientesPanel() {
               <p className="text-sm font-bold text-white leading-none">Clientes con WhatsApp</p>
               <p className="text-[10px] text-white/40 mt-0.5">{filtrados.length} de {clientes.length} · {ids.length} seleccionados</p>
             </div>
+            <button
+              onClick={() => setCrear(true)}
+              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-full text-[11px] font-bold text-white"
+              style={{ background: 'linear-gradient(135deg,#25D366,#128C7E)' }}
+            >
+              <UserPlus className="w-3.5 h-3.5" /> Nuevo
+            </button>
             <button
               onClick={toggleTodos}
               className="inline-flex items-center gap-1.5 px-3 py-2 rounded-full text-[11px] font-bold text-white/70 hover:text-white"
@@ -91,6 +100,14 @@ export default function WhatsAppClientesPanel() {
         style={{ background: 'rgba(0,0,0,.30)', border: '1px solid rgba(255,255,255,.08)' }}>
         <WhatsAppComposePanel seleccionados={seleccionados} />
       </div>
+
+      {/* Modal crear cliente */}
+      {crear && (
+        <ClienteCreateModal
+          onClose={() => setCrear(false)}
+          onCreated={(nuevo) => setClientes((prev) => [nuevo, ...prev])}
+        />
+      )}
 
       {/* Mobile: aparece cuando hay seleccionados */}
       {ids.length > 0 && (
