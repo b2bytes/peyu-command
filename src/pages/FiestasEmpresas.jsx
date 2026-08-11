@@ -8,6 +8,11 @@ import { Link } from 'react-router-dom';
 import { Briefcase, Building2, Truck, FileText, Award, ArrowRight, Check, Clock, Sparkles, Loader2 } from 'lucide-react';
 import SEO from '@/components/SEO';
 import CountdownDieciocho from '@/components/fiestas/CountdownDieciocho';
+import B2BVolumenPrecios from '@/components/fiestas/B2BVolumenPrecios';
+import ComparativaFiestas from '@/components/fiestas/ComparativaFiestas';
+import FiestasFAQ from '@/components/fiestas/FiestasFAQ';
+import FiestasStickyCTA from '@/components/fiestas/FiestasStickyCTA';
+import { FAQ_EMPRESAS, schemaEmpresas } from '@/lib/fiestas-seo';
 import { base44 } from '@/api/base44Client';
 
 const VENTAJAS = [
@@ -67,9 +72,10 @@ export default function FiestasEmpresas() {
   return (
     <div className="min-h-screen font-inter" style={{ background: '#F8F3ED', color: '#2C1810' }}>
       <SEO
-        title="Kits Corporativos Fiestas Patrias — Regala con identidad · PEYU"
-        description="Kits corporativos chilenos con tu marca para Fiestas Patrias. Grabado láser con tu logo, factura y despacho a oficina. Pedidos antes del 5 de septiembre = entrega garantizada el 18."
+        title="Regalos corporativos Fiestas Patrias 2026 — Kits sustentables con tu logo | PEYU"
+        description="Regalos corporativos de Fiestas Patrias hechos en Chile con plástico reciclado y grabado láser con el logo de tu empresa. Desde 20 kits, precios por volumen, factura y despacho a oficina. Cierre de pedidos: 5 de septiembre."
         canonical="https://peyuchile.cl/fiestas-patrias/empresas"
+        jsonLd={schemaEmpresas()}
       />
 
       {/* ── HERO ────────────────────────────────────────────────────── */}
@@ -128,6 +134,12 @@ export default function FiestasEmpresas() {
         </div>
       </section>
 
+      {/* ── PRECIOS POR VOLUMEN ─────────────────────────────────────── */}
+      <B2BVolumenPrecios onCotizar={scrollToForm} />
+
+      {/* ── COMPARATIVA ─────────────────────────────────────────────── */}
+      <ComparativaFiestas />
+
       {/* ── FORM LEAD B2B ───────────────────────────────────────────── */}
       <section ref={formRef} className="px-5 pb-20">
         <div className="max-w-xl mx-auto rounded-3xl p-7" style={{ background: 'white', border: '1.5px solid #D4C4B0', boxShadow: '0 12px 32px rgba(44,24,16,.08)' }}>
@@ -173,6 +185,12 @@ export default function FiestasEmpresas() {
           )}
         </div>
       </section>
+
+      {/* ── FAQ (visible + FAQPage en el head) ──────────────────────── */}
+      <FiestasFAQ faqs={FAQ_EMPRESAS} titulo="Preguntas de empresas" />
+
+      <div className="sm:hidden h-24" />
+      <FiestasStickyCTA onClick={scrollToForm} label="Cotizar mi kit corporativo" nota="Cierre de pedidos con logo: 5 de septiembre" />
     </div>
   );
 }

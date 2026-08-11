@@ -8,6 +8,10 @@ import { Link } from 'react-router-dom';
 import { Sparkles, Recycle, Truck, ShieldCheck, ShoppingBag, Briefcase, ArrowRight, MapPin, Star } from 'lucide-react';
 import SEO from '@/components/SEO';
 import CountdownDieciocho from '@/components/fiestas/CountdownDieciocho';
+import ComparativaFiestas from '@/components/fiestas/ComparativaFiestas';
+import FiestasFAQ from '@/components/fiestas/FiestasFAQ';
+import FiestasStickyCTA from '@/components/fiestas/FiestasStickyCTA';
+import { FAQ_MADRE, schemaMadre } from '@/lib/fiestas-seo';
 import { base44 } from '@/api/base44Client';
 
 const PILARES = [
@@ -27,9 +31,10 @@ export default function FiestasPatrias() {
   return (
     <div className="min-h-screen font-inter" style={{ background: '#F8F3ED', color: '#2C1810' }}>
       <SEO
-        title="PEYU Fiestas Patrias 2026 — Lo chileno de verdad 🇨🇱"
-        description="Productos 100% chilenos, calidad premium y entrega garantizada antes del 18. Elige tu kit de regalo de Fiestas o regala kits corporativos con identidad."
+        title="Regalos de Fiestas Patrias 2026 en Chile — Kits chilenos y sustentables | PEYU"
+        description="Regalos de Fiestas Patrias hechos en Chile con plástico 100% reciclado: kits para la casa, para regalar y kits corporativos con tu logo grabado. Entrega garantizada antes del 18 de septiembre."
         canonical="https://peyuchile.cl/fiestas-patrias"
+        jsonLd={schemaMadre()}
       />
 
       {/* ── HERO ────────────────────────────────────────────────────── */}
@@ -132,6 +137,12 @@ export default function FiestasPatrias() {
         </div>
       </section>
 
+      {/* ── COMPARATIVA (por qué esto y no una caja gourmet) ────────── */}
+      <ComparativaFiestas />
+
+      {/* ── FAQ (visible + FAQPage en el head) ──────────────────────── */}
+      <FiestasFAQ faqs={FAQ_MADRE} />
+
       {/* ── CIERRE ──────────────────────────────────────────────────── */}
       <section className="px-5 pb-20">
         <div className="max-w-3xl mx-auto rounded-3xl p-8 text-center" style={{ background: 'linear-gradient(135deg,#A8443A,#7A2E26)' }}>
@@ -149,6 +160,9 @@ export default function FiestasPatrias() {
           </Link>
         </div>
       </section>
+
+      <div className="sm:hidden h-24" />
+      <FiestasStickyCTA to="/fiestas-patrias/kits" label="Ver los 15 kits" nota="Compra hasta el 12 de septiembre y llega antes del 18" />
     </div>
   );
 }

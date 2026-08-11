@@ -9,7 +9,10 @@ import { Gift, ArrowRight, Sparkles, Truck, Recycle } from 'lucide-react';
 import SEO from '@/components/SEO';
 import CountdownDieciocho from '@/components/fiestas/CountdownDieciocho';
 import KitCard from '@/components/fiestas/KitCard';
+import FiestasFAQ from '@/components/fiestas/FiestasFAQ';
+import FiestasStickyCTA from '@/components/fiestas/FiestasStickyCTA';
 import { KITS_FIESTAS, TAGS_KITS } from '@/lib/fiestas-kits';
+import { FAQ_KITS, schemaKits } from '@/lib/fiestas-seo';
 import { base44 } from '@/api/base44Client';
 
 export default function FiestasKits() {
@@ -27,9 +30,10 @@ export default function FiestasKits() {
   return (
     <div className="min-h-screen font-inter" style={{ background: '#F8F3ED', color: '#2C1810' }}>
       <SEO
-        title="Kits de Regalo Fiestas Patrias 2026 — PEYU Chile 🇨🇱"
-        description="15 kits de regalo 100% chilenos y reciclados para el 18: cachos, paletas, posavasos y más, con grabado láser. Para tu casa, para regalar o para tu empresa. Entrega antes del 18 de septiembre."
+        title="Kits de regalo Fiestas Patrias 2026 desde $14.990 — PEYU Chile"
+        description="15 kits de regalo de Fiestas Patrias hechos en Chile con plástico reciclado: cachos, paletas, posavasos y más, con grabado láser incluido. Desde $14.990, entrega antes del 18 de septiembre."
         canonical="https://peyuchile.cl/fiestas-patrias/kits"
+        jsonLd={schemaKits()}
       />
 
       {/* ── HERO ────────────────────────────────────────────────────── */}
@@ -97,6 +101,9 @@ export default function FiestasKits() {
         </div>
       </section>
 
+      {/* ── FAQ (visible + FAQPage en el head) ──────────────────────── */}
+      <FiestasFAQ faqs={FAQ_KITS} titulo="Dudas sobre los kits" />
+
       {/* ── CIERRE ──────────────────────────────────────────────────── */}
       <section className="px-5 pb-20">
         <div className="max-w-3xl mx-auto rounded-3xl p-8 text-center" style={{ background: 'linear-gradient(135deg,#A8443A,#7A2E26)' }}>
@@ -111,6 +118,9 @@ export default function FiestasKits() {
           </Link>
         </div>
       </section>
+
+      <div className="sm:hidden h-24" />
+      <FiestasStickyCTA to="/fiestas-patrias/empresas" label="¿Es para tu empresa? Cotiza aquí" nota="Compra hasta el 12 de septiembre y llega antes del 18" />
     </div>
   );
 }
