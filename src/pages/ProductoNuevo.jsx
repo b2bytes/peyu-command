@@ -18,6 +18,7 @@ import DescripcionCollapsibleV2 from '@/components/shopv2/DescripcionCollapsible
 import MobileNavBarV2 from '@/components/shopv2/MobileNavBarV2';
 import PaymentMethodsBadgesV2 from '@/components/shopv2/PaymentMethodsBadgesV2';
 import QtyDiscountNoticeV2 from '@/components/shopv2/QtyDiscountNoticeV2';
+import EnvioAvisoV2 from '@/components/shopv2/EnvioAvisoV2';
 import AddWithoutEngravingV2 from '@/components/shopv2/AddWithoutEngravingV2';
 import IntencionCompraV2 from '@/components/shopv2/IntencionCompraV2';
 import { getProductImage, getProductImageForColor } from '@/utils/productImages';
@@ -901,6 +902,10 @@ export default function ProductoNuevo() {
 
               {/* Aviso de descuentos por cantidad + grabado gratis desde 10u */}
               <QtyDiscountNoticeV2 cantidad={cantidad} moq={moq} />
+
+              {/* Envío: el cliente ve antes del checkout cuánto falta para el
+                  envío gratis (informativo; el costo real se calcula al pagar) */}
+              <EnvioAvisoV2 total={total} />
 
               {/* El cotizador de envío vive solo en el carrito/checkout, donde se
                   piden los datos de envío. En la ficha de producto se eliminó. */}
