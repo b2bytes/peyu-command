@@ -45,30 +45,38 @@ export default function FiestasKits() {
           <div className="flex-1" style={{ background: '#D52B1E' }} />
         </div>
 
-        <div className="relative max-w-3xl mx-auto px-5 pt-14 pb-10 text-center">
-          <span className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-bold mb-5"
+        <div className="relative max-w-3xl mx-auto px-5 pt-8 sm:pt-14 pb-7 sm:pb-10 text-center">
+          <span className="inline-flex items-center gap-1.5 px-3 sm:px-4 py-1 sm:py-1.5 rounded-full text-[11px] sm:text-xs font-bold mb-3 sm:mb-5"
             style={{ background: 'rgba(168,68,58,.1)', color: '#A8443A' }}>
             <Sparkles className="w-3.5 h-3.5" /> 15 kits · Edición Fiestas Patrias
           </span>
-          <h1 className="font-fraunces text-4xl sm:text-5xl leading-[1.05] mb-4">
+          <h1 className="font-fraunces text-[2rem] sm:text-5xl leading-[1.05] mb-2.5 sm:mb-4">
             Kits de regalo <span style={{ color: '#A8443A' }}>para el 18</span>
           </h1>
-          <p className="text-base sm:text-lg max-w-xl mx-auto mb-8" style={{ color: '#7A6050' }}>
+          <p className="text-sm sm:text-lg max-w-xl mx-auto mb-5 sm:mb-8" style={{ color: '#7A6050' }}>
             Combinaciones listas para regalar: 100% chilenas, recicladas y con grabado láser.
             Recíbelas <strong style={{ color: '#2C1810' }}>antes del 18</strong>.
           </p>
-          <div className="flex justify-center"><CountdownDieciocho /></div>
+
+          {/* CTA primero: baja directo a la grilla de kits */}
+          <a href="#kits"
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 h-14 px-8 rounded-2xl text-white font-bold transition-all active:scale-[0.98]"
+            style={{ background: 'linear-gradient(135deg,#C0785C,#A86440)' }}>
+            <Gift className="w-5 h-5" /> Ver los 15 kits
+          </a>
+
+          <div className="mt-6 sm:mt-8 flex justify-center"><CountdownDieciocho /></div>
         </div>
       </section>
 
       {/* ── FILTRO + GRILLA DE KITS ─────────────────────────────────── */}
-      <section className="max-w-6xl mx-auto px-4 sm:px-5 py-10">
-        <div className="flex items-center justify-center gap-2 mb-8 flex-wrap">
+      <section id="kits" className="max-w-6xl mx-auto px-4 sm:px-5 py-7 sm:py-10 scroll-mt-4">
+        <div className="flex items-center justify-center gap-2 mb-6 sm:mb-8 overflow-x-auto scrollbar-hide sm:flex-wrap">
           {TAGS_KITS.map((t) => (
             <button
               key={t}
               onClick={() => setTag(t)}
-              className="px-5 py-2 rounded-full text-sm font-bold transition-all"
+              className="flex-shrink-0 px-5 py-2 rounded-full text-sm font-bold transition-all peyu-tap-sm"
               style={{
                 background: tag === t ? '#A8443A' : 'white',
                 color: tag === t ? 'white' : '#7A6050',

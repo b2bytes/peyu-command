@@ -85,24 +85,27 @@ export default function FiestasEmpresas() {
           <div className="flex-1" style={{ background: '#FFFFFF' }} />
           <div className="flex-1" style={{ background: '#D52B1E' }} />
         </div>
-        <div className="relative max-w-4xl mx-auto px-5 pt-14 pb-14 text-center">
-          <span className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-bold mb-5"
+        <div className="relative max-w-4xl mx-auto px-5 pt-8 sm:pt-14 pb-10 sm:pb-14 text-center">
+          <span className="inline-flex items-center gap-1.5 px-3 sm:px-4 py-1 sm:py-1.5 rounded-full text-[11px] sm:text-xs font-bold mb-3 sm:mb-5"
             style={{ background: 'rgba(255,255,255,.1)', color: '#F2D9C9' }}>
             <Briefcase className="w-3.5 h-3.5" /> Programa Corporativo · Fiestas Patrias
           </span>
-          <h1 className="font-fraunces text-4xl sm:text-5xl leading-[1.05] mb-4 text-white">
+          <h1 className="font-fraunces text-[2rem] sm:text-5xl leading-[1.05] mb-2.5 sm:mb-4 text-white">
             Regala con <span style={{ color: '#E89B6C' }}>identidad</span>
           </h1>
-          <p className="text-base sm:text-lg max-w-xl mx-auto mb-8" style={{ color: '#D4C4B0' }}>
+          <p className="text-sm sm:text-lg max-w-xl mx-auto mb-5 sm:mb-8" style={{ color: '#D4C4B0' }}>
             Kits corporativos 100% chilenos con la marca de tu empresa. Factura, despacho a oficina
             y entrega garantizada para el 18.
           </p>
-          <div className="mb-9 flex justify-center"><CountdownDieciocho label="Cierre de pedidos B2B" /></div>
+
+          {/* CTA primero: cotizar es la única acción que importa acá */}
           <button onClick={scrollToForm}
-            className="inline-flex items-center gap-2 h-14 px-8 rounded-2xl text-white font-bold transition-all active:scale-[0.98] hover:-translate-y-0.5"
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 h-14 px-8 rounded-2xl text-white font-bold transition-all active:scale-[0.98] hover:-translate-y-0.5"
             style={{ background: 'linear-gradient(135deg,#C0785C,#A86440)' }}>
             Cotizar mi kit corporativo <ArrowRight className="w-5 h-5" />
           </button>
+
+          <div className="mt-6 sm:mt-9 flex justify-center"><CountdownDieciocho label="Cierre de pedidos B2B" /></div>
         </div>
       </section>
 

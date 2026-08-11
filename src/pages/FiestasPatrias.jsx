@@ -50,27 +50,24 @@ export default function FiestasPatrias() {
           <div className="flex-1" style={{ background: '#D52B1E' }} />
         </div>
 
-        <div className="relative max-w-5xl mx-auto px-5 pt-14 pb-16 text-center">
+        <div className="relative max-w-5xl mx-auto px-5 pt-8 sm:pt-14 pb-10 sm:pb-16 text-center">
           <span
-            className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-bold mb-5"
+            className="inline-flex items-center gap-1.5 px-3 sm:px-4 py-1 sm:py-1.5 rounded-full text-[11px] sm:text-xs font-bold mb-3 sm:mb-5"
             style={{ background: 'rgba(168,68,58,.1)', color: '#A8443A' }}
           >
             <Sparkles className="w-3.5 h-3.5" /> Campaña Fiestas Patrias · 18 de septiembre
           </span>
 
-          <h1 className="font-fraunces text-4xl sm:text-6xl leading-[1.02] mb-4">
+          <h1 className="font-fraunces text-[2rem] sm:text-6xl leading-[1.05] mb-2.5 sm:mb-4">
             Lo chileno <span style={{ color: '#A8443A' }}>de verdad</span>
           </h1>
-          <p className="text-base sm:text-xl max-w-2xl mx-auto mb-8" style={{ color: '#7A6050' }}>
+          <p className="text-sm sm:text-xl max-w-2xl mx-auto mb-5 sm:mb-8" style={{ color: '#7A6050' }}>
             Este 18, regala identidad. Productos 100% chilenos, premium y sostenibles,
             con <strong style={{ color: '#2C1810' }}>entrega garantizada antes del 18</strong>.
           </p>
 
-          <div className="mb-9 flex justify-center">
-            <CountdownDieciocho />
-          </div>
-
-          <div className="flex flex-col sm:flex-row gap-3 justify-center max-w-lg mx-auto">
+          {/* CTA antes que todo lo demás: en móvil es lo primero que se ve */}
+          <div className="flex flex-col sm:flex-row gap-2.5 sm:gap-3 justify-center max-w-lg mx-auto">
             <Link
               to="/fiestas-patrias/kits"
               className="flex-1 h-14 rounded-2xl text-white font-bold flex items-center justify-center gap-2 transition-all active:scale-[0.98] hover:brightness-110"
@@ -85,6 +82,10 @@ export default function FiestasPatrias() {
             >
               <Briefcase className="w-5 h-5" style={{ color: '#A8443A' }} /> Kits corporativos
             </Link>
+          </div>
+
+          <div className="mt-6 sm:mt-9 flex justify-center">
+            <CountdownDieciocho />
           </div>
         </div>
       </section>
