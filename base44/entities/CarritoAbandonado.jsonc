@@ -73,6 +73,12 @@
       "format": "date-time",
       "title": "Fecha env\u00edo recordatorio"
     },
+    "whatsapp_enviado_at": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Fecha recordatorio WhatsApp",
+      "description": "Marca de idempotencia: cu\u00e1ndo se envi\u00f3 el recordatorio amistoso por WhatsApp con el link al carrito. Solo se env\u00eda una vez por carrito."
+    },
     "converted_at": {
       "type": "string",
       "format": "date-time",
