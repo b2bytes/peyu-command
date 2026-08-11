@@ -1,0 +1,58 @@
+{
+  "name": "ABTestEvent",
+  "type": "object",
+  "description": "Evento de un test A/B de landing. Cada registro es una visita (view) o un clic en el bot\u00f3n de compra final (click) de una variante concreta. Sirve para comparar la tasa de conversi\u00f3n entre variante A y B.",
+  "properties": {
+    "test_id": {
+      "type": "string",
+      "title": "Test (ej. fiestas_patrias)"
+    },
+    "variante": {
+      "type": "string",
+      "title": "Variante",
+      "enum": [
+        "A",
+        "B"
+      ]
+    },
+    "evento": {
+      "type": "string",
+      "title": "Tipo de evento",
+      "enum": [
+        "view",
+        "click"
+      ]
+    },
+    "visitor_id": {
+      "type": "string",
+      "title": "ID an\u00f3nimo del visitante"
+    },
+    "page_path": {
+      "type": "string",
+      "title": "Ruta de la p\u00e1gina"
+    }
+  },
+  "required": [
+    "test_id",
+    "variante",
+    "evento"
+  ],
+  "rls": {
+    "create": {},
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

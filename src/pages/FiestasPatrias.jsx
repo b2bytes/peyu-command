@@ -3,7 +3,7 @@
 // Ángulo: "Lo chileno de verdad". Bifurca a B2C (canasta) y B2B (kits corp).
 // Diseño Warm Dusk + acentos patrios. Pure conversion, sin tocar el home.
 // ============================================================================
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Sparkles, Recycle, Truck, ShieldCheck, ShoppingBag, Briefcase, ArrowRight, MapPin, Star } from 'lucide-react';
 import SEO from '@/components/SEO';
@@ -13,6 +13,28 @@ import FiestasFAQ from '@/components/fiestas/FiestasFAQ';
 import FiestasStickyCTA from '@/components/fiestas/FiestasStickyCTA';
 import { FAQ_MADRE, schemaMadre } from '@/lib/fiestas-seo';
 import { base44 } from '@/api/base44Client';
+import { getVariante, trackABView, trackABClick } from '@/lib/ab-test';
+
+const AB_TEST = 'fiestas_patrias';
+// Dos versiones del bloque principal. Se mide cuál lleva a más clics al botón
+// de compra final. Solo cambia el diseño/copy: el flujo es idéntico.
+const VARIANTES = {
+  A: {
+    fondo: 'linear-gradient(135deg,#FBF5EE 0%,#F6E7DB 55%,#F2D9C9 100%)',
+    titulo: 'Lo chileno',
+    destacado: 'de verdad',
+    bajada: 'Este 18, regala identidad. Productos 100% chilenos, premium y sostenibles,',
+    cta: 'Ver los 15 kits',
+  },
+  B: {
+    fondo: 'linear-gradient(135deg,#2C1810 0%,#5A2A22 55%,#A8443A 100%)',
+    oscuro: true,
+    titulo: 'Regalos del 18',
+    destacado: 'hechos en Chile',
+    bajada: 'Kits listos para regalar, hechos con plástico reciclado chileno,',
+    cta: 'Quiero mi kit ahora',
+  },
+};
 
 const PILARES = [
   { icon: MapPin, t: '100% chileno', d: 'Diseñado y fabricado en Chile, con materia prima reciclada nacional.' },
@@ -22,11 +44,17 @@ const PILARES = [
 ];
 
 export default function FiestasPatrias() {
+  const [variante] = useState(() => getVariante(AB_TEST));
+  const v = VARIANTES[variante];
+
   useEffect(() => {
     try {
       base44.analytics.track({ eventName: 'fiestas_landing_view', properties: { variante: 'madre' } });
     } catch {}
-  }, []);
+    trackABView(AB_TEST, variante);
+  }, [variante]);
+
+  const onCompraClick = () => trackABClick(AB_TEST, variante);
 
   return (
     <div className="min-h-screen font-inter" style={{ background: '#F8F3ED', color: '#2C1810' }}>
@@ -41,7 +69,7 @@ export default function FiestasPatrias() {
       <section className="relative overflow-hidden">
         <div
           className="absolute inset-0"
-          style={{ background: 'linear-gradient(135deg,#FBF5EE 0%,#F6E7DB 55%,#F2D9C9 100%)' }}
+          style={{ background: v.fondo }}
         />
         {/* franja patria sutil arriba */}
         <div className="absolute top-0 inset-x-0 h-1.5 flex">
@@ -58,22 +86,24 @@ export default function FiestasPatrias() {
             <Sparkles className="w-3.5 h-3.5" /> Campaña Fiestas Patrias · 18 de septiembre
           </span>
 
-          <h1 className="font-fraunces text-[2rem] sm:text-6xl leading-[1.05] mb-2.5 sm:mb-4">
-            Lo chileno <span style={{ color: '#A8443A' }}>de verdad</span>
+          <h1 className="font-fraunces text-[2rem] sm:text-6xl leading-[1.05] mb-2.5 sm:mb-4"
+            style={{ color: v.oscuro ? '#FFFFFF' : '#2C1810' }}>
+            {v.titulo} <span style={{ color: v.oscuro ? '#F2D9C9' : '#A8443A' }}>{v.destacado}</span>
           </h1>
-          <p className="text-sm sm:text-xl max-w-2xl mx-auto mb-5 sm:mb-8" style={{ color: '#7A6050' }}>
-            Este 18, regala identidad. Productos 100% chilenos, premium y sostenibles,
-            con <strong style={{ color: '#2C1810' }}>entrega garantizada antes del 18</strong>.
+          <p className="text-sm sm:text-xl max-w-2xl mx-auto mb-5 sm:mb-8" style={{ color: v.oscuro ? '#E7D8C6' : '#7A6050' }}>
+            {v.bajada}{' '}
+            con <strong style={{ color: v.oscuro ? '#FFFFFF' : '#2C1810' }}>entrega garantizada antes del 18</strong>.
           </p>
 
           {/* CTA antes que todo lo demás: en móvil es lo primero que se ve */}
           <div className="flex flex-col sm:flex-row gap-2.5 sm:gap-3 justify-center max-w-lg mx-auto">
             <Link
               to="/fiestas-patrias/kits"
+              onClick={onCompraClick}
               className="flex-1 h-14 rounded-2xl text-white font-bold flex items-center justify-center gap-2 transition-all active:scale-[0.98] hover:brightness-110"
               style={{ background: 'linear-gradient(135deg,#C0785C,#A86440)' }}
             >
-              <ShoppingBag className="w-5 h-5" /> Ver los 15 kits
+              <ShoppingBag className="w-5 h-5" /> {v.cta}
             </Link>
             <Link
               to="/fiestas-patrias/empresas"
@@ -154,7 +184,7 @@ export default function FiestasPatrias() {
           <p className="text-sm mb-6" style={{ color: '#F2D9C9' }}>
             Entrega garantizada antes del 18 de septiembre comprando dentro de plazo. Stock limitado.
           </p>
-          <Link to="/fiestas-patrias/kits"
+          <Link to="/fiestas-patrias/kits" onClick={onCompraClick}
             className="inline-flex items-center gap-2 h-13 px-7 py-3.5 rounded-2xl font-bold transition-all active:scale-[0.98] hover:brightness-95"
             style={{ background: 'white', color: '#A8443A' }}>
             Ver toda la tienda <ArrowRight className="w-5 h-5" />
@@ -163,7 +193,7 @@ export default function FiestasPatrias() {
       </section>
 
       <div className="sm:hidden h-24" />
-      <FiestasStickyCTA to="/fiestas-patrias/kits" label="Ver los 15 kits" nota="Compra hasta el 12 de septiembre y llega antes del 18" />
+      <FiestasStickyCTA to="/fiestas-patrias/kits" onClick={onCompraClick} label={v.cta} nota="Compra hasta el 12 de septiembre y llega antes del 18" />
     </div>
   );
 }

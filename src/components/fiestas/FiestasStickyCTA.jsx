@@ -17,7 +17,7 @@ export default function FiestasStickyCTA({ to, onClick, label, nota }) {
         <p className="text-[11px] font-semibold text-center mb-2" style={{ color: '#A8443A' }}>{nota}</p>
       )}
       {to ? (
-        <Link to={to} className={cls} style={style}>{label} <ArrowRight className="w-5 h-5" /></Link>
+        <Link to={to} onClick={onClick} className={cls} style={style}>{label} <ArrowRight className="w-5 h-5" /></Link>
       ) : (
         <button onClick={onClick} className={cls} style={style}>{label} <ArrowRight className="w-5 h-5" /></button>
       )}

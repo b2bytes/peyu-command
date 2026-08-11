@@ -10,6 +10,7 @@ import TrustSocialBarV2 from '@/components/shopv2/TrustSocialBarV2';
 import ImpactStoryV2 from '@/components/shopv2/ImpactStoryV2';
 import ProductCardV2 from '@/components/shopv2/ProductCardV2';
 import RuletaDescuento from '@/components/fidelizacion/RuletaDescuento';
+import HomeFiestasStrip from '@/components/fiestas/HomeFiestasStrip';
 import { CATEGORIAS_V2 } from '@/lib/shop-v2-config';
 import { getProductImage } from '@/utils/productImages';
 
@@ -98,6 +99,9 @@ export default function TiendaNueva() {
 
       {/* 1 · HERO BOLD */}
       <HeroBoldV2 heroImg={heroImg} slides={heroSlides} />
+
+      {/* Guiño Fiestas Patrias (sutil) */}
+      <HomeFiestasStrip />
 
       {/* 1b · TRUST + SOCIAL PROOF */}
       <TrustSocialBarV2 />
