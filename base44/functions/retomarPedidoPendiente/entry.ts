@@ -32,8 +32,12 @@ Deno.serve(async (req) => {
 
     // Solo se puede retomar un pedido que sigue esperando pago, del mismo
     // cliente y por el mismo monto. Cualquier otra cosa → pedido nuevo.
+    // "manual_review" también cuenta como pendiente: el pedido aún no se paga
+    // y el cliente puede reintentar. Antes se rechazaba y cada reintento de un
+    // pedido flaggeado creaba un pedido DUPLICADO nuevo.
+    const ps = String(pedido.payment_status || '');
     const pendiente = pedido.estado === 'Nuevo' &&
-      String(pedido.payment_status || '').startsWith('pending');
+      (ps.startsWith('pending') || ps === 'manual_review');
     const mismoCliente = String(pedido.cliente_email || '').toLowerCase() === String(email).toLowerCase();
     const mismoTotal = Math.round(pedido.total || 0) === Math.round(Number(total) || 0);
 
@@ -43,7 +47,9 @@ Deno.serve(async (req) => {
 
     await base44.asServiceRole.entities.PedidoWeb.update(pedido.id, {
       medio_pago: medio_pago,
-      payment_status: PS_POR_MEDIO[medio_pago] || 'pending_mp',
+      // No borramos la marca de revisión manual al reintentar: el equipo debe
+      // seguir viendo el pedido como flaggeado hasta revisarlo.
+      payment_status: ps === 'manual_review' ? 'manual_review' : (PS_POR_MEDIO[medio_pago] || 'pending_mp'),
       historial: [
         ...(Array.isArray(pedido.historial) ? pedido.historial : []),
         {

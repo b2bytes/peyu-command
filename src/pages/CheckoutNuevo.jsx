@@ -19,6 +19,7 @@ import { uploadImagePublic } from '@/lib/public-upload';
 import { calcularCargoPersonalizacionCarrito, calcularCargoPersonalizacion, getTipoPersonalizacion, MOQ_PERSONALIZACION_GRATIS } from '@/lib/personalizacion-config';
 import { computeQtyDiscountBySku } from '@/lib/volume-discount';
 import { normalizarRut } from '@/lib/rut-chile';
+import useCuponActivo, { calcularDescuentoCupon } from '@/hooks/useCuponActivo';
 import { trackPurchase } from '@/lib/analytics-peyu';
 import { trackInitiateCheckout } from '@/lib/meta-pixel';
 import { trackBeginCheckout } from '@/lib/analytics-peyu';
@@ -109,8 +110,13 @@ export default function CheckoutNuevo() {
   // 🚚 Envío gratis ≥$40.000 SOLO B2C: pedidos B2B (líneas B2B del catálogo
   // corporativo o compra con Factura empresa) pagan siempre su envío real.
   const esB2B = tieneLineaB2B || billing.tipo_documento === 'Factura';
-  const envio = envioBluex ? envioBluex.costo : 0;
-  const total = Math.max(0, subtotal + cargoPersonalizacion - ahorroTotal + envio);
+  // 🎟️ Cupón aplicado en el carrito: llega INTACTO al pago (antes se perdía
+  // aquí y el total cobrado era mayor al que el cliente vio en el carrito).
+  const cupon = useCuponActivo();
+  const baseCupon = subtotal + cargoPersonalizacion - ahorroTotal;
+  const { descuento: descuentoCupon, liberaEnvio } = calcularDescuentoCupon(cupon, baseCupon);
+  const envio = liberaEnvio ? 0 : (envioBluex ? envioBluex.costo : 0);
+  const total = Math.max(0, baseCupon - descuentoCupon + envio);
   // Descuento por Gift Card canjeada en el checkout.
   const descuentoGift = giftcard ? Math.min(giftcard.saldo_clp, total) : 0;
   const totalFinal = Math.max(0, total - descuentoGift);
@@ -378,7 +384,7 @@ export default function CheckoutNuevo() {
         const tipos = Array.from(new Set(carrito.filter(i => i.personalizacion).map(i => getTipoPersonalizacion(i)).filter(Boolean)));
         return tipos.length === 1 ? tipos[0] : (tipos.length > 1 ? 'mixto' : '');
       })(),
-      descuento: Number(ahorroTotal) + Number(descuentoGift) || 0,
+      descuento: Number(ahorroTotal) + Number(descuentoCupon) + Number(descuentoGift) || 0,
       total: Number(totalFinal) || 0,
       medio_pago: totalFinal === 0 ? 'GiftCard' : medioPago,
       // Estado fino del pago correcto según el medio elegido (antes todos
@@ -400,9 +406,12 @@ export default function CheckoutNuevo() {
       logo_recibido: !!(itemConLogo || itemConMockup),
       courier: esRetiroPedido ? 'Retiro en Tienda' : 'BlueExpress',
       ciudad: esRetiroPedido ? 'Macul' : cliente.ciudad,
-      notas: esRetiroPedido
-        ? `Carrito v2: ${carrito.length} items | Retiro en tienda Pedro de Valdivia 6603, Macul`
-        : `Carrito v2: ${carrito.length} items | Bluex ${envioBluex.servicio} (${(envioBluex.peso_kg || 0)}kg) → $${(envioBluex.costo_real || envioBluex.costo).toLocaleString('es-CL')}`,
+      notas: [
+        esRetiroPedido
+          ? `Carrito v2: ${carrito.length} items | Retiro en tienda Pedro de Valdivia 6603, Macul`
+          : `Carrito v2: ${carrito.length} items | Bluex ${envioBluex.servicio} (${(envioBluex.peso_kg || 0)}kg) → $${(envioBluex.costo_real || envioBluex.costo).toLocaleString('es-CL')}`,
+        descuentoCupon > 0 || liberaEnvio ? `Cupón ${cupon?.codigo}: −$${descuentoCupon.toLocaleString('es-CL')}${liberaEnvio ? ' (envío gratis)' : ''}` : null,
+      ].filter(Boolean).join(' | '),
     };
 
     // Reintento automático: hasta 2 intentos extra con espera creciente para
@@ -817,6 +826,7 @@ export default function CheckoutNuevo() {
               ahorroTotal={ahorroTotal} descLineas={descLineas}
               envioBluex={envioBluex} envio={envio} total={totalFinal}
               descuentoGift={descuentoGift} giftcardCodigo={giftcard?.codigo || ''}
+              descuentoCupon={descuentoCupon} cuponCodigo={cupon?.codigo || ''} cuponEnvioGratis={liberaEnvio}
               errorPago={errorPago} medioPago={medioPago}
             />
 
@@ -859,6 +869,7 @@ export default function CheckoutNuevo() {
                   ahorroTotal={ahorroTotal} descLineas={descLineas}
                   envioBluex={envioBluex} envio={envio} total={totalFinal}
                   descuentoGift={descuentoGift} giftcardCodigo={giftcard?.codigo || ''}
+                  descuentoCupon={descuentoCupon} cuponCodigo={cupon?.codigo || ''} cuponEnvioGratis={liberaEnvio}
                   errorPago={errorPago} medioPago={medioPago}
                 />
               </div>

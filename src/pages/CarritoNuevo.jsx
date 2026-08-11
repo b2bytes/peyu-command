@@ -37,11 +37,13 @@ export default function CarritoNuevo() {
   useEffect(() => {
     const skus = [...new Set(getCartV2().map((i) => i.sku).filter(Boolean))];
     if (skus.length === 0) return;
-    base44.entities.Producto.list('-updated_date', 300)
-      .then((all) => {
+    // Solo los productos del carrito (bajar el catálogo completo de 300
+    // registros era lento en móvil y podía fallar con conexión débil).
+    base44.entities.Producto.filter({ sku: { $in: skus } }, '-updated_date', skus.length)
+      .then((rows) => {
         const map = {};
-        for (const p of all || []) {
-          if (p.sku && skus.includes(p.sku)) map[p.sku] = p;
+        for (const p of rows || []) {
+          if (p.sku) map[p.sku] = p;
         }
         setProductosBySku(map);
       })

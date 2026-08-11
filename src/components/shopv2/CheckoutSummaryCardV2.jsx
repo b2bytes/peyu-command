@@ -10,7 +10,8 @@ import { AlertCircle, ShieldCheck } from 'lucide-react';
 // ════════════════════════════════════════════════════════════════════════
 export default function CheckoutSummaryCardV2({
   carrito, subtotal, cargoPersonalizacion, ahorroTotal, descLineas,
-  envioBluex, envio, total, descuentoGift = 0, giftcardCodigo = '', errorPago, medioPago,
+  envioBluex, envio, total, descuentoGift = 0, giftcardCodigo = '',
+  descuentoCupon = 0, cuponCodigo = '', cuponEnvioGratis = false, errorPago, medioPago,
 }) {
   return (
     <div className="bg-white rounded-2xl p-4" style={{ border: '1px solid var(--ck-border-soft, #E3D6C4)', boxShadow: '0 2px 16px rgba(var(--ck-fg-rgb, 44,24,16),.06)' }}>
@@ -56,6 +57,12 @@ export default function CheckoutSummaryCardV2({
                 <span className="font-semibold flex-shrink-0">−{fmtCLP(l.ahorro)}</span>
               </div>
             ))}
+          </div>
+        )}
+        {(descuentoCupon > 0 || cuponEnvioGratis) && (
+          <div className="rounded-xl p-2.5 flex justify-between" style={{ background: 'rgba(139,173,138,.1)', border: '1px solid rgba(139,173,138,.3)' }}>
+            <span className="font-bold text-xs" style={{ color: '#5B7D5A' }}>🎟️ Cupón{cuponCodigo ? ` ${cuponCodigo}` : ''}</span>
+            <span className="font-bold text-xs" style={{ color: '#5B7D5A' }}>{cuponEnvioGratis ? 'Envío gratis' : `−${fmtCLP(descuentoCupon)}`}</span>
           </div>
         )}
         <div className="flex justify-between" style={{ color: 'var(--ck-fg-soft, #7A6050)' }}>
