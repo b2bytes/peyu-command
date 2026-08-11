@@ -26,6 +26,7 @@ import { getProductImage, getProductImageForColor } from '@/utils/productImages'
 import { findColorImageMatch } from '@/lib/color-image-matcher';
 import { getB2BPriceForQty, getUnitBasePrice } from '@/lib/catalog-pricing';
 import { fmtCLP, addToCartV2 } from '@/lib/shop-v2-cart';
+import CompraPersonalBanner from '@/components/b2b/CompraPersonalBanner';
 
 const IVA = 0.19;
 
@@ -123,6 +124,20 @@ export default function EmpresaProducto() {
   const incluye = Array.isArray(producto?.incluye_items_v2) && producto.incluye_items_v2.length
     ? producto.incluye_items_v2
     : (producto?.incluye ? [producto.incluye] : []);
+
+  // ¿Llegó desde un anuncio (Instagram/Facebook)? En ese caso puede ser un
+  // cliente final: se le ofrece además el camino de compra por unidad. NO
+  // altera el flujo B2B ni los precios de esta ficha.
+  const vieneDeAnuncio = useMemo(() => {
+    const p = new URLSearchParams(location.search);
+    if (p.get('fbclid') || p.get('utm_id')) return true;
+    const medium = (p.get('utm_medium') || '').toLowerCase();
+    const source = (p.get('utm_source') || '').toLowerCase();
+    if (['paid', 'cpc', 'ppc', 'paid_social'].includes(medium)) return true;
+    if (['ig', 'instagram', 'fb', 'facebook', 'meta'].includes(source)) return true;
+    if (typeof document !== 'undefined' && /instagram|facebook/i.test(document.referrer || '')) return true;
+    return false;
+  }, [location.search]);
 
   const goToCotizar = () => setShowForm(true);
 
@@ -281,6 +296,14 @@ export default function EmpresaProducto() {
 
           {/* ── CONFIGURADOR ── */}
           <div className="min-w-0 space-y-4 sm:space-y-6 lg:pb-8">
+            {vieneDeAnuncio && (
+              <CompraPersonalBanner
+                productoId={producto.id}
+                precioB2C={producto.precio_b2c}
+                fmt={fmtCLP}
+              />
+            )}
+
             {/* Encabezado */}
             <div>
               <p className="text-[10px] sm:text-xs font-bold uppercase tracking-wider mb-1" style={{ color: '#A08070' }}>
