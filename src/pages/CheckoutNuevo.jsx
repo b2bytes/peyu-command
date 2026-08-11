@@ -7,6 +7,7 @@ import useFeatureFlag from '@/hooks/useFeatureFlag';
 import MobileNavBarV2 from '@/components/shopv2/MobileNavBarV2';
 import CheckoutStepperV2 from '@/components/shopv2/CheckoutStepperV2';
 import CheckoutSummaryCardV2 from '@/components/shopv2/CheckoutSummaryCardV2';
+import MobilePayCTA from '@/components/shopv2/MobilePayCTA';
 import CollapsibleSectionV2 from '@/components/shopv2/CollapsibleSectionV2';
 import ShippingAddressForm, { validarShippingForm } from '@/components/cart/ShippingAddressForm';
 import BillingSection, { validarBilling } from '@/components/cart/BillingSection';
@@ -573,6 +574,8 @@ export default function CheckoutNuevo() {
   }, []);
   // Sección abierta en móvil: 'envio' | 'forma' | 'pago' | 'facturacion' | null
   const [openSection, setOpenSection] = useState('envio');
+  // Móvil: los datos de facturación aparecen solo si el cliente los pide.
+  const [mostrarFactura, setMostrarFactura] = useState(false);
   // ⚠️ NO auto-cerramos la sección de envío al validar: el cliente seguía
   // escribiendo (depto, referencia) y la sección se colapsaba sola, sacándolo
   // del formulario. Ahora avanza SOLO con el botón "Continuar".
@@ -716,7 +719,21 @@ export default function CheckoutNuevo() {
         <PaymentMethodSelector value={medioPago} onChange={setMedioPago} totalCubiertoConGC={totalFinal === 0} />
       </CollapsibleSectionV2>
 
-      {/* 4 · Facturación */}
+      {/* 4 · Facturación — en móvil se muestra solo si el cliente la pide
+          (Boleta es el default), para no cargar el flujo con campos de empresa. */}
+      {isMobile && !mostrarFactura && billing.tipo_documento !== 'Factura' ? (
+        <button
+          type="button"
+          onClick={() => setMostrarFactura(true)}
+          className="w-full rounded-2xl p-4 text-left bg-white transition-all active:scale-[0.99]"
+          style={{ border: '1.5px solid var(--ck-border, #D4C4B0)' }}
+        >
+          <p className="font-bold text-sm" style={{ color: 'var(--ck-fg, #2C1810)' }}>¿Necesitas factura de empresa?</p>
+          <p className="text-[11px] mt-0.5" style={{ color: 'var(--ck-fg-muted, #A08070)' }}>
+            Por defecto emitimos boleta. Toca aquí para pedir factura.
+          </p>
+        </button>
+      ) : (
       <div data-billing-section>
         <BillingSection
           billing={billing}
@@ -724,6 +741,7 @@ export default function CheckoutNuevo() {
           errors={billingErrors}
         />
       </div>
+      )}
     </>
   );
 
@@ -844,6 +862,9 @@ export default function CheckoutNuevo() {
                   errorPago={errorPago} medioPago={medioPago}
                 />
               </div>
+
+              {/* Botón de pago final destacado (móvil) */}
+              <MobilePayCTA label={ctaPagar} total={totalFinal} onClick={crearPedido} loading={creando} />
             </div>
 
             {/* CTA desktop fijo bajo la columna (siempre visible) */}

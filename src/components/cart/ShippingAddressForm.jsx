@@ -21,6 +21,7 @@ import PhoneInput from './PhoneInput';
 export default function ShippingAddressForm({ cliente, setCliente, errors = {}, onEmailBlur }) {
   const [touched, setTouched] = useState({});
   const [localErrors, setLocalErrors] = useState({});
+  const [mostrarReferencia, setMostrarReferencia] = useState(false);
   const comunas = getComunasByRegion(cliente.region);
 
   // Helper de update — preserva foco porque el setter es estable
@@ -171,15 +172,29 @@ export default function ShippingAddressForm({ cliente, setCliente, errors = {}, 
           isValid={fieldValid('direccion')}
         />
 
-        <FormField
-          label="Depto / Oficina / Casa"
-          name="referencia"
-          autoComplete="address-line2"
-          value={cliente.referencia || ''}
-          onChange={update('referencia')}
-          placeholder="Depto 502, Torre B (opcional)"
-          hint="Ayuda al courier a encontrarte"
-        />
+        {/* Campo opcional: en móvil queda oculto tras un enlace para acortar
+            el formulario (menos campos = más conversión). Desktop sin cambios. */}
+        <div className={mostrarReferencia || cliente.referencia ? '' : 'hidden sm:block'}>
+          <FormField
+            label="Depto / Oficina / Casa"
+            name="referencia"
+            autoComplete="address-line2"
+            value={cliente.referencia || ''}
+            onChange={update('referencia')}
+            placeholder="Depto 502, Torre B (opcional)"
+            hint="Ayuda al courier a encontrarte"
+          />
+        </div>
+        {!mostrarReferencia && !cliente.referencia && (
+          <button
+            type="button"
+            onClick={() => setMostrarReferencia(true)}
+            className="sm:hidden text-xs font-bold underline"
+            style={{ color: 'var(--ck-action, #C0785C)' }}
+          >
+            + Agregar depto u oficina (opcional)
+          </button>
+        )}
       </Section>
 
       {/* Errores agregados al final */}

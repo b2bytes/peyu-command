@@ -111,6 +111,7 @@ const Alertas = lazyWithRetry(() => import('./pages/Alertas'), { name: 'Alertas'
 const AdminPropuestas = lazyWithRetry(() => import('./pages/AdminPropuestas'), { name: 'AdminPropuestas' });
 const EstadoActual = lazyWithRetry(() => import('./pages/EstadoActual'), { name: 'EstadoActual' });
 const EmbudoVentas = lazyWithRetry(() => import('./pages/EmbudoVentas'), { name: 'EmbudoVentas' });
+const EmbudoMovil = lazyWithRetry(() => import('./pages/EmbudoMovil'), { name: 'EmbudoMovil' });
 const ImportarClientes = lazyWithRetry(() => import('./pages/ImportarClientes'), { name: 'ImportarClientes' });
 const Backlinks = lazyWithRetry(() => import('./pages/Backlinks'), { name: 'Backlinks' });
 const IntegracionWoo = lazyWithRetry(() => import('./pages/IntegracionWoo'), { name: 'IntegracionWoo' });
@@ -240,6 +241,7 @@ const AuthenticatedApp = () => {
           <Route path="propuestas" element={<AdminPropuestas />} />
           <Route path="estado-actual" element={<EstadoActual />} />
           <Route path="embudo" element={<EmbudoVentas />} />
+          <Route path="embudo-movil" element={<EmbudoMovil />} />
           <Route path="importar-clientes" element={<ImportarClientes />} />
           <Route path="backlinks" element={<Backlinks />} />
           <Route path="woocommerce" element={<IntegracionWoo />} />
