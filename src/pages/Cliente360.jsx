@@ -9,6 +9,7 @@ import ClienteNotas from '@/components/cliente/ClienteNotas';
 import PersonalizedProductsSummary from '@/components/cliente/PersonalizedProductsSummary';
 import RecentQuotesSummary from '@/components/cliente/RecentQuotesSummary';
 import B2BProposalHistory from '@/components/cliente/B2BProposalHistory';
+import PropuestasPDFCliente from '@/components/cliente/PropuestasPDFCliente';
 
 // Ficha 360° del cliente — administración uno a uno: identidad, inteligencia,
 // historial y notas editables, todo en una sola vista escaneable.
@@ -102,6 +103,9 @@ export default function Cliente360() {
 
           {/* Historial B2B propuestas */}
           <B2BProposalHistory empresa={cliente.empresa || cliente.contacto} />
+
+          {/* Biblioteca de propuestas en PDF, lista para compartir */}
+          <PropuestasPDFCliente email={cliente.email} empresa={cliente.empresa} />
 
           {/* Resumen: productos personalizados (con archivos) + cotizaciones */}
           <div className="grid lg:grid-cols-2 gap-5">
