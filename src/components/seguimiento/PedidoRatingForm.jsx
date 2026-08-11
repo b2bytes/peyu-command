@@ -56,8 +56,14 @@ export default function PedidoRatingForm({ pedido, onSubmitted }) {
     setLoading(true);
     setError('');
     try {
+      // SKUs del pedido para que las estrellas lleguen a cada producto
+      const skus = [...new Set([
+        ...(pedido.items_detalle || []).map((i) => i?.sku).filter(Boolean),
+        ...(pedido.sku ? [pedido.sku] : []),
+      ])];
       const resena = await base44.entities.ResenaPedido.create({
         pedido_id: pedido.id,
+        skus: skus.length ? skus : undefined,
         numero_pedido: pedido.numero_pedido,
         cliente_email: pedido.cliente_email,
         cliente_nombre: pedido.cliente_nombre,

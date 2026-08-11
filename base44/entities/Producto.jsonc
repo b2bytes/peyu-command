@@ -292,6 +292,17 @@
       "title": "Peso volum\u00e9trico (kg)",
       "description": "Calculado: (largo \u00d7 ancho \u00d7 alto) / 5000. Bluex factura por el mayor entre peso real y volum\u00e9trico."
     },
+    "rating_promedio": {
+      "type": "number",
+      "title": "Calificaci\u00f3n promedio (1-5)",
+      "description": "Promedio de las estrellas de producto (rating_producto) de las rese\u00f1as de clientes cuyos pedidos incluyen este SKU. Actualizado autom\u00e1ticamente por syncRatingProducto."
+    },
+    "rating_count": {
+      "type": "number",
+      "title": "N\u00b0 de rese\u00f1as",
+      "description": "Cantidad de rese\u00f1as de clientes que respaldan rating_promedio. Actualizado autom\u00e1ticamente por syncRatingProducto.",
+      "default": 0
+    },
     "seo_meta_title": {
       "type": "string",
       "title": "SEO \u00b7 Meta Title",

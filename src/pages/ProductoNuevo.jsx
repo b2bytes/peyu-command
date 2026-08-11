@@ -20,6 +20,7 @@ import PaymentMethodsBadgesV2 from '@/components/shopv2/PaymentMethodsBadgesV2';
 import QtyDiscountNoticeV2 from '@/components/shopv2/QtyDiscountNoticeV2';
 import EnvioAvisoV2 from '@/components/shopv2/EnvioAvisoV2';
 import AddWithoutEngravingV2 from '@/components/shopv2/AddWithoutEngravingV2';
+import ProductRatingStars from '@/components/shopv2/ProductRatingStars';
 import IntencionCompraV2 from '@/components/shopv2/IntencionCompraV2';
 import { getProductImage, getProductImageForColor } from '@/utils/productImages';
 import { getColoresProducto } from '@/lib/color-parser';
@@ -653,6 +654,11 @@ export default function ProductoNuevo() {
               </p>
               <h1 className="font-fraunces text-2xl xl:text-3xl leading-[1.05] mb-1.5" style={{ color: C.fg }}>{producto.nombre}</h1>
               <p className="font-poppins font-bold text-xl" style={{ color: C.action }}>{fmtCLP(precioUnit)}</p>
+              {producto.rating_count > 0 && (
+                <div className="mt-1.5">
+                  <ProductRatingStars promedio={producto.rating_promedio} count={producto.rating_count} size="lg" />
+                </div>
+              )}
               {stockBajo && (
                 <p className="inline-flex items-center gap-1 mt-1.5 text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ color: C.action, background: 'rgba(192,120,92,.1)' }}>
                   🔥 Solo {stock}u disponibles
@@ -809,6 +815,11 @@ export default function ProductoNuevo() {
                 </p>
                 <h1 className="font-fraunces text-lg sm:text-4xl leading-[1.05] mb-1" style={{ color: C.fg }}>{producto.nombre}</h1>
                 <p className="font-poppins font-bold text-lg sm:text-2xl" style={{ color: C.action }}>{fmtCLP(precioUnit)}</p>
+                {producto.rating_count > 0 && (
+                  <div className="mt-1">
+                    <ProductRatingStars promedio={producto.rating_promedio} count={producto.rating_count} size="lg" />
+                  </div>
+                )}
                 {stockBajo && (
                   <p className="inline-flex items-center gap-1 mt-1 text-[9px] font-bold px-2 py-0.5 rounded-full" style={{ color: C.action, background: 'rgba(192,120,92,.1)' }}>
                     🔥 Solo {stock}u

@@ -1,7 +1,7 @@
 {
   "name": "ResenaPedido",
   "type": "object",
-  "description": "Rese\u00f1a post-entrega del cliente sobre un PedidoWeb. Califica el producto, el servicio y permite recomendaci\u00f3n NPS.",
+  "description": "Rese\u00f1a post-entrega del cliente sobre un PedidoWeb. Califica el producto, el servicio y permite recomendaci\u00f3n NPS. skus denormaliza los productos del pedido para que syncRatingProducto agregue las estrellas en cada Producto.",
   "properties": {
     "description": {
       "type": "string",
@@ -23,6 +23,15 @@
     "cliente_nombre": {
       "type": "string",
       "title": "Nombre cliente"
+    },
+    "skus": {
+      "type": "array",
+      "title": "SKUs del pedido rese\u00f1ado",
+      "description": "SKUs de los productos incluidos en el pedido, denormalizados al crear la rese\u00f1a. Permiten agregar rating_promedio/rating_count en cada Producto.",
+      "items": {
+        "type": "string"
+      },
+      "default": []
     },
     "rating_producto": {
       "type": "number",

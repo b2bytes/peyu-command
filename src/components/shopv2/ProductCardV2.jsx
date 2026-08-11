@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { Leaf, Recycle, ArrowUpRight } from 'lucide-react';
 import { getProductImage } from '@/utils/productImages';
 import { fmtCLP } from '@/lib/shop-v2-cart';
+import ProductRatingStars from '@/components/shopv2/ProductRatingStars';
 
 // Card de producto 2027 — Neo-minimalista con icono eco tintado, tipografía editorial,
 // hover CTA con ArrowUpRight (tendencia plataforma inteligente).
@@ -63,6 +64,11 @@ export default function ProductCardV2({ producto, index = 0 }) {
         <h3 className="font-jakarta font-semibold text-[13px] sm:text-sm leading-snug line-clamp-2 flex-1" style={{ color: '#2C1810' }}>
           {producto.nombre}
         </h3>
+        {producto.rating_count > 0 && (
+          <div className="mt-1">
+            <ProductRatingStars promedio={producto.rating_promedio} count={producto.rating_count} />
+          </div>
+        )}
         <div className="flex items-center justify-between mt-3 pt-2.5" style={{ borderTop: '1px solid #F2EBE0' }}>
           <p className="font-fraunces font-bold text-base sm:text-lg" style={{ color: '#C0785C' }}>{fmtCLP(precio)}</p>
           <span className="text-[11px] sm:text-xs font-semibold sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-200 inline-flex items-center gap-0.5" style={{ color: '#C0785C' }}>
