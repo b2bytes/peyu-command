@@ -59,6 +59,29 @@ function computeScore(rec) {
   return Math.min(100, s);
 }
 
+// Registra la conversación completa en el pipeline: nº de mensajes, preview del
+// último mensaje del visitante y página de origen. Crea el ChatLead si no existe.
+async function upsertConvSnapshot(sr, conversation_id, lastUserText, pagePath) {
+  const now = new Date().toISOString();
+  const conv = await sr.agents.getConversation(conversation_id);
+  const count = (conv?.messages || []).length + 1;
+  const preview = cleanUserContent(lastUserText).slice(0, 140);
+  const existing = await sr.entities.ChatLead.filter({ conversation_id }, undefined, 1);
+  const snap = { mensajes_count: count, ultimo_mensaje_preview: preview, ultimo_mensaje_at: now };
+  if (existing?.[0]) {
+    await sr.entities.ChatLead.update(existing[0].id, snap);
+  } else {
+    await sr.entities.ChatLead.create({
+      conversation_id,
+      tipo: 'Sin clasificar',
+      estado: 'Activo',
+      page_origen: pagePath || null,
+      score: 0,
+      ...snap,
+    });
+  }
+}
+
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
@@ -97,6 +120,10 @@ Deno.serve(async (req) => {
         else { try { text += await buildCatalogDigest(sr); } catch { /* sin digest: usa la herramienta */ } }
       }
       await sr.agents.addMessage(conv, { role: 'user', content: text });
+      // Respaldo del hilo COMPLETO: cada mensaje del visitante actualiza (o crea)
+      // su ChatLead, aunque todavía no haya entregado ningún dato personal. Así
+      // ninguna conversación queda fuera del pipeline.
+      await upsertConvSnapshot(sr, conversation_id, content, body.page_path).catch(() => null);
       return Response.json({ ok: true });
     }
 

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { MessageSquare, Building2, Mail, Phone } from 'lucide-react';
 import { WEB_STAGES, clasificarChatLead } from '@/lib/webchat-pipeline';
+import LeadDataChips from '@/components/whatsapp/LeadDataChips';
 
 // ════════════════════════════════════════════════════════════════════════
 // Vista de etiquetas: todas las conversaciones del vendedor Peyu en una
@@ -65,6 +66,7 @@ export default function WebChatTagsView({ leads, onOpen }) {
                 <p className="text-[10px] text-ld-fg-muted truncate">
                   {lead.ultimo_mensaje_preview || lead.producto_interes_nombre || 'Sin mensajes guardados'}
                 </p>
+                <div className="mt-1"><LeadDataChips lead={lead} /></div>
               </div>
               <div className="hidden sm:flex items-center gap-2 flex-shrink-0 text-[9px] text-ld-fg-subtle">
                 {lead.empresa && <span className="inline-flex items-center gap-0.5"><Building2 className="w-2.5 h-2.5" />{lead.empresa}</span>}

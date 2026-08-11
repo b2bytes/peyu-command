@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
 import { MessageSquare, Building2, Mail, Phone, Package } from 'lucide-react';
+import LeadDataChips from '@/components/whatsapp/LeadDataChips';
 
 // Tarjeta de una conversación del vendedor Peyu web dentro del pipeline.
 export default function WebChatConvCard({ lead, color, onOpen }) {
@@ -39,6 +40,10 @@ export default function WebChatConvCard({ lead, color, onOpen }) {
         {lead.producto_interes_nombre && (
           <span className="inline-flex items-center gap-0.5"><Package className="w-2.5 h-2.5" />{lead.producto_interes_nombre}</span>
         )}
+      </div>
+
+      <div className="mt-1.5">
+        <LeadDataChips lead={lead} />
       </div>
 
       <div className="flex items-center gap-2 mt-1.5 text-[9px] text-ld-fg-subtle">
