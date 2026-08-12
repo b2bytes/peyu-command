@@ -19,7 +19,14 @@ export default function ProductCardV2({ producto, index = 0 }) {
       onMouseOut={e => { e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.borderColor = '#E8DDD0'; }}
       onFocus={e => { e.currentTarget.style.boxShadow = '0 0 0 3px rgba(192,120,92,.25)'; }}
       onBlur={e => { e.currentTarget.style.boxShadow = 'none'; }}
-      style={{ border: '1.5px solid #E8DDD0', animationDelay: `${Math.min(index, 11) * 50}ms` }}
+      style={{
+        border: '1.5px solid #E8DDD0',
+        animationDelay: `${Math.min(index, 11) * 50}ms`,
+        // Las cards fuera de pantalla no se pintan hasta acercarse al viewport:
+        // catálogos largos (300 productos) cargan y hacen scroll mucho más liviano.
+        contentVisibility: index < 8 ? 'visible' : 'auto',
+        containIntrinsicSize: '320px',
+      }}
     >
       {/* Imagen: object-contain para ver el producto completo, con fondo cálido */}
       <div className="relative overflow-hidden" style={{ background: 'linear-gradient(145deg,#F7F2EC,#EDE3D6)', aspectRatio: '1/1' }}>
@@ -28,7 +35,11 @@ export default function ProductCardV2({ producto, index = 0 }) {
           alt={producto.nombre}
           className="w-full h-full transition-transform duration-500 ease-out group-hover:scale-[1.06]"
           style={{ objectFit: 'contain', objectPosition: 'center', padding: '6px' }}
-          loading="lazy"
+          loading={index < 4 ? 'eager' : 'lazy'}
+          decoding="async"
+          fetchpriority={index < 4 ? 'high' : 'low'}
+          width={400}
+          height={400}
           onError={(e) => {
             e.target.src = 'https://media.base44.com/images/public/69d99b9d61f699701129c103/4a2230d61_generated_image.png';
             e.target.onerror = null;

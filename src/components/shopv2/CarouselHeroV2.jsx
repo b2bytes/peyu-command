@@ -61,6 +61,8 @@ export default function CarouselHeroV2({ slides = [], onSlideClick }) {
               transition: 'transform 5.5s ease-out',
             }}
             loading={idx === 0 ? 'eager' : 'lazy'}
+            decoding="async"
+            fetchpriority={idx === 0 ? 'high' : 'low'}
             onError={(e) => {
               e.target.src = 'https://media.base44.com/images/public/69d99b9d61f699701129c103/4a2230d61_generated_image.png';
               e.target.onerror = null;
@@ -73,16 +75,20 @@ export default function CarouselHeroV2({ slides = [], onSlideClick }) {
           {/* Caption editorial — contenedor glass que destaca sobre la foto */}
           {(s.kicker || s.title) && (
             <div className="absolute bottom-0 inset-x-0 p-3.5 sm:p-5 pb-5 sm:pb-7 pointer-events-none">
+              {/* OJO: color en style inline (#FFFFFF), NO clase text-white: el layer
+                  de compatibilidad del modo día remapea .text-white a texto oscuro
+                  y el caption quedaba ilegible sobre la foto. */}
               <div className="inline-block max-w-[88%] rounded-2xl px-3.5 py-2.5 sm:px-4 sm:py-3"
-                style={{ background: 'rgba(20,12,6,.55)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', border: '1px solid rgba(255,255,255,.12)' }}>
+                style={{ background: 'rgba(20,12,6,.78)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', border: '1px solid rgba(255,255,255,.18)' }}>
                 {s.kicker && (
-                  <p className="text-[9px] sm:text-[10px] font-bold uppercase tracking-[0.14em] mb-0.5"
-                    style={{ color: '#F0C9B4' }}>
+                  <p className="text-[10px] sm:text-[11px] font-bold uppercase tracking-[0.14em] mb-0.5"
+                    style={{ color: '#FFD9C6' }}>
                     {s.kicker}
                   </p>
                 )}
                 {s.title && (
-                  <p className="font-fraunces text-sm sm:text-xl leading-tight text-white">
+                  <p className="font-fraunces text-base sm:text-xl leading-tight"
+                    style={{ color: '#FFFFFF', textShadow: '0 1px 12px rgba(0,0,0,.55)' }}>
                     {s.title}
                   </p>
                 )}
