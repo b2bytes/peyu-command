@@ -5,7 +5,7 @@ import { ArrowRight } from 'lucide-react';
 // el cliente recorre la landing.
 export default function FiestasStickyCTA({ to, onClick, label, nota }) {
   const cls =
-    'w-full h-13 py-3.5 rounded-2xl text-white font-bold flex items-center justify-center gap-2 active:scale-[0.98] transition-transform';
+    'w-full h-13 py-3.5 rounded-2xl text-[#FFFFFF] font-bold flex items-center justify-center gap-2 active:scale-[0.98] transition-transform';
   const style = { background: 'linear-gradient(135deg,#C0785C,#A86440)' };
 
   return (

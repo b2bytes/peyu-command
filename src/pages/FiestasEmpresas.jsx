@@ -12,6 +12,7 @@ import B2BVolumenPrecios from '@/components/fiestas/B2BVolumenPrecios';
 import ComparativaFiestas from '@/components/fiestas/ComparativaFiestas';
 import FiestasFAQ from '@/components/fiestas/FiestasFAQ';
 import FiestasStickyCTA from '@/components/fiestas/FiestasStickyCTA';
+import FiestasNav from '@/components/fiestas/FiestasNav';
 import { FAQ_EMPRESAS, schemaEmpresas } from '@/lib/fiestas-seo';
 import { base44 } from '@/api/base44Client';
 
@@ -78,6 +79,8 @@ export default function FiestasEmpresas() {
         jsonLd={schemaEmpresas()}
       />
 
+      <FiestasNav />
+
       {/* ── HERO ────────────────────────────────────────────────────── */}
       <section className="relative overflow-hidden" style={{ background: '#2C1810' }}>
         <div className="absolute top-0 inset-x-0 h-1.5 flex">
@@ -90,7 +93,7 @@ export default function FiestasEmpresas() {
             style={{ background: 'rgba(255,255,255,.1)', color: '#F2D9C9' }}>
             <Briefcase className="w-3.5 h-3.5" /> Programa Corporativo · Fiestas Patrias
           </span>
-          <h1 className="font-fraunces text-[2rem] sm:text-5xl leading-[1.05] mb-2.5 sm:mb-4 text-white">
+          <h1 className="font-fraunces text-[2rem] sm:text-5xl leading-[1.05] mb-2.5 sm:mb-4 text-[#FFFFFF]">
             Regala con <span style={{ color: '#E89B6C' }}>identidad</span>
           </h1>
           <p className="text-sm sm:text-lg max-w-xl mx-auto mb-5 sm:mb-8" style={{ color: '#D4C4B0' }}>
@@ -100,20 +103,20 @@ export default function FiestasEmpresas() {
 
           {/* CTA primero: cotizar es la única acción que importa acá */}
           <button onClick={scrollToForm}
-            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 h-14 px-8 rounded-2xl text-white font-bold transition-all active:scale-[0.98] hover:-translate-y-0.5"
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 h-14 px-8 rounded-2xl text-[#FFFFFF] font-bold transition-all active:scale-[0.98] hover:-translate-y-0.5"
             style={{ background: 'linear-gradient(135deg,#C0785C,#A86440)' }}>
             Cotizar mi kit corporativo <ArrowRight className="w-5 h-5" />
           </button>
 
-          <div className="mt-6 sm:mt-9 flex justify-center"><CountdownDieciocho label="Cierre de pedidos B2B" /></div>
+          <div className="mt-6 sm:mt-9 flex justify-center"><CountdownDieciocho label="Cierre de pedidos B2B" dark /></div>
         </div>
       </section>
 
       {/* ── DEADLINE BANNER ─────────────────────────────────────────── */}
       <section className="px-5 -mt-6 relative z-10">
         <div className="max-w-3xl mx-auto rounded-2xl p-4 flex items-center gap-3" style={{ background: '#A8443A', boxShadow: '0 10px 28px rgba(168,68,58,.3)' }}>
-          <Clock className="w-6 h-6 text-white flex-shrink-0" />
-          <p className="text-sm font-semibold text-white">
+          <Clock className="w-6 h-6 text-[#FFFFFF] flex-shrink-0" />
+          <p className="text-sm font-semibold text-[#FFFFFF]">
             Pedidos antes del <strong>5 de septiembre</strong> tienen despacho garantizado para el <strong>18</strong>.
           </p>
         </div>
@@ -149,7 +152,7 @@ export default function FiestasEmpresas() {
           {done ? (
             <div className="text-center py-8">
               <div className="w-14 h-14 mx-auto rounded-2xl flex items-center justify-center mb-4" style={{ background: 'linear-gradient(135deg,#C0785C,#A86440)' }}>
-                <Check className="w-7 h-7 text-white" />
+                <Check className="w-7 h-7 text-[#FFFFFF]" />
               </div>
               <h3 className="font-fraunces text-2xl mb-2">¡Solicitud recibida!</h3>
               <p className="text-sm mb-6" style={{ color: '#7A6050' }}>
@@ -179,7 +182,7 @@ export default function FiestasEmpresas() {
                   value={form.qty_estimate} onChange={(e) => setForm({ ...form, qty_estimate: e.target.value })} />
                 {error && <p className="text-xs font-semibold" style={{ color: '#A8443A' }}>{error}</p>}
                 <button type="submit" disabled={sending}
-                  className="w-full h-13 py-3.5 rounded-2xl text-white font-bold flex items-center justify-center gap-2 transition-all active:scale-[0.98] disabled:opacity-60"
+                  className="w-full h-13 py-3.5 rounded-2xl text-[#FFFFFF] font-bold flex items-center justify-center gap-2 transition-all active:scale-[0.98] disabled:opacity-60"
                   style={{ background: 'linear-gradient(135deg,#C0785C,#A86440)' }}>
                   {sending ? <><Loader2 className="w-4 h-4 animate-spin" /> Enviando…</> : <><Briefcase className="w-5 h-5" /> Solicitar cotización</>}
                 </button>

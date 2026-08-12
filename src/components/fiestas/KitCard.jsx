@@ -14,7 +14,7 @@ export default function KitCard({ kit }) {
       style={{ background: 'white', border: `1.5px solid ${kit.destacado ? '#C0785C' : '#D4C4B0'}` }}
     >
       {kit.destacado && (
-        <div className="text-center text-[10px] font-bold uppercase tracking-[0.15em] py-1.5 text-white" style={{ background: '#C0785C' }}>
+        <div className="text-center text-[10px] font-bold uppercase tracking-[0.15em] py-1.5 text-[#FFFFFF]" style={{ background: '#C0785C' }}>
           El más pedido
         </div>
       )}
@@ -50,7 +50,7 @@ export default function KitCard({ kit }) {
         {esEmpresa ? (
           <Link
             to="/fiestas-patrias/empresas"
-            className="w-full h-11 rounded-xl text-white font-bold text-sm flex items-center justify-center gap-2 transition-all active:scale-[0.98] hover:brightness-110"
+            className="w-full h-11 rounded-xl text-[#FFFFFF] font-bold text-sm flex items-center justify-center gap-2 transition-all active:scale-[0.98] hover:brightness-110"
             style={{ background: '#2C1810' }}
           >
             <Briefcase className="w-4 h-4" /> Cotizar para mi empresa
@@ -60,7 +60,7 @@ export default function KitCard({ kit }) {
             href={waLinkKit(kit)}
             target="_blank"
             rel="noopener noreferrer"
-            className="w-full h-11 rounded-xl text-white font-bold text-sm flex items-center justify-center gap-2 transition-all active:scale-[0.98] hover:brightness-110"
+            className="w-full h-11 rounded-xl text-[#FFFFFF] font-bold text-sm flex items-center justify-center gap-2 transition-all active:scale-[0.98] hover:brightness-110"
             style={{ background: 'linear-gradient(135deg,#C0785C,#A86440)' }}
           >
             <MessageCircle className="w-4 h-4" /> Lo quiero

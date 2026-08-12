@@ -11,6 +11,7 @@ import CountdownDieciocho from '@/components/fiestas/CountdownDieciocho';
 import ComparativaFiestas from '@/components/fiestas/ComparativaFiestas';
 import FiestasFAQ from '@/components/fiestas/FiestasFAQ';
 import FiestasStickyCTA from '@/components/fiestas/FiestasStickyCTA';
+import FiestasNav from '@/components/fiestas/FiestasNav';
 import { FAQ_MADRE, schemaMadre } from '@/lib/fiestas-seo';
 import { base44 } from '@/api/base44Client';
 import { getVariante, trackABView, trackABClick } from '@/lib/ab-test';
@@ -65,6 +66,8 @@ export default function FiestasPatrias() {
         jsonLd={schemaMadre()}
       />
 
+      <FiestasNav />
+
       {/* ── HERO ────────────────────────────────────────────────────── */}
       <section className="relative overflow-hidden">
         <div
@@ -100,7 +103,7 @@ export default function FiestasPatrias() {
             <Link
               to="/fiestas-patrias/kits"
               onClick={onCompraClick}
-              className="flex-1 h-14 rounded-2xl text-white font-bold flex items-center justify-center gap-2 transition-all active:scale-[0.98] hover:brightness-110"
+              className="flex-1 h-14 rounded-2xl text-[#FFFFFF] font-bold flex items-center justify-center gap-2 transition-all active:scale-[0.98] hover:brightness-110"
               style={{ background: 'linear-gradient(135deg,#C0785C,#A86440)' }}
             >
               <ShoppingBag className="w-5 h-5" /> {v.cta}
@@ -142,13 +145,13 @@ export default function FiestasPatrias() {
           <Link to="/fiestas-patrias/empresas" className="group rounded-3xl p-7 transition-all hover:-translate-y-1"
             style={{ background: '#2C1810', border: '1.5px solid #2C1810' }}>
             <div className="w-12 h-12 rounded-2xl flex items-center justify-center mb-4" style={{ background: 'rgba(255,255,255,.1)' }}>
-              <Briefcase className="w-6 h-6 text-white" />
+              <Briefcase className="w-6 h-6 text-[#FFFFFF]" />
             </div>
-            <h2 className="font-fraunces text-2xl mb-2 text-white">Para tu empresa</h2>
+            <h2 className="font-fraunces text-2xl mb-2 text-[#FFFFFF]">Para tu empresa</h2>
             <p className="text-sm mb-4" style={{ color: '#D4C4B0' }}>
               Regala con identidad. Kits corporativos con tu marca, factura y despacho a oficina. Desde 20 unidades.
             </p>
-            <span className="inline-flex items-center gap-1.5 font-bold text-sm text-white">
+            <span className="inline-flex items-center gap-1.5 font-bold text-sm text-[#FFFFFF]">
               Cotizar kit corporativo <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </span>
           </Link>
@@ -180,14 +183,14 @@ export default function FiestasPatrias() {
           <div className="flex justify-center gap-1 mb-3">
             {[...Array(5)].map((_, i) => <Star key={i} className="w-4 h-4 fill-current" style={{ color: '#F2D9C9' }} />)}
           </div>
-          <h2 className="font-fraunces text-2xl sm:text-3xl text-white mb-3">El 18 se acerca. No te quedes sin tu pedido.</h2>
+          <h2 className="font-fraunces text-2xl sm:text-3xl text-[#FFFFFF] mb-3">El 18 se acerca. No te quedes sin tu pedido.</h2>
           <p className="text-sm mb-6" style={{ color: '#F2D9C9' }}>
             Entrega garantizada antes del 18 de septiembre comprando dentro de plazo. Stock limitado.
           </p>
           <Link to="/fiestas-patrias/kits" onClick={onCompraClick}
             className="inline-flex items-center gap-2 h-13 px-7 py-3.5 rounded-2xl font-bold transition-all active:scale-[0.98] hover:brightness-95"
             style={{ background: 'white', color: '#A8443A' }}>
-            Ver toda la tienda <ArrowRight className="w-5 h-5" />
+            Ver los kits del 18 <ArrowRight className="w-5 h-5" />
           </Link>
         </div>
       </section>

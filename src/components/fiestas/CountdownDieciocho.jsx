@@ -10,7 +10,7 @@ function getTarget() {
   return target;
 }
 
-export default function CountdownDieciocho({ label = 'Faltan para el 18' }) {
+export default function CountdownDieciocho({ label = 'Faltan para el 18', dark = false }) {
   const [diff, setDiff] = useState(() => getTarget() - new Date());
 
   useEffect(() => {
@@ -27,18 +27,18 @@ export default function CountdownDieciocho({ label = 'Faltan para el 18' }) {
   const Box = ({ value, unit }) => (
     <div className="flex flex-col items-center">
       <div
-        className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl flex items-center justify-center font-poppins font-extrabold text-xl sm:text-2xl text-white tabular-nums"
+        className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl flex items-center justify-center font-poppins font-extrabold text-xl sm:text-2xl text-[#FFFFFF] tabular-nums"
         style={{ background: 'linear-gradient(135deg,#C0785C,#A8443A)', boxShadow: '0 8px 22px rgba(168,68,58,.32)' }}
       >
         {String(value).padStart(2, '0')}
       </div>
-      <span className="mt-1.5 text-[10px] font-bold uppercase tracking-wide" style={{ color: '#A8443A' }}>{unit}</span>
+      <span className="mt-1.5 text-[10px] font-bold uppercase tracking-wide" style={{ color: dark ? '#F2D9C9' : '#A8443A' }}>{unit}</span>
     </div>
   );
 
   return (
     <div className="inline-flex flex-col items-center gap-2">
-      <span className="text-xs font-bold uppercase tracking-widest" style={{ color: '#7A6050' }}>{label}</span>
+      <span className="text-xs font-bold uppercase tracking-widest" style={{ color: dark ? '#E7D8C6' : '#7A6050' }}>{label}</span>
       <div className="flex items-center gap-2 sm:gap-3">
         <Box value={dias} unit="días" />
         <Box value={horas} unit="hrs" />

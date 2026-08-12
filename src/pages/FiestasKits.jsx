@@ -11,6 +11,7 @@ import CountdownDieciocho from '@/components/fiestas/CountdownDieciocho';
 import KitCard from '@/components/fiestas/KitCard';
 import FiestasFAQ from '@/components/fiestas/FiestasFAQ';
 import FiestasStickyCTA from '@/components/fiestas/FiestasStickyCTA';
+import FiestasNav from '@/components/fiestas/FiestasNav';
 import { KITS_FIESTAS, TAGS_KITS } from '@/lib/fiestas-kits';
 import { FAQ_KITS, schemaKits } from '@/lib/fiestas-seo';
 import { base44 } from '@/api/base44Client';
@@ -36,6 +37,8 @@ export default function FiestasKits() {
         jsonLd={schemaKits()}
       />
 
+      <FiestasNav />
+
       {/* ── HERO ────────────────────────────────────────────────────── */}
       <section className="relative overflow-hidden">
         <div className="absolute inset-0" style={{ background: 'linear-gradient(135deg,#FBF5EE 0%,#F6E7DB 60%,#F2D9C9 100%)' }} />
@@ -60,7 +63,7 @@ export default function FiestasKits() {
 
           {/* CTA primero: baja directo a la grilla de kits */}
           <a href="#kits"
-            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 h-14 px-8 rounded-2xl text-white font-bold transition-all active:scale-[0.98]"
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 h-14 px-8 rounded-2xl text-[#FFFFFF] font-bold transition-all active:scale-[0.98]"
             style={{ background: 'linear-gradient(135deg,#C0785C,#A86440)' }}>
             <Gift className="w-5 h-5" /> Ver los 15 kits
           </a>
@@ -115,7 +118,7 @@ export default function FiestasKits() {
       {/* ── CIERRE ──────────────────────────────────────────────────── */}
       <section className="px-5 pb-20">
         <div className="max-w-3xl mx-auto rounded-3xl p-8 text-center" style={{ background: 'linear-gradient(135deg,#A8443A,#7A2E26)' }}>
-          <h2 className="font-fraunces text-2xl sm:text-3xl text-white mb-3">¿Prefieres armarlo tú?</h2>
+          <h2 className="font-fraunces text-2xl sm:text-3xl text-[#FFFFFF] mb-3">¿Prefieres armarlo tú?</h2>
           <p className="text-sm mb-6" style={{ color: '#F2D9C9' }}>
             Elige tus productos uno a uno en la tienda y personalízalos con grabado láser.
           </p>
