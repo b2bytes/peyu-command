@@ -101,6 +101,22 @@ export default function MobileNavBarV2({
   useEffect(() => subscribeCartV2(() => setCartCount(cartCountV2())), []);
   const isAction = !!onCta;
 
+  // Teclado abierto: la barra fija tapaba el campo que el cliente estaba
+  // escribiendo (y el botón "Continuar" quedaba debajo). Mientras haya un
+  // campo enfocado, la ocultamos; vuelve sola al terminar de escribir.
+  const [escribiendo, setEscribiendo] = useState(false);
+  useEffect(() => {
+    const esCampo = (el) => el && /^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName);
+    const onFocus = (e) => { if (esCampo(e.target)) setEscribiendo(true); };
+    const onBlur = () => setTimeout(() => setEscribiendo(esCampo(document.activeElement)), 80);
+    document.addEventListener('focusin', onFocus);
+    document.addEventListener('focusout', onBlur);
+    return () => {
+      document.removeEventListener('focusin', onFocus);
+      document.removeEventListener('focusout', onBlur);
+    };
+  }, []);
+
   return (
     <div
       className="lg:hidden fixed bottom-0 inset-x-0 z-[90] pb-safe"
@@ -112,8 +128,10 @@ export default function MobileNavBarV2({
         backdropFilter: 'blur(20px) saturate(160%)',
         WebkitBackdropFilter: 'blur(20px) saturate(160%)',
         boxShadow: '0 -6px 28px rgba(var(--ck-fg-rgb, 44,24,16),.14)',
-        transform: 'translateZ(0)',
-        WebkitTransform: 'translateZ(0)',
+        transform: escribiendo ? 'translateY(115%)' : 'translateZ(0)',
+        WebkitTransform: escribiendo ? 'translateY(115%)' : 'translateZ(0)',
+        transition: 'transform .18s ease',
+        pointerEvents: escribiendo ? 'none' : 'auto',
       }}
     >
       {isAction ? (

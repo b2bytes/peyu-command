@@ -45,7 +45,7 @@ export default function ShippingAddressForm({ cliente, setCliente, errors = {}, 
   const fieldValid = (key) => touched[key] && !fieldError(key) && cliente[key];
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-5" data-shipping-form>
       {/* ── SECCIÓN 1 · CONTACTO ──────────────────────────────────── */}
       <Section icon={User} title="Contacto" subtitle="Te enviaremos el comprobante y tracking aquí">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
