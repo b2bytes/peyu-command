@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { REGIONES_CHILE, getComunasByRegion, validarCodigoPostal, validarTelefonoChile, validarDireccion } from '@/lib/chile-regiones';
+import { REGIONES_CHILE, getComunasByRegion, validarTelefonoChile, validarDireccion } from '@/lib/chile-regiones';
 import { AlertCircle, User, MapPin, Mail } from 'lucide-react';
 import FormField from './FormField';
 import PhoneInput from './PhoneInput';
@@ -241,6 +241,5 @@ export function validarShippingForm(cliente) {
   if (!cliente.region) errors.region = 'Selecciona una región';
   if (!cliente.ciudad) errors.ciudad = 'Selecciona una comuna';
   if (!cliente.direccion || !validarDireccion(cliente.direccion)) errors.direccion = 'Calle y número (ej: Av. Apoquindo 1234)';
-  if (cliente.codigo_postal && !validarCodigoPostal(cliente.codigo_postal)) errors.codigo_postal = '7 dígitos';
   return errors;
 }

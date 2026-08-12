@@ -101,28 +101,11 @@ export default function BillingSection({ billing, setBilling, errors = {} }) {
               error={errors.giro}
             />
           </div>
-          <FormField
-            label="Dirección de facturación"
-            name="direccion_facturacion"
-            autoComplete="off"
-            value={billing.direccion_facturacion}
-            onChange={update('direccion_facturacion')}
-            placeholder="Av. Apoquindo 1234, oficina 56"
-            required
-            error={errors.direccion_facturacion}
-          />
-          <FormField
-            label="Comuna de facturación"
-            name="comuna_facturacion"
-            value={billing.comuna_facturacion}
-            onChange={update('comuna_facturacion')}
-            placeholder="Las Condes"
-            required
-            error={errors.comuna_facturacion}
-          />
+          {/* Dirección/comuna de facturación se toman de la dirección de envío
+              (menos campos = menos fricción). El equipo puede ajustarlas luego. */}
           <p className="text-[11px] text-gray-400 flex items-start gap-1.5">
             <AlertCircle className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
-            Emitimos la factura electrónica con estos datos. Verifica que sean correctos.
+            Usamos tu dirección de envío como dirección de facturación.
           </p>
         </div>
       )}
@@ -137,7 +120,5 @@ export function validarBilling(billing) {
   if (!billing.razon_social || billing.razon_social.trim().length < 2) errs.razon_social = 'Ingresa la razón social';
   if (!billing.rut_empresa || !validarRut(billing.rut_empresa)) errs.rut_empresa = 'RUT inválido (revisa el dígito verificador)';
   if (!billing.giro || billing.giro.trim().length < 2) errs.giro = 'Ingresa el giro';
-  if (!billing.direccion_facturacion || billing.direccion_facturacion.trim().length < 3) errs.direccion_facturacion = 'Ingresa la dirección de facturación';
-  if (!billing.comuna_facturacion || billing.comuna_facturacion.trim().length < 2) errs.comuna_facturacion = 'Ingresa la comuna';
   return errs;
 }

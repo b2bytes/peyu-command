@@ -200,17 +200,6 @@ export default function CheckoutNuevo() {
 
     // La validación de dirección se hace más abajo (después de detectar retiro en tienda)
 
-    const bErrs = validarBilling(billing);
-    setBillingErrors(bErrs);
-    if (Object.keys(bErrs).length > 0) {
-      setErrorPago('Completa los datos de facturación para emitir la factura.');
-      // Móvil: asegura que la sección de facturación esté VISIBLE antes de scrollear.
-      if (isMobile) setMostrarFactura(true);
-      setTimeout(() => document.querySelector('[data-billing-section]')?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 250);
-      enviandoRef.current = false;
-      return;
-    }
-
     // Retiro en tienda: saltamos validación de dirección y selector de envío
     const esRetiro = envioBluex?.es_retiro === true;
 
@@ -236,6 +225,17 @@ export default function CheckoutNuevo() {
       // Móvil: abre la sección "Forma de envío" para que las opciones se vean al tiro.
       if (isMobile) setOpenSection('forma');
       setTimeout(() => document.querySelector('[data-shipping-selector]')?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 250);
+      enviandoRef.current = false;
+      return;
+    }
+
+    // Facturación al final: solo si el cliente pidió Factura (Boleta no valida nada).
+    const bErrs = validarBilling(billing);
+    setBillingErrors(bErrs);
+    if (Object.keys(bErrs).length > 0) {
+      setErrorPago('Para emitir la factura necesitamos razón social, RUT y giro.');
+      if (isMobile) setMostrarFactura(true);
+      setTimeout(() => document.querySelector('[data-billing-section]')?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 250);
       enviandoRef.current = false;
       return;
     }
@@ -386,8 +386,10 @@ export default function CheckoutNuevo() {
       razon_social: billing.tipo_documento === 'Factura' ? billing.razon_social.trim() : '',
       rut_empresa: billing.tipo_documento === 'Factura' ? normalizarRut(billing.rut_empresa) : '',
       giro: billing.tipo_documento === 'Factura' ? billing.giro.trim() : '',
-      direccion_facturacion: billing.tipo_documento === 'Factura' ? billing.direccion_facturacion.trim() : '',
-      comuna_facturacion: billing.tipo_documento === 'Factura' ? billing.comuna_facturacion.trim() : '',
+      // La factura se emite con la dirección de envío del cliente (ya no se
+      // piden campos duplicados en el formulario).
+      direccion_facturacion: billing.tipo_documento === 'Factura' ? (cliente.direccion || '').trim() : '',
+      comuna_facturacion: billing.tipo_documento === 'Factura' ? (cliente.ciudad || '').trim() : '',
       sku: carrito[0]?.sku || carrito[0]?.productoId || '',
       descripcion_items: items,
       items_detalle: itemsDetalle,
