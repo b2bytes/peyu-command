@@ -8,6 +8,7 @@ import BrainTerminal from '@/components/cockpit/BrainTerminal';
 import NorthStarMetrics from '@/components/cockpit/NorthStarMetrics';
 import ForesightPanel from '@/components/cockpit/ForesightPanel';
 import StatusFooter from '@/components/cockpit/StatusFooter';
+import CheckoutFunnelPanel from '@/components/cockpit/CheckoutFunnelPanel';
 
 /**
  * Peyu Cockpit — el puente de mando único para los fundadores.
@@ -95,6 +96,9 @@ export default function Cockpit() {
           <div className="xl:col-span-2"><NorthStarMetrics /></div>
           <ForesightPanel />
         </div>
+
+        {/* Embudo de checkout — dónde se cae la venta */}
+        <CheckoutFunnelPanel />
 
         {/* Zona 3 · FLEET de agentes IA */}
         <AgentFleet />
