@@ -204,7 +204,9 @@ export default function CheckoutNuevo() {
     setBillingErrors(bErrs);
     if (Object.keys(bErrs).length > 0) {
       setErrorPago('Completa los datos de facturación para emitir la factura.');
-      setTimeout(() => document.querySelector('[data-billing-section]')?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 100);
+      // Móvil: asegura que la sección de facturación esté VISIBLE antes de scrollear.
+      if (isMobile) setMostrarFactura(true);
+      setTimeout(() => document.querySelector('[data-billing-section]')?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 250);
       enviandoRef.current = false;
       return;
     }
@@ -217,7 +219,13 @@ export default function CheckoutNuevo() {
       setErrors(errs);
       if (Object.keys(errs).length > 0) {
         setErrorPago('Revisa los campos de envío marcados en rojo.');
-        setTimeout(() => document.querySelector('[class*="border-red-300"]')?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 100);
+        // Móvil: el acordeón podía estar CERRADO y el cliente no veía qué
+        // corregir — abrimos la sección de envío antes de scrollear.
+        if (isMobile) setOpenSection('envio');
+        setTimeout(() => {
+          const el = document.querySelector('[class*="border-red-300"]') || document.querySelector('[data-shipping-form]');
+          el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }, 250);
         enviandoRef.current = false;
         return;
       }
@@ -225,7 +233,9 @@ export default function CheckoutNuevo() {
 
     if (!envioBluex) {
       setErrorPago('Elige una forma de envío para continuar (o selecciona "Retiro en Tienda", siempre disponible).');
-      setTimeout(() => document.querySelector('[data-shipping-selector]')?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 100);
+      // Móvil: abre la sección "Forma de envío" para que las opciones se vean al tiro.
+      if (isMobile) setOpenSection('forma');
+      setTimeout(() => document.querySelector('[data-shipping-selector]')?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 250);
       enviandoRef.current = false;
       return;
     }
@@ -261,8 +271,11 @@ export default function CheckoutNuevo() {
     // URLs persistentes antes de guardar en el pedido. Sin esto, el mockup sería
     // un string base64 masivo que rompería la DB. Best-effort: si falla, cae al
     // imagen_base (foto del color) que siempre existe.
+    // BLINDADO con tope de 8s TOTAL: en redes móviles lentas la subida podía
+    // colgarse y el botón quedaba en "Procesando…" para siempre. Si no alcanza,
+    // el pedido sigue con la imagen base (las capas del grabado se guardan igual).
     const uploadedMockups = {};
-    await Promise.all(carrito.map(async (item) => {
+    const subidaMockups = Promise.all(carrito.map(async (item) => {
       const mu = item.mockupUrl || item.mockup_url || '';
       if (!mu.startsWith('data:')) return; // ya es URL, no necesita subir
       try {
@@ -275,6 +288,10 @@ export default function CheckoutNuevo() {
         console.warn('No se pudo subir mockup dataURL para item:', item.nombre, e?.message);
       }
     }));
+    await Promise.race([
+      subidaMockups.catch(() => null),
+      new Promise((r) => setTimeout(r, 8000)),
+    ]);
 
     const items = carrito.map(i => {
       const partes = [`${i.nombre} x${i.cantidad}`];
