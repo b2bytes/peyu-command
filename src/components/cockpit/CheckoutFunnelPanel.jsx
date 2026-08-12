@@ -52,7 +52,7 @@ export default function CheckoutFunnelPanel() {
           </div>
           <div>
             <h3 className="text-xs font-poppins font-black text-white tracking-wide leading-none">EMBUDO DE CHECKOUT</h3>
-            <p className="text-[10px] text-violet-300/50 mt-0.5">Últimos {DIAS} días · dónde se cae la venta</p>
+            <p className="text-[11px] text-violet-200/85 mt-0.5">Últimos {DIAS} días · dónde se cae la venta</p>
           </div>
         </div>
         <span className="font-mono font-black text-emerald-300 text-lg leading-none">{conversion}%</span>
@@ -98,14 +98,14 @@ export default function CheckoutFunnelPanel() {
             ].map((k) => (
               <div key={k.label} className="rounded-xl bg-white/5 p-2 text-center">
                 <p className={`font-mono font-black text-sm leading-none ${k.tono}`}>{k.valor}</p>
-                <p className="text-[9px] text-violet-300/50 mt-1 leading-tight">{k.label}</p>
+                <p className="text-[10px] text-white/70 mt-1 leading-tight">{k.label}</p>
               </div>
             ))}
           </div>
 
           <Link
             to="/admin/pipeline-b2c"
-            className="mt-3 flex items-center justify-center gap-1.5 text-[10px] font-bold text-violet-300/70 hover:text-violet-200 transition"
+            className="mt-3 flex items-center justify-center gap-1.5 text-[11px] font-bold text-violet-200/90 hover:text-white transition"
           >
             Ver carritos abandonados y recuperar <ArrowRight className="w-3 h-3" />
           </Link>

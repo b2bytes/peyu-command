@@ -98,9 +98,9 @@ export default function NorthStarMetrics() {
   }, []);
 
   const colorMap = {
-    emerald: { text: 'text-emerald-300', bar: 'from-emerald-500 to-teal-500', glow: 'shadow-[0_0_20px_rgba(52,211,153,0.15)]' },
-    cyan: { text: 'text-cyan-300', bar: 'from-cyan-500 to-blue-500', glow: 'shadow-[0_0_20px_rgba(34,211,238,0.15)]' },
-    violet: { text: 'text-violet-300', bar: 'from-violet-500 to-indigo-500', glow: 'shadow-[0_0_20px_rgba(167,139,250,0.15)]' },
+    emerald: { text: 'text-emerald-200', bar: 'from-emerald-500 to-teal-500', glow: 'shadow-[0_0_20px_rgba(52,211,153,0.15)]' },
+    cyan: { text: 'text-cyan-200', bar: 'from-cyan-500 to-blue-500', glow: 'shadow-[0_0_20px_rgba(34,211,238,0.15)]' },
+    violet: { text: 'text-violet-200', bar: 'from-violet-500 to-indigo-500', glow: 'shadow-[0_0_20px_rgba(167,139,250,0.15)]' },
     amber: { text: 'text-amber-300', bar: 'from-amber-500 to-orange-500', glow: '' },
     red: { text: 'text-red-300', bar: 'from-red-500 to-rose-500', glow: '' },
   };
@@ -112,13 +112,13 @@ export default function NorthStarMetrics() {
         <div className="flex items-center gap-2">
           <Star className="w-3.5 h-3.5 text-emerald-300 fill-emerald-300/30" />
           <h3 className="text-[11px] font-bold tracking-[0.2em] text-white">NORTH STAR</h3>
-          <span className="text-[9px] text-emerald-300/60 font-mono">· Q2 · vs_mes_anterior</span>
+          <span className="text-[10px] text-emerald-200/85 font-mono">· Q2 · vs_mes_anterior</span>
         </div>
-        <span className="text-[9px] text-emerald-300/40 font-mono">5 KPIs</span>
+        <span className="text-[10px] text-emerald-200/70 font-mono">5 KPIs</span>
       </div>
 
       {loading ? (
-        <div className="text-white/30 text-xs text-center py-8 font-mono">computing metrics...</div>
+        <div className="text-white/70 text-xs text-center py-8 font-mono">calculando métricas…</div>
       ) : (
         <div className="grid grid-cols-2 lg:grid-cols-5 divide-x divide-y lg:divide-y-0 divide-white/5">
           {metrics.map((m, i) => {
@@ -128,7 +128,7 @@ export default function NorthStarMetrics() {
             return (
               <div key={i} className="p-3 hover:bg-white/[0.02] transition">
                 <div className="flex items-center justify-between mb-1.5">
-                  <span className="text-[9px] text-white/40 font-mono tracking-widest">{m.label}</span>
+                  <span className="text-[10px] text-white/75 font-mono font-semibold tracking-widest">{m.label}</span>
                   {m.delta != null && (
                     <span className={`text-[9px] font-mono ${trendColor} flex items-center gap-0.5`}>
                       <TrendIcon className="w-2.5 h-2.5" />
@@ -144,7 +144,7 @@ export default function NorthStarMetrics() {
                       style={{ width: `${Math.max(2, m.progress)}%` }}
                     />
                   </div>
-                  <p className="text-[9px] text-white/30 mt-1 font-mono">target · {m.target}</p>
+                  <p className="text-[10px] text-white/60 mt-1 font-mono">target · {m.target}</p>
                 </div>
               </div>
             );

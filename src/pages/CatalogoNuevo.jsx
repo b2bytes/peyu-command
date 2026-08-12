@@ -144,12 +144,12 @@ export default function CatalogoNuevo() {
 
         {/* Buscador */}
         <div className="relative mb-2 sm:mb-3">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3 sm:w-3.5 h-3 sm:h-3.5 text-[#A78B6F]" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#A78B6F] pointer-events-none" />
           <input
             value={q}
             onChange={(e) => setQ(e.target.value)}
             placeholder="Buscar..."
-            className="w-full h-8 sm:h-11 pl-8 sm:pl-9 pr-3 sm:pr-4 rounded-lg sm:rounded-2xl text-[11px] sm:text-sm focus:outline-none transition-all"
+            className="w-full h-11 pl-9 pr-10 sm:pr-4 rounded-xl sm:rounded-2xl text-sm focus:outline-none transition-all"
             style={{ background: 'white', border: '1.5px solid #D4C4B0', color: '#2C1810' }}
             onFocus={e => { e.target.style.borderColor = '#C0785C'; e.target.style.boxShadow = '0 0 0 3px rgba(192,120,92,.12)'; }}
             onBlur={e => { e.target.style.borderColor = '#D4C4B0'; e.target.style.boxShadow = 'none'; }}
@@ -158,7 +158,7 @@ export default function CatalogoNuevo() {
             <button
               onClick={() => setQ('')}
               aria-label="Limpiar búsqueda"
-              className="absolute right-2 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full flex items-center justify-center transition-all active:scale-90 peyu-tap-sm"
+              className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full flex items-center justify-center transition-all active:scale-90 peyu-tap-sm"
               style={{ background: '#F2EBE1', color: '#7A6050' }}
             >
               <X className="w-3.5 h-3.5" />
@@ -167,13 +167,13 @@ export default function CatalogoNuevo() {
         </div>
 
         {/* Chips de categoría */}
-        <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto scrollbar-hide pb-1 mb-2 sm:mb-4 -mx-3 sm:mx-0 px-3 sm:px-0">
-          <SlidersHorizontal className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-[#A78B6F] flex-shrink-0" />
+        <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide pb-1.5 mb-2.5 sm:mb-4 -mx-3 sm:mx-0 px-3 sm:px-0">
+          <SlidersHorizontal className="w-3.5 h-3.5 text-[#A78B6F] flex-shrink-0" />
           {chips.map((c) => (
             <button
               key={c}
               onClick={() => setCat(c)}
-              className="flex-shrink-0 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-[10px] sm:text-sm font-bold transition-all whitespace-nowrap"
+              className="flex-shrink-0 h-10 px-4 rounded-full text-xs sm:text-sm font-bold transition-all whitespace-nowrap active:scale-95"
               style={{
                 background: cat === c ? '#C0785C' : 'white',
                 color: cat === c ? 'white' : '#7A6050',
@@ -187,13 +187,13 @@ export default function CatalogoNuevo() {
 
         {/* Carcasas: filtro por MARCA (categoría) */}
         {esCarcasas && marcas.length > 0 && (
-          <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto scrollbar-hide pb-1 mb-1.5 sm:mb-3 -mx-3 sm:mx-0 px-3 sm:px-0">
-            <span className="text-[10px] sm:text-xs font-bold flex-shrink-0" style={{ color: '#A78B6F' }}>Marca</span>
+          <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide pb-1.5 mb-2 sm:mb-3 -mx-3 sm:mx-0 px-3 sm:px-0">
+            <span className="text-xs font-bold flex-shrink-0" style={{ color: '#A78B6F' }}>Marca</span>
             {['Todas', ...marcas].map((m) => (
               <button
                 key={m}
                 onClick={() => setMarca(m)}
-                className="flex-shrink-0 px-3 sm:px-4 py-1.5 rounded-full text-[10px] sm:text-xs font-bold transition-all whitespace-nowrap"
+                className="flex-shrink-0 h-10 px-4 rounded-full text-xs font-bold transition-all whitespace-nowrap active:scale-95"
                 style={{
                   background: marca === m ? '#2C1810' : 'white',
                   color: marca === m ? 'white' : '#7A6050',
@@ -212,7 +212,7 @@ export default function CatalogoNuevo() {
             {/* Mobile: solo botón */}
             <button
               onClick={() => setOpenModelsModal(true)}
-              className="lg:hidden w-full mb-2.5 py-2 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-all active:scale-95"
+              className="lg:hidden w-full h-12 mb-3 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
               style={{ background: 'white', border: '1.5px solid #D4C4B0', color: '#7A6050' }}
             >
               <Smartphone className="w-4 h-4" /> {modelo === 'Todos' ? 'Ver modelos' : modelo}

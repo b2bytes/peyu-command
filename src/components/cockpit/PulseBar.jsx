@@ -65,14 +65,14 @@ export default function PulseBar() {
   ];
 
   const accentMap = {
-    emerald: 'text-emerald-300 border-emerald-400/30',
-    cyan: 'text-cyan-300 border-cyan-400/30',
-    green: 'text-green-300 border-green-400/30',
-    blue: 'text-blue-300 border-blue-400/30',
-    teal: 'text-teal-300 border-teal-400/30',
-    violet: 'text-violet-300 border-violet-400/30',
-    orange: 'text-orange-300 border-orange-400/30',
-    red: 'text-red-300 border-red-400/30',
+    emerald: 'text-emerald-200 border-emerald-400/30',
+    cyan: 'text-cyan-200 border-cyan-400/30',
+    green: 'text-green-200 border-green-400/30',
+    blue: 'text-blue-200 border-blue-400/30',
+    teal: 'text-teal-200 border-teal-400/30',
+    violet: 'text-violet-200 border-violet-400/30',
+    orange: 'text-orange-200 border-orange-400/30',
+    red: 'text-red-200 border-red-400/30',
   };
 
   return (
@@ -84,9 +84,9 @@ export default function PulseBar() {
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
             <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-400"></span>
           </span>
-          <span className="text-[9px] uppercase tracking-[0.2em] text-emerald-400/90 font-bold truncate">PULSE · LIVE</span>
+          <span className="text-[10px] uppercase tracking-[0.2em] text-emerald-300 font-bold truncate">PULSE · LIVE</span>
         </div>
-        <span className="text-[9px] text-emerald-300/40 font-mono tracking-wider shrink-0">
+        <span className="text-[10px] text-emerald-200/80 font-mono tracking-wider shrink-0">
           T+ {now.toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
         </span>
       </div>
@@ -105,7 +105,7 @@ export default function PulseBar() {
               )}
               <div className="flex items-center gap-1.5 mb-0.5">
                 <Icon className={`w-2.5 h-2.5 ${accent.split(' ')[0]}`} />
-                <span className="text-[8px] tracking-widest text-white/40 font-mono">{it.label}</span>
+                <span className="text-[10px] tracking-widest text-white/75 font-mono font-semibold">{it.label}</span>
               </div>
               <p className={`text-xl font-bold font-poppins leading-none ${accent.split(' ')[0]}`}>{it.value}</p>
             </div>

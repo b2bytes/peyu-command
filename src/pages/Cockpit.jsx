@@ -72,7 +72,7 @@ export default function Cockpit() {
                   <Sparkles className="w-2 h-2" /> COPILOT
                 </span>
               </div>
-              <p className="text-[10px] text-violet-300/60 leading-tight mt-0.5 flex items-center gap-1.5">
+              <p className="text-[11px] text-violet-200/90 leading-tight mt-0.5 flex items-center gap-1.5">
                 <Radio className="w-2.5 h-2.5 text-emerald-400" />
                 {greeting} · {now.toLocaleDateString('es-CL', { weekday: 'long', day: 'numeric', month: 'long' })}
               </p>
@@ -81,7 +81,7 @@ export default function Cockpit() {
           <div className="flex items-center gap-2 text-[10px] font-mono">
             <Link
               to="/admin"
-              className="text-violet-300/60 hover:text-violet-200 transition px-2 py-1 rounded-md hover:bg-white/5"
+              className="text-[11px] text-violet-200/90 hover:text-white transition px-2 py-1 rounded-md hover:bg-white/10"
             >
               dashboard clásico ↗
             </Link>
