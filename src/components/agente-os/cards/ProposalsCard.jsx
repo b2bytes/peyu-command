@@ -1,10 +1,15 @@
 import { useState } from 'react';
-import { FileText, ChevronRight, Send, Check, Eye } from 'lucide-react';
-import { Link } from 'react-router-dom';
-import ActionButton from '../ActionButton';
+import { FileText } from 'lucide-react';
+import ChatCardShell from './ChatCardShell';
 import PropuestaViewerModal from '../PropuestaViewerModal';
+import ProposalRow from './ProposalRow';
 
-const fmtCLP = (n) => (n != null ? `$${Number(n).toLocaleString('es-CL')}` : '—');
+const fmtCompacto = (n) => {
+  const v = Number(n) || 0;
+  if (v >= 1_000_000) return `$${(v / 1_000_000).toFixed(1)}M`;
+  if (v >= 1_000) return `$${Math.round(v / 1_000)}k`;
+  return `$${v}`;
+};
 
 // Propuestas corporativas pendientes (enviadas sin respuesta) + acciones:
 // reenviar / marcar aceptada. Acepta `cotizaciones` (CRM) o `lista` (brain).
@@ -12,58 +17,30 @@ export default function ProposalsCard({ cotizaciones = [], lista, onDone }) {
   const [verPropuesta, setVerPropuesta] = useState(null); // { id, titulo }
   const pendientes = lista
     ? lista
-    : cotizaciones.filter((c) => c.status === 'Enviada' || c.status === 'Borrador').slice(0, 6);
+    : cotizaciones.filter((c) => c.status === 'Enviada' || c.status === 'Borrador');
 
-  if (pendientes.length === 0) {
-    return (
-      <div className="ld-glass rounded-2xl p-4 sm:p-5">
-        <p className="text-sm text-ld-fg-muted">No hay propuestas pendientes.</p>
-      </div>
-    );
-  }
+  const montoTotal = pendientes.reduce((s, c) => s + (Number(c.total) || 0), 0);
+  const enviadas = pendientes.filter((c) => c.status === 'Enviada').length;
+  const borradores = pendientes.filter((c) => c.status === 'Borrador').length;
 
   return (
-    <div className="ld-glass rounded-2xl p-4 sm:p-5">
-      <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center gap-2">
-          <span className="w-7 h-7 rounded-lg bg-ld-action-soft flex items-center justify-center">
-            <FileText className="w-4 h-4 text-ld-action" />
-          </span>
-          <span className="text-sm font-semibold text-ld-fg">Propuestas pendientes</span>
-        </div>
-        <Link to="/admin/propuestas" className="text-xs text-ld-action hover:underline flex items-center gap-0.5">
-          Ver todas <ChevronRight className="w-3 h-3" />
-        </Link>
-      </div>
-
-      <div className="space-y-2.5">
-        {pendientes.map((c) => (
-          <div key={c.id} className="rounded-xl px-3 py-2.5 bg-ld-bg-soft/60 border border-ld-border">
-            <div className="flex items-center justify-between gap-2">
-              <div className="min-w-0">
-                <div className="text-sm font-medium text-ld-fg truncate">{c.empresa || 'Sin empresa'}</div>
-                <div className="text-[11px] text-ld-fg-muted truncate">{c.numero || ''}{c.contacto ? ` · ${c.contacto}` : ''}</div>
-              </div>
-              <div className="flex items-center gap-2 flex-shrink-0">
-                <span className="text-sm font-semibold text-ld-fg">{fmtCLP(c.total)}</span>
-                <span className="text-[10px] px-2 py-0.5 rounded-full bg-ld-bg-soft text-ld-fg-muted font-medium">{c.status}</span>
-              </div>
-            </div>
-            <div className="flex items-center gap-1.5 mt-2.5 flex-wrap">
-              <button
-                onClick={() => setVerPropuesta({ id: c.id, titulo: `${c.empresa || ''}${c.numero ? ` · ${c.numero}` : ''}` })}
-                className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg ld-glass-soft text-ld-fg-soft hover:text-ld-fg hover:border-ld-action/50 transition-colors"
-              >
-                <Eye className="w-3.5 h-3.5" /> Ver propuesta
-              </button>
-              {c.email && (
-                <ActionButton action="reenviarPropuesta" payload={{ proposalId: c.id }} label="Reenviar" icon={Send} onDone={onDone} />
-              )}
-              <ActionButton action="updatePropuestaEstado" payload={{ id: c.id, status: 'Aceptada' }} label="Marcar aceptada" icon={Check} onDone={onDone} />
-            </div>
-          </div>
-        ))}
-      </div>
+    <>
+      <ChatCardShell
+        icon={FileText}
+        title="Propuestas pendientes"
+        subtitle={pendientes.length ? 'Esperando respuesta del cliente' : undefined}
+        count={pendientes.length}
+        metrics={pendientes.length ? [
+          { label: 'En juego', value: fmtCompacto(montoTotal), tone: 'accent' },
+          { label: 'Enviadas', value: enviadas },
+          { label: 'Borradores', value: borradores, tone: borradores ? 'warn' : undefined },
+        ] : []}
+        items={pendientes}
+        renderItem={(c) => <ProposalRow key={c.id} propuesta={c} onVer={setVerPropuesta} onDone={onDone} />}
+        emptyText="No hay propuestas pendientes."
+        linkTo="/admin/propuestas"
+        linkLabel="Ver todas"
+      />
 
       {verPropuesta && (
         <PropuestaViewerModal
@@ -72,6 +49,6 @@ export default function ProposalsCard({ cotizaciones = [], lista, onDone }) {
           onClose={() => setVerPropuesta(null)}
         />
       )}
-    </div>
+    </>
   );
 }
