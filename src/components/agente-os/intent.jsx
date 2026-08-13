@@ -120,7 +120,16 @@ export function detectCards(text) {
   if (has(['lead', 'b2b', 'prospecto', 'empresa'])) {
     cards.push({ type: 'leads' });
   }
-  if (has(['envío', 'envio', 'bluex', 'blue express', 'tracking', 'etiqueta', 'courier', 'reparto', 'tránsito', 'transito', 'despacho'])) {
+  // Cotizar tarifa BlueExpress: "cuánto cuesta/sale enviar ... a tal comuna".
+  // Se evalúa antes que la lista de envíos para no devolver un listado cuando
+  // lo que se pide es un precio de despacho.
+  if (has(['cuánto cuesta enviar', 'cuanto cuesta enviar', 'cuánto sale enviar', 'cuanto sale enviar',
+           'cotizar envío', 'cotizar envio', 'cotizar despacho', 'tarifa de envío', 'tarifa de envio',
+           'costo de envío', 'costo de envio', 'precio del envío', 'precio del envio', 'cuánto vale enviar', 'cuanto vale enviar'])) {
+    const peso = parseFloat((q.match(/(\d+(?:[.,]\d+)?)\s*(?:kg|kilo)/) || [])[1]?.replace(',', '.'));
+    const comuna = (q.match(/\ba\s+([a-záéíóúñ\s]{3,30}?)(?:\s+(?:de|con|por|pesa|pesando)\b|[?.,]|$)/) || [])[1];
+    cards.push({ type: 'bluex_tarifa', comuna: comuna?.trim() || '', peso: Number.isFinite(peso) ? peso : 0.5 });
+  } else if (has(['envío', 'envio', 'bluex', 'blue express', 'tracking', 'etiqueta', 'courier', 'reparto', 'tránsito', 'transito', 'despacho'])) {
     cards.push({ type: 'shipments' });
   }
   if (has(['consulta', 'pregunta', 'sin responder', 'mensaje', 'whatsapp'])) {
