@@ -32,7 +32,7 @@ export default function Layout() {
       {!esAgente && <AdminTopNav />}
 
       {/* Main · canvas Liquid Dual (respeta día/noche) */}
-      <main className="flex-1 min-w-0 overflow-y-auto overflow-x-hidden ld-canvas relative">
+      <main className="flex-1 min-w-0 overflow-y-auto overflow-x-hidden ld-canvas admin-legible relative">
         <Outlet />
         {/* El antiguo FAB "Comando" (volver a /admin) se eliminó: el nuevo centro
             de comandos general es la página Agente, no el dashboard. */}

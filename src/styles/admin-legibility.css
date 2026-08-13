@@ -1,0 +1,70 @@
+/* ═══════════════════════════════════════════════════════════════════
+   ADMIN LEGIBILITY LAYER · Cero fricción de lectura en el panel admin
+   ────────────────────────────────────────────────────────────────────
+   Problema real detectado en la auditoría del viaje admin:
+   1) MICRO-TIPOGRAFÍA. Muchas tarjetas y etiquetas usan text-[10px] /
+      text-[11px] / text-xs. Como la escala global baja la base a 12px en
+      pantallas grandes (ver src/index.css), esos textos terminan a ~8px
+      reales → ilegibles y sensación de "pantalla amorfa".
+   2) CONTRASTE DÉBIL. Los textos secundarios usan --ld-fg-muted /
+      --ld-fg-subtle, pensados para textos grandes. En micro-tipografía
+      quedan bajo el mínimo legible.
+
+   Solución quirúrgica: un PISO de tamaño y un refuerzo de contraste,
+   aplicados SOLO dentro de .admin-legible (el <main> del panel admin).
+   No cambia layout ni lógica: solo sube tamaños mínimos y densidad de
+   color de lo que ya existe. Las páginas públicas no se tocan.
+   ─────────────────────────────────────────────────────────────────── */
+
+/* ── 1 · Refuerzo de contraste de los tokens secundarios ─────────── */
+.admin-legible {
+  --ld-fg-muted:  #4B5563; /* antes #6B7280 — sube a AA en texto pequeño */
+  --ld-fg-subtle: #6B7280; /* antes #9CA3AF — deja de "desaparecer"     */
+}
+html[data-liquid-mode="night"] .admin-legible {
+  --ld-fg-muted:  #B4C0D0; /* antes #94A3B8 */
+  --ld-fg-subtle: #93A1B4; /* antes #64748B */
+}
+
+/* ── 2 · Piso de tamaño tipográfico ──────────────────────────────────
+   Selectores por atributo: Tailwind emite la clase arbitraria literal
+   (class="text-[10px]"), así que podemos elevarla sin editar 200 archivos. */
+.admin-legible [class*="text-[9px]"],
+.admin-legible [class*="text-[10px]"] {
+  font-size: 11.5px !important;
+  line-height: 1.45 !important;
+}
+.admin-legible [class*="text-[11px]"] {
+  font-size: 12.5px !important;
+  line-height: 1.5 !important;
+}
+.admin-legible .text-xs {
+  font-size: 13px !important;
+  line-height: 1.5 !important;
+}
+.admin-legible .text-sm {
+  font-size: 14.5px !important;
+  line-height: 1.55 !important;
+}
+.admin-legible .text-base { font-size: 16px !important; }
+
+/* ── 3 · Etiquetas en mayúsculas: aire para que no se apelotonen ──── */
+.admin-legible .uppercase.tracking-wide,
+.admin-legible .uppercase.tracking-wider,
+.admin-legible .uppercase.tracking-widest {
+  letter-spacing: 0.06em !important;
+}
+
+/* ── 4 · Números grandes de KPI: nunca por debajo de lo legible ───── */
+.admin-legible .text-2xl { font-size: 24px !important; }
+.admin-legible .text-3xl { font-size: 30px !important; }
+
+/* ── 5 · Áreas táctiles mínimas en controles densos del admin ─────── */
+@media (max-width: 640px) {
+  .admin-legible button,
+  .admin-legible a[role="button"] {
+    min-height: 40px;
+  }
+  /* Chips e iconos intencionalmente compactos pueden optar out */
+  .admin-legible .peyu-tap-sm { min-height: 30px !important; }
+}

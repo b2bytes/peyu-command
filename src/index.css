@@ -8,6 +8,10 @@
    TODAS las secciones compartan la misma identidad en modo día y noche. */
 @import './styles/admin-unify.css';
 
+/* Capa de legibilidad del admin: piso de tamaño tipográfico + refuerzo de
+   contraste de textos secundarios dentro de .admin-legible (<main> admin). */
+@import './styles/admin-legibility.css';
+
 /* Plantillas del checkout (Warm Dusk por defecto · Verde PEYU vía flag) */
 @import './styles/checkout-themes.css';
 
