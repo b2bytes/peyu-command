@@ -1,53 +1,45 @@
-import { FileText, ChevronRight } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { FileText } from 'lucide-react';
+import ChatCardShell from './ChatCardShell';
+import QuoteRow from './QuoteRow';
 
-const fmtCLP = (n) => (n != null ? `$${Number(n).toLocaleString('es-CL')}` : '—');
-
-const STATUS_STYLE = {
-  'Borrador': 'bg-ld-bg-soft text-ld-fg-muted',
-  'Enviada': 'bg-ld-action-soft text-ld-action',
-  'Aceptada': 'bg-ld-action-soft text-ld-action',
-  'Rechazada': 'bg-ld-highlight-soft text-ld-highlight',
-  'Vencida': 'bg-ld-highlight-soft text-ld-highlight',
+const fmtCompacto = (n) => {
+  const v = Number(n) || 0;
+  if (v >= 1_000_000) return `$${(v / 1_000_000).toFixed(1)}M`;
+  if (v >= 1_000) return `$${Math.round(v / 1_000)}k`;
+  return `$${v}`;
 };
 
-// Lista de cotizaciones / propuestas B2B recientes con estado.
+// Cotizaciones B2B recientes. Prioriza lo que decide plata: primero las que
+// están esperando respuesta del cliente (ahí está la venta que se puede cerrar
+// hoy), después el resto. El fundador ve el monto en juego antes del detalle.
 export default function QuotesCard({ cotizaciones = [] }) {
-  const recientes = cotizaciones.slice(0, 6);
+  const abiertas = cotizaciones.filter((c) => c.status === 'Enviada');
+  const aceptadas = cotizaciones.filter((c) => c.status === 'Aceptada');
+  const enJuego = abiertas.reduce((s, c) => s + (Number(c.total) || 0), 0);
+  const ganado = aceptadas.reduce((s, c) => s + (Number(c.total) || 0), 0);
+
+  // Orden de lectura: lo esperando respuesta arriba, luego por fecha.
+  const orden = { 'Enviada': 0, 'Borrador': 1, 'Aceptada': 2, 'Rechazada': 3, 'Vencida': 4 };
+  const ordenadas = [...cotizaciones].sort(
+    (a, b) => (orden[a.status] ?? 9) - (orden[b.status] ?? 9)
+  );
 
   return (
-    <div className="ld-glass rounded-2xl p-4 sm:p-5">
-      <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center gap-2">
-          <span className="w-7 h-7 rounded-lg bg-ld-action-soft flex items-center justify-center">
-            <FileText className="w-4 h-4 text-ld-action" />
-          </span>
-          <span className="text-sm font-semibold text-ld-fg">Cotizaciones B2B</span>
-        </div>
-        <Link to="/admin/propuestas" className="text-xs text-ld-action hover:underline flex items-center gap-0.5">
-          Ver todas <ChevronRight className="w-3 h-3" />
-        </Link>
-      </div>
-      {recientes.length === 0 ? (
-        <p className="text-sm text-ld-fg-muted">Sin cotizaciones recientes.</p>
-      ) : (
-        <div className="space-y-2">
-          {recientes.map((c) => (
-            <div key={c.id} className="flex items-center justify-between gap-3 rounded-xl px-3 py-2.5 bg-ld-bg-soft/60 border border-ld-border">
-              <div className="min-w-0">
-                <div className="text-sm font-medium text-ld-fg truncate">{c.empresa}</div>
-                <div className="text-[11px] text-ld-fg-muted truncate">{c.numero || ''} · {c.contacto || ''}</div>
-              </div>
-              <div className="flex items-center gap-2 flex-shrink-0">
-                <span className="text-sm font-semibold text-ld-fg">{fmtCLP(c.total)}</span>
-                <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${STATUS_STYLE[c.status] || 'bg-ld-bg-soft text-ld-fg-muted'}`}>
-                  {c.status}
-                </span>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
+    <ChatCardShell
+      icon={FileText}
+      title="Cotizaciones B2B"
+      subtitle={abiertas.length ? `${abiertas.length} esperando respuesta del cliente` : 'Ninguna esperando respuesta'}
+      count={cotizaciones.length}
+      metrics={[
+        { label: 'En juego', value: fmtCompacto(enJuego), tone: 'accent' },
+        { label: 'Aceptado', value: fmtCompacto(ganado) },
+        { label: 'Por responder', value: abiertas.length, tone: abiertas.length ? 'warn' : undefined },
+      ]}
+      items={ordenadas}
+      renderItem={(c) => <QuoteRow key={c.id} cotizacion={c} />}
+      emptyText="Sin cotizaciones recientes."
+      linkTo="/admin/propuestas"
+      linkLabel="Ver todas"
+    />
   );
 }

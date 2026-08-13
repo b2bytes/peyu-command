@@ -1,20 +1,19 @@
-import { Package, Truck, Tag, Clock } from 'lucide-react';
-import ActionButton from '../ActionButton';
-import { fmtRelativo, fmtFechaHora } from '@/lib/fecha-relativa';
+import { Package, Tag } from 'lucide-react';
+import ChatCardShell from './ChatCardShell';
+import OrderRow from './OrderRow';
 
-const fmtCLP = (n) => (n != null ? `$${Number(n).toLocaleString('es-CL')}` : '—');
+const fmtCompacto = (n) => {
+  const v = Number(n) || 0;
+  if (v >= 1_000_000) return `$${(v / 1_000_000).toFixed(1)}M`;
+  if (v >= 1_000) return `$${Math.round(v / 1_000)}k`;
+  return `$${v}`;
+};
 
 // ¿Pagado? (payment_status paid o estado post-pago).
 const ESTADOS_PAGADOS = ['Confirmado', 'En Producción', 'Listo para Despacho', 'Despachado', 'Entregado'];
 const estaPagado = (p) => p.payment_status === 'paid' || ESTADOS_PAGADOS.includes(p.estado);
-
-const ESTADO_STYLE = {
-  'Nuevo': 'bg-ld-highlight-soft text-ld-highlight',
-  'Confirmado': 'bg-ld-action-soft text-ld-action',
-  'En Producción': 'bg-ld-action-soft text-ld-action',
-  'Listo para Despacho': 'bg-ld-action-soft text-ld-action',
-  'Despachado': 'bg-ld-action-soft text-ld-action',
-};
+const tieneOT = (p) => !!(p.tracking && String(p.tracking).trim());
+const VIVOS = (p) => !['Cancelado', 'Reembolsado'].includes(p.estado);
 
 // Siguiente estado lógico en el flujo operativo del pedido.
 const NEXT = {
@@ -25,23 +24,39 @@ const NEXT = {
   'Despachado': 'Entregado',
 };
 
-// ¿Tiene etiqueta/OT ya emitida?
-const tieneOT = (p) => !!(p.tracking && String(p.tracking).trim());
-const VIVOS = (p) => !['Cancelado', 'Reembolsado'].includes(p.estado);
+// Decide la ÚNICA acción que corresponde a este pedido según el contexto.
+function accionDe(p, filtro) {
+  if (filtro === 'por_etiqueta') {
+    return { action: 'generarEtiqueta', payload: { id: p.id }, label: 'Generar etiqueta BlueExpress', icon: 'tag', variant: 'primary' };
+  }
+  if (filtro === 'por_pagar') {
+    return { action: 'marcarPedidoPagado', payload: { id: p.id }, label: 'Marcar pagado' };
+  }
+  if (p.estado === 'Listo para Despacho' && !tieneOT(p)) {
+    return { action: 'generarEtiqueta', payload: { id: p.id }, label: 'Generar etiqueta BlueExpress', icon: 'tag', variant: 'primary' };
+  }
+  if (!estaPagado(p)) {
+    return { action: 'marcarPedidoPagado', payload: { id: p.id }, label: 'Marcar pagado' };
+  }
+  if (NEXT[p.estado]) {
+    return { action: 'updatePedidoEstado', payload: { id: p.id, estado: NEXT[p.estado] }, label: `→ ${NEXT[p.estado]}` };
+  }
+  return null;
+}
 
-// Pedidos pendientes con acción: avanzar al siguiente estado del flujo.
-// Acepta `pedidos` (CRM completo) o `lista` (datos ya filtrados de brain).
+// Pedidos pendientes con acción. Acepta `pedidos` (CRM completo) o `lista`
+// (datos ya filtrados del cerebro).
 // `filtro`: 'por_pagar' (faltan marcar pagados) | 'por_etiqueta' (pagados sin OT).
 export default function OrdersCard({ pedidos = [], lista, filtro, onDone }) {
   let pendientes;
   if (filtro === 'por_pagar') {
-    pendientes = pedidos.filter((p) => VIVOS(p) && !estaPagado(p)).slice(0, 12);
+    pendientes = pedidos.filter((p) => VIVOS(p) && !estaPagado(p)).slice(0, 30);
   } else if (filtro === 'por_etiqueta') {
-    pendientes = pedidos.filter((p) => VIVOS(p) && estaPagado(p) && !tieneOT(p) && p.estado !== 'Entregado').slice(0, 12);
+    pendientes = pedidos.filter((p) => VIVOS(p) && estaPagado(p) && !tieneOT(p) && p.estado !== 'Entregado').slice(0, 30);
   } else if (lista) {
     pendientes = lista;
   } else {
-    pendientes = pedidos.filter((p) => !['Entregado', 'Cancelado', 'Reembolsado'].includes(p.estado)).slice(0, 6);
+    pendientes = pedidos.filter((p) => !['Entregado', 'Cancelado', 'Reembolsado'].includes(p.estado)).slice(0, 30);
   }
 
   const titulo = filtro === 'por_pagar'
@@ -55,100 +70,28 @@ export default function OrdersCard({ pedidos = [], lista, filtro, onDone }) {
       ? 'No hay pedidos pagados pendientes de etiqueta 🎉'
       : 'No hay pedidos pendientes 🎉';
 
+  const montoTotal = pendientes.reduce((s, p) => s + (Number(p.total) || 0), 0);
+  const sinPagar = pendientes.filter((p) => !estaPagado(p)).length;
+  const sinEtiqueta = pendientes.filter((p) => estaPagado(p) && !tieneOT(p) && p.estado !== 'Entregado').length;
+
   return (
-    <div className="ld-glass rounded-2xl p-4 sm:p-5">
-      <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center gap-2">
-          <span className="w-7 h-7 rounded-lg bg-ld-action-soft flex items-center justify-center">
-            {filtro === 'por_etiqueta' ? <Tag className="w-4 h-4 text-ld-action" /> : <Package className="w-4 h-4 text-ld-action" />}
-          </span>
-          <span className="text-sm font-semibold text-ld-fg">{titulo}</span>
-        </div>
-        <span className="text-[11px] text-ld-fg-subtle">{pendientes.length}</span>
-      </div>
-      {pendientes.length === 0 ? (
-        <p className="text-sm text-ld-fg-muted">{vacio}</p>
-      ) : (
-        <div className="space-y-2.5">
-          {pendientes.map((p) => (
-            <div key={p.id} className="rounded-xl px-3 py-2.5 bg-ld-bg-soft/60 border border-ld-border">
-              <div className="flex items-center justify-between gap-3">
-                <div className="min-w-0">
-                  <div className="text-sm font-medium text-ld-fg truncate">{p.cliente_nombre || 'Cliente'}</div>
-                  <div className="text-[11px] text-ld-fg-muted truncate">{p.numero_pedido || p.id?.slice(-6)} · {p.medio_pago || ''}</div>
-                  {(p.created_date || p.fecha) && (
-                    <div className="text-[10px] text-ld-fg-subtle mt-0.5 flex items-center gap-1" title={fmtFechaHora(p.created_date || p.fecha) || ''}>
-                      <Clock className="w-2.5 h-2.5" /> {fmtRelativo(p.created_date || p.fecha)}
-                    </div>
-                  )}
-                </div>
-                <div className="flex items-center gap-2 flex-shrink-0">
-                  <span className="text-sm font-semibold text-ld-fg">{fmtCLP(p.total)}</span>
-                  <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${ESTADO_STYLE[p.estado] || 'bg-ld-bg-soft text-ld-fg-muted'}`}>
-                    {p.estado}
-                  </span>
-                </div>
-              </div>
-              {/* Filtro "por_etiqueta": la acción siempre es generar etiqueta.
-                  Filtro "por_pagar": siempre marcar pagado. Sin filtro: lógica
-                  por estado (etiqueta en "Listo para Despacho" sin OT, etc.). */}
-              {filtro === 'por_etiqueta' ? (
-                <div className="mt-2.5">
-                  <ActionButton
-                    action="generarEtiqueta"
-                    payload={{ id: p.id }}
-                    label="Generar etiqueta BlueExpress"
-                    icon={Tag}
-                    variant="primary"
-                    onDone={onDone}
-                  />
-                </div>
-              ) : filtro === 'por_pagar' ? (
-                <div className="mt-2.5">
-                  <ActionButton
-                    action="marcarPedidoPagado"
-                    payload={{ id: p.id }}
-                    label="Marcar pagado"
-                    icon={Truck}
-                    onDone={onDone}
-                  />
-                </div>
-              ) : p.estado === 'Listo para Despacho' && !p.tracking ? (
-                <div className="mt-2.5">
-                  <ActionButton
-                    action="generarEtiqueta"
-                    payload={{ id: p.id }}
-                    label="Generar etiqueta BlueExpress"
-                    icon={Tag}
-                    variant="primary"
-                    onDone={onDone}
-                  />
-                </div>
-              ) : !estaPagado(p) ? (
-                <div className="mt-2.5">
-                  <ActionButton
-                    action="marcarPedidoPagado"
-                    payload={{ id: p.id }}
-                    label="Marcar pagado"
-                    icon={Truck}
-                    onDone={onDone}
-                  />
-                </div>
-              ) : NEXT[p.estado] && (
-                <div className="mt-2.5">
-                  <ActionButton
-                    action="updatePedidoEstado"
-                    payload={{ id: p.id, estado: NEXT[p.estado] }}
-                    label={`→ ${NEXT[p.estado]}`}
-                    icon={Truck}
-                    onDone={onDone}
-                  />
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
+    <ChatCardShell
+      icon={filtro === 'por_etiqueta' ? Tag : Package}
+      title={titulo}
+      subtitle={pendientes.length ? 'Ordenados por urgencia · una acción por pedido' : undefined}
+      count={pendientes.length}
+      metrics={pendientes.length ? [
+        { label: 'Monto', value: fmtCompacto(montoTotal), tone: 'accent' },
+        { label: 'Sin pagar', value: sinPagar, tone: sinPagar ? 'warn' : undefined },
+        { label: 'Sin etiqueta', value: sinEtiqueta, tone: sinEtiqueta ? 'warn' : undefined },
+      ] : []}
+      items={pendientes}
+      renderItem={(p) => (
+        <OrderRow key={p.id} pedido={p} accion={accionDe(p, filtro)} onDone={onDone} />
       )}
-    </div>
+      emptyText={vacio}
+      linkTo="/admin/procesar-pedidos"
+      linkLabel="Ver todos"
+    />
   );
 }
