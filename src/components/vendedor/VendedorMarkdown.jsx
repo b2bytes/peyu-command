@@ -33,6 +33,17 @@ export default function VendedorMarkdown({ children, isUser = false }) {
         h1: ({ node, ...props }) => <p className="text-sm font-bold mb-1" style={{ color: textColor }} {...props} />,
         h2: ({ node, ...props }) => <p className="text-sm font-bold mb-1" style={{ color: textColor }} {...props} />,
         h3: ({ node, ...props }) => <p className="text-[13px] font-bold mb-1" style={{ color: textColor }} {...props} />,
+        // Imágenes en la conversación (ej: el mockup del grabado láser que
+        // genera el vendedor). Se muestran como preview enmarcado, nunca a
+        // tamaño crudo que rompa la burbuja del chat.
+        img: ({ node, ...props }) => (
+          <img
+            className="w-full max-w-[240px] rounded-xl my-1.5 border"
+            style={{ borderColor: 'rgba(192,120,92,.25)' }}
+            loading="lazy"
+            {...props}
+          />
+        ),
         code: ({ node, ...props }) => (
           <code className="px-1 py-0.5 rounded text-[11px] font-mono" style={{ background: 'rgba(192,120,92,.12)', color: '#A86440' }} {...props} />
         ),
