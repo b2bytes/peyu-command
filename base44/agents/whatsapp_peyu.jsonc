@@ -61,6 +61,10 @@
       "allowed_operations": [
         "create"
       ]
+    },
+    {
+      "function_name": "brainRecallPublico",
+      "description": "Consulta la memoria central de PEYU (pol\u00edticas, cat\u00e1logo y rese\u00f1as) con una pregunta en lenguaje natural. \u00dasalo antes de afirmar precios, plazos, materiales o condiciones. Si el dato no est\u00e1, dile al cliente que lo confirmas con el equipo en vez de inventarlo."
     }
   ],
   "context_files": [],
@@ -76,6 +80,9 @@
     "scope": "user",
     "include_other_conversation_context": false,
     "instructions": "DESHABILITADA. La memoria del agente estaba fugando datos entre clientes (un cliente nuevo recib\u00eda el nombre y proyecto de otro). El reconocimiento de clientes se hace EXCLUSIVAMENTE con whatsappBuscarCliente (consulta por tel\u00e9fono en la base de datos), y el historial de la conversaci\u00f3n ya queda aislado por tel\u00e9fono (una conversaci\u00f3n por n\u00famero). NUNCA uses datos 'recordados' de otros chats para saludar o asumir la identidad del cliente."
+  },
+  "voice_config": {
+    "voice_id": null
   },
   "allow_anonymous_access": true,
   "name": "whatsapp_peyu"

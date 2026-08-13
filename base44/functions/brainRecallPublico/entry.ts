@@ -46,7 +46,10 @@ Deno.serve(async (req) => {
     const apiKey = Deno.env.get('PINECONE_API_KEY');
     if (!apiKey) return Response.json({ ok: false, error: 'PINECONE_API_KEY no configurada' }, { status: 500 });
 
-    const { pregunta, top_k = 5 } = await req.json().catch(() => ({}));
+    const body = await req.json().catch(() => ({}));
+    // Acepta `pregunta` o `query`: los agentes a veces nombran el parámetro en inglés.
+    const { top_k = 5 } = body;
+    const pregunta = body.pregunta || body.query;
     if (!pregunta || !String(pregunta).trim()) {
       return Response.json({ ok: false, error: 'Falta la pregunta.' }, { status: 400 });
     }

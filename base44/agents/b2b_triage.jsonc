@@ -37,8 +37,29 @@
         "create",
         "read"
       ]
+    },
+    {
+      "function_name": "brainRecall",
+      "description": "Consulta la memoria central completa de PEYU (clientes, ventas, propuestas, cotizaciones, leads, soporte) con una pregunta en lenguaje natural. \u00dasalo para detectar si la empresa del lead ya tiene historial con PEYU antes de clasificarlo."
     }
   ],
+  "context_files": [],
+  "app_user_connector_configs": [],
+  "selected_skill_names": [],
+  "selected_workspace_skill_ids": [],
+  "model": "automatic",
   "whatsapp_greeting": "\u00a1Hola! Soy el asistente comercial de Peyu Chile \ud83c\udf3f\n\nFabricamos regalos corporativos \u00fanicos con pl\u00e1stico 100% reciclado, personalizados con tu logo mediante l\u00e1ser UV.\n\nPuedo ayudarte con:\n\u2022 \ud83d\udccb Cotizaciones corporativas\n\u2022 \ud83c\udfa8 Mockups con tu logo (en 30 min)\n\u2022 \ud83d\udce6 Kits de escritorio y accesorios\n\u2022 \u2705 Seguimiento de pedidos\n\n\u00bfQu\u00e9 necesitas?",
+  "telegram_greeting": null,
+  "line_greeting": null,
+  "memory_config": {
+    "enabled": true,
+    "scope": "both",
+    "include_other_conversation_context": false,
+    "instructions": null
+  },
+  "voice_config": {
+    "voice_id": null
+  },
+  "allow_anonymous_access": false,
   "name": "b2b_triage"
 }

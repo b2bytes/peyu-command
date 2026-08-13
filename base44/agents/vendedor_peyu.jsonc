@@ -19,6 +19,10 @@
     {
       "function_name": "whatsappGenerarMockup",
       "description": "Genera el mockup real del grabado l\u00e1ser sobre el producto y devuelve mockup_url. Recibe {sku, imagen_url?, texto?, color?}: imagen_url es la foto o logo que adjunt\u00f3 el cliente, texto es la frase a grabar, color es el color elegido. Requiere sku del cat\u00e1logo y al menos imagen_url o texto. Tarda unos segundos."
+    },
+    {
+      "function_name": "brainRecallPublico",
+      "description": "Consulta la memoria central de PEYU (pol\u00edticas del negocio, cat\u00e1logo y rese\u00f1as publicables) con una pregunta en lenguaje natural. Devuelve contexto real con su fuente. \u00dasalo SIEMPRE antes de afirmar precios, plazos, materiales, garant\u00edas o condiciones. Si no aparece la respuesta, dilo en vez de inventarla."
     }
   ],
   "context_files": [],

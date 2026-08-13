@@ -50,8 +50,29 @@
         "read",
         "create"
       ]
+    },
+    {
+      "function_name": "brainRecall",
+      "description": "Consulta la memoria central completa de PEYU con una pregunta en lenguaje natural: cat\u00e1logo, clientes, ventas, propuestas, cotizaciones, leads, soporte, rese\u00f1as y pol\u00edticas. Devuelve el contexto real citando la fuente. \u00dasalo antes de afirmar precios ya ofrecidos, historial de un cliente o condiciones comerciales."
     }
   ],
+  "context_files": [],
+  "app_user_connector_configs": [],
+  "selected_skill_names": [],
+  "selected_workspace_skill_ids": [],
+  "model": "automatic",
   "whatsapp_greeting": "\u00a1Hola! Soy el asistente comercial de Peyu Chile \ud83d\udc22\u267b\ufe0f\n\nPuedo ayudarte con:\n\u2022 Precios y cat\u00e1logo de productos\n\u2022 Cotizaciones corporativas\n\u2022 Estado de propuestas y pedidos\n\u2022 Informaci\u00f3n sobre personalizaci\u00f3n l\u00e1ser UV\n\n\u00bfEn qu\u00e9 te puedo ayudar hoy?",
+  "telegram_greeting": null,
+  "line_greeting": null,
+  "memory_config": {
+    "enabled": true,
+    "scope": "both",
+    "include_other_conversation_context": false,
+    "instructions": null
+  },
+  "voice_config": {
+    "voice_id": null
+  },
+  "allow_anonymous_access": false,
   "name": "asistente_comercial"
 }
