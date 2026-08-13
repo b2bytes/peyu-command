@@ -30,7 +30,7 @@ export default function AdminTopNav() {
   const areaActual = GUIDE_AREAS.find((a) => a.links.some((l) => l.to === location.pathname));
 
   return (
-    <nav className="sticky top-0 z-50 bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 border-b border-white/10">
+    <nav className="force-dark-ui sticky top-0 z-50 bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 border-b border-white/10">
       <div className="px-4 h-16 flex items-center justify-between gap-6">
         {/* Logo + Marca */}
         <div className="flex items-center gap-3 flex-shrink-0">
