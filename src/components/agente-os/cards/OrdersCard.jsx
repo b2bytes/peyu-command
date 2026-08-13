@@ -27,19 +27,19 @@ const NEXT = {
 // Decide la ÚNICA acción que corresponde a este pedido según el contexto.
 function accionDe(p, filtro) {
   if (filtro === 'por_etiqueta') {
-    return { action: 'generarEtiqueta', payload: { id: p.id }, label: 'Generar etiqueta BlueExpress', icon: 'tag', variant: 'primary' };
+    return { action: 'generarEtiqueta', payload: { id: p.id }, label: 'Generar etiqueta BlueExpress', short: 'Etiqueta', icon: 'tag', variant: 'primary' };
   }
   if (filtro === 'por_pagar') {
-    return { action: 'marcarPedidoPagado', payload: { id: p.id }, label: 'Marcar pagado' };
+    return { action: 'marcarPedidoPagado', payload: { id: p.id }, label: 'Marcar pagado', short: 'Pagado' };
   }
   if (p.estado === 'Listo para Despacho' && !tieneOT(p)) {
-    return { action: 'generarEtiqueta', payload: { id: p.id }, label: 'Generar etiqueta BlueExpress', icon: 'tag', variant: 'primary' };
+    return { action: 'generarEtiqueta', payload: { id: p.id }, label: 'Generar etiqueta BlueExpress', short: 'Etiqueta', icon: 'tag', variant: 'primary' };
   }
   if (!estaPagado(p)) {
-    return { action: 'marcarPedidoPagado', payload: { id: p.id }, label: 'Marcar pagado' };
+    return { action: 'marcarPedidoPagado', payload: { id: p.id }, label: 'Marcar pagado', short: 'Pagado' };
   }
   if (NEXT[p.estado]) {
-    return { action: 'updatePedidoEstado', payload: { id: p.id, estado: NEXT[p.estado] }, label: `→ ${NEXT[p.estado]}` };
+    return { action: 'updatePedidoEstado', payload: { id: p.id, estado: NEXT[p.estado] }, label: `→ ${NEXT[p.estado]}`, short: `→ ${NEXT[p.estado]}` };
   }
   return null;
 }

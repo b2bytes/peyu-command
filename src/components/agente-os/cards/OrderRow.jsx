@@ -1,58 +1,84 @@
-import { Clock, Tag, Truck } from 'lucide-react';
+import { useState } from 'react';
+import { Clock, Tag, Truck, ChevronDown, MapPin, Package } from 'lucide-react';
 import ActionButton from '../ActionButton';
 import { fmtRelativo, fmtFechaHora } from '@/lib/fecha-relativa';
 
 const fmtCLP = (n) => (n != null ? `$${Number(n).toLocaleString('es-CL')}` : '—');
 
-const ESTADO_STYLE = {
-  'Nuevo': 'bg-ld-highlight-soft text-ld-highlight',
-  'Confirmado': 'bg-ld-action-soft text-ld-action',
-  'En Producción': 'bg-ld-action-soft text-ld-action',
-  'Listo para Despacho': 'bg-ld-action-soft text-ld-action',
-  'Despachado': 'bg-ld-action-soft text-ld-action',
-  'Entregado': 'bg-ld-bg-soft text-ld-fg-muted',
+// Punto de color = estado, sin ocupar ancho con un chip largo.
+const ESTADO_DOT = {
+  'Nuevo': 'var(--ld-highlight)',
+  'Confirmado': 'var(--ld-action)',
+  'En Producción': 'var(--ld-action)',
+  'Listo para Despacho': 'var(--ld-action)',
+  'Despachado': 'var(--ld-action)',
+  'Entregado': 'var(--ld-fg-subtle)',
 };
 
-// Fila de pedido con UNA acción clara. La acción se decide fuera (la card sabe
-// el contexto operativo), así la fila solo se preocupa de leerse bien.
+// Fila de pedido de UNA línea: lo esencial visible, el detalle al desplegar y
+// UNA acción clara al costado. Así 10 pedidos caben sin volverse una lista larga.
 export default function OrderRow({ pedido: p, accion, onDone }) {
+  const [abierto, setAbierto] = useState(false);
   const fecha = p.created_date || p.fecha;
 
   return (
-    <div className="rounded-xl px-3 py-2 bg-ld-bg-soft/50 border border-ld-border">
-      <div className="flex items-center gap-3">
-        <div className="min-w-0 flex-1">
-          <p className="text-[12.5px] font-semibold text-ld-fg truncate leading-tight">
+    <div className="rounded-xl border" style={{ borderColor: 'var(--ld-border)', background: 'var(--ld-bg-soft)' }}>
+      <div className="flex items-center gap-2 px-2.5 py-2">
+        <button onClick={() => setAbierto((v) => !v)} className="flex items-center gap-2 min-w-0 flex-1 text-left">
+          <span className="w-1.5 h-1.5 rounded-full flex-shrink-0"
+            style={{ background: ESTADO_DOT[p.estado] || 'var(--ld-fg-subtle)' }} title={p.estado} />
+          <span className="text-[12.5px] font-semibold truncate" style={{ color: 'var(--ld-fg)' }}>
             {p.cliente_nombre || 'Cliente'}
-          </p>
-          <div className="flex items-center gap-1.5 mt-0.5 text-[10.5px] text-ld-fg-muted">
-            <span className="font-mono">{p.numero_pedido || p.id?.slice(-6)}</span>
-            {p.medio_pago && <span className="truncate">· {p.medio_pago}</span>}
-            {fecha && (
-              <span className="flex items-center gap-0.5 flex-shrink-0" title={fmtFechaHora(fecha) || ''}>
-                <Clock className="w-2.5 h-2.5" /> {fmtRelativo(fecha)}
-              </span>
-            )}
-          </div>
-        </div>
-        <div className="text-right flex-shrink-0">
-          <p className="text-[13px] font-bold text-ld-fg tabular-nums leading-tight">{fmtCLP(p.total)}</p>
-          <span className={`inline-block mt-0.5 text-[9.5px] px-1.5 py-0.5 rounded-md font-bold ${ESTADO_STYLE[p.estado] || 'bg-ld-bg-soft text-ld-fg-muted'}`}>
-            {p.estado}
           </span>
-        </div>
+          <span className="text-[10px] hidden sm:flex items-center gap-0.5 flex-shrink-0"
+            style={{ color: 'var(--ld-fg-muted)' }} title={fmtFechaHora(fecha) || ''}>
+            <Clock className="w-2.5 h-2.5" /> {fmtRelativo(fecha)}
+          </span>
+          <ChevronDown className={`w-3 h-3 flex-shrink-0 transition-transform ${abierto ? 'rotate-180' : ''}`}
+            style={{ color: 'var(--ld-fg-subtle)' }} />
+        </button>
+
+        <span className="text-[12.5px] font-bold tabular-nums flex-shrink-0" style={{ color: 'var(--ld-fg)' }}>
+          {fmtCLP(p.total)}
+        </span>
+
+        {accion && (
+          <div className="flex-shrink-0">
+            <ActionButton
+              action={accion.action}
+              payload={accion.payload}
+              label={accion.short || accion.label}
+              icon={accion.icon === 'tag' ? Tag : Truck}
+              variant={accion.variant}
+              onDone={onDone}
+            />
+          </div>
+        )}
       </div>
 
-      {accion && (
-        <div className="mt-2">
-          <ActionButton
-            action={accion.action}
-            payload={accion.payload}
-            label={accion.label}
-            icon={accion.icon === 'tag' ? Tag : Truck}
-            variant={accion.variant}
-            onDone={onDone}
-          />
+      {abierto && (
+        <div className="px-3 pb-2.5 pt-0.5 space-y-1 border-t" style={{ borderColor: 'var(--ld-border)' }}>
+          <p className="text-[10.5px] font-mono pt-1.5" style={{ color: 'var(--ld-fg-muted)' }}>
+            {p.numero_pedido || p.id?.slice(-6)} · {p.estado}{p.medio_pago ? ` · ${p.medio_pago}` : ''}
+          </p>
+          {(p.ciudad || p.direccion_envio) && (
+            <p className="text-[10.5px] flex items-start gap-1" style={{ color: 'var(--ld-fg-muted)' }}>
+              <MapPin className="w-3 h-3 flex-shrink-0 mt-px" />
+              <span className="truncate">{[p.direccion_envio, p.ciudad].filter(Boolean).join(', ')}</span>
+            </p>
+          )}
+          {p.descripcion_items && (
+            <p className="text-[10.5px] flex items-start gap-1" style={{ color: 'var(--ld-fg-muted)' }}>
+              <Package className="w-3 h-3 flex-shrink-0 mt-px" />
+              <span className="line-clamp-2">{p.descripcion_items}</span>
+            </p>
+          )}
+          {p.tracking && (
+            <a href={`https://www.bluex.cl/seguimiento?n=${p.tracking}`} target="_blank" rel="noreferrer"
+              className="text-[10.5px] font-bold" style={{ color: 'var(--ld-action)' }}>
+              OT {p.tracking} →
+            </a>
+          )}
         </div>
       )}
     </div>

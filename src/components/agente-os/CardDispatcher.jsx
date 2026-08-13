@@ -20,6 +20,8 @@ import StockColorCard from './cards/StockColorCard';
 import TextosManagerCard from './cards/TextosManagerCard';
 import BlogManagerCard from './cards/BlogManagerCard';
 import BluexTarifaCard from './cards/BluexTarifaCard';
+import TrackOrderCard from './cards/TrackOrderCard';
+import LogisticsAnalysisCard from './cards/LogisticsAnalysisCard';
 
 // Renderiza la tarjeta rica correcta según el tipo detectado, hidratada con
 // los datos reales del CRM + las listas/métricas en vivo de peyuBrainOps.
@@ -62,6 +64,12 @@ export default function CardDispatcher({ card, crm, metrics, lists = {}, onAsk, 
       return <ProposalsCard cotizaciones={crm.cotizaciones} lista={lists.propuestas_pendientes_list} onDone={onDone} />;
     case 'leads':
       return <LeadsCard leads={lists.leads_top || crm.leads} onDone={onDone} />;
+    case 'track_order':
+      // Rastreo de un pedido puntual: "¿dónde va el pedido de Matías?"
+      return <TrackOrderCard pedidos={crm.pedidos || []} queryInicial={card.query} />;
+    case 'logistics_health':
+      // Análisis de la operación de despacho (OTIF, atrasos, comunas caras).
+      return <LogisticsAnalysisCard dias={card.dias} />;
     case 'bluex_tarifa':
       // Cotizador BlueExpress en vivo: "¿cuánto sale enviar 2 kg a Temuco?"
       return <BluexTarifaCard comunaInicial={card.comuna} pesoInicial={card.peso} />;

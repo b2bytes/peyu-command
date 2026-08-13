@@ -120,10 +120,24 @@ export function detectCards(text) {
   if (has(['lead', 'b2b', 'prospecto', 'empresa'])) {
     cards.push({ type: 'leads' });
   }
+  // Rastrear UN pedido: "¿dónde va el pedido de Matías?", "rastrear OT ...".
+  const quiereRastrear = has(['dónde va', 'donde va', 'dónde está el pedido', 'donde esta el pedido',
+    'rastrear', 'rastreo', 'seguimiento del pedido', 'seguir el pedido', 'estado del envío', 'estado del envio',
+    'llegó el pedido', 'llego el pedido']);
+  // Salud del despacho: análisis de la operación logística.
+  const quiereSalud = has(['salud del despacho', 'cómo va el despacho', 'como va el despacho',
+    'análisis logístico', 'analisis logistico', 'analizar envíos', 'analizar envios',
+    'atrasos', 'entregas a tiempo', 'otif', 'problemas de envío', 'problemas de envio',
+    'comunas problemáticas', 'comunas problematicas']);
+
   // Cotizar tarifa BlueExpress: "cuánto cuesta/sale enviar ... a tal comuna".
   // Se evalúa antes que la lista de envíos para no devolver un listado cuando
   // lo que se pide es un precio de despacho.
-  if (has(['cuánto cuesta enviar', 'cuanto cuesta enviar', 'cuánto sale enviar', 'cuanto sale enviar',
+  if (quiereRastrear) {
+    cards.push({ type: 'track_order', query: (text || '').replace(/.*pedido (?:de |del )?/i, '').replace(/[?¿.]/g, '').trim().slice(0, 40) });
+  } else if (quiereSalud) {
+    cards.push({ type: 'logistics_health', dias: has(['semana', '7 día', '7 dia']) ? 7 : 30 });
+  } else if (has(['cuánto cuesta enviar', 'cuanto cuesta enviar', 'cuánto sale enviar', 'cuanto sale enviar',
            'cotizar envío', 'cotizar envio', 'cotizar despacho', 'tarifa de envío', 'tarifa de envio',
            'costo de envío', 'costo de envio', 'precio del envío', 'precio del envio', 'cuánto vale enviar', 'cuanto vale enviar'])) {
     const peso = parseFloat((q.match(/(\d+(?:[.,]\d+)?)\s*(?:kg|kilo)/) || [])[1]?.replace(',', '.'));
