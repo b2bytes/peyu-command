@@ -16,8 +16,16 @@ import { partirEnBurbujas } from '../../shared/evolution.ts';
 import { obtenerConversacion, esperarRespuesta } from '../../shared/whatsapp-agent.ts';
 import { clasificarConversacion } from '../../shared/whatsapp-pipeline.ts';
 
+// ⛔ SERVICIO PAUSADO (cliente dio de baja el sistema). Para reactivar,
+// eliminar este bloque de retorno temprano.
+const SERVICIO_PAUSADO = true;
+
 export default async function (req) {
   try {
+    if (SERVICIO_PAUSADO) {
+      // 200 para que Meta no reintente ni marque el webhook como roto.
+      return Response.json({ ok: true, paused: true });
+    }
     const cfg = getCloudConfig();
     const url = new URL(req.url);
 

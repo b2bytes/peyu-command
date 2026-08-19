@@ -15,8 +15,15 @@ import { clasificarConversacion } from '../../shared/whatsapp-pipeline.ts';
 import { interpretarAdjunto } from '../../shared/whatsapp-media.ts';
 import { obtenerConversacion, esperarRespuesta } from '../../shared/whatsapp-agent.ts';
 
+// ⛔ SERVICIO PAUSADO (cliente dio de baja el sistema). Para reactivar,
+// eliminar este bloque de retorno temprano.
+const SERVICIO_PAUSADO = true;
+
 Deno.serve(async (req) => {
   try {
+    if (SERVICIO_PAUSADO) {
+      return Response.json({ ok: true, paused: true });
+    }
     const cfg = getEvoConfig();
 
     // 1 · Autenticidad del webhook

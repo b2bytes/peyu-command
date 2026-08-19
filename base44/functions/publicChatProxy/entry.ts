@@ -205,8 +205,15 @@ async function upsertChatLead(base44, { conversation_id, session_id, page_path, 
   } catch (e) { console.error('[ChatLead update]', e?.message); }
 }
 
+// ⛔ SERVICIO PAUSADO (cliente dio de baja el sistema). Para reactivar,
+// eliminar este bloque de retorno temprano.
+const SERVICIO_PAUSADO = true;
+
 Deno.serve(async (req) => {
   try {
+    if (SERVICIO_PAUSADO) {
+      return Response.json({ error: 'El chat no está disponible en este momento.', paused: true }, { status: 503 });
+    }
     const base44 = createClientFromRequest(req);
     const body = await req.json();
     const { action } = body || {};
