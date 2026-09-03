@@ -1,0 +1,44 @@
+{
+  "name": "Generar colores carcasas (lote background)",
+  "description": "Procesa de a 1 carcasa pendiente generando sus 5 colores con IA y poblando imagenes_por_color. Se ejecuta cada 5 min hasta vaciar la cola (es idempotente y barato cuando no quedan pendientes).",
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "scheduled",
+      "events": [],
+      "schedule_mode": "interval",
+      "cron_expression": null,
+      "one_time_date": null,
+      "timezone": "UTC",
+      "interval_value": 5,
+      "interval_unit": "minutes",
+      "interval_anchor": "2026-06-02T21:24:04.725000",
+      "ends_type": "never",
+      "ends_on_date": null,
+      "ends_after_count": null
+    }
+  },
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "generar_colores_carcasas_lote_background",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "run_function": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "generateCarcasaColorsCRON",
+            "args": {}
+          },
+          "then": "end"
+        }
+      }
+    ]
+  },
+  "x-base44-migrated-from-automation": {
+    "legacy_payload_function": "generateCarcasaColorsCRON"
+  }
+}

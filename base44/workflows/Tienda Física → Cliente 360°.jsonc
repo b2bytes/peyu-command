@@ -1,0 +1,37 @@
+{
+  "name": "Tienda F\u00edsica \u2192 Cliente 360\u00b0",
+  "description": "Al registrar una venta en tienda f\u00edsica, crea o actualiza la ficha Cliente con tel\u00e9fono/nombre. Asegura que las ventas presenciales tambi\u00e9n alimenten el CRM.",
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "entity",
+      "events": [
+        "create"
+      ],
+      "entity_name": "VentaTienda"
+    }
+  },
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "tienda_f_sica_cliente_360",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "run_function": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "syncClienteFromVentaTienda",
+            "args": {}
+          },
+          "then": "end"
+        }
+      }
+    ]
+  },
+  "x-base44-migrated-from-automation": {
+    "legacy_payload_function": "syncClienteFromVentaTienda"
+  }
+}

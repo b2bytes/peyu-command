@@ -1,0 +1,37 @@
+{
+  "name": "Cerrar loop chat \u2192 B2BLead",
+  "description": "Al crear B2BLead, busca ChatLead activo del mismo email/tel\u00e9fono y lo marca como convertido. Cierra el embudo chat\u2192formulario y permite medir tasa de conversi\u00f3n.",
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "entity",
+      "events": [
+        "create"
+      ],
+      "entity_name": "B2BLead"
+    }
+  },
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "cerrar_loop_chat_b2blead",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "run_function": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "linkChatLeadToB2BLead",
+            "args": {}
+          },
+          "then": "end"
+        }
+      }
+    ]
+  },
+  "x-base44-migrated-from-automation": {
+    "legacy_payload_function": "linkChatLeadToB2BLead"
+  }
+}

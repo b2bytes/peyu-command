@@ -1,0 +1,37 @@
+{
+  "name": "Calendar \u00b7 Agendar Producci\u00f3n al iniciar",
+  "description": "Cuando una OrdenProduccion cambia a \"En Producci\u00f3n\", crea un evento en Google Calendar del equipo de operaciones con detalles de la orden y entrega estimada.",
+  "trigger": {
+    "condition": "${ ((.trigger.changed_fields | index(\"estado\") != null) and (.trigger.data.estado == \"En Producci\\u00f3n\")) }",
+    "config": {
+      "trigger_type": "entity",
+      "events": [
+        "update"
+      ],
+      "entity_name": "OrdenProduccion"
+    }
+  },
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "calendar_agendar_producci_n_al_iniciar",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "run_function": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "agendarProduccionCalendar",
+            "args": {}
+          },
+          "then": "end"
+        }
+      }
+    ]
+  },
+  "x-base44-migrated-from-automation": {
+    "legacy_payload_function": "agendarProduccionCalendar"
+  }
+}

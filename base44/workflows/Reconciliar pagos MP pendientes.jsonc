@@ -1,0 +1,44 @@
+{
+  "name": "Reconciliar pagos MP pendientes",
+  "description": "Cada 30 min audita pedidos con payment_status=pending_mp contra la API de b\u00fasqueda de MP. Reconcilia pagos donde el webhook no lleg\u00f3.",
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "scheduled",
+      "events": [],
+      "schedule_mode": "interval",
+      "cron_expression": null,
+      "one_time_date": null,
+      "timezone": "UTC",
+      "interval_value": 1,
+      "interval_unit": "hours",
+      "interval_anchor": "2026-05-13T02:21:39.060000",
+      "ends_type": "never",
+      "ends_on_date": null,
+      "ends_after_count": null
+    }
+  },
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "reconciliar_pagos_mp_pendientes",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "run_function": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "mpReconcilePending",
+            "args": {}
+          },
+          "then": "end"
+        }
+      }
+    ]
+  },
+  "x-base44-migrated-from-automation": {
+    "legacy_payload_function": "mpReconcilePending"
+  }
+}

@@ -1,0 +1,44 @@
+{
+  "name": "Reposici\u00f3n materia prima \u00b7 diario 08:00",
+  "description": "Cada d\u00eda a las 08:00 Santiago cruza ventas \u00faltimas 4 semanas con stock actual. Avisa por email al fundador + equipo de producci\u00f3n/operaciones cuando un top-15 SKU cae bajo el punto de reorden (cobertura proyectada < 14 d\u00edas).",
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "scheduled",
+      "events": [],
+      "schedule_mode": "recurring",
+      "cron_expression": "0 12 * * *",
+      "one_time_date": null,
+      "timezone": "UTC",
+      "interval_value": null,
+      "interval_unit": null,
+      "interval_anchor": null,
+      "ends_type": "never",
+      "ends_on_date": null,
+      "ends_after_count": null
+    }
+  },
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "reposici_n_materia_prima_diario_08_00",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "run_function": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "analizarTendenciasYAlertarStock",
+            "args": {}
+          },
+          "then": "end"
+        }
+      }
+    ]
+  },
+  "x-base44-migrated-from-automation": {
+    "legacy_payload_function": "analizarTendenciasYAlertarStock"
+  }
+}

@@ -1,0 +1,44 @@
+{
+  "name": "CRON \u00b7 Cross-sell Post-Compra B2C",
+  "description": "Cada d\u00eda a las 16:00 detecta pedidos B2C de hace 2-4 d\u00edas y env\u00eda email con producto complementario sugerido (misma categor\u00eda) + cup\u00f3n PEYU2X 12% OFF de 48h.",
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "scheduled",
+      "events": [],
+      "schedule_mode": "recurring",
+      "cron_expression": "0 20 * * *",
+      "one_time_date": null,
+      "timezone": "UTC",
+      "interval_value": null,
+      "interval_unit": null,
+      "interval_anchor": null,
+      "ends_type": "never",
+      "ends_on_date": null,
+      "ends_after_count": null
+    }
+  },
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "cron_cross_sell_post_compra_b2c",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "run_function": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "crossSellPostCompra",
+            "args": {}
+          },
+          "then": "end"
+        }
+      }
+    ]
+  },
+  "x-base44-migrated-from-automation": {
+    "legacy_payload_function": "crossSellPostCompra"
+  }
+}

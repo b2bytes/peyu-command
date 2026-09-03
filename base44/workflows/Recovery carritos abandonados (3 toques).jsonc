@@ -1,0 +1,44 @@
+{
+  "name": "Recovery carritos abandonados (3 toques)",
+  "description": "Cada hora env\u00eda emails de recuperaci\u00f3n B2C: T1 a las 3h (recordatorio), T2 a las 22h (cup\u00f3n sorpresa 10%), T3 a las 50h (\u00faltimo aviso). Excluye B2B, pagos confirmados, sospechosos y tests.",
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "scheduled",
+      "events": [],
+      "schedule_mode": "interval",
+      "cron_expression": null,
+      "one_time_date": null,
+      "timezone": "UTC",
+      "interval_value": 1,
+      "interval_unit": "hours",
+      "interval_anchor": "2026-05-13T02:24:26.626000",
+      "ends_type": "never",
+      "ends_on_date": null,
+      "ends_after_count": null
+    }
+  },
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "recovery_carritos_abandonados_3_toques",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "run_function": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "carritoAbandonadoCRON",
+            "args": {}
+          },
+          "then": "end"
+        }
+      }
+    ]
+  },
+  "x-base44-migrated-from-automation": {
+    "legacy_payload_function": "carritoAbandonadoCRON"
+  }
+}

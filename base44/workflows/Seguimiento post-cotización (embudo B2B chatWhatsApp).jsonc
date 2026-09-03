@@ -1,0 +1,44 @@
+{
+  "name": "Seguimiento post-cotizaci\u00f3n (embudo B2B chat/WhatsApp)",
+  "description": "Env\u00eda la secuencia de 3 correos de enganche (d\u00eda 2, 5 y 12) a cotizaciones sin aprobar generadas desde el chat/WhatsApp, con CTA de aprobaci\u00f3n online y WhatsApp.",
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "scheduled",
+      "events": [],
+      "schedule_mode": "recurring",
+      "cron_expression": "0 14 * * *",
+      "one_time_date": null,
+      "timezone": "UTC",
+      "interval_value": null,
+      "interval_unit": null,
+      "interval_anchor": null,
+      "ends_type": "never",
+      "ends_on_date": null,
+      "ends_after_count": null
+    }
+  },
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "seguimiento_post_cotizaci_n_embudo_b2b_chat_whatsapp",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "run_function": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "cotizacionSeguimientoCRON",
+            "args": {}
+          },
+          "then": "end"
+        }
+      }
+    ]
+  },
+  "x-base44-migrated-from-automation": {
+    "legacy_payload_function": "cotizacionSeguimientoCRON"
+  }
+}

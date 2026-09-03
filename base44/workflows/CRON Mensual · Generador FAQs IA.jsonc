@@ -1,0 +1,44 @@
+{
+  "name": "CRON Mensual \u00b7 Generador FAQs IA",
+  "description": "D\u00eda 15 de cada mes a las 11:00 analiza \u00faltimas 90 d\u00edas de Consultas reales, IA agrupa por intenci\u00f3n y genera 8-12 FAQs candidatas con respuesta lista para revisar y publicar en /faq.",
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "scheduled",
+      "events": [],
+      "schedule_mode": "recurring",
+      "cron_expression": "0 15 15 * *",
+      "one_time_date": null,
+      "timezone": "UTC",
+      "interval_value": null,
+      "interval_unit": null,
+      "interval_anchor": null,
+      "ends_type": "never",
+      "ends_on_date": null,
+      "ends_after_count": null
+    }
+  },
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "cron_mensual_generador_faqs_ia",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "run_function": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "generarFAQsDesdeConsultas",
+            "args": {}
+          },
+          "then": "end"
+        }
+      }
+    ]
+  },
+  "x-base44-migrated-from-automation": {
+    "legacy_payload_function": "generarFAQsDesdeConsultas"
+  }
+}

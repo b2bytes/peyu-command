@@ -1,0 +1,39 @@
+{
+  "name": "Sitemap \u00b7 Auto-regenerar al modificar Producto",
+  "description": "Cada vez que se crea, actualiza o elimina un producto, regenera sitemap.xml din\u00e1mico con todas las URLs (p\u00e1ginas est\u00e1ticas + productos activos) y registra la acci\u00f3n en IndexationLog.",
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "entity",
+      "events": [
+        "create",
+        "update",
+        "delete"
+      ],
+      "entity_name": "Producto"
+    }
+  },
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "sitemap_auto_regenerar_al_modificar_producto",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "run_function": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "generateSitemap",
+            "args": {}
+          },
+          "then": "end"
+        }
+      }
+    ]
+  },
+  "x-base44-migrated-from-automation": {
+    "legacy_payload_function": "generateSitemap"
+  }
+}

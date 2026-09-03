@@ -1,0 +1,44 @@
+{
+  "name": "CRON \u00b7 Recordatorio Anticipo B2B",
+  "description": "Cada d\u00eda a las 14:00 detecta propuestas aceptadas hace \u22653 d\u00edas sin pago de anticipo y env\u00eda recordatorio al cliente. Alerta interna de morosidad si supera 7 d\u00edas.",
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "scheduled",
+      "events": [],
+      "schedule_mode": "recurring",
+      "cron_expression": "0 18 * * *",
+      "one_time_date": null,
+      "timezone": "UTC",
+      "interval_value": null,
+      "interval_unit": null,
+      "interval_anchor": null,
+      "ends_type": "never",
+      "ends_on_date": null,
+      "ends_after_count": null
+    }
+  },
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "cron_recordatorio_anticipo_b2b",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "run_function": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "recordatorioAnticipoB2B",
+            "args": {}
+          },
+          "then": "end"
+        }
+      }
+    ]
+  },
+  "x-base44-migrated-from-automation": {
+    "legacy_payload_function": "recordatorioAnticipoB2B"
+  }
+}

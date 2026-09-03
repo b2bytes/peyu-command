@@ -1,0 +1,44 @@
+{
+  "name": "Pipeline WhatsApp \u00b7 Clasificaci\u00f3n autom\u00e1tica",
+  "description": "Cada 10 min clasifica las conversaciones del agente whatsapp_peyu en su etapa real del pipeline (explorando, datos, cotizado, pago, convertido, postventa, escalado) seg\u00fan lo que el agente hizo en cada conversaci\u00f3n.",
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "scheduled",
+      "events": [],
+      "schedule_mode": "interval",
+      "cron_expression": null,
+      "one_time_date": null,
+      "timezone": "UTC",
+      "interval_value": 10,
+      "interval_unit": "minutes",
+      "interval_anchor": "2026-07-01T20:25:01.325000",
+      "ends_type": "never",
+      "ends_on_date": null,
+      "ends_after_count": null
+    }
+  },
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "pipeline_whatsapp_clasificaci_n_autom_tica",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "run_function": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "whatsappPipelineSync",
+            "args": {}
+          },
+          "then": "end"
+        }
+      }
+    ]
+  },
+  "x-base44-migrated-from-automation": {
+    "legacy_payload_function": "whatsappPipelineSync"
+  }
+}

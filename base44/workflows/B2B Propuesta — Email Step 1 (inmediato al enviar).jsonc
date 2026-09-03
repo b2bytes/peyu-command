@@ -1,0 +1,39 @@
+{
+  "name": "B2B Propuesta \u2014 Email Step 1 (inmediato al enviar)",
+  "description": "",
+  "trigger": {
+    "condition": "${ ((.trigger.changed_fields | index(\"status\") != null) and (.trigger.data.status == \"Enviada\")) }",
+    "config": {
+      "trigger_type": "entity",
+      "events": [
+        "update"
+      ],
+      "entity_name": "CorporateProposal"
+    }
+  },
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "b2b_propuesta_email_step_1_inmediato_al_enviar",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "run_function": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "b2bProposalEmailSequence",
+            "args": {
+              "step": 1
+            }
+          },
+          "then": "end"
+        }
+      }
+    ]
+  },
+  "x-base44-migrated-from-automation": {
+    "legacy_payload_function": "b2bProposalEmailSequence"
+  }
+}

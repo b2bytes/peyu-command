@@ -1,0 +1,39 @@
+{
+  "name": "Pinecone \u00b7 Sync Pedidos (memoria de ventas)",
+  "description": "Vectoriza cada PedidoWeb en el namespace 'orders' del cerebro al crearse o cambiar de estado: qu\u00e9 se vendi\u00f3, a qui\u00e9n, color, grabado, precio, pago y despacho. Los pedidos cancelados o eliminados se sacan de la memoria.",
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "entity",
+      "events": [
+        "create",
+        "update",
+        "delete"
+      ],
+      "entity_name": "PedidoWeb"
+    }
+  },
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "pinecone_sync_pedidos_memoria_de_ventas",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "run_function": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "pineconeSyncPedido",
+            "args": {}
+          },
+          "then": "end"
+        }
+      }
+    ]
+  },
+  "x-base44-migrated-from-automation": {
+    "legacy_payload_function": "pineconeSyncPedido"
+  }
+}

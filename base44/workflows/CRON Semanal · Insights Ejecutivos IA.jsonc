@@ -1,0 +1,44 @@
+{
+  "name": "CRON Semanal \u00b7 Insights Ejecutivos IA",
+  "description": "Lunes 07:00 cruza datos semanales (pedidos, leads, propuestas, consultas) y genera con IA un briefing ejecutivo: tendencias, alertas y 3 acciones priorizadas para la semana.",
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "scheduled",
+      "events": [],
+      "schedule_mode": "recurring",
+      "cron_expression": "0 11 * * 1",
+      "one_time_date": null,
+      "timezone": "UTC",
+      "interval_value": null,
+      "interval_unit": null,
+      "interval_anchor": null,
+      "ends_type": "never",
+      "ends_on_date": null,
+      "ends_after_count": null
+    }
+  },
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "cron_semanal_insights_ejecutivos_ia",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "run_function": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "insightsSemanalesIA",
+            "args": {}
+          },
+          "then": "end"
+        }
+      }
+    ]
+  },
+  "x-base44-migrated-from-automation": {
+    "legacy_payload_function": "insightsSemanalesIA"
+  }
+}

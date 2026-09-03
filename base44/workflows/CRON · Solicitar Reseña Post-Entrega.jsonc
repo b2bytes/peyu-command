@@ -1,0 +1,44 @@
+{
+  "name": "CRON \u00b7 Solicitar Rese\u00f1a Post-Entrega",
+  "description": "Cada d\u00eda a las 11:00 env\u00eda email solicitando rese\u00f1a a clientes cuyo pedido fue entregado hace 6-9 d\u00edas, con cup\u00f3n GRACIAS10 de incentivo.",
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "scheduled",
+      "events": [],
+      "schedule_mode": "recurring",
+      "cron_expression": "0 15 * * *",
+      "one_time_date": null,
+      "timezone": "UTC",
+      "interval_value": null,
+      "interval_unit": null,
+      "interval_anchor": null,
+      "ends_type": "never",
+      "ends_on_date": null,
+      "ends_after_count": null
+    }
+  },
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "cron_solicitar_rese_a_post_entrega",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "run_function": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "solicitarResenaCRON",
+            "args": {}
+          },
+          "then": "end"
+        }
+      }
+    ]
+  },
+  "x-base44-migrated-from-automation": {
+    "legacy_payload_function": "solicitarResenaCRON"
+  }
+}

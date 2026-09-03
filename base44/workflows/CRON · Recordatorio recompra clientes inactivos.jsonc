@@ -1,0 +1,44 @@
+{
+  "name": "CRON \u00b7 Recordatorio recompra clientes inactivos",
+  "description": "El d\u00eda 1 de cada mes a las 09:00 detecta clientes B2B activos sin compras hace >180 d\u00edas y les env\u00eda email de re-engagement con cup\u00f3n VUELTA15.",
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "scheduled",
+      "events": [],
+      "schedule_mode": "recurring",
+      "cron_expression": "0 13 1 * *",
+      "one_time_date": null,
+      "timezone": "UTC",
+      "interval_value": null,
+      "interval_unit": null,
+      "interval_anchor": null,
+      "ends_type": "never",
+      "ends_on_date": null,
+      "ends_after_count": null
+    }
+  },
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "cron_recordatorio_recompra_clientes_inactivos",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "run_function": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "recordatorioRecompraCRON",
+            "args": {}
+          },
+          "then": "end"
+        }
+      }
+    ]
+  },
+  "x-base44-migrated-from-automation": {
+    "legacy_payload_function": "recordatorioRecompraCRON"
+  }
+}

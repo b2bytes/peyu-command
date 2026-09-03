@@ -1,0 +1,39 @@
+{
+  "name": "Sitemap auto-rebuild on BlogPost change",
+  "description": "Regenera el sitemap autom\u00e1ticamente cuando se publica/edita/elimina un art\u00edculo del blog.",
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "entity",
+      "events": [
+        "create",
+        "update",
+        "delete"
+      ],
+      "entity_name": "BlogPost"
+    }
+  },
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "sitemap_auto_rebuild_on_blogpost_change",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "run_function": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "generateSitemap",
+            "args": {}
+          },
+          "then": "end"
+        }
+      }
+    ]
+  },
+  "x-base44-migrated-from-automation": {
+    "legacy_payload_function": "generateSitemap"
+  }
+}

@@ -1,0 +1,39 @@
+{
+  "name": "Pinecone \u00b7 Auto-sync Cliente",
+  "description": "Re-vectoriza un cliente en el namespace 'customers' de Pinecone al crear, actualizar o eliminar. Permite que Peyu reconozca a clientes recurrentes y personalice recomendaciones con memoria 360\\u00b0.",
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "entity",
+      "events": [
+        "create",
+        "update",
+        "delete"
+      ],
+      "entity_name": "Cliente"
+    }
+  },
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "pinecone_auto_sync_cliente",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "run_function": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "pineconeSyncCliente",
+            "args": {}
+          },
+          "then": "end"
+        }
+      }
+    ]
+  },
+  "x-base44-migrated-from-automation": {
+    "legacy_payload_function": "pineconeSyncCliente"
+  }
+}

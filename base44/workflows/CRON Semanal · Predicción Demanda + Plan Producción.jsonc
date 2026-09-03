@@ -1,0 +1,44 @@
+{
+  "name": "CRON Semanal \u00b7 Predicci\u00f3n Demanda + Plan Producci\u00f3n",
+  "description": "Domingo 19:00 analiza pedidos \u00faltimos 60d, calcula tendencias por SKU, IA genera plan de producci\u00f3n priorizado para la semana siguiente y crea Tareas URGENTE para SKUs en riesgo de stock-out.",
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "scheduled",
+      "events": [],
+      "schedule_mode": "recurring",
+      "cron_expression": "0 23 * * 0",
+      "one_time_date": null,
+      "timezone": "UTC",
+      "interval_value": null,
+      "interval_unit": null,
+      "interval_anchor": null,
+      "ends_type": "never",
+      "ends_on_date": null,
+      "ends_after_count": null
+    }
+  },
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "cron_semanal_predicci_n_demanda_plan_producci_n",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "run_function": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "prediccionDemandaCRON",
+            "args": {}
+          },
+          "then": "end"
+        }
+      }
+    ]
+  },
+  "x-base44-migrated-from-automation": {
+    "legacy_payload_function": "prediccionDemandaCRON"
+  }
+}

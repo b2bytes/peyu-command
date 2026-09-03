@@ -1,0 +1,37 @@
+{
+  "name": "Auto Promo Image en producto nuevo",
+  "description": "Cuando se crea un nuevo producto activo con imagen principal, genera autom\u00e1ticamente la imagen promo 1:1 con branding PEYU para difusi\u00f3n en RRSS.",
+  "trigger": {
+    "condition": "${ ((.trigger.data.activo != false) and (.trigger.data.imagen_url != null and .trigger.data.imagen_url != \"\" and .trigger.data.imagen_url != [] and .trigger.data.imagen_url != {})) }",
+    "config": {
+      "trigger_type": "entity",
+      "events": [
+        "create"
+      ],
+      "entity_name": "Producto"
+    }
+  },
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "auto_promo_image_en_producto_nuevo",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "run_function": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "generateProductPromoImage",
+            "args": {}
+          },
+          "then": "end"
+        }
+      }
+    ]
+  },
+  "x-base44-migrated-from-automation": {
+    "legacy_payload_function": "generateProductPromoImage"
+  }
+}

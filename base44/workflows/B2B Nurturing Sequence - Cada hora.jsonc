@@ -1,0 +1,44 @@
+{
+  "name": "B2B Nurturing Sequence - Cada hora",
+  "description": "Secuencia inteligente de emails post-cotizaci\u00f3n B2B: T+4h recordatorio, T+24h propuesta formal, T+72h urgencia validez, T+7d reactivaci\u00f3n, T+14d cierre cort\u00e9s, T+15d marca como Perdido.",
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "scheduled",
+      "events": [],
+      "schedule_mode": "interval",
+      "cron_expression": null,
+      "one_time_date": null,
+      "timezone": "UTC",
+      "interval_value": 1,
+      "interval_unit": "hours",
+      "interval_anchor": "2026-06-07T23:08:29.141000",
+      "ends_type": "never",
+      "ends_on_date": null,
+      "ends_after_count": null
+    }
+  },
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "b2b_nurturing_sequence_cada_hora",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "run_function": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "b2bNurturingSequence",
+            "args": {}
+          },
+          "then": "end"
+        }
+      }
+    ]
+  },
+  "x-base44-migrated-from-automation": {
+    "legacy_payload_function": "b2bNurturingSequence"
+  }
+}

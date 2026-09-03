@@ -1,0 +1,44 @@
+{
+  "name": "CRON Semanal \u00b7 Oportunidades SEO IA",
+  "description": "Lunes 09:00 cruza queries de Search Console \u00faltimos 28d, IA detecta quick wins (pos 8-20), queries con impresiones sin clicks, sugiere temas de blog y crea Tareas para top 3 oportunidades.",
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "scheduled",
+      "events": [],
+      "schedule_mode": "recurring",
+      "cron_expression": "0 13 * * 1",
+      "one_time_date": null,
+      "timezone": "UTC",
+      "interval_value": null,
+      "interval_unit": null,
+      "interval_anchor": null,
+      "ends_type": "never",
+      "ends_on_date": null,
+      "ends_after_count": null
+    }
+  },
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "cron_semanal_oportunidades_seo_ia",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "run_function": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "oportunidadesSEOCRON",
+            "args": {}
+          },
+          "then": "end"
+        }
+      }
+    ]
+  },
+  "x-base44-migrated-from-automation": {
+    "legacy_payload_function": "oportunidadesSEOCRON"
+  }
+}

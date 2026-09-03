@@ -1,0 +1,38 @@
+{
+  "name": "Gmail \u00b7 ingest emails entrantes \u2192 Consulta",
+  "description": "Cada vez que llega un email nuevo a tu bandeja, lo lee, extrae remitente/asunto/cuerpo, clasifica B2B/B2C y crea una Consulta. La entity automation existente (triageConsultaIA) la califica como Caliente/Tibio/Fr\u00edo autom\u00e1ticamente.",
+  "trigger": {
+    "condition": "${ (.trigger.data.has_new_messages == true) }",
+    "config": {
+      "trigger_type": "connector",
+      "events": [
+        "mailbox"
+      ],
+      "integration_type": "gmail",
+      "resource_id": null
+    }
+  },
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "gmail_ingest_emails_entrantes_consulta",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "run_function": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "ingestGmailInquiry",
+            "args": {}
+          },
+          "then": "end"
+        }
+      }
+    ]
+  },
+  "x-base44-migrated-from-automation": {
+    "legacy_payload_function": "ingestGmailInquiry"
+  }
+}

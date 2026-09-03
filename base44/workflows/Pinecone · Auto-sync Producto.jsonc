@@ -1,0 +1,39 @@
+{
+  "name": "Pinecone \u00b7 Auto-sync Producto",
+  "description": "Re-vectoriza autom\u00e1ticamente un producto en Pinecone cuando se crea, actualiza o elimina en la entidad Producto. Mantiene el Brain sincronizado con el cat\u00e1logo real sin intervenci\u00f3n manual.",
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "entity",
+      "events": [
+        "create",
+        "update",
+        "delete"
+      ],
+      "entity_name": "Producto"
+    }
+  },
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "pinecone_auto_sync_producto",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "run_function": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "pineconeSyncProducto",
+            "args": {}
+          },
+          "then": "end"
+        }
+      }
+    ]
+  },
+  "x-base44-migrated-from-automation": {
+    "legacy_payload_function": "pineconeSyncProducto"
+  }
+}

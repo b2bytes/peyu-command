@@ -1,0 +1,37 @@
+{
+  "name": "IA \u00b7 Triage Consultas Entrantes",
+  "description": "Cuando llega una Consulta nueva, IA clasifica calidad/urgencia, redacta borrador de respuesta y notifica al equipo si es lead Caliente o urgencia Alta (SLA &lt;2h).",
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "entity",
+      "events": [
+        "create"
+      ],
+      "entity_name": "Consulta"
+    }
+  },
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "ia_triage_consultas_entrantes",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "run_function": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "triageConsultaIA",
+            "args": {}
+          },
+          "then": "end"
+        }
+      }
+    ]
+  },
+  "x-base44-migrated-from-automation": {
+    "legacy_payload_function": "triageConsultaIA"
+  }
+}

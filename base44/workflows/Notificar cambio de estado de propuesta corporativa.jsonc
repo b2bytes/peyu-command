@@ -1,0 +1,37 @@
+{
+  "name": "Notificar cambio de estado de propuesta corporativa",
+  "description": "Env\u00eda email autom\u00e1tico al contacto corporativo cuando una propuesta cambia a 'Aceptada' o 'Rechazada', con resumen y link directo a la propuesta online.",
+  "trigger": {
+    "condition": "${ ((.trigger.changed_fields | index(\"status\") != null) and (.trigger.data.status == \"Aceptada\" or .trigger.data.status == \"Rechazada\")) }",
+    "config": {
+      "trigger_type": "entity",
+      "events": [
+        "update"
+      ],
+      "entity_name": "CorporateProposal"
+    }
+  },
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "notificar_cambio_de_estado_de_propuesta_corporativa",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "run_function": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "notifyProposalStatusChange",
+            "args": {}
+          },
+          "then": "end"
+        }
+      }
+    ]
+  },
+  "x-base44-migrated-from-automation": {
+    "legacy_payload_function": "notifyProposalStatusChange"
+  }
+}

@@ -1,0 +1,38 @@
+{
+  "name": "Auto-Index \u00b7 Blog post publicado",
+  "description": "Notifica a Google e IndexNow cuando se publica un art\u00edculo del blog, para que aparezca r\u00e1pido en resultados de b\u00fasqueda.",
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "entity",
+      "events": [
+        "create",
+        "update"
+      ],
+      "entity_name": "BlogPost"
+    }
+  },
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "auto_index_blog_post_publicado",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "run_function": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "autoIndexOnPublish",
+            "args": {}
+          },
+          "then": "end"
+        }
+      }
+    ]
+  },
+  "x-base44-migrated-from-automation": {
+    "legacy_payload_function": "autoIndexOnPublish"
+  }
+}

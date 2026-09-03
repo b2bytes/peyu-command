@@ -1,0 +1,37 @@
+{
+  "name": "Consulta \u00b7 linkear a Cliente y ChatLead",
+  "description": "Al crear una Consulta, busca por email si existe Cliente o ChatLead previo y los enlaza para vista 360\u00b0 del contacto.",
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "entity",
+      "events": [
+        "create"
+      ],
+      "entity_name": "Consulta"
+    }
+  },
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "consulta_linkear_a_cliente_y_chatlead",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "run_function": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "linkConsultaToCliente",
+            "args": {}
+          },
+          "then": "end"
+        }
+      }
+    ]
+  },
+  "x-base44-migrated-from-automation": {
+    "legacy_payload_function": "linkConsultaToCliente"
+  }
+}

@@ -1,0 +1,39 @@
+{
+  "name": "Pinecone \u00b7 Sync Propuestas (memoria IA)",
+  "description": "Cuando una CorporateProposal cambia a estado Enviada/Aceptada/Rechazada, la vectoriza en el namespace 'proposals' para que el chatbot tenga memoria de qu\u00e9 se vendi\u00f3 y a qu\u00e9 precio.",
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "entity",
+      "events": [
+        "create",
+        "update",
+        "delete"
+      ],
+      "entity_name": "CorporateProposal"
+    }
+  },
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "pinecone_sync_propuestas_memoria_ia",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "run_function": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "pineconeSyncProposal",
+            "args": {}
+          },
+          "then": "end"
+        }
+      }
+    ]
+  },
+  "x-base44-migrated-from-automation": {
+    "legacy_payload_function": "pineconeSyncProposal"
+  }
+}

@@ -1,0 +1,39 @@
+{
+  "name": "Cerebro \u00b7 Ventas en tienda f\u00edsica al vuelo",
+  "description": "Cada venta presencial entra al cerebro (namespace orders) por brainIngest, igual que las ventas web.",
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "entity",
+      "events": [
+        "create",
+        "update",
+        "delete"
+      ],
+      "entity_name": "VentaTienda"
+    }
+  },
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "cerebro_ventas_en_tienda_f_sica_al_vuelo",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "run_function": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "brainIngest",
+            "args": {}
+          },
+          "then": "end"
+        }
+      }
+    ]
+  },
+  "x-base44-migrated-from-automation": {
+    "legacy_payload_function": "brainIngest"
+  }
+}

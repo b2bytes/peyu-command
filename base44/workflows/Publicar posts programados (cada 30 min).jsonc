@@ -1,0 +1,44 @@
+{
+  "name": "Publicar posts programados (cada 30 min)",
+  "description": "Publica autom\u00e1ticamente los ContentPost en estado Programado cuya fecha/hora ya lleg\u00f3 (Instagram/LinkedIn v\u00eda publishContentPost). Permite que el agente de marketing programe 1 post o la semana completa.",
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "scheduled",
+      "events": [],
+      "schedule_mode": "interval",
+      "cron_expression": null,
+      "one_time_date": null,
+      "timezone": "UTC",
+      "interval_value": 30,
+      "interval_unit": "minutes",
+      "interval_anchor": "2026-06-11T03:15:32.907000",
+      "ends_type": "never",
+      "ends_on_date": null,
+      "ends_after_count": null
+    }
+  },
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "publicar_posts_programados_cada_30_min",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "run_function": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "publicarPostsProgramadosCRON",
+            "args": {}
+          },
+          "then": "end"
+        }
+      }
+    ]
+  },
+  "x-base44-migrated-from-automation": {
+    "legacy_payload_function": "publicarPostsProgramadosCRON"
+  }
+}

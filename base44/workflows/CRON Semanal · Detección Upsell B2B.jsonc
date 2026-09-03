@@ -1,0 +1,44 @@
+{
+  "name": "CRON Semanal \u00b7 Detecci\u00f3n Upsell B2B",
+  "description": "Cada lunes 09:30 detecta clientes con patrones de fidelidad (3+ pedidos, $500K+, VIP) y crea tareas comerciales de upsell con propuesta sugerida.",
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "scheduled",
+      "events": [],
+      "schedule_mode": "recurring",
+      "cron_expression": "30 13 * * 1",
+      "one_time_date": null,
+      "timezone": "UTC",
+      "interval_value": null,
+      "interval_unit": null,
+      "interval_anchor": null,
+      "ends_type": "never",
+      "ends_on_date": null,
+      "ends_after_count": null
+    }
+  },
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "cron_semanal_detecci_n_upsell_b2b",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "run_function": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "detectarUpsellB2B",
+            "args": {}
+          },
+          "then": "end"
+        }
+      }
+    ]
+  },
+  "x-base44-migrated-from-automation": {
+    "legacy_payload_function": "detectarUpsellB2B"
+  }
+}
